@@ -1,6 +1,6 @@
-# Substrate Node Template
+# Setheum Substrate Node
 
-A new FRAME-based Substrate node, ready for hacking :rocket:
+Setheum Network's FRAME-based Substrate node, ready for hacking :rocket:
 
 ## Getting Started
 
