@@ -25,7 +25,10 @@ hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.101' }
 
 # local dependencies
-pallet-template = { path = '../pallets/template', default-features = false, version = '2.0.0' }
+stp258 = { version = "2.0.0", default-features = false, path = "../pallets/stp258", package = "stp258" }
+serp_tes = { version = "2.0.0", default-features = false, path = "../pallets/serp_tes", package = "serp_tes" }
+serp_market = { version = "2.0.0", default-features = false, path = "../pallets/serp_market", package = "serp_market" }
+
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '2.0.0' }
@@ -78,7 +81,9 @@ std = [
     'pallet-grandpa/std',
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
-    'pallet-template/std',
+    'stp258/std',
+    'serp_tes/std',
+    'serp_market/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
