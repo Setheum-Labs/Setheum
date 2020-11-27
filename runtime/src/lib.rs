@@ -269,7 +269,13 @@ impl pallet_sudo::Trait for Runtime {
 impl stp258::Trait for Runtime {
     type Event = Event;
 }
+impl serp_market::Trait for Runtime{
+    type Event=Event;
+}
 
+impl serp_tes::Trait for Runtime{
+    type Event=Event;
+}
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
