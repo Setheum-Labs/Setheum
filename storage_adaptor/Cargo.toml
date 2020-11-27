@@ -1,0 +1,31 @@
+[package]
+name = "storage_adapters"
+version = "0.0.3"
+authors = ["apopiak"]
+edition = "2018"
+
+[features]
+default = ['std']
+std = [
+    'codec/std',
+    'frame-support/std',
+    'sp-runtime/std',
+    'sp-io/std',
+    'sp-std/std',
+    'system/std',
+]
+
+[dependencies]
+codec = { default-features = false, features = ['derive'], package = 'parity-scale-codec', version = '1.2.0' }
+frame-support = { default-features = false, version = '2.0.0-alpha.5' }
+num-traits = { default-features = false, version = "0.2.11" }
+sp-std = { default-features = false, version = '2.0.0-alpha.5' }
+
+# dev-dependencies that have to be dependencies because of this cargo issue:
+# https://github.com/rust-lang/cargo/issues/6915
+sp-io = { default-features = false, version = '2.0.0-alpha.5' }
+sp-runtime = { default-features = false, version = '2.0.0-alpha.5' }
+system = { default-features = false, package = 'frame-system', version = '2.0.0-alpha.5' }
+
+[dev-dependencies]
+sp-core = { default-features = false, version = '2.0.0-alpha.5' }

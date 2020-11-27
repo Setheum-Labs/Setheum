@@ -6516,6 +6516,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "storage_adapters"
+version = "0.0.3"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "num-traits",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "stp258"
 version = "2.0.0"
 dependencies = [
@@ -6525,6 +6539,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "storage_adapters",
 ]
 
 [[package]]
