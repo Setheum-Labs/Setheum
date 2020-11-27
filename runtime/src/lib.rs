@@ -45,6 +45,8 @@ pub use serp_tes;
 /// Import the template pallet.
 pub use stp258;
 
+/// Importing offchain price fetch
+pub use fetch_price;
 /// An index to a block.
 pub type BlockNumber = u32;
 
