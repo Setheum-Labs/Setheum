@@ -47,6 +47,7 @@ pub use stp258;
 
 /// Importing offchain price fetch
 pub use fetch_price;
+pub use price;
 /// An index to a block.
 pub type BlockNumber = u32;
 
