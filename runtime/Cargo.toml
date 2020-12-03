@@ -28,7 +28,8 @@ serde = { features = ['derive'], optional = true, version = '1.0.101' }
 stp258 = { version = "2.0.0", default-features = false, path = "../pallets/stp258", package = "stp258" }
 serp_tes = { version = "2.0.0", default-features = false, path = "../pallets/serp_tes", package = "serp_tes" }
 serp_market = { version = "2.0.0", default-features = false, path = "../pallets/serp_market", package = "serp_market" }
-
+fetch-price = { version = "1.2.0", default-features = false, path = "../pallets/fetch-price", package = "pallet-price-fetch" }
+price={version="0.1.0", default-features = false, path = "../pallets/price", package = "price"}
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '2.0.0' }
@@ -84,6 +85,8 @@ std = [
     'stp258/std',
     'serp_tes/std',
     'serp_market/std',
+    'fetch-price/std',
+    'price/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',

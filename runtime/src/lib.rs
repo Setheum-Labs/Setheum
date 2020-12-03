@@ -45,6 +45,9 @@ pub use serp_tes;
 /// Import the template pallet.
 pub use stp258;
 
+/// Importing offchain price fetch
+pub use fetch_price;
+pub use price;
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -269,7 +272,13 @@ impl pallet_sudo::Trait for Runtime {
 impl stp258::Trait for Runtime {
     type Event = Event;
 }
+impl serp_market::Trait for Runtime {
+    type Event = Event;
+}
 
+impl serp_tes::Trait for Runtime {
+    type Event = Event;
+}
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
