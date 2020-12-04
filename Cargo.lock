@@ -2881,24 +2881,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lite-json"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0460d985423a026b4d9b828a7c6eed1bcf606f476322f3f9b507529686a61715"
-dependencies = [
- "lite-parser",
-]
-
-[[package]]
-name = "lite-parser"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c50092e40e0ccd1bf2015a10333fde0502ff95b832b0895dc1ca0d7ac6c52f6"
-dependencies = [
- "paste",
-]
-
-[[package]]
 name = "lock_api"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3296,14 +3278,12 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-grandpa",
- "pallet-price-fetch",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
- "price",
  "serde",
  "serp_market",
  "serp_tes",
@@ -3557,22 +3537,6 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-price-fetch"
-version = "1.2.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "lite-json",
- "parity-scale-codec",
- "sc-keystore",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
  "sp-std",
 ]
 
@@ -4060,20 +4024,6 @@ name = "ppv-lite86"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "237a5ed80e274dbc66f86bd59c1e25edc039660be53194b5fe0a482e0f2612ea"
-
-[[package]]
-name = "price"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-price-fetch",
- "parity-scale-codec",
- "safe-mix",
- "sp-core",
- "sp-io",
- "sp-runtime",
-]
 
 [[package]]
 name = "primitive-types"
@@ -6566,20 +6516,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "storage_adapters"
-version = "0.0.3"
-dependencies = [
- "frame-support",
- "frame-system",
- "num-traits",
- "parity-scale-codec",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "stp258"
 version = "2.0.0"
 dependencies = [
@@ -6589,7 +6525,6 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "storage_adapters",
 ]
 
 [[package]]
