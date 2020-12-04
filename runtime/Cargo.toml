@@ -26,8 +26,8 @@ serde = { features = ['derive'], optional = true, version = '1.0.101' }
 
 # local dependencies
 stp258 = { version = "2.0.0", default-features = false, path = "../pallets/stp258", package = "stp258" }
-serp_tes = { version = "2.0.0", default-features = false, path = "../pallets/serp_tes", package = "serp_tes" }
-serp_market = { version = "2.0.0", default-features = false, path = "../pallets/serp_market", package = "serp_market" }
+serp-tes = { version = "2.0.0", default-features = false, path = "../pallets/serp-tes", package = "serp-tes" }
+serp-market = { version = "2.0.0", default-features = false, path = "../pallets/serp-market", package = "serp-market" }
 
 
 # Substrate dependencies
@@ -82,8 +82,8 @@ std = [
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
     'stp258/std',
-    'serp_tes/std',
-    'serp_market/std',
+    'serp-tes/std',
+    'serp-market/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
