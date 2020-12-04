@@ -1,10 +1,10 @@
 [package]
 authors = ['Setheum <https://github.com/Setheum-Labs/Setheum>']
-description = 'serp-tes pallet template'
+description = 'serp_market pallet template'
 edition = '2018'
 homepage = 'https://substrate.dev'
 license = 'Unlicense'
-name = 'serp-tes'
+name = 'serp_market'
 repository = 'https://github.com/substrate-developer-hub/substrate-node-template/'
 version = '2.0.0'
 
