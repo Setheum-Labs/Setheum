@@ -3285,8 +3285,8 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
  "serde",
- "serp_market",
- "serp_tes",
+ "serp-market",
+ "serp-tes",
  "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
@@ -5664,7 +5664,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "serp_market"
+name = "serp-market"
 version = "2.0.0"
 dependencies = [
  "frame-support",
@@ -5676,7 +5676,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "serp_tes"
+name = "serp-tes"
 version = "2.0.0"
 dependencies = [
  "frame-support",

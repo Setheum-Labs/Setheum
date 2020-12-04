@@ -265,8 +265,16 @@ impl pallet_sudo::Trait for Runtime {
     type Call = Call;
 }
 
-/// Configure the template pallet in pallets/template.
+/// Configure the stp258 Stablecoin pallet.
 impl stp258::Trait for Runtime {
+    type Event = Event;
+}
+/// Configure the serp_tes pallet.
+impl serp_tes::Trait for Runtime {
+    type Event = Event;
+}
+/// Configure the serp_market pallet.
+impl serp_market::Trait for Runtime {
     type Event = Event;
 }
 
