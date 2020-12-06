@@ -1,5 +1,5 @@
 [package]
-authors = ['Setheum <https://github.com/Setheum-Labs/Setheum>']
+authors = ['Setheum Labs<https://github.com/Setheum-Labs>']
 description = 'serp-market pallet template'
 edition = '2018'
 homepage = 'https://setheum.xyz'

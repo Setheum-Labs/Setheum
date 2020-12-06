@@ -1,5 +1,5 @@
 [package]
-authors = ['Setheum <https://github.com/Setheum-Labs>']
+authors = ['Setheum Labs<https://github.com/Setheum-Labs>']
 description = 'price pallet template'
 edition = '2018'
 homepage = 'https://setheum.xyz'

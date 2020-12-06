@@ -1,11 +1,11 @@
 [package]
-authors = ['Setheum <https://github.com/Setheum-Labs>']
+authors = ['Setheum Labs<https://github.com/Setheum-Labs>']
 description = 'serp-tes pallet template'
 edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
 name = 'serp-tes'
-repository = 'https://github.com/substrate-developer-hub/substrate-node-template/'
+repository = 'https://github.com/Setheum-Labs/Setheum/'
 version = '0.1.0'
 
 [package.metadata.docs.rs]
