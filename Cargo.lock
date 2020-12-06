@@ -1169,6 +1169,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "fetch-price"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "lite-json",
+ "parity-scale-codec",
+ "sc-keystore",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "file-per-thread-logger"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3249,7 +3265,7 @@ dependencies = [
 
 [[package]]
 name = "node-template"
-version = "2.0.0"
+version = "0.1.0"
 dependencies = [
  "frame-benchmarking",
  "frame-benchmarking-cli",
@@ -3286,6 +3302,7 @@ dependencies = [
 name = "node-template-runtime"
 version = "2.0.0"
 dependencies = [
+ "fetch-price",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",
@@ -3296,7 +3313,6 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-grandpa",
- "pallet-price-fetch",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-timestamp",
@@ -3305,8 +3321,8 @@ dependencies = [
  "parity-scale-codec",
  "price",
  "serde",
- "serp_market",
- "serp_tes",
+ "serp-market",
+ "serp-tes",
  "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
@@ -3557,22 +3573,6 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-price-fetch"
-version = "1.2.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "lite-json",
- "parity-scale-codec",
- "sc-keystore",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
  "sp-std",
 ]
 
@@ -4065,14 +4065,15 @@ checksum = "237a5ed80e274dbc66f86bd59c1e25edc039660be53194b5fe0a482e0f2612ea"
 name = "price"
 version = "0.1.0"
 dependencies = [
+ "fetch-price",
  "frame-support",
  "frame-system",
- "pallet-price-fetch",
  "parity-scale-codec",
  "safe-mix",
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "stp258",
 ]
 
 [[package]]
@@ -5714,8 +5715,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "serp_market"
-version = "2.0.0"
+name = "serp-market"
+version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -5726,8 +5727,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "serp_tes"
-version = "2.0.0"
+name = "serp-tes"
+version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6566,7 +6567,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "storage_adapters"
+name = "storage-adapters"
 version = "0.0.3"
 dependencies = [
  "frame-support",
@@ -6581,7 +6582,7 @@ dependencies = [
 
 [[package]]
 name = "stp258"
-version = "2.0.0"
+version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6589,7 +6590,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "storage_adapters",
+ "storage-adapters",
 ]
 
 [[package]]

@@ -1,12 +1,12 @@
 [package]
-authors = ['Setheum <https://github.com/Setheum-Labs/Setheum>']
-description = 'serp_market pallet template'
+authors = ['Setheum <https://github.com/Setheum-Labs>']
+description = 'serp-tes pallet template'
 edition = '2018'
-homepage = 'https://substrate.dev'
-license = 'Unlicense'
-name = 'serp_market'
+homepage = 'https://setheum.xyz'
+license = 'Apache-2.0 License'
+name = 'serp-tes'
 repository = 'https://github.com/substrate-developer-hub/substrate-node-template/'
-version = '2.0.0'
+version = '0.1.0'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
@@ -21,7 +21,6 @@ version = '1.3.4'
 [dependencies]
 frame-support = { default-features = false, version = '2.0.0' }
 frame-system = { default-features = false, version = '2.0.0' }
-
 
 [dev-dependencies]
 sp-core = { default-features = false, version = '2.0.0' }

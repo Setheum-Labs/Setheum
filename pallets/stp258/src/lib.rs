@@ -12,6 +12,12 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+/// Expected price oracle interface. `fetch_price` must return the amount of Coins exchanged for the tracked value.
+pub trait FetchPrice<Balance> {
+	/// Fetch the current price.
+	fn fetch_price() -> Balance;
+}
+
 /// Configure the pallet by specifying the parameters and types on which it depends.
 pub trait Trait: frame_system::Trait {
     /// Because this pallet emits events, it depends on the runtime's definition of an event.

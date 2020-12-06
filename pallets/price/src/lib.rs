@@ -4,10 +4,8 @@
 use frame_support::{debug::native, decl_error, decl_event, decl_module, decl_storage, dispatch};
 use frame_system::ensure_signed;
 
+use stp258::FetchPrice;
 use fetch_price::FetchPriceFor;
-trait FetchPrice<u32> {
-    fn fetch_price() -> u32;
-}
 
 impl<T: Trait> FetchPrice<u32> for Module<T> {
     fn fetch_price() -> u32 {

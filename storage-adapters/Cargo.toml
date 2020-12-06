@@ -1,5 +1,5 @@
 [package]
-name = "storage_adapters"
+name = "storage-adapters"
 version = "0.0.3"
 authors = ["apopiak"]
 edition = "2018"
