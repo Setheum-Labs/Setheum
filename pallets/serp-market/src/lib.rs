@@ -27,7 +27,7 @@ use system::ensure_signed;
 #[cfg(test)]
 mod tests;
 
-/// Expected price oracle interface. `fetch_price` must return the amount of Coins exchanged for the tracked value.
+/// Expected price oracle interface. `fetch_price` must return the amount of SettCurrency exchanged for the tracked value.
 pub trait FetchPrice<Balance> {
 	/// Fetch the current price.
 	fn fetch_price() -> Balance;
@@ -38,27 +38,25 @@ pub trait Trait: system::Trait {
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
-	/// The amount of Coins necessary to buy the tracked value. (e.g., 1_100 for 1$)
-	type CoinPrice: FetchPrice<Coins>;
+	/// The amount of SettCurrency necessary to buy the tracked value. (e.g., 1_100 for 1$)
+	type SettCurrencyPrice: FetchPrice<SettCurrency>;
 	/// The maximum amount of bids allowed in the queue. Used to prevent the queue from growing forever.
 	type MaximumBids: Get<u64>;
-	/// The minimum percentage to pay for a bond.
-	///
-	/// The [Basis Whitepaper](https://www.basis.io/basis_whitepaper_en.pdf) recommends a minimum
-	/// bond price of 10% based on simulations.
-	type MinimumBondPrice: Get<Perbill>;
+	/// The minimum percentage to pay for a dinar.
+	/// dinar price of 10%.
+	type MinimumDinarPrice: Get<Perbill>;
 }
 ///
-/// A bid for a bond of the stablecoin at a certain price.
+/// A bid for a Dinar of the stablecoins at a certain price.
 ///
 /// + `account` is the bidder.
-/// + `price` is a percentage of 1 coin.
-/// + `quantity` is the amount of Coins gained on payout of the corresponding bond.
+/// + `price` is a percentage of 1 settcurrency.
+/// + `quantity` is the amount of SettCurrency gained on payout of the corresponding Dinar.
 #[derive(Encode, Decode, Default, Clone, RuntimeDebug)]
 pub struct Bid<AccountId> {
 	account: AccountId,
 	price: Perbill,
-	quantity: Coins,
+	quantity: SettCurrency,
 }
 
 // Implement `Ord` for `Bid` to get the wanted sorting in the priority queue.
@@ -82,17 +80,17 @@ impl<AccountId> Ord for Bid<AccountId> {
 	}
 }
 
-/// Error returned from `remove_coins` if there is an over- or underflow.
+/// Error returned from `remove_settcurrency` if there is an over- or underflow.
 pub enum BidError {
-	/// `remove_coins` overflowed.
+	/// `remove_settcurrency` overflowed.
 	Overflow,
-	/// `remove_coins` underflowed.
+	/// `remove_settcurrency` underflowed.
 	Underflow,
 }
 
 impl<AccountId> Bid<AccountId> {
 	/// Create a new bid.
-	fn new(account: AccountId, price: Perbill, quantity: Coins) -> Bid<AccountId> {
+	fn new(account: AccountId, price: Perbill, quantity: SettCurrency) -> Bid<AccountId> {
 		Bid {
 			account,
 			price,
@@ -100,25 +98,25 @@ impl<AccountId> Bid<AccountId> {
 		}
 	}
 
-	/// Return the amount of Coins to be payed for this bid.
-	fn payment(&self) -> Coins {
+	/// Return the amount of SettCurrency to be payed for this bid.
+	fn payment(&self) -> SettCurrency {
 		// This naive multiplication is fine because Perbill has an implementation tuned for balance types.
 		self.price * self.quantity
 	}
 
-	/// Remove `coins` amount of Coins from the bid, mirroring the changes in quantity
+	/// Remove `settcurrency` amount of SettCurrency from the bid, mirroring the changes in quantity
 	/// according to the price attached to the bid.
-	fn remove_coins(&mut self, coins: Coins) -> Result<Coins, BidError> {
-		// Inverse price is needed because `self.price` converts from amount of bond payout coins to payment coins,
-		// but we need to convert the other way from payment coins to bond payout coins.
-		// `self.price` equals the fraction of coins I'm willing to pay now in exchange for a bond.
-		// But we need to calculate the amount of bond payouts corresponding to the coins I'm willing to pay now
+	fn remove_settcurrency(&mut self, settcurrency: SettCurrency) -> Result<SettCurrency, BidError> {
+		// Inverse price is needed because `self.price` converts from amount of dinar payout settcurrency to payment settcurrency,
+		// but we need to convert the other way from payment settcurrency to dinar payout settcurrency.
+		// `self.price` equals the fraction of settcurrency I'm willing to pay now in exchange for a dinar.
+		// But we need to calculate the amount of dinar payouts corresponding to the settcurrency I'm willing to pay now
 		// which means we need to use the inverse of self.price!
 		let inverse_price: Ratio<u64> = Ratio::new(Perbill::ACCURACY.into(), self.price.deconstruct().into());
 
 		// Should never overflow, but better safe than sorry.
 		let removed_quantity = inverse_price
-			.checked_mul(&coins.into())
+			.checked_mul(&settcurrency.into())
 			.map(|r| r.to_integer())
 			.ok_or(BidError::Overflow)?;
 		self.quantity = self
@@ -159,12 +157,12 @@ decl_error! {
 		GenericOverflow,
 		/// An arithmetic operation caused an underflow.
 		GenericUnderflow,
-		/// The bidder tried to pay more than 100% for a bond.
-		BondPriceOver100Percent,
-		/// The bidding price is below `MinimumBondPrice`.
-		BondPriceTooLow,
-		/// The bond being bid for is not big enough (in amount of Coins).
-		BondQuantityTooLow,
+		/// The bidder tried to pay more than 100% for a dinar.
+		DinarPriceOver100Percent,
+		/// The bidding price is below `MinimumDinarPrice`.
+		DinarPriceTooLow,
+		/// The dinar being bid for is not big enough (in amount of SettCurrency).
+		DinarQuantityTooLow,
 	}
 }
 
@@ -180,30 +178,30 @@ impl<T: Trait> From<BidError> for Error<T> {
 // This pallet's storage items.
 decl_storage! {
 	trait Store for Module<T: Trait> as SerpMarket {
-		/// The current bidding queue for bonds.
-		BondBids get(fn bond_bids): Vec<Bid<T::AccountId>>;
+		/// The current bidding queue for dinar.
+		DinarBids get(fn dinar_bids): Vec<Bid<T::AccountId>>;
 	}
 }
 
 decl_module! {
    /// The pallet's dispatchable functions.
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-		/// The minimum percentage to pay for a bond.
-		const MinimumBondPrice: Perbill = T::MinimumBondPrice::get();
+		/// The minimum percentage to pay for a dinar.
+		const MinimumDinarPrice: Perbill = T::MinimumDinarPrice::get();
 		/// The maximum amount of bids in the bidding queue.
 		const MaximumBids: u64 = T::MaximumBids::get();
-		/// The minimum amount of Coins that will be in circulation.
+		/// The minimum amount of SettCurrency that will be in circulation.
 
 		fn deposit_event() = default;
 
-		/// Bid for `quantity` Coins at a `price`.
+		/// Bid for `quantity` SettCurrency at a `price`.
 		///
 		/// + `price` is a fraction of the desired payout quantity (e.g., 80%).
 		/// + Expects a `quantity` of a least `BaseUnit`.
 		///
-		/// Example: `bid_for_bond(origin, Perbill::from_percent(80), 5 * BaseUnit)` will bid
-		/// for a bond with a payout of `5 * BaseUnit` Coins for a price of
-		/// `0.8 * 5 * BaseUnit = 4 * BaseUnit` Coins.
+		/// Example: `bid_for_dinar(origin, Perbill::from_percent(80), 5 * BaseUnit)` will bid
+		/// for a dinar with a payout of `5 * BaseUnit` SettCurrency for a price of
+		/// `0.8 * 5 * BaseUnit = 4 * BaseUnit` SettCurrency.
 		///
 		/// **Weight:**
 		/// - complexity: `O(B)`
@@ -212,12 +210,12 @@ decl_module! {
 		///   - read and write bids from and to DB
 		///   - 1 DB storage map write to pay the bid
 		///   - 1 potential DB storage map write to refund evicted bid
-		pub fn bid_for_bond(origin, price: Perbill, quantity: Coins) -> DispatchResult {
+		pub fn bid_for_dinar(origin, price: Perbill, quantity: SettCurrency) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			ensure!(price <= Perbill::from_percent(100), Error::<T>::BondPriceOver100Percent);
-			ensure!(price > T::MinimumBondPrice::get(), Error::<T>::BondPriceTooLow);
-			ensure!(quantity >= T::BaseUnit::get(), Error::<T>::BondQuantityTooLow);
+			ensure!(price <= Perbill::from_percent(100), Error::<T>::DinarPriceOver100Percent);
+			ensure!(price > T::MinimumDinarPrice::get(), Error::<T>::DinarPriceTooLow);
+			ensure!(quantity >= T::BaseUnit::get(), Error::<T>::DinarQuantityTooLow);
 
 			let bid = Bid::new(who.clone(), price, quantity);
 
@@ -230,7 +228,7 @@ decl_module! {
 			Ok(())
 		}
 
-		/// Cancel all bids at or below `price` of the sender and refund the Coins.
+		/// Cancel all bids at or below `price` of the sender and refund the SettCurrency.
 		///
 		/// **Weight:**
 		/// - complexity: `O(B)`
@@ -256,7 +254,7 @@ decl_module! {
 			Ok(())
 		}
 
-		/// Cancel all bids belonging to the sender and refund the Coins.
+		/// Cancel all bids belonging to the sender and refund the SettCurrency.
 		///
 		/// **Weight:**
 		/// - complexity: `O(B)`
@@ -278,9 +276,9 @@ decl_module! {
 	// bids
 
 	/// Construct a transient storage adapter for the bids priority queue.
-	fn bids_transient() -> BoundedPriorityQueue<Bid<T::AccountId>, <Self as Store>::BondBids, T::MaximumBids>
+	fn bids_transient() -> BoundedPriorityQueue<Bid<T::AccountId>, <Self as Store>::DinarBids, T::MaximumBids>
 	{
-		BoundedPriorityQueue::<Bid<T::AccountId>, <Self as Store>::BondBids, T::MaximumBids>::new()
+		BoundedPriorityQueue::<Bid<T::AccountId>, <Self as Store>::DinarBids, T::MaximumBids>::new()
 	}
 
 	/// Add a bid to the queue.
@@ -296,7 +294,7 @@ decl_module! {
 			.map(|to_refund| Self::refund_bid(&to_refund));
 	}
 
-	/// Refund the Coins payed for `bid` to the account that bid.
+	/// Refund the SettCurrency payed for `bid` to the account that bid.
 	///
 	/// **Weight:**
 	/// - complexity: `O(1)`
@@ -317,7 +315,7 @@ decl_module! {
 	where
 		F: Fn(&Bid<T::AccountId>) -> bool,
 	{
-		let mut bids = Self::bond_bids();
+		let mut bids = Self::dinar_bids();
 
 		bids.retain(|b| {
 			if cancel_for(b) {
@@ -327,5 +325,5 @@ decl_module! {
 			true
 		});
 
-		<BondBids<T>>::put(bids);
+		<DinarBids<T>>::put(bids);
     }

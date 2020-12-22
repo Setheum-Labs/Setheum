@@ -1210,6 +1210,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fixed"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac9066245905bb98fca1671fe6fbb1ae7f6083e824d2411c4d0f5663fec466d8"
+dependencies = [
+ "typenum",
+]
+
+[[package]]
 name = "fixed-hash"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3224,7 +3233,7 @@ dependencies = [
  "generic-array 0.12.3",
  "matrixmultiply",
  "num-complex",
- "num-rational",
+ "num-rational 0.2.4",
  "num-traits",
  "rand 0.6.5",
  "typenum",
@@ -3399,6 +3408,17 @@ checksum = "5c000134b5dbf44adc5cb772486d335293351644b801551abe8f75c84cfa4aef"
 dependencies = [
  "autocfg 1.0.0",
  "num-bigint",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-rational"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12ac428b1cb17fce6f731001d307d351ec70a6d202fc2e60f7d4c5e42d8f4f07"
+dependencies = [
+ "autocfg 1.0.0",
  "num-integer",
  "num-traits",
 ]
@@ -5765,8 +5785,10 @@ name = "serp-market"
 version = "0.1.0"
 dependencies = [
  "fetch-price",
+ "fixed",
  "frame-support",
  "frame-system",
+ "num-rational 0.3.2",
  "orml-tokens",
  "orml-traits",
  "orml-utilities",
@@ -5776,6 +5798,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
  "storage-adapters",
 ]
 
@@ -5784,8 +5807,10 @@ name = "serp-tes"
 version = "0.1.0"
 dependencies = [
  "fetch-price",
+ "fixed",
  "frame-support",
  "frame-system",
+ "num-rational 0.3.2",
  "orml-tokens",
  "orml-traits",
  "orml-utilities",
@@ -5794,6 +5819,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
  "storage-adapters",
  "stp258",
 ]
@@ -6645,8 +6671,10 @@ name = "stp258"
 version = "0.1.0"
 dependencies = [
  "fetch-price",
+ "fixed",
  "frame-support",
  "frame-system",
+ "num-rational 0.3.2",
  "orml-tokens",
  "orml-traits",
  "orml-utilities",
@@ -6655,6 +6683,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
  "storage-adapters",
 ]
 
@@ -7659,7 +7688,7 @@ checksum = "bf617d864d25af3587aa745529f7aaa541066c876d57e050c0d0c85c61c92aff"
 dependencies = [
  "libc",
  "memory_units",
- "num-rational",
+ "num-rational 0.2.4",
  "num-traits",
  "parity-wasm",
  "wasmi-validation",
