@@ -47,7 +47,7 @@ pub trait Trait: system::Trait {
 	type MinimumDinarPrice: Get<Perbill>;
 }
 ///
-/// A bid for a Dinar of the stablecoins at a certain price.
+/// A bid for a Dinar of the SettCurrencys at a certain price.
 ///
 /// + `account` is the bidder.
 /// + `price` is a percentage of 1 settcurrency.
@@ -132,9 +132,9 @@ decl_event!(
 	where
 		AccountId = <T as system::Trait>::AccountId,
 	{
-		NewBid(AccountId, Perbill, u64),
+		NewBid(AccountId, Perbill, u32),
 		/// A bid was refunded (repayed and removed from the queue).
-		RefundedBid(AccountId, u64),
+		RefundedBid(AccountId, u32),
 		/// All bids at and above the given price were cancelled for the account.
 		CancelledBidsAbove(AccountId, Perbill),
 		/// All bids at and below the given price were cancelled for the account.
@@ -189,7 +189,7 @@ decl_module! {
 		/// The minimum percentage to pay for a dinar.
 		const MinimumDinarPrice: Perbill = T::MinimumDinarPrice::get();
 		/// The maximum amount of bids in the bidding queue.
-		const MaximumBids: u64 = T::MaximumBids::get();
+		const MaximumBids: u32 = T::MaximumBids::get();
 		/// The minimum amount of SettCurrency that will be in circulation.
 
 		fn deposit_event() = default;

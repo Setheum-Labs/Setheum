@@ -44,7 +44,7 @@ pub trait Trait: system::Trait {
 	/// The frequency of adjustments of the SettCurrency supply.
 	type AdjustmentFrequency: Get<<Self as system::Trait>::BlockNumber>;
 	/// The amount of SettCurrency that are meant to track the value. Example: A value of 1_000 when tracking
-	/// Dollars means that the Stablecoins will try to maintain a price of 1_000 SettCurrency for 1$.
+	/// Dollars means that the SettCurrencys will try to maintain a price of 1_000 SettCurrency for 1$.
 	type BaseUnit: Get<SettCurrency>;
 }
 // The pallet's runtime storage items.

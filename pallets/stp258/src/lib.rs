@@ -19,7 +19,7 @@ pub trait FetchPrice<Balance> {
 	fn fetch_price() -> Balance;
 }
 
-/// The type used to represent the account balance for the Setheum stablecoins.
+/// The type used to represent the account balance for the Setheum SettCurrencys.
 pub type SettCurrency = u32;
 
 pub type DinarIndex = u32;
@@ -40,7 +40,7 @@ pub trait Trait: frame_system::Trait {
 	type MinimumDinarPrice: Get<Perbill>;
     
     /// The amount of SettCurrency that are meant to track the value. Example: A value of 1_000 when tracking
-	/// Dollars means that the Stablecoin will try to maintain a price of 1_000 SettCurrency for 1$.
+	/// Dollars means that the SettCurrency will try to maintain a price of 1_000 SettCurrency for 1$.
 	type BaseUnit: Get<SettCurrency>;
     
     /// The initial supply of SettCurrency.
@@ -111,7 +111,7 @@ decl_storage! {
         Shares get(fn shares): Vec<(T::AccountId, u64)>;
         
         /// *SettCurrency*
-		/// The balance of stablecoins associated with each account.
+		/// The balance of SettCurrencys associated with each account.
 		Balance get(fn get_balance): map hasher(blake2_128_concat) T::AccountId => SettCurrency;
 
 		/// The total amount of SettCurrency in circulation.
@@ -125,7 +125,7 @@ decl_storage! {
 	}
 
 	add_extra_genesis {
-		/// The shareholders to initialize the stablecoins with.
+		/// The shareholders to initialize the SettCurrencys with.
 		config(shareholders):
 			Vec<(T::AccountId, u64)>;
 		build(|config: &GenesisConfig<T>| {
@@ -179,7 +179,7 @@ decl_storage! {
 decl_module! {
 	/// The pallet's dispatchable functions.
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-		/// The amount of stablecoins that represent 1 external value (e.g., 1$).
+		/// The amount of SettCurrencys that represent 1 external value (e.g., 1$).
 		const BaseUnit: SettCurrency = T::BaseUnit::get();
 		/// The minimum amount of SettCurrency that will be in circulation.
 		const MinimumSupply: SettCurrency = T::MinimumSupply::get();
@@ -197,7 +197,7 @@ decl_module! {
 		}
 
 		// Implement the BasicCurrency to allow other pallets to interact programmatically
-		// with the Stablecoins.
+		// with the SettCurrencys.
 		impl<T: Trait> BasicCurrency<T::AccountId> for Module<T> {
 			type Balance = SettCurrency;
 
@@ -221,7 +221,7 @@ decl_module! {
 
 			/// Return the free balance of the given account.
 			///
-			/// Equal to `total_balance` for this stablecoins.
+			/// Equal to `total_balance` for this SettCurrencys.
 			///
 			/// **Weight:**
 			/// - complexity: `O(1)`
@@ -230,12 +230,12 @@ decl_module! {
 				Self::get_balance(who)
 			}
 
-			/// Cannot withdraw from stablecoins accounts. Returns `Ok(())` if `amount` is 0, otherwise returns an error.
+			/// Cannot withdraw from SettCurrencys accounts. Returns `Ok(())` if `amount` is 0, otherwise returns an error.
 			fn ensure_can_withdraw(_who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 				if amount.is_zero() {
 					return Ok(());
 				}
-				Err(DispatchError::Other("cannot change issuance for stablecoins"))
+				Err(DispatchError::Other("cannot change issuance for SettCurrencys"))
 			}
 
 			/// Transfer `amount` from one account to another.
@@ -249,12 +249,12 @@ decl_module! {
 
 			/// Noop that returns an error. Cannot change the issuance of a stables.
 			fn deposit(_who: &T::AccountId, _amount: Self::Balance) -> DispatchResult {
-				Err(DispatchError::Other("cannot change issuance for stablecoins"))
+				Err(DispatchError::Other("cannot change issuance for SettCurrencys"))
 			}
 
-			/// Noop that returns an error. Cannot change the issuance of a stablecoins.
+			/// Noop that returns an error. Cannot change the issuance of a SettCurrencys.
 			fn withdraw(_who: &T::AccountId, _amount: Self::Balance) -> DispatchResult {
-				Err(DispatchError::Other("cannot change issuance for stablecoins"))
+				Err(DispatchError::Other("cannot change issuance for SettCurrencys"))
 			}
 
 			/// Test whether the given account can be slashed with `value`.

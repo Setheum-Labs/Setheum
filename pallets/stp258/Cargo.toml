@@ -1,6 +1,6 @@
 [package]
 authors = ['Setheum Labs<https://github.com/Setheum-Labs>']
-description = 'sett currencies stablecoins pallet'
+description = 'sett currencies SettCurrencys pallet'
 edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
