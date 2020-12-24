@@ -146,6 +146,7 @@ decl_storage! {
 		});
 	}
 
+	///-----------------------------------------------------------------------------
 	/// Dinar
 	///
 	/// Create a new dinar for the given account with the given payout.
@@ -186,7 +187,7 @@ decl_module! {
 
 		fn deposit_event() = default;
 
-		// Weight:
+		#[weight = 10_000 + T::DbWeight::get().reads_writes(1,1)]
 		// - complexity: `O(1)`
 		// - DB access: 2 storage map reads + 2 storage map writes
 		pub fn send_settcurrency(origin, to: T::AccountId, amount: u64) -> DispatchResult {
@@ -203,7 +204,7 @@ decl_module! {
 
 			/// Return the amount of SettCurrency in circulation.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().reads(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 1 read
 			fn total_issuance() -> Self::Balance {
@@ -212,7 +213,7 @@ decl_module! {
 
 			/// Return the balance of the given account.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().reads(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 1 read from balance storage map
 			fn total_balance(who: &T::AccountId) -> Self::Balance {
@@ -223,7 +224,7 @@ decl_module! {
 			///
 			/// Equal to `total_balance` for this SettCurrencys.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().reads(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 1 read from balance storage map
 			fn free_balance(who: &T::AccountId) -> Self::Balance {
@@ -240,7 +241,7 @@ decl_module! {
 
 			/// Transfer `amount` from one account to another.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().reads_writes(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 2 reads and write from and to balance storage map
 			fn transfer(from: &T::AccountId, to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
@@ -259,7 +260,7 @@ decl_module! {
 
 			/// Test whether the given account can be slashed with `value`.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().reads(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 1 read from balance storage map
 			fn can_slash(who: &T::AccountId, value: Self::Balance) -> bool {
@@ -274,7 +275,7 @@ decl_module! {
 			/// If the account does not have `amount` SettCurrency it will be slashed to 0
 			/// and that amount returned.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().writes(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 1 write to balance storage map
 			fn slash(who: &T::AccountId, amount: Self::Balance) -> Self::Balance {
@@ -297,7 +298,7 @@ decl_module! {
 
 			/// Transfer `amount` of SettCurrency from one account to another.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().reads_writes(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 2 storage map reads + 2 storage map writes
 			fn transfer_from_to(from: &T::AccountId, to: &T::AccountId, amount: SettCurrency) -> DispatchResult {
@@ -323,7 +324,7 @@ decl_module! {
 
 			/// Add `amount` SettCurrency to the balance for `account`.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().writes(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 1 write to balance storage map
 			fn add_balance(account: &T::AccountId, amount: SettCurrency) {
@@ -335,7 +336,7 @@ decl_module! {
 
 			/// Remove `amount` SettCurrency from the balance of `account`.
 			///
-			/// **Weight:**
+			#[weight = 10_000 + T::DbWeight::get().writes(1)]
 			/// - complexity: `O(1)`
 			/// - DB access: 1 write to balance storage map
 			fn remove_balance(account: &T::AccountId, amount: SettCurrency) -> DispatchResult {
