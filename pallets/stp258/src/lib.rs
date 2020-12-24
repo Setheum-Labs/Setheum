@@ -42,10 +42,6 @@ pub trait Trait: frame_system::Trait {
 
 	/// The amount of SettCurrency necessary to buy the tracked value. (e.g., 1_100 for 1$)
     type SettCurrencyPrice: FetchPrice<SettCurrency>; 
-
-    /// The expiration time of a Dinar.
-	/// 5 years.
-	type ExpirationPeriod: Get<<Self as frame_system::Trait>::BlockNumber>;
     
     /// The maximum amount of bids allowed in the queue. Used to prevent the queue from growing forever.
     type MaximumBids: Get<u64>;
@@ -68,15 +64,12 @@ pub trait Trait: frame_system::Trait {
 
 /// A Dinar representing (potential) future payout of SettCurrency.
 ///
-/// Expires at block `expiration` so it will be discarded if payed out after that block.
-///
 /// + `account` is the recipient of the Dinar payout.
 /// + `payout` is the amount of SettCurrency payed out.
 #[derive(Encode, Decode, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
-pub struct Dinar<AccountId, BlockNumber> {
+pub struct Dinar<AccountId> {
 	account: AccountId,
 	payout: SettCurrency,
-	expiration: BlockNumber,
 }
 
 decl_event!(
@@ -89,8 +82,8 @@ decl_event!(
 		Transfer(AccountId, AccountId, u64),
 		/// The supply was expanded by the amount.
         ExpandedSupply(u64),
-        /// A new Dinar was created for the account with payout and expiration.
-		NewDinar(AccountId, u64, BlockNumber),
+        /// A new Dinar was created for the account with payout.
+		NewDinar(AccountId, u64,),
 		/// A Dinar was payed out to the account.
 		DinarFulfilled(AccountId, u64),
 		/// A Dinar was partially payed out to the account.
@@ -193,14 +186,10 @@ decl_module! {
 
 	/// Create a new dinar for the given `account` with the given `payout`.
 	///
-	/// Expiration is calculated based on the current `block_number` and the configured
-	/// `ExpirationPeriod`.
-	fn new_dinar(account: T::AccountId, payout: SettCurrency) -> Dinar<T::AccountId, T::BlockNumber> {
-		let expiration = <frame_system::Module<T>>::block_number() + T::ExpirationPeriod::get();
+	fn new_dinar(account: T::AccountId, payout: SettCurrency) -> Dinar<T::AccountId> {
 		Dinar {
 			account,
 			payout,
-			expiration,
 		}
 	}
 
@@ -208,13 +197,13 @@ decl_module! {
 	///
 	/// Allows pushing and popping on a ringbuffer without managing the storage details.
 	fn dinar_transient() -> BoundedDeque<
-		Dinar<T::AccountId, T::BlockNumber>,
+		Dinar<T::AccountId>,
 		<Self as Store>::DinarRange,
 		<Self as Store>::Dinar,
 		DinarIndex,
 	> {
 		BoundedDeque::<
-			Dinar<T::AccountId, T::BlockNumber>,
+			Dinar<T::AccountId>,
 			<Self as Store>::DinarRange,
 			<Self as Store>::Dinar,
 			DinarIndex,
