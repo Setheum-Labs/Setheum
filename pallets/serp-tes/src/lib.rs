@@ -186,7 +186,6 @@ decl_module! {
 			Self::deposit_event(RawEvent::NewDinar(
 				dinar.account.clone(),
 				dinar.payout,
-				dinar.expiration,
 			));
 		}
 		let mut dinar = Self::dinar_transient();
@@ -228,14 +227,9 @@ decl_module! {
 		while let Some(Dinar {
 			account,
 			payout,
-			expiration,
 		}) = if remaining > 0 { dinar.pop_front() } else { None }
 		{
-			// dinar has expired --> discard
-			if <system::Module<T>>::block_number() >= expiration {
-				Self::deposit_event(RawEvent::DinarExpired(account, payout));
-				continue;
-			}
+			
 			// dinar does not cover the remaining amount --> resolve and continue
 			if payout <= remaining {
 				// this is safe because we are in the branch where remaining >= payout
@@ -251,7 +245,6 @@ decl_module! {
 				dinar.push_front(Dinar {
 					account: account.clone(),
 					payout,
-					expiration,
 				});
 				Self::deposit_event(RawEvent::DinarPartiallyFulfilled(account, payout));
 				break;
@@ -284,7 +277,7 @@ decl_module! {
 	/// - DB access:
 	///   - 1 write for `settcurrency_supply`
 	///   - `S` amount of writes
-	fn hand_out_settcurrency(shares: &[(T::AccountId, u64)], amount: SettCurrency, settcurrency_supply: SettCurrency) -> DispatchResult {
+	fn hand_out_settcurrency(shares: &[(T::AccountId, u32)], amount: SettCurrency, settcurrency_supply: SettCurrency) -> DispatchResult {
 		// Checking whether the supply will overflow.
 		settcurrency_supply
 			.checked_add(amount)
