@@ -42,7 +42,7 @@ pub trait Trait: system::Trait {
 	/// The amount of SettCurrency necessary to buy the tracked value. (e.g., 1_100 for 1$)
 	type SettCurrencyPrice: FetchPrice<SettCurrency>;
 	/// The frequency of adjustments of the SettCurrency supply.
-	type AdjustmentFrequency: Get<<Self as system::Trait>::BlockNumber>;
+	type ElastAdjustmentFrequency: Get<<Self as system::Trait>::BlockNumber>;
 	/// The amount of SettCurrency that are meant to track the value. Example: A value of 1_000 when tracking
 	/// Dollars means that the SettCurrencys will try to maintain a price of 1_000 SettCurrency for 1$.
 	type BaseUnit: Get<SettCurrency>;
@@ -99,7 +99,7 @@ decl_error! {
 decl_module! {
 	/// The pallet's dispatchable functions.
 	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-		const AdjustmentFrequency: T::BlockNumber = T::AdjustmentFrequency::get();
+		const ElastAdjustmentFrequency: T::BlockNumber = T::ElastAdjustmentFrequency::get();
 
 		/// Adjust the amount of SettCurrency according to the price.
 		///
@@ -323,16 +323,17 @@ decl_module! {
 	/// Contracts or expands the supply based on conditions.
 	///
 	/// **Weight:**
-	/// Calls `expand_or_contract_on_price` every `AdjustmentFrequency` blocks.
-	/// - complexity: `O(P)` with `P` being the complexity of `expand_or_contract_on_price`
+	/// Calls `serp_elast` (expand_or_contract_on_price) every `ElastAdjustmentFrequency` blocks.
+	/// - complexity: `O(P)` with `P` being the complexity of `serp_elast`
 	fn on_block_with_price(block: T::BlockNumber, price: SettCurrency) -> DispatchResult {
 		// This can be changed to only correct for small or big price swings.
-		if block % T::AdjustmentFrequency::get() == 0.into() {
-			Self::expand_or_contract_on_price(price)
+		if block % T::ElastAdjustmentFrequency::get() == 0.into() {
+			Self::serp_elast(price)        
 		} else {
 			Ok(())
 		}
 	}
+	
 
 	/// Expands (if the price is too high) or contracts (if the price is too low) the SettCurrency supply.
 	///
@@ -343,7 +344,7 @@ decl_module! {
 	/// - DB access:
 	///   - 1 read for settcurrency_supply
 	///   - execute `expand_supply` OR execute `contract_supply` which have DB accesses
-	fn expand_or_contract_on_price(price: SettCurrency) -> DispatchResult {
+	fn serp_elast(price: SettCurrency) -> DispatchResult {
 		match price {
 			0 => {
 				native::error!("settcurrency price is zero!");

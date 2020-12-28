@@ -89,43 +89,11 @@ fn adding_dinar() {
 		// computing the length this way is fine because there was no overflow
 		assert_eq!(length, 1);
 		let dinar = &SettCurrency::get_dinar(start);
-		assert_eq!(dinar.expiration, System::block_number() + ExpirationPeriod::get());
 	})
 }
 
 #[test]
-fn expire_dinar() {
-	new_test_ext_with(vec![1]).execute_with(|| {
-		let acc = 3;
-		let prev_acc_balance = SettCurrency::get_balance(acc);
-		let payout = Fixed64::from_rational(20, 100).saturated_multiply_accumulate(BaseUnit::get());
-		add_dinar(SettCurrency::new_dinar(acc, payout));
-
-		let (start, length) = SettCurrency::dinar_range();
-		// computing the length this way is fine because there was no overflow
-		assert_eq!(length, 1);
-		let dinar = &SettCurrency::get_dinar(start);
-		assert_eq!(dinar.expiration, System::block_number() + ExpirationPeriod::get());
-
-		let prev_supply = SettCurrency::settcurrency_supply();
-		// set blocknumber past expiration time
-		System::set_block_number(System::block_number() + ExpirationPeriod::get());
-		assert_ok!(SettCurrency::expand_supply(prev_supply, 42));
-		let acc_balance = SettCurrency::get_balance(acc);
-		assert_eq!(
-			prev_acc_balance, acc_balance,
-			"account balance should not change as the dinar expired"
-		);
-		assert_eq!(
-			prev_supply + 42,
-			SettCurrency::settcurrency_supply(),
-			"settcurrency supply should have increased"
-		);
-	});
-}
-
-#[test]
-fn expire_dinar_and_expand_supply() {
+fn expand_supply() {
 	new_test_ext_with(vec![1]).execute_with(|| {
 		let first_acc = 3;
 		let prev_first_acc_balance = SettCurrency::get_balance(first_acc);
@@ -137,13 +105,10 @@ fn expire_dinar_and_expand_supply() {
 		// computing the length this way is fine because there was no overflow
 		assert_eq!(length, 1);
 		let dinar = &SettCurrency::get_dinar(start);
-		assert_eq!(dinar.expiration, System::block_number() + ExpirationPeriod::get());
 
 		let prev_supply = SettCurrency::settcurrency_supply();
 		let second_acc = first_acc + 1;
 		let prev_second_acc_balance = SettCurrency::get_balance(second_acc);
-		// set blocknumber to the block number right before the first dinar's expiration block
-		System::set_block_number(System::block_number() + ExpirationPeriod::get() - 1);
 		// Add a new dinar
 		add_dinar(SettCurrency::new_dinar(second_acc, payout));
 		add_dinar(SettCurrency::new_dinar(second_acc, payout));
@@ -155,12 +120,10 @@ fn expire_dinar_and_expand_supply() {
 		let (_, length) = SettCurrency::dinar_range();
 		// computing the length this way is fine because there was no overflow
 		assert_eq!(length, 5);
-		// Increase block number by one so that we reach the first dinar's expiration block number.
-		System::set_block_number(System::block_number() + 1);
 		// expand the supply, only hitting the last dinar that was added to the queue, but not fully filling it
 		let new_SettCurrency = payout;
 		assert_ok!(SettCurrency::expand_supply(SettCurrency::settcurrency_supply(), new_settcurrency));
-		// make sure there are only three dinar left (the first one expired, the second one got consumed)
+		// make sure there are only four dinar left (the first one got consumed)
 		let (_, length) = SettCurrency::dinar_range();
 		// computing the length this way is fine because there was no overflow
 		assert_eq!(length, 3);
@@ -176,14 +139,12 @@ fn expire_dinar_and_expand_supply() {
 		assert_eq!(prev_supply + new_settcurrency, SettCurrency::settcurrency_supply());
 
 		let intermediate_supply = SettCurrency::settcurrency_supply();
-		// Set the block number to be *exactly equal* to the expiration date of all dinar that are left in the queue
-		System::set_block_number(System::block_number() + ExpirationPeriod::get() - 1);
 
-		// try to expand_supply, expected to do nothing because all dinar have expired
+		// try to expand_supply
 		let new_settcurrency = 42;
 		assert_ok!(SettCurrency::expand_supply(intermediate_supply, new_settcurrency));
 
-		// make sure there are no dinar left (they have all expired)
+		// make sure there are no dinar left
 		let (_, length) = SettCurrency::dinar_range();
 		// computing the length this way is fine because there was no overflow
 		assert_eq!(length, 0);
@@ -199,7 +160,6 @@ fn expire_dinar_and_expand_supply() {
 		assert_eq!(
 			intermediate_supply + new_settcurrency,
 			SettCurrency::settcurrency_supply(),
-			"settcurrency supply should not change as the dinar expired"
 		);
 	});
 }

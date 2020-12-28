@@ -57,5 +57,5 @@ std = [
     'orml-utilities/std',
 	"serde/std",
     "sp-runtime/std",
-    "sp-std/std",
+    "sp-std",
 ]
