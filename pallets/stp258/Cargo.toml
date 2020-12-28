@@ -1,6 +1,6 @@
 [package]
 authors = ['Setheum Labs<https://github.com/Setheum-Labs>']
-description = 'sett stablecoin pallet template'
+description = 'sett currencies SettCurrencys pallet'
 edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
@@ -19,20 +19,43 @@ package = 'parity-scale-codec'
 version = '1.3.4'
 
 [dependencies]
-adapters = { default-features = false, package = 'storage-adapters', version = '0.0.*', path = '../../storage-adapters' }
+adapters = { default-features = false, package = 'storage-adapters', version = '0.0.3', path = '../../storage-adapters' }
+fetch-price = { default-features = false, package = 'fetch-price', version = '0.1.0', path = '../fetch-price' }
+sp-std = { default-features = false, optional = true, version = '2.0.0' }
 
+
+serde = { version = "1.0.118", optional = true }
 frame-support = { default-features = false, version = '2.0.0' }
 frame-system = { default-features = false, version = '2.0.0' }
+
+orml-traits = { default-features = false, version = '0.3.2' }
+orml-tokens = { default-features = false, version = '0.3.2' }
+orml-utilities = { default-features = false, version = '0.3.2' }
+
+num-rational = { default-features = false, version = '0.3.2' }
+
+fixed = { default-features = false, version = '1.5.0' }
+
+sp-runtime = { default-features = false, optional = true, version = '2.0.0' }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = '2.0.0' }
 sp-io = { default-features = false, version = '2.0.0' }
-sp-runtime = { default-features = false, version = '2.0.0' }
 
 [features]
 default = ['std']
 std = [
+    "adapters/std",
     'codec/std',
+    "fetch-price/std",
+    "fixed/std",
     'frame-support/std',
     'frame-system/std',
+    "num-rational/std",
+	"orml-traits/std",
+    "orml-tokens/std",
+    'orml-utilities/std',
+	"serde/std",
+    "sp-runtime/std",
+    "sp-std/std",
 ]

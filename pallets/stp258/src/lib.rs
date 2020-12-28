@@ -1,111 +1,353 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// https://substrate.dev/docs/en/knowledgebase/runtime/frame
-use frame_support::{decl_error, decl_event, decl_module, decl_storage, dispatch, traits::Get};
-use frame_system::ensure_signed;
+use sp_std::prelude::*;
 
-#[cfg(test)]
-mod mock;
+use codec::{Decode, Encode};
+use core::cmp::Ord;
+use frame_support::{
+	decl_error, decl_event, decl_module, decl_storage,traits::Get,
+};
+use sp_runtime::Perbill;
+use frame_system::Module;
 
 #[cfg(test)]
 mod tests;
 
-/// Expected price oracle interface. `fetch_price` must return the amount of Coins exchanged for the tracked value.
+/// Expected price oracle interface. `fetch_price` must return the amount of SettCurrency exchanged for the tracked value.
 pub trait FetchPrice<Balance> {
 	/// Fetch the current price.
 	fn fetch_price() -> Balance;
 }
 
-/// Configure the pallet by specifying the parameters and types on which it depends.
+/// The type used to represent the account balance for the Setheum SettCurrencys.
+pub type SettCurrency = u32;
+
+pub type DinarIndex = u32;
+
+/// The pallet's configuration trait.
 pub trait Trait: frame_system::Trait {
-    /// Because this pallet emits events, it depends on the runtime's definition of an event.
-    type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
+	/// The overarching event type.
+	type Event: From<Event<Self>> + Into<<Self as frame_system::Trait>::Event>;
+
+	/// The amount of SettCurrency necessary to buy the tracked value. (e.g., 1_100 for 1$)
+    type SettCurrencyPrice: FetchPrice<SettCurrency>; 
+    
+    /// The maximum amount of bids allowed in the queue. Used to prevent the queue from growing forever.
+    type MaximumBids: Get<u64>;
+    
+    /// The minimum percentage to pay for a Dinar.. 
+	/// minimum price of 10%.
+	type MinimumDinarPrice: Get<Perbill>;
+    
+    /// The amount of SettCurrency that are meant to track the value. Example: A value of 1_000 when tracking
+	/// Dollars means that the SettCurrency will try to maintain a price of 1_000 SettCurrency for 1$.
+	type BaseUnit: Get<SettCurrency>;
+    
+    /// The initial supply of SettCurrency.
+	type InitialSupply: Get<SettCurrency>;
+    
+    /// The minimum amount of SettCurrency in circulation.
+	/// Must be lower than `InitialSupply`.
+	type MinimumSupply: Get<SettCurrency>;
 }
 
-// The pallet's runtime storage items.
-// https://substrate.dev/docs/en/knowledgebase/runtime/storage
-decl_storage! {
-    // A unique name is used to ensure that the pallet's storage items are isolated.
-    // This name may be updated, but each pallet in the runtime must use a unique name.
-    // ---------------------------------vvvvvvvvvvvvvv
-    trait Store for Module<T: Trait> as Stp258 {
-        // Learn more about declaring storage items:
-        // https://substrate.dev/docs/en/knowledgebase/runtime/storage#declaring-storage-items
-        Something get(fn something): Option<u32>;
-    }
+
+/// A Dinar representing (potential) future payout of SettCurrency.+
+///
+/// + `account` is the recipient of the Dinar payout.
+/// + `payout` is the amount of SettCurrency payed out.
+#[derive(Encode, Decode, Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
+pub struct Dinar<AccountId> {
+	account: AccountId,
+	payout: SettCurrency,
 }
 
-// Pallets use events to inform users when important changes are made.
-// https://substrate.dev/docs/en/knowledgebase/runtime/events
 decl_event!(
-    pub enum Event<T>
-    where
-        AccountId = <T as frame_system::Trait>::AccountId,
-    {
-        /// Event documentation should end with an array that provides descriptive names for event
-        /// parameters. [something, who]
-        SomethingStored(u32, AccountId),
-    }
+	pub enum Event<T>
+	where
+		AccountId = <T as frame_system::Trait>::AccountId,
+	{
+		/// Successful transfer from the first to the second account.
+		Transfer(AccountId, AccountId, u64),
+		/// The supply was expanded by the amount.
+        ExpandedSupply(u64),
+        /// A new Dinar was created for the account with payout.
+		NewDinar(AccountId, u64,),
+		/// A Dinar was payed out to the account.
+		DinarFulfilled(AccountId, u64),
+		/// A Dinar was partially payed out to the account.
+		DinarPartiallyFulfilled(AccountId, u64),
+	}
 );
 
-// Errors inform users that something went wrong.
 decl_error! {
-    pub enum Error for Module<T: Trait> {
-        /// Error names should be descriptive.
-        NoneValue,
-        /// Errors should have helpful documentation associated with them.
-        StorageOverflow,
-    }
+	/// The possible errors returned by calls to this pallet's functions.
+	pub enum Error for Module<T: Trait> {
+		/// While trying to expand the supply, it overflowed.
+		SettCurrencySupplyOverflow,
+		/// While trying to contract the supply, it underflowed.
+		SettCurrencySupplyUnderflow,
+		/// The account trying to use funds (e.g., for bidding) does not have enough balance.
+		InsufficientBalance,
+		/// While trying to increase the balance for an account, it overflowed.
+		BalanceOverflow,
+		/// Something went very wrong and the price of the currency is zero.
+		ZeroPrice,
+		/// An arithmetic operation caused an overflow.
+		GenericOverflow,
+		/// An arithmetic operation caused an underflow.
+		GenericUnderflow,
+	}
 }
 
-// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-// These functions materialize as "extrinsics", which are often compared to transactions.
-// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+// This pallet's storage items.
+decl_storage! {
+	trait Store for Module<T: Trait> as Stp258 {
+        /// *Slot Shares*
+		/// The allocation of slot shares to accounts.
+		/// This is a `Vec` and thus should be limited to few shareholders (< 1_000).
+		/// In principle it would be possible to make shares tradeable. In that case
+		/// we would have to use a map similar to the `Balance` one.
+        Shares get(fn shares): Vec<(T::AccountId, u64)>;
+        
+        /// *SettCurrency*
+		/// The balance of SettCurrencys associated with each account.
+		Balance get(fn get_balance): map hasher(blake2_128_concat) T::AccountId => SettCurrency;
+
+		/// The total amount of SettCurrency in circulation.
+        SettCurrencySupply get(fn settcurrency_supply): SettCurrency = 0;
+		
+		/// *Dinar*
+		/// The available dinar for contracting supply.
+		Dinar get(fn get_dinar): map hasher(twox_64_concat) DinarIndex => Dinar<T::AccountId>;
+		/// Start and end index pair used to implement a ringbuffer on top of the `Dinar` map.
+		DinarRange get(fn dinar_range): (DinarIndex, DinarIndex) = (0, 0);
+	}
+
+	add_extra_genesis {
+		/// The shareholders to initialize the SettCurrencys with.
+		config(shareholders):
+			Vec<(T::AccountId, u64)>;
+		build(|config: &GenesisConfig<T>| {
+			assert!(
+				T::MinimumSupply::get() < T::InitialSupply::get(),
+				"initial settcurrency supply needs to be greater than the minimum"
+			);
+
+			assert!(!config.shareholders.is_empty(), "need at least one shareholder");
+			// TODO: make sure shareholders are unique?
+
+			// Hand out the initial settcurrency supply to the shareholders.
+			<Module<T>>::hand_out_settcurrency(&config.shareholders, T::InitialSupply::get(), <Module<T>>::settcurrency_supply())
+				.expect("initialization handout should not fail");
+
+			// Store the shareholders with their shares.
+			<Shares<T>>::put(&config.shareholders);
+		});
+	}
+
+	///-----------------------------------------------------------------------------
+	/// Dinar
+	///
+	/// Create a new dinar for the given account with the given payout.
+	
+	fn new_dinar(account: T::AccountId, payout: SettCurrency) -> Dinar<T::AccountId> {
+		Dinar {
+			account,
+			payout,
+		}
+	}
+
+	/// Create a new transient storage adapter that manages the Dinar.
+	///
+	/// Allows pushing and popping on a ringbuffer without managing the storage details.
+	fn dinar_transient() -> BoundedDeque<
+		Dinar<T::AccountId>,
+		<Self as Store>::DinarRange,
+		<Self as Store>::Dinar,
+		DinarIndex,
+	> {
+		BoundedDeque::<
+			Dinar<T::AccountId>,
+			<Self as Store>::DinarRange,
+			<Self as Store>::Dinar,
+			DinarIndex,
+		>::new()
+	}
+
+}
+
 decl_module! {
-    pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-        // Errors must be initialized if they are used by the pallet.
-        type Error = Error<T>;
+	/// The pallet's dispatchable functions.
+	pub struct Module<T: Trait> for enum Call where origin: T::Origin {
+		/// The amount of SettCurrencys that represent 1 external value (e.g., 1$).
+		const BaseUnit: SettCurrency = T::BaseUnit::get();
+		/// The minimum amount of SettCurrency that will be in circulation.
+		const MinimumSupply: SettCurrency = T::MinimumSupply::get();
 
-        // Events must be initialized if they are used by the pallet.
-        fn deposit_event() = default;
+		fn deposit_event() = default;
 
-        /// An example dispatchable that takes a singles value as a parameter, writes the value to
-        /// storage and emits an event. This function must be dispatched by a signed extrinsic.
-        #[weight = 10_000 + T::DbWeight::get().writes(1)]
-        pub fn do_something(origin, something: u32) -> dispatch::DispatchResult {
-            // Check that the extrinsic was signed and get the signer.
-            // This function will return an error if the extrinsic is not signed.
-            // https://substrate.dev/docs/en/knowledgebase/runtime/origin
-            let who = ensure_signed(origin)?;
+		#[weight = 10_000 + T::DbWeight::get().reads_writes(1,1)]
+		// - complexity: `O(1)`
+		// - DB access: 2 storage map reads + 2 storage map writes
+		pub fn send_settcurrency(origin, to: T::AccountId, amount: u64) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+			Self::transfer_from_to(&sender, &to, amount)?;
+			Self::deposit_event(RawEvent::Transfer(sender, to, amount));
+			Ok(())
+		}
 
-            // Update storage.
-            Something::put(something);
+		// Implement the BasicCurrency to allow other pallets to interact programmatically
+		// with the SettCurrencys.
+		impl<T: Trait> BasicCurrency<T::AccountId> for Module<T> {
+			type Balance = SettCurrency;
 
-            // Emit an event.
-            Self::deposit_event(RawEvent::SomethingStored(something, who));
-            // Return a successful DispatchResult
-            Ok(())
-        }
+			/// Return the amount of SettCurrency in circulation.
+			///
+			#[weight = 10_000 + T::DbWeight::get().reads(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 1 read
+			fn total_issuance() -> Self::Balance {
+				Self::settcurrency_supply()
+			}
 
-        /// An example dispatchable that may throw a custom error.
-        #[weight = 10_000 + T::DbWeight::get().reads_writes(1,1)]
-        pub fn cause_error(origin) -> dispatch::DispatchResult {
-            let _who = ensure_signed(origin)?;
+			/// Return the balance of the given account.
+			///
+			#[weight = 10_000 + T::DbWeight::get().reads(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 1 read from balance storage map
+			fn total_balance(who: &T::AccountId) -> Self::Balance {
+				Self::get_balance(who)
+			}
 
-            // Read a value from storage.
-            match Something::get() {
-                // Return an error if the value has not been set.
-                None => Err(Error::<T>::NoneValue)?,
-                Some(old) => {
-                    // Increment the value read from storage; will error in the event of overflow.
-                    let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-                    // Update the value in storage with the incremented result.
-                    Something::put(new);
-                    Ok(())
-                },
-            }
-        }
-    }
+			/// Return the free balance of the given account.
+			///
+			/// Equal to `total_balance` for this SettCurrencys.
+			///
+			#[weight = 10_000 + T::DbWeight::get().reads(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 1 read from balance storage map
+			fn free_balance(who: &T::AccountId) -> Self::Balance {
+				Self::get_balance(who)
+			}
+
+			/// Cannot withdraw from SettCurrencys accounts. Returns `Ok(())` if `amount` is 0, otherwise returns an error.
+			fn ensure_can_withdraw(_who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
+				if amount.is_zero() {
+					return Ok(());
+				}
+				Err(DispatchError::Other("cannot change issuance for SettCurrencys"))
+			}
+
+			/// Transfer `amount` from one account to another.
+			///
+			#[weight = 10_000 + T::DbWeight::get().reads_writes(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 2 reads and write from and to balance storage map
+			fn transfer(from: &T::AccountId, to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
+				Self::transfer_from_to(from, to, amount)
+			}
+
+			/// Noop that returns an error. Cannot change the issuance of a stables.
+			fn deposit(_who: &T::AccountId, _amount: Self::Balance) -> DispatchResult {
+				Err(DispatchError::Other("cannot change issuance for SettCurrencys"))
+			}
+
+			/// Noop that returns an error. Cannot change the issuance of a SettCurrencys.
+			fn withdraw(_who: &T::AccountId, _amount: Self::Balance) -> DispatchResult {
+				Err(DispatchError::Other("cannot change issuance for SettCurrencys"))
+			}
+
+			/// Test whether the given account can be slashed with `value`.
+			///
+			#[weight = 10_000 + T::DbWeight::get().reads(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 1 read from balance storage map
+			fn can_slash(who: &T::AccountId, value: Self::Balance) -> bool {
+				if value.is_zero() {
+					return true;
+				}
+				Self::get_balance(who) >= value
+			}
+
+			/// Slash account `who` by `amount` returning the actual amount slashed.
+			///
+			/// If the account does not have `amount` SettCurrency it will be slashed to 0
+			/// and that amount returned.
+			///
+			#[weight = 10_000 + T::DbWeight::get().writes(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 1 write to balance storage map
+			fn slash(who: &T::AccountId, amount: Self::Balance) -> Self::Balance {
+				let mut remaining: SettCurrency = 0;
+				<Balance<T>>::mutate(who, |b: &mut u64| {
+					if *b < amount {
+						remaining = amount - *b;
+						*b = 0;
+					} else {
+						*b = b.saturating_sub(amount);
+					}
+				});
+				remaining
+			}
+		}
+
+		impl<T: Trait> Module<T> {
+			// ------------------------------------------------------------
+			// balances
+
+			/// Transfer `amount` of SettCurrency from one account to another.
+			///
+			#[weight = 10_000 + T::DbWeight::get().reads_writes(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 2 storage map reads + 2 storage map writes
+			fn transfer_from_to(from: &T::AccountId, to: &T::AccountId, amount: SettCurrency) -> DispatchResult {
+				let from_balance = Self::get_balance(from);
+				let updated_from_balance = from_balance
+					.checked_sub(amount)
+					.ok_or(Error::<T>::InsufficientBalance)?;
+				let receiver_balance = Self::get_balance(&to);
+				let updated_to_balance = receiver_balance
+					.checked_add(amount)
+					.ok_or(Error::<T>::BalanceOverflow)?;
+
+				// ↑ verify ↑
+				// ↓ update ↓
+
+				// reduce from's balance
+				<Balance<T>>::insert(&from, updated_from_balance);
+				// increase receiver's balance
+				<Balance<T>>::insert(&to, updated_to_balance);
+
+				Ok(())
+			}
+
+			/// Add `amount` SettCurrency to the balance for `account`.
+			///
+			#[weight = 10_000 + T::DbWeight::get().writes(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 1 write to balance storage map
+			fn add_balance(account: &T::AccountId, amount: SettCurrency) {
+				<Balance<T>>::mutate(account, |b: &mut u64| {
+					*b = b.saturating_add(amount);
+					*b
+				});
+			}
+
+			/// Remove `amount` SettCurrency from the balance of `account`.
+			///
+			#[weight = 10_000 + T::DbWeight::get().writes(1)]
+			/// - complexity: `O(1)`
+			/// - DB access: 1 write to balance storage map
+			fn remove_balance(account: &T::AccountId, amount: SettCurrency) -> DispatchResult {
+				<Balance<T>>::try_mutate(&account, |b: &mut u64| -> DispatchResult {
+					*b = b.checked_sub(amount).ok_or(Error::<T>::InsufficientBalance)?;
+					Ok(())
+				});
+			}
+		}
+	}
 }
+
+
+
