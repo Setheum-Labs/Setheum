@@ -46,7 +46,7 @@ parameter_types! {
     // allow few bids
 	pub const MaximumBids: u64 = 10;
 	// adjust supply every second block
-	pub const AdjustmentFrequency: u64 = 2;
+	pub const ElastAdjustmentFrequency: u64 = 2;
 	pub const BaseUnit: u64 = TEST_BASE_UNIT;
 	pub const InitialSupply: u64 = 100 * BaseUnit::get();
 	pub const MinimumSupply: u64 = BaseUnit::get();
@@ -88,7 +88,7 @@ impl Trait for Test {
     type Event = ();
     type SettCurrencyPrice = RandomPrice;
 	type MaximumBids = MaximumBids;
-	type AdjustmentFrequency = AdjustmentFrequency;
+	type ElastAdjustmentFrequency = ElastAdjustmentFrequency;
 	type BaseUnit = BaseUnit;
 	type InitialSupply = InitialSupply;
 	type MinimumSupply = MinimumSupply;

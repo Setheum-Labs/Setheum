@@ -1,13 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use sp_std::prelude::*;
-
 use codec::{Decode, Encode};
 use core::cmp::Ord;
-use frame_support::{
-	decl_error, decl_event, decl_module, decl_storage,traits::Get,
-};
 use sp_runtime::Perbill;
+use frame_support::{
+	sp_runtime, decl_error, decl_event, decl_module, decl_storage,traits::Get,
+};
 use frame_system::Module;
 
 #[cfg(test)]
@@ -155,6 +153,7 @@ decl_storage! {
 		Dinar {
 			account,
 			payout,
+
 		}
 	}
 

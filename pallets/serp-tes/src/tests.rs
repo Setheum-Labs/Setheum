@@ -95,7 +95,7 @@ fn contract_supply_test() {
 }
 
 #[test]
-fn expand_or_contract_quickcheck() {
+fn serp_elast_quickcheck() {
 	fn property(dinar: Vec<(u64, u64)>, prices: Vec<SettCurrency>) -> TestResult {
 		new_test_ext().execute_with(|| {
 			if prices.iter().any(|p| p == &0) {
@@ -113,7 +113,7 @@ fn expand_or_contract_quickcheck() {
 				// as there might be errors returned that are the correct
 				// behavior for the given parameters
 				assert!(matches!(
-					SettCurrency::expand_or_contract_on_price(price),
+					SettCurrency::serp_elast(price),
 					Ok(())
 						| Err(DispatchError::Module {
 							index: 0,
@@ -135,7 +135,7 @@ fn expand_or_contract_quickcheck() {
 }
 
 #[test]
-fn expand_or_contract_smoketest() {
+fn serp_elast_smoketest() {
 	new_test_ext().execute_with(|| {
 		let mut rng = rand::thread_rng();
 
