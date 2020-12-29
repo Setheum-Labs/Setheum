@@ -183,7 +183,7 @@ impl<T: Trait> FetchPriceFor for Module<T> {
     /// Fetch current price and return the result in cents.
     fn fetch_price() -> Result<u32, http::Error> {
         let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
+ 
         let request =
             http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD");
 

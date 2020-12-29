@@ -298,6 +298,8 @@ construct_runtime!(
         Stp258: stp258::{Module, Call, Storage, Event<T>},
         SerpMarket: serp_market::{Module, Call, Storage, Event<T>},
         SerpTes: serp_tes::{Module, Call, Storage, Event<T>},
+        FetchPrice: fetch_price::{Module, Call, Storage, Event<T>},
+        Price: price::{Module, Call, Storage, Event<T>},
     }
 );
 
