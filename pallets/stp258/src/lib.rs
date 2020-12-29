@@ -8,6 +8,10 @@ use frame_support::{
 };
 use frame_system::Module;
 
+use orml_traits::*;
+use orml_utilities::*;
+use orml_tokens::*;
+
 #[cfg(test)]
 mod tests;
 
