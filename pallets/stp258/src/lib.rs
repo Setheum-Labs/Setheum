@@ -1,15 +1,15 @@
-//! # STP258-Currencies Module
+//! # stp258 Module
 //!
 //! ## Overview
 //!
-//! The stp258-currencies module provides a mixed stablecoin system, by configuring a
+//! The stp258 module provides a mixed stablecoin system, by configuring a
 //! native currency which implements `BasicCurrencyExtended`, and a
 //! multi-currency which implements `SettCurrency`.
 //!
 //! It also provides an adapter, to adapt `frame_support::traits::Currency`
 //! implementations into `BasicCurrencyExtended`.
 //!
-//! The stp258-currencies module provides functionality of both `SettCurrencyExtended`
+//! The stp258 module provides functionality of both `SettCurrencyExtended`
 //! and `BasicCurrencyExtended`, via unified interfaces, and all calls would be
 //! delegated to the underlying multi-currency and base currency system.
 //! A native currency ID could be set by `Config::GetNativeCurrencyId`, to
@@ -17,7 +17,7 @@
 //!
 //! ### Implementations
 //!
-//! The stp258-currencies module provides implementations for following traits.
+//! The stp258 module provides implementations for following traits.
 //!
 //! - `SettCurrency` - Abstraction over a fungible multi-currency stablecoin system.
 //! - `SettCurrencyExtended` - Extended `SettCurrency` with additional helper
@@ -190,7 +190,7 @@ decl_event!(
 );
 
 decl_error! {
-	/// Error for stp258-currencies module.
+	/// Error for stp258 module.
 	pub enum Error for Module<T: Config> {
 		/// Unable to convert the Amount type into Balance.
 		AmountIntoBalanceFailed,

@@ -4,7 +4,7 @@ description = 'sett currencies SettCurrencies pallet'
 edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
-name = "stp258-currencies"
+name = "stp258"
 repository = 'https://github.com/Setheum-Labs/Setheum/'
 version = '0.1.0'
 

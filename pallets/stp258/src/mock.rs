@@ -1,4 +1,4 @@
-//! Mocks for the stp258-currencies module.
+//! Mocks for the stp258 module.
 
 #![cfg(test)]
 

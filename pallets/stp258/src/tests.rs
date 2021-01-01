@@ -1,4 +1,4 @@
-//! Unit tests for the stp258-currencies module.
+//! Unit tests for the stp258 module.
 
 #![cfg(test)]
 

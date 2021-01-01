@@ -25,7 +25,7 @@ hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.101' }
 
 # local dependencies
-stp258-currencies = { version = "0.1.0", default-features = false, path = "../pallets/stp258-currencies", package = "stp258-currencies" }
+stp258 = { version = "0.1.0", default-features = false, path = "../pallets/stp258", package = "stp258" }
 serp-tes = { version = "0.1.0", default-features = false, path = "../pallets/serp-tes", package = "serp-tes" }
 serp-market = { version = "0.1.0", default-features = false, path = "../pallets/serp-market", package = "serp-market" }
 fetch-price = { version = "0.1.0", default-features = false, path = "../pallets/fetch-price", package = "fetch-price" }
@@ -82,7 +82,7 @@ std = [
     'pallet-grandpa/std',
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
-    'stp258-currencies/std',
+    'stp258/std',
     'serp-tes/std',
     'serp-market/std',
     'fetch-price/std',
