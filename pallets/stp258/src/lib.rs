@@ -68,6 +68,7 @@ use orml_utilities::with_transaction_result;
 
 mod default_weight;
 
+#[cfg(test)]
 mod mock;
 
 #[cfg(test)]
@@ -100,7 +101,7 @@ pub trait Config: frame_system::Config {
 	type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 	
 	/// The amount of SettCurrency necessary to buy the tracked value. (e.g., 1_100 for 1$)
-	type SettCurrencyPrice: FetchPrice<SettCurrency>;
+	type SettCurrencyPrice: FetchPrice<CurrencyId>;
 
 	/// The amount of SettCurrency that are meant to track the value. Example: A value of 1_000 when tracking
 	/// Dollars means that the SettCurrency will try to maintain a price of 1_000 SettCurrency for 1$.
@@ -198,7 +199,13 @@ decl_error! {
 		/// An arithmetic operation caused an underflow.
 		GenericUnderflow,
 		/// While trying to increase the Supply, it overflowed.
+		SettCurrencySupplyOverflow,
+		/// While trying to increase the Supply, it overflowed.
+		SettCurrencySupplyUnderflow,
+		/// While trying to increase the Supply, it overflowed.
 		SupplyOverflow,
+		/// Something went very wrong and the price of the currency is zero.
+		ZeroPrice,
 	}
 }
 
@@ -471,9 +478,9 @@ impl<T: Config> SettCurrency<T::AccountId> for Module<T> {
 		}
 		Self::deposit_event(RawEvent::burned(currency_id, who.clone(), amount));
 		let supply = Self::total_supply();
-		let new_supply = supply.checked_remove(amount).ok_or(Error::<T>::SupplyOverflow)?;
-		// ^ verify
-		// v update
+		let new_supply = supply.checked_sub(amount).ok_or(Error::<T>::SupplyUnderflow)?;
+		// ↑ verify ↑
+		// ↓ update ↓
 		<TotalSupply>::put(new_supply);
 		Ok(())
 	}
