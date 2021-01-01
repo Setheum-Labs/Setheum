@@ -17,7 +17,6 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and SE
 </div>
 
 
-
 ## Getting Started
 
 This project contains some configuration files to help get started :hammer_and_wrench:
