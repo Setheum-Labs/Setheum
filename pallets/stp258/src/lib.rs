@@ -376,7 +376,7 @@ impl<T: Config> SettCurrency<T::AccountId> for Module<T> {
 			T::SettCurrency::ensure_can_withdraw(currency_id, who, amount)
 		}
 	}
-
+	
 	fn transfer(
 		currency_id: Self::CurrencyId,
 		from: &T::AccountId,
@@ -435,65 +435,6 @@ impl<T: Config> SettCurrency<T::AccountId> for Module<T> {
 		} else {
 			T::SettCurrency::slash(currency_id, who, amount)
 		}
-	}
-
-	/// Mint and increase the total inssuance of `currency_id` by adding `amount` to `who`.
-	fn mint(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> result::Result<(), &'static str>{
-		if currency_id == T::GetNativeCurrencyId::get() {
-			T::NativeCurrency::mint(who, amount)?;
-		} else {
-			T::SettCurrency::mint(currency_id, who, amount)?;
-		}
-		Self::deposit_event(RawEvent::minted(currency_id, who.clone(), amount));
-		let supply = Self::total_supply();
-		let new_supply = supply.checked_add(amount).ok_or(Error::<T>::SupplyOverflow)?;
-		// ^ verify
-		// v update
-		<TotalSupply>::put(new_supply);
-		Ok(())
-	}
-
-	/// Mint SERP Reserve Asset (NativeCurrency) `currency_id` by adding `amount` to `who`. Used by the SERP
-	fn mint_asset(currency_id: Self::CurrencyId, who: &T::AccountId,, payout: SettCurrency::CurrencyId, amount: Self::Balance) -> result::Result<(), &'static str>{
-		if currency_id == T::GetNativeCurrencyId::get() {
-			T::NativeCurrency::mint(who,  payout, amount)?;
-		} else {
-			return Ok(());
-		}
-		Self::deposit_event(RawEvent::minted(currency_id, who.clone(), amount));
-		let supply = Self::total_supply();
-		let new_supply = supply.checked_add(amount).ok_or(Error::<T>::SupplyOverflow)?;
-		// ^ verify
-		// v update
-		<TotalSupply>::put(new_supply);
-		Ok(())
-	}
-
-	/// Burn and reduce the total inssuance of `currency_id` by moving `amount` from `who`.
-	fn burn(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> result::Result<(), &'static str>{
-		if currency_id == T::GetNativeCurrencyId::get() {
-			T::NativeCurrency::burn(who, amount)?;
-		} else {
-			T::SettCurrency::burn(currency_id, who, amount)?;
-		}
-		Self::deposit_event(RawEvent::burned(currency_id, who.clone(), amount));
-		let supply = Self::total_supply();
-		let new_supply = supply.checked_sub(amount).ok_or(Error::<T>::SupplyUnderflow)?;
-		// ↑ verify ↑
-		// ↓ update ↓
-		<TotalSupply>::put(new_supply);
-		Ok(())
-	}
-
-	/// Mint SERP Reserve Asset (NativeCurrency) `currency_id` by adding `amount` to `who`. Used by the SERP
-	fn burn_asset(currency_id: Self::CurrencyId, who: &T::AccountId,, payout: SettCurrency::CurrencyId, amount: Self::Balance) -> result::Result<(), &'static str>{
-		if currency_id == T::GetNativeCurrencyId::get() {
-			T::NativeCurrency::burn(who,  payout, amount)?;
-		} else {
-			return Ok(());
-		}
-		Self::deposit_event(RawEvent::burned(currency_id, who.clone(), amount));
-		Ok(())
 	}
 }
 
