@@ -18,7 +18,7 @@ frame-support = { default-features = false, version = "2.0.0" }
 frame-system = { default-features = false, version = "2.0.0" }
 # pallets
 fetch-price = { default-features = false, package = "fetch-price", version = "0.1.0", path = "../fetch-price" }
-stp258 = { default-features = false, package = "stp258", version = "0.1.0", path = "../stp258" }
+stp258-currencies = { default-features = false, package = "stp258", version = "0.1.0", path = "../stp258-currencies" }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = "2.0.0-alpha.5" }
@@ -33,5 +33,5 @@ std = [
     'safe-mix/std',
     'frame-system/std',
     'fetch-price/std',
-    'stp258/std',
+    'stp258-currencies/std',
 ]
