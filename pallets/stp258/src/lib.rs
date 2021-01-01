@@ -174,14 +174,18 @@ decl_event!(
 		Transferred(CurrencyId, AccountId, AccountId, Balance),
 		/// Update balance success. [currency_id, who, amount]
 		BalanceUpdated(CurrencyId, AccountId, Amount),
-		/// Deposit success. [currency_id, who, amount]
-		Deposited(CurrencyId, AccountId, Balance),
-		/// Withdraw success. [currency_id, who, amount]
-		Withdrawn(CurrencyId, AccountId, Balance),
 		/// Burn success, [currency_id, who, amount]
 		Burned(CurrencyId, AccountId, Balance),
 		/// Asset Burn success, [currency_id, who, amount]
 		BurnedAsset(CurrencyId, AccountId, Balance),
+		/// Deposit success. [currency_id, who, amount]
+		Deposited(CurrencyId, AccountId, Balance),
+		/// Mint success, [currency_id, who, amount]
+		Minted(CurrencyId, AccountId, Balance),
+		/// Asset Mint success, [currency_id, who, amount]
+		MintedAsset(CurrencyId, AccountId, Balance),
+		/// Withdraw success. [currency_id, who, amount]
+		Withdrawn(CurrencyId, AccountId, Balance),
 	}
 );
 
@@ -215,6 +219,7 @@ decl_module! {
 		type Error = Error<T>;
 
 		const NativeCurrencyId: CurrencyIdOf<T> = T::GetNativeCurrencyId::get();
+		const ReserveAsset: CurrencyIdOf<T> = T::GetNativeCurrencyId::get();
 
 		/// The amount of SettCurrencys that represent 1 external value (e.g., 1$).
 		const BaseUnit: CurrencyIdOf<T> = T::BaseUnit::get();
@@ -376,7 +381,7 @@ impl<T: Config> SettCurrency<T::AccountId> for Module<T> {
 			T::SettCurrency::ensure_can_withdraw(currency_id, who, amount)
 		}
 	}
-	
+
 	fn transfer(
 		currency_id: Self::CurrencyId,
 		from: &T::AccountId,

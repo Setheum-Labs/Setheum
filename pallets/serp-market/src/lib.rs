@@ -1,5 +1,8 @@
-/// pallet-bids\
-///
+//! SerpMarket pallet.
+//!
+//!This is the Serp Market Pallet that trades with the SERP system 
+//!to make bids for Nativecurrency in this case called Dinar, and Sett Currencies.
+//! 
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use sp_std::prelude::*;
@@ -53,28 +56,28 @@ pub trait Trait: system::Trait {
 /// + `price` is a percentage of 1 settcurrency.
 /// + `quantity` is the amount of SettCurrency gained on payout of the corresponding Dinar.
 #[derive(Encode, Decode, Default, Clone, RuntimeDebug)]
-pub struct Bid<AccountId> {
+pub struct Bid<AccountId, currency_id: Self::CurrencyId,> {
 	account: AccountId,
 	price: Perbill,
-	quantity: SettCurrency,
+	quantity: SettCurrency::Amount,
 }
 
 // Implement `Ord` for `Bid` to get the wanted sorting in the priority queue.
 // TODO: Could this create issues in testing? How to address?
-impl<AccountId> PartialEq for Bid<AccountId> {
+impl<AccountId> PartialEq for Bid<AccountId, currency_id: Self::CurrencyId,> {
 	fn eq(&self, other: &Self) -> bool { Cx																		
 		self.price == other.price
 	}
 }
-impl<AccountId> Eq for Bid<AccountId> {}
+impl<AccountId> Eq for Bid<AccountId, currency_id: Self::CurrencyId, {}
 
-impl<AccountId> PartialOrd for Bid<AccountId> {
+impl<AccountId> PartialOrd for Bid<AccountId, currency_id: Self::CurrencyId,> {
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
 		Some(self.cmp(other))
 	}
 }
 /// Sort `Bid`s by price.
-impl<AccountId> Ord for Bid<AccountId> {
+impl<AccountId> Ord for Bid<AccountId, currency_id: Self::CurrencyId,> {
 	fn cmp(&self, other: &Self) -> Ordering {
 		self.price.cmp(&other.price)
 	}
@@ -88,13 +91,14 @@ pub enum BidError {
 	Underflow,
 }
 
-impl<AccountId> Bid<AccountId> {
+impl<AccountId> Bid<AccountId, currency_id: Self::CurrencyId,> {
 	/// Create a new bid.
-	fn new(account: AccountId, price: Perbill, quantity: SettCurrency) -> Bid<AccountId> {
+	fn new(account: AccountId, price: Perbill, quantity: SettCurrency) -> Bid<AccountId, currency_id: Self::CurrencyId,> {
 		Bid {
 			account,
 			price,
 			quantity,
+			currency_id,
 		}
 	}
 
@@ -130,17 +134,17 @@ impl<AccountId> Bid<AccountId> {
 decl_event!(
 	pub enum Event<T>
 	where
-		AccountId = <T as system::Trait>::AccountId,
+		AccountId = <T as system::Trait>::AccountId, CurrencyId
 	{
-		NewBid(AccountId, Perbill, u32),
+		NewBid(AccountId, Perbill, u32, CurrencyId),
 		/// A bid was refunded (repayed and removed from the queue).
-		RefundedBid(AccountId, u32),
+		RefundedBid(AccountId, u32, CurrencyId),
 		/// All bids at and above the given price were cancelled for the account.
-		CancelledBidsAbove(AccountId, Perbill),
+		CancelledBidsAbove(AccountId, Perbill, CurrencyId),
 		/// All bids at and below the given price were cancelled for the account.
-		CancelledBidsBelow(AccountId, Perbill),
+		CancelledBidsBelow(AccountId, Perbill, CurrencyId),
 		/// All bids were cancelled for the account.
-		CancelledBids(AccountId),
+		CancelledBids(AccountId, CurrencyId),
 	}
 );
 
@@ -179,7 +183,7 @@ impl<T: Trait> From<BidError> for Error<T> {
 decl_storage! {
 	trait Store for Module<T: Trait> as SerpMarket {
 		/// The current bidding queue for dinar.
-		DinarBids get(fn dinar_bids): Vec<Bid<T::AccountId>>;
+		DinarBids get(fn dinar_bids): Vec<Bid<T::AccountId, currency_id: Self::CurrencyId,>>;
 	}
 }
 
@@ -210,20 +214,20 @@ decl_module! {
 		///   - read and write bids from and to DB
 		///   - 1 DB storage map write to pay the bid
 		///   - 1 potential DB storage map write to refund evicted bid
-		pub fn bid_for_dinar(origin, price: Perbill, quantity: SettCurrency) -> DispatchResult {
+		pub fn bid_for_dinar(origin, price: Perbill, quantity: SettCurrency, currency_id: CurrencyId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
 			ensure!(price <= Perbill::from_percent(100), Error::<T>::DinarPriceOver100Percent);
 			ensure!(price > T::MinimumDinarPrice::get(), Error::<T>::DinarPriceTooLow);
 			ensure!(quantity >= T::BaseUnit::get(), Error::<T>::DinarQuantityTooLow);
 
-			let bid = Bid::new(who.clone(), price, quantity);
+			let bid = Bid::new(who.clone(), price, quantity, currency_id);
 
 			// ↑ verify ↑
 			Self::remove_balance(&who, bid.payment())?;
 			// ↓ update ↓
 			Self::add_bid(bid);
-			Self::deposit_event(RawEvent::NewBid(who, price, quantity));
+			Self::deposit_event(RawEvent::NewBid(who, price, quantity, currency_id));
 
 			Ok(())
 		}
@@ -238,18 +242,18 @@ decl_module! {
 			let who = ensure_signed(origin)?;
 			// ↑ verify ↑
 			// ↓ update ↓
-			Self::cancel_bids(|bid| bid.account == who && bid.price <= price);
-			Self::deposit_event(RawEvent::CancelledBidsBelow(who, price));
+			Self::cancel_bids(|bid| bid.account == who && bid.price <= price, currency_id);
+			Self::deposit_event(RawEvent::CancelledBidsBelow(who, price, currency_id));
 
 			Ok(())
 		}
 
-		pub fn cancel_bids_at_or_above(origin, price: Perbill) -> DispatchResult {
+		pub fn cancel_bids_at_or_above(origin, price: Perbill, CurrencyId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			// ↑ verify ↑
 			// ↓ update ↓
-			Self::cancel_bids(|bid| bid.account == who && bid.price >= price);
-			Self::deposit_event(RawEvent::CancelledBidsAbove(who, price));
+			Self::cancel_bids(|bid| bid.account == who && bid.price >= price, currency_id);
+			Self::deposit_event(RawEvent::CancelledBidsAbove(who, price, currency_id));
 
 			Ok(())
 		}
@@ -264,8 +268,8 @@ decl_module! {
 			let who = ensure_signed(origin)?;
 			// ↑ verify ↑
 			// ↓ update ↓
-			Self::cancel_bids(|bid| bid.account == who);
-			Self::deposit_event(RawEvent::CancelledBids(who));
+			Self::cancel_bids(|bid| bid.account == who, currency_id);
+			Self::deposit_event(RawEvent::CancelledBids(who, currency_id));
 
 			Ok(())
 		}
@@ -276,9 +280,9 @@ decl_module! {
 	// bids
 
 	/// Construct a transient storage adapter for the bids priority queue.
-	fn bids_transient() -> BoundedPriorityQueue<Bid<T::AccountId>, <Self as Store>::DinarBids, T::MaximumBids>
+	fn bids_transient() -> BoundedPriorityQueue<Bid<T::AccountId>, currency_id: Self::CurrencyId, <Self as Store>::DinarBids, T::MaximumBids>
 	{
-		BoundedPriorityQueue::<Bid<T::AccountId>, <Self as Store>::DinarBids, T::MaximumBids>::new()
+		BoundedPriorityQueue::<Bid<T::AccountId>, currency_id: Self::CurrencyId, <Self as Store>::DinarBids, T::MaximumBids>::new()
 	}
 
 	/// Add a bid to the queue.
@@ -288,7 +292,7 @@ decl_module! {
 	/// - DB access:
 	///   - read and write `B` bids
 	///   - potentially call 1 `refund_bid`
-	fn add_bid(bid: Bid<T::AccountId>) {
+	fn add_bid(bid: Bid<T::AccountId>, currency_id: Self::CurrencyId) {
 		Self::bids_transient()
 			.push(bid)
 			.map(|to_refund| Self::refund_bid(&to_refund));
@@ -299,9 +303,9 @@ decl_module! {
 	/// **Weight:**
 	/// - complexity: `O(1)`
 	/// - DB access: 1 write
-	fn refund_bid(bid: &Bid<T::AccountId>) {
+	fn refund_bid(bid: &Bid<T::AccountId>, currency_id: Self::CurrencyId) {
 		Self::add_balance(&bid.account, bid.payment());
-		Self::deposit_event(RawEvent::RefundedBid(bid.account.clone(), bid.payment()));
+		Self::deposit_event(RawEvent::RefundedBid(bid.account.clone(), currency_id,  bid.payment()));
 	}
 
 	/// Cancel all bids where `cancel_for` returns true and refund the bidders.
@@ -313,7 +317,7 @@ decl_module! {
 	///   - call `refund_bid` up to `B` times
 	fn cancel_bids<F>(cancel_for: F)
 	where
-		F: Fn(&Bid<T::AccountId>) -> bool,
+		F: Fn(&Bid<T::AccountId>, currency_id: Self::CurrencyId) -> bool,
 	{
 		let mut bids = Self::dinar_bids();
 
