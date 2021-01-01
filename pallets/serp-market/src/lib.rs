@@ -227,7 +227,7 @@ decl_module! {
 
 			Ok(())
 		}
-
+ 
 		/// Cancel all bids at or below `price` of the sender and refund the SettCurrency.
 		///
 		/// **Weight:**
