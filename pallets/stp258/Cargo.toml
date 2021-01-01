@@ -1,10 +1,10 @@
 [package]
 authors = ['Setheum Labs<https://github.com/Setheum-Labs>']
-description = 'sett currencies SettCurrencys pallet'
+description = 'sett currencies SettCurrencies pallet'
 edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
-name = 'stp258'
+name = "stp258"
 repository = 'https://github.com/Setheum-Labs/Setheum/'
 version = '0.1.0'
 
@@ -29,7 +29,6 @@ frame-support = { default-features = false, version = '2.0.0' }
 frame-system = { default-features = false, version = '2.0.0' }
 
 orml-traits = { default-features = false, version = '0.3.2' }
-orml-tokens = { default-features = false, version = '0.3.2' }
 orml-utilities = { default-features = false, version = '0.3.2' }
 
 num-rational = { default-features = false, version = '0.3.2' }
@@ -41,6 +40,11 @@ sp-runtime = { default-features = false, optional = true, version = '2.0.0' }
 [dev-dependencies]
 sp-core = { default-features = false, version = '2.0.0' }
 sp-io = { default-features = false, version = '2.0.0' }
+orml-tokens = { default-features = false, version = '0.3.2' }
+
+pallet-assets = "2.0.0"
+pallet-balances = "2.0.0"
+clear_on_drop = { version = "0.2.4", features = ["no_cc"] }	# https://github.com/paritytech/substrate/issues/4179
 
 [features]
 default = ['std']

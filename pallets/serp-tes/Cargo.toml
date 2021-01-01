@@ -21,7 +21,7 @@ version = '1.3.4'
 [dependencies]
 adapters = { default-features = false, package = 'storage-adapters', version = '0.0.3', path = '../../storage-adapters' }
 fetch-price = { default-features = false, package = 'fetch-price', version = '0.1.0', path = '../fetch-price' }
-stp258 = { default-features = false, package = 'stp258', version = '0.1.0', path = '../stp258' }
+stp258= { default-features = false, package = 'stp258', version = '0.1.0', path = '../stp258' }
 
 serde = { version = "1.0.118", optional = true }
 sp-std = { default-features = false, optional = true, version = '2.0.0' }
