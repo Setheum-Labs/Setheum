@@ -374,4 +374,5 @@ decl_module! {
 		type Fix = FixedU128<U64>;
 		let fraction = Fix::from_num(numerator) / Fix::from_num(denominator) - Fix::from_num(1);
 		fraction.saturating_mul_int(supply as u128).to_num::<u64>()
-	}
+	}                          
+	
