@@ -125,7 +125,7 @@ pub trait Config: frame_system::Config {
 }
 
 decl_storage! {
-	trait Store for Module<T: Config> as Stp258Currencies {
+	trait Store for Module<T: Config> as Stp258 {
 		/// The total amount of SettCurrency in circulation.
         SettCurrencySupply get(fn settcurrency_supply): Get<CurrencyId> = 0;
 		

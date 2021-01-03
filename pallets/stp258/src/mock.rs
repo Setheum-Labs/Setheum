@@ -25,14 +25,14 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use sp_std::iter;
 use system;
 
-mod stp258_currencies {
+mod stp258 {
 	pub use crate::Event;
 }
                              
 impl_outer_event! {
 	pub enum TestEvent for Runtime {
 		frame_system<T>,
-		stp258_currencies<T>,
+		stp258<T>,
 		orml_tokens<T>,
 		pallet_balances<T>,
 	}
@@ -118,7 +118,7 @@ impl system::Config for Runtime {
     type AvailableBlockRatio = AvailableBlockRatio;
 }          
 pub type System = frame_system::Module<Runtime>;
-pub type Stp258Currencies = Module<Runtime>;
+pub type Stp258 = Module<Runtime>;
 
 type CurrencyId = u32;
 type Balance = u64;
@@ -173,7 +173,7 @@ impl Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
 }
-pub type Stp258Currencies = Module<Runtime>;
+pub type Stp258 = Module<Runtime>;
 pub type NativeCurrency = NativeCurrencyOf<Runtime>;
 pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Runtime, PalletBalances, i64, u64>;
 

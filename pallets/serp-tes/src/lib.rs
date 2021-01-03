@@ -16,7 +16,7 @@
 //! TODO: Also handout 25% of each `expand_supply` to the validators of the network as per the
 //! Setheum white paper.
 //!
-//! The serp-tes module provides functionality of both the `Stp258Currencies` module that needs 
+//! The serp-tes module provides functionality of both the `Stp258` module that needs 
 //! to contract and expand the supply of its currencies for its stablecoin system stability 
 //! and the `SerpMarket` module that needs to trade/auction the currencies minted and 
 //! contracted by the `SerpTes` module, which it has to do with the `SerpStaking` module to be 
@@ -40,7 +40,7 @@ use frame_support::{
 	traits::Get,
 };
 
-use stp258_currencies::*;
+use stp258::*;
 use serp_market::*;
 
 use num_rational::Ratio;

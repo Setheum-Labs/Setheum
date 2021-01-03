@@ -42,12 +42,12 @@ pub use sp_runtime::{Perbill, Permill};
 
 pub use serp_market;
 pub use serp_tes;
-/// Import the template pallet.
-pub use stp258_currencies;
+pub use stp258;
 
 /// Importing offchain price fetch
 pub use fetch_price;
 pub use price;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -269,7 +269,7 @@ impl pallet_sudo::Trait for Runtime {
 }
 
 /// Configure the template pallet in pallets/template.
-impl stp258_currencies::Trait for Runtime {
+impl stp258::Trait for Runtime {
     type Event = Event;
 }
 impl serp_market::Trait for Runtime {
@@ -295,7 +295,7 @@ construct_runtime!(
         TransactionPayment: pallet_transaction_payment::{Module, Storage},
         Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
         // Include the custom logic from the template pallet in the runtime.
-        Stp258Currencies: stp258_currencies::{Module, Call, Storage, Event<T>},
+        Stp258: stp258::{Module, Call, Storage, Event<T>},
         SerpMarket: serp_market::{Module, Call, Storage, Event<T>},
         SerpTes: serp_tes::{Module, Call, Storage, Event<T>},
         FetchPrice: fetch_price::{Module, Call, Storage, Event<T>},
