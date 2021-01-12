@@ -1,9 +1,6 @@
-use crate::arithmetic;
+use orml_traits::*;
 use codec::{Codec, FullCodec};
 pub use frame_support::traits::{BalanceStatus, LockIdentifier};
-use impl_trait_for_tuples::impl_for_tuples;
-use orml_utilities::with_transaction_result;
-use orml_traits::*;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize},
 	DispatchError, DispatchResult,
@@ -14,27 +11,6 @@ use sp_std::{
 	fmt::Debug,
 	result,
 };
-
-pub trait MergeAccount<AccountId> {
-	fn merge_account(source: &AccountId, dest: &AccountId) -> DispatchResult;
-}
-
-#[impl_for_tuples(5)]
-impl<AccountId> MergeAccount<AccountId> for Tuple {
-	fn merge_account(source: &AccountId, dest: &AccountId) -> DispatchResult {
-		with_transaction_result(|| {
-			for_tuples!( #( {
-                Tuple::merge_account(source, dest)?;
-            } )* );
-			Ok(())
-		})
-	}
-}
-
-#[impl_trait_for_tuples::impl_for_tuples(30)]
-pub trait Happened<T> {
-	fn happened(t: &T);
-}
 
 /// Abstraction over a fungible multi-currency system.
 pub trait SettCurrency<AccountId> {

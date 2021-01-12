@@ -58,7 +58,7 @@ use sp_std::{
 	marker, result,
 };
 
-use traits::*;
+use serml_traits::*;
 use orml_traits::*;
 use orml_utilities::with_transaction_result;
 

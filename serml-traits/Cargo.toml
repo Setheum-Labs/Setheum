@@ -1,0 +1,47 @@
+[package]
+authors = ['Setheum Labs<https://github.com/Setheum-Labs>']
+description = 'SERML (Setheum Elas) Traits'
+edition = '2018'
+homepage = 'https://setheum.xyz'
+license = 'Apache-2.0 License'
+name = "serml-traits"
+repository = 'https://github.com/Setheum-Labs/Setheum/'
+version = '0.3.1-alpha.3'
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+# alias "parity-scale-code" to "codec"
+[dependencies.codec]
+default-features = false
+features = ['derive']
+package = 'parity-scale-codec'
+version = '1.3.4'
+
+[dependencies]
+serde = { version = "1.0.111", optional = true }
+sp-runtime = { version = "2.0.0", default-features = false }
+sp-io = { version = "2.0.0", default-features = false }
+sp-std = { version = "2.0.0", default-features = false }
+num-traits = { version = "0.2.11", default-features = false }
+impl-trait-for-tuples = "0.1.3"
+frame-support = { version = "2.0.0", default-features = false }
+orml-utilities = { version = "0.3.2", default-features = false }
+orml-traits = { version = "0.3.2", default-features = false }
+
+[dev-dependencies]
+clear_on_drop = { version = "0.2.4", features = ["no_cc"] }	# https://github.com/paritytech/substrate/issues/4179
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"sp-runtime/std",
+	"sp-io/std",
+	"sp-std/std",
+	"num-traits/std",
+	"frame-support/std",
+	"orml-utilities/std",
+	"orml-traits/std",
+]
