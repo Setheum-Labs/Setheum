@@ -14,6 +14,8 @@ use sp_runtime::{
 	AccountId32, ModuleId, Fixed64, Perbill,
 };
 
+use traits::*;
+
 use super::*;
 use itertools::Itertools;
 use log;

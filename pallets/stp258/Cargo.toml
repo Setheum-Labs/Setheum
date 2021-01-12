@@ -23,6 +23,7 @@ version = '1.3.4'
 adapters = { default-features = false, package = 'storage-adapters', version = '0.0.3', path = '../../storage-adapters' }
 fetch-price = { default-features = false, package = 'fetch-price', version = '0.1.0', path = '../fetch-price' }
 sp-std = { default-features = false, optional = true, version = '2.0.0' }
+traits = { default-features = false, package = 'traits', path = '/traits' }
 
 
 serde = { version = "1.0.118", optional = true }
@@ -64,4 +65,5 @@ std = [
     "sp-runtime/std",
 	"sp-io/std",
     "sp-std",
+    "traits/std",
 ]

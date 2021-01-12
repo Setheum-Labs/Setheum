@@ -11,6 +11,7 @@ use mock::{
 };
 use sp_runtime::traits::BadOrigin;
 
+use traits::SettCurrency;
 
 #[test]
 fn it_works_for_default_value() {
@@ -282,7 +283,7 @@ fn sett_currency_extended_should_work() {
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_ok!(<Stp258 as SettCurrencyExtended<AccountId>>::update_balance(
+			assert_ok!(<Stp258 as ExtendedSettCurrency<AccountId>>::update_balance(
 				X_TOKEN_ID, &ALICE, 50
 			));
 			assert_eq!(Stp258::free_balance(X_TOKEN_ID, &ALICE), 150);
@@ -318,7 +319,7 @@ fn native_currency_extended_should_work() {
 			assert_ok!(NativeCurrency::update_balance(&ALICE, 10));
 			assert_eq!(NativeCurrency::free_balance(&ALICE), 110);
 
-			assert_ok!(<Stp258 as SettCurrencyExtended<AccountId>>::update_balance(
+			assert_ok!(<Stp258 as ExtendedSettCurrency<AccountId>>::update_balance(
 				NATIVE_CURRENCY_ID,
 				&ALICE,
 				10
