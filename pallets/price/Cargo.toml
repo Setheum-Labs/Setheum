@@ -17,8 +17,8 @@ safe-mix = { default-features = false, version = '1.0.1' }
 frame-support = { default-features = false, version = "2.0.1" }
 frame-system = { default-features = false, version = "2.0.1" }
 # pallets
-fetch-price = { default-features = false, package = "fetch-price", version = "0.3.1-alpha.3", path = "../fetch-price" }
-stp258 = { default-features = false, package = "stp258", version = "0.3.1-alpha.3", path = "../stp258" }
+fetch-price = { default-features = false, package = "fetch-price", version = "0.3.1-alpha.3", path = "https://github.com/Setheum-Labs/SERML/tree/master/fetch-price" }
+stp258 = { default-features = false, package = "stp258", version = "0.3.1-alpha.3", path = "https://github.com/Setheum-Labs/SERML/tree/master/stp258" }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = "2.0.1" }
