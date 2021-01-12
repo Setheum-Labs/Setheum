@@ -96,7 +96,7 @@ impl Trait for Test {
 }
 
 pub type System = system::Module<Test>;
-pub type Stp258Currencies = Module<Test>;
+pub type Stp258 = Module<Test>;
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {

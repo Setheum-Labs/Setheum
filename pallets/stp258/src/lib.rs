@@ -3,14 +3,14 @@
 //! ## Overview
 //!
 //! The stp258 module provides a mixed stablecoin system, by configuring a
-//! native currency which implements `BasicCurrencyExtended`, and a
+//! native currency which implements `ExtendedBasicCurrency`, and a
 //! multi-currency which implements `SettCurrency`.
 //!
 //! It also provides an adapter, to adapt `frame_support::traits::Currency`
-//! implementations into `BasicCurrencyExtended`.
+//! implementations into `ExtendedBasicCurrency`.
 //!
-//! The stp258 module provides functionality of both `SettCurrencyExtended`
-//! and `BasicCurrencyExtended`, via unified interfaces, and all calls would be
+//! The stp258 module provides functionality of both `ExtendedSettCurrency`
+//! and `ExtendedBasicCurrency`, via unified interfaces, and all calls would be
 //! delegated to the underlying multi-currency and base currency system.
 //! A native currency ID could be set by `Config::GetNativeCurrencyId`, to
 //! identify the native currency.
@@ -20,7 +20,7 @@
 //! The stp258 module provides implementations for following traits.
 //!
 //! - `SettCurrency` - Abstraction over a fungible multi-currency stablecoin system.
-//! - `SettCurrencyExtended` - Extended `SettCurrency` with additional helper
+//! - `ExtendedSettCurrency` - Extended `SettCurrency` with additional helper
 //!   types and methods, like updating balance
 //! by a given signed integer amount.
 //!
@@ -58,15 +58,9 @@ use sp_std::{
 	marker, result,
 };
 
-use orml_traits::{
-	account::MergeAccount,
-	arithmetic::{Signed, SimpleArithmetic},
-	BalanceStatus, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency, BasicReservableCurrency,
-	LockIdentifier, SettCurrency, SettCurrencyExtended, LockableSettCurrency, ReservableSettCurrency,
-};
+use traits::*;
+use orml_traits::*;
 use orml_utilities::with_transaction_result;
-
-mod default_weight;
 
 #[cfg(test)]
 mod mock;
@@ -75,7 +69,7 @@ mod mock;
 mod tests;
 
 /// Expected price oracle interface. `fetch_price` must return the amount of SettCurrency exchanged for the tracked value.
-pub trait FetchPrice<ettCurrency> {
+pub trait FetchPrice<SettCurrency> {
 	/// Fetch the current price.
 	fn fetch_price() -> SettCurrency;
 }
@@ -93,7 +87,7 @@ type CurrencyIdOf<T> =
 	<<T as Config>::SettCurrency as SettCurrency<<T as frame_system::Config>::AccountId>>::CurrencyId;
 
 type AmountOf<T> =
-	<<T as Config>::SettCurrency as SettCurrencyExtended<<T as frame_system::Config>::AccountId>>::Amount;
+	<<T as Config>::SettCurrency as ExtendedSettCurrency<<T as frame_system::Config>::AccountId>>::Amount;
 
 /// The pallet's configuration trait.
 pub trait Config: frame_system::Config {
@@ -108,7 +102,7 @@ pub trait Config: frame_system::Config {
 	type BaseUnit: Get<CurrencyId>;
 	
 	type SettCurrency: MergeAccount<Self::AccountId>
-		+ SettCurrencyExtended<Self::AccountId>
+		+ ExtendedSettCurrency<Self::AccountId>
 		+ LockableSettCurrency<Self::AccountId>
 		+ ReservableSettCurrency<Self::AccountId>;
 	type NativeCurrency: BasicCurrencyExtended<Self::AccountId, Balance = BalanceOf<Self>, Amount = AmountOf<Self>>
@@ -125,7 +119,7 @@ pub trait Config: frame_system::Config {
 }
 
 decl_storage! {
-	trait Store for Module<T: Config> as Stp258Currencies {
+	trait Store for Module<T: Config> as Stp258 {
 		/// The total amount of SettCurrency in circulation.
         SettCurrencySupply get(fn settcurrency_supply): Get<CurrencyId> = 0;
 		
@@ -312,7 +306,7 @@ decl_module! {
 		) {
 			ensure_root(origin)?;
 			let dest = T::Lookup::lookup(who)?;
-			<Self as SettCurrencyExtended<T::AccountId>>::update_balance(currency_id, &dest, amount)?;
+			<Self as ExtendedSettCurrency<T::AccountId>>::update_balance(currency_id, &dest, amount)?;
 		}
 	}
 }
@@ -443,7 +437,7 @@ impl<T: Config> SettCurrency<T::AccountId> for Module<T> {
 	}
 }
 
-impl<T: Config> SettCurrencyExtended<T::AccountId> for Module<T> {
+impl<T: Config> ExtendedSettCurrency<T::AccountId> for Module<T> {
 	type Amount = AmountOf<T>;
 
 	fn update_balance(currency_id: Self::CurrencyId, who: &T::AccountId, by_amount: Self::Amount) -> DispatchResult {
