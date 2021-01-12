@@ -19,9 +19,9 @@ package = 'parity-scale-codec'
 version = '1.3.4'
 
 [dependencies]
-adapters = { default-features = false, package = 'storage-adapters', version = '0.3.1-alpha.3', path = '../../storage-adapters' }
-fetch-price = { default-features = false, package = 'fetch-price', version = '0.3.1-alpha.3', path = '../fetch-price' }
-serp-tes = { default-features = false, package = 'serp-tes', version = '0.3.1-alpha.3', path = '../serp-tes' }
+adapters = { default-features = false, package = 'storage-adapters', version = '0.3.1-alpha.3', path = 'https://github.com/Setheum-Labs/SERML/tree/master/storage-adapters' }
+fetch-price = { default-features = false, package = 'fetch-price', version = '0.3.1-alpha.3', path = 'https://github.com/Setheum-Labs/SERML/tree/master/fetch-price' }
+serp-tes = { default-features = false, package = 'serp-tes', version = '0.3.1-alpha.3', path = 'https://github.com/Setheum-Labs/SERML/tree/master/serp-tes' }
 
 
 serde = { version = "1.0.119", optional = true }
