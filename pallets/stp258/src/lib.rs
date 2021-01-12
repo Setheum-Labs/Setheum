@@ -62,11 +62,9 @@ use orml_traits::{
 	account::MergeAccount,
 	arithmetic::{Signed, SimpleArithmetic},
 	BalanceStatus, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency, BasicReservableCurrency,
-	LockIdentifier, SettCurrency, SettCurrencyExtended, LockableSettCurrency, ReservableSettCurrency,
+	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
 use orml_utilities::with_transaction_result;
-
-mod default_weight;
 
 #[cfg(test)]
 mod mock;
@@ -75,7 +73,7 @@ mod mock;
 mod tests;
 
 /// Expected price oracle interface. `fetch_price` must return the amount of SettCurrency exchanged for the tracked value.
-pub trait FetchPrice<ettCurrency> {
+pub trait FetchPrice<SettCurrency> {
 	/// Fetch the current price.
 	fn fetch_price() -> SettCurrency;
 }
