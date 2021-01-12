@@ -6,7 +6,7 @@ homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
 name = 'price'
 repository = 'https://github.com/Setheum-Labs/Setheum/'
-version = '0.1.0'
+version = '0.2.1'
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,8 +17,8 @@ safe-mix = { default-features = false, version = '1.0.0' }
 frame-support = { default-features = false, version = "2.0.0" }
 frame-system = { default-features = false, version = "2.0.0" }
 # pallets
-fetch-price = { default-features = false, package = "fetch-price", version = "0.1.0", path = "../fetch-price" }
-stp258 = { default-features = false, package = "stp258", version = "0.1.0", path = "../stp258" }
+fetch-price = { default-features = false, package = "fetch-price", version = "0.2.1", path = "../fetch-price" }
+stp258 = { default-features = false, package = "stp258", version = "0.2.1", path = "../stp258" }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = "2.0.0-alpha.5" }

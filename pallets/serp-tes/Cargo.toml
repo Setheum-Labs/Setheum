@@ -6,7 +6,7 @@ homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
 name = 'serp-tes'
 repository = 'https://github.com/Setheum-Labs/Setheum/'
-version = '0.1.0'
+version = '0.2.1'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
@@ -19,9 +19,9 @@ package = 'parity-scale-codec'
 version = '1.3.4'
 
 [dependencies]
-adapters = { default-features = false, package = 'storage-adapters', version = '0.0.3', path = '../../storage-adapters' }
-fetch-price = { default-features = false, package = 'fetch-price', version = '0.1.0', path = '../fetch-price' }
-stp258= { default-features = false, package = 'stp258', version = '0.1.0', path = '../stp258' }
+adapters = { default-features = false, package = 'storage-adapters', version = '0.2.1', path = '../../storage-adapters' }
+fetch-price = { default-features = false, package = 'fetch-price', version = '0.2.1', path = '../fetch-price' }
+stp258= { default-features = false, package = 'stp258', version = '0.2.1', path = '../stp258' }
 
 serde = { version = "1.0.118", optional = true }
 sp-std = { default-features = false, optional = true, version = '2.0.0' }
