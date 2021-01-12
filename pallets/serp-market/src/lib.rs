@@ -73,7 +73,7 @@ impl<AccountId> Eq for Bid<AccountId, currency_id: Self::CurrencyId, {}
 
 impl<AccountId> PartialOrd for Bid<AccountId, currency_id: Self::CurrencyId,> {
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-		Some(self.cmp(other))
+		Some(self.cmp(other));
 	}
 }
 /// Sort `Bid`s by price.
