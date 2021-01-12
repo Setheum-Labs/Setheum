@@ -6,7 +6,7 @@ homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
 name = "storage-adapters"
 repository = 'https://github.com/Setheum-Labs/Setheum/'
-version = '0.2.1'
+version = '0.3.1-alpha.3'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
@@ -19,18 +19,17 @@ package = 'parity-scale-codec'
 version = '1.3.4'
 
 [dependencies]
-frame-support = { default-features = false, version = '2.0.0-alpha.5' }
-num-traits = { default-features = false, version = "0.2.11" }
-sp-std = { default-features = false, version = '2.0.0-alpha.5' }
+frame-support = { default-features = false, version = '2.0.1' }
+num-traits = { default-features = false, version = "0.2.14" }
+sp-std = { default-features = false, version = '2.0.1' }
 
 # dev-dependencies that have to be dependencies because of this cargo issue:
 # https://github.com/rust-lang/cargo/issues/6915
-sp-io = { default-features = false, version = '2.0.0-alpha.5' }
-sp-runtime = { default-features = false, version = '2.0.0-alpha.5' }
-system = { default-features = false, package = 'frame-system', version = '2.0.0-alpha.5' }
+sp-io = { default-features = false, version = '2.0.1' }
+system = { default-features = false, package = 'frame-system', version = '2.0.1' }
 
 [dev-dependencies]
-sp-core = { default-features = false, version = '2.0.0-alpha.5' }
+sp-core = { default-features = false, version = '2.0.1' }
 
 [features]
 default = ['std']
