@@ -3533,13 +3533,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-template"
+name = "setheum-node"
 version = "0.3.1-alpha.3"
 dependencies = [
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "jsonrpc-core 16.0.0",
- "node-template-runtime",
+ "setheum-node-runtime",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
  "sc-cli",
@@ -3568,7 +3568,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "node-template-runtime"
+name = "setheum-node-runtime"
 version = "0.3.1-alpha.3"
 dependencies = [
  "fetch-price",
