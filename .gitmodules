@@ -1,0 +1,3 @@
+[submodule "SERML"]
+	path = SERML
+	url = https://github.com/Setheum-Labs/SERML
