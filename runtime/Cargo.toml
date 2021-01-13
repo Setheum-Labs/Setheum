@@ -3,8 +3,8 @@ authors = ['Setheum Labs <https://github.com/Setheum-Labs>']
 edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
-name = 'node-template-runtime'
-repository = 'https://github.com/substrate-developer-hub/substrate-node-template/'
+name = 'setheum-node-runtime'
+repository = 'https://github.com/Setheum-Labs/Setheum/'
 version = '0.3.1-alpha.3'
 
 [package.metadata.docs.rs]
@@ -25,11 +25,11 @@ hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.119' }
 
 # local dependencies
-stp258 = { version = "0.3.1-alpha.3", default-features = false, path = "https://github.com/Setheum-Labs/SERML/tree/master/stp258", package = "stp258" }
-serp-tes = { version = "0.3.1-alpha.3", default-features = false, path = "https://github.com/Setheum-Labs/SERML/tree/master/serp-tes", package = "serp-tes" }
-serp-market = { version = "0.3.1-alpha.3", default-features = false, path = "https://github.com/Setheum-Labs/SERML/tree/master/serp-market", package = "serp-market" }
-fetch-price = { version = "0.3.1-alpha.3", default-features = false, path = "https://github.com/Setheum-Labs/SERML/tree/master/fetch-price", package = "fetch-price" }
-price = {version = "0.3.1-alpha.3", default-features = false, path = "https://github.com/Setheum-Labs/SERML/tree/master/price", package = "price"}
+stp258 = { version = "0.3.1-alpha.3", default-features = false, path = "SERML/stp258", package = "stp258" }
+serp-tes = { version = "0.3.1-alpha.3", default-features = false, path = "SERML/serp-tes", package = "serp-tes" }
+serp-market = { version = "0.3.1-alpha.3", default-features = false, path = "SERML/serp-market", package = "serp-market" }
+fetch-price = { version = "0.3.1-alpha.3", default-features = false, path = "SERML/fetch-price", package = "fetch-price" }
+price = {version = "0.3.1-alpha.3", default-features = false, path = "SERML/price", package = "price"}
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '2.0.1' }

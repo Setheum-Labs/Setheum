@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-push-template:
-    if: ${{ github.repository == 'substrate-developer-hub/substrate-node-template' }}
+    if: ${{ github.repository == 'substrate-developer-hub/substrate-setheum-node' }}
     runs-on: ubuntu-18.04
     steps:
     - name: Trigger playground inclusion
@@ -16,4 +16,4 @@ jobs:
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
         repository: paritytech/substrate-playground
         event-type: template-updated
-        client-payload: '{"id": "node-template"}'
+        client-payload: '{"id": "setheum-node"}'
