@@ -4,12 +4,7 @@ panic = 'unwind'
 [workspace]
 members = [
     'node',
+    'pallets/*',
     'runtime',
-    'SERML/fetch-price',
-    'SERML/price',
-    'SERML/serml-traits',
-    'SERML/serp-market',
-    'SERML/serp-tes',
-    'SERML/storage-adapters',
-    'SERML/stp258',
+    'SERML',
 ]
