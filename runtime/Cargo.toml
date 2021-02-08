@@ -25,11 +25,11 @@ hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.119' }
 
 # local dependencies
-stp258 = { version = "0.3.1-alpha.3", default-features = false, path = "SERML/stp258", package = "stp258" }
-serp-tes = { version = "0.3.1-alpha.3", default-features = false, path = "SERML/serp-tes", package = "serp-tes" }
-serp-market = { version = "0.3.1-alpha.3", default-features = false, path = "SERML/serp-market", package = "serp-market" }
-fetch-price = { version = "0.3.1-alpha.3", default-features = false, path = "SERML/fetch-price", package = "fetch-price" }
-price = {version = "0.3.1-alpha.3", default-features = false, path = "SERML/price", package = "price"}
+stp258 = { version = "0.3.1-alpha.3", default-features = false, path = "pallets/stp258", package = "stp258" }
+serp-tes = { version = "0.3.1-alpha.3", default-features = false, path = "pallets/serp-tes", package = "serp-tes" }
+serp-market = { version = "0.3.1-alpha.3", default-features = false, path = "pallets/serp-market", package = "serp-market" }
+fetch-price = { version = "0.3.1-alpha.3", default-features = false, path = "pallets/fetch-price", package = "fetch-price" }
+price = {version = "0.3.1-alpha.3", default-features = false, path = "pallets/price", package = "price"}
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '2.0.1' }
