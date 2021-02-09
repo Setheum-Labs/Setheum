@@ -6,5 +6,4 @@ members = [
     'node',
     'pallets/*',
     'runtime',
-    'SERML',
 ]
