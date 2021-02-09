@@ -40,14 +40,14 @@
 
 use codec::Codec;
 use frame_support::{
-	decl_error, decl_event, decl_module, decl_storage,
+	pallet_prelude::*,
 	traits::{
 		Currency as PalletCurrency, ExistenceRequirement, Get, LockableCurrency as PalletLockableCurrency,
 		ReservableCurrency as PalletReservableCurrency, WithdrawReasons,
 	},
 	weights::Weight,
 };
-use frame_system::{ensure_root, ensure_signed};
+use frame_system::{ensure_root, ensure_signed, pallet_prelude::*};
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, StaticLookup, Zero},
 	DispatchError, DispatchResult,
@@ -59,7 +59,6 @@ use sp_std::{
 };
 
 use serml_traits::*;
-use orml_traits::*;
 use orml_utilities::with_transaction_result;
 
 #[cfg(test)]
@@ -82,11 +81,12 @@ pub trait WeightInfo {
 	fn update_balance_native_currency_killing() -> Weight;
 }
 
-type BalanceOf<T> = <<T as Config>::SettCurrency as SettCurrency<<T as frame_system::Config>::AccountId>>::Balance;
-type CurrencyIdOf<T> =
+pub(crate) type BalanceOf<T> = 
+	<<T as Config>::SettCurrency as SettCurrency<<T as frame_system::Config>::AccountId>>::Balance;
+pub(crate) type CurrencyIdOf<T> =
 	<<T as Config>::SettCurrency as SettCurrency<<T as frame_system::Config>::AccountId>>::CurrencyId;
 
-type AmountOf<T> =
+pub(crate) type AmountOf<T> =
 	<<T as Config>::SettCurrency as ExtendedSettCurrency<<T as frame_system::Config>::AccountId>>::Amount;
 
 /// The pallet's configuration trait.

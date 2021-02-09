@@ -5,10 +5,7 @@
 use crate::{mock::*, Error};
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{
-	AccountId, AdaptedBasicCurrency, Stp258, ExtBuilder, NativeCurrency, Origin, PalletBalances, System, TestEvent,
-	Tokens, ALICE, BOB, EVA, ID_1, NATIVE_CURRENCY_ID, X_TOKEN_ID,
-};
+use mock::*;
 use sp_runtime::traits::BadOrigin;
 
 use traits::SettCurrency;
