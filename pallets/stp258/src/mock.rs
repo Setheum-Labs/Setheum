@@ -196,6 +196,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	// shareholders are settpay slots that receive the serpups when new currencies are minted.
 	let shareholders: Vec<(AccountId, u64)> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 		.into_iter()
 		.zip(iter::repeat(1))
