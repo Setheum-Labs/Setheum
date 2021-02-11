@@ -19,8 +19,7 @@ frame-system = { default-features = false, version = "2.0.1" }
 # pallets
 fetch-price = { default-features = false, package = "fetch-price", version = "0.4", path = "../fetch-price" }
 stp258 = { default-features = false, package = "stp258", version = "0.4", path = "../stp258" }
-# orml deps
-orml-oracle = { default-features = false, version = '0.3.2' }
+
 [dev-dependencies]
 sp-core = { default-features = false, version = "2.0.1" }
 sp-io = { default-features = false, version = "2.0.1" }
