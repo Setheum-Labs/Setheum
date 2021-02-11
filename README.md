@@ -23,11 +23,8 @@ This project contains some configuration files to help get started :hammer_and_w
 
 ### Rust Setup
 
-Setup instructions for working with the [Rust](https://www.rust-lang.org/) programming language can
-be found at the
-[Substrate Developer Hub](https://substrate.dev/docs/en/knowledgebase/getting-started). Follow those
-steps to install [`rustup`](https://rustup.rs/) and configure the Rust toolchain to default to the
-latest stable version.
+Follow the [Rust setup instructions](./doc/rust-setup.md) before using the included Makefile to
+build the Node Template.
 
 ### Makefile
 
@@ -58,7 +55,7 @@ Once the project has been built, the following command can be used to explore al
 subcommands:
 
 ```sh
-./target/release/setheum-node -h
+./target/release/node-template -h
 ```
 
 ## Run
@@ -71,19 +68,19 @@ terminate the process. After the project has been built, there are other ways to
 This command will start the single-node development chain with persistent state:
 
 ```bash
-./target/release/setheum-node --dev
+./target/release/node-template --dev
 ```
 
 Purge the development chain's state:
 
 ```bash
-./target/release/setheum-node purge-chain --dev
+./target/release/node-template purge-chain --dev
 ```
 
 Start the development chain with detailed logging:
 
 ```bash
-RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum-node -lruntime=debug --dev
+RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/node-template -lruntime=debug --dev
 ```
 
 ### Multi-Node Local Testnet
@@ -134,7 +131,7 @@ After the node has been [built](#build), refer to the embedded documentation to 
 capabilities and configuration parameters that it exposes:
 
 ```shell
-./target/release/setheum-node --help
+./target/release/node-template --help
 ```
 
 ### Runtime
@@ -194,15 +191,15 @@ Then run the following command to start a single node development chain.
 ```
 
 This command will firstly compile your code, and then start a local development network. You can
-also replace the default command (`cargo build --release && ./target/release/setheum-node --dev --ws-external`)
+also replace the default command (`cargo build --release && ./target/release/node-template --dev --ws-external`)
 by appending your own. A few useful ones are as follow.
 
 ```bash
 # Run Substrate node without re-compiling
-./scripts/docker_run.sh ./target/release/setheum-node --dev --ws-external
+./scripts/docker_run.sh ./target/release/node-template --dev --ws-external
 
 # Purge the local dev chain
-./scripts/docker_run.sh ./target/release/setheum-node purge-chain --dev
+./scripts/docker_run.sh ./target/release/node-template purge-chain --dev
 
 # Check whether the code is compilable
 ./scripts/docker_run.sh cargo check
