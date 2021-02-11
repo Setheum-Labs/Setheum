@@ -1,6 +1,20 @@
-# Setheum Substrate Node
+# Setheum Network Node
 
-Setheum Network's FRAME-based Substrate node, ready for hacking :rocket:
+Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and SERML, ready for hacking :rocket:
+<div align="center">
+
+[![Setheum version](https://img.shields.io/badge/Setheum-0.4-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
+[![Substrate version](https://img.shields.io/badge/Substrate-2.0.1-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
+[![License](https://img.shields.io/github/license/Setheum-Labs/SERML?color=green)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
+ <br />
+[![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FSetheum)](https://twitter.com/Setheum)
+[![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/HDdQJy9v)
+[![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](https://t.me/SetheumNetwork)
+[![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](https://medium.com/setheum-labs)
+[![Setheum](https://img.shields.io/badge/Setheum-blue?logo=Parity%20Substrate)](https://medium.com/setheum-labs)
+
+</div>
+
 
 ## Getting Started
 
@@ -8,11 +22,8 @@ This project contains some configuration files to help get started :hammer_and_w
 
 ### Rust Setup
 
-Setup instructions for working with the [Rust](https://www.rust-lang.org/) programming language can
-be found at the
-[Substrate Developer Hub](https://substrate.dev/docs/en/knowledgebase/getting-started). Follow those
-steps to install [`rustup`](https://rustup.rs/) and configure the Rust toolchain to default to the
-latest stable version.
+Follow the [Rust setup instructions](./doc/rust-setup.md) before using the included Makefile to
+build the Node Template.
 
 ### Makefile
 
