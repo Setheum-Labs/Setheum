@@ -33,7 +33,7 @@ fn bids_are_sorted_highest_to_lowest() {
 		SettCurrency::add_bid(Bid::new(1, Perbill::from_percent(50), bid_amount));
 
 		let bids = SettCurrency::dinar_bids();
-		let prices: Vec<_> = bids.into_iter().map(|Bid { price, .. }| price).collect();
+		let prices: Vec<_> = bids.into_iter().map(|Bid { price, .. }| price).collect::<Vec<PathBuf>>();
 		// largest bid is stored last so we can pop
 		assert_eq!(
 			prices,
