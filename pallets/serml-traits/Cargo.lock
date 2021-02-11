@@ -1380,7 +1380,7 @@ dependencies = [
 
 [[package]]
 name = "serml-traits"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "clear_on_drop",
  "frame-support",

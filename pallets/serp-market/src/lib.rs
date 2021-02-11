@@ -18,7 +18,8 @@ use sp_runtime::{
 	traits::{CheckedMul, Zero},
 	PerThing, Perbill, RuntimeDebug,
 };
-use sp_std::collections::vec_deque::VecDeque;
+use sp_std::collections::vec_
+deque::VecDeque;
 use frame_system::{ensure_signed, pallet_prelude::*};
 
 #[cfg(test)]

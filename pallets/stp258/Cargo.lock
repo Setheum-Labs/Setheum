@@ -432,7 +432,7 @@ checksum = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
 
 [[package]]
 name = "fetch-price"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1751,7 +1751,7 @@ dependencies = [
 
 [[package]]
 name = "serml-traits"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "frame-support",
  "impl-trait-for-tuples",
@@ -2154,7 +2154,7 @@ dependencies = [
 
 [[package]]
 name = "storage-adapters"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2167,7 +2167,7 @@ dependencies = [
 
 [[package]]
 name = "stp258"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "clear_on_drop",
  "fetch-price",

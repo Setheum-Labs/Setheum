@@ -1336,7 +1336,7 @@ dependencies = [
 
 [[package]]
 name = "fetch-price"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3533,13 +3533,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-node"
-version = "0.3.1-alpha.3"
+name = "node-template"
+version = "0.4"
 dependencies = [
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "jsonrpc-core 16.0.0",
- "setheum-node-runtime",
+ "node-template-runtime",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
  "sc-cli",
@@ -3568,8 +3568,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-node-runtime"
-version = "0.3.1-alpha.3"
+name = "node-template-runtime"
+version = "0.4"
 dependencies = [
  "fetch-price",
  "frame-benchmarking",
@@ -4447,7 +4447,7 @@ checksum = "ac74c624d6b2d21f425f752262f42188365d7b8ff1aff74c82e45136510a4857"
 
 [[package]]
 name = "price"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "fetch-price",
  "frame-support",
@@ -6075,7 +6075,7 @@ dependencies = [
 
 [[package]]
 name = "serml-traits"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "clear_on_drop",
  "frame-support",
@@ -6092,7 +6092,7 @@ dependencies = [
 
 [[package]]
 name = "serp-market"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "fetch-price",
  "fixed",
@@ -6114,7 +6114,7 @@ dependencies = [
 
 [[package]]
 name = "serp-tes"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "fetch-price",
  "fixed",
@@ -6954,7 +6954,7 @@ dependencies = [
 
 [[package]]
 name = "storage-adapters"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6968,7 +6968,7 @@ dependencies = [
 
 [[package]]
 name = "stp258"
-version = "0.3.1-alpha.3"
+version = "0.4"
 dependencies = [
  "clear_on_drop",
  "fetch-price",

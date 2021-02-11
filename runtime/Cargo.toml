@@ -3,15 +3,15 @@ authors = ['Setheum Labs <https://github.com/Setheum-Labs>']
 edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
-name = 'setheum-node-runtime'
+name = 'node-template-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum/'
-version = '0.3.1-alpha.3'
+version = '2.0.1'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
 
 [build-dependencies]
-wasm-builder-runner = { package = 'substrate-wasm-builder-runner', version = '3.0.0' }
+substrate-wasm-builder = '3.0.0'
 
 # alias "parity-scale-code" to "codec"
 [dependencies.codec]
@@ -25,11 +25,11 @@ hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.119' }
 
 # local dependencies
-stp258 = { version = "0.3.1-alpha.3", default-features = false, path = "pallets/stp258", package = "stp258" }
-serp-tes = { version = "0.3.1-alpha.3", default-features = false, path = "pallets/serp-tes", package = "serp-tes" }
-serp-market = { version = "0.3.1-alpha.3", default-features = false, path = "pallets/serp-market", package = "serp-market" }
-fetch-price = { version = "0.3.1-alpha.3", default-features = false, path = "pallets/fetch-price", package = "fetch-price" }
-price = {version = "0.3.1-alpha.3", default-features = false, path = "pallets/price", package = "price"}
+stp258 = { version = "0.4", default-features = false, path = "../pallets/stp258", package = "stp258" }
+serp-tes = { version = "0.4", default-features = false, path = "../pallets/serp-tes", package = "serp-tes" }
+serp-market = { version = "0.4", default-features = false, path = "../pallets/serp-market", package = "serp-market" }
+fetch-price = { version = "0.4", default-features = false, path = "../pallets/fetch-price", package = "fetch-price" }
+price = {version = "0.4", default-features = false, path = "../pallets/price", package = "price"}
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '2.0.1' }

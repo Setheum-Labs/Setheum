@@ -2,6 +2,7 @@
 
 use crate::{Module, Trait};
 use frame_support::{impl_outer_origin, parameter_types, weights::Weight};
+use serml_traits::*;
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -207,7 +208,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 pub fn new_test_ext_with(shareholders: Vec<AccountId>) -> sp_io::TestExternalities {
 	let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
-	let shareholders: Vec<(AccountId, u64)> = shareholders.into_iter().zip(iter::repeat(1)).collect();
+	let shareholders: Vec<(AccountId, u64)> = shareholders.into_iter().zip(iter::repeat(1)).collect::<Vec<PathBuf>>();
 	// make sure to run our storage build function to check config
 	let _ = GenesisConfig::<Test> { shareholders }.assimilate_storage(&mut storage);
 	storage.into()

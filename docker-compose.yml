@@ -2,17 +2,16 @@ version: "3.2"
 
 services:
   dev:
-    container_name: setheum-node
-    image: paritytech/ci-linux:production
-    working_dir: /var/www/setheum-node
+    container_name: node-template
+    image: paritytech/ci-linux:974ba3ac-20201006
+    working_dir: /var/www/node-template
     ports:
       - "9944:9944"
     environment:
-      - CARGO_HOME=/var/www/setheum-node/.cargo
-      - WASM_BUILD_TOOLCHAIN=nightly-2020-10-05
+      - CARGO_HOME=/var/www/node-template/.cargo
     volumes:
-      - .:/var/www/setheum-node
+      - .:/var/www/node-template
       - type: bind
         source: ./.local
         target: /root/.local
-    command: bash -c "cargo build --release && ./target/release/setheum-node --dev --ws-external"
+    command: bash -c "cargo build --release && ./target/release/node-template --dev --ws-external"

@@ -7,7 +7,12 @@
             "label": "Run ",
             "type": "shell",
             "command": "cargo",
-            "args": ["run", "--release", "--", "--dev"],
+            "args": [
+                "run",
+                "--release",
+                "--",
+                "--dev"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -17,20 +22,23 @@
                 "panel": "new"
             },
             "problemMatcher": [
-            {
-                "owner": "rust",
-                "fileLocation": ["relative", "${workspaceRoot}"],
-                "pattern": {
-                "regexp": "^(.*):(\\d+):(\\d+):\\s+(\\d+):(\\d+)\\s+(warning|error):\\s+(.*)$",
-                "file": 1,
-                "line": 2,
-                "column": 3,
-                "endLine": 4,
-                "endColumn": 5,
-                "severity": 6,
-                "message": 7
+                {
+                    "owner": "rust",
+                    "fileLocation": [
+                        "relative",
+                        "${workspaceRoot}"
+                    ],
+                    "pattern": {
+                        "regexp": "^(.*):(\\d+):(\\d+):\\s+(\\d+):(\\d+)\\s+(warning|error):\\s+(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3,
+                        "endLine": 4,
+                        "endColumn": 5,
+                        "severity": 6,
+                        "message": 7
+                    }
                 }
-            }
             ]
         }
     ]
