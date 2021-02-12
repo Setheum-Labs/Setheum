@@ -1,6 +1,13 @@
+//! Unit tests for the serp-tes module.
+
 #![cfg(test)]
+use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::*;
+use sp_core::H160;
+use sp_runtime::traits::BadOrigin;
+
+use traits::SettCurrency;
 
 #[test]
 fn it_works_for_default_value() {
@@ -63,14 +70,20 @@ fn contract_supply_test() {
 			.checked_mul(&BaseUnit::get().into())
 			.map(|r| r.to_integer())
 			.expect("dinar_amount should not have overflowed");
+		NativeCurrency::add_bid(Bid::new(1, Perbill::from_percent(80), dinar_amount));
+		NativeCurrency::add_bid(Bid::new(2, Perbill::from_percent(75), 2 * BaseUnit::get()));
 		SettCurrency::add_bid(Bid::new(1, Perbill::from_percent(80), dinar_amount));
 		SettCurrency::add_bid(Bid::new(2, Perbill::from_percent(75), 2 * BaseUnit::get()));
 
-		let prev_supply = SettCurrency::settcurrency_supply();
+		let prev_supply = SettCurrency::settcurrency_supply(SETT_USD_ID);
 		let amount = 2 * BaseUnit::get();
 		assert_ok!(SettCurrency::contract_supply(prev_supply, amount));
 
-		let bids = SettCurrency::dinar_bids();
+		assert_ok!(<Stp258 as ExtendedSettCurrency<AccountId>>::settcurrency_supply(
+				NATIVE_SETT_USD_ID,
+			));
+
+		let bids = SettCurrency::dinar_bids(NATIVE_CURRENCY_ID);
 		assert_eq!(bids.len(), 1, "exactly one bid should have been removed");
 		let remainging_bid_quantity = Fixed64::from_rational(667, 1_000)
 			.saturated_multiply_accumulate(BaseUnit::get())
@@ -88,7 +101,7 @@ fn contract_supply_test() {
 		);
 
 		assert_eq!(
-			SettCurrency::settcurrency_supply(),
+			SettCurrency::settcurrency_supply(SETT_USD_ID),
 			prev_supply - amount,
 			"supply should be decreased by amount"
 		);
