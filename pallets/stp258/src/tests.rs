@@ -72,7 +72,7 @@ fn simple_handout_test() {
 		assert_ok!(Stp258::hand_out_settcurrency(
 			&Stp258::shares(),
 			amount,
-			Stp258::settcurrency_supply(currency_id)
+			Stp258::settcurrency_supply(SETT_USD_ID)
 		));
 
 		let amount_per_acc = 3 * BaseUnit::get();
@@ -95,7 +95,7 @@ fn handout_less_than_shares_test() {
 		assert_ok!(Stp258::hand_out_settcurrency(
 			&Stp258::shares(),
 			amount,
-			Stp258::settcurrency_supply(currency_id)
+			Stp258::settcurrency_supply(SETT_USD_ID)
 		));
 
 		let amount_per_acc = 1;
@@ -120,7 +120,7 @@ fn handout_more_than_shares_test() {
 		assert_ok!(Stp258::hand_out_settcurrency(
 			&Stp258::shares(),
 			amount,
-			Stp258::settcurrency_supply(currency_id)
+			Stp258::settcurrency_supply(SETT_USD_ID)
 		));
 
 		let amount_per_acc = 1;
@@ -163,7 +163,7 @@ fn handout_quickcheck() {
 			assert_ok!(Stp258::hand_out_settcurrency(
 				&Stp258::shares(),
 				amount,
-				Stp258::settcurrency_supply(currency_id)
+				Stp258::settcurrency_supply(SETT_USD_ID)
 			));
 
 			let len = len as u64;
@@ -190,9 +190,9 @@ fn lockable_sett_currency_should_work() {
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stp258::set_lock(ID_1, SETT-USD_ID, &ALICE, 50));
-			assert_eq!(Tokens::locks(&ALICE, SETT-USD_ID).len(), 1);
-			assert_ok!(Stp258::set_lock(ID_1, NATIVE_CURRENCY_ID, &ALICE, 50));
+			assert_ok!(Stp258::set_lock(ID_1, SETT_USD_ID, &ALICE, 50));
+			assert_eq!(Tokens::locks(&ALICE, SETT_USD_ID).len(), 1);
+			assert_ok!(Stp258::set_lock(ID_1, NATIVE_SETT_USD_ID, &ALICE, 50));
 			assert_eq!(PalletBalances::locks(&ALICE).len(), 1);
 		});
 }
@@ -203,15 +203,15 @@ fn reservable_sett_currency_should_work() {
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_eq!(Stp258::total_issuance(NATIVE_CURRENCY_ID), 200);
-			assert_eq!(Stp258::total_issuance(SETT-USD_ID), 200);
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 100);
+			assert_eq!(Stp258::total_issuance(NATIVE_SETT_USD_ID), 200);
+			assert_eq!(Stp258::total_issuance(SETT_USD_ID), 200);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 100);
 			assert_eq!(NativeCurrency::free_balance(&ALICE), 100);
 
-			assert_ok!(Stp258::reserve(SETT-USD_ID, &ALICE, 30));
-			assert_ok!(Stp258::reserve(NATIVE_CURRENCY_ID, &ALICE, 40));
-			assert_eq!(Stp258::reserved_balance(SETT-USD_ID, &ALICE), 30);
-			assert_eq!(Stp258::reserved_balance(NATIVE_CURRENCY_ID, &ALICE), 40);
+			assert_ok!(Stp258::reserve(SETT_USD_ID, &ALICE, 30));
+			assert_ok!(Stp258::reserve(NATIVE_SETT_USD_ID, &ALICE, 40));
+			assert_eq!(Stp258::reserved_balance(SETT_USD_ID, &ALICE), 30);
+			assert_eq!(Stp258::reserved_balance(NATIVE_SETT_USD_ID, &ALICE), 40);
 		});
 }
 
@@ -269,9 +269,9 @@ fn sett_currency_should_work() {
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_ok!(Stp258::transfer(Some(ALICE).into(), BOB, SETT-USD_ID, 50));
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 50);
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &BOB), 150);
+			assert_ok!(Stp258::transfer(Some(ALICE).into(), BOB, SETT_USD_ID, 50));
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 50);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &BOB), 150);
 		});
 }
 
@@ -282,9 +282,9 @@ fn sett_currency_extended_should_work() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(<Stp258 as ExtendedSettCurrency<AccountId>>::update_balance(
-				SETT-USD_ID, &ALICE, 50
+				SETT_USD_ID, &ALICE, 50
 			));
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 150);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 150);
 		});
 }
 
@@ -302,7 +302,7 @@ fn native_currency_should_work() {
 			assert_eq!(NativeCurrency::free_balance(&ALICE), 40);
 			assert_eq!(NativeCurrency::free_balance(&BOB), 160);
 
-			assert_eq!(Stp258::slash(NATIVE_CURRENCY_ID, &ALICE, 10), 0);
+			assert_eq!(Stp258::slash(NATIVE_SETT_USD_ID, &ALICE, 10), 0);
 			assert_eq!(NativeCurrency::free_balance(&ALICE), 30);
 			assert_eq!(NativeCurrency::total_issuance(), 190);
 		});
@@ -318,7 +318,7 @@ fn native_currency_extended_should_work() {
 			assert_eq!(NativeCurrency::free_balance(&ALICE), 110);
 
 			assert_ok!(<Stp258 as ExtendedSettCurrency<AccountId>>::update_balance(
-				NATIVE_CURRENCY_ID,
+				NATIVE_SETT_USD_ID,
 				&ALICE,
 				10
 			));
@@ -400,13 +400,13 @@ fn update_balance_call_should_work() {
 			assert_ok!(Stp258::update_balance(
 				Origin::root(),
 				ALICE,
-				NATIVE_CURRENCY_ID,
+				NATIVE_SETT_USD_ID,
 				-10
 			));
 			assert_eq!(NativeCurrency::free_balance(&ALICE), 90);
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 100);
-			assert_ok!(Stp258::update_balance(Origin::root(), ALICE, SETT-USD_ID, 10));
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 110);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 100);
+			assert_ok!(Stp258::update_balance(Origin::root(), ALICE, SETT_USD_ID, 10));
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 110);
 		});
 }
 
@@ -414,7 +414,7 @@ fn update_balance_call_should_work() {
 fn update_balance_call_fails_if_not_root_origin() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			Stp258::update_balance(Some(ALICE).into(), ALICE, SETT-USD_ID, 100),
+			Stp258::update_balance(Some(ALICE).into(), ALICE, SETT_USD_ID, 100),
 			BadOrigin
 		);
 	});
@@ -428,36 +428,36 @@ fn call_event_should_work() {
 		.execute_with(|| {
 			System::set_block_number(1);
 
-			assert_ok!(Stp258::transfer(Some(ALICE).into(), BOB, SETT-USD_ID, 50));
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 50);
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &BOB), 150);
+			assert_ok!(Stp258::transfer(Some(ALICE).into(), BOB, SETT_USD_ID, 50));
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 50);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &BOB), 150);
 
-			let transferred_event = TestEvent::stp258(RawEvent::Transferred(SETT-USD_ID, ALICE, BOB, 50));
+			let transferred_event = TestEvent::stp258(RawEvent::Transferred(SETT_USD_ID, ALICE, BOB, 50));
 			assert!(System::events().iter().any(|record| record.event == transferred_event));
 
 			assert_ok!(<Stp258 as SettCurrency<AccountId>>::transfer(
-				SETT-USD_ID, &ALICE, &BOB, 10
+				SETT_USD_ID, &ALICE, &BOB, 10
 			));
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 40);
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &BOB), 160);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 40);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &BOB), 160);
 
-			let transferred_event = TestEvent::stp258(RawEvent::Transferred(SETT-USD_ID, ALICE, BOB, 10));
+			let transferred_event = TestEvent::stp258(RawEvent::Transferred(SETT_USD_ID, ALICE, BOB, 10));
 			assert!(System::events().iter().any(|record| record.event == transferred_event));
 
 			assert_ok!(<Stp258 as SettCurrency<AccountId>>::deposit(
-				SETT-USD_ID, &ALICE, 100
+				SETT_USD_ID, &ALICE, 100
 			));
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 140);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 140);
 
-			let transferred_event = TestEvent::stp258(RawEvent::Deposited(SETT-USD_ID, ALICE, 100));
+			let transferred_event = TestEvent::stp258(RawEvent::Deposited(SETT_USD_ID, ALICE, 100));
 			assert!(System::events().iter().any(|record| record.event == transferred_event));
 
 			assert_ok!(<Stp258 as SettCurrency<AccountId>>::withdraw(
-				SETT-USD_ID, &ALICE, 20
+				SETT_USD_ID, &ALICE, 20
 			));
-			assert_eq!(Stp258::free_balance(SETT-USD_ID, &ALICE), 120);
+			assert_eq!(Stp258::free_balance(SETT_USD_ID, &ALICE), 120);
 
-			let transferred_event = TestEvent::stp258(RawEvent::Withdrawn(SETT-USD_ID, ALICE, 20));
+			let transferred_event = TestEvent::stp258(RawEvent::Withdrawn(SETT_USD_ID, ALICE, 20));
 			assert!(System::events().iter().any(|record| record.event == transferred_event));
 		});
 }

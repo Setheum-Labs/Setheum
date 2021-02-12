@@ -162,7 +162,7 @@ impl orml_tokens::Config for Runtime {
 pub type Tokens = orml_tokens::Module<Runtime>;
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SETT-USD_ID: CurrencyId = CurrencyId::Token(TokenSymbol::JUSD);
+pub const SETT_USD_ID: CurrencyId = CurrencyId::Token(TokenSymbol::JUSD);
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
@@ -239,8 +239,8 @@ impl ExtBuilder {
 		self.balances(vec![
 			(ALICE, NATIVE_CURRENCY_ID, 100),
 			(BOB, NATIVE_CURRENCY_ID, 100),
-			(ALICE, SETT-USD_ID, 100),
-			(BOB, SETT-USD_ID, 100),
+			(ALICE, SETT_USD_ID, 100),
+			(BOB, SETT_USD_ID, 100),
 		])
 	}
 
