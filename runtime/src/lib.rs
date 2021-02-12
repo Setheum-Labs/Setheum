@@ -269,8 +269,23 @@ impl pallet_sudo::Trait for Runtime {
 }
 
 /// Configure the template pallet in pallets/template.
+pub type Amount = i128;
+
+#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub enum CurrencyId {
+	DNAR, //Native
+	JUSD,
+	SETT,
+}
+
 impl stp258::Trait for Runtime {
     type Event = Event;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type OnReceived = ();
+	type WeightInfo = ();
 }
 impl serp_market::Trait for Runtime {
     type Event = Event;

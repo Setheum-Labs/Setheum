@@ -52,6 +52,13 @@ sp-runtime = '3.0.0'
 sp-transaction-pool = '3.0.0'
 substrate-frame-rpc-system = '3.0.0'
 
+adapters = { default-features = false, package = 'storage-adapters', version = '0.4.1', path = '../../storage-adapters' }
+price = { default-features = false, package = 'price', version = '0.4.1', path = '../pallets/price' }
+fetch-price = { default-features = false, package = 'fetch-price', version = '0.4.1', path = '../pallets/fetch-price' }
+stp258 = { default-features = false, package = 'stp258', version = '0.4.1', path = '../pallets/stp258' }
+serp-tes = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../pallets/serp-tes' }
+serp-market = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../pallets/serp-market' }
+
 [features]
 default = []
 runtime-benchmarks = ['node-template-runtime/runtime-benchmarks']
