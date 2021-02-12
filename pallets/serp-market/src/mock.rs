@@ -98,6 +98,70 @@ impl Trait for Test {
 pub type System = system::Module<Test>;
 pub type Stp258 = Module<Test>;
 
+type CurrencyId = u32;
+type Balance = u64;
+
+
+parameter_types! {
+	pub const ExistentialDeposit: u64 = 1;
+}
+
+impl pallet_balances::Config for Runtime {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = TestEvent;
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = frame_system::Module<Runtime>;
+	type MaxLocks = ();
+	type WeightInfo = ();
+}
+pub type PalletBalances = pallet_balances::Module<Runtime>;
+
+parameter_type_with_key! {
+	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+
+parameter_types! {
+	pub DustAccount: AccountId = ModuleId(*b"orml/dst").into_account();
+}
+
+impl orml_tokens::Config for Runtime {
+	type Event = TestEvent;
+	type Balance = Balance;
+	type Amount = i64;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = orml_tokens::TransferDust<Runtime, DustAccount>;
+}
+pub type Tokens = orml_tokens::Module<Runtime>;
+
+pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SETT_USD_ID: CurrencyId = CurrencyId::Token(TokenSymbol::JUSD);
+
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
+}
+
+impl Config for Runtime {
+	type Event = TestEvent;
+	type SettCurrency = Tokens;
+	type NativeCurrency = AdaptedBasicCurrency;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type WeightInfo = ();
+}
+pub type Stp258 = Module<Runtime>;
+pub type NativeCurrency = NativeCurrencyOf<Runtime>;
+pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Runtime, PalletBalances, i64, u64>;
+
+pub const ALICE: AccountId = AccountId32::new([1u8; 32]);
+pub const BOB: AccountId = AccountId32::new([2u8; 32]);
+pub const EVA: AccountId = AccountId32::new([5u8; 32]);
+pub const ID_1: LockIdentifier = *b"1       ";
+
+
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
     system::GenesisConfig::default()
@@ -136,4 +200,66 @@ pub fn add_dinar(dinar: DinarT) {
 	let mut dinar = Transient::new();
 	dinar.push_back(dinar);
 	dinar.commit();
+}
+
+///-----------------------------------------------------------------------------------
+
+
+
+pub struct ExtBuilder {
+	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+}
+
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		Self {
+			endowed_accounts: vec![],
+		}
+	}
+}
+
+impl ExtBuilder {
+	pub fn balances(mut self, endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>) -> Self {
+		self.endowed_accounts = endowed_accounts;
+		self
+	}
+
+	pub fn one_hundred_for_alice_n_bob(self) -> Self {
+		self.balances(vec![
+			(ALICE, NATIVE_CURRENCY_ID, 100),
+			(BOB, NATIVE_CURRENCY_ID, 100),
+			(ALICE, SETT_USD_ID, 100),
+			(BOB, SETT_USD_ID, 100),
+		])
+	}
+
+	pub fn build(self) -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::default()
+			.build_storage::<Runtime>()
+			.unwrap();
+
+		pallet_balances::GenesisConfig::<Runtime> {
+			balances: self
+				.endowed_accounts
+				.clone()
+				.into_iter()
+				.filter(|(_, currency_id, _)| *currency_id == NATIVE_CURRENCY_ID)
+				.map(|(account_id, _, initial_balance)| (account_id, initial_balance))
+				.collect::<Vec<_>>(),
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		orml_tokens::GenesisConfig::<Runtime> {
+			endowed_accounts: self
+				.endowed_accounts
+				.into_iter()
+				.filter(|(_, currency_id, _)| *currency_id != NATIVE_CURRENCY_ID)
+				.collect::<Vec<_>>(),
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		t.into()
+	}
 }
