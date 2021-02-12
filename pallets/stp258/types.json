@@ -1,7 +1,7 @@
 {
     "Address": "AccountId",
     "LookupSource": "AccountId",
-    "SettCurrency": "u32",
+    "SettCurrency": "CurrencyId",
     "DinarIndex": "u32",
     "Bid": {
         "account": "AccountId",
@@ -11,5 +11,13 @@
     "Dinar": {
         "account": "AccountId",
         "payout": "SettCurrency"
-    }
+    },
+    "CurrencyId": {
+        "_enum": [
+            "DNAR",
+            "JUSD",
+            "SETT"
+        ]
+    },
+    "Amount": "i128"
 }
