@@ -4,6 +4,7 @@ panic = 'unwind'
 [workspace]
 members = [
     'node',
-    'pallets/*',
+    'serml/pallets/*',
+    'serml/storage-adapters',
     'runtime',
 ]
