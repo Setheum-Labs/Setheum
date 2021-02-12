@@ -24,26 +24,26 @@ adapters = { default-features = false, package = 'storage-adapters', version = '
 fetch-price = { default-features = false, package = 'fetch-price', version = '0.4.1', path = '../fetch-price' }
 serml-traits = { default-features = false, package = 'serml-traits', version = '0.4.1', path = '../serml-traits' }
 
-sp-std = { default-features = false, optional = true, version = '2.0.1' }
-serde = { version = "1.0.119", optional = true }
-frame-support = { default-features = false, version = '2.0.1' }
-frame-system = { default-features = false, version = '2.0.1' }
+sp-std = { default-features = false, optional = true, version = '3.0.0' }
+serde = { version = "1.0.123", optional = true }
+frame-support = { default-features = false, version = '3.0.0' }
+frame-system = { default-features = false, version = '3.0.0' }
 
 orml-traits = { default-features = false, version = '0.3.2' }
 orml-utilities = { default-features = false, version = '0.3.2' }
 
 num-rational = { default-features = false, version = '0.3.2' }
 num-traits = { version = "0.2.14", default-features = false }
-fixed = { default-features = false, version = '1.5.0' }
+fixed = { default-features = false, version = '1.6.0' }
 
-sp-runtime = { default-features = false, optional = true, version = '2.0.1' }
+sp-runtime = { default-features = false, optional = true, version = '3.0.0' }
 
 [dev-dependencies]
-sp-core = { default-features = false, version = '2.0.1' }
-sp-io = { default-features = false, version = '2.0.1' }
+sp-core = { default-features = false, version = '3.0.0' }
+sp-io = { default-features = false, version = '3.0.0' }
 orml-tokens = { default-features = false, version = '0.3.2' }
-pallet-assets = "2.0.0"
-pallet-balances = "2.0.0"
+pallet-assets = "3.0.0"
+pallet-balances = "3.0.0"
 clear_on_drop = { version = "0.2.4", features = ["no_cc"] }	# https://github.com/paritytech/substrate/issues/4179
 
 [features]
