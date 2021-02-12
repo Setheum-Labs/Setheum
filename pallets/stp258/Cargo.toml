@@ -6,7 +6,7 @@ homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
 name = "stp258"
 repository = 'https://github.com/Setheum-Labs/Setheum/'
-version = '0.4'
+version = '0.4.1'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
@@ -20,9 +20,9 @@ version = '1.3.4'
 
 [dependencies]
 
-adapters = { default-features = false, package = 'storage-adapters', version = '0.4', path = '../../storage-adapters' }
-fetch-price = { default-features = false, package = 'fetch-price', version = '0.4', path = '../fetch-price' }
-serml-traits = { default-features = false, package = 'serml-traits', version = '0.4', path = '../serml-traits' }
+adapters = { default-features = false, package = 'storage-adapters', version = '0.4.1', path = '../../storage-adapters' }
+fetch-price = { default-features = false, package = 'fetch-price', version = '0.4.1', path = '../fetch-price' }
+serml-traits = { default-features = false, package = 'serml-traits', version = '0.4.1', path = '../serml-traits' }
 
 sp-std = { default-features = false, optional = true, version = '2.0.1' }
 serde = { version = "1.0.119", optional = true }
