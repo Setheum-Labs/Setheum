@@ -1,8 +1,6 @@
 //! Unit tests for the stp258 module.
 
 #![cfg(test)]
-
-use crate::{mock::*, Error};
 use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::*;
@@ -68,14 +66,14 @@ fn simple_handout_test() {
 		assert_eq!(Stp258::get_balance(1), balance_per_acc);
 		assert_eq!(Stp258::get_balance(10), balance_per_acc);
 
-		let amount = 30 * BaseUnit::get();
+		let amount = 30 * BaseUnit::get(SETT_USD_ID);
 		assert_ok!(Stp258::hand_out_settcurrency(
 			&Stp258::shares(),
 			amount,
 			Stp258::settcurrency_supply(SETT_USD_ID)
 		));
 
-		let amount_per_acc = 3 * BaseUnit::get();
+		let amount_per_acc = 3 * BaseUnit::get(SETT_USD_ID);
 		assert_eq!(Stp258::get_balance(1), balance_per_acc + amount_per_acc);
 		assert_eq!(Stp258::get_balance(2), balance_per_acc + amount_per_acc);
 		assert_eq!(Stp258::get_balance(3), balance_per_acc + amount_per_acc);
