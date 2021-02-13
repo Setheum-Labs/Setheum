@@ -4,16 +4,16 @@ init:
 
 .PHONY: check
 check:
-	SKIP_WASM_BUILD=1 cargo check --release
+	WASM_BUILD_TOOLCHAIN=nightly-2020-10-05 cargo check
 
 .PHONY: test
 test:
-	SKIP_WASM_BUILD=1 cargo test --release --all
+	WASM_BUILD_TOOLCHAIN=nightly-2020-10-05 cargo test --all
 
 .PHONY: run
 run:
-	 cargo run --release -- --dev --tmp
+	WASM_BUILD_TOOLCHAIN=nightly-2020-10-05 cargo run --release -- --dev --tmp
 
 .PHONY: build
 build:
-	 cargo build --release
+	WASM_BUILD_TOOLCHAIN=nightly-2020-10-05 cargo build --release
