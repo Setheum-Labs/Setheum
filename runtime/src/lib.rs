@@ -6,6 +6,9 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use pallet_evm::{
+    EnsureAddressTruncated, HashedAddressMapping,
+};
 use pallet_grandpa::fg_primitives;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use sp_api::impl_runtime_apis;
@@ -203,6 +206,21 @@ impl pallet_aura::Trait for Runtime {
     type AuthorityId = AuraId;
 }
 
+parameter_types! {
+    pub const LeetChainId: u64 = 1337;
+}
+
+impl pallet_evm::Trait for Runtime {
+    type FeeCalculator = ();
+    type CallOrigin = EnsureAddressTruncated;
+    type WithdrawOrigin = EnsureAddressTruncated;
+    type AddressMapping = HashedAddressMapping<BlakeTwo256>;
+    type Currency = Balances;
+    type Event = Event;
+    type Precompiles = ();
+    type ChainId = LeetChainId;
+}
+
 impl pallet_grandpa::Trait for Runtime {
     type Event = Event;
     type Call = Call;
@@ -309,12 +327,14 @@ construct_runtime!(
         Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Module, Storage},
         Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
-        // Include the custom logic from the template pallet in the runtime.
+        // Include the custom logic from the SERML pallets in the runtime.
         Stp258: stp258::{Module, Call, Storage, Event<T>},
         SerpMarket: serp_market::{Module, Call, Storage, Event<T>},
         SerpTes: serp_tes::{Module, Call, Storage, Event<T>},
         FetchPrice: fetch_price::{Module, Call, Storage, Event<T>},
         Price: price::{Module, Call, Storage, Event<T>},
+        // Include EVM Pallet in the runtime.
+        EVM: pallet_evm::{Module, Call, Storage, Config, Event<T>},
     }
 );
 
