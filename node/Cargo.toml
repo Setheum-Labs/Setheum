@@ -33,6 +33,8 @@ serp-market = { default-features = false, package = 'serp-tes', version = '0.4.1
 
 # Frontier Dependencies
 frontier-consensus = { git = 'https://github.com/PureStake/frontier.git', branch = 'substrate-v2' }
+frontier-rpc = { git = 'https://github.com/PureStake/frontier.git', branch = 'substrate-v2' }
+frontier-rpc-primitives = { git = 'https://github.com/PureStake/frontier.git', branch = 'substrate-v2' }
 
 # Substrate dependencies
 frame-benchmarking = '3.0.0'

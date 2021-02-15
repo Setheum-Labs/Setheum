@@ -129,7 +129,8 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 	let enable_grandpa = !config.disable_grandpa;
 	let prometheus_registry = config.prometheus_registry().cloned();
 	let telemetry_connection_sinks = sc_service::TelemetryConnectionSinks::default();
-
+	let is_authority = role.is_authority();
+	
 	let rpc_extensions_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();
@@ -139,6 +140,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 				client: client.clone(),
 				pool: pool.clone(),
 				deny_unsafe,
+				is_authority,
 			};
 
 			crate::rpc::create_full(deps)
