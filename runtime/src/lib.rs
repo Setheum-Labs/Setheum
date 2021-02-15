@@ -9,6 +9,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use pallet_evm::{
     EnsureAddressTruncated, HashedAddressMapping,
 };
+use pallet_ethereum::*;
 use pallet_grandpa::fg_primitives;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use sp_api::impl_runtime_apis;
@@ -221,6 +222,12 @@ impl pallet_evm::Trait for Runtime {
     type ChainId = LeetChainId;
 }
 
+impl pallet_ethereum::Trait for Runtime {
+	type Event = Event;
+	// This means we will never record a block author in the Ethereum-formatted blocks
+	type FindAuthor = ();
+}
+
 impl pallet_grandpa::Trait for Runtime {
     type Event = Event;
     type Call = Call;
@@ -335,6 +342,7 @@ construct_runtime!(
         Price: price::{Module, Call, Storage, Event<T>},
         // Include EVM Pallet in the runtime.
         EVM: pallet_evm::{Module, Call, Storage, Config, Event<T>},
+        Ethereum: pallet_ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned},
     }
 );
 
