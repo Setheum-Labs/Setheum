@@ -31,6 +31,9 @@ stp258 = { default-features = false, package = 'stp258', version = '0.4.1', path
 serp-tes = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../pallets/serp-tes' }
 serp-market = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../pallets/serp-market' }
 
+# Frontier Dependencies
+frontier-consensus = { git = 'https://github.com/PureStake/frontier.git', branch = 'substrate-v2' }
+
 # Substrate dependencies
 frame-benchmarking = '3.0.0'
 frame-benchmarking-cli = '3.0.0'
