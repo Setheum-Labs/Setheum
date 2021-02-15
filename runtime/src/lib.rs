@@ -6,6 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use codec::{Encode, Decode};
 use pallet_evm::{
     EnsureAddressTruncated, HashedAddressMapping,
 };
@@ -344,6 +345,25 @@ construct_runtime!(
         Ethereum: pallet_ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned},
     }
 );
+
+/// A unit struct that can can convert ethereum-formatted transactions into Substrate-formatted transactions
+/// The ConvertTransaction trait is implemented twice. Once for Uncheckd Extrinsic and once for Opaque Unchecked Extrinsic
+/// Essentially we wrap the raw ethereum transaction in a call to the transact extrinsic in pallet ethereum.
+pub struct TransactionConverter;
+
+impl frontier_rpc_primitives::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
+    fn convert_transaction(&self, transaction: pallet_ethereum::Transaction) -> UncheckedExtrinsic {
+        UncheckedExtrinsic::new_unsigned(pallet_ethereum::Call::<Runtime>::transact(transaction).into())
+    }
+}
+
+impl frontier_rpc_primitives::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConverter {
+    fn convert_transaction(&self, transaction: pallet_ethereum::Transaction) -> opaque::UncheckedExtrinsic {
+        let extrinsic = UncheckedExtrinsic::new_unsigned(pallet_ethereum::Call::<Runtime>::transact(transaction).into());
+        let encoded = extrinsic.encode();
+        opaque::UncheckedExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
+    }
+}
 
 /// The address format for describing accounts.
 pub type Address = AccountId;
