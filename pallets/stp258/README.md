@@ -8,3 +8,7 @@ It also provides a system to receive newly minted stable-currency automatically,
 It also provides an adapter, to adapt `frame_support::traits::Currency` implementations into `ExtendedBasicCurrency`.
 
 The STP258 Currencies Pallet provides functionality of both `ExtendedSettCurrency` and `ExtendedBasicCurrencyExtended`, via unified interfaces, and all calls would be delegated to the underlying multi-currency and base currency system. A native currency ID could be set by `Config::GetNativeCurrencyId`, to identify the native currency.
+
+## Acknowledgement
+
+This Pallet is built on the [ORML Currencies](https://github.com/open-web3-stack/open-runtime-module-library/blob/master/currencies) Pallet originally developed by [Open Web3 Stack](https://github.com/open-web3-stack/), for reference check [The ORML Repo](https://github.com/open-web3-stack/open-runtime-module-library)
