@@ -1,8 +1,8 @@
 //! SerpMarket pallet.
 //!
 //!This is the Serp Market Pallet that trades with the SERP system 
-//!to make bids for Nativecurrency in this case called Dinar, and Sett Currencies.
-//! 
+//!to make bids for Nativecurrency in this case called Dinar, and Sett-Currencies(Multiple stablecoins).
+//!Dutch Auction for Bids on stability of the Stablecoins.
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use sp_std::prelude::*;
