@@ -24,12 +24,12 @@ structopt = '0.3.21'
 
 # local dependencies
 node-template-runtime = { path = '../runtime', version = '2.0.1' }
-adapters = { default-features = false, package = 'storage-adapters', version = '0.4.1', path = '../modules/storage-adapters' }
-price = { default-features = false, package = 'price', version = '0.4.1', path = '../modules/price' }
-fetch-price = { default-features = false, package = 'fetch-price', version = '0.4.1', path = '../modules/fetch-price' }
-stp258 = { default-features = false, package = 'stp258', version = '0.4.1', path = '../modules/stp258' }
-serp-tes = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../modules/serp-tes' }
-serp-market = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../modules/serp-market' }
+adapters = { default-features = false, package = 'storage-adapters', version = '0.4.1', path = '../modules/SERML/storage-adapters' }
+price = { default-features = false, package = 'price', version = '0.4.1', path = '../modules/SERML/price' }
+fetch-price = { default-features = false, package = 'fetch-price', version = '0.4.1', path = '../modules/SERML/fetch-price' }
+stp258 = { default-features = false, package = 'stp258', version = '0.4.1', path = '../modules/SERML/stp258' }
+serp-tes = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../modules/SERML/serp-tes' }
+serp-market = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../modules/SERML/serp-market' }
 
 # Frontier Dependencies
 frontier-consensus = { git = 'https://github.com/PureStake/frontier.git', branch = 'substrate-v2' }
