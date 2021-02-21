@@ -7,7 +7,7 @@
 
  use std::{io, path::PathBuf, sync::Arc};
 
-use node_template_runtime::{opaque::Block, AccountId, Balance, Index, TransactionConverter};
+use setheum_node_runtime::{opaque::Block, AccountId, Balance, Index, TransactionConverter};
 use sc_client_api::{
 	backend::{StorageProvider, Backend, StateBackend, AuxStore},
 };
