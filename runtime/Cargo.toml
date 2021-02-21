@@ -3,9 +3,9 @@ authors = ['Setheum Labs <https://github.com/Setheum-Labs>']
 edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0 License'
-name = 'node-template-runtime'
+name = 'setheum-node-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum/'
-version = '2.0.1'
+version = '0.4.1'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
