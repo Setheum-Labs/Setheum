@@ -4,10 +4,8 @@ panic = 'unwind'
 [workspace]
 members = [
     'node',
-    'modules/SERML/fetch-price',
-    'modules/SERML/price',
-    'modules/SERML/serp-market',
-    'modules/SERML/serp-tes',
-    'modules/SERML/stp258',
+    'modules/serp-market',
+    'modules/serp-tes',
+    'modules/stp258',
     'runtime',
 ]
