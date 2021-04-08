@@ -1,0 +1,7 @@
+pragma solidity ^0.6.0;
+
+contract ADDRESS {
+	{{#each this}}
+	address public constant {{this.[0]}} = {{this.[1]}};
+	{{/each}}
+}

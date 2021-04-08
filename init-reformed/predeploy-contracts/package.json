@@ -1,0 +1,19 @@
+{
+  "name": "predeploy-contracts",
+  "version": "0.1.0",
+  "main": "index.js",
+  "repository": "https://github.com/setheumNetwork/predeploy-contracts.git",
+  "author": "Shaopeng Wang <spxwang@gmail.com>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "generate-bytecode": "node generate/generate.js",
+    "truffle-compile": "truffle compile"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "3.0.0",
+    "handlebars": "^4.7.7"
+  },
+  "devDependencies": {
+    "truffle": "^5.1.50"
+  }
+}
