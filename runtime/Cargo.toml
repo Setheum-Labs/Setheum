@@ -25,7 +25,6 @@ hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.123' }
 # local dependencies
 stp258 = { version = "0.4.1", default-features = false, path = "../modules/stp258", package = "stp258" }
-serp-tes = { version = "0.4.1", default-features = false, path = "../modules/serp-tes", package = "serp-tes" }
 serp-market = { version = "0.4.1", default-features = false, path = "../modules/serp-market", package = "serp-market" }
 # Frontier Pallets
 pallet-evm = { default-features = false, version = '2.0.1' }
@@ -86,7 +85,6 @@ std = [
     'pallet-ethereum/std',
     'pallet-evm/std',
     'stp258/std',
-    'serp-tes/std',
     'serp-market/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',

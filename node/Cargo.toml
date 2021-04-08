@@ -25,8 +25,7 @@ structopt = '0.3.21'
 # local dependencies
 setheum-node-runtime = { path = '../runtime', version = '0.4.1' }
 stp258 = { default-features = false, package = 'stp258', version = '0.4.1', path = '../modules/stp258' }
-serp-tes = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../modules/serp-tes' }
-serp-market = { default-features = false, package = 'serp-tes', version = '0.4.1', path = '../modules/serp-market' }
+serp-market = { default-features = false, package = 'serp-market', version = '0.4.1', path = '../modules/serp-market' }
 
 # Frontier Dependencies
 frontier-consensus = { git = 'https://github.com/PureStake/frontier.git', branch = 'substrate-v2' }
