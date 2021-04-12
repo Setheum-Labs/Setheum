@@ -1,6 +1,6 @@
-[submodule "modules/stp258"]
-	path = modules/stp258
-	url = https://github.com/Setheum-Labs/stp258
-[submodule "modules/serp-market"]
-	path = modules/serp-market
-	url = https://github.com/Setheum-Labs/serp-market
+[submodule "orml"]
+	path = orml
+	url = https://github.com/open-web3-stack/open-runtime-module-library.git
+[submodule "predeploy-contracts"]
+	path = predeploy-contracts
+	url = https://github.com/Setheum-Labs/predeploy-contracts.git
