@@ -1,0 +1,51 @@
+# Created by https://www.gitignore.io/api/soliditytruffle
+# Edit at https://www.gitignore.io/?templates=soliditytruffle
+
+### SolidityTruffle ###
+# depedencies
+node_modules
+
+# testing
+coverage
+
+# production
+build
+build_webpack
+
+# misc
+.DS_Store
+.env
+npm-debug.log
+.truffle-solidity-loader
+.vagrant/**
+blockchain/geth/**
+blockchain/keystore/**
+blockchain/history
+
+#truffle
+.tern-port
+package-lock.json
+
+# buidler
+artifacts
+cache
+
+# End of https://www.gitignore.io/api/soliditytruffle
+
+.vscode/
+.idea/
+types/truffle-contracts
+types/web3-v1-contracts
+
+generated
+subgraph.yaml
+
+artifacts/development
+
+# Docker data
+data
+
+#yarn
+yarn-error.log
+
+**/tmp/**
