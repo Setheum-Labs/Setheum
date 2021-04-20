@@ -81,12 +81,12 @@ orml-unknown-tokens = { path = "../../orml/unknown-tokens", default-features = f
 
 module-transaction-payment = { path = "../../modules/transaction-payment", default-features = false }
 setheum-airdrop = { path = "../../modules/airdrop", default-features = false }
-module-dex = { path = "../../modules/dex", default-features = false }
+module-dex = { path = "../../modules/settindex", default-features = false }
 module-currencies = { path = "../../modules/currencies", default-features = false }
 module-emergency-shutdown = { path = "../../modules/emergency-shutdown", default-features = false }
 sevm = { path = "../../modules/evm", default-features = false }
 sevm-accounts = { path = "../../modules/evm-accounts", default-features = false }
-sevm-evm-bridge = { path = "../../modules/evm-bridge", default-features = false }
+sevm-evm-bridge = { path = "../../modules/sevm-evm-bridge", default-features = false }
 module-serp = { path = "../../modules/serp", default-features = false }
 module-nft = { path = "../../modules/nft", default-features = false }
 module-prices = { path = "../../modules/prices", default-features = false }

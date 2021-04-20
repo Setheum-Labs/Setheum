@@ -1211,9 +1211,7 @@ construct_runtime!(
 
 		// Serp
 		Serp: module_serp::{Pallet, Storage, Call, Event<T>} = 40,
-		CdpTreasury: module_cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 41,
-		CdpEngine: module_cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 42,
-		EmergencyShutdown: module_emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 43,
+		SerpReserve: serp_reserve::{Pallet, Storage, Call, Config, Event<T>} = 41,
 
 		// Homa
 		Homa: setheum_abha::{Pallet, Call} = 44,

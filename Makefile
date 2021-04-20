@@ -125,4 +125,4 @@ build-wasm-newrome:
 
 .PHONY: generate-tokens
 generate-tokens:
-	./scripts/generate-tokens-and-predeploy-contracts.sh
+	./scripts/generate-tokens-and-predeployed-contracts.sh

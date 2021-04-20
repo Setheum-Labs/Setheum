@@ -21,7 +21,6 @@
 
 pub mod module_currencies;
 pub mod settindex;
-pub mod module_emergency_shutdown;
 pub mod sevm;
 pub mod sevm_accounts;
 pub mod setheum_abha;

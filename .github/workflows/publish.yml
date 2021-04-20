@@ -41,12 +41,12 @@ jobs:
           echo running on branch ${GITHUB_REF##*/}
           git config --global user.name "Github Actions"
           git config --global user.email "Github Actions"
-          cd predeploy-contracts
+          cd predeployed-contracts
           git checkout master
           git pull
           cd ..
           make generate-tokens
-          cd predeploy-contracts
+          cd predeployed-contracts
           if [ -z "$(git status --porcelain)" ]
           then
               echo "nothing to update."
@@ -54,17 +54,17 @@ jobs:
               git commit -am "${{ github.event.inputs.commitMessage }}"
           fi
           cd ..
-          cd predeploy-contracts/contracts
+          cd predeployed-contracts/contracts
           yarn run prepare
           yarn version --patch
           new_version=$(yarn versions --json | jq -er '.data."@setheum-network/contracts"')
-          git push "https://${{ secrets.GH_PAT }}@github.com/setheumNetwork/predeploy-contracts.git" HEAD:master
+          git push "https://${{ secrets.GH_PAT }}@github.com/setheumNetwork/predeployed-contracts.git" HEAD:master
           yarn publish --new-version=$new_version --access=public
           cd ../..
           git commit -am "${{ github.event.inputs.commitMessage }}"
           if [ ${GITHUB_REF##*/} -eq "master" ]
           then
-              branch="update-predeploy-contracts-$(date "+%Y%m%d%H%M%y")"
+              branch="update-predeployed-contracts-$(date "+%Y%m%d%H%M%y")"
               git checkout -b "$branch"
               git push -u "https://${{ secrets.GH_PAT }}@github.com/setheumNetwork/setheum.git" "$branch"
               hub pull-request -m "${{ github.event.inputs.commitMessage }}"

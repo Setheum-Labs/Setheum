@@ -102,7 +102,7 @@ macro_rules! create_currency_id {
 					},
 				)*
 			];
-			frame_support::assert_ok!(std::fs::write("../predeploy-contracts/resources/tokens.json", serde_json::to_string_pretty(&tokens).unwrap()));
+			frame_support::assert_ok!(std::fs::write("../predeployed-contracts/resources/tokens.json", serde_json::to_string_pretty(&tokens).unwrap()));
 		}
     }
 }

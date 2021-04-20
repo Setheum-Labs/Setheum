@@ -7,7 +7,7 @@ PROJECT_ROOT=`git rev-parse --show-toplevel`
 # generate-tokens
 cargo test -p setheum-primitives -- --ignored
 
-# generate-predeploy-contracts
-cd predeploy-contracts
+# generate-predeployed-contracts
+cd predeployed-contracts
 yarn
 yarn run generate-bytecode
