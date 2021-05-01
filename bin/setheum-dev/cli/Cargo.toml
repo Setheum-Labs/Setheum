@@ -1,0 +1,42 @@
+[package]
+name = "setheum-dev-cli"
+version = "0.7.11"
+authors = ["setheum Developers"]
+edition = "2018"
+
+[dependencies]
+structopt = "0.3.8"
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", optional = true }
+sc-cli = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", optional = true }
+sc-service = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", optional = true }
+frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", optional = true }
+
+inspect = { package = "setheum-inspect", path = "../../../inspect" }
+service = { package = "setheum-dev-service", path = "../service", default-features = false, optional = true }
+
+[build-dependencies]
+orml-build-script-utils = { path = "../../../orml/build-script-utils"}
+
+[features]
+default = [ "wasmtime", "cli", "with-newrome-runtime" ]
+wasmtime = [ "sc-cli/wasmtime" ]
+cli = [
+	"service",
+	"sp-core",
+	"sc-cli",
+	"sc-service",
+	"frame-benchmarking-cli",
+]
+runtime-benchmarks = [ "service/runtime-benchmarks" ]
+with-newrome-runtime = [
+	"service/with-newrome-runtime",
+]
+with-neom-runtime = [
+	"service/with-neom-runtime",
+]
+with-setheum-runtime = [
+	"service/with-setheum-runtime",
+]
+with-all-runtime = [
+	"service/with-all-runtime",
+]

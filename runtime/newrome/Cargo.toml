@@ -89,7 +89,7 @@ setheum-airdrop = { path = "../../serml/setheum-airdrop", default-features = fal
 setheum-dex = { path = "../../serml/dex", default-features = false }
 setheum-currencies = { path = "../../serml/currencies", default-features = false }
 module-emergency-shutdown = { path = "../../serml/emergency-shutdown", default-features = false }
-evm = { path = "../../serml/evm", default-features = false }
+setheum-evm = { path = "../../serml/evm", default-features = false }
 evm-accounts = { path = "../../serml/evm-accounts", default-features = false }
 setheum-evm-bridge = { path = "../../serml/evm-bridge", default-features = false }
 setheum-nft = { path = "../../serml/nft", default-features = false }
@@ -105,7 +105,7 @@ module-polkadot-bridge = { path = "../../serml/polkadot-bridge", default-feature
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 runtime-common = { path = "../common", default-features = false }
 
-evm-rpc-runtime-api = { path = "../../serml/evm/rpc/runtime_api",  default-features = false }
+setheum-evm-rpc-runtime-api = { path = "../../serml/evm/rpc/runtime_api",  default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = "4.0.0"
@@ -209,7 +209,7 @@ std = [
 	"primitives/std",
 	"runtime-common/std",
 
-	"evm-rpc-runtime-api/std",
+	"setheum-evm-rpc-runtime-api/std",
 
 ]
 runtime-benchmarks = [

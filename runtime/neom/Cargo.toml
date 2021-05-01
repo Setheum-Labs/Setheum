@@ -101,7 +101,7 @@ module-polkadot-bridge = { path = "../../serml/polkadot-bridge", default-feature
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 runtime-common = { path = "../common", default-features = false }
 
-evm-rpc-runtime-api = { path = "../../serml/evm/rpc/runtime_api",  default-features = false }
+setheum-evm-rpc-runtime-api = { path = "../../serml/evm/rpc/runtime_api",  default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = "4.0.0"
@@ -201,7 +201,7 @@ std = [
 	"primitives/std",
 	"runtime-common/std",
 
-	"evm-rpc-runtime-api/std",
+	"setheum-evm-rpc-runtime-api/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",
