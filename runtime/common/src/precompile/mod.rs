@@ -26,16 +26,16 @@ mod tests;
 
 use crate::is_setheum_precompile;
 use frame_support::log;
-use sevm::{
+use evm::{
 	precompiles::{Precompile, Precompiles},
 	Context, ExitError, ExitSucceed,
 };
-use module_support::PrecompileCallerFilter as PrecompileCallerFilterT;
+use setheum_support::PrecompileCallerFilter as PrecompileCallerFilterT;
 use primitives::PRECOMPILE_ADDRESS_START;
 use sp_core::H160;
 use sp_std::{marker::PhantomData, prelude::*};
 
-pub mod settindex;
+pub mod dex;
 pub mod input;
 pub mod multicurrency;
 pub mod nft;
@@ -43,7 +43,7 @@ pub mod oracle;
 pub mod schedule_call;
 pub mod state_rent;
 
-pub use settindex::SettinDexPrecompile;
+pub use setheum_dex::DexPrecompile;
 pub use multicurrency::MultiCurrencyPrecompile;
 pub use nft::NFTPrecompile;
 pub use oracle::OraclePrecompile;
@@ -51,10 +51,10 @@ pub use schedule_call::ScheduleCallPrecompile;
 pub use state_rent::StateRentPrecompile;
 
 pub type EthereumPrecompiles = (
-	sevm::precompiles::ECRecover,
-	sevm::precompiles::Sha256,
-	sevm::precompiles::Ripemd160,
-	sevm::precompiles::Identity,
+	evm::precompiles::ECRecover,
+	evm::precompiles::Sha256,
+	evm::precompiles::Ripemd160,
+	evm::precompiles::Identity,
 );
 
 pub struct AllPrecompiles<
@@ -64,7 +64,7 @@ pub struct AllPrecompiles<
 	StateRentPrecompile,
 	OraclePrecompile,
 	ScheduleCallPrecompile,
-	SettinDexPrecompile,
+	DexPrecompile,
 >(
 	PhantomData<(
 		PrecompileCallerFilter,
@@ -73,7 +73,7 @@ pub struct AllPrecompiles<
 		StateRentPrecompile,
 		OraclePrecompile,
 		ScheduleCallPrecompile,
-		SettinDexPrecompile,
+		DexPrecompile,
 	)>,
 );
 
@@ -84,7 +84,7 @@ impl<
 		StateRentPrecompile,
 		OraclePrecompile,
 		ScheduleCallPrecompile,
-		SettinDexPrecompile,
+		DexPrecompile,
 	> Precompiles
 	for AllPrecompiles<
 		PrecompileCallerFilter,
@@ -93,7 +93,7 @@ impl<
 		StateRentPrecompile,
 		OraclePrecompile,
 		ScheduleCallPrecompile,
-		SettinDexPrecompile,
+		DexPrecompile,
 	> where
 	MultiCurrencyPrecompile: Precompile,
 	NFTPrecompile: Precompile,
@@ -101,7 +101,7 @@ impl<
 	OraclePrecompile: Precompile,
 	ScheduleCallPrecompile: Precompile,
 	PrecompileCallerFilter: PrecompileCallerFilterT,
-	SettinDexPrecompile: Precompile,
+	DexPrecompile: Precompile,
 {
 	#[allow(clippy::type_complexity)]
 	fn execute(
@@ -112,7 +112,7 @@ impl<
 	) -> Option<core::result::Result<(ExitSucceed, Vec<u8>, u64), ExitError>> {
 		EthereumPrecompiles::execute(address, input, target_gas, context).or_else(|| {
 			if is_setheum_precompile(address) && !PrecompileCallerFilter::is_allowed(context.caller) {
-				log::debug!(target: "sevm", "Precompile no permission");
+				log::debug!(target: "evm", "Precompile no permission");
 				return Some(Err(ExitError::Other("no permission".into())));
 			}
 
@@ -127,7 +127,7 @@ impl<
 			} else if address == H160::from_low_u64_be(PRECOMPILE_ADDRESS_START + 4) {
 				Some(ScheduleCallPrecompile::execute(input, target_gas, context))
 			} else if address == H160::from_low_u64_be(PRECOMPILE_ADDRESS_START + 5) {
-				Some(SettinDexPrecompile::execute(input, target_gas, context))
+				Some(DexPrecompile::execute(input, target_gas, context))
 			} else {
 				None
 			}

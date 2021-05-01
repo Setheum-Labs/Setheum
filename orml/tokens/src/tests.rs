@@ -426,7 +426,7 @@ fn no_op_if_amount_is_zero() {
 		assert_ok!(Tokens::withdraw(DNAR, &ALICE, 0));
 		assert_eq!(Tokens::slash(DNAR, &ALICE, 0), 0);
 		assert_eq!(Tokens::slash(DNAR, &ALICE, 1), 1);
-		assert_ok!(Tokens::update_balance(DNAR, &ALICE, 0));
+		assert_ok!(Tokens::update_balance(, &ALICE, 0));
 	});
 }
 

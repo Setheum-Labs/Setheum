@@ -2,7 +2,7 @@
 
 FROM phusion/baseimage:0.10.2 as builder
 LABEL maintainer="hello@setheum.network"
-LABEL description="This is the build stage for setheum Node. Here we create the binary."
+LABEL description="This is the build stage for Setheum node. Here we create the binary."
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -27,7 +27,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
 
 FROM phusion/baseimage:0.10.2
 LABEL maintainer="hello@setheum.network"
-LABEL description="This is the 2nd stage: a very small image where we copy the setheum Node binary."
+LABEL description="This is the 2nd stage: a very small image where we copy the Setheum node binary."
 ARG PROFILE=release
 
 RUN mv /usr/share/ca* /tmp && \

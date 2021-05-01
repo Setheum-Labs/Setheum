@@ -52,9 +52,9 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 use frame_system::{EnsureOneOf, EnsureRoot, RawOrigin};
-use module_currencies::{BasicCurrencyAdapter, Currency};
-use sevm::{CallInfo, CreateInfo};
-use sevm_accounts::EvmAddressMapping;
+use setheum_currencies::{BasicCurrencyAdapter, Currency};
+use evm::{CallInfo, CreateInfo};
+use evm_accounts::EvmAddressMapping;
 use module_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use orml_tokens::CurrencyAdapter;
 use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
@@ -126,8 +126,8 @@ pub use primitives::{
 };
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, CurveFeeModel, ExchangeRate, GasToWeight, OffchainSolutionWeightLimit,
-	Price, Rate, Ratio, RuntimeBlockLength, RuntimeBlockWeights, SystemContractsFilter, TimeStampedPrice, DNAR, JUSD,
-	DOT, KILT, LDOT, PHA, PLM, POLKABTC, RENBTC, XBTC,
+	Price, Rate, Ratio, RuntimeBlockLength, RuntimeBlockWeights, SystemContractsFilter, TimeStampedPrice, 
+	DNAR, JUSD, JEUR, JGBP, NEOM, JSAR, JCHF, JNGN, SETN, HALAL, DOT, KSM,
 };
 
 mod authority;
@@ -163,12 +163,12 @@ impl_opaque_keys! {
 // Pallet accounts of runtime
 parameter_types! {
 	pub const SetheumTreasuryModuleId: ModuleId = ModuleId(*b"dnr/trsy");
-	pub const SettinDEXModuleId: ModuleId = ModuleId(*b"dnr/sdex");
+	pub const SetheumDexModuleId: ModuleId = ModuleId(*b"dnr/sdex");
 	pub const StakingPoolModuleId: ModuleId = ModuleId(*b"dnr/stkp");
-	pub const AbhaTreasuryModuleId: ModuleId = ModuleId(*b"dnr/hmtr");
+	pub const AbhaTreasuryModuleId: ModuleId = ModuleId(*b"dnr/abtr");
 	pub const IncentivesModuleId: ModuleId = ModuleId(*b"dnr/inct");
-	// Decentralized Sovereign Wealth Fund
-	pub const DSWFModuleId: ModuleId = ModuleId(*b"dnr/dswf");
+	// Setheum Investment Fund
+	pub const SIFModuleId: ModuleId = ModuleId(*b"dnr/sSIF");
 	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"dnr/phre";
 	pub const NftModuleId: ModuleId = ModuleId(*b"dnr/sNFT");
 }
@@ -176,11 +176,11 @@ parameter_types! {
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
 		SetheumTreasuryModuleId::get().into_account(),
-		SettinDEXModuleId::get().into_account(),
+		SetheumDexModuleId::get().into_account(),
 		StakingPoolModuleId::get().into_account(),
 		AbhaTreasuryModuleId::get().into_account(),
 		IncentivesModuleId::get().into_account(),
-		DSWFModuleId::get().into_account(),
+		SIFModuleId::get().into_account(),
 		ZeroAccountId::get(),
 	]
 }
@@ -194,7 +194,7 @@ parameter_types! {
 impl frame_system::Config for Runtime {
 	type AccountId = AccountId;
 	type Call = Call;
-	type Lookup = (Indices, EvmAccounts);
+	type Lookup = (Indices, SevmAccounts);
 	type Index = Nonce;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
@@ -210,8 +210,8 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = (
-		sevm::CallKillAccount<Runtime>,
-		sevm_accounts::CallKillAccount<Runtime>,
+		evm::CallKillAccount<Runtime>,
+		evm_accounts::CallKillAccount<Runtime>,
 	);
 	type DbWeight = RocksDbWeight;
 	type BaseCallFilter = ();
@@ -558,9 +558,9 @@ impl orml_authority::Config for Runtime {
 }
 
 parameter_types! {
-	pub CandidacyBond: Balance = 10 * dollar(LDOT);
-	pub VotingBondBase: Balance = 2 * dollar(LDOT);
-	pub VotingBondFactor: Balance = dollar(LDOT);
+	pub CandidacyBond: Balance = 10 * dollar(DOTS);
+	pub VotingBondBase: Balance = 2 * dollar(DOTS);
+	pub VotingBondFactor: Balance = dollar(DOTS);
 	pub const TermDuration: BlockNumber = 7 * DAYS;
 	pub const DesiredMembers: u32 = 13;
 	pub const DesiredRunnersUp: u32 = 7;
@@ -652,7 +652,7 @@ parameter_types! {
 	pub StableCurrencyFixedPrice: Price = Price::saturating_from_rational(1, 1);
 }
 
-impl module_prices::Config for Runtime {
+impl setheum_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
 	type GetStableCurrencyId = GetStableCurrencyId;
@@ -661,13 +661,13 @@ impl module_prices::Config for Runtime {
 	type GetLiquidCurrencyId = GetLiquidCurrencyId;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type LiquidStakingExchangeRateProvider = LiquidStakingExchangeRateProvider;
-	type SettinDex = SettinDex;
+	type DEX = SetheumDex;
 	type Currency = Currencies;
-	type WeightInfo = weights::module_prices::WeightInfo<Runtime>;
+	type WeightInfo = weights::setheum_prices::WeightInfo<Runtime>;
 }
 
 pub struct LiquidStakingExchangeRateProvider;
-impl module_support::ExchangeRateProvider for LiquidStakingExchangeRateProvider {
+impl setheum_support::ExchangeRateProvider for LiquidStakingExchangeRateProvider {
 	fn get_exchange_rate() -> ExchangeRate {
 		StakingPool::liquid_exchange_rate()
 	}
@@ -678,14 +678,14 @@ parameter_types! {
 	pub const GetStableCurrencyId: CurrencyId = JUSD;
 }
 
-impl module_currencies::Config for Runtime {
+impl setheum_currencies::Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type WeightInfo = weights::module_currencies::WeightInfo<Runtime>;
+	type WeightInfo = weights::setheum_currencies::WeightInfo<Runtime>;
 	type AddressMapping = EvmAddressMapping<Runtime>;
-	type SEVMBridge = SEVMBridge;
+	type EVMBridge = EVMBridge;
 }
 
 pub struct EnsureRootOrSetheumTreasury;
@@ -783,7 +783,7 @@ where
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			module_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-			sevm::SetEvmOrigin::<Runtime>::new(),
+			evm::SetEvmOrigin::<Runtime>::new(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
@@ -816,24 +816,24 @@ parameter_types! {
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(JUSD, DNAR),
 		TradingPair::new(JUSD, DOT),
-		TradingPair::new(JUSD, LDOT),
+		TradingPair::new(JUSD, DOTS),
 	];
 }
 
-impl settindex::Config for Runtime {
+impl setheum_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = SettinDEXModuleId;
-	type SettinDexIncentives = Incentives;
-	type WeightInfo = weights::settindex::WeightInfo<Runtime>;
+	type ModuleId = SetheumDexModuleId;
+	type DexIncentives = Incentives;
+	type WeightInfo = weights::setheum_dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
 }
 
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![JUSD, LDOT, DOT, XBTC, RENBTC, POLKABTC, PLM, PHA, KILT];
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![JUSD, JEUR, JGBP, JSAR, JCHF, JNGN, SETN, HALAL, DOT, KSM];
 }
 
 impl module_transaction_payment::Config for Runtime {
@@ -846,17 +846,17 @@ impl module_transaction_payment::Config for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
-	type SettinDex = SettinDex;
+	type DEX = SetheumDex;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type WeightInfo = weights::module_transaction_payment::WeightInfo<Runtime>;
 }
 
-impl sevm_accounts::Config for Runtime {
+impl evm_accounts::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type MergeAccount = Currencies;
-	type WeightInfo = weights::sevm_accounts::WeightInfo<Runtime>;
+	type WeightInfo = weights::evm_accounts::WeightInfo<Runtime>;
 }
 
 impl orml_rewards::Config for Runtime {
@@ -880,7 +880,7 @@ impl module_incentives::Config for Runtime {
 	type AccumulatePeriod = AccumulatePeriod;
 	type UpdateOrigin = EnsureRootOrHalfSerpCouncil;
 	type Currency = Currencies;
-	type SettinDex = SettinDex;
+	type DEX = SetheumDex;
 	type EmergencyShutdown = EmergencyShutdown;
 	type ModuleId = IncentivesModuleId;
 	type WeightInfo = weights::module_incentives::WeightInfo<Runtime>;
@@ -904,13 +904,13 @@ impl module_polkadot_bridge::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetLiquidCurrencyId: CurrencyId = LDOT;
+	pub const GetLiquidCurrencyId: CurrencyId = DOTS;
 	pub const GetStakingCurrencyId: CurrencyId = DOT;
 	pub DefaultExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(10, 100);	// 1 : 10
 	pub PoolAccountIndexes: Vec<u32> = vec![1, 2, 3, 4];
 }
 
-impl module_staking_pool::Config for Runtime {
+impl setheum_staking_pool::Config for Runtime {
 	type Event = Event;
 	type StakingCurrencyId = GetStakingCurrencyId;
 	type LiquidCurrencyId = GetLiquidCurrencyId;
@@ -924,19 +924,19 @@ impl module_staking_pool::Config for Runtime {
 	type Currency = Currencies;
 }
 
-impl setheum_abha::Config for Runtime {
-	type Homa = StakingPool;
-	type WeightInfo = weights::setheum_abha::WeightInfo<Runtime>;
+impl setheum_staking::Config for Runtime {
+	type SetheumStaking = StakingPool;
+	type WeightInfo = weights::setheum_staking::WeightInfo<Runtime>;
 }
 
 parameter_types! {
-	pub MinCouncilBondThreshold: Balance = dollar(LDOT);
+	pub MinCouncilBondThreshold: Balance = dollar(DOTS);
 	pub const NominateesCount: u32 = 7;
 	pub const MaxUnlockingChunks: u32 = 7;
 	pub const NomineesElectionBondingDuration: EraIndex = 7;
 }
 
-impl module_nominees_election::Config for Runtime {
+impl setheum_nominees_election::Config for Runtime {
 	type Currency = Currency<Runtime, GetLiquidCurrencyId>;
 	type PolkadotAccountId = AccountId;
 	type MinBondThreshold = MinCouncilBondThreshold;
@@ -947,11 +947,11 @@ impl module_nominees_election::Config for Runtime {
 }
 
 parameter_types! {
-	pub MinGuaranteeAmount: Balance = dollar(LDOT);
+	pub MinGuaranteeAmount: Balance = dollar(DOTS);
 	pub const ValidatorInsuranceThreshold: Balance = 0;
 }
 
-impl setheum_abha_validator_list::Config for Runtime {
+impl setheum_staking_validator_list::Config for Runtime {
 	type Event = Event;
 	type RelaychainAccountId = AccountId;
 	type LiquidTokenCurrency = Currency<Runtime, GetLiquidCurrencyId>;
@@ -960,7 +960,7 @@ impl setheum_abha_validator_list::Config for Runtime {
 	type ValidatorInsuranceThreshold = ValidatorInsuranceThreshold;
 	type FreezeOrigin = EnsureRootOrHalfAbhaCouncil;
 	type SlashOrigin = EnsureRootOrHalfAbhaCouncil;
-	type OnSlash = module_staking_pool::OnSlash<Runtime>;
+	type OnSlash = setheum_staking_pool::OnSlash<Runtime>;
 	type LiquidStakingExchangeRateProvider = LiquidStakingExchangeRateProvider;
 	type WeightInfo = ();
 	type OnIncreaseGuarantee = module_incentives::OnIncreaseGuarantee<Runtime>;
@@ -972,20 +972,20 @@ parameter_types! {
 	pub CreateTokenDeposit: Balance = 100 * millicent(DNAR);
 }
 
-impl module_nft::Config for Runtime {
+impl setheum_nft::Config for Runtime {
 	type Event = Event;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
 	type ModuleId = NftModuleId;
 	type Currency = Currency<Runtime, GetNativeCurrencyId>;
-	type WeightInfo = weights::module_nft::WeightInfo<Runtime>;
+	type WeightInfo = weights::setheum_nft::WeightInfo<Runtime>;
 }
 
 impl orml_nft::Config for Runtime {
 	type ClassId = u32;
 	type TokenId = u64;
-	type ClassData = module_nft::ClassData;
-	type TokenData = module_nft::TokenData;
+	type ClassData = setheum_nft::ClassData;
+	type TokenData = setheum_nft::TokenData;
 }
 
 parameter_types! {
@@ -1053,12 +1053,12 @@ pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
 	OriginCaller,
 	Runtime,
 >;
-pub type SettinDexPrecompile = runtime_common::SettinDexPrecompile<AccountId, EvmAddressMapping<Runtime>, Dex>;
+pub type DexPrecompile = runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, Dex>;
 
 #[cfg(feature = "with-ethereum-compatibility")]
 static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
-impl sevm::Config for Runtime {
+impl evm::Config for Runtime {
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type Currency = Balances;
 	type MergeAccount = Currencies;
@@ -1074,7 +1074,7 @@ impl sevm::Config for Runtime {
 		StateRentPrecompile,
 		OraclePrecompile,
 		ScheduleCallPrecompile,
-		SettinDexPrecompile,
+		DexPrecompile,
 	>;
 	type ChainId = ChainId;
 	type GasToWeight = GasToWeight;
@@ -1085,7 +1085,7 @@ impl sevm::Config for Runtime {
 	type DeploymentFee = DeploymentFee;
 	type TreasuryAccount = TreasuryModuleAccount;
 	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil;
-	type WeightInfo = weights::sevm::WeightInfo<Runtime>;
+	type WeightInfo = weights::evm::WeightInfo<Runtime>;
 
 	#[cfg(feature = "with-ethereum-compatibility")]
 	fn config() -> &'static evm::Config {
@@ -1093,7 +1093,7 @@ impl sevm::Config for Runtime {
 	}
 }
 
-impl sevm_evm_bridge::Config for Runtime {
+impl setheum_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
@@ -1420,8 +1420,8 @@ macro_rules! construct_newrome_runtime {
 				Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 3,
 
 				TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 4,
-				EvmAccounts: sevm_accounts::{Pallet, Call, Storage, Event<T>} = 5,
-				Currencies: module_currencies::{Pallet, Call, Event<T>} = 6,
+				SevmAccounts: evm_accounts::{Pallet, Call, Storage, Event<T>} = 5,
+				Currencies: setheum_currencies::{Pallet, Call, Event<T>} = 6,
 				Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 7,
 				Vesting: orml_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 8,
 
@@ -1462,26 +1462,26 @@ macro_rules! construct_newrome_runtime {
 				OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 35,
 
 				// setheum Core
-				Prices: module_prices::{Pallet, Storage, Call, Event<T>} = 36,
+				Prices: setheum_prices::{Pallet, Storage, Call, Event<T>} = 36,
 
-				// SettinDex
-				SettinDex: settindex::{Pallet, Storage, Call, Event<T>, Config<T>} = 37,
+				// SetheumDex
+				DEX = setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 37,
 
-				// Homa
-				Homa: setheum_abha::{Pallet, Call} = 44,
-				NomineesElection: module_nominees_election::{Pallet, Call, Storage} = 45,
-				StakingPool: module_staking_pool::{Pallet, Call, Storage, Event<T>, Config} = 46,
+				// SetheumStaking
+				SetheumStaking: setheum_staking::{Pallet, Call} = 44,
+				NomineesElection: setheum_nominees_election::{Pallet, Call, Storage} = 45,
+				StakingPool: setheum_staking_pool::{Pallet, Call, Storage, Event<T>, Config} = 46,
 				PolkadotBridge: module_polkadot_bridge::{Pallet, Call, Storage} = 47,
-				HomaValidatorListModule: setheum_abha_validator_list::{Pallet, Call, Storage, Event<T>} = 48,
+				SetheumValidatorList: setheum_staking_validator_list::{Pallet, Call, Storage, Event<T>} = 48,
 
 				// setheum Other
 				Incentives: module_incentives::{Pallet, Storage, Call, Event<T>} = 49,
 				AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>, Config<T>} = 50,
-				NFT: module_nft::{Pallet, Call, Event<T>} = 51,
+				NFT: setheum_nft::{Pallet, Call, Event<T>} = 51,
 
 				// Smart contracts
-				EVM: sevm::{Pallet, Config<T>, Call, Storage, Event<T>} = 53,
-				SEVMBridge: sevm_evm_bridge::{Pallet} = 54,
+				EVM: evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 53,
+				EVMBridge: setheum_setheum_evm_bridge::{Pallet} = 54,
 
 				// Dev
 				Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 55,
@@ -1533,7 +1533,7 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	module_transaction_payment::ChargeTransactionPayment<Runtime>,
-	sevm::SetEvmOrigin<Runtime>,
+	evm::SetEvmOrigin<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
@@ -1742,13 +1742,13 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl module_staking_pool_rpc_runtime_api::StakingPoolApi<
+	impl setheum_staking_pool_rpc_runtime_api::StakingPoolApi<
 		Block,
 		AccountId,
 		Balance,
 	> for Runtime {
-		fn get_available_unbonded(account: AccountId) -> module_staking_pool_rpc_runtime_api::BalanceInfo<Balance> {
-			module_staking_pool_rpc_runtime_api::BalanceInfo {
+		fn get_available_unbonded(account: AccountId) -> setheum_staking_pool_rpc_runtime_api::BalanceInfo<Balance> {
+			setheum_staking_pool_rpc_runtime_api::BalanceInfo {
 				amount: StakingPool::get_available_unbonded(&account)
 			}
 		}
@@ -1758,7 +1758,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl sevm_rpc_runtime_api::EVMRuntimeRPCApi<Block, Balance> for Runtime {
+	impl evm_rpc_runtime_api::EVMRuntimeRPCApi<Block, Balance> for Runtime {
 		fn call(
 			from: H160,
 			to: H160,
@@ -1769,14 +1769,14 @@ impl_runtime_apis! {
 			estimate: bool,
 		) -> Result<CallInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
-				let mut config = <Runtime as sevm::Config>::config().clone();
+				let mut config = <Runtime as evm::Config>::config().clone();
 				config.estimate = true;
 				Some(config)
 			} else {
 				None
 			};
 
-			sevm::Runner::<Runtime>::call(
+			evm::Runner::<Runtime>::call(
 				from,
 				from,
 				to,
@@ -1784,7 +1784,7 @@ impl_runtime_apis! {
 				value,
 				gas_limit.into(),
 				storage_limit,
-				config.as_ref().unwrap_or(<Runtime as sevm::Config>::config()),
+				config.as_ref().unwrap_or(<Runtime as evm::Config>::config()),
 			)
 		}
 
@@ -1797,20 +1797,20 @@ impl_runtime_apis! {
 			estimate: bool,
 		) -> Result<CreateInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
-				let mut config = <Runtime as sevm::Config>::config().clone();
+				let mut config = <Runtime as evm::Config>::config().clone();
 				config.estimate = true;
 				Some(config)
 			} else {
 				None
 			};
 
-			sevm::Runner::<Runtime>::create(
+			evm::Runner::<Runtime>::create(
 				from,
 				data,
 				value,
 				gas_limit.into(),
 				storage_limit,
-				config.as_ref().unwrap_or(<Runtime as sevm::Config>::config()),
+				config.as_ref().unwrap_or(<Runtime as evm::Config>::config()),
 			)
 		}
 	}
@@ -1824,8 +1824,8 @@ impl_runtime_apis! {
 			use frame_benchmarking::{Benchmarking, BenchmarkBatch, add_benchmark, TrackedStorageKey};
 			use orml_benchmarking::{add_benchmark as orml_add_benchmark};
 
-			use module_nft::benchmarking::Pallet as NftBench;
-			impl module_nft::benchmarking::Config for Runtime {}
+			use setheum_nft::benchmarking::Pallet as NftBench;
+			impl setheum_nft::benchmarking::Config for Runtime {}
 
 			let whitelist: Vec<TrackedStorageKey> = vec![
 				// Block Number
@@ -1847,15 +1847,15 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 
-			add_benchmark!(params, batches, module_nft, NftBench::<Runtime>);
-			orml_add_benchmark!(params, batches, settindex, benchmarking::dex);
-			orml_add_benchmark!(params, batches, sevm, benchmarking::evm);
+			add_benchmark!(params, batches, setheum_nft, NftBench::<Runtime>);
+			orml_add_benchmark!(params, batches, setheum_dex, benchmarking::dex);
+			orml_add_benchmark!(params, batches, evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, module_transaction_payment, benchmarking::transaction_payment);
 			orml_add_benchmark!(params, batches, module_incentives, benchmarking::incentives);
-			orml_add_benchmark!(params, batches, module_prices, benchmarking::prices);
-			orml_add_benchmark!(params, batches, sevm_accounts, benchmarking::evm_accounts);
-			orml_add_benchmark!(params, batches, setheum_abha, benchmarking::homa);
-			orml_add_benchmark!(params, batches, module_currencies, benchmarking::currencies);
+			orml_add_benchmark!(params, batches, setheum_prices, benchmarking::prices);
+			orml_add_benchmark!(params, batches, evm_accounts, benchmarking::evm_accounts);
+			orml_add_benchmark!(params, batches, setheum_staking, benchmarking::setheum_staking);
+			orml_add_benchmark!(params, batches, setheum_currencies, benchmarking::currencies);
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, orml_vesting, benchmarking::vesting);

@@ -19,10 +19,10 @@
 //! An orml_authority trait implementation.
 
 use crate::{
-	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, DSWFModuleId,
+	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, SIFModuleId,
 	DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, EnsureRootOrHalfAbhaCouncil,
 	EnsureRootOrHalfSerpCouncil, EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
-	EnsureRootOrTwoThirdsTechnicalCommittee, AbhaTreasuryModuleId, SerpTreasuryModuleId, OneDay, Origin,
+	EnsureRootOrTwoThirdsTechnicalCommittee, AbhaTreasuryModuleId, SerpReserveModuleId, OneDay, Origin,
 	OriginCaller, SevenDays, ZeroDay, HOURS,
 };
 pub use frame_support::traits::{schedule::Priority, EnsureOrigin, OriginTrait};
@@ -81,13 +81,13 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 			AuthoritysOriginId::SetheumTreasury => Origin::signed(SetheumTreasuryModuleId::get().into_account())
 				.caller()
 				.clone(),
-			AuthoritysOriginId::SerpTreasury => Origin::signed(SerpTreasuryModuleId::get().into_account())
+			AuthoritysOriginId::SerpReserve => Origin::signed(SerpReserveModuleId::get().into_account())
 				.caller()
 				.clone(),
 			AuthoritysOriginId::AbhaTreasury => Origin::signed(AbhaTreasuryModuleId::get().into_account())
 				.caller()
 				.clone(),
-			AuthoritysOriginId::DSWF => Origin::signed(DSWFModuleId::get().into_account()).caller().clone(),
+			AuthoritysOriginId::SIF => Origin::signed(SIFModuleId::get().into_account()).caller().clone(),
 		}
 	}
 
@@ -107,7 +107,7 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 				>>::ensure_origin(origin)
 				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 			}
-			AuthoritysOriginId::SerpTreasury => {
+			AuthoritysOriginId::SerpReserve => {
 				<EnsureDelayed<OneDay, EnsureRootOrHalfSerpCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
 					Origin,
 				>>::ensure_origin(origin)
@@ -119,7 +119,7 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 				>>::ensure_origin(origin)
 				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 			}
-			AuthoritysOriginId::DSWF => {
+			AuthoritysOriginId::SIF => {
 				<EnsureDelayed<ZeroDay, EnsureRoot<AccountId>, BlockNumber, OriginCaller> as EnsureOrigin<
 						Origin,
 					>>::ensure_origin(origin)

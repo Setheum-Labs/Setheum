@@ -30,7 +30,7 @@ use orml_benchmarking::runtime_benchmarks;
 use sp_std::prelude::*;
 
 const SEED: u32 = 0;
-const BTC_JUSD_LP: CurrencyId = CurrencyId::DEXShare(TokenSymbol::XBTC, TokenSymbol::JUSD);
+const BTC_JUSD_LP: CurrencyId = CurrencyId::DEXShare(TokenSymbol::JCHF, TokenSymbol::JUSD);
 
 runtime_benchmarks! {
 	{ Runtime, module_incentives }

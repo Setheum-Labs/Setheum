@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, AccountId, EvmAccounts, Runtime, DNAR};
+use crate::{dollar, AccountId, SevmAccounts, Runtime, DNAR};
 
 use super::utils::set_dnar_balance;
 use codec::Encode;
@@ -37,7 +37,7 @@ fn bob() -> secp256k1::SecretKey {
 }
 
 pub fn bob_account_id() -> AccountId {
-	let address = EvmAccounts::eth_address(&bob());
+	let address = SevmAccounts::eth_address(&bob());
 	let mut data = [0u8; 32];
 	data[0..4].copy_from_slice(b"evm:");
 	data[4..24].copy_from_slice(&address[..]);
@@ -45,7 +45,7 @@ pub fn bob_account_id() -> AccountId {
 }
 
 runtime_benchmarks! {
-	{ Runtime, sevm_accounts }
+	{ Runtime, evm_accounts }
 
 	_ {}
 
@@ -53,7 +53,7 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let eth: AccountId = account("eth", 0, SEED);
 		set_dnar_balance(&bob_account_id(), 1_000 * dollar(DNAR));
-	}: _(RawOrigin::Signed(caller), EvmAccounts::eth_address(&alice()), EvmAccounts::eth_sign(&alice(), &caller.encode(), &[][..]))
+	}: _(RawOrigin::Signed(caller), SevmAccounts::eth_address(&alice()), SevmAccounts::eth_sign(&alice(), &caller.encode(), &[][..]))
 
 	claim_default_account {
 		let caller = whitelisted_caller();

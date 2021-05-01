@@ -20,16 +20,16 @@
 use super::*;
 use crate::precompile::{
 	mock::{
-		alice, bob, get_task_id, new_test_ext, run_to_block, Balances, SettinDex, SettinDexPrecompile, Event as TestEvent,
+		alice, bob, get_task_id, new_test_ext, run_to_block, Balances, SetheumDex, DexPrecompile, Event as TestEvent,
 		Oracle, OraclePrecompile, Origin, Price, ScheduleCallPrecompile, System, Test, DNAR_ERC20_ADDRESS, ALICE, JUSD,
-		XBTC,
+		JCHF,
 	},
 	schedule_call::TaskInfo,
 };
 use codec::Encode;
 use frame_support::{assert_noop, assert_ok};
 use hex_literal::hex;
-use sevm::ExitError;
+use evm::ExitError;
 use orml_traits::DataFeeder;
 use primitives::{currency::GetDecimals, evm::AddressMapping, Balance, PREDEPLOY_ADDRESS_START};
 use sp_core::{H160, H256, U256};
@@ -130,9 +130,9 @@ fn oracle_precompile_should_work() {
 		assert_eq!(output, [0u8; 32]);
 		assert_eq!(used_gas, 0);
 
-		assert_ok!(Oracle::feed_value(ALICE, XBTC, price));
+		assert_ok!(Oracle::feed_value(ALICE, JCHF, price));
 		assert_eq!(
-			Oracle::get_no_op(&XBTC),
+			Oracle::get_no_op(&JCHF),
 			Some(orml_oracle::TimestampedValue {
 				value: price,
 				timestamp: 1
@@ -142,7 +142,7 @@ fn oracle_precompile_should_work() {
 		// returned price + timestamp
 		let mut expected_output = [0u8; 32];
 
-		let maybe_adjustment_multiplier = 10u128.checked_pow(XBTC.decimals()).unwrap();
+		let maybe_adjustment_multiplier = 10u128.checked_pow(JCHF.decimals()).unwrap();
 		let price = Price::checked_from_rational(price.into_inner(), maybe_adjustment_multiplier).unwrap();
 		U256::from(price.into_inner()).to_big_endian(&mut expected_output[..]);
 
@@ -293,8 +293,8 @@ fn schedule_call_precompile_should_work() {
 		let event = TestEvent::pallet_scheduler(pallet_scheduler::RawEvent::Scheduled(5, 0));
 		assert!(System::events().iter().any(|record| record.event == event));
 
-		let from_account = <Test as sevm::Config>::AddressMapping::get_account_id(&alice());
-		let to_account = <Test as sevm::Config>::AddressMapping::get_account_id(&bob());
+		let from_account = <Test as evm::Config>::AddressMapping::get_account_id(&alice());
+		let to_account = <Test as evm::Config>::AddressMapping::get_account_id(&bob());
 		#[cfg(not(feature = "with-ethereum-compatibility"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
@@ -360,8 +360,8 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(used_gas, 0);
 
-		let from_account = <Test as sevm::Config>::AddressMapping::get_account_id(&alice());
-		let to_account = <Test as sevm::Config>::AddressMapping::get_account_id(&bob());
+		let from_account = <Test as evm::Config>::AddressMapping::get_account_id(&alice());
+		let to_account = <Test as evm::Config>::AddressMapping::get_account_id(&bob());
 		#[cfg(not(feature = "with-ethereum-compatibility"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
@@ -404,12 +404,12 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 #[test]
 fn dex_precompile_get_liquidity_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable XBTC/JUSD
-		assert_ok!(SettinDex::enable_trading_pair(Origin::signed(ALICE), XBTC, JUSD,));
+		// enable JCHF/JUSD
+		assert_ok!(SetheumDex::enable_trading_pair(Origin::signed(ALICE), JCHF, JUSD,));
 
-		assert_ok!(SettinDex::add_liquidity(
+		assert_ok!(SetheumDex::add_liquidity(
 			Origin::signed(ALICE),
-			XBTC,
+			JCHF,
 			JUSD,
 			1_000,
 			1_000_000,
@@ -434,7 +434,7 @@ fn dex_precompile_get_liquidity_should_work() {
 		U256::from(1_000).to_big_endian(&mut expected_output[..32]);
 		U256::from(1_000_000).to_big_endian(&mut expected_output[32..64]);
 
-		let (reason, output, used_gas) = SettinDexPrecompile::execute(&input, None, &context).unwrap();
+		let (reason, output, used_gas) = DexPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
@@ -444,12 +444,12 @@ fn dex_precompile_get_liquidity_should_work() {
 #[test]
 fn dex_precompile_get_swap_target_amount_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable XBTC/JUSD
-		assert_ok!(SettinDex::enable_trading_pair(Origin::signed(ALICE), XBTC, JUSD,));
+		// enable JCHF/JUSD
+		assert_ok!(SetheumDex::enable_trading_pair(Origin::signed(ALICE), JCHF, JUSD,));
 
-		assert_ok!(SettinDex::add_liquidity(
+		assert_ok!(SetheumDex::add_liquidity(
 			Origin::signed(ALICE),
-			XBTC,
+			JCHF,
 			JUSD,
 			1_000,
 			1_000_000,
@@ -476,7 +476,7 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 		let mut expected_output = [0u8; 32];
 		U256::from(202195).to_big_endian(&mut expected_output[..32]);
 
-		let (reason, output, used_gas) = SettinDexPrecompile::execute(&input, None, &context).unwrap();
+		let (reason, output, used_gas) = DexPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
@@ -486,12 +486,12 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 #[test]
 fn dex_precompile_get_swap_supply_amount_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable XBTC/JUSD
-		assert_ok!(SettinDex::enable_trading_pair(Origin::signed(ALICE), XBTC, JUSD,));
+		// enable JCHF/JUSD
+		assert_ok!(SetheumDex::enable_trading_pair(Origin::signed(ALICE), JCHF, JUSD,));
 
-		assert_ok!(SettinDex::add_liquidity(
+		assert_ok!(SetheumDex::add_liquidity(
 			Origin::signed(ALICE),
-			XBTC,
+			JCHF,
 			JUSD,
 			1_000,
 			1_000_000,
@@ -518,7 +518,7 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 		let mut expected_output = [0u8; 32];
 		U256::from(202195).to_big_endian(&mut expected_output[..32]);
 
-		let (reason, output, used_gas) = SettinDexPrecompile::execute(&input, None, &context).unwrap();
+		let (reason, output, used_gas) = DexPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
@@ -528,12 +528,12 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 #[test]
 fn dex_precompile_swap_with_exact_supply_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable XBTC/JUSD
-		assert_ok!(SettinDex::enable_trading_pair(Origin::signed(ALICE), XBTC, JUSD,));
+		// enable JCHF/JUSD
+		assert_ok!(SetheumDex::enable_trading_pair(Origin::signed(ALICE), JCHF, JUSD,));
 
-		assert_ok!(SettinDex::add_liquidity(
+		assert_ok!(SetheumDex::add_liquidity(
 			Origin::signed(ALICE),
-			XBTC,
+			JCHF,
 			JUSD,
 			1_000,
 			1_000_000,
@@ -562,7 +562,7 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 		let mut expected_output = [0u8; 32];
 		U256::from(989).to_big_endian(&mut expected_output[..32]);
 
-		let (reason, output, used_gas) = SettinDexPrecompile::execute(&input, None, &context).unwrap();
+		let (reason, output, used_gas) = DexPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
@@ -572,12 +572,12 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 #[test]
 fn dex_precompile_swap_with_exact_target_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable XBTC/JUSD
-		assert_ok!(SettinDex::enable_trading_pair(Origin::signed(ALICE), XBTC, JUSD,));
+		// enable JCHF/JUSD
+		assert_ok!(SetheumDex::enable_trading_pair(Origin::signed(ALICE), JCHF, JUSD,));
 
-		assert_ok!(SettinDex::add_liquidity(
+		assert_ok!(SetheumDex::add_liquidity(
 			Origin::signed(ALICE),
-			XBTC,
+			JCHF,
 			JUSD,
 			1_000,
 			1_000_000,
@@ -606,7 +606,7 @@ fn dex_precompile_swap_with_exact_target_should_work() {
 		let mut expected_output = [0u8; 32];
 		U256::from(1).to_big_endian(&mut expected_output[..32]);
 
-		let (reason, output, used_gas) = SettinDexPrecompile::execute(&input, None, &context).unwrap();
+		let (reason, output, used_gas) = DexPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);

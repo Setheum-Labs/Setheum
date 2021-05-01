@@ -65,7 +65,7 @@ fn inject_liquidity(
 }
 
 runtime_benchmarks! {
-	{ Runtime, settindex }
+	{ Runtime, setheum_dex }
 
 	_ {}
 

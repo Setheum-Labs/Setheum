@@ -18,12 +18,12 @@
 
 use super::utils::set_balance;
 use crate::{
-	dollar, AccountId, Currencies, GetStakingCurrencyId, Homa, PolkadotBondingDuration, PolkadotBridge, Runtime,
+	dollar, AccountId, Currencies, GetStakingCurrencyId, SetheumStaking, PolkadotBondingDuration, PolkadotBridge, Runtime,
 	StakingPool,
 };
 use frame_benchmarking::account;
 use frame_system::RawOrigin;
-use setheum_abha::RedeemStrategy;
+use setheum_staking::RedeemStrategy;
 use orml_benchmarking::runtime_benchmarks;
 use orml_traits::MultiCurrency;
 use sp_std::prelude::*;
@@ -38,11 +38,11 @@ fn new_era() {
 }
 
 runtime_benchmarks! {
-	{ Runtime, setheum_abha }
+	{ Runtime, setheum_staking }
 
 	_ {}
 
-	// inject DOT to staking pool and mint LDOT
+	// inject DOT to staking pool and mint DOTS
 	mint {
 		let caller: AccountId = account("caller", 0, SEED);
 		let currency_id = GetStakingCurrencyId::get();
@@ -54,7 +54,7 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let currency_id = GetStakingCurrencyId::get();
 		set_balance(currency_id, &caller, 1_000 * dollar(currency_id));
-		Homa::mint(RawOrigin::Signed(caller.clone()).into(), 1_000 * dollar(currency_id))?;
+		SetheumStaking::mint(RawOrigin::Signed(caller.clone()).into(), 1_000 * dollar(currency_id))?;
 		for era_index in 0..=PolkadotBondingDuration::get() {
 			new_era();
 		}
@@ -68,7 +68,7 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let currency_id = GetStakingCurrencyId::get();
 		set_balance(currency_id, &caller, 1_000 * dollar(currency_id));
-		Homa::mint(RawOrigin::Signed(caller.clone()).into(), 1_000 * dollar(currency_id))?;
+		SetheumStaking::mint(RawOrigin::Signed(caller.clone()).into(), 1_000 * dollar(currency_id))?;
 		new_era();
 	}: redeem(RawOrigin::Signed(caller), dollar(currency_id), RedeemStrategy::WaitForUnbonding)
 
@@ -77,7 +77,7 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let currency_id = GetStakingCurrencyId::get();
 		set_balance(currency_id, &caller, 1_000 * dollar(currency_id));
-		Homa::mint(RawOrigin::Signed(caller.clone()).into(), 1_000 * dollar(currency_id))?;
+		SetheumStaking::mint(RawOrigin::Signed(caller.clone()).into(), 1_000 * dollar(currency_id))?;
 		new_era();
 		new_era();
 	}: redeem(RawOrigin::Signed(caller.clone()), dollar(currency_id), RedeemStrategy::Target(PolkadotBondingDuration::get() + 2))
@@ -86,9 +86,9 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let currency_id = GetStakingCurrencyId::get();
 		set_balance(currency_id, &caller, 1_000 * dollar(currency_id));
-		Homa::mint(RawOrigin::Signed(caller.clone()).into(), 1_000 * dollar(currency_id))?;
+		SetheumStaking::mint(RawOrigin::Signed(caller.clone()).into(), 1_000 * dollar(currency_id))?;
 		new_era();
-		Homa::redeem(RawOrigin::Signed(caller.clone()).into(), dollar(currency_id), RedeemStrategy::WaitForUnbonding)?;
+		SetheumStaking::redeem(RawOrigin::Signed(caller.clone()).into(), dollar(currency_id), RedeemStrategy::WaitForUnbonding)?;
 		for era_index in 0..=PolkadotBondingDuration::get() {
 			new_era();
 		}
@@ -109,8 +109,8 @@ mod tests {
 			.build_storage::<Runtime>()
 			.unwrap();
 
-		module_staking_pool::GenesisConfig {
-			staking_pool_params: module_staking_pool::Params {
+		setheum_staking_pool::GenesisConfig {
+			staking_pool_params: setheum_staking_pool::Params {
 				target_max_free_unbonded_ratio: FixedU128::saturating_from_rational(10, 100),
 				target_min_free_unbonded_ratio: FixedU128::saturating_from_rational(5, 100),
 				target_unbonding_to_free_ratio: FixedU128::saturating_from_rational(2, 100),

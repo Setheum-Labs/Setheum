@@ -25,7 +25,7 @@ use sp_std::{
 	vec::Vec,
 };
 
-use sevm::ExitError;
+use evm::ExitError;
 use primitives::{evm::AddressMapping as AddressMappingT, Amount, Balance, CurrencyId};
 use sp_core::H160;
 

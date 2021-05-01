@@ -22,7 +22,7 @@
 pub mod dex;
 pub mod evm;
 pub mod evm_accounts;
-pub mod homa;
+pub mod staking;
 pub mod incentives;
 pub mod prices;
 pub mod transaction_payment;

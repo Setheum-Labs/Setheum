@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, AccountId, Event, EvmAccounts, Origin, Runtime, System, DNAR, EVM};
+use crate::{dollar, AccountId, Event, SevmAccounts, Origin, Runtime, System, DNAR, EVM};
 
 use super::utils::set_dnar_balance;
 use frame_support::dispatch::DispatchError;
@@ -53,7 +53,7 @@ fn deploy_contract(caller: AccountId) -> Result<H160, DispatchError> {
 	EVM::create(Origin::signed(caller), contract, 0, 1000000000, 1000000000)
 		.map_or_else(|e| Err(e.error), |_| Ok(()))?;
 
-	if let Event::sevm(sevm::Event::Created(address)) = System::events().iter().last().unwrap().event {
+	if let Event::evm(evm::Event::Created(address)) = System::events().iter().last().unwrap().event {
 		Ok(address)
 	} else {
 		Err("deploy_contract failed".into())
@@ -61,7 +61,7 @@ fn deploy_contract(caller: AccountId) -> Result<H160, DispatchError> {
 }
 
 pub fn alice_account_id() -> AccountId {
-	let address = EvmAccounts::eth_address(&alice());
+	let address = SevmAccounts::eth_address(&alice());
 	let mut data = [0u8; 32];
 	data[0..4].copy_from_slice(b"evm:");
 	data[4..24].copy_from_slice(&address[..]);
@@ -69,7 +69,7 @@ pub fn alice_account_id() -> AccountId {
 }
 
 pub fn bob_account_id() -> AccountId {
-	let address = EvmAccounts::eth_address(&bob());
+	let address = SevmAccounts::eth_address(&bob());
 	let mut data = [0u8; 32];
 	data[0..4].copy_from_slice(b"evm:");
 	data[4..24].copy_from_slice(&address[..]);
@@ -77,7 +77,7 @@ pub fn bob_account_id() -> AccountId {
 }
 
 runtime_benchmarks! {
-	{ Runtime, sevm }
+	{ Runtime, evm }
 
 	_ {}
 
@@ -85,7 +85,7 @@ runtime_benchmarks! {
 		set_dnar_balance(&alice_account_id(), 1_000 * dollar(DNAR));
 		set_dnar_balance(&bob_account_id(), 1_000 * dollar(DNAR));
 		let contract = deploy_contract(alice_account_id())?;
-		let bob_address = EvmAccounts::eth_address(&bob());
+		let bob_address = SevmAccounts::eth_address(&bob());
 	}: _(RawOrigin::Signed(alice_account_id()), contract, bob_address)
 
 	deploy {

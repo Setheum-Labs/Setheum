@@ -105,16 +105,16 @@ pub enum AirDropCurrencyId {
 pub enum AuthoritysOriginId {
 	Root,
 	SetheumTreasury,
-	SerpTreasury,
+	SerpReserve,
 	AbhaTreasury,
-	DSWF,
+	SIF,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum DataProviderId {
 	Aggregated = 0,
-	setheum = 1,
+	Setheum = 1,
 	Band = 2,
 }
 
@@ -146,7 +146,7 @@ impl TradingPair {
 
 /// Ethereum precompiles
 /// 0 - 0x400
-/// setheum precompiles
+/// Setheum precompiles
 /// 0x400 - 0x800
 pub const PRECOMPILE_ADDRESS_START: u64 = 0x400;
 /// Predeployed system contracts (except Mirrored ERC20)

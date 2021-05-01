@@ -1,7 +1,7 @@
 [package]
 name = "neom-runtime"
 version = "0.7.11"
-authors = ["setheum Developers"]
+authors = ["Setheum Labs"]
 edition = "2018"
 build = "build.rs"
 
@@ -79,29 +79,29 @@ orml-xtokens = { path = "../../orml/xtokens", default-features = false }
 orml-xcm-support = { path = "../../orml/xcm-support", default-features = false }
 orml-unknown-tokens = { path = "../../orml/unknown-tokens", default-features = false }
 
-module-transaction-payment = { path = "../../modules/transaction-payment", default-features = false }
-setheum-airdrop = { path = "../../modules/airdrop", default-features = false }
-module-dex = { path = "../../modules/settindex", default-features = false }
-module-currencies = { path = "../../modules/currencies", default-features = false }
-module-emergency-shutdown = { path = "../../modules/emergency-shutdown", default-features = false }
-sevm = { path = "../../modules/evm", default-features = false }
-sevm-accounts = { path = "../../modules/evm-accounts", default-features = false }
-sevm-evm-bridge = { path = "../../modules/sevm-evm-bridge", default-features = false }
-module-serp = { path = "../../modules/serp", default-features = false }
-module-nft = { path = "../../modules/nft", default-features = false }
-module-prices = { path = "../../modules/prices", default-features = false }
-module-incentives = { path = "../../modules/incentives", default-features = false }
-module-support = { path = "../../modules/support", default-features = false }
-setheum-abha = { path = "../../modules/abha", default-features = false }
-setheum-abha-validator-list = { path = "../../modules/abha-validator-list", default-features = false }
-module-nominees-election = { path = "../../modules/nominees-election", default-features = false }
-module-staking-pool = { path = "../../modules/staking-pool", default-features = false }
-module-staking-pool-rpc-runtime-api = { path = "../../modules/staking-pool/rpc/runtime-api", default-features = false }
-module-polkadot-bridge = { path = "../../modules/polkadot-bridge", default-features = false }
+setheum-transaction-payment = { path = "../../serml/transaction-payment", default-features = false }
+setheum-airdrop = { path = "../../serml/setheum-airdrop", default-features = false }
+setheum-dex = { path = "../../serml/dex", default-features = false }
+setheum-currencies = { path = "../../serml/currencies", default-features = false }
+module-emergency-shutdown = { path = "../../serml/emergency-shutdown", default-features = false }
+evm = { path = "../../serml/evm", default-features = false }
+evm-accounts = { path = "../../serml/evm-accounts", default-features = false }
+setheum-evm-bridge = { path = "../../serml/evm-bridge", default-features = false }
+serp = { path = "../../serml/serp", default-features = false }
+setheum-nft = { path = "../../serml/nft", default-features = false }
+setheum-prices = { path = "../../serml/prices", default-features = false }
+module-incentives = { path = "../../serml/incentives", default-features = false }
+setheum-support = { path = "../../serml/support", default-features = false }
+setheum-staking = { path = "../../serml/abha", default-features = false }
+setheum-staking-validator-list = { path = "../../serml/abha-validator-list", default-features = false }
+setheum-nominees-election = { path = "../../serml/nominees-election", default-features = false }
+setheum-staking-pool = { path = "../../serml/staking-pool", default-features = false }
+setheum-staking-pool-rpc-runtime-api = { path = "../../serml/staking-pool/rpc/runtime-api", default-features = false }
+module-polkadot-bridge = { path = "../../serml/polkadot-bridge", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 runtime-common = { path = "../common", default-features = false }
 
-sevm-rpc-runtime-api = { path = "../../modules/evm/rpc/runtime_api",  default-features = false }
+evm-rpc-runtime-api = { path = "../../serml/evm/rpc/runtime_api",  default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = "4.0.0"
@@ -126,7 +126,7 @@ std = [
 	"pallet-bounties/std",
 	"pallet-collective/std",
 	"pallet-elections-phragmen/std",
-	"sevm/std",
+	"evm/std",
 	"pallet-grandpa/std",
 	"pallet-indices/std",
 	"pallet-membership/std",
@@ -181,27 +181,27 @@ std = [
 	"orml-xcm-support/std",
 	"orml-unknown-tokens/std",
 
-	"module-transaction-payment/std",
+	"setheum-transaction-payment/std",
 	"setheum-airdrop/std",
-	"module-dex/std",
-	"module-currencies/std",
+	"dex/std",
+	"setheum-currencies/std",
 	"module-emergency-shutdown/std",
-	"sevm-accounts/std",
-	"sevm-evm-bridge/std",
-	"module-serp/std",
-	"module-nft/std",
-	"module-prices/std",
+	"evm-accounts/std",
+	"setheum-evm-bridge/std",
+	"serp/std",
+	"setheum-nft/std",
+	"setheum-prices/std",
 	"module-incentives/std",
-	"module-support/std",
-	"setheum-abha/std",
-	"module-nominees-election/std",
-	"module-staking-pool/std",
-	"module-staking-pool-rpc-runtime-api/std",
+	"setheum-support/std",
+	"setheum-staking/std",
+	"setheum-nominees-election/std",
+	"setheum-staking-pool/std",
+	"setheum-staking-pool-rpc-runtime-api/std",
 	"module-polkadot-bridge/std",
 	"primitives/std",
 	"runtime-common/std",
 
-	"sevm-rpc-runtime-api/std",
+	"evm-rpc-runtime-api/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",
@@ -212,8 +212,8 @@ runtime-benchmarks = [
 	"pallet-collective/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"orml-authority/runtime-benchmarks",
-	"module-dex/runtime-benchmarks",
-	"module-nft/runtime-benchmarks",
+	"dex/runtime-benchmarks",
+	"setheum-nft/runtime-benchmarks",
 ]
 # When enabled, the runtime api will not be build.
 #

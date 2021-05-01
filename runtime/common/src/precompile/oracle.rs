@@ -17,13 +17,13 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use frame_support::{log, sp_runtime::FixedPointNumber};
-use sevm::{Context, ExitError, ExitSucceed, Precompile};
+use evm::{Context, ExitError, ExitSucceed, Precompile};
 use primitives::{evm::AddressMapping as AddressMappingT, CurrencyId};
 use sp_core::U256;
 use sp_std::{convert::TryFrom, fmt::Debug, marker::PhantomData, prelude::*, result};
 
 use super::input::{Input, InputT};
-use module_support::{Price, PriceProvider as PriceProviderT};
+use setheum_support::{Price, PriceProvider as PriceProviderT};
 
 /// The `Oracle` impl precompile.
 ///
@@ -64,7 +64,7 @@ where
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
 		//TODO: evaluate cost
 
-		log::debug!(target: "sevm", "input: {:?}", input);
+		log::debug!(target: "evm", "input: {:?}", input);
 
 		let input = Input::<Action, AccountId, AddressMapping>::new(input);
 
@@ -74,7 +74,7 @@ where
 			Action::GetPrice => {
 				let key = input.currency_id_at(1)?;
 				let value = PriceProvider::get_price(key).unwrap_or_else(Default::default);
-				log::debug!(target: "sevm", "oracle currency_id: {:?}, price: {:?}", key, value);
+				log::debug!(target: "evm", "oracle currency_id: {:?}, price: {:?}", key, value);
 				Ok((ExitSucceed::Returned, vec_u8_from_price(value), 0))
 			}
 		}

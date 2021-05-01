@@ -18,13 +18,13 @@
 
 use super::input::{Input, InputT};
 use frame_support::log;
-use sevm::{Context, ExitError, ExitSucceed, Precompile};
-use module_support::SettinDexManager;
+use evm::{Context, ExitError, ExitSucceed, Precompile};
+use setheum_support::setheum_dexManager;
 use primitives::{evm::AddressMapping as AddressMappingT, Balance, CurrencyId};
 use sp_core::U256;
 use sp_std::{convert::TryFrom, fmt::Debug, marker::PhantomData, prelude::*, result};
 
-/// The `SettinDex` impl precompile.
+/// The `setheum_dex` impl precompile.
 ///
 ///
 /// `input` data starts with `action`.
@@ -33,7 +33,7 @@ use sp_std::{convert::TryFrom, fmt::Debug, marker::PhantomData, prelude::*, resu
 /// - Get liquidity. Rest `input` bytes: `currency_id_a`, `currency_id_b`.
 /// - Swap with exact supply. Rest `input` bytes: `who`, `currency_id_a`,
 ///   `currency_id_b`, `supply_amount`, `min_target_amount`.
-pub struct SettinDexPrecompile<AccountId, AddressMapping, SettinDex>(PhantomData<(AccountId, AddressMapping, SettinDex)>);
+pub struct setheum_dexPrecompile<AccountId, AddressMapping, setheum_dex>(PhantomData<(AccountId, AddressMapping, setheum_dex)>);
 
 enum Action {
 	GetLiquidityPool,
@@ -58,11 +58,11 @@ impl TryFrom<u8> for Action {
 	}
 }
 
-impl<AccountId, AddressMapping, SettinDex> Precompile for SettinDexPrecompile<AccountId, AddressMapping, SettinDex>
+impl<AccountId, AddressMapping, Dex> Precompile for DexPrecompile<AccountId, AddressMapping, setheum_dex>
 where
 	AccountId: Debug + Clone,
 	AddressMapping: AddressMappingT<AccountId>,
-	SettinDex: SettinDexManager<AccountId, CurrencyId, Balance>,
+	DEX = DexManager<AccountId, CurrencyId, Balance>,
 {
 	fn execute(
 		input: &[u8],
@@ -71,7 +71,7 @@ where
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
 		//TODO: evaluate cost
 
-		log::debug!(target: "sevm", "input: {:?}", input);
+		log::debug!(target: "evm", "input: {:?}", input);
 
 		// Solidity dynamic arrays will add the array size to the front of the array,
 		// pre-compile needs to deal with the `size`.
@@ -84,12 +84,12 @@ where
 				let currency_id_a = input.currency_id_at(1)?;
 				let currency_id_b = input.currency_id_at(2)?;
 				log::debug!(
-					target: "sevm",
-					"settindex: get_liquidity_pool currency_id_a: {:?}, currency_id_b: {:?}",
+					target: "evm",
+					"setheum_dex: get_liquidity_pool currency_id_a: {:?}, currency_id_b: {:?}",
 					currency_id_a, currency_id_b
 				);
 
-				let (balance_a, balance_b) = SettinDex::get_liquidity_pool(currency_id_a, currency_id_b);
+				let (balance_a, balance_b) = SetheumDex::get_liquidity_pool(currency_id_a, currency_id_b);
 
 				// output
 				let mut be_bytes = [0u8; 64];
@@ -106,13 +106,13 @@ where
 				}
 				let supply_amount = input.balance_at((path_len + 1) as usize)?;
 				log::debug!(
-					target: "sevm",
-					"settindex: get_swap_target_amount path: {:?}, supply_amount: {:?}",
+					target: "evm",
+					"setheum_dex: get_swap_target_amount path: {:?}, supply_amount: {:?}",
 					path, supply_amount
 				);
 
-				let value = SettinDex::get_swap_target_amount(&path, supply_amount, None)
-					.ok_or_else(|| ExitError::Other("SettinDex get_swap_target_amount failed".into()))?;
+				let value = SetheumDex::get_swap_target_amount(&path, supply_amount, None)
+					.ok_or_else(|| ExitError::Other("setheum_dex get_swap_target_amount failed".into()))?;
 
 				// output
 				let mut be_bytes = [0u8; 32];
@@ -128,13 +128,13 @@ where
 				}
 				let target_amount = input.balance_at((path_len + 1) as usize)?;
 				log::debug!(
-					target: "sevm",
-					"settindex: get_swap_supply_amount path: {:?}, target_amount: {:?}",
+					target: "evm",
+					"setheum_dex: get_swap_supply_amount path: {:?}, target_amount: {:?}",
 					path, target_amount
 				);
 
-				let value = SettinDex::get_swap_target_amount(&path, target_amount, None)
-					.ok_or_else(|| ExitError::Other("SettinDex get_swap_supply_amount failed".into()))?;
+				let value = SetheumDex::get_swap_target_amount(&path, target_amount, None)
+					.ok_or_else(|| ExitError::Other("setheum_dex get_swap_supply_amount failed".into()))?;
 
 				// output
 				let mut be_bytes = [0u8; 32];
@@ -152,13 +152,13 @@ where
 				let supply_amount = input.balance_at((path_len + 3) as usize)?;
 				let min_target_amount = input.balance_at((path_len + 4) as usize)?;
 				log::debug!(
-					target: "sevm",
-					"settindex: swap_with_exact_supply who: {:?}, path: {:?}, supply_amount: {:?}, min_target_amount: {:?}",
+					target: "evm",
+					"setheum_dex: swap_with_exact_supply who: {:?}, path: {:?}, supply_amount: {:?}, min_target_amount: {:?}",
 					who, path, supply_amount, min_target_amount
 				);
 
 				let value =
-					SettinDex::swap_with_exact_supply(&who, &path, supply_amount, min_target_amount, None).map_err(|e| {
+					SetheumDex::swap_with_exact_supply(&who, &path, supply_amount, min_target_amount, None).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
@@ -179,13 +179,13 @@ where
 				let target_amount = input.balance_at((path_len + 3) as usize)?;
 				let max_supply_amount = input.balance_at((path_len + 4) as usize)?;
 				log::debug!(
-					target: "sevm",
-					"settindex: swap_with_exact_target who: {:?}, path: {:?}, target_amount: {:?}, max_supply_amount: {:?}",
+					target: "evm",
+					"setheum_dex: swap_with_exact_target who: {:?}, path: {:?}, target_amount: {:?}, max_supply_amount: {:?}",
 					who, path, target_amount, max_supply_amount
 				);
 
 				let value =
-					SettinDex::swap_with_exact_target(&who, &path, target_amount, max_supply_amount, None).map_err(|e| {
+					SetheumDex::swap_with_exact_target(&who, &path, target_amount, max_supply_amount, None).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;

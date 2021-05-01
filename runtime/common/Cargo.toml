@@ -1,7 +1,7 @@
 [package]
 name = "runtime-common"
 version = "0.7.11"
-authors = ["setheum Developers"]
+authors = ["Setheum Labs"]
 edition = "2018"
 
 [dependencies]
@@ -15,16 +15,16 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 pallet-scheduler  = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-sevm = { path = "../../modules/evm", default-features = false }
+evm = { path = "../../serml/evm", default-features = false }
+
+setheum-staking-pool = { path = "../../serml/staking-pool", default-features = false }
+setheum-support = { path = "../../serml/support", default-features = false }
+setheum-transaction-payment = { path = "../../serml/transaction-payment", default-features = false }
+setheum-prices = { path = "../../serml/prices", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 orml-oracle = { path = "../../orml/oracle", default-features = false }
 orml-traits = { path = "../../orml/traits", default-features = false }
-
-module-support = { path = "../../modules/support", default-features = false }
-module-transaction-payment = { path = "../../modules/transaction-payment", default-features = false }
-module-prices = { path = "../../modules/prices", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-module-staking-pool = { path = "../../modules/staking-pool", default-features = false }
 
 [dev-dependencies]
 serde_json = "1.0.64"
@@ -36,10 +36,10 @@ pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "roco
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 orml-tokens = { path = "../../orml/tokens" }
 orml-nft = { path = "../../orml/nft" }
-module-currencies = { path = "../../modules/currencies" }
-sevm-evm-bridge = { path = "../../modules/sevm-evm-bridge" }
-module-nft = { path = "../../modules/nft" }
-module-dex = { path = "../../modules/settindex" }
+setheum-currencies = { path = "../../serml/currencies" }
+setheum-nft = { path = "../../serml/nft" }
+setheum-dex = { path = "../../serml/dex" }
+setheum-evm-bridge = { path = "../../serml/evm-bridge" }
 
 [features]
 default = ["std"]
@@ -52,13 +52,13 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-scheduler/std",
-	"sevm/std",
+	"evm/std",
 	"orml-oracle/std",
 	"orml-traits/std",
-	"module-support/std",
+	"setheum-support/std",
 	"primitives/std",
-	"module-staking-pool/std",
-	"module-transaction-payment/std",
-	"module-prices/std",
+	"setheum-staking-pool/std",
+	"setheum-transaction-payment/std",
+	"setheum-prices/std",
 ]
 with-ethereum-compatibility = []

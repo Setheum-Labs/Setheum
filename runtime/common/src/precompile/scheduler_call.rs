@@ -27,8 +27,8 @@ use frame_support::{
 		Currency, IsType, OriginTrait,
 	},
 };
-use sevm::{Context, ExitError, ExitSucceed, Precompile};
-use module_support::TransactionPayment;
+use evm::{Context, ExitError, ExitSucceed, Precompile};
+use setheum_support::TransactionPayment;
 use primitives::{evm::AddressMapping as AddressMappingT, Balance, BlockNumber};
 use sp_core::{H160, U256};
 use sp_runtime::RuntimeDebug;
@@ -101,9 +101,9 @@ impl TryFrom<u8> for Action {
 }
 
 type PalletBalanceOf<T> =
-	<<T as sevm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	<<T as evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 type NegativeImbalanceOf<T> =
-	<<T as sevm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance;
+	<<T as evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance;
 
 impl<AccountId, AddressMapping, Scheduler, ChargeTransactionPayment, Call, Origin, PalletsOrigin, Runtime> Precompile
 	for ScheduleCallPrecompile<
@@ -120,11 +120,11 @@ impl<AccountId, AddressMapping, Scheduler, ChargeTransactionPayment, Call, Origi
 	AddressMapping: AddressMappingT<AccountId>,
 	Scheduler: ScheduleNamed<BlockNumber, Call, PalletsOrigin, Address = TaskAddress<BlockNumber>>,
 	ChargeTransactionPayment: TransactionPayment<AccountId, PalletBalanceOf<Runtime>, NegativeImbalanceOf<Runtime>>,
-	Call: Dispatchable<Origin = Origin> + Debug + From<sevm::Call<Runtime>>,
+	Call: Dispatchable<Origin = Origin> + Debug + From<evm::Call<Runtime>>,
 	Origin: IsType<<Runtime as frame_system::Config>::Origin>
 		+ OriginTrait<AccountId = AccountId, PalletsOrigin = PalletsOrigin>,
 	PalletsOrigin: Into<<Runtime as frame_system::Config>::Origin> + From<frame_system::RawOrigin<AccountId>> + Clone,
-	Runtime: sevm::Config + frame_system::Config<AccountId = AccountId>,
+	Runtime: evm::Config + frame_system::Config<AccountId = AccountId>,
 	PalletBalanceOf<Runtime>: IsType<Balance>,
 {
 	fn execute(
@@ -132,7 +132,7 @@ impl<AccountId, AddressMapping, Scheduler, ChargeTransactionPayment, Call, Origi
 		_target_gas: Option<u64>,
 		_context: &Context,
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
-		log::debug!(target: "sevm", "schedule call: input: {:?}", input);
+		log::debug!(target: "evm", "schedule call: input: {:?}", input);
 
 		// Solidity dynamic arrays will add the array size to the front of the array,
 		// pre-compile needs to deal with the `size`.
@@ -153,7 +153,7 @@ impl<AccountId, AddressMapping, Scheduler, ChargeTransactionPayment, Call, Origi
 				let input_data = input.bytes_at(8 * PER_PARAM_BYTES, input_len as usize)?;
 
 				log::debug!(
-					target: "sevm",
+					target: "evm",
 					"schedule call: from: {:?}, target: {:?}, value: {:?}, gas_limit: {:?}, storage_limit: {:?}, min_delay: {:?}, input_len: {:?}, input_data: {:?}",
 					from,
 					target,
@@ -171,14 +171,14 @@ impl<AccountId, AddressMapping, Scheduler, ChargeTransactionPayment, Call, Origi
 					// reserve the transaction fee for gas_limit
 					use sp_runtime::traits::Convert;
 					let from_account = AddressMapping::get_account_id(&from);
-					let weight = <Runtime as sevm::Config>::GasToWeight::convert(gas_limit);
+					let weight = <Runtime as evm::Config>::GasToWeight::convert(gas_limit);
 					_fee = ChargeTransactionPayment::reserve_fee(&from_account, weight).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
 				}
 
-				let call = sevm::Call::<Runtime>::scheduled_call(
+				let call = evm::Call::<Runtime>::scheduled_call(
 					from,
 					target,
 					input_data,
@@ -203,7 +203,7 @@ impl<AccountId, AddressMapping, Scheduler, ChargeTransactionPayment, Call, Origi
 				.encode();
 
 				log::debug!(
-					target: "sevm",
+					target: "evm",
 					"schedule call: task_id: {:?}",
 					task_id,
 				);
@@ -231,7 +231,7 @@ impl<AccountId, AddressMapping, Scheduler, ChargeTransactionPayment, Call, Origi
 				let task_id = input.bytes_at(3 * PER_PARAM_BYTES, task_id_len as usize)?;
 
 				log::debug!(
-					target: "sevm",
+					target: "evm",
 					"cancel call: from: {:?}, task_id: {:?}",
 					from,
 					task_id,
@@ -259,7 +259,7 @@ impl<AccountId, AddressMapping, Scheduler, ChargeTransactionPayment, Call, Origi
 				let task_id = input.bytes_at(4 * PER_PARAM_BYTES, task_id_len as usize)?;
 
 				log::debug!(
-					target: "sevm",
+					target: "evm",
 					"reschedule call: from: {:?}, task_id: {:?}, min_delay: {:?}",
 					from,
 					task_id,

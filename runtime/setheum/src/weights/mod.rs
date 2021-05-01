@@ -19,14 +19,14 @@
 //! A list of the different weight modules for our runtime.
 #![allow(clippy::unnecessary_cast)]
 
-pub mod module_currencies;
-pub mod settindex;
-pub mod sevm;
-pub mod sevm_accounts;
-pub mod setheum_abha;
+pub mod setheum_currencies;
+pub mod dex;
+pub mod evm;
+pub mod evm_accounts;
+pub mod setheum_staking;
 pub mod module_incentives;
-pub mod module_nft;
-pub mod module_prices;
+pub mod setheum_nft;
+pub mod setheum_prices;
 pub mod module_transaction_payment;
 
 pub mod orml_authority;

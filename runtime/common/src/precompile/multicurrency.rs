@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use frame_support::log;
-use sevm::{Context, ExitError, ExitSucceed, Precompile};
+use evm::{Context, ExitError, ExitSucceed, Precompile};
 use primitives::evm::AddressMapping as AddressMappingT;
 use sp_core::U256;
 use sp_std::{convert::TryFrom, fmt::Debug, marker::PhantomData, prelude::*, result};
@@ -73,28 +73,28 @@ where
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
 		//TODO: evaluate cost
 
-		log::debug!(target: "sevm", "input: {:?}", input);
+		log::debug!(target: "evm", "input: {:?}", input);
 
 		let input = Input::<Action, AccountId, AddressMapping>::new(input);
 
 		let action = input.action()?;
 		let currency_id = input.currency_id_at(1)?;
 
-		log::debug!(target: "sevm", "currency id: {:?}", currency_id);
+		log::debug!(target: "evm", "currency id: {:?}", currency_id);
 
 		match action {
 			Action::QueryTotalIssuance => {
 				let total_issuance = vec_u8_from_balance(MultiCurrency::total_issuance(currency_id));
-				log::debug!(target: "sevm", "total issuance: {:?}", total_issuance);
+				log::debug!(target: "evm", "total issuance: {:?}", total_issuance);
 
 				Ok((ExitSucceed::Returned, total_issuance, 0))
 			}
 			Action::QueryBalance => {
 				let who = input.account_id_at(2)?;
-				log::debug!(target: "sevm", "who: {:?}", who);
+				log::debug!(target: "evm", "who: {:?}", who);
 
 				let balance = vec_u8_from_balance(MultiCurrency::total_balance(currency_id, &who));
-				log::debug!(target: "sevm", "balance: {:?}", balance);
+				log::debug!(target: "evm", "balance: {:?}", balance);
 
 				Ok((ExitSucceed::Returned, balance, 0))
 			}
@@ -103,16 +103,16 @@ where
 				let to = input.account_id_at(3)?;
 				let amount = input.balance_at(4)?;
 
-				log::debug!(target: "sevm", "from: {:?}", from);
-				log::debug!(target: "sevm", "to: {:?}", to);
-				log::debug!(target: "sevm", "amount: {:?}", amount);
+				log::debug!(target: "evm", "from: {:?}", from);
+				log::debug!(target: "evm", "to: {:?}", to);
+				log::debug!(target: "evm", "amount: {:?}", amount);
 
 				MultiCurrency::transfer(currency_id, &from, &to, amount).map_err(|e| {
 					let err_msg: &str = e.into();
 					ExitError::Other(err_msg.into())
 				})?;
 
-				log::debug!(target: "sevm", "transfer success!");
+				log::debug!(target: "evm", "transfer success!");
 
 				Ok((ExitSucceed::Returned, vec![], 0))
 			}

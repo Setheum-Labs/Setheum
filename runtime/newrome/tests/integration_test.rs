@@ -26,12 +26,12 @@ use frame_support::{
 use frame_system::RawOrigin;
 use newrome_runtime::{
 	dollar, get_all_module_accounts, AccountId, AuthoritysOriginId, Balance, Balances, BlockNumber, Call,
-	CreateClassDeposit, CreateTokenDeposit, CurrencyId, DSWFModuleId, EnabledTradingPairs, Event, EvmAccounts,
+	CreateClassDeposit, CreateTokenDeposit, CurrencyId, SIFModuleId, EnabledTradingPairs, Event, SevmAccounts,
 	GetNativeCurrencyId, NativeTokenExistentialDeposit, NftModuleId, Origin, OriginCaller, Perbill, Proxy, Runtime,
-	SevenDays, System, TokenSymbol, DNAR, JUSD, DOT, EVM, LDOT, NFT, XBTC,
+	SevenDays, System, TokenSymbol, DNAR, JUSD, DOT, EVM, DOTS, NFT, JCHF,
 };
 use module_cdp_engine::LiquidationStrategy;
-use module_support::{CDPTreasury, SettinDexManager, Price, Rate, Ratio, RiskManager};
+use setheum_support::{CDPTreasury, SetheumDexManager, Price, Rate, Ratio, RiskManager};
 use orml_authority::DelayedOrigin;
 use orml_traits::{Change, MultiCurrency};
 use sp_io::hashing::keccak_256;
@@ -48,13 +48,13 @@ const ALICE: [u8; 32] = [4u8; 32];
 const BOB: [u8; 32] = [5u8; 32];
 
 pub type OracleModule = orml_oracle::Pallet<Runtime, orml_oracle::Instance1>;
-pub type SettinDex = settindex::Pallet<Runtime>;
+pub type DEX = SetheumDex::Pallet<Runtime>;
 pub type CdpEngineModule = module_cdp_engine::Pallet<Runtime>;
 pub type LoansModule = module_loans::Pallet<Runtime>;
 pub type CdpTreasuryModule = module_cdp_treasury::Pallet<Runtime>;
 pub type SystemModule = frame_system::Pallet<Runtime>;
 pub type AuthorityModule = orml_authority::Pallet<Runtime>;
-pub type Currencies = module_currencies::Pallet<Runtime>;
+pub type Currencies = setheum_currencies::Pallet<Runtime>;
 pub type SchedulerModule = pallet_scheduler::Pallet<Runtime>;
 
 fn run_to_block(n: u32) {
@@ -96,7 +96,7 @@ impl ExtBuilder {
 		let existential_deposit = NativeTokenExistentialDeposit::get();
 		let initial_enabled_trading_pairs = EnabledTradingPairs::get();
 
-		settindex::GenesisConfig::<Runtime> {
+		setheum_dex::GenesisConfig::<Runtime> {
 			initial_enabled_trading_pairs: initial_enabled_trading_pairs,
 			initial_listing_trading_pairs: Default::default(),
 			initial_added_liquidity_pools: vec![],
@@ -175,7 +175,7 @@ fn bob() -> secp256k1::SecretKey {
 }
 
 pub fn evm_alice_account_id() -> AccountId {
-	let address = EvmAccounts::eth_address(&alice());
+	let address = SevmAccounts::eth_address(&alice());
 	let mut data = [0u8; 32];
 	data[0..4].copy_from_slice(b"evm:");
 	data[4..24].copy_from_slice(&address[..]);
@@ -183,7 +183,7 @@ pub fn evm_alice_account_id() -> AccountId {
 }
 
 pub fn evm_bob_account_id() -> AccountId {
-	let address = EvmAccounts::eth_address(&bob());
+	let address = SevmAccounts::eth_address(&bob());
 	let mut data = [0u8; 32];
 	data[0..4].copy_from_slice(b"evm:");
 	data[4..24].copy_from_slice(&address[..]);
@@ -211,7 +211,7 @@ fn deploy_contract(account: AccountId) -> Result<H160, DispatchError> {
 	EVM::create(Origin::signed(account), contract, 0, 1000000000, 1000000000)
 		.map_or_else(|e| Err(e.error), |_| Ok(()))?;
 
-	if let Event::sevm(sevm::Event::Created(address)) = System::events().iter().last().unwrap().event {
+	if let Event::evm(evm::Event::Created(address)) = System::events().iter().last().unwrap().event {
 		Ok(address)
 	} else {
 		Err("deploy_contract failed".into())
@@ -223,44 +223,44 @@ fn test_dex_module() {
 	ExtBuilder::default()
 		.balances(vec![
 			(AccountId::from(ALICE), JUSD, (1_000_000_000_000_000_000u128)),
-			(AccountId::from(ALICE), XBTC, (1_000_000_000_000_000_000u128)),
+			(AccountId::from(ALICE), JCHF, (1_000_000_000_000_000_000u128)),
 			(AccountId::from(BOB), JUSD, (1_000_000_000_000_000_000u128)),
-			(AccountId::from(BOB), XBTC, (1_000_000_000_000_000_000u128)),
+			(AccountId::from(BOB), JCHF, (1_000_000_000_000_000_000u128)),
 		])
 		.build()
 		.execute_with(|| {
-			assert_eq!(SettinDex::get_liquidity_pool(XBTC, JUSD), (0, 0));
+			assert_eq!(SetheumDex::get_liquidity_pool(JCHF, JUSD), (0, 0));
 			assert_eq!(
-				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC)),
+				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF)),
 				0
 			);
 			assert_eq!(
 				Currencies::free_balance(
-					CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC),
+					CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF),
 					&AccountId::from(ALICE)
 				),
 				0
 			);
 
 			assert_noop!(
-				SettinDex::add_liquidity(origin_of(AccountId::from(ALICE)), XBTC, JUSD, 0, 10000000, false,),
-				settindex::Error::<Runtime>::InvalidLiquidityIncrement,
+				SetheumDex::add_liquidity(origin_of(AccountId::from(ALICE)), JCHF, JUSD, 0, 10000000, false,),
+				setheum_dex::Error::<Runtime>::InvalidLiquidityIncrement,
 			);
 
-			assert_ok!(SettinDex::add_liquidity(
+			assert_ok!(SetheumDex::add_liquidity(
 				origin_of(AccountId::from(ALICE)),
-				XBTC,
+				JCHF,
 				JUSD,
 				10000,
 				10000000,
 				false,
 			));
 
-			let add_liquidity_event = Event::settindex(settindex::Event::AddLiquidity(
+			let add_liquidity_event = Event::setheum_dex(setheum_dex::Event::AddLiquidity(
 				AccountId::from(ALICE),
 				JUSD,
 				10000000,
-				XBTC,
+				JCHF,
 				10000,
 				20000000,
 			));
@@ -268,75 +268,75 @@ fn test_dex_module() {
 				.iter()
 				.any(|record| record.event == add_liquidity_event));
 
-			assert_eq!(SettinDex::get_liquidity_pool(XBTC, JUSD), (10000, 10000000));
+			assert_eq!(SetheumDex::get_liquidity_pool(JCHF, JUSD), (10000, 10000000));
 			assert_eq!(
-				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC)),
+				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF)),
 				20000000
 			);
 			assert_eq!(
 				Currencies::free_balance(
-					CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC),
+					CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF),
 					&AccountId::from(ALICE)
 				),
 				20000000
 			);
-			assert_ok!(SettinDex::add_liquidity(
+			assert_ok!(SetheumDex::add_liquidity(
 				origin_of(AccountId::from(BOB)),
-				XBTC,
+				JCHF,
 				JUSD,
 				1,
 				1000,
 				false,
 			));
-			assert_eq!(SettinDex::get_liquidity_pool(XBTC, JUSD), (10001, 10001000));
+			assert_eq!(SetheumDex::get_liquidity_pool(JCHF, JUSD), (10001, 10001000));
 			assert_eq!(
-				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC)),
+				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF)),
 				20002000
 			);
 			assert_eq!(
 				Currencies::free_balance(
-					CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC),
+					CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF),
 					&AccountId::from(BOB)
 				),
 				2000
 			);
 			assert_noop!(
-				SettinDex::add_liquidity(origin_of(AccountId::from(BOB)), XBTC, JUSD, 1, 999, false,),
-				settindex::Error::<Runtime>::InvalidLiquidityIncrement,
+				SetheumDex::add_liquidity(origin_of(AccountId::from(BOB)), JCHF, JUSD, 1, 999, false,),
+				setheum_dex::Error::<Runtime>::InvalidLiquidityIncrement,
 			);
-			assert_eq!(SettinDex::get_liquidity_pool(XBTC, JUSD), (10001, 10001000));
+			assert_eq!(SetheumDex::get_liquidity_pool(JCHF, JUSD), (10001, 10001000));
 			assert_eq!(
-				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC)),
+				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF)),
 				20002000
 			);
 			assert_eq!(
 				Currencies::free_balance(
-					CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC),
+					CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF),
 					&AccountId::from(BOB)
 				),
 				2000
 			);
-			assert_ok!(SettinDex::add_liquidity(
+			assert_ok!(SetheumDex::add_liquidity(
 				origin_of(AccountId::from(BOB)),
-				XBTC,
+				JCHF,
 				JUSD,
 				2,
 				1000,
 				false,
 			));
-			assert_eq!(SettinDex::get_liquidity_pool(XBTC, JUSD), (10002, 10002000));
-			assert_ok!(SettinDex::add_liquidity(
+			assert_eq!(SetheumDex::get_liquidity_pool(JCHF, JUSD), (10002, 10002000));
+			assert_ok!(SetheumDex::add_liquidity(
 				origin_of(AccountId::from(BOB)),
-				XBTC,
+				JCHF,
 				JUSD,
 				1,
 				1001,
 				false,
 			));
-			assert_eq!(SettinDex::get_liquidity_pool(XBTC, JUSD), (10003, 10003000));
+			assert_eq!(SetheumDex::get_liquidity_pool(JCHF, JUSD), (10003, 10003000));
 
 			assert_eq!(
-				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::XBTC)),
+				Currencies::total_issuance(CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::JCHF)),
 				20005998
 			);
 		});
@@ -349,8 +349,8 @@ fn test_authority_module() {
 	ExtBuilder::default()
 		.balances(vec![
 			(AccountId::from(ALICE), JUSD, 1_000 * dollar(JUSD)),
-			(AccountId::from(ALICE), XBTC, 1_000 * dollar(XBTC)),
-			(DSWFModuleId::get().into_account(), JUSD, 1000 * dollar(JUSD)),
+			(AccountId::from(ALICE), JCHF, 1_000 * dollar(JCHF)),
+			(SIFModuleId::get().into_account(), JUSD, 1000 * dollar(JUSD)),
 		])
 		.build()
 		.execute_with(|| {
@@ -387,14 +387,14 @@ fn test_authority_module() {
 
 			// schedule_dispatch
 			run_to_block(1);
-			// DSWF transfer
-			let transfer_call = Call::Currencies(module_currencies::Call::transfer(
+			// SIF transfer
+			let transfer_call = Call::Currencies(setheum_currencies::Call::transfer(
 				AccountId::from(BOB).into(),
 				JUSD,
 				500 * dollar(JUSD),
 			));
-			let dswf_call = Call::Authority(orml_authority::Call::dispatch_as(
-				AuthoritysOriginId::DSWF,
+			let sif_call = Call::Authority(orml_authority::Call::dispatch_as(
+				AuthoritysOriginId::SIF,
 				Box::new(transfer_call.clone()),
 			));
 			assert_ok!(AuthorityModule::schedule_dispatch(
@@ -402,7 +402,7 @@ fn test_authority_module() {
 				DispatchTime::At(2),
 				0,
 				true,
-				Box::new(dswf_call.clone())
+				Box::new(sif_call.clone())
 			));
 
 			assert_ok!(AuthorityModule::schedule_dispatch(
@@ -424,7 +424,7 @@ fn test_authority_module() {
 
 			run_to_block(2);
 			assert_eq!(
-				Currencies::free_balance(JUSD, &DSWFModuleId::get().into_account()),
+				Currencies::free_balance(JUSD, &SIFModuleId::get().into_account()),
 				500 * dollar(JUSD)
 			);
 			assert_eq!(
@@ -583,7 +583,7 @@ fn test_nft_module() {
 			assert_ok!(NFT::create_class(
 				origin_of(AccountId::from(ALICE)),
 				vec![1],
-				module_nft::Properties(module_nft::ClassProperty::Transferable | module_nft::ClassProperty::Burnable)
+				setheum_nft::Properties(setheum_nft::ClassProperty::Transferable | setheum_nft::ClassProperty::Burnable)
 			));
 			assert_eq!(
 				Balances::deposit_into_existing(&NftModuleId::get().into_sub_account(0), 1 * CreateTokenDeposit::get())
@@ -624,33 +624,33 @@ fn test_evm_accounts_module() {
 		.execute_with(|| {
 			assert_eq!(Balances::free_balance(AccountId::from(ALICE)), 0);
 			assert_eq!(Balances::free_balance(evm_bob_account_id()), 1_000 * dollar(DNAR));
-			assert_ok!(EvmAccounts::claim_account(
+			assert_ok!(SevmAccounts::claim_account(
 				Origin::signed(AccountId::from(ALICE)),
-				EvmAccounts::eth_address(&alice()),
-				EvmAccounts::eth_sign(&alice(), &AccountId::from(ALICE).encode(), &[][..])
+				SevmAccounts::eth_address(&alice()),
+				SevmAccounts::eth_sign(&alice(), &AccountId::from(ALICE).encode(), &[][..])
 			));
-			let event = Event::sevm_accounts(sevm_accounts::Event::ClaimAccount(
+			let event = Event::evm_accounts(evm_accounts::Event::ClaimAccount(
 				AccountId::from(ALICE),
-				EvmAccounts::eth_address(&alice()),
+				SevmAccounts::eth_address(&alice()),
 			));
 			assert_eq!(last_event(), event);
 
 			// claim another eth address
 			assert_noop!(
-				EvmAccounts::claim_account(
+				SevmAccounts::claim_account(
 					Origin::signed(AccountId::from(ALICE)),
-					EvmAccounts::eth_address(&alice()),
-					EvmAccounts::eth_sign(&alice(), &AccountId::from(ALICE).encode(), &[][..])
+					SevmAccounts::eth_address(&alice()),
+					SevmAccounts::eth_sign(&alice(), &AccountId::from(ALICE).encode(), &[][..])
 				),
-				sevm_accounts::Error::<Runtime>::AccountIdHasMapped
+				evm_accounts::Error::<Runtime>::AccountIdHasMapped
 			);
 			assert_noop!(
-				EvmAccounts::claim_account(
+				SevmAccounts::claim_account(
 					Origin::signed(AccountId::from(BOB)),
-					EvmAccounts::eth_address(&alice()),
-					EvmAccounts::eth_sign(&alice(), &AccountId::from(BOB).encode(), &[][..])
+					SevmAccounts::eth_address(&alice()),
+					SevmAccounts::eth_sign(&alice(), &AccountId::from(BOB).encode(), &[][..])
 				),
-				sevm_accounts::Error::<Runtime>::EthAddressHasMapped
+				evm_accounts::Error::<Runtime>::EthAddressHasMapped
 			);
 		});
 }
@@ -668,11 +668,11 @@ fn test_evm_module() {
 			assert_eq!(Balances::free_balance(evm_alice_account_id()), 1_000 * dollar(DNAR));
 			assert_eq!(Balances::free_balance(evm_bob_account_id()), 1_000 * dollar(DNAR));
 
-			let _alice_address = EvmAccounts::eth_address(&alice());
-			let bob_address = EvmAccounts::eth_address(&bob());
+			let _alice_address = SevmAccounts::eth_address(&alice());
+			let bob_address = SevmAccounts::eth_address(&bob());
 
 			let contract = deploy_contract(evm_alice_account_id()).unwrap();
-			let event = Event::sevm(sevm::Event::Created(contract));
+			let event = Event::evm(evm::Event::Created(contract));
 			assert_eq!(last_event(), event);
 
 			assert_ok!(EVM::transfer_maintainer(
@@ -680,13 +680,13 @@ fn test_evm_module() {
 				contract,
 				bob_address
 			));
-			let event = Event::sevm(sevm::Event::TransferredMaintainer(contract, bob_address));
+			let event = Event::evm(evm::Event::TransferredMaintainer(contract, bob_address));
 			assert_eq!(last_event(), event);
 
-			// test EvmAccounts Lookup
+			// test SevmAccounts Lookup
 			assert_eq!(Balances::free_balance(evm_alice_account_id()), 9_999_998_963_300_000);
 			assert_eq!(Balances::free_balance(evm_bob_account_id()), 1_000 * dollar(DNAR));
-			let to = EvmAccounts::eth_address(&alice());
+			let to = SevmAccounts::eth_address(&alice());
 			assert_ok!(Currencies::transfer(
 				Origin::signed(evm_bob_account_id()),
 				MultiAddress::Address20(to.0),
@@ -742,7 +742,7 @@ fn test_evm_module() {
 				));
 
 				match System::events().iter().last().unwrap().event {
-					Event::sevm(sevm::Event::Created(_)) => {}
+					Event::evm(evm::Event::Created(_)) => {}
 					_ => {
 						println!(
 							"contract {:?} create failed, event: {:?}",

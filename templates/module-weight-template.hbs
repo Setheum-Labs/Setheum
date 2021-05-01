@@ -46,7 +46,7 @@ pub trait WeightInfo {
 	{{~/each}}
 }
 
-/// Weights for {{pallet}} using the setheum node and recommended hardware.
+/// Weights for {{pallet}} using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	{{~#each benchmarks as |benchmark|}}

@@ -17,11 +17,11 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use frame_support::log;
-use sevm::{Context, ExitError, ExitSucceed, Precompile};
+use evm::{Context, ExitError, ExitSucceed, Precompile};
 use sp_core::U256;
 use sp_std::{borrow::Cow, convert::TryFrom, marker::PhantomData, prelude::*, result};
 
-use module_support::EVMStateRentTrait;
+use setheum_support::EVMStateRentTrait;
 
 use super::input::{Input, InputT};
 use primitives::{evm::AddressMapping as AddressMappingT, Balance};
@@ -77,7 +77,7 @@ where
 		_target_gas: Option<u64>,
 		_context: &Context,
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
-		log::debug!(target: "sevm", "state_rent input: {:?}", input);
+		log::debug!(target: "evm", "state_rent input: {:?}", input);
 		let input = Input::<Action, AccountId, AddressMapping>::new(input);
 
 		let action = input.action()?;

@@ -24,7 +24,7 @@ use sp_runtime::FixedPointNumber;
 use sp_std::prelude::*;
 
 runtime_benchmarks! {
-	{ Runtime, module_prices }
+	{ Runtime, setheum_prices }
 
 	_ {}
 

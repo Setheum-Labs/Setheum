@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use sevm::{Context, ExitError, ExitSucceed, Precompile};
+use evm::{Context, ExitError, ExitSucceed, Precompile};
 use sp_core::{H160, U256};
 use sp_std::{borrow::Cow, convert::TryFrom, marker::PhantomData, prelude::*, result};
 
