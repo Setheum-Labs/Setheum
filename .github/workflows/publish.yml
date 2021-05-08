@@ -41,12 +41,12 @@ jobs:
           echo running on branch ${GITHUB_REF##*/}
           git config --global user.name "Github Actions"
           git config --global user.email "Github Actions"
-          cd predeployed-contracts
+          cd sevm-predeployed-contracts
           git checkout master
           git pull
           cd ..
           make generate-tokens
-          cd predeployed-contracts
+          cd sevm-predeployed-contracts
           if [ -z "$(git status --porcelain)" ]
           then
               echo "nothing to update."
@@ -54,7 +54,7 @@ jobs:
               git commit -am "${{ github.event.inputs.commitMessage }}"
           fi
           cd ..
-          cd predeployed-contracts/contracts
+          cd sevm-predeployed-contracts/contracts
           yarn run prepare
           yarn version --patch
           new_version=$(yarn versions --json | jq -er '.data."@setheum-network/contracts"')

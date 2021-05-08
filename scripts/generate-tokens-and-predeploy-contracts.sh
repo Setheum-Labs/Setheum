@@ -8,6 +8,6 @@ PROJECT_ROOT=`git rev-parse --show-toplevel`
 cargo test -p setheum-primitives -- --ignored
 
 # generate-predeployed-contracts
-cd predeployed-contracts
+cd sevm-predeployed-contracts
 yarn
 yarn run generate-bytecode
