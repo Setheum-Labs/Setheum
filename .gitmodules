@@ -1,9 +1,0 @@
-[submodule "modules/stp258"]
-	path = modules/stp258
-	url = https://github.com/Setheum-Labs/stp258
-[submodule "modules/serp-tes"]
-	path = modules/serp-tes
-	url = https://github.com/Setheum-Labs/serp-tes
-[submodule "modules/serp-market"]
-	path = modules/serp-market
-	url = https://github.com/Setheum-Labs/serp-market
