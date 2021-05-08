@@ -111,7 +111,7 @@ Bench bot will do the benchmarking, generate `weights.rs` file push changes into
 
 ### Generate runtime weights
 
-Comment on a PR `/bench runtime <runtime> <module_name>` i.e.: `/bench runtime newrome module_currencies`.
+Comment on a PR `/bench runtime <runtime> <module_name>` i.e.: `/bench runtime newrome setheum_currencies`.
 
 To generate weights for all modules just pass `*` as `module_name` i.e: `/bench runtime newrome *`
 
