@@ -28,10 +28,9 @@ use newrome_runtime::{
 	dollar, get_all_module_accounts, AccountId, AuthoritysOriginId, Balance, Balances, BlockNumber, Call,
 	CreateClassDeposit, CreateTokenDeposit, CurrencyId, SIFModuleId, EnabledTradingPairs, Event, SevmAccounts,
 	GetNativeCurrencyId, NativeTokenExistentialDeposit, NftModuleId, Origin, OriginCaller, Perbill, Proxy, Runtime,
-	SevenDays, System, TokenSymbol, DNAR, JUSD, DOT, EVM, DOTS, NFT, JCHF,
+	SevenDays, System, TokenSymbol, DNAR, JUSD, DOT, EVM, JEUR, NFT, JCHF,
 };
-use module_cdp_engine::LiquidationStrategy;
-use setheum_support::{CDPTreasury, SetheumDexManager, Price, Rate, Ratio, RiskManager};
+use setheum_support::{SetheumDexManager, Price, Rate, Ratio};
 use orml_authority::DelayedOrigin;
 use orml_traits::{Change, MultiCurrency};
 use sp_io::hashing::keccak_256;
@@ -48,10 +47,7 @@ const ALICE: [u8; 32] = [4u8; 32];
 const BOB: [u8; 32] = [5u8; 32];
 
 pub type OracleModule = orml_oracle::Pallet<Runtime, orml_oracle::Instance1>;
-pub type DEX = SetheumDex::Pallet<Runtime>;
-pub type CdpEngineModule = module_cdp_engine::Pallet<Runtime>;
-pub type LoansModule = module_loans::Pallet<Runtime>;
-pub type CdpTreasuryModule = module_cdp_treasury::Pallet<Runtime>;
+pub type SetheumDex = SetheumDex::Pallet<Runtime>;
 pub type SystemModule = frame_system::Pallet<Runtime>;
 pub type AuthorityModule = orml_authority::Pallet<Runtime>;
 pub type Currencies = setheum_currencies::Pallet<Runtime>;

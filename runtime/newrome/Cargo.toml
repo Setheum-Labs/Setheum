@@ -1,6 +1,6 @@
 [package]
 name = "newrome-runtime"
-version = "0.7.11"
+version = "0.4.2"
 authors = ["Setheum Labs"]
 edition = "2018"
 build = "build.rs"
@@ -85,23 +85,16 @@ orml-xcm-support = { path = "../../orml/xcm-support", default-features = false }
 orml-unknown-tokens = { path = "../../orml/unknown-tokens", default-features = false }
 
 setheum-transaction-payment = { path = "../../serml/transaction-payment", default-features = false }
-setheum-airdrop = { path = "../../serml/setheum-airdrop", default-features = false }
+setheum-airdrop = { path = "../../serml/airdrop", default-features = false }
 setheum-dex = { path = "../../serml/dex", default-features = false }
 setheum-currencies = { path = "../../serml/currencies", default-features = false }
-module-emergency-shutdown = { path = "../../serml/emergency-shutdown", default-features = false }
 setheum-evm = { path = "../../serml/evm", default-features = false }
 evm-accounts = { path = "../../serml/evm-accounts", default-features = false }
 setheum-evm-bridge = { path = "../../serml/evm-bridge", default-features = false }
 setheum-nft = { path = "../../serml/nft", default-features = false }
 setheum-prices = { path = "../../serml/prices", default-features = false }
-module-incentives = { path = "../../serml/incentives", default-features = false }
+setheum-incentives = { path = "../../serml/incentives", default-features = false }
 setheum-support = { path = "../../serml/support", default-features = false }
-setheum-staking = { path = "../../serml/abha", default-features = false }
-setheum-staking-validator-list = { path = "../../serml/abha-validator-list", default-features = false }
-setheum-nominees-election = { path = "../../serml/nominees-election", default-features = false }
-setheum-staking-pool = { path = "../../serml/staking-pool", default-features = false }
-setheum-staking-pool-rpc-runtime-api = { path = "../../serml/staking-pool/rpc/runtime-api", default-features = false }
-module-polkadot-bridge = { path = "../../serml/polkadot-bridge", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 runtime-common = { path = "../common", default-features = false }
 
@@ -122,7 +115,6 @@ std = [
 	"codec/std",
 	"serde",
 	"hex/std",
-
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",
@@ -191,21 +183,14 @@ std = [
 
 	"setheum-transaction-payment/std",
 	"setheum-airdrop/std",
-	"dex/std",
+	"setheum-dex/std",
 	"setheum-currencies/std",
-	"module-emergency-shutdown/std",
-	"evm/std",
+	"setheum-evm/std",
 	"evm-accounts/std",
 	"setheum-evm-bridge/std",
 	"setheum-nft/std",
 	"setheum-prices/std",
-	"module-incentives/std",
 	"setheum-support/std",
-	"setheum-staking/std",
-	"setheum-nominees-election/std",
-	"setheum-staking-pool/std",
-	"setheum-staking-pool-rpc-runtime-api/std",
-	"module-polkadot-bridge/std",
 	"primitives/std",
 	"runtime-common/std",
 
@@ -223,7 +208,7 @@ runtime-benchmarks = [
 	"sp-runtime/runtime-benchmarks",
 	"orml-authority/runtime-benchmarks",
 
-	"dex/runtime-benchmarks",
+	"setheum-dex/runtime-benchmarks",
 	"setheum-nft/runtime-benchmarks",
 ]
 # When enabled, the runtime api will not be build.

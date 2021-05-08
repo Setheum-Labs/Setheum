@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Foundation.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ use service::{chain_spec, IdentifyVariant};
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"setheum Node".into()
+		"Setheum Node".into()
 	}
 
 	fn impl_version() -> String {
@@ -38,11 +38,11 @@ impl SubstrateCli for Cli {
 	}
 
 	fn author() -> String {
-		"setheum Developers".into()
+		"Setheum Labs".into()
 	}
 
 	fn support_url() -> String {
-		"https://github.com/setheumNetwork/setheum/issues".into()
+		"https://github.com/Setheum-Labs/Setheum/issues".into()
 	}
 
 	fn copyright_start_year() -> i32 {
@@ -99,7 +99,7 @@ impl SubstrateCli for Cli {
 						Box::new(chain_spec::setheum::ChainSpec::from_json_file(path)?)
 					}
 					#[cfg(not(feature = "with-setheum-runtime"))]
-					return Err("setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into());
+					return Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into());
 				} else {
 					#[cfg(feature = "with-newrome-runtime")]
 					{
@@ -146,7 +146,7 @@ fn set_default_ss58_version(spec: &Box<dyn service::ChainSpec>) {
 	sp_core::crypto::set_default_ss58_version(ss58_version);
 }
 
-/// Parses setheum specific CLI arguments and run the service.
+/// Parses Setheum specific CLI arguments and run the service.
 pub fn run() -> sc_cli::Result<()> {
 	let cli = Cli::from_args();
 

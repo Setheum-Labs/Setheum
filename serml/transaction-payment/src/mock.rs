@@ -158,10 +158,6 @@ impl setheum_currencies::Config for Runtime {
 	type EVMBridge = MockEVMBridge;
 }
 
-thread_local! {
-	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
-}
-
 ord_parameter_types! {
 	pub const Zero: AccountId = AccountId::new([0u8; 32]);
 }

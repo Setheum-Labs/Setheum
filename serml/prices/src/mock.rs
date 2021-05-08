@@ -92,13 +92,6 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 	}
 }
 
-pub struct MockLiquidStakingExchangeProvider;
-impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
-	fn get_exchange_rate() -> ExchangeRate {
-		ExchangeRate::saturating_from_rational(1, 2)
-	}
-}
-
 pub struct MockSetheumDex;
 impl SetheumDexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
@@ -167,8 +160,6 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetStableCurrencyId: CurrencyId = JUSD;
-	pub const GetStakingCurrencyId: CurrencyId = DNAR;
-	pub const GetLiquidCurrencyId: CurrencyId = LDNAR;
 	pub StableCurrencyFixedPrice: Price = Price::one();
 }
 
@@ -177,10 +168,7 @@ impl Config for Runtime {
 	type Source = MockDataProvider;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
-	type GetStakingCurrencyId = GetStakingCurrencyId;
-	type GetLiquidCurrencyId = GetLiquidCurrencyId;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type LiquidStakingExchangeRateProvider = MockLiquidStakingExchangeProvider;
 	type DEX = MockSetheumDex;
 	type Currency = Tokens;
 	type WeightInfo = ();

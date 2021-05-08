@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Foundation.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 //! setheum chain configurations.
 
 use setheum_primitives::{AccountId, AccountPublic, Balance, Nonce};
-use module_evm::GenesisAccount;
+use setheum_evm::GenesisAccount;
 use sc_chain_spec::ChainSpecExtension;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
@@ -85,7 +85,7 @@ pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, Grandp
 
 /// Returns `evm_genesis_accounts`
 pub fn evm_genesis() -> BTreeMap<H160, GenesisAccount<Balance, Nonce>> {
-	let contracts_json = &include_bytes!("../../../../../predeploy-contracts/resources/bytecodes.json")[..];
+	let contracts_json = &include_bytes!("../../../../../sevm-predeployed-contracts/resources/bytecodes.json")[..];
 	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
 	let mut accounts = BTreeMap::new();
 	for (_, address, code_string) in contracts {
@@ -98,7 +98,7 @@ pub fn evm_genesis() -> BTreeMap<H160, GenesisAccount<Balance, Nonce>> {
 
 		let addr = H160::from_slice(
 			from_hex(address.as_str())
-				.expect("predeploy-contracts must specify address")
+				.expect("sevm-predeployed-contracts must specify address")
 				.as_slice(),
 		);
 		accounts.insert(addr, account);

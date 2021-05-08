@@ -1,7 +1,7 @@
 [package]
 name = "setheum-dev-service"
-version = "0.7.11"
-authors = ["setheum Developers"]
+version = "0.4.2"
+authors = ["Setheum Labs"]
 edition = "2018"
 
 [dependencies]
@@ -43,14 +43,12 @@ sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch 
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 
-module-evm = { path = "../../../modules/evm" }
-module-staking-pool = { path = "../../../modules/staking-pool" }
-module-staking-pool-rpc = { path = "../../../modules/staking-pool/rpc" }
-module-nft = { path = "../../../modules/nft" }
+module-evm = { path = "../../..serml/evm" }
+module-nft = { path = "../../..serml/nft" }
 orml-oracle-rpc = { path = "../../../orml/oracle/rpc" }
 setheum-primitives = { path = "../../../primitives" }
 setheum-rpc = { path = "../../../rpc", features = ["standalone"]}
-module-setheum-evm-rpc-runtime-api = { path = "../../../modules/evm/rpc/runtime_api" }
+setheum-evm-rpc-runtime-api = { path = "../../..serml/evm/rpc/runtime_api" }
 
 runtime-common = { path = "../../../runtime/common" }
 newrome-runtime = { path = "../../../runtime/newrome", features = ["standalone"], optional = true }

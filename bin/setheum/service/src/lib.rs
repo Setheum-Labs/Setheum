@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Foundation.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -79,16 +79,16 @@ native_executor_instance!(
 
 #[cfg(feature = "with-setheum-runtime")]
 native_executor_instance!(
-	pub setheumExecutor,
+	pub SetheumExecutor,
 	setheum_runtime::api::dispatch,
 	setheum_runtime::native_version,
 	frame_benchmarking::benchmarking::HostFunctions,
 );
 
 /// Can be called for a `Configuration` to check if it is a configuration for
-/// the `setheum` network.
+/// the `Setheum` network.
 pub trait IdentifyVariant {
-	/// Returns if this is a configuration for the `setheum` network.
+	/// Returns if this is a configuration for the `Setheum` network.
 	fn is_setheum(&self) -> bool;
 
 	/// Returns if this is a configuration for the `Neom` network.
@@ -425,7 +425,7 @@ pub fn new_chain_ops(
 				import_queue,
 				task_manager,
 				..
-			} = new_partial::<setheum_runtime::RuntimeApi, setheumExecutor>(config, false)?;
+			} = new_partial::<setheum_runtime::RuntimeApi, SetheumExecutor>(config, false)?;
 			Ok((Arc::new(Client::setheum(client)), backend, import_queue, task_manager))
 		}
 		#[cfg(not(feature = "with-setheum-runtime"))]
