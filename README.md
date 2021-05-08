@@ -2,8 +2,6 @@
 
 Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and SERML, ready for hacking :rocket:
 <div align="center">
-
-[![Setheum version](https://img.shields.io/badge/Setheum-0.4.1-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
 [![Substrate version](https://img.shields.io/badge/Substrate-2.0.1-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
 [![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=green)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
  <br />
@@ -21,7 +19,7 @@ This project contains some configuration files to help get started :hammer_and_w
 ### Rust Setup
 
 Follow the [Rust setup instructions](./doc/rust-setup.md) before using the included Makefile to
-build the Setheum Node.
+build the Setheum node.
 
 ### Makefile
 

@@ -1,19 +1,128 @@
-.PHONY: init
-init:
+.PHONY: run
+run: githooks
+	cargo run --manifest-path bin/setheum-dev/Cargo.toml -- --dev -lruntime=debug --instant-sealing
+
+.PHONY: run-eth
+run-eth: githooks
+	cargo run --manifest-path bin/setheum-dev/Cargo.toml --features with-ethereum-compatibility -- --dev -lruntime=debug -levm=debug --instant-sealing
+
+.PHONY: toolchain
+toolchain:
 	./scripts/init.sh
 
+.PHONY: build-full
+build-full: githooks
+	cargo build
+
+.PHONY: build-all
+build-all: build-dev build-setheum
+
+.PHONY: build-dev
+build-dev:
+	cargo build --manifest-path bin/setheum-dev/Cargo.toml --locked
+
+.PHONY: build-setheum
+build-setheum:
+	cargo build --manifest-path bin/setheum/Cargo.toml --locked --features with-all-runtime
+
 .PHONY: check
-check:
-	WASM_BUILD_TOOLCHAIN=nightly-2020-11-16 cargo check
+check: githooks
+	SKIP_WASM_BUILD= cargo check
+
+.PHONY: check-tests
+check-tests: githooks
+	SKIP_WASM_BUILD= cargo check --tests --all
+
+.PHONY: check-all
+check-all: check-dev check-setheum
+
+.PHONY: check-dev
+check-dev:
+	SKIP_WASM_BUILD= cargo check --manifest-path bin/setheum-dev/Cargo.toml --tests --all
+
+.PHONY: check-setheum
+check-setheum:
+	SKIP_WASM_BUILD= cargo check --manifest-path bin/setheum/Cargo.toml --tests --all --features with-all-runtime
+
+.PHONY: check-debug
+check-debug:
+	RUSTFLAGS="-Z macro-backtrace" SKIP_WASM_BUILD= cargo +nightly check
 
 .PHONY: test
-test:
-	WASM_BUILD_TOOLCHAIN=nightly-2020-11-16 cargo test --all
+test: githooks
+	SKIP_WASM_BUILD= cargo test --all
 
-.PHONY: run
-run:
-	WASM_BUILD_TOOLCHAIN=nightly-2020-11-16 cargo run --release -- --dev --tmp
+.PHONY: test-eth
+test-eth: githooks
+	SKIP_WASM_BUILD= cargo test --manifest-path bin/setheum/Cargo.toml test_evm_module --features with-ethereum-compatibility -p newrome-runtime
+
+.PHONY: test-all
+test-all: test-dev test-setheum
+
+.PHONY: test-dev
+test-dev:
+	SKIP_WASM_BUILD= cargo test --manifest-path bin/setheum-dev/Cargo.toml --all
+
+.PHONY: test-setheum
+test-setheum:
+	SKIP_WASM_BUILD= cargo test --manifest-path bin/setheum/Cargo.toml --all --features with-all-runtime
+
+.PHONY: test-benchmarking
+test-benchmarking:
+	SKIP_WASM_BUILD= cargo test --manifest-path bin/setheum/Cargo.toml --features runtime-benchmarks -p newrome-runtime benchmarking
 
 .PHONY: build
-build:
-	WASM_BUILD_TOOLCHAIN=nightly-2020-11-16 cargo build --release
+build: githooks
+	SKIP_WASM_BUILD= cargo build
+
+.PHONY: purge
+purge: target/debug/setheum-dev
+	target/debug/setheum-dev purge-chain --dev -y
+
+.PHONY: restart
+restart: purge run
+
+target/debug/setheum-dev:
+	SKIP_WASM_BUILD= cargo build
+
+GITHOOKS_SRC = $(wildcard githooks/*)
+GITHOOKS_DEST = $(patsubst githooks/%, .git/hooks/%, $(GITHOOKS_SRC))
+
+.git/hooks:
+	mkdir .git/hooks
+
+.git/hooks/%: githooks/%
+	cp $^ $@
+
+.PHONY: githooks
+githooks: .git/hooks $(GITHOOKS_DEST)
+
+.PHONY: init
+init: toolchain submodule build-full
+
+.PHONY: submodule
+submodule:
+	git submodule update --init --recursive
+
+.PHONY: update-orml
+update-orml:
+	cd orml && git checkout master && git pull
+	git add orml
+
+.PHONY: update
+update: update-orml cargo-update check-all
+
+.PHONY: cargo-update
+cargo-update:
+	cargo update
+	cargo update --manifest-path bin/setheum-dev/Cargo.toml
+	cargo update --manifest-path bin/setheum-dev/cli/Cargo.toml
+	cargo update --manifest-path bin/setheum-dev/service/Cargo.toml
+
+.PHONY: build-wasm-newrome
+build-wasm-newrome:
+	./scripts/build-only-wasm.sh newrome-runtime
+
+.PHONY: generate-tokens
+generate-tokens:
+	./scripts/generate-tokens-and-predeployed-contracts.sh

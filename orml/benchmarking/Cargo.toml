@@ -1,0 +1,41 @@
+[package]
+name = "orml-benchmarking"
+description = "Provide macro to benchmark Substrate runtime."
+repository = "https://github.com/open-web3-stack/open-runtime-module-library/tree/master/benchmarking"
+license = "Apache-2.0"
+version = "0.4.1-dev"
+authors = ["Laminar Developers <hello@laminar.one>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0.124", optional = true }
+paste = "0.1.16"
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-runtime-interface = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+
+funty = { version = "=1.1.0", default-features = false } # https://github.com/bitvecto-rs/bitvec/issues/105
+
+[dev-dependencies]
+hex-literal = "0.2.1"
+
+[features]
+default = [ "std" ]
+std = [
+	"serde",
+	"codec/std",
+	"sp-runtime-interface/std",
+	"sp-runtime/std",
+	"sp-api/std",
+	"sp-std/std",
+	"frame-support/std",
+	"frame-system/std",
+	"frame-benchmarking/std",
+]
+

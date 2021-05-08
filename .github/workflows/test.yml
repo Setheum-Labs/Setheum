@@ -1,0 +1,41 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+    - master
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    env:
+      SCCACHE_CACHE_SIZE: "50G"
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Install toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly-2021-03-04
+        components: rustfmt
+        target: wasm32-unknown-unknown
+        default: true
+    - name: Check format
+      run: cargo fmt --all -- --check
+    - name: Install clippy
+      run: rustup component add clippy
+    - name: Run clippy
+      run: cargo clippy -- -D warnings
+    - name: Build
+      run: make build-all
+    - name: Run tests
+      run: make test-all
+    - name: Run test-eth
+      run: make test-eth
+    - name: Run benchmarking tests
+      run: make test-benchmarking
