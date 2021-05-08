@@ -131,7 +131,7 @@ pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const JUSD: CurrencyId = CurrencyId::Token(TokenSymbol::JUSD);
 pub const JCHF: CurrencyId = CurrencyId::Token(TokenSymbol::JCHF);
 pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
-pub const DOTS: CurrencyId = CurrencyId::Token(TokenSymbol::DOTS);
+pub const JEUR: CurrencyId = CurrencyId::Token(TokenSymbol::JEUR);
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
@@ -369,17 +369,8 @@ impl evm::Config for Test {
 	type WeightInfo = ();
 }
 
-pub struct MockLiquidStakingExchangeProvider;
-impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
-	fn get_exchange_rate() -> ExchangeRate {
-		ExchangeRate::saturating_from_rational(1, 2)
-	}
-}
-
 parameter_types! {
 	pub StableCurrencyFixedPrice: Price = Price::saturating_from_rational(1, 1);
-	pub const GetStakingCurrencyId: CurrencyId = DOT;
-	pub const GetLiquidCurrencyId: CurrencyId = DOTS;
 }
 
 ord_parameter_types! {
@@ -391,10 +382,7 @@ impl setheum_prices::Config for Test {
 	type Source = Oracle;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
-	type GetStakingCurrencyId = GetStakingCurrencyId;
-	type GetLiquidCurrencyId = GetLiquidCurrencyId;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type LiquidStakingExchangeRateProvider = MockLiquidStakingExchangeProvider;
 	type SetheumDex = SetheumDex;
 	type Currency = Currencies;
 	type WeightInfo = ();
@@ -435,7 +423,7 @@ pub fn evm_genesis() -> BTreeMap<H160, evm::GenesisAccount<Balance, u64>> {
 }
 
 pub const INITIAL_BALANCE: Balance = 1_000_000_000_000;
-pub const DNAR_ERC20_ADDRESS: &str = "0x0000000000000000000000000000000001000000";
+pub const DNAR_ERC20_ADDRESS: &str = "0x0000000000000000000000000000000000100000";
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;

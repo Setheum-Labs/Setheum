@@ -44,7 +44,7 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::currency::{
-	GetDecimals, DNAR, JUSD, JEUR, JGBP, NEOM, JSAR, JCHF, JNGN, SETN, HALAL, DOT, KSM,
+	GetDecimals, DNAR, JUSD, JEUR, JGBP, NEOM, JSAR, JCHF, JNGN, SETN, HALAL,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
@@ -211,73 +211,6 @@ parameter_types! {
 			Rate::one(),  // 100%
 		],
 	];
-}
-
-pub struct CurveFeeModel;
-impl<Balance: FixedPointOperand> setheum_staking_pool::FeeModel<Balance> for CurveFeeModel {
-	/// The parameter `base_rate` does not work in this fee model, base fee is
-	/// fixed at 2%
-	fn get_fee(
-		remain_available_percent: Ratio,
-		available_amount: Balance,
-		request_amount: Balance,
-		_base_rate: Rate,
-	) -> Option<Balance> {
-		if remain_available_percent.is_zero()
-			|| remain_available_percent > Ratio::one()
-			|| request_amount > available_amount
-			|| request_amount.is_zero()
-		{
-			return None;
-		}
-
-		let ten = Ratio::saturating_from_rational(10, 1);
-
-		// x , [0, 100%)
-		let used_buffer_percent = Ratio::one().saturating_sub(remain_available_percent);
-		// y  [0, 100%]
-		let demand_in_available_percent = Ratio::saturating_from_rational(request_amount, available_amount);
-
-		// x0 [0, 9]
-		let x = used_buffer_percent.saturating_mul(ten);
-		let x0 = x
-			.into_inner()
-			.checked_div(Ratio::accuracy())
-			.expect("panics only if accuracy is zero, accuracy is not zero; qed") as usize;
-		let prefix_x: Ratio = x.frac();
-
-		// y0 [0, 10]
-		let y = demand_in_available_percent.saturating_mul(ten);
-		let mut y0 = y
-			.into_inner()
-			.checked_div(Ratio::accuracy())
-			.expect("panics only if accuracy is zero, accuracy is not zero; qed") as usize;
-		let mut prefix_y: Ratio = y.frac();
-
-		let multiplier = if prefix_x.is_zero() && prefix_y.is_zero() {
-			FeeRateMatrix::get()[x0][y0]
-		} else {
-			if y0 == 10 {
-				y0 -= 1;
-				prefix_y = prefix_y.saturating_add(Ratio::saturating_from_rational(10, 100));
-			}
-
-			let x0_y0_rate = FeeRateMatrix::get()[x0][y0];
-			let x0_y1_rate = FeeRateMatrix::get()[x0][y0 + 1];
-			let x1_y0_rate = FeeRateMatrix::get()[x0 + 1][y0];
-			let x1_y1_rate = FeeRateMatrix::get()[x0 + 1][y0 + 1];
-			let y0_x = prefix_x
-				.saturating_mul(x1_y0_rate.saturating_sub(x0_y0_rate))
-				.saturating_add(x0_y0_rate);
-			let y1_x = prefix_x
-				.saturating_mul(x1_y1_rate.saturating_sub(x0_y1_rate))
-				.saturating_add(x0_y1_rate);
-
-			y1_x.saturating_sub(y0_x).saturating_mul(prefix_y).saturating_add(y0_x)
-		};
-
-		multiplier.checked_mul_int(available_amount)
-	}
 }
 
 pub const SYSTEM_CONTRACT_LEADING_ZERO_BYTES: usize = 12;

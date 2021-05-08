@@ -65,20 +65,8 @@ pub mod module {
 		/// The fixed prices of stable currency, it should be 1 USD in Setheum.
 		type StableCurrencyFixedPrice: Get<Price>;
 
-		#[pallet::constant]
-		/// The staking currency id, it should be DOT in Setheum.
-		type GetStakingCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The liquid currency id, it should be DOTS in Setheum.
-		type GetLiquidCurrencyId: Get<CurrencyId>;
-
 		/// The origin which may lock and unlock prices feed to system.
 		type LockOrigin: EnsureOrigin<Self::Origin>;
-
-		/// The provider of the exchange rate between liquid currency and
-		/// staking currency.
-		type LiquidStakingExchangeRateProvider: ExchangeRateProvider;
 
 		/// DEX provide liquidity info.
 		type DEX = SetheumDexManager<Self::AccountId, CurrencyId, Balance>;
@@ -159,11 +147,6 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		let maybe_feed_price = if currency_id == T::GetStableCurrencyId::get() {
 			// if is stable currency, return fixed price
 			Some(T::StableCurrencyFixedPrice::get())
-		} else if currency_id == T::GetLiquidCurrencyId::get() {
-			// if is setheum-staking liquid currency, return the product of staking currency price and
-			// liquid/staking exchange rate.
-			return Self::get_price(T::GetStakingCurrencyId::get())
-				.and_then(|n| n.checked_mul(&T::LiquidStakingExchangeRateProvider::get_exchange_rate()));
 		} else if let CurrencyId::DEXShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = CurrencyId::Token(symbol_0);
 			let token_1 = CurrencyId::Token(symbol_1);

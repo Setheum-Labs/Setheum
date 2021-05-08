@@ -24,7 +24,7 @@ pub mod dex;
 pub mod evm;
 pub mod evm_accounts;
 pub mod setheum_staking;
-pub mod module_incentives;
+pub mod setheum_incentives;
 pub mod setheum_nft;
 pub mod setheum_prices;
 pub mod module_transaction_payment;

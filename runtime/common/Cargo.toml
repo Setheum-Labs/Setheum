@@ -1,6 +1,6 @@
 [package]
 name = "runtime-common"
-version = "0.7.11"
+version = "0.4.2"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -17,7 +17,6 @@ frame-system = { git = "https://github.com/paritytech/substrate", branch = "roco
 pallet-scheduler  = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 evm = { path = "../../serml/evm", default-features = false }
 
-setheum-staking-pool = { path = "../../serml/staking-pool", default-features = false }
 setheum-support = { path = "../../serml/support", default-features = false }
 setheum-transaction-payment = { path = "../../serml/transaction-payment", default-features = false }
 setheum-prices = { path = "../../serml/prices", default-features = false }
@@ -57,7 +56,6 @@ std = [
 	"orml-traits/std",
 	"setheum-support/std",
 	"primitives/std",
-	"setheum-staking-pool/std",
 	"setheum-transaction-payment/std",
 	"setheum-prices/std",
 ]

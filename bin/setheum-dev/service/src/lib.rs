@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Foundation.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -75,7 +75,7 @@ native_executor_instance!(
 );
 
 /// Can be called for a `Configuration` to check if it is a configuration for
-/// the `setheum` network.
+/// the `Setheum` network.
 pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Setheum` network.
 	fn is_setheum(&self) -> bool;
@@ -684,7 +684,7 @@ pub fn new_chain_ops(
 			Ok((Arc::new(Client::setheum(client)), backend, import_queue, task_manager))
 		}
 		#[cfg(not(feature = "with-setheum-runtime"))]
-		Err("setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
+		Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
 	}
 }
 
@@ -694,7 +694,7 @@ pub fn build_light(config: Configuration) -> Result<TaskManager, ServiceError> {
 		#[cfg(feature = "with-setheum-runtime")]
 		return new_light::<setheum_runtime::RuntimeApi, setheumExecutor>(config).map(|r| r.0);
 		#[cfg(not(feature = "with-setheum-runtime"))]
-		Err("setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
+		Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
 	} else if config.chain_spec.is_neom() {
 		#[cfg(feature = "with-neom-runtime")]
 		return new_light::<neom_runtime::RuntimeApi, NeomExecutor>(config).map(|r| r.0);
@@ -721,7 +721,7 @@ pub fn build_full(
 			Ok((Arc::new(Client::setheum(client)), network_status_sinks, task_manager))
 		}
 		#[cfg(not(feature = "with-setheum-runtime"))]
-		Err("setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
+		Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
 	} else if config.chain_spec.is_neom() {
 		#[cfg(feature = "with-neom-runtime")]
 		{

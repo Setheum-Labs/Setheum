@@ -99,7 +99,7 @@ pub use primitives::{
 	EraIndex, Hash, Moment, Nonce, Share, Signature, TokenSymbol, TradingPair,
 };
 pub use runtime_common::{
-	cent, deposit, dollar, microcent, millicent, CurveFeeModel, ExchangeRate, GasToWeight, OffchainSolutionWeightLimit,
+	cent, deposit, dollar, microcent, millicent, ExchangeRate, GasToWeight, OffchainSolutionWeightLimit,
 	Price, Rate, Ratio, RuntimeBlockLength, RuntimeBlockWeights, SystemContractsFilter, TimeStampedPrice, 
 	NEOM, JSAR, JCHF, JNGN, HALAL, KSM,
 };
@@ -136,10 +136,8 @@ impl_opaque_keys! {
 parameter_types! {
 	pub const SetheumTreasuryModuleId: ModuleId = ModuleId(*b"dnr/trsy");
 	pub const HalalSwapModuleId: ModuleId = ModuleId(*b"dnr/sdex");
-	pub const StakingPoolModuleId: ModuleId = ModuleId(*b"dnr/stkp");
-	pub const SerpReserveModuleId: ModuleId = ModuleId(*b"dnr/sptr");
-	pub const IncentivesModuleId: ModuleId = ModuleId(*b"dnr/inct");
-	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"dnr/phre";
+	//TODO: Add the SERPReserve
+	//pub const SerpReserveModuleId: ModuleId = ModuleId(*b"dnr/sptr");
 	pub const NftModuleId: ModuleId = ModuleId(*b"dnr/sNFT");
 	// Setheum Investment Fund
 	pub const SIFModuleId: ModuleId = ModuleId(*b"dnr/sSIF");
@@ -149,9 +147,8 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
 		SetheumTreasuryModuleId::get().into_account(),
 		HalalSwapModuleId::get().into_account(),
-		StakingPoolModuleId::get().into_account(),
-		SerpReserveModuleId::get().into_account()
-		IncentivesModuleId::get().into_account(),
+		//TODO: Add the SERPReserve
+		// SerpReserveModuleId::get().into_account()
 		SIFModuleId::get().into_account(),
 		ZeroAccountId::get(),
 	]
@@ -250,10 +247,11 @@ type EnsureRootOrHalfGeneralCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, GeneralCouncilInstance>,
 >;
 
-type EnsureRootOrHalfSerpCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SerpCouncilInstance>,
+//TODO: Add the SERPReserve
+// type EnsureRootOrHalfSerpCouncil = EnsureOneOf<
+//		AccountId,
+//		EnsureRoot<AccountId>,
+//		pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SerpCouncilInstance>,
 >;
 
 type EnsureRootOrTwoThirdsGeneralCouncil = EnsureOneOf<
@@ -310,35 +308,36 @@ impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
 	type MembershipChanged = GeneralCouncil;
 }
 
-parameter_types! {
-	pub const SerpCouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const SerpCouncilMaxProposals: u32 = 100;
-	pub const SerpCouncilMaxMembers: u32 = 100;
-}
+//TODO: Add the SERP
+//	parameter_types! {
+//		pub const SerpCouncilMotionDuration: BlockNumber = 7 * DAYS;
+//		pub const SerpCouncilMaxProposals: u32 = 100;
+//		pub const SerpCouncilMaxMembers: u32 = 100;
+//	}
 
-type SerpCouncilInstance = pallet_collective::Instance2;
-impl pallet_collective::Config<SerpCouncilInstance> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-	type MotionDuration = SerpCouncilMotionDuration;
-	type MaxProposals = SerpCouncilMaxProposals;
-	type MaxMembers = SerpCouncilMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = ();
-}
+//	type SerpCouncilInstance = pallet_collective::Instance2;
+//	impl pallet_collective::Config<SerpCouncilInstance> for Runtime {
+//		type Origin = Origin;
+//		type Proposal = Call;
+//		type Event = Event;
+//		type MotionDuration = SerpCouncilMotionDuration;
+//		type MaxProposals = SerpCouncilMaxProposals;
+//		type MaxMembers = SerpCouncilMaxMembers;
+//		type DefaultVote = pallet_collective::PrimeDefaultVote;
+//		type WeightInfo = ();
+//	}
 
-type SerpCouncilMembershipInstance = pallet_membership::Instance2;
-impl pallet_membership::Config<SerpCouncilMembershipInstance> for Runtime {
-	type Event = Event;
-	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type MembershipInitialized = SerpCouncil;
-	type MembershipChanged = SerpCouncil;
-}
+//	type SerpCouncilMembershipInstance = pallet_membership::Instance2;
+//	impl pallet_membership::Config<SerpCouncilMembershipInstance> for Runtime {
+//		type Event = Event;
+//		type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
+//		type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
+//		type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
+//		type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
+//		type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
+//		type MembershipInitialized = SerpCouncil;
+//		type MembershipChanged = SerpCouncil;
+//	}
 
 parameter_types! {
 	pub const TechnicalCommitteeMotionDuration: BlockNumber = 7 * DAYS;
@@ -378,8 +377,8 @@ impl pallet_membership::Config<OperatorMembershipInstancesetheum> for Runtime {
 	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type MembershipInitialized = setheumOracle;
-	type MembershipChanged = setheumOracle;
+	type MembershipInitialized = SetheumOracle;
+	type MembershipChanged = SetheumOracle;
 }
 
 type OperatorMembershipInstanceBand = pallet_membership::Instance6;
@@ -529,43 +528,16 @@ impl orml_authority::Config for Runtime {
 }
 
 parameter_types! {
-	pub CandidacyBond: Balance = 10 * dollar(KSMS);
-	pub VotingBondBase: Balance = 2 * dollar(KSMS);
-	pub VotingBondFactor: Balance = dollar(KSMS);
-	pub const TermDuration: BlockNumber = 7 * DAYS;
-	pub const DesiredMembers: u32 = 13;
-	pub const DesiredRunnersUp: u32 = 7;
-}
-
-impl pallet_elections_phragmen::Config for Runtime {
-	type ModuleId = ElectionsPhragmenModuleId;
-	type Event = Event;
-	type Currency = CurrencyAdapter<Runtime, GetLiquidCurrencyId>;
-	type CurrencyToVote = U128CurrencyToVote;
-	type ChangeMembers = AbhaCouncil;
-	type InitializeMembers = AbhaCouncil;
-	type CandidacyBond = CandidacyBond;
-	type VotingBondBase = VotingBondBase;
-	type VotingBondFactor = VotingBondFactor;
-	type TermDuration = TermDuration;
-	type DesiredMembers = DesiredMembers;
-	type DesiredRunnersUp = DesiredRunnersUp;
-	type LoserCandidate = ();
-	type KickedMember = ();
-	type WeightInfo = ();
-}
-
-parameter_types! {
 	pub const MinimumCount: u32 = 1;
 	pub const ExpiresIn: Moment = 1000 * 60 * 60; // 60 mins
 	pub ZeroAccountId: AccountId = AccountId::from([0u8; 32]);
 }
 
-type setheumDataProvider = orml_oracle::Instance1;
-impl orml_oracle::Config<setheumDataProvider> for Runtime {
+type SetheumDataProvider = orml_oracle::Instance1;
+impl orml_oracle::Config<SetheumDataProvider> for Runtime {
 	type Event = Event;
 	type OnNewData = ();
-	type CombineData = orml_oracle::DefaultCombineData<Runtime, MinimumCount, ExpiresIn, setheumDataProvider>;
+	type CombineData = orml_oracle::DefaultCombineData<Runtime, MinimumCount, ExpiresIn, SetheumDataProvider>;
 	type Time = Timestamp;
 	type OracleKey = CurrencyId;
 	type OracleValue = Price;
@@ -590,7 +562,7 @@ create_median_value_data_provider!(
 	CurrencyId,
 	Price,
 	TimeStampedPrice,
-	[setheumOracle, BandOracle]
+	[SetheumOracle, BandOracle]
 );
 // Aggregated data provider cannot feed.
 impl DataFeeder<CurrencyId, Price, AccountId> for AggregatedDataProvider {
@@ -628,20 +600,10 @@ impl setheum_prices::Config for Runtime {
 	type Source = AggregatedDataProvider;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
-	type GetStakingCurrencyId = GetStakingCurrencyId;
-	type GetLiquidCurrencyId = GetLiquidCurrencyId;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type LiquidStakingExchangeRateProvider = LiquidStakingExchangeRateProvider;
 	type SetheumDex = HalalSwap;
 	type Currency = Currencies;
 	type WeightInfo = weights::setheum_prices::WeightInfo<Runtime>;
-}
-
-pub struct LiquidStakingExchangeRateProvider;
-impl setheum_support::ExchangeRateProvider for LiquidStakingExchangeRateProvider {
-	fn get_exchange_rate() -> ExchangeRate {
-		StakingPool::liquid_exchange_rate()
-	}
 }
 
 parameter_types! {
@@ -807,7 +769,7 @@ impl HalalSwap::Config for Runtime {
 
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![JSAR, KSMS, KSM, SDN];
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![JSAR, JNGN, KSM, SDN];
 }
 
 impl module_transaction_payment::Config for Runtime {
@@ -836,105 +798,8 @@ impl evm_accounts::Config for Runtime {
 impl orml_rewards::Config for Runtime {
 	type Share = Balance;
 	type Balance = Balance;
-	type PoolId = module_incentives::PoolId<AccountId>;
+	type PoolId = setheum_incentives::PoolId<AccountId>;
 	type Handler = Incentives;
-}
-
-parameter_types! {
-	pub const AccumulatePeriod: BlockNumber = MINUTES;
-}
-
-impl module_incentives::Config for Runtime {
-	type Event = Event;
-	type RelaychainAccountId = AccountId;
-	type RewardsVaultAccountId = ZeroAccountId;
-	type NativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyId = GetStableCurrencyId;
-	type LiquidCurrencyId = GetLiquidCurrencyId;
-	type AccumulatePeriod = AccumulatePeriod;
-	type UpdateOrigin = EnsureRootOrHalfSerpCouncil;
-	type Currency = Currencies;
-	type HalalSwap = HalalSwap;
-	type EmergencyShutdown = EmergencyShutdown;
-	type ModuleId = IncentivesModuleId;
-	type WeightInfo = weights::module_incentives::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub const PolkadotBondingDuration: EraIndex = 7;
-	pub const EraLength: BlockNumber = DAYS;
-}
-
-impl module_polkadot_bridge::Config for Runtime {
-	type DOTCurrency = Currency<Runtime, GetStakingCurrencyId>;
-	type OnNewEra = (NomineesElection, StakingPool);
-	type BondingDuration = PolkadotBondingDuration;
-	type EraLength = EraLength;
-	type PolkadotAccountId = AccountId;
-}
-
-parameter_types! {
-	pub const GetLiquidCurrencyId: CurrencyId = KSMS;
-	pub const GetStakingCurrencyId: CurrencyId = KSM;
-	pub DefaultExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(10, 100);	// 1 : 10
-	pub PoolAccountIndexes: Vec<u32> = vec![1, 2, 3, 4];
-}
-
-impl setheum_staking_pool::Config for Runtime {
-	type Event = Event;
-	type StakingCurrencyId = GetStakingCurrencyId;
-	type LiquidCurrencyId = GetLiquidCurrencyId;
-	type DefaultExchangeRate = DefaultExchangeRate;
-	type ModuleId = StakingPoolModuleId;
-	type PoolAccountIndexes = PoolAccountIndexes;
-	type UpdateOrigin = EnsureRootOrHalfAbhaCouncil;
-	type FeeModel = CurveFeeModel;
-	type Nominees = NomineesElection;
-	type Bridge = PolkadotBridge;
-	type Currency = Currencies;
-}
-
-impl setheum_liquid::Config for Runtime {
-	type Liquid = StakingPool;
-	type WeightInfo = weights::setheum_staking::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub MinCouncilBondThreshold: Balance = dollar(KSMS);
-	pub const NominateesCount: u32 = 7;
-	pub const MaxUnlockingChunks: u32 = 7;
-	pub const NomineesElectionBondingDuration: EraIndex = 7;
-}
-
-impl setheum_nominees_election::Config for Runtime {
-	type Currency = Currency<Runtime, GetLiquidCurrencyId>;
-	type PolkadotAccountId = AccountId;
-	type MinBondThreshold = MinCouncilBondThreshold;
-	type BondingDuration = NomineesElectionBondingDuration;
-	type NominateesCount = NominateesCount;
-	type MaxUnlockingChunks = MaxUnlockingChunks;
-	type RelaychainValidatorFilter = runtime_common::RelaychainValidatorFilter;
-}
-
-parameter_types! {
-	pub MinGuaranteeAmount: Balance = dollar(KSMS);
-	pub const ValidatorInsuranceThreshold: Balance = 0;
-}
-
-impl setheum_staking_validator_list::Config for Runtime {
-	type Event = Event;
-	type RelaychainAccountId = AccountId;
-	type LiquidTokenCurrency = Currency<Runtime, GetLiquidCurrencyId>;
-	type MinBondAmount = MinGuaranteeAmount;
-	type BondingDuration = PolkadotBondingDuration;
-	type ValidatorInsuranceThreshold = ValidatorInsuranceThreshold;
-	type FreezeOrigin = EnsureRootOrHalfAbhaCouncil;
-	type SlashOrigin = EnsureRootOrHalfAbhaCouncil;
-	type OnSlash = setheum_staking_pool::OnSlash<Runtime>;
-	type LiquidStakingExchangeRateProvider = LiquidStakingExchangeRateProvider;
-	type WeightInfo = ();
-	type OnIncreaseGuarantee = module_incentives::OnIncreaseGuarantee<Runtime>;
-	type OnDecreaseGuarantee = module_incentives::OnDecreaseGuarantee<Runtime>;
 }
 
 parameter_types! {
@@ -1069,7 +934,7 @@ impl Convert<AccountId, [u8; 32]> for AccountId32Convert {
 }
 
 parameter_types! {
-	pub setheumNetwork: NetworkId = NetworkId::Named("setheum".into());
+	pub SetheumNetwork: NetworkId = NetworkId::Named("setheum".into());
 	pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
 	pub Ancestry: MultiLocation = MultiLocation::X1(Junction::Parachain {
 		id: ParachainInfo::get().into(),
@@ -1080,7 +945,7 @@ parameter_types! {
 pub type LocationConverter = (
 	ParentIsDefault<AccountId>,
 	SiblingParachainConvertsVia<Sibling, AccountId>,
-	AccountId32Aliases<setheumNetwork, AccountId>,
+	AccountId32Aliases<SetheumNetwork, AccountId>,
 );
 
 pub type LocalAssetTransactor = MultiCurrencyAdapter<
@@ -1097,7 +962,7 @@ pub type LocalOriginConverter = (
 	SovereignSignedViaLocation<LocationConverter, Origin>,
 	RelayChainAsNative<RelayChainOrigin, Origin>,
 	SiblingParachainAsNative<cumulus_pallet_xcm_handler::Origin, Origin>,
-	SignedAccountId32AsNative<setheumNetwork, Origin>,
+	SignedAccountId32AsNative<SetheumNetwork, Origin>,
 );
 
 pub struct XcmConfig;
@@ -1181,8 +1046,9 @@ construct_runtime!(
 		// Governance
 		GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 19,
 		GeneralCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 20,
-		SerpCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 21,
-		SerpCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
+		//TODO: Add the SERP
+		//	SerpCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 21,
+		//	SerpCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
 		TechnicalCommittee: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 25,
 		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 26,
 
@@ -1190,7 +1056,7 @@ construct_runtime!(
 		ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>} = 28,
 
 		// Oracle
-		setheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Config<T>, Event<T>} = 29,
+		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Config<T>, Event<T>} = 29,
 		BandOracle: orml_oracle::<Instance2>::{Pallet, Storage, Call, Config<T>, Event<T>} = 30,
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
 		OperatorMembershipsetheum: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 31,
@@ -1206,15 +1072,8 @@ construct_runtime!(
 		// DEX
 		HalalSwap: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 37,
 
-		// SetheumStaking
-		SetheumStaking: setheum_staking::{Pallet, Call} = 44,
-		NomineesElection: setheum_nominees_election::{Pallet, Call, Storage} = 45,
-		StakingPool: setheum_staking_pool::{Pallet, Call, Storage, Event<T>, Config} = 46,
-		PolkadotBridge: module_polkadot_bridge::{Pallet, Call, Storage} = 47,
-		SetheumValidatorListModule: setheum_staking_validator_list::{Pallet, Call, Storage, Event<T>} = 48,
-
 		// Setheum Other
-		Incentives: module_incentives::{Pallet, Storage, Call, Event<T>} = 49,
+		Incentives: setheum_incentives::{Pallet, Storage, Call, Event<T>} = 49,
 		NFT: setheum_nft::{Pallet, Call, Event<T>} = 50,
 
 		// Smart contracts
@@ -1365,7 +1224,7 @@ impl_runtime_apis! {
 	> for Runtime {
 		fn get_value(provider_id: DataProviderId ,key: CurrencyId) -> Option<TimeStampedPrice> {
 			match provider_id {
-				DataProviderId::setheum => setheumOracle::get_no_op(&key),
+				DataProviderId::setheum => SetheumOracle::get_no_op(&key),
 				DataProviderId::Band => BandOracle::get_no_op(&key),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_no_op(&key)
 			}
@@ -1373,26 +1232,10 @@ impl_runtime_apis! {
 
 		fn get_all_values(provider_id: DataProviderId) -> Vec<(CurrencyId, Option<TimeStampedPrice>)> {
 			match provider_id {
-				DataProviderId::setheum => setheumOracle::get_all_values(),
+				DataProviderId::setheum => SetheumOracle::get_all_values(),
 				DataProviderId::Band => BandOracle::get_all_values(),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_all_values()
 			}
-		}
-	}
-
-	impl setheum_staking_pool_rpc_runtime_api::StakingPoolApi<
-		Block,
-		AccountId,
-		Balance,
-	> for Runtime {
-		fn get_available_unbonded(account: AccountId) -> setheum_staking_pool_rpc_runtime_api::BalanceInfo<Balance> {
-			setheum_staking_pool_rpc_runtime_api::BalanceInfo {
-				amount: StakingPool::get_available_unbonded(&account)
-			}
-		}
-
-		fn get_liquid_staking_exchange_rate() -> ExchangeRate {
-			StakingPool::liquid_exchange_rate()
 		}
 	}
 

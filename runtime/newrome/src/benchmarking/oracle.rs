@@ -16,14 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{setheumDataProvider, setheumOracle, CollateralCurrencyIds, FixedPointNumber, Origin, Price, Runtime, System};
+use crate::{SetheumDataProvider, SetheumOracle, CollateralCurrencyIds, FixedPointNumber, Origin, Price, Runtime, System};
 
 use frame_support::traits::OnFinalize;
 use orml_benchmarking::runtime_benchmarks_instance;
 use sp_std::prelude::*;
 
 runtime_benchmarks_instance! {
-	{ Runtime, orml_oracle, setheumDataProvider }
+	{ Runtime, orml_oracle, SetheumDataProvider }
 
 	_ {}
 
@@ -46,9 +46,9 @@ runtime_benchmarks_instance! {
 			values.push((currency_id, Price::one()));
 		}
 		System::set_block_number(1);
-		setheumOracle::feed_values(Origin::root(), values)?;
+		SetheumOracle::feed_values(Origin::root(), values)?;
 	}: {
-		setheumOracle::on_finalize(System::block_number());
+		SetheumOracle::on_finalize(System::block_number());
 	}
 }
 

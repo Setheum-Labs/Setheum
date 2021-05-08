@@ -34,48 +34,10 @@ use sp_std::{
 	prelude::*,
 };
 
-pub mod setheum_staking;
-pub use setheum_staking::{
-	SetheumStaking, NomineesProvider, OnCommission, OnNewEra, PolkadotBridge, PolkadotBridgeCall, PolkadotBridgeState,
-	PolkadotBridgeType, PolkadotStakingLedger, PolkadotUnlockChunk,
-};
-
 pub type Price = FixedU128;
 pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
-
-pub trait RiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
-	fn get_bad_debt_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
-
-	fn check_position_valid(
-		currency_id: CurrencyId,
-		collateral_balance: Balance,
-		debit_balance: DebitBalance,
-	) -> DispatchResult;
-
-	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: DebitBalance) -> DispatchResult;
-}
-
-impl<AccountId, CurrencyId, Balance: Default, DebitBalance> RiskManager<AccountId, CurrencyId, Balance, DebitBalance>
-	for ()
-{
-	fn get_bad_debt_value(_currency_id: CurrencyId, _debit_balance: DebitBalance) -> Balance {
-		Default::default()
-	}
-
-	fn check_position_valid(
-		_currency_id: CurrencyId,
-		_collateral_balance: Balance,
-		_debit_balance: DebitBalance,
-	) -> DispatchResult {
-		Ok(())
-	}
-
-	fn check_debit_cap(_currency_id: CurrencyId, _total_debit_balance: DebitBalance) -> DispatchResult {
-		Ok(())
-	}
-}
 
 pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
@@ -163,10 +125,6 @@ pub trait PriceProvider<CurrencyId> {
 
 pub trait ExchangeRateProvider {
 	fn get_exchange_rate() -> ExchangeRate;
-}
-
-pub trait EmergencyShutdown {
-	fn is_shutdown() -> bool;
 }
 
 pub trait DexIncentives<AccountId, CurrencyId, Balance> {

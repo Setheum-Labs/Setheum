@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Foundation.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -145,18 +145,26 @@ pub fn latest_newrome_testnet_config() -> Result<ChainSpec, String> {
 		"Setheum Newrome TN1",
 		"newrome1",
 		ChainType::Live,
+		//
+		//TODO: Change `//setheum` to `//newrome`
 		// SECRET="..."
+		//
+		// ROOT
 		// ./target/debug/subkey inspect "$SECRET//setheum//root"
+		//
+		// ORACLE
 		// ./target/debug/subkey --sr25519 inspect "$SECRET//setheum//oracle"
+		//
+		// VALIDATOR 1
 		// ./target/debug/subkey --sr25519 inspect "$SECRET//setheum//1//validator"
 		// ./target/debug/subkey --sr25519 inspect "$SECRET//setheum//1//babe"
 		// ./target/debug/subkey --ed25519 inspect "$SECRET//setheum//1//grandpa"
+		//
+		// VALIDATOR 2
 		// ./target/debug/subkey --sr25519 inspect "$SECRET//setheum//2//validator"
 		// ./target/debug/subkey --sr25519 inspect "$SECRET//setheum//2//babe"
 		// ./target/debug/subkey --ed25519 inspect "$SECRET//setheum//2//grandpa"
-		// ./target/debug/subkey --sr25519 inspect "$SECRET//setheum//3//validator"
-		// ./target/debug/subkey --sr25519 inspect "$SECRET//setheum//3//babe"
-		// ./target/debug/subkey --ed25519 inspect "$SECRET//setheum//3//grandpa"
+		//
 		move || {
 			newrome_genesis(
 				wasm_binary,
@@ -217,12 +225,12 @@ fn testnet_genesis(
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
 		dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, BabeConfig, Balance, BalancesConfig,
-		BandOracleConfig, CdpEngineConfig, CdpTreasuryConfig, DexConfig, EVMConfig, EnabledTradingPairs,
-		GeneralCouncilMembershipConfig, GrandpaConfig, HomaCouncilMembershipConfig, SerpCouncilMembershipConfig,
-		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipsetheumConfig, OperatorMembershipBandConfig,
-		OrmlNFTConfig, RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, StakingPoolConfig, SudoConfig,
-		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, TradingPair, VestingConfig, DNAR, AUSD, DOT,
-		LDOT, RENBTC, XBTC, BABE_GENESIS_EPOCH_CONFIG
+		BandOracleConfig, DexConfig, EVMConfig, EnabledTradingPairs,
+		GeneralCouncilMembershipConfig, GrandpaConfig, MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, 
+		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
+		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
+		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, TradingPair, VestingConfig, 
+		DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT, BABE_GENESIS_EPOCH_CONFIG
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -296,13 +304,15 @@ fn testnet_genesis(
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
+		//TODO: Add the Shura Council
+		//TODO: Rename SerpCouncil to MonetaryCouncil
 		pallet_collective_Instance2: Default::default(),
-		pallet_membership_Instance2: SerpCouncilMembershipConfig {
+		pallet_membership_Instance2: MonetaryCouncilMembershipConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
 		pallet_collective_Instance3: Default::default(),
-		pallet_membership_Instance3: HomaCouncilMembershipConfig {
+		pallet_membership_Instance3: FinancialCouncilMembershipConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
@@ -311,7 +321,7 @@ fn testnet_genesis(
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance5: OperatorMembershipsetheumConfig {
+		pallet_membership_Instance5: OperatorMembershipSetheumConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
@@ -325,50 +335,14 @@ fn testnet_genesis(
 				.iter()
 				.flat_map(|x| {
 					vec![
-						(x.clone(), AUSD, 1_000_000 * dollar(AUSD)),
+						(x.clone(), JUSD, 1_000_000 * dollar(JUSD)),
 						(x.clone(), DOT, 1_000_000 * dollar(DOT)),
-						(x.clone(), XBTC, 1_000_000 * dollar(XBTC)),
+						(x.clone(), JGBP, 1_000_000 * dollar(JGBP)),
 					]
 				})
 				.collect(),
 		},
-		module_cdp_engine: CdpEngineConfig {
-			collaterals_params: vec![
-				(
-					DOT,
-					Some(FixedU128::zero()),                             // stability fee for this collateral
-					Some(FixedU128::saturating_from_rational(150, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(10, 100)),  // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(150, 100)), // required liquidation ratio
-					10_000_000 * dollar(AUSD),                           // maximum debit value in aUSD (cap)
-				),
-				(
-					XBTC,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(150, 100)),
-					Some(FixedU128::saturating_from_rational(10, 100)),
-					Some(FixedU128::saturating_from_rational(150, 100)),
-					10_000_000 * dollar(AUSD),
-				),
-				(
-					LDOT,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(150, 100)),
-					Some(FixedU128::saturating_from_rational(10, 100)),
-					Some(FixedU128::saturating_from_rational(180, 100)),
-					10_000_000 * dollar(AUSD),
-				),
-				(
-					RENBTC,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(150, 100)),
-					Some(FixedU128::saturating_from_rational(10, 100)),
-					Some(FixedU128::saturating_from_rational(150, 100)),
-					10_000_000 * dollar(AUSD),
-				),
-			],
-			global_stability_fee: FixedU128::saturating_from_rational(618_850_393, 100_000_000_000_000_000_u128), /* 5% APR */
-		},
+		
 		module_airdrop: AirDropConfig {
 			airdrop_accounts: vec![],
 		},
@@ -380,32 +354,20 @@ fn testnet_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		module_evm: EVMConfig {
+		setheum_evm: EVMConfig {
 			accounts: evm_genesis_accounts,
 		},
-		module_staking_pool: StakingPoolConfig {
-			staking_pool_params: module_staking_pool::Params {
-				target_max_free_unbonded_ratio: FixedU128::saturating_from_rational(10, 100),
-				target_min_free_unbonded_ratio: FixedU128::saturating_from_rational(5, 100),
-				target_unbonding_to_free_ratio: FixedU128::saturating_from_rational(2, 100),
-				unbonding_to_free_adjustment: FixedU128::saturating_from_rational(1, 1000),
-				base_fee_rate: FixedU128::saturating_from_rational(2, 100),
-			},
-		},
-		module_dex: DexConfig {
+		setheum_dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![(
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				vec![
-					(TradingPair::new(AUSD, DOT), (1_000_000u128, 2_000_000u128)),
-					(TradingPair::new(AUSD, XBTC), (1_000_000u128, 2_000_000u128)),
-					(TradingPair::new(AUSD, DNAR), (1_000_000u128, 2_000_000u128)),
+					(TradingPair::new(JUSD, DOT), (1_000_000u128, 2_000_000u128)),
+					(TradingPair::new(JUSD, JGBP), (1_000_000u128, 2_000_000u128)),
+					(TradingPair::new(JUSD, DNAR), (1_000_000u128, 2_000_000u128)),
 				],
 			)],
-		},
-		ecosystem_renvm_bridge: RenVmBridgeConfig {
-			ren_vm_public_key: hex!["4b939fc8ade87cb50b78987b1dda927460dc456a"],
 		},
 		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
@@ -419,12 +381,13 @@ fn newrome_genesis(
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
 		cent, dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, AirDropCurrencyId, BabeConfig,
-		Balance, BalancesConfig, BandOracleConfig, CdpEngineConfig, CdpTreasuryConfig, DexConfig, EVMConfig,
-		EnabledTradingPairs, GeneralCouncilMembershipConfig, GrandpaConfig, HomaCouncilMembershipConfig,
-		SerpCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipsetheumConfig,
-		OperatorMembershipBandConfig, OrmlNFTConfig, RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig,
-		StakingPoolConfig, SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		DNAR, AUSD, DOT, LDOT, RENBTC, XBTC, BABE_GENESIS_EPOCH_CONFIG,
+		Balance, BalancesConfig, BandOracleConfig, DexConfig, EVMConfig,
+		EnabledTradingPairs, GeneralCouncilMembershipConfig, GrandpaConfig, 
+		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, 
+		NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig, 
+		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig, 
+		TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
+		DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT, BABE_GENESIS_EPOCH_CONFIG,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -497,13 +460,15 @@ fn newrome_genesis(
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
+		//TODO: Add the Shura Council
+		//TODO: Rename SerpCouncil to MonetaryCouncil
 		pallet_collective_Instance2: Default::default(),
-		pallet_membership_Instance2: SerpCouncilMembershipConfig {
+		pallet_membership_Instance2: MonetaryCouncilMembershipConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
 		pallet_collective_Instance3: Default::default(),
-		pallet_membership_Instance3: HomaCouncilMembershipConfig {
+		pallet_membership_Instance3: FinancialCouncilMembershipConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
@@ -512,7 +477,7 @@ fn newrome_genesis(
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance5: OperatorMembershipsetheumConfig {
+		pallet_membership_Instance5: OperatorMembershipSetheumConfig {
 			members: endowed_accounts.clone(),
 			phantom: Default::default(),
 		},
@@ -524,45 +489,8 @@ fn newrome_genesis(
 		orml_tokens: TokensConfig {
 			endowed_accounts: vec![
 				(root_key.clone(), DOT, 1_000_000 * dollar(DOT)),
-				(root_key, XBTC, 1_000_000 * dollar(XBTC)),
+				(root_key, JGBP, 1_000_000 * dollar(JGBP)),
 			],
-		},
-		module_cdp_engine: CdpEngineConfig {
-			collaterals_params: vec![
-				(
-					DOT,
-					Some(FixedU128::zero()),                             // stability fee for this collateral
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					10_000_000 * dollar(AUSD),                           // maximum debit value in aUSD (cap)
-				),
-				(
-					XBTC,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(110, 100)),
-					Some(FixedU128::saturating_from_rational(4, 100)),
-					Some(FixedU128::saturating_from_rational(115, 100)),
-					10_000_000 * dollar(AUSD),
-				),
-				(
-					LDOT,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(120, 100)),
-					Some(FixedU128::saturating_from_rational(10, 100)),
-					Some(FixedU128::saturating_from_rational(130, 100)),
-					10_000_000 * dollar(AUSD),
-				),
-				(
-					RENBTC,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(110, 100)),
-					Some(FixedU128::saturating_from_rational(4, 100)),
-					Some(FixedU128::saturating_from_rational(115, 100)),
-					10_000_000 * dollar(AUSD),
-				),
-			],
-			global_stability_fee: FixedU128::saturating_from_rational(618_850_393, 100_000_000_000_000_000_u128), /* 5% APR */
 		},
 		module_airdrop: AirDropConfig {
 			airdrop_accounts: {
@@ -594,29 +522,17 @@ fn newrome_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		module_evm: EVMConfig {
+		setheum_evm: EVMConfig {
 			accounts: evm_genesis_accounts,
 		},
-		module_staking_pool: StakingPoolConfig {
-			staking_pool_params: module_staking_pool::Params {
-				target_max_free_unbonded_ratio: FixedU128::saturating_from_rational(10, 100),
-				target_min_free_unbonded_ratio: FixedU128::saturating_from_rational(5, 100),
-				target_unbonding_to_free_ratio: FixedU128::saturating_from_rational(2, 100),
-				unbonding_to_free_adjustment: FixedU128::saturating_from_rational(1, 1000),
-				base_fee_rate: FixedU128::saturating_from_rational(2, 100),
-			},
-		},
-		module_dex: DexConfig {
+		setheum_dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		ecosystem_renvm_bridge: RenVmBridgeConfig {
-			ren_vm_public_key: hex!["4b939fc8ade87cb50b78987b1dda927460dc456a"],
-		},
 		orml_nft: OrmlNFTConfig {
 			tokens: {
-				let nft_airdrop_json = &include_bytes!("../../../../../resources/NEWROME-airdrop-NFT.json")[..];
+				let nft_airdrop_json = &include_bytes!("../../../../../resources/newrome-airdrop-NFT.json")[..];
 				let nft_airdrop: Vec<(
 					AccountId,
 					Vec<u8>,
