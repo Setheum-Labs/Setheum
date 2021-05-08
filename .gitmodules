@@ -1,6 +1,6 @@
 [submodule "orml"]
 	path = orml
 	url = https://github.com/open-web3-stack/open-runtime-module-library.git
-[submodule "evm-predeployed-contracts"]
-	path = evm-predeployed-contracts
+[submodule "sevm-predeployed-contracts"]
+	path = sevm-predeployed-contracts
 	url = https://github.com/Setheum-Labs/sevm-predeployed-contracts
