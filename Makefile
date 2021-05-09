@@ -1,6 +1,6 @@
 .PHONY: run
 run: githooks
-	cargo run --manifest-path bin/setheum-dev/Cargo.toml -- --dev -lruntime=debug --instant-sealing
+	cargo run -- --dev -lruntime=debug --instant-sealing
 
 .PHONY: toolchain
 toolchain:
@@ -10,16 +10,9 @@ toolchain:
 build-full: githooks
 	cargo build
 
-.PHONY: build-all
-build-all: build-dev build-setheum
-
-.PHONY: build-dev
-build-dev:
-	cargo build --manifest-path bin/setheum-dev/Cargo.toml --locked
-
 .PHONY: build-setheum
 build-setheum:
-	cargo build --manifest-path bin/setheum/Cargo.toml --locked --features with-all-runtime
+	cargo build --locked --features with-all-runtime
 
 .PHONY: check
 check: githooks
@@ -30,15 +23,16 @@ check-tests: githooks
 	SKIP_WASM_BUILD= cargo check --tests --all
 
 .PHONY: check-all
-check-all: check-dev check-setheum
-
-.PHONY: check-dev
-check-dev:
-	SKIP_WASM_BUILD= cargo check --manifest-path bin/setheum-dev/Cargo.toml --tests --all
+check-all: check-setheum check-benchmarks
 
 .PHONY: check-setheum
 check-setheum:
-	SKIP_WASM_BUILD= cargo check --manifest-path bin/setheum/Cargo.toml --tests --all --features with-all-runtime
+	SKIP_WASM_BUILD= cargo check  --tests --all --features with-all-runtime
+
+.PHONY: check-benchmarks
+check-benchmarks:
+	SKIP_WASM_BUILD= cargo check --tests --all --features with-all-runtime --features runtime-benchmarks
+
 
 .PHONY: check-debug
 check-debug:
@@ -47,20 +41,17 @@ check-debug:
 .PHONY: test
 test: githooks
 	SKIP_WASM_BUILD= cargo test --all
-.PHONY: test-all
-test-all: test-dev test-setheum
 
-.PHONY: test-dev
-test-dev:
-	SKIP_WASM_BUILD= cargo test --manifest-path bin/setheum-dev/Cargo.toml --all
+.PHONY: test-all
+test-all: test-setheum test-benchmarking
 
 .PHONY: test-setheum
 test-setheum:
-	SKIP_WASM_BUILD= cargo test --manifest-path bin/setheum/Cargo.toml --all --features with-all-runtime
+	SKIP_WASM_BUILD= cargo test  --all --features with-all-runtime
 
 .PHONY: test-benchmarking
 test-benchmarking:
-	SKIP_WASM_BUILD= cargo test --manifest-path bin/setheum/Cargo.toml --features runtime-benchmarks -p newrome-runtime benchmarking
+	SKIP_WASM_BUILD= cargo test --features runtime-benchmarks --features with-all-runtime --features --all benchmarking
 
 .PHONY: build
 build: githooks
@@ -106,14 +97,7 @@ update: update-orml cargo-update check-all
 .PHONY: cargo-update
 cargo-update:
 	cargo update
-	cargo update --manifest-path bin/setheum-dev/Cargo.toml
-	cargo update --manifest-path bin/setheum-dev/cli/Cargo.toml
-	cargo update --manifest-path bin/setheum-dev/service/Cargo.toml
 
 .PHONY: build-wasm-newrome
 build-wasm-newrome:
 	./scripts/build-only-wasm.sh newrome-runtime
-
-.PHONY: generate-tokens
-generate-tokens:
-	./scripts/generate-tokens-and-predeployed-contracts.sh

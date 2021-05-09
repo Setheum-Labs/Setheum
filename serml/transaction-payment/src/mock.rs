@@ -28,7 +28,11 @@ use primitives::{Amount, TokenSymbol, TradingPair};
 use smallvec::smallvec;
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
-	testing::Header, traits::IdentityLookup, DispatchError, DispatchResult, FixedPointNumber, ModuleId, Perbill,
+	testing::Header, 
+	traits::{IdentityLookup, One}, 
+	DispatchError, DispatchResult, 
+	FixedPointNumber, ModuleId, 
+	Perbill,
 };
 use sp_std::cell::RefCell;
 use support::Ratio;

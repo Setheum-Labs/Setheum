@@ -30,7 +30,7 @@ use mock::{
 	JUSD, BOB, DOT,
 };
 use orml_traits::MultiCurrency;
-use sp_runtime::testing::TestXt;
+use sp_runtime::{testing::TestXt, traits::One};
 
 const CALL: &<Runtime as frame_system::Config>::Call =
 	&Call::Currencies(setheum_currencies::Call::transfer(BOB, JUSD, 12));
