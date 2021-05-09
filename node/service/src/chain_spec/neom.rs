@@ -21,10 +21,10 @@ use hex_literal::hex;
 use sc_chain_spec::ChainType;
 use sc_telemetry::TelemetryEndpoints;
 use serde_json::map::Map;
-use sp_consensus_babe::AuthorityId as BabeId;
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::crypto::UncheckedInto;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::{FixedPointNumber, FixedU128};
+use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128};
 
 use crate::chain_spec::{Extensions, TELEMETRY_URL};
 
@@ -117,23 +117,24 @@ pub fn latest_neom_config() -> Result<ChainSpec, String> {
 
 fn neom_genesis(
 	wasm_binary: &[u8],
-	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId)>,
+	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, AuraId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 ) -> neom_runtime::GenesisConfig {
 	use neom_runtime::{
-		cent, dollar, get_all_module_accounts, SetheumOracleConfig, Balance, BalancesConfig, SecondOracleConfig,
-		DexConfig, EnabledTradingPairs, GeneralCouncilMembershipConfig,
-		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit,
-		OperatorMembershipSetheumConfig, OperatorMembershipSecondConfig, OrmlNFTConfig, ParachainInfoConfig,
-		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		NEOM, JUSD, JEUR, JGBP, JIDR, JNGN, JSETT, HDEX, KSM,
+		cent, dollar, get_all_module_accounts,  AuraConfig, Balance, BalancesConfig, 
+		SetheumOracleConfig, SecondOracleConfig, DexConfig, EnabledTradingPairs, 
+		GeneralCouncilMembershipConfig, MonetaryCouncilMembershipConfig, 
+		FinancialCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit,
+		OperatorMembershipSetheumConfig, OperatorMembershipSecondConfig, OrmlNFTConfig, 
+		ParachainInfoConfig, SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, 
+		TokensConfig, VestingConfig, NEOM, JUSD, JEUR, JGBP, JIDR, JNGN, JSETT, HDEX, KSM,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
 
 	let existential_deposit = NativeTokenExistentialDeposit::get();
-	let airdrop_accounts_json = &include_bytes!("../../../../../resources/newrome-airdrop-NEOM.json")[..];
+	let airdrop_accounts_json = &include_bytes!("../../../../resources/newrome-airdrop-NEOM.json")[..];
 	let airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(airdrop_accounts_json).unwrap();
 
 	let initial_balance: u128 = 1_000_000 * dollar(NEOM);
@@ -174,6 +175,9 @@ fn neom_genesis(
 		pallet_indices: IndicesConfig { indices: vec![] },
 		pallet_balances: BalancesConfig { balances },
 		pallet_sudo: SudoConfig { key: root_key.clone() },
+		pallet_aura: AuraConfig {
+			authorities: initial_authorities.iter().map(|x| (x.3.clone())).collect(),
+		},
 		pallet_collective_Instance1: Default::default(),
 		pallet_membership_Instance1: GeneralCouncilMembershipConfig {
 			members: vec![root_key.clone()],
