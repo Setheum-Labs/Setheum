@@ -44,7 +44,6 @@ std = [
 	"orml-traits/std",
 	"orml-nft/std",
 	"pallet-timestamp/std",
-	"enumflags2/serde",
 	"setheum-currencies/std",
 ]
 runtime-benchmarks = [
