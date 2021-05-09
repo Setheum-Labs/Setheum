@@ -136,10 +136,10 @@ fn setheum_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> setheum_runtime::GenesisConfig {
 	use setheum_runtime::{
-		cent, dollar, get_all_module_accounts, SetheumOracleConfig, Balance, BalancesConfig, BandOracleConfig,
+		cent, dollar, get_all_module_accounts, SetheumOracleConfig, Balance, BalancesConfig, SecondOracleConfig,
 		DexConfig, EnabledTradingPairs, GeneralCouncilMembershipConfig,
 		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit, 
-		OperatorMembershipSetheumConfig, OperatorMembershipBandConfig, OrmlNFTConfig, ParachainInfoConfig, 
+		OperatorMembershipSetheumConfig, OperatorMembershipSecondConfig, OrmlNFTConfig, ParachainInfoConfig, 
 		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, 
 		DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT,
 	};
@@ -216,7 +216,7 @@ fn setheum_genesis(
 			members: endowed_accounts.clone(),
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance6: OperatorMembershipBandConfig {
+		pallet_membership_Instance6: OperatorMembershipSecondConfig {
 			members: endowed_accounts.clone(),
 			phantom: Default::default(),
 		},
@@ -231,7 +231,7 @@ fn setheum_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		orml_oracle_Instance2: BandOracleConfig {
+		orml_oracle_Instance2: SecondOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},

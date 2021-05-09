@@ -384,8 +384,8 @@ impl pallet_membership::Config<OperatorMembershipInstanceBand> for Runtime {
 	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type MembershipInitialized = BandOracle;
-	type MembershipChanged = BandOracle;
+	type MembershipInitialized = SecondOracle;
+	type MembershipChanged = SecondOracle;
 }
 
 impl pallet_utility::Config for Runtime {
@@ -557,7 +557,7 @@ create_median_value_data_provider!(
 	CurrencyId,
 	Price,
 	TimeStampedPrice,
-	[SetheumOracle, BandOracle]
+	[SetheumOracle, SecondOracle]
 );
 // Aggregated data provider cannot feed.
 impl DataFeeder<CurrencyId, Price, AccountId> for AggregatedDataProvider {
@@ -969,7 +969,7 @@ construct_runtime!(
 
 		// Oracle
 		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Config<T>, Event<T>} = 29,
-		BandOracle: orml_oracle::<Instance2>::{Pallet, Storage, Call, Config<T>, Event<T>} = 30,
+		SecondOracle: orml_oracle::<Instance2>::{Pallet, Storage, Call, Config<T>, Event<T>} = 30,
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
 		OperatorMembershipsetheum: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 31,
 		OperatorMembershipBand: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 32,
@@ -1135,7 +1135,7 @@ impl_runtime_apis! {
 		fn get_value(provider_id: DataProviderId ,key: CurrencyId) -> Option<TimeStampedPrice> {
 			match provider_id {
 				DataProviderId::setheum => SetheumOracle::get_no_op(&key),
-				DataProviderId::Band => BandOracle::get_no_op(&key),
+				DataProviderId::Band => SecondOracle::get_no_op(&key),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_no_op(&key)
 			}
 		}
@@ -1143,7 +1143,7 @@ impl_runtime_apis! {
 		fn get_all_values(provider_id: DataProviderId) -> Vec<(CurrencyId, Option<TimeStampedPrice>)> {
 			match provider_id {
 				DataProviderId::setheum => SetheumOracle::get_all_values(),
-				DataProviderId::Band => BandOracle::get_all_values(),
+				DataProviderId::Band => SecondOracle::get_all_values(),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_all_values()
 			}
 		}

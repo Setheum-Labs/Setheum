@@ -122,10 +122,10 @@ fn neom_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> neom_runtime::GenesisConfig {
 	use neom_runtime::{
-		cent, dollar, get_all_module_accounts, SetheumOracleConfig, Balance, BalancesConfig, BandOracleConfig,
+		cent, dollar, get_all_module_accounts, SetheumOracleConfig, Balance, BalancesConfig, SecondOracleConfig,
 		DexConfig, EnabledTradingPairs, GeneralCouncilMembershipConfig,
 		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit,
-		OperatorMembershipSetheumConfig, OperatorMembershipBandConfig, OrmlNFTConfig, ParachainInfoConfig,
+		OperatorMembershipSetheumConfig, OperatorMembershipSecondConfig, OrmlNFTConfig, ParachainInfoConfig,
 		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
 		NEOM, JUSD, JEUR, JGBP, JIDR, JNGN, JSETT, HDEX, KSM,
 	};
@@ -201,7 +201,7 @@ fn neom_genesis(
 			members: endowed_accounts.clone(),
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance6: OperatorMembershipBandConfig {
+		pallet_membership_Instance6: OperatorMembershipSecondConfig {
 			members: endowed_accounts.clone(),
 			phantom: Default::default(),
 		},
@@ -213,7 +213,7 @@ fn neom_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		orml_oracle_Instance2: BandOracleConfig {
+		orml_oracle_Instance2: SecondOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},

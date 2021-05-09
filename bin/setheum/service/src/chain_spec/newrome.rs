@@ -222,10 +222,10 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
-		dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, Balance, BalancesConfig, BandOracleConfig,
+		dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, Balance, BalancesConfig, SecondOracleConfig,
 		DexConfig, EnabledTradingPairs, GeneralCouncilMembershipConfig,
 		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit,
-		OperatorMembershipSetheumConfig, OperatorMembershipBandConfig, OrmlNFTConfig, ParachainInfoConfig,
+		OperatorMembershipSetheumConfig, OperatorMembershipSecondConfig, OrmlNFTConfig, ParachainInfoConfig,
 		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, 
 		DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT,
 	};
@@ -298,7 +298,7 @@ fn testnet_genesis(
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance6: OperatorMembershipBandConfig {
+		pallet_membership_Instance6: OperatorMembershipSecondConfig {
 			members: vec![root_key],
 			phantom: Default::default(),
 		},
@@ -316,7 +316,7 @@ fn testnet_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		orml_oracle_Instance2: BandOracleConfig {
+		orml_oracle_Instance2: SecondOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
@@ -340,11 +340,11 @@ fn newrome_genesis(
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
 		cent, dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, AirDropCurrencyId, Balance,
-		BalancesConfig, BandOracleConfig, 
+		BalancesConfig, SecondOracleConfig, 
 		EnabledTradingPairs, GeneralCouncilMembershipConfig, 
 		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, 
 		NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
-		OperatorMembershipBandConfig, OrmlNFTConfig, ParachainInfoConfig,
+		OperatorMembershipSecondConfig, OrmlNFTConfig, ParachainInfoConfig,
 		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, 
 		DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT,
 	};
@@ -416,7 +416,7 @@ fn newrome_genesis(
 			members: endowed_accounts.clone(),
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance6: OperatorMembershipBandConfig {
+		pallet_membership_Instance6: OperatorMembershipSecondConfig {
 			members: endowed_accounts,
 			phantom: Default::default(),
 		},
@@ -453,7 +453,7 @@ fn newrome_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		orml_oracle_Instance2: BandOracleConfig {
+		orml_oracle_Instance2: SecondOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
