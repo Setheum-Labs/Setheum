@@ -1,6 +1,6 @@
 [package]
 name = "newrome-runtime"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Setheum Labs"]
 edition = "2018"
 build = "build.rs"
@@ -12,7 +12,6 @@ serde = { version = "1.0.124", optional = true, default-features = false }
 serde_json = "1.0.64"
 hex = { version = "0.4", default-features = false, optional = true }
 hex-literal = { version = "0.3.1" }
-evm = { version = "0.24.0", optional = true, default-features = false }
 
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false, optional = true }
 frame-executive = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
@@ -70,35 +69,29 @@ xcm-executor = { git = "https://github.com/paritytech/polkadot", branch = "rococ
 xcm-builder = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1", default-features = false }
 cumulus-pallet-xcm-handler = { git = "https://github.com/paritytech/cumulus", branch = "rococo-v1", default-features = false }
 
-orml-authority = { path = "../../orml/authority", default-features = false }
-orml-benchmarking = { path = "../../orml/benchmarking", default-features = false, optional = true }
-orml-oracle = { path = "../../orml/oracle", default-features = false }
-orml-oracle-rpc-runtime-api = { path = "../../orml/oracle/rpc/runtime-api", default-features = false }
-orml-gradually-update = { path = "../../orml/gradually-update", default-features = false }
-orml-tokens = { path = "../../orml/tokens", default-features = false }
-orml-traits = { path = "../../orml/traits", default-features = false }
-orml-vesting = { path = "../../orml/vesting", default-features = false }
-orml-rewards = { path = "../../orml/rewards", default-features = false }
-orml-nft= { path = "../../orml/nft", default-features = false }
-orml-xtokens = { path = "../../orml/xtokens", default-features = false }
-orml-xcm-support = { path = "../../orml/xcm-support", default-features = false }
-orml-unknown-tokens = { path = "../../orml/unknown-tokens", default-features = false }
+orml-authority = { path = "../../modules/authority", default-features = false }
+orml-benchmarking = { path = "../../modules/benchmarking", default-features = false, optional = true }
+orml-oracle = { path = "../../modules/oracle", default-features = false }
+orml-oracle-rpc-runtime-api = { path = "../../modules/oracle/rpc/runtime-api", default-features = false }
+orml-tokens = { path = "../../modules/tokens", default-features = false }
+orml-traits = { path = "../../modules/traits", default-features = false }
+orml-vesting = { path = "../../modules/vesting", default-features = false }
+orml-rewards = { path = "../../modules/rewards", default-features = false }
+orml-nft= { path = "../../modules/nft", default-features = false }
+orml-xtokens = { path = "../../modules/xtokens", default-features = false }
+orml-xcm-support = { path = "../../modules/xcm-support", default-features = false }
+orml-unknown-tokens = { path = "../../modules/unknown-tokens", default-features = false }
 
 setheum-transaction-payment = { path = "../../serml/transaction-payment", default-features = false }
 setheum-airdrop = { path = "../../serml/airdrop", default-features = false }
 setheum-dex = { path = "../../serml/dex", default-features = false }
 setheum-currencies = { path = "../../serml/currencies", default-features = false }
-setheum-evm = { path = "../../serml/evm", default-features = false }
-evm-accounts = { path = "../../serml/evm-accounts", default-features = false }
-setheum-evm-bridge = { path = "../../serml/evm-bridge", default-features = false }
 setheum-nft = { path = "../../serml/nft", default-features = false }
 setheum-prices = { path = "../../serml/prices", default-features = false }
 setheum-incentives = { path = "../../serml/incentives", default-features = false }
 setheum-support = { path = "../../serml/support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 runtime-common = { path = "../common", default-features = false }
-
-setheum-evm-rpc-runtime-api = { path = "../../serml/evm/rpc/runtime_api",  default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = "4.0.0"
@@ -171,7 +164,6 @@ std = [
 	"orml-benchmarking/std",
 	"orml-oracle-rpc-runtime-api/std",
 	"orml-oracle/std",
-	"orml-gradually-update/std",
 	"orml-tokens/std",
 	"orml-traits/std",
 	"orml-vesting/std",
@@ -185,17 +177,11 @@ std = [
 	"setheum-airdrop/std",
 	"setheum-dex/std",
 	"setheum-currencies/std",
-	"setheum-evm/std",
-	"evm-accounts/std",
-	"setheum-evm-bridge/std",
 	"setheum-nft/std",
 	"setheum-prices/std",
 	"setheum-support/std",
 	"primitives/std",
 	"runtime-common/std",
-
-	"setheum-evm-rpc-runtime-api/std",
-
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",
@@ -217,9 +203,4 @@ runtime-benchmarks = [
 # runtime without clashing with the runtime api exported functions
 # in WASM.
 disable-runtime-api = []
-with-ethereum-compatibility = [
-	"evm",
-	"evm/with-ethereum-compatibility",
-	"runtime-common/with-ethereum-compatibility",
-]
 standalone = []

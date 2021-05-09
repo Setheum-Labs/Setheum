@@ -126,14 +126,13 @@ mod mock {
 		RuntimeDebug,
 	};
 	use orml_traits::parameter_type_with_key;
-	use primitives::{evm::EvmAddress, mocks::MockAddressMapping, Amount, BlockNumber, CurrencyId};
+	use primitives::{mocks::MockAddressMapping, Amount, BlockNumber, CurrencyId};
 	use sp_core::{crypto::AccountId32, H256};
 	use sp_runtime::{
 		testing::Header,
 		traits::{BlakeTwo256, IdentityLookup},
 		DispatchError, DispatchResult, ModuleId, Perbill,
 	};
-	use support::{EVMBridge, InvokeContext};
 
 	parameter_types! {
 		pub const BlockHashCount: u64 = 250;
@@ -260,38 +259,11 @@ mod mock {
 		type OnDust = ();
 	}
 
-	pub struct MockEVMBridge;
-	impl<AccountId, Balance> EVMBridge<AccountId, Balance> for MockEVMBridge
-	where
-		AccountId: Default,
-		Balance: Default,
-	{
-		fn total_supply(_context: InvokeContext) -> Result<Balance, DispatchError> {
-			Ok(Default::default())
-		}
-
-		fn balance_of(_context: InvokeContext, _address: EvmAddress) -> Result<Balance, DispatchError> {
-			Ok(Default::default())
-		}
-
-		fn transfer(_context: InvokeContext, _to: EvmAddress, _value: Balance) -> DispatchResult {
-			Ok(())
-		}
-
-		fn get_origin() -> Option<AccountId> {
-			None
-		}
-
-		fn set_origin(_origin: AccountId) {}
-	}
-
 	impl setheum_currencies::Config for Runtime {
 		type Event = ();
 		type MultiCurrency = Tokens;
 		type NativeCurrency = NativeCurrency;
 		type WeightInfo = ();
-		type AddressMapping = MockAddressMapping;
-		type EVMBridge = MockEVMBridge;
 	}
 
 	parameter_types! {

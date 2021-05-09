@@ -1,6 +1,6 @@
 [package]
 name = "setheum-service"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -58,12 +58,10 @@ cumulus-primitives-core = { git = "https://github.com/paritytech/cumulus", branc
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1" }
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1", features = ["real-overseer"] }
 
-setheum-evm = { path = "../../..serml/evm" }
 setheum-nft = { path = "../../..serml/nft" }
-orml-oracle-rpc = { path = "../../../orml/oracle/rpc" }
+orml-oracle-rpc = { path = "../../../modules/oracle/rpc" }
 setheum-primitives = { path = "../../../primitives" }
 setheum-rpc = { path = "../../../rpc" }
-setheum-evm-rpc-runtime-api = { path = "../../..serml/evm/rpc/runtime_api" }
 
 runtime-common = { path = "../../../runtime/common" }
 newrome-runtime = { path = "../../../runtime/newrome", optional = true }

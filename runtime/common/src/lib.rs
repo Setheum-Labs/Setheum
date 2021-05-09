@@ -28,8 +28,8 @@ use frame_support::{
 	},
 };
 use frame_system::limits;
-pub use setheum_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
-use primitives::{Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START};
+pub use setheum_support::{ExchangeRate, Price, Rate, Ratio};
+use primitives::{Balance, CurrencyId};
 use sp_core::H160;
 use sp_runtime::{
 	traits::{Convert, Saturating},
@@ -38,11 +38,6 @@ use sp_runtime::{
 };
 use static_assertions::const_assert;
 
-pub mod precompile;
-pub use precompile::{
-	AllPrecompiles, DexPrecompile, MultiCurrencyPrecompile, NFTPrecompile, OraclePrecompile, ScheduleCallPrecompile,
-	StateRentPrecompile,
-};
 pub use primitives::currency::{
 	GetDecimals, DNAR, JUSD, JEUR, JGBP, NEOM, JSAR, JCHF, JNGN, SETN, HALAL,
 };
@@ -213,36 +208,6 @@ parameter_types! {
 	];
 }
 
-pub const SYSTEM_CONTRACT_LEADING_ZERO_BYTES: usize = 12;
-
-/// Check if the given `address` is a system contract.
-///
-/// It's system contract if the address starts with 12 zero bytes.
-pub fn is_system_contract(address: H160) -> bool {
-	address[..SYSTEM_CONTRACT_LEADING_ZERO_BYTES] == [0u8; SYSTEM_CONTRACT_LEADING_ZERO_BYTES]
-}
-
-pub fn is_setheum_precompile(address: H160) -> bool {
-	address >= H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)
-		&& address < H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)
-}
-
-/// The call is allowed only if caller is a system contract.
-pub struct SystemContractsFilter;
-impl PrecompileCallerFilter for SystemContractsFilter {
-	fn is_allowed(caller: H160) -> bool {
-		is_system_contract(caller)
-	}
-}
-
-/// Convert gas to weight
-pub struct GasToWeight;
-impl Convert<u64, Weight> for GasToWeight {
-	fn convert(a: u64) -> u64 {
-		a as Weight
-	}
-}
-
 pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
 /// used by  Operational  extrinsics.
@@ -314,50 +279,4 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 
 pub fn deposit(items: u32, bytes: u32, currency_id: CurrencyId) -> Balance {
 	items as Balance * 15 * cent(currency_id) + (bytes as Balance) * 6 * cent(currency_id)
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn system_contracts_filter_works() {
-		assert!(SystemContractsFilter::is_allowed(H160::from_low_u64_be(1)));
-
-		let mut max_allowed_addr = [0u8; 20];
-		max_allowed_addr[SYSTEM_CONTRACT_LEADING_ZERO_BYTES] = 127u8;
-		assert!(SystemContractsFilter::is_allowed(max_allowed_addr.into()));
-
-		let mut min_blocked_addr = [0u8; 20];
-		min_blocked_addr[SYSTEM_CONTRACT_LEADING_ZERO_BYTES - 1] = 1u8;
-		assert!(!SystemContractsFilter::is_allowed(min_blocked_addr.into()));
-	}
-
-	#[test]
-	fn is_system_contract_works() {
-		assert!(is_system_contract(H160::from_low_u64_be(0)));
-		assert!(is_system_contract(H160::from_low_u64_be(u64::max_value())));
-
-		let mut bytes = [0u8; 20];
-		bytes[SYSTEM_CONTRACT_LEADING_ZERO_BYTES - 1] = 1u8;
-
-		assert!(!is_system_contract(bytes.into()));
-
-		bytes = [0u8; 20];
-		bytes[0] = 1u8;
-
-		assert!(!is_system_contract(bytes.into()));
-	}
-
-	#[test]
-	fn is_setheum_precompile_works() {
-		assert!(!is_setheum_precompile(H160::from_low_u64_be(0)));
-		assert!(!is_setheum_precompile(H160::from_low_u64_be(
-			PRECOMPILE_ADDRESS_START - 1
-		)));
-		assert!(is_setheum_precompile(H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)));
-		assert!(is_setheum_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START - 1)));
-		assert!(!is_setheum_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)));
-		assert!(!is_setheum_precompile([1u8; 20].into()));
-	}
 }

@@ -27,7 +27,7 @@ use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{FixedPointNumber, FixedU128, Perbill};
 
 use crate::chain_spec::{
-	evm_genesis, get_account_id_from_seed, get_authority_keys_from_seed, Extensions, TELEMETRY_URL,
+	get_account_id_from_seed, get_authority_keys_from_seed, Extensions, TELEMETRY_URL,
 };
 
 pub type ChainSpec = sc_service::GenericChainSpec<newrome_runtime::GenesisConfig, Extensions>;
@@ -225,7 +225,7 @@ fn testnet_genesis(
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
 		dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, BabeConfig, Balance, BalancesConfig,
-		BandOracleConfig, DexConfig, EVMConfig, EnabledTradingPairs,
+		BandOracleConfig, DexConfig, EnabledTradingPairs,
 		GeneralCouncilMembershipConfig, GrandpaConfig, MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, 
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
 		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
@@ -239,8 +239,6 @@ fn testnet_genesis(
 
 	let initial_balance: u128 = 1_000_000 * dollar(DNAR);
 	let initial_staking: u128 = 100_000 * dollar(DNAR);
-
-	let evm_genesis_accounts = evm_genesis();
 
 	// merge duplicated
 	let balances = initial_authorities
@@ -354,9 +352,6 @@ fn testnet_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		setheum_evm: EVMConfig {
-			accounts: evm_genesis_accounts,
-		},
 		setheum_dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
@@ -381,7 +376,7 @@ fn newrome_genesis(
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
 		cent, dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, AirDropCurrencyId, BabeConfig,
-		Balance, BalancesConfig, BandOracleConfig, DexConfig, EVMConfig,
+		Balance, BalancesConfig, BandOracleConfig, DexConfig, 
 		EnabledTradingPairs, GeneralCouncilMembershipConfig, GrandpaConfig, 
 		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, 
 		NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig, 
@@ -396,8 +391,6 @@ fn newrome_genesis(
 
 	let initial_balance: u128 = 1_000_000 * dollar(DNAR);
 	let initial_staking: u128 = 100_000 * dollar(DNAR);
-
-	let evm_genesis_accounts = evm_genesis();
 
 	let balances = initial_authorities
 		.iter()
@@ -521,9 +514,6 @@ fn newrome_genesis(
 		orml_oracle_Instance2: BandOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
-		},
-		setheum_evm: EVMConfig {
-			accounts: evm_genesis_accounts,
 		},
 		setheum_dex: DexConfig {
 			initial_listing_trading_pairs: vec![],

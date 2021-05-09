@@ -1,6 +1,6 @@
 [package]
 name = "setheum-dev-service"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -43,12 +43,10 @@ sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch 
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 
-module-evm = { path = "../../..serml/evm" }
 module-nft = { path = "../../..serml/nft" }
-orml-oracle-rpc = { path = "../../../orml/oracle/rpc" }
+orml-oracle-rpc = { path = "../../../modules/oracle/rpc" }
 setheum-primitives = { path = "../../../primitives" }
 setheum-rpc = { path = "../../../rpc", features = ["standalone"]}
-setheum-evm-rpc-runtime-api = { path = "../../..serml/evm/rpc/runtime_api" }
 
 runtime-common = { path = "../../../runtime/common" }
 newrome-runtime = { path = "../../../runtime/newrome", features = ["standalone"], optional = true }
@@ -80,7 +78,4 @@ with-all-runtime = [
 	"with-newrome-runtime",
 	"with-neom-runtime",
 	"with-setheum-runtime",
-]
-with-ethereum-compatibility = [
-	"newrome-runtime/with-ethereum-compatibility"
 ]

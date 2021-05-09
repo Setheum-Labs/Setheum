@@ -2,10 +2,6 @@
 run: githooks
 	cargo run --manifest-path bin/setheum-dev/Cargo.toml -- --dev -lruntime=debug --instant-sealing
 
-.PHONY: run-eth
-run-eth: githooks
-	cargo run --manifest-path bin/setheum-dev/Cargo.toml --features with-ethereum-compatibility -- --dev -lruntime=debug -levm=debug --instant-sealing
-
 .PHONY: toolchain
 toolchain:
 	./scripts/init.sh
@@ -51,11 +47,6 @@ check-debug:
 .PHONY: test
 test: githooks
 	SKIP_WASM_BUILD= cargo test --all
-
-.PHONY: test-eth
-test-eth: githooks
-	SKIP_WASM_BUILD= cargo test --manifest-path bin/setheum/Cargo.toml test_evm_module --features with-ethereum-compatibility -p newrome-runtime
-
 .PHONY: test-all
 test-all: test-dev test-setheum
 

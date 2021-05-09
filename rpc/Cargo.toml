@@ -29,10 +29,8 @@ sc-rpc-api = { git = "https://github.com/paritytech/substrate", branch = "rococo
 substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 
-setheum-staking-pool-rpc = { path = "../serml/staking-pool/rpc" }
-orml-oracle-rpc = { path = "../orml/oracle/rpc" }
+orml-oracle-rpc = { path = "../modules/oracle/rpc" }
 runtime-common = { path = "../runtime/common" }
-evm-rpc = { path = "../serml/evm/rpc" }
 
 [features]
 standalone = []

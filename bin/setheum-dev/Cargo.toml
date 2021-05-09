@@ -1,6 +1,6 @@
 [package]
 name = "setheum-dev"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -20,8 +20,5 @@ funty = { version = "=1.1.0" }
 [features]
 runtime-benchmarks = [
 	"setheum-dev-cli/runtime-benchmarks",
-]
-with-ethereum-compatibility = [
-	"setheum-dev-service/with-ethereum-compatibility"
 ]
 with-newrome-runtime = []

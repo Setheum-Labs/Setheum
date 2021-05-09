@@ -1,6 +1,6 @@
 [package]
 name = "setheum-support"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -11,7 +11,7 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-orml-traits = { path = "../../orml/traits", default-features = false }
+orml-traits = { path = "../../modules/traits", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [features]

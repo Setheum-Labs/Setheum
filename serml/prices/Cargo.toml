@@ -1,6 +1,6 @@
 [package]
 name = "setheum-prices"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -11,14 +11,14 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-orml-traits = { package = "orml-traits", path = "../../orml/traits", default-features = false }
+orml-traits = { package = "orml-traits", path = "../../modules/traits", default-features = false }
 support = { package = "setheum-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-orml-tokens = { path = "../../orml/tokens" }
+orml-tokens = { path = "../../modules/tokens" }
 
 [features]
 default = ["std"]

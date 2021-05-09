@@ -20,7 +20,7 @@
 
 use super::*;
 
-use crate as nft;
+use crate as setrheum_nft;
 use codec::{Decode, Encode};
 use frame_support::{
 	construct_runtime, parameter_types,
@@ -28,14 +28,13 @@ use frame_support::{
 	RuntimeDebug,
 };
 use orml_traits::parameter_type_with_key;
-use primitives::{evm::EvmAddress, mocks::MockAddressMapping, Amount, BlockNumber, CurrencyId, TokenSymbol};
+use primitives::{mocks::MockAddressMapping, Amount, BlockNumber, CurrencyId, TokenSymbol};
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 	DispatchError, DispatchResult,
 };
-use support::{EVMBridge, InvokeContext};
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -159,31 +158,6 @@ impl orml_tokens::Config for Runtime {
 	type OnDust = ();
 }
 
-pub struct MockEVMBridge;
-impl<AccountId, Balance> EVMBridge<AccountId, Balance> for MockEVMBridge
-where
-	AccountId: Default,
-	Balance: Default,
-{
-	fn total_supply(_context: InvokeContext) -> Result<Balance, DispatchError> {
-		Ok(Default::default())
-	}
-
-	fn balance_of(_context: InvokeContext, _address: EvmAddress) -> Result<Balance, DispatchError> {
-		Ok(Default::default())
-	}
-
-	fn transfer(_context: InvokeContext, _to: EvmAddress, _value: Balance) -> DispatchResult {
-		Ok(())
-	}
-
-	fn get_origin() -> Option<AccountId> {
-		None
-	}
-
-	fn set_origin(_origin: AccountId) {}
-}
-
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
 parameter_types! {
@@ -196,8 +170,6 @@ impl setheum_currencies::Config for Runtime {
 	type NativeCurrency = NativeCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
-	type AddressMapping = MockAddressMapping;
-	type EVMBridge = MockEVMBridge;
 }
 
 parameter_types! {
@@ -233,7 +205,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		NFTModule: nft::{Pallet, Call, Event<T>},
+		SetheumNFT: setheum_nft::{Pallet, Call, Event<T>},
 		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},

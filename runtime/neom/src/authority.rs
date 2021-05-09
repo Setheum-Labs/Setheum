@@ -22,7 +22,7 @@ use crate::{
 	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, 
 	SIFModuleId, DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, 
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil, EnsureRootOrTwoThirdsTechnicalCommittee, 
-	OneDay, Origin, OriginCaller, SevenDays, ZeroDay, HOURS, //TODO: Add the SERPReserve `EnsureRootOrHalfSerpCouncil`.
+	OneDay, Origin, OriginCaller, SevenDays, ZeroDay, HOURS, //TODO: Add the SERPReserve `EnsureRootOrHalfSerpCouncil` and the 2 other Councils.
 };
 pub use frame_support::traits::{schedule::Priority, EnsureOrigin, OriginTrait};
 use frame_system::ensure_root;

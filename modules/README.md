@@ -1,6 +1,6 @@
 # open-runtime-module-library
 
-[![Crates.io](https://img.shields.io/crates/v/orml-tokens)](https://crates.io/search?q=orml)
+[![Crates.io](https://img.shields.io/crates/v/modules-tokens)](https://crates.io/search?q=orml)
 [![GitHub](https://img.shields.io/github/license/open-web3-stack/open-runtime-module-library)](https://github.com/open-web3-stack/open-runtime-module-library/blob/master/LICENSE)
 
 The Open Runtime Module Library (ORML) is a community maintained collection of Substrate runtime modules.
@@ -31,7 +31,7 @@ The Open Runtime Module Library (ORML) is a community maintained collection of S
 
 ## Example
 
-Checkout [orml-workshop](https://github.com/xlc/orml-workshop) for example usage.
+Checkout [orml-workshop](https://github.com/xlc/modules-workshop) for example usage.
 
 ## Development
 

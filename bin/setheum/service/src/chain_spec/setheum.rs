@@ -235,7 +235,6 @@ fn setheum_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		setheum_evm: Default::default(),
 		setheum_dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),

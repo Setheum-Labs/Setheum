@@ -39,12 +39,12 @@ fn class_id_account() -> AccountId {
 #[test]
 fn create_class_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Default::default()
 		));
-		let event = Event::nft(crate::Event::CreatedClass(class_id_account(), CLASS_ID));
+		let event = Event::setheum_nft(crate::Event::CreatedClass(class_id_account(), CLASS_ID));
 		assert_eq!(last_event(), event);
 
 		assert_eq!(
@@ -58,7 +58,7 @@ fn create_class_should_work() {
 fn create_class_should_fail() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			NFTModule::create_class(
+			SetheumNFT::create_class(
 				Origin::signed(BOB),
 				vec![1],
 				Properties(ClassProperty::Transferable | ClassProperty::Burnable)
@@ -71,12 +71,12 @@ fn create_class_should_fail() {
 #[test]
 fn mint_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
 		));
-		let event = Event::nft(crate::Event::CreatedClass(class_id_account(), CLASS_ID));
+		let event = Event::setheum_nft(crate::Event::CreatedClass(class_id_account(), CLASS_ID));
 		assert_eq!(last_event(), event);
 
 		assert_eq!(
@@ -84,14 +84,14 @@ fn mint_should_work() {
 				.is_ok(),
 			true
 		);
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
 			vec![1],
 			2
 		));
-		let event = Event::nft(crate::Event::MintedToken(class_id_account(), BOB, CLASS_ID, 2));
+		let event = Event::setheum_nft(crate::Event::MintedToken(class_id_account(), BOB, CLASS_ID, 2));
 		assert_eq!(last_event(), event);
 
 		assert_eq!(
@@ -106,23 +106,23 @@ fn mint_should_work() {
 #[test]
 fn mint_should_fail() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
 		));
 		assert_noop!(
-			NFTModule::mint(Origin::signed(ALICE), BOB, CLASS_ID_NOT_EXIST, vec![1], 2),
+			SetheumNFT::mint(Origin::signed(ALICE), BOB, CLASS_ID_NOT_EXIST, vec![1], 2),
 			Error::<Runtime>::ClassIdNotFound
 		);
 
 		assert_noop!(
-			NFTModule::mint(Origin::signed(BOB), BOB, CLASS_ID, vec![1], 0),
+			SetheumNFT::mint(Origin::signed(BOB), BOB, CLASS_ID, vec![1], 0),
 			Error::<Runtime>::InvalidQuantity
 		);
 
 		assert_noop!(
-			NFTModule::mint(Origin::signed(BOB), BOB, CLASS_ID, vec![1], 2),
+			SetheumNFT::mint(Origin::signed(BOB), BOB, CLASS_ID, vec![1], 2),
 			Error::<Runtime>::NoPermission
 		);
 
@@ -135,7 +135,7 @@ fn mint_should_fail() {
 			true
 		);
 		assert_noop!(
-			NFTModule::mint(Origin::signed(class_id_account()), BOB, CLASS_ID, vec![1], 2),
+			SetheumNFT::mint(Origin::signed(class_id_account()), BOB, CLASS_ID, vec![1], 2),
 			orml_nft::Error::<Runtime>::NoAvailableTokenId
 		);
 	});
@@ -144,7 +144,7 @@ fn mint_should_fail() {
 #[test]
 fn transfer_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
@@ -154,7 +154,7 @@ fn transfer_should_work() {
 				.is_ok(),
 			true
 		);
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
@@ -162,12 +162,12 @@ fn transfer_should_work() {
 			2
 		));
 
-		assert_ok!(NFTModule::transfer(Origin::signed(BOB), ALICE, (CLASS_ID, TOKEN_ID)));
-		let event = Event::nft(crate::Event::TransferredToken(BOB, ALICE, CLASS_ID, TOKEN_ID));
+		assert_ok!(SetheumNFT::transfer(Origin::signed(BOB), ALICE, (CLASS_ID, TOKEN_ID)));
+		let event = Event::setheum_nft(crate::Event::TransferredToken(BOB, ALICE, CLASS_ID, TOKEN_ID));
 		assert_eq!(last_event(), event);
 
-		assert_ok!(NFTModule::transfer(Origin::signed(ALICE), BOB, (CLASS_ID, TOKEN_ID)));
-		let event = Event::nft(crate::Event::TransferredToken(ALICE, BOB, CLASS_ID, TOKEN_ID));
+		assert_ok!(SetheumNFT::transfer(Origin::signed(ALICE), BOB, (CLASS_ID, TOKEN_ID)));
+		let event = Event::setheum_nft(crate::Event::TransferredToken(ALICE, BOB, CLASS_ID, TOKEN_ID));
 		assert_eq!(last_event(), event);
 	});
 }
@@ -175,7 +175,7 @@ fn transfer_should_work() {
 #[test]
 fn transfer_should_fail() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
@@ -185,7 +185,7 @@ fn transfer_should_fail() {
 				.is_ok(),
 			true
 		);
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
@@ -193,21 +193,21 @@ fn transfer_should_fail() {
 			1
 		));
 		assert_noop!(
-			NFTModule::transfer(Origin::signed(BOB), ALICE, (CLASS_ID_NOT_EXIST, TOKEN_ID)),
+			SetheumNFT::transfer(Origin::signed(BOB), ALICE, (CLASS_ID_NOT_EXIST, TOKEN_ID)),
 			Error::<Runtime>::ClassIdNotFound
 		);
 		assert_noop!(
-			NFTModule::transfer(Origin::signed(BOB), ALICE, (CLASS_ID, TOKEN_ID_NOT_EXIST)),
+			SetheumNFT::transfer(Origin::signed(BOB), ALICE, (CLASS_ID, TOKEN_ID_NOT_EXIST)),
 			Error::<Runtime>::TokenIdNotFound
 		);
 		assert_noop!(
-			NFTModule::transfer(Origin::signed(ALICE), BOB, (CLASS_ID, TOKEN_ID)),
+			SetheumNFT::transfer(Origin::signed(ALICE), BOB, (CLASS_ID, TOKEN_ID)),
 			Error::<Runtime>::NoPermission
 		);
 	});
 
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Default::default()
@@ -217,7 +217,7 @@ fn transfer_should_fail() {
 				.is_ok(),
 			true
 		);
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
@@ -225,7 +225,7 @@ fn transfer_should_fail() {
 			1
 		));
 		assert_noop!(
-			NFTModule::transfer(Origin::signed(BOB), ALICE, (CLASS_ID, TOKEN_ID)),
+			SetheumNFT::transfer(Origin::signed(BOB), ALICE, (CLASS_ID, TOKEN_ID)),
 			Error::<Runtime>::NonTransferable
 		);
 	});
@@ -234,7 +234,7 @@ fn transfer_should_fail() {
 #[test]
 fn burn_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
@@ -244,15 +244,15 @@ fn burn_should_work() {
 				.is_ok(),
 			true
 		);
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
 			vec![1],
 			1
 		));
-		assert_ok!(NFTModule::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)));
-		let event = Event::nft(crate::Event::BurnedToken(BOB, CLASS_ID, TOKEN_ID));
+		assert_ok!(SetheumNFT::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)));
+		let event = Event::setheum_nft(crate::Event::BurnedToken(BOB, CLASS_ID, TOKEN_ID));
 		assert_eq!(last_event(), event);
 
 		assert_eq!(
@@ -265,7 +265,7 @@ fn burn_should_work() {
 #[test]
 fn burn_should_fail() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
@@ -275,7 +275,7 @@ fn burn_should_fail() {
 				.is_ok(),
 			true
 		);
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
@@ -283,12 +283,12 @@ fn burn_should_fail() {
 			1
 		));
 		assert_noop!(
-			NFTModule::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID_NOT_EXIST)),
+			SetheumNFT::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID_NOT_EXIST)),
 			Error::<Runtime>::TokenIdNotFound
 		);
 
 		assert_noop!(
-			NFTModule::burn(Origin::signed(ALICE), (CLASS_ID, TOKEN_ID)),
+			SetheumNFT::burn(Origin::signed(ALICE), (CLASS_ID, TOKEN_ID)),
 			Error::<Runtime>::NoPermission
 		);
 
@@ -296,13 +296,13 @@ fn burn_should_fail() {
 			class_info.as_mut().unwrap().total_issuance = 0;
 		});
 		assert_noop!(
-			NFTModule::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)),
+			SetheumNFT::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)),
 			orml_nft::Error::<Runtime>::NumOverflow
 		);
 	});
 
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Default::default()
@@ -312,7 +312,7 @@ fn burn_should_fail() {
 				.is_ok(),
 			true
 		);
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
@@ -320,7 +320,7 @@ fn burn_should_fail() {
 			1
 		));
 		assert_noop!(
-			NFTModule::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)),
+			SetheumNFT::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)),
 			Error::<Runtime>::NonBurnable
 		);
 	});
@@ -329,7 +329,7 @@ fn burn_should_fail() {
 #[test]
 fn destroy_class_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
@@ -339,20 +339,20 @@ fn destroy_class_should_work() {
 				.is_ok(),
 			true
 		); // + 100
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
 			vec![1],
 			1
 		));
-		assert_ok!(NFTModule::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)));
-		assert_ok!(NFTModule::destroy_class(
+		assert_ok!(SetheumNFT::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)));
+		assert_ok!(SetheumNFT::destroy_class(
 			Origin::signed(class_id_account()),
 			CLASS_ID,
 			BOB
 		));
-		let event = Event::nft(crate::Event::DestroyedClass(class_id_account(), CLASS_ID, BOB));
+		let event = Event::setheum_nft(crate::Event::DestroyedClass(class_id_account(), CLASS_ID, BOB));
 		assert_eq!(last_event(), event);
 
 		assert_eq!(reserved_balance(&class_id_account()), 2);
@@ -364,7 +364,7 @@ fn destroy_class_should_work() {
 #[test]
 fn destroy_class_should_fail() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(NFTModule::create_class(
+		assert_ok!(SetheumNFT::create_class(
 			Origin::signed(ALICE),
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
@@ -374,7 +374,7 @@ fn destroy_class_should_fail() {
 				.is_ok(),
 			true
 		);
-		assert_ok!(NFTModule::mint(
+		assert_ok!(SetheumNFT::mint(
 			Origin::signed(class_id_account()),
 			BOB,
 			CLASS_ID,
@@ -382,22 +382,22 @@ fn destroy_class_should_fail() {
 			1
 		));
 		assert_noop!(
-			NFTModule::destroy_class(Origin::signed(class_id_account()), CLASS_ID_NOT_EXIST, BOB),
+			SetheumNFT::destroy_class(Origin::signed(class_id_account()), CLASS_ID_NOT_EXIST, BOB),
 			Error::<Runtime>::ClassIdNotFound
 		);
 
 		assert_noop!(
-			NFTModule::destroy_class(Origin::signed(BOB), CLASS_ID, BOB),
+			SetheumNFT::destroy_class(Origin::signed(BOB), CLASS_ID, BOB),
 			Error::<Runtime>::NoPermission
 		);
 
 		assert_noop!(
-			NFTModule::destroy_class(Origin::signed(class_id_account()), CLASS_ID, BOB),
+			SetheumNFT::destroy_class(Origin::signed(class_id_account()), CLASS_ID, BOB),
 			Error::<Runtime>::CannotDestroyClass
 		);
 
-		assert_ok!(NFTModule::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)));
-		assert_ok!(NFTModule::destroy_class(
+		assert_ok!(SetheumNFT::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)));
+		assert_ok!(SetheumNFT::destroy_class(
 			Origin::signed(class_id_account()),
 			CLASS_ID,
 			BOB

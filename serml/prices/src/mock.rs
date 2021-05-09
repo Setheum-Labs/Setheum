@@ -40,7 +40,7 @@ pub const LDNAR: CurrencyId = CurrencyId::Token(TokenSymbol::LDNAR);
 pub const LP_JCHF_JUSD: CurrencyId = CurrencyId::DEXShare(TokenSymbol::JCHF, TokenSymbol::JUSD);
 pub const LP_JUSD_DNAR: CurrencyId = CurrencyId::DEXShare(TokenSymbol::JUSD, TokenSymbol::DNAR);
 
-mod prices {
+mod setheum_prices {
 	pub use super::super::*;
 }
 
@@ -184,7 +184,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		PricesModule: prices::{Pallet, Storage, Call, Event<T>},
+		PricesModule: setheum_prices::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 	}
 );

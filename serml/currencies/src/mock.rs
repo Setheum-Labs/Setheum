@@ -22,7 +22,7 @@
 
 use frame_support::{ord_parameter_types, parameter_types, traits::GenesisBuild};
 use orml_traits::parameter_type_with_key;
-use primitives::{evm::AddressMapping, mocks::MockAddressMapping, CurrencyId, TokenSymbol};
+use primitives::{CurrencyId, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -32,7 +32,6 @@ use sp_runtime::{
 
 use super::*;
 use frame_system::EnsureSignedBy;
-use evm::GenesisAccount;
 use sp_core::{bytes::from_hex, H160};
 use sp_std::collections::btree_map::BTreeMap;
 use sp_std::str::FromStr;
@@ -132,58 +131,16 @@ parameter_types! {
 	pub NetworkContractSource: H160 = H160::default();
 }
 
-ord_parameter_types! {
-	pub const CouncilAccount: AccountId32 = AccountId32::from([1u8; 32]);
-	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
-	pub const NetworkContractAccount: AccountId32 = AccountId32::from([0u8; 32]);
-	pub const StorageDepositPerByte: u128 = 10;
-	pub const MaxCodeSize: u32 = 60 * 1024;
-	pub const DeveloperDeposit: u64 = 1000;
-	pub const DeploymentFee: u64 = 200;
-}
-
-impl evm::Config for Runtime {
-	type AddressMapping = MockAddressMapping;
-	type Currency = PalletBalances;
-	type MergeAccount = ();
-	type NewContractExtraBytes = NewContractExtraBytes;
-	type StorageDepositPerByte = StorageDepositPerByte;
-	type MaxCodeSize = MaxCodeSize;
-
-	type Event = Event;
-	type Precompiles = ();
-	type ChainId = ();
-	type GasToWeight = ();
-	type ChargeTransactionPayment = ();
-	type NetworkContractOrigin = EnsureSignedBy<NetworkContractAccount, AccountId>;
-	type NetworkContractSource = NetworkContractSource;
-
-	type DeveloperDeposit = DeveloperDeposit;
-	type DeploymentFee = DeploymentFee;
-	type TreasuryAccount = TreasuryAccount;
-	type FreeDeploymentOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
-
-	type WeightInfo = ();
-}
-
-impl setheum_evm_bridge::Config for Runtime {
-	type EVM = EVM;
-}
-
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
-	type AddressMapping = MockAddressMapping;
-	type EVMBridge = EVMBridge;
 }
 
 pub type NativeCurrency = Currency<Runtime, GetNativeCurrencyId>;
 pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Runtime, PalletBalances, i64, u64>;
-
-pub type SignedExtra = evm::SetEvmOrigin<Runtime>;
 
 pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
 pub type UncheckedExtrinsic = sp_runtime::generic::UncheckedExtrinsic<u32, Call, u32, SignedExtra>;
@@ -197,9 +154,7 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currencies: currencies::{Pallet, Call, Event<T>},
-		EVM: evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: setheum_evm_bridge::{Pallet},
+		Currencies: setheum-currencies::{Pallet, Call, Event<T>},
 	}
 );
 
@@ -288,16 +243,6 @@ impl ExtBuilder {
 			H256::from_str("e6f18b3f6d2cdeb50fb82c61f7a7a249abf7b534575880ddcfde84bba07ce81d").unwrap(),
 			H256::from_str("00000000000000000000000000000000ffffffffffffffffffffffffffffffff").unwrap(),
 		);
-		accounts.insert(
-			ERC20_ADDRESS,
-			GenesisAccount {
-				nonce: 1,
-				balance: 0,
-				storage,
-				code: from_hex(include!("../../evm-bridge/src/erc20_demo_contract")).unwrap(),
-			},
-		);
-		evm::GenesisConfig::<Runtime> { accounts }
 			.assimilate_storage(&mut t)
 			.unwrap();
 

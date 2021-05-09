@@ -16,20 +16,19 @@ members = [
 	"runtime/neom",
 	"runtime/setheum",
 
-	"orml/authority",
-	"orml/benchmarking",
-	"orml/currencies",
-	"orml/gradually-update",
-	"orml/nft",
-	"orml/oracle",
-	"orml/rewards",
-	"orml/tokens",
-	"orml/traits",
-	"orml/utilities",
-	"orml/vesting",
-	"orml/xtokens",
-	"orml/xcm-support",
-	"orml/unknown-tokens",
+	"modules/authority",
+	"modules/benchmarking",
+	"modules/currencies",
+	"modules/nft",
+	"modules/oracle",
+	"modules/rewards",
+	"modules/tokens",
+	"modules/traits",
+	"modules/utilities",
+	"modules/vesting",
+	"modules/xtokens",
+	"modules/xcm-support",
+	"modules/unknown-tokens",
 ]
 exclude = [
 	"bin/setheum-dev",
@@ -104,9 +103,3 @@ wasmi = { opt-level = 3 }
 x25519-dalek = { opt-level = 3 }
 yamux = { opt-level = 3 }
 zeroize = { opt-level = 3 }
-
-[patch.crates-io]
-evm = { git = "https://github.com/rust-blockchain/evm.git", rev = "f90f8432fc0070a6de9e2532e5d0fcef7a041fd7" }
-evm-core = { git = "https://github.com/rust-blockchain/evm.git", rev = "f90f8432fc0070a6de9e2532e5d0fcef7a041fd7" }
-evm-gasometer = { git = "https://github.com/rust-blockchain/evm.git", rev = "f90f8432fc0070a6de9e2532e5d0fcef7a041fd7" }
-evm-runtime = { git = "https://github.com/rust-blockchain/evm.git", rev = "f90f8432fc0070a6de9e2532e5d0fcef7a041fd7" }

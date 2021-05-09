@@ -1,6 +1,6 @@
 [package]
 name = "setheum-transaction-payment"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -16,11 +16,11 @@ pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "r
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-orml-tokens = { path = "../../orml/tokens", default-features = false }
+orml-tokens = { path = "../../modules/tokens", default-features = false }
 setheum-currencies = { path = "../../serml/currencies", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 support = { package = "setheum-support", path = "../support", default-features = false }
-orml-traits = { path = "../../orml/traits", default-features = false }
+orml-traits = { path = "../../modules/traits", default-features = false }
 setheum-dex = { path = "../dex", default-features = false }
 
 [dev-dependencies]

@@ -105,7 +105,7 @@ Bench bot can take care of syncing branch with `master` and generating WeightInf
 
 ### Generate module weights
 
-Comment on a PR `/bench runtime module <module_name>` i.e.: `setheum_evm`
+Comment on a PR `/bench runtime module <module_name>` i.e.: `setheum_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
 

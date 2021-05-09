@@ -53,8 +53,6 @@ use sp_version::RuntimeVersion;
 
 use frame_system::{EnsureOneOf, EnsureRoot, RawOrigin};
 use setheum_currencies::{BasicCurrencyAdapter, Currency};
-use evm::{CallInfo, CreateInfo};
-use evm_accounts::EvmAddressMapping;
 use module_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use orml_tokens::CurrencyAdapter;
 use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
@@ -188,7 +186,7 @@ parameter_types! {
 impl frame_system::Config for Runtime {
 	type AccountId = AccountId;
 	type Call = Call;
-	type Lookup = (Indices, SevmAccounts);
+	type Lookup = (Indices);
 	type Index = Nonce;
 	type BlockNumber = BlockNumber;
 	type Hash = Hash;
@@ -203,10 +201,7 @@ impl frame_system::Config for Runtime {
 	type PalletInfo = PalletInfo;
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
-	type OnKilledAccount = (
-		evm::CallKillAccount<Runtime>,
-		evm_accounts::CallKillAccount<Runtime>,
-	);
+	type OnKilledAccount = ();
 	type DbWeight = RocksDbWeight;
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
@@ -605,8 +600,6 @@ impl setheum_currencies::Config for Runtime {
 	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = weights::setheum_currencies::WeightInfo<Runtime>;
-	type AddressMapping = EvmAddressMapping<Runtime>;
-	type EVMBridge = EVMBridge;
 }
 
 pub struct EnsureRootOrSetheumTreasury;
@@ -665,13 +658,6 @@ parameter_types! {
 	pub const UpdateFrequency: BlockNumber = 10;
 }
 
-impl orml_gradually_update::Config for Runtime {
-	type Event = Event;
-	type UpdateFrequency = UpdateFrequency;
-	type DispatchOrigin = EnsureRoot<AccountId>;
-	type WeightInfo = weights::orml_gradually_update::WeightInfo<Runtime>;
-}
-
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
 where
 	Call: From<LocalCall>,
@@ -704,7 +690,6 @@ where
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			module_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-			evm::SetEvmOrigin::<Runtime>::new(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
@@ -772,14 +757,6 @@ impl module_transaction_payment::Config for Runtime {
 	type WeightInfo = weights::module_transaction_payment::WeightInfo<Runtime>;
 }
 
-impl evm_accounts::Config for Runtime {
-	type Event = Event;
-	type Currency = Balances;
-	type AddressMapping = EvmAddressMapping<Runtime>;
-	type MergeAccount = Currencies;
-	type WeightInfo = weights::evm_accounts::WeightInfo<Runtime>;
-}
-
 impl orml_rewards::Config for Runtime {
 	type Share = Balance;
 	type Balance = Balance;
@@ -836,89 +813,6 @@ impl pallet_proxy::Config for Runtime {
 	type CallHasher = BlakeTwo256;
 	type AnnouncementDepositBase = AnnouncementDepositBase;
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
-}
-
-parameter_types! {
-	pub const ChainId: u64 = 595;
-	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
-}
-
-#[cfg(feature = "with-ethereum-compatibility")]
-parameter_types! {
-	pub const NewContractExtraBytes: u32 = 0;
-	pub const StorageDepositPerByte: Balance = 0;
-	pub const MaxCodeSize: u32 = 0x6000;
-	pub const DeveloperDeposit: Balance = 0;
-	pub const DeploymentFee: Balance = 0;
-}
-
-#[cfg(not(feature = "with-ethereum-compatibility"))]
-parameter_types! {
-	pub const NewContractExtraBytes: u32 = 10_000;
-	pub StorageDepositPerByte: Balance = microcent(DNAR);
-	pub const MaxCodeSize: u32 = 60 * 1024;
-	pub DeveloperDeposit: Balance = dollar(DNAR);
-	pub DeploymentFee: Balance = dollar(DNAR);
-}
-
-pub type MultiCurrencyPrecompile =
-	runtime_common::MultiCurrencyPrecompile<AccountId, EvmAddressMapping<Runtime>, Currencies>;
-
-pub type NFTPrecompile = runtime_common::NFTPrecompile<AccountId, EvmAddressMapping<Runtime>, NFT>;
-pub type StateRentPrecompile = runtime_common::StateRentPrecompile<AccountId, EvmAddressMapping<Runtime>, EVM>;
-pub type OraclePrecompile = runtime_common::OraclePrecompile<AccountId, EvmAddressMapping<Runtime>, Prices>;
-pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
-	AccountId,
-	EvmAddressMapping<Runtime>,
-	Scheduler,
-	module_transaction_payment::ChargeTransactionPayment<Runtime>,
-	Call,
-	Origin,
-	OriginCaller,
-	Runtime,
->;
-pub type DexPrecompile = runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, Dex>;
-
-#[cfg(feature = "with-ethereum-compatibility")]
-static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
-
-impl evm::Config for Runtime {
-	type AddressMapping = EvmAddressMapping<Runtime>;
-	type Currency = Balances;
-	type MergeAccount = Currencies;
-	type NewContractExtraBytes = NewContractExtraBytes;
-	type StorageDepositPerByte = StorageDepositPerByte;
-	type MaxCodeSize = MaxCodeSize;
-
-	type Event = Event;
-	type Precompiles = runtime_common::AllPrecompiles<
-		SystemContractsFilter,
-		MultiCurrencyPrecompile,
-		NFTPrecompile,
-		StateRentPrecompile,
-		OraclePrecompile,
-		ScheduleCallPrecompile,
-		DexPrecompile,
-	>;
-	type ChainId = ChainId;
-	type GasToWeight = GasToWeight;
-	type ChargeTransactionPayment = module_transaction_payment::ChargeTransactionPayment<Runtime>;
-	type NetworkContractOrigin = EnsureRootOrTwoThirdsTechnicalCommittee;
-	type NetworkContractSource = NetworkContractSource;
-	type DeveloperDeposit = DeveloperDeposit;
-	type DeploymentFee = DeploymentFee;
-	type TreasuryAccount = TreasuryModuleAccount;
-	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil;
-	type WeightInfo = weights::evm::WeightInfo<Runtime>;
-
-	#[cfg(feature = "with-ethereum-compatibility")]
-	fn config() -> &'static evm::Config {
-		&ISTANBUL_CONFIG
-	}
-}
-
-impl setheum_evm_bridge::Config for Runtime {
-	type EVM = EVM;
 }
 
 #[cfg(feature = "standalone")]
@@ -1244,7 +1138,6 @@ macro_rules! construct_newrome_runtime {
 				Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 3,
 
 				TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 4,
-				SevmAccounts: evm_accounts::{Pallet, Call, Storage, Event<T>} = 5,
 				Currencies: setheum_currencies::{Pallet, Call, Event<T>} = 6,
 				Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 7,
 				Vesting: orml_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 8,
@@ -1261,7 +1154,6 @@ macro_rules! construct_newrome_runtime {
 				Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 16,
 
 				Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 17,
-				GraduallyUpdate: orml_gradually_update::{Pallet, Storage, Call, Event<T>} = 18,
 
 				// Governance
 				GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 19,
@@ -1294,9 +1186,7 @@ macro_rules! construct_newrome_runtime {
 				AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>, Config<T>} = 50,
 				NFT: setheum_nft::{Pallet, Call, Event<T>} = 51,
 
-				// Smart contracts
-				EVM: evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 53,
-				EVMBridge: setheum_setheum_evm_bridge::{Pallet} = 54,
+				// Smart contracts - Add Ink! Contracts Pallet
 
 				// Dev
 				Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 55,
@@ -1348,7 +1238,6 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	module_transaction_payment::ChargeTransactionPayment<Runtime>,
-	evm::SetEvmOrigin<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
@@ -1557,63 +1446,6 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl evm_rpc_runtime_api::EVMRuntimeRPCApi<Block, Balance> for Runtime {
-		fn call(
-			from: H160,
-			to: H160,
-			data: Vec<u8>,
-			value: Balance,
-			gas_limit: u32,
-			storage_limit: u32,
-			estimate: bool,
-		) -> Result<CallInfo, sp_runtime::DispatchError> {
-			let config = if estimate {
-				let mut config = <Runtime as evm::Config>::config().clone();
-				config.estimate = true;
-				Some(config)
-			} else {
-				None
-			};
-
-			evm::Runner::<Runtime>::call(
-				from,
-				from,
-				to,
-				data,
-				value,
-				gas_limit.into(),
-				storage_limit,
-				config.as_ref().unwrap_or(<Runtime as evm::Config>::config()),
-			)
-		}
-
-		fn create(
-			from: H160,
-			data: Vec<u8>,
-			value: Balance,
-			gas_limit: u32,
-			storage_limit: u32,
-			estimate: bool,
-		) -> Result<CreateInfo, sp_runtime::DispatchError> {
-			let config = if estimate {
-				let mut config = <Runtime as evm::Config>::config().clone();
-				config.estimate = true;
-				Some(config)
-			} else {
-				None
-			};
-
-			evm::Runner::<Runtime>::create(
-				from,
-				data,
-				value,
-				gas_limit.into(),
-				storage_limit,
-				config.as_ref().unwrap_or(<Runtime as evm::Config>::config()),
-			)
-		}
-	}
-
 	// benchmarks for setheum modules
 	#[cfg(feature = "runtime-benchmarks")]
 	impl frame_benchmarking::Benchmark<Block> for Runtime {
@@ -1648,18 +1480,15 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, setheum_nft, NftBench::<Runtime>);
 			orml_add_benchmark!(params, batches, setheum_dex, benchmarking::dex);
-			orml_add_benchmark!(params, batches, evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, module_transaction_payment, benchmarking::transaction_payment);
 			orml_add_benchmark!(params, batches, setheum_incentives, benchmarking::incentives);
 			orml_add_benchmark!(params, batches, setheum_prices, benchmarking::prices);
-			orml_add_benchmark!(params, batches, evm_accounts, benchmarking::evm_accounts);
 			orml_add_benchmark!(params, batches, setheum_currencies, benchmarking::currencies);
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, orml_vesting, benchmarking::vesting);
 
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
-			orml_add_benchmark!(params, batches, orml_gradually_update, benchmarking::gradually_update);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
 
 			if batches.is_empty() { return Err("Benchmark not found for this module.".into()) }

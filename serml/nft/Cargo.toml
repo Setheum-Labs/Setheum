@@ -1,6 +1,6 @@
 [package]
 name = "setheum-nft"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -15,8 +15,8 @@ frame-system = { git = "https://github.com/paritytech/substrate", branch = "roco
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false, optional = true}
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-orml-traits = { path = "../../orml/traits", default-features = false }
-orml-nft = { path = "../../orml/nft", default-features = false }
+orml-traits = { path = "../../modules/traits", default-features = false }
+orml-nft = { path = "../../modules/nft", default-features = false }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 setheum-currencies = { path = "../currencies", default-features = false }
 
@@ -26,7 +26,7 @@ sp-io = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" 
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 setheum-currencies = { path = "../../serml/currencies", default-features = false }
-orml-tokens = { path = "../../orml/tokens", default-features = false }
+orml-tokens = { path = "../../modules/tokens", default-features = false }
 support = { package = "setheum-support", path = "../../serml/support" }
 
 [features]

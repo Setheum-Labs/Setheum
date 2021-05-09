@@ -20,8 +20,6 @@
 
 // module benchmarking
 pub mod dex;
-pub mod evm;
-pub mod evm_accounts;
 pub mod staking;
 pub mod incentives;
 pub mod prices;
@@ -30,7 +28,6 @@ pub mod transaction_payment;
 // orml benchmarking
 pub mod authority;
 pub mod currencies;
-pub mod gradually_update;
 pub mod oracle;
 pub mod tokens;
 pub mod utils;
