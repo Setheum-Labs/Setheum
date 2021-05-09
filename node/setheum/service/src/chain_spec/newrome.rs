@@ -72,7 +72,7 @@ pub fn development_testnet_config() -> Result<ChainSpec, String> {
 		Some(properties),
 		Extensions {
 			relay_chain: "rococo".into(),
-			para_id: 666_u32,
+			para_id: 258_u32,
 		},
 	))
 }
@@ -125,7 +125,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		Some(properties),
 		Extensions {
 			relay_chain: "rococo".into(),
-			para_id: 666_u32,
+			para_id: 258_u32,
 		},
 	))
 }
@@ -206,7 +206,7 @@ pub fn latest_newrome_testnet_config() -> Result<ChainSpec, String> {
 		Some(properties),
 		Extensions {
 			relay_chain: "rococo".into(),
-			para_id: 666_u32,
+			para_id: 258_u32,
 		},
 	))
 }

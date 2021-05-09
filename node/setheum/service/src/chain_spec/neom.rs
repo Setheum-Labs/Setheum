@@ -110,7 +110,7 @@ pub fn latest_neom_config() -> Result<ChainSpec, String> {
 		Some(properties),
 		Extensions {
 			relay_chain: "rococo".into(),
-			para_id: 666_u32.into(),
+			para_id: 258_u32.into(),
 		},
 	))
 }

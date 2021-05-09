@@ -123,7 +123,7 @@ pub fn latest_setheum_config() -> Result<ChainSpec, String> {
 		// Extensions
 		Extensions {
 			relay_chain: "rococo".into(),
-			para_id: 666_u32.into(),
+			para_id: 258_u32.into(),
 		},
 	))
 }

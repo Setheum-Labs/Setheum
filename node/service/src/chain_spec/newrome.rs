@@ -21,10 +21,10 @@ use hex_literal::hex;
 use sc_chain_spec::ChainType;
 use sc_telemetry::TelemetryEndpoints;
 use serde_json::map::Map;
-use sp_consensus_babe::AuthorityId as BabeId;
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::UncheckedInto, sr25519};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::{FixedPointNumber, FixedU128};
+use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128};
 
 use crate::chain_spec::{
 	get_account_id_from_seed, get_authority_keys_from_seed, Extensions, TELEMETRY_URL,
@@ -47,8 +47,8 @@ pub fn development_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = newrome_runtime::WASM_BINARY.unwrap_or_default();
 
 	Ok(ChainSpec::from_genesis(
-		"NewRome PC Dev",
-		"newrome-pc-dev",
+		"NewRome Dev",
+		"newrome-dev",
 		ChainType::Development,
 		move || {
 			testnet_genesis(
@@ -71,8 +71,8 @@ pub fn development_testnet_config() -> Result<ChainSpec, String> {
 		None,
 		Some(properties),
 		Extensions {
-			relay_chain: "rococo".into(),
-			para_id: 666_u32,
+			relay_chain: "rococo-local".into(),
+			para_id: PARA_ID,
 		},
 	))
 }
@@ -124,8 +124,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		None,
 		Some(properties),
 		Extensions {
-			relay_chain: "rococo".into(),
-			para_id: 666_u32,
+			relay_chain: "rococo-local".into(),
+			para_id: PARA_ID,
 		},
 	))
 }
@@ -206,28 +206,29 @@ pub fn latest_newrome_testnet_config() -> Result<ChainSpec, String> {
 		Some(properties),
 		Extensions {
 			relay_chain: "rococo".into(),
-			para_id: 666_u32,
+			para_id: 258_u32,
 		},
 	))
 }
 
 pub fn newrome_testnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../../../../../resources/newrome-pc-dist.json")[..])
+	ChainSpec::from_json_bytes(&include_bytes!("../../../../resources/newrome-pc-dist.json")[..])
 }
 
 fn testnet_genesis(
 	wasm_binary: &[u8],
-	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId)>,
+	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, AuraId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
-		dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, Balance, BalancesConfig, SecondOracleConfig,
-		DexConfig, EnabledTradingPairs, GeneralCouncilMembershipConfig,
-		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit,
-		OperatorMembershipSetheumConfig, OperatorMembershipSecondConfig, OrmlNFTConfig, ParachainInfoConfig,
-		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, 
-		DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT,
+		dollar, get_all_module_accounts, AirDropConfig, AuraConfig, Balance, BalancesConfig, 
+		SetheumOracleConfig, SecondOracleConfig, DexConfig, EnabledTradingPairs, 
+		GeneralCouncilMembershipConfig, MonetaryCouncilMembershipConfig, 
+		FinancialCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit,
+		OperatorMembershipSetheumConfig, OperatorMembershipSecondConfig, OrmlNFTConfig, 
+		ParachainInfoConfig, SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, 
+		TokensConfig, VestingConfig, DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -271,6 +272,9 @@ fn testnet_genesis(
 		pallet_indices: IndicesConfig { indices: vec![] },
 		pallet_balances: BalancesConfig { balances },
 		pallet_sudo: SudoConfig { key: root_key.clone() },
+		pallet_aura: AuraConfig {
+			authorities: initial_authorities.iter().map(|x| (x.3.clone())).collect(),
+		},
 		pallet_collective_Instance1: Default::default(),
 		pallet_membership_Instance1: GeneralCouncilMembershipConfig {
 			members: vec![root_key.clone()],
@@ -334,19 +338,18 @@ fn testnet_genesis(
 
 fn newrome_genesis(
 	wasm_binary: &[u8],
-	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId)>,
+	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, AuraId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
-		cent, dollar, get_all_module_accounts, SetheumOracleConfig, AirDropConfig, AirDropCurrencyId, Balance,
-		BalancesConfig, SecondOracleConfig, 
-		EnabledTradingPairs, GeneralCouncilMembershipConfig, 
-		MonetaryCouncilMembershipConfig, FinancialCouncilMembershipConfig, IndicesConfig, 
-		NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
-		OperatorMembershipSecondConfig, OrmlNFTConfig, ParachainInfoConfig,
-		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, 
-		DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT,
+		cent, dollar, get_all_module_accounts, AirDropConfig, AirDropCurrencyId, 
+		AuraConfig, Balance, BalancesConfig, SetheumOracleConfig, SecondOracleConfig, 
+		EnabledTradingPairs, GeneralCouncilMembershipConfig, MonetaryCouncilMembershipConfig, 
+		FinancialCouncilMembershipConfig, IndicesConfig,  NativeTokenExistentialDeposit, 
+		OperatorMembershipSetheumConfig, OperatorMembershipSecondConfig, OrmlNFTConfig, 
+		ParachainInfoConfig, SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, 
+		TokensConfig, VestingConfig, DNAR, USDJ, EURJ, GBPJ, IDRJ, NGNJ, SETT, SDEX, DOT,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -390,6 +393,9 @@ fn newrome_genesis(
 		pallet_indices: IndicesConfig { indices: vec![] },
 		pallet_balances: BalancesConfig { balances },
 		pallet_sudo: SudoConfig { key: root_key.clone() },
+		pallet_aura: AuraConfig {
+			authorities: initial_authorities.iter().map(|x| (x.3.clone())).collect(),
+		},
 		pallet_collective_Instance1: Default::default(),
 		pallet_membership_Instance1: GeneralCouncilMembershipConfig {
 			members: vec![root_key.clone()],
@@ -430,11 +436,11 @@ fn newrome_genesis(
 		module_airdrop: AirDropConfig {
 			airdrop_accounts: {
 				let dnar_airdrop_accounts_json =
-					&include_bytes!("../../../../../resources/newrome-airdrop-DNAR.json")[..];
+					&include_bytes!("../../../../resources/newrome-airdrop-DNAR.json")[..];
 				let dnar_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(dnar_airdrop_accounts_json).unwrap();
 				let neom_airdrop_accounts_json =
-					&include_bytes!("../../../../../resources/newrome-airdrop-NEOM.json")[..];
+					&include_bytes!("../../../../resources/newrome-airdrop-NEOM.json")[..];
 				let neom_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(neom_airdrop_accounts_json).unwrap();
 
@@ -467,7 +473,7 @@ fn newrome_genesis(
 		},
 		orml_nft: OrmlNFTConfig {
 			tokens: {
-				let nft_airdrop_json = &include_bytes!("../../../../../resources/newrome-airdrop-NFT.json")[..];
+				let nft_airdrop_json = &include_bytes!("../../../../resources/newrome-airdrop-NFT.json")[..];
 				let nft_airdrop: Vec<(
 					AccountId,
 					Vec<u8>,
