@@ -38,12 +38,23 @@ pub use neom_runtime;
 pub use newrome_runtime;
 
 use setheum_primitives::Block;
+use mock_inherent_data_provider::{
+	MockParachainInherentDataProvider, 
+	MockTimestampInherentDataProvider
+};
 use polkadot_primitives::v0::CollatorPair;
+use sc_client_api::ExecutorProvider;
+use sc_consensus::LongestChain;
+use sc_consensus_aura::{ImportQueueParams, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 use sc_service::{
-	error::Error as ServiceError, Configuration, PartialComponents, Role, TFullBackend, TFullClient, TaskManager,
+	error::Error as ServiceError, 
+	Configuration, PartialComponents, 
+	Role, TFullBackend, TFullClient, 
+	TaskManager,
 };
 use sc_telemetry::{Telemetry, TelemetryWorker, TelemetryWorkerHandle};
+use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
 use sp_runtime::traits::BlakeTwo256;
 use sp_trie::PrefixedMemoryDB;
 use std::sync::Arc;
@@ -59,7 +70,7 @@ pub use sp_api::ConstructRuntimeApi;
 
 pub mod chain_spec;
 mod client;
-mod mock_timestamp_data_provider;
+mod mock_inherent_data_provider;
 
 #[cfg(feature = "with-newrome-runtime")]
 native_executor_instance!(
@@ -88,14 +99,17 @@ native_executor_instance!(
 /// Can be called for a `Configuration` to check if it is a configuration for
 /// the `Setheum` network.
 pub trait IdentifyVariant {
-	/// Returns if this is a configuration for the `Setheum` network.
+	/// Returns `true` if this is a configuration for the `Setheum` network.
 	fn is_setheum(&self) -> bool;
 
-	/// Returns if this is a configuration for the `Neom` network.
+	/// Returns `true` if this is a configuration for the `Neom` network.
 	fn is_neom(&self) -> bool;
 
-	/// Returns if this is a configuration for the `NewRome` network.
+	/// Returns `true` if this is a configuration for the `NewRome` network.
 	fn is_newrome(&self) -> bool;
+
+	/// Returns `true` if this is a configuration for the `Newrome` dev network.
+	fn is_newrome_dev(&self) -> bool;
 }
 
 impl IdentifyVariant for Box<dyn ChainSpec> {
@@ -110,6 +124,10 @@ impl IdentifyVariant for Box<dyn ChainSpec> {
 	fn is_newrome(&self) -> bool {
 		self.id().starts_with("newrome") || self.id().starts_with("rom")
 	}
+
+	fn is_newrome_dev(&self) -> bool { 
+		self.id().starts_with("newrome-dev")
+	}
 }
 
 /// setheum's full backend.
@@ -118,14 +136,19 @@ type FullBackend = TFullBackend<Block>;
 /// setheum's full client.
 type FullClient<RuntimeApi, Executor> = TFullClient<Block, RuntimeApi, Executor>;
 
+/// Maybe Newrome Dev full select chain.
+type MaybeFullSelectChain = Option<LongestChain<FullBackend, Block>>;
+
 pub fn new_partial<RuntimeApi, Executor>(
 	config: &Configuration,
 	_test: bool,
+	dev: bool,
+	instant_sealing: bool,
 ) -> Result<
 	PartialComponents<
 		FullClient<RuntimeApi, Executor>,
 		FullBackend,
-		(),
+		MaybeFullSelectChain,
 		sp_consensus::import_queue::BasicQueue<Block, PrefixedMemoryDB<BlakeTwo256>>,
 		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(Option<Telemetry>, Option<TelemetryWorkerHandle>),
@@ -135,6 +158,7 @@ pub fn new_partial<RuntimeApi, Executor>(
 where
 	RuntimeApi: ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>> + Send + Sync + 'static,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
 	Executor: NativeExecutionDispatch + 'static,
 {
 	let inherent_data_providers = sp_inherents::InherentDataProviders::new();
@@ -181,6 +205,56 @@ where
 		registry,
 	)?;
 
+	let select_chain = if dev {
+		Some(LongestChain::new(backend.clone()))
+	} else {
+		None
+	};
+
+	let import_queue = if dev {
+		inherent_data_providers
+			.register_provider(MockParachainInherentDataProvider)
+			.map_err(Into::into)
+			.map_err(sp_consensus::error::Error::InherentData)?;
+		inherent_data_providers
+			.register_provider(MockTimestampInherentDataProvider)
+			.map_err(Into::into)
+			.map_err(sp_consensus::error::Error::InherentData)?;
+
+		if instant_sealing {
+			// instance sealing
+			sc_consensus_manual_seal::import_queue(
+				Box::new(client.clone()),
+				&task_manager.spawn_essential_handle(),
+				registry,
+			)
+		} else {
+			// aura import queue
+			let block_import =
+				sc_consensus_aura::AuraBlockImport::<_, _, _, AuraPair>::new(client.clone(), client.clone());
+			sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _>(ImportQueueParams {
+				block_import,
+				justification_import: None,
+				client: client.clone(),
+				inherent_data_providers: inherent_data_providers.clone(),
+				spawner: &task_manager.spawn_essential_handle(),
+				registry,
+				can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
+				check_for_equivocation: Default::default(),
+				slot_duration: sc_consensus_aura::slot_duration(&*client)?,
+				telemetry: telemetry.as_ref().map(|x| x.handle()),
+			})?
+		}
+	} else {
+		cumulus_client_consensus_relay_chain::import_queue(
+			client.clone(),
+			client.clone(),
+			inherent_data_providers.clone(),
+			&task_manager.spawn_essential_handle(),
+			registry,
+		)?
+	};
+
 	Ok(PartialComponents {
 		backend,
 		client,
@@ -189,7 +263,7 @@ where
 		task_manager,
 		transaction_pool,
 		inherent_data_providers,
-		select_chain: (),
+		select_chain,
 		other: (telemetry, telemetry_worker_handle),
 	})
 }
@@ -212,6 +286,7 @@ where
 	RB: Fn(Arc<FullClient<RuntimeApi, Executor>>) -> jsonrpc_core::IoHandler<sc_rpc::Metadata> + Send + 'static,
 	RuntimeApi: ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>> + Send + Sync + 'static,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
 	Executor: NativeExecutionDispatch + 'static,
 {
 	if matches!(parachain_config.role, Role::Light) {
@@ -220,7 +295,7 @@ where
 
 	let parachain_config = prepare_node_config(parachain_config);
 
-	let params = new_partial(&parachain_config, false)?;
+	let params = new_partial(&parachain_config, false, false)?;
 	params
 		.inherent_data_providers
 		.register_provider(sp_timestamp::InherentDataProvider)
@@ -367,6 +442,7 @@ pub async fn start_node<RuntimeApi, Executor>(
 where
 	RuntimeApi: ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>> + Send + Sync + 'static,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
+	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
 	Executor: NativeExecutionDispatch + 'static,
 {
 	start_node_impl(parachain_config, collator_key, polkadot_config, id, validator, |_| {
@@ -388,7 +464,7 @@ pub fn new_chain_ops(
 	ServiceError,
 > {
 	config.keystore = sc_service::config::KeystoreConfig::InMemory;
-	if config.chain_spec.is_newrome() {
+	if config.chain_spec.is_newrome_dev() {
 		#[cfg(feature = "with-newrome-runtime")]
 		{
 			let PartialComponents {
@@ -397,7 +473,21 @@ pub fn new_chain_ops(
 				import_queue,
 				task_manager,
 				..
-			} = new_partial(config, false)?;
+			} = new_partial(config, true, false)?;
+			Ok((Arc::new(Client::Newrome(client)), backend, import_queue, task_manager))
+		}
+		#[cfg(not(feature = "with-newrome-runtime"))]
+		Err("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.".into())
+	} else if config.chain_spec.is_newrome() {
+		#[cfg(feature = "with-newrome-runtime")]
+		{
+			let PartialComponents {
+				client,
+				backend,
+				import_queue,
+				task_manager,
+				..
+			} = new_partial(config, false, false)?;
 			Ok((Arc::new(Client::NewRome(client)), backend, import_queue, task_manager))
 		}
 		#[cfg(not(feature = "with-newrome-runtime"))]
@@ -411,7 +501,7 @@ pub fn new_chain_ops(
 				import_queue,
 				task_manager,
 				..
-			} = new_partial::<neom_runtime::RuntimeApi, NeomExecutor>(config, false)?;
+			} = new_partial::<neom_runtime::RuntimeApi, NeomExecutor>(config, false, false)?;
 			Ok((Arc::new(Client::Neom(client)), backend, import_queue, task_manager))
 		}
 		#[cfg(not(feature = "with-neom-runtime"))]
@@ -429,6 +519,139 @@ pub fn new_chain_ops(
 			Ok((Arc::new(Client::setheum(client)), backend, import_queue, task_manager))
 		}
 		#[cfg(not(feature = "with-setheum-runtime"))]
-		Err("setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
+		Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
 	}
+}
+
+fn inner_newrome_dev(config: Configuration, instant_sealing: bool) -> Result<TaskManager, ServiceError> {
+	let sc_service::PartialComponents {
+		client,
+		backend,
+		mut task_manager,
+		import_queue,
+		keystore_container,
+		select_chain: maybe_select_chain,
+		transaction_pool,
+		inherent_data_providers,
+		other: (mut telemetry, _),
+	} = new_partial::<newrome_runtime::RuntimeApi, NewromeExecutor>(&config, true, instant_sealing)?;
+
+	let (network, network_status_sinks, system_rpc_tx, network_starter) =
+		sc_service::build_network(sc_service::BuildNetworkParams {
+			config: &config,
+			client: client.clone(),
+			transaction_pool: transaction_pool.clone(),
+			spawn_handle: task_manager.spawn_handle(),
+			import_queue,
+			on_demand: None,
+			block_announce_validator_builder: None,
+		})?;
+
+	if config.offchain_worker.enabled {
+		sc_service::build_offchain_workers(&config, task_manager.spawn_handle(), client.clone(), network.clone());
+	}
+
+	let prometheus_registry = config.prometheus_registry().cloned();
+
+	let role = config.role.clone();
+	let force_authoring = config.force_authoring;
+	let backoff_authoring_blocks: Option<()> = None;
+
+	let select_chain =
+		maybe_select_chain.expect("In newrome dev mode, `new_partial` will return some `select_chain`; qed");
+
+	if role.is_authority() {
+		let proposer_factory = sc_basic_authorship::ProposerFactory::new(
+			task_manager.spawn_handle(),
+			client.clone(),
+			transaction_pool.clone(),
+			prometheus_registry.as_ref(),
+			telemetry.as_ref().map(|x| x.handle()),
+		);
+
+		if instant_sealing {
+			let authorship_future =
+				sc_consensus_manual_seal::run_instant_seal(sc_consensus_manual_seal::InstantSealParams {
+					block_import: client.clone(),
+					env: proposer_factory,
+					client: client.clone(),
+					pool: transaction_pool.pool().clone(),
+					select_chain,
+					consensus_data_provider: None,
+					inherent_data_providers,
+				});
+			// we spawn the future on a background thread managed by service.
+			task_manager
+				.spawn_essential_handle()
+				.spawn_blocking("instant-seal", authorship_future);
+		} else {
+			// aura
+			let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
+			let block_import =
+				sc_consensus_aura::AuraBlockImport::<_, _, _, AuraPair>::new(client.clone(), client.clone());
+			let aura = sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _>(StartAuraParams {
+				slot_duration: sc_consensus_aura::slot_duration(&*client)?,
+				client: client.clone(),
+				select_chain,
+				block_import,
+				proposer_factory,
+				inherent_data_providers,
+				force_authoring,
+				backoff_authoring_blocks,
+				keystore: keystore_container.sync_keystore(),
+				can_author_with,
+				sync_oracle: network.clone(),
+				block_proposal_slot_portion: SlotProportion::new(2f32 / 3f32),
+				telemetry: telemetry.as_ref().map(|x| x.handle()),
+			})?;
+
+			// the AURA authoring task is considered essential, i.e. if it
+			// fails we take down the service with it.
+			task_manager.spawn_essential_handle().spawn_blocking("aura", aura);
+		}
+	}
+
+	let rpc_extensions_builder = {
+		let client = client.clone();
+		let transaction_pool = transaction_pool.clone();
+
+		Box::new(move |deny_unsafe, _| -> setheum_rpc::RpcExtension {
+			let deps = setheum_rpc::FullDeps {
+				client: client.clone(),
+				pool: transaction_pool.clone(),
+				deny_unsafe,
+			};
+
+			setheum_rpc::create_full(deps)
+		})
+	};
+
+	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
+		on_demand: None,
+		remote_blockchain: None,
+		rpc_extensions_builder,
+		client,
+		transaction_pool,
+		task_manager: &mut task_manager,
+		config,
+		keystore: keystore_container.sync_keystore(),
+		backend,
+		network,
+		network_status_sinks,
+		system_rpc_tx,
+		telemetry: telemetry.as_mut(),
+	})?;
+
+	network_starter.start_network();
+
+	Ok(task_manager)
+}
+
+pub fn newrome_dev(config: Configuration, instant_sealing: bool) -> Result<TaskManager, ServiceError> {
+	#[cfg(feature = "with-newrome-runtime")]
+	{
+		inner_newrome_dev(config, instant_sealing)
+	}
+	#[cfg(not(feature = "with-newrome-runtime"))]
+	Err("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.".into())
 }
