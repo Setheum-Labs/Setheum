@@ -38,7 +38,7 @@ pub use neom_runtime;
 pub use newrome_runtime;
 
 use setheum_primitives::Block;
-use mock_inherent_data_provider::{
+use mock_timestamp_inherent_data_provider::{
 	MockParachainInherentDataProvider, 
 	MockTimestampInherentDataProvider
 };
@@ -70,7 +70,7 @@ pub use sp_api::ConstructRuntimeApi;
 
 pub mod chain_spec;
 mod client;
-mod mock_inherent_data_provider;
+mod mock_timestamp_inherent_data_provider;
 
 #[cfg(feature = "with-newrome-runtime")]
 native_executor_instance!(
