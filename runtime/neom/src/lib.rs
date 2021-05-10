@@ -34,6 +34,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::Encode;
 use sp_api::impl_runtime_apis;
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{
 	crypto::KeyTypeId,
 	u32_trait::{_1, _2, _3, _4},
@@ -42,7 +43,7 @@ use sp_core::{
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		AccountIdConversion, BadOrigin, BlakeTwo256, Block as BlockT, Convert, Identity, SaturatedConversion,
+		AccountIdConversion, BadOrigin, BlakeTwo256, Block as BlockT, Identity, SaturatedConversion,
 		StaticLookup, Zero,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
@@ -60,16 +61,22 @@ use orml_tokens::CurrencyAdapter;
 use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
 use pallet_transaction_payment::RuntimeDispatchInfo;
 
-use orml_xcm_support::{
-	CurrencyIdConverter, IsConcreteWithGeneralKey, MultiCurrencyAdapter, XcmHandler as XcmHandlerT,
-};
-use polkadot_parachain::primitives::Sibling;
-use xcm::v0::{Junction, MultiLocation, NetworkId, Xcm};
-use xcm_builder::{
-	AccountId32Aliases, LocationInverter, ParentIsDefault, RelayChainAsNative, SiblingParachainAsNative,
-	SiblingParachainConvertsVia, SignedAccountId32AsNative, SovereignSignedViaLocation,
-};
-use xcm_executor::{traits::NativeAsset, Config, XcmExecutor};
+//
+// use cumulus_primitives_core::ParaId;
+// use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset, XcmHandler as
+// XcmHandlerT}; use polkadot_parachain::primitives::Sibling;
+// use xcm::v0::{
+// 	Junction::{GeneralKey, Parachain, Parent},
+// 	MultiAsset,
+// 	MultiLocation::{self, X1, X2, X3},
+// 	NetworkId, Xcm,
+// };
+// use xcm_builder::{
+// 	AccountId32Aliases, LocationInverter, ParentIsDefault, RelayChainAsNative,
+// SiblingParachainAsNative, 	SiblingParachainConvertsVia, SignedAccountId32AsNative,
+// SovereignSignedViaLocation, };
+// use xcm_executor::{Config, XcmExecutor};
+//
 
 /// Weights for pallets used in the runtime.
 mod weights;
@@ -77,8 +84,9 @@ mod weights;
 pub use frame_support::{
 	construct_runtime, log, parameter_types,
 	traits::{
-		Contains, ContainsLengthBound, EnsureOrigin, Filter, Get, IsType, KeyOwnerProofSystem, LockIdentifier,
-		Randomness, U128CurrencyToVote,
+		ContainsLengthBound, EnsureOrigin, Filter, Get, IsType, 
+		KeyOwnerProofSystem, LockIdentifier, Randomness, 
+		SortedMembers, U128CurrencyToVote,
 	},
 	weights::{constants::RocksDbWeight, IdentityFee, Weight},
 	StorageValue,
@@ -127,7 +135,9 @@ pub fn native_version() -> NativeVersion {
 }
 
 impl_opaque_keys! {
-	pub struct SessionKeys {}
+	pub struct SessionKeys {
+		pub aura: Aura,
+	}
 }
 
 // Pallet accounts of runtime
@@ -156,6 +166,16 @@ parameter_types! {
 	pub const BlockHashCount: BlockNumber = 900; // mortal tx can be valid up to 1 hour after signing
 	pub const Version: RuntimeVersion = VERSION;
 	pub const SS58Prefix: u8 = 8; // Ss58AddressFormat::NeomAccount
+}
+
+pub struct BaseCallFilter;
+impl Filter<Call> for BaseCallFilter {
+	fn filter(call: &Call) -> bool {
+		matches!(
+			call,
+			Call::Sudo(_) | Call::System(_) | Call::Timestamp(_) | Call::ParachainSystem(_)
+		)
+	}
 }
 
 impl frame_system::Config for Runtime {
@@ -193,6 +213,10 @@ impl pallet_indices::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = IndexDeposit;
 	type WeightInfo = ();
+}
+
+impl pallet_aura::Config for Runtime {
+	type AuthorityId = AuraId;
 }
 
 parameter_types! {
@@ -301,6 +325,8 @@ impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
 	type PrimeOrigin = EnsureRootOrThreeFourthsGeneralCouncil;
 	type MembershipInitialized = GeneralCouncil;
 	type MembershipChanged = GeneralCouncil;
+	type MaxMembers = GeneralCouncilMaxMembers;
+	type WeightInfo = ();
 }
 
 //TODO: Add the SERP
@@ -340,7 +366,7 @@ parameter_types! {
 	pub const TechnicalCouncilMaxMembers: u32 = 100;
 }
 
-type TechnicalCommitteeInstance = pallet_collective::Instance4;
+type TechnicalCommitteeInstance = pallet_collective::Instance2;
 impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -352,7 +378,7 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
+type TechnicalCommitteeMembershipInstance = pallet_membership::Instance2;
 impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
@@ -362,10 +388,17 @@ impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime
 	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type MembershipInitialized = TechnicalCommittee;
 	type MembershipChanged = TechnicalCommittee;
+	type MaxMembers = TechnicalCouncilMaxMembers;
+	type WeightInfo = ();
 }
 
-type OperatorMembershipInstancesetheum = pallet_membership::Instance5;
-impl pallet_membership::Config<OperatorMembershipInstancesetheum> for Runtime {
+parameter_types! {
+	// TODO: update
+	pub const OracleMaxMembers: u32 = 100;
+}
+
+type OperatorMembershipInstanceSetheum = pallet_membership::Instance3;
+impl pallet_membership::Config<OperatorMembershipInstanceSetheum> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
@@ -374,18 +407,8 @@ impl pallet_membership::Config<OperatorMembershipInstancesetheum> for Runtime {
 	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type MembershipInitialized = SetheumOracle;
 	type MembershipChanged = SetheumOracle;
-}
-
-type OperatorMembershipInstanceBand = pallet_membership::Instance6;
-impl pallet_membership::Config<OperatorMembershipInstanceBand> for Runtime {
-	type Event = Event;
-	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type MembershipInitialized = SecondOracle;
-	type MembershipChanged = SecondOracle;
+	type MaxMembers = OracleMaxMembers;
+	type WeightInfo = ();
 }
 
 impl pallet_utility::Config for Runtime {
@@ -411,7 +434,7 @@ impl pallet_multisig::Config for Runtime {
 }
 
 pub struct GeneralCouncilProvider;
-impl Contains<AccountId> for GeneralCouncilProvider {
+impl SortedMembers<AccountId> for GeneralCouncilProvider {
 	fn contains(who: &AccountId) -> bool {
 		GeneralCouncil::is_member(who)
 	}
@@ -538,18 +561,6 @@ impl orml_oracle::Config<SetheumDataProvider> for Runtime {
 	type OracleValue = Price;
 	type RootOperatorAccountId = ZeroAccountId;
 	type WeightInfo = ();
-}
-
-type BandDataProvider = orml_oracle::Instance2;
-impl orml_oracle::Config<BandDataProvider> for Runtime {
-	type Event = Event;
-	type OnNewData = ();
-	type CombineData = orml_oracle::DefaultCombineData<Runtime, MinimumCount, ExpiresIn, BandDataProvider>;
-	type Time = Timestamp;
-	type OracleKey = CurrencyId;
-	type OracleValue = Price;
-	type RootOperatorAccountId = ZeroAccountId;
-	type WeightInfo = weights::orml_oracle::WeightInfo<Runtime>;
 }
 
 create_median_value_data_provider!(
@@ -830,97 +841,99 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type Event = Event;
 	type OnValidationData = ();
 	type SelfParaId = ParachainInfo;
-	type DownwardMessageHandlers = XcmHandler;
-	type HrmpMessageHandlers = XcmHandler;
+	type DownwardMessageHandlers = ();
+	type OutboundXcmpMessageSource = ();
+	type XcmpMessageHandler = ();
+	type ReservedXcmpWeight = ();
 }
 
 impl parachain_info::Config for Runtime {}
 
-parameter_types! {
-	pub const PolkadotNetworkId: NetworkId = NetworkId::Polkadot;
-}
-
-pub struct AccountId32Convert;
-impl Convert<AccountId, [u8; 32]> for AccountId32Convert {
-	fn convert(account_id: AccountId) -> [u8; 32] {
-		account_id.into()
-	}
-}
-
-parameter_types! {
-	pub SetheumNetwork: NetworkId = NetworkId::Named("setheum".into());
-	pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
-	pub Ancestry: MultiLocation = MultiLocation::X1(Junction::Parachain {
-		id: ParachainInfo::get().into(),
-	});
-	pub const RelayChainCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
-}
-
-pub type LocationConverter = (
-	ParentIsDefault<AccountId>,
-	SiblingParachainConvertsVia<Sibling, AccountId>,
-	AccountId32Aliases<SetheumNetwork, AccountId>,
-);
-
-pub type LocalAssetTransactor = MultiCurrencyAdapter<
-	Currencies,
-	UnknownTokens,
-	IsConcreteWithGeneralKey<CurrencyId, Identity>,
-	LocationConverter,
-	AccountId,
-	CurrencyIdConverter<CurrencyId, RelayChainCurrencyId>,
-	CurrencyId,
->;
-
-pub type LocalOriginConverter = (
-	SovereignSignedViaLocation<LocationConverter, Origin>,
-	RelayChainAsNative<RelayChainOrigin, Origin>,
-	SiblingParachainAsNative<cumulus_pallet_xcm_handler::Origin, Origin>,
-	SignedAccountId32AsNative<SetheumNetwork, Origin>,
-);
-
-pub struct XcmConfig;
-impl Config for XcmConfig {
-	type Call = Call;
-	type XcmSender = XcmHandler;
-	type AssetTransactor = LocalAssetTransactor;
-	type OriginConverter = LocalOriginConverter;
-	//TODO: might need to add other assets based on orml-tokens
-	type IsReserve = NativeAsset;
-	type IsTeleporter = ();
-	type LocationInverter = LocationInverter<Ancestry>;
-}
-
-impl cumulus_pallet_xcm_handler::Config for Runtime {
-	type Event = Event;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type UpwardMessageSender = ParachainSystem;
-	type HrmpMessageSender = ParachainSystem;
-	type SendXcmOrigin = EnsureRoot<AccountId>;
-	type AccountIdConverter = LocationConverter;
-}
-
-pub struct HandleXcm;
-impl XcmHandlerT<AccountId> for HandleXcm {
-	fn execute_xcm(origin: AccountId, xcm: Xcm) -> DispatchResult {
-		XcmHandler::execute_xcm(origin, xcm)
-	}
-}
-
-impl orml_xtokens::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type ToRelayChainBalance = Identity;
-	type AccountId32Convert = AccountId32Convert;
-	//TODO: change network id if kusama
-	type RelayChainNetworkId = PolkadotNetworkId;
-	type ParaId = ParachainInfo;
-	type XcmHandler = HandleXcm;
-}
-
-impl orml_unknown_tokens::Config for Runtime {
-	type Event = Event;
-}
+// parameter_types! {
+// 	pub const PolkadotNetworkId: NetworkId = NetworkId::Polkadot;
+// }
+// 
+// pub struct AccountId32Convert;
+// impl Convert<AccountId, [u8; 32]> for AccountId32Convert {
+// 	fn convert(account_id: AccountId) -> [u8; 32] {
+// 		account_id.into()
+// 	}
+// }
+// 
+// parameter_types! {
+// 	pub SetheumNetwork: NetworkId = NetworkId::Named("setheum".into());
+// 	pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
+// 	pub Ancestry: MultiLocation = MultiLocation::X1(Junction::Parachain {
+// 		id: ParachainInfo::get().into(),
+// 	});
+// 	pub const RelayChainCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
+// }
+// 
+// pub type LocationConverter = (
+// 	ParentIsDefault<AccountId>,
+// 	SiblingParachainConvertsVia<Sibling, AccountId>,
+// 	AccountId32Aliases<SetheumNetwork, AccountId>,
+// );
+// 
+// pub type LocalAssetTransactor = MultiCurrencyAdapter<
+// 	Currencies,
+// 	UnknownTokens,
+// 	IsConcreteWithGeneralKey<CurrencyId, Identity>,
+// 	LocationConverter,
+// 	AccountId,
+// 	CurrencyIdConverter<CurrencyId, RelayChainCurrencyId>,
+// 	CurrencyId,
+// >;
+// 
+// pub type LocalOriginConverter = (
+// 	SovereignSignedViaLocation<LocationConverter, Origin>,
+// 	RelayChainAsNative<RelayChainOrigin, Origin>,
+// 	SiblingParachainAsNative<cumulus_pallet_xcm_handler::Origin, Origin>,
+// 	SignedAccountId32AsNative<SetheumNetwork, Origin>,
+// );
+// 
+// pub struct XcmConfig;
+// impl Config for XcmConfig {
+// 	type Call = Call;
+// 	type XcmSender = XcmHandler;
+// 	type AssetTransactor = LocalAssetTransactor;
+// 	type OriginConverter = LocalOriginConverter;
+// 	//TODO: might need to add other assets based on orml-tokens
+// 	type IsReserve = NativeAsset;
+// 	type IsTeleporter = ();
+// 	type LocationInverter = LocationInverter<Ancestry>;
+// }
+// 
+// impl cumulus_pallet_xcm_handler::Config for Runtime {
+// 	type Event = Event;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// 	type UpwardMessageSender = ParachainSystem;
+// 	type HrmpMessageSender = ParachainSystem;
+// 	type SendXcmOrigin = EnsureRoot<AccountId>;
+// 	type AccountIdConverter = LocationConverter;
+// }
+// 
+// pub struct HandleXcm;
+// impl XcmHandlerT<AccountId> for HandleXcm {
+// 	fn execute_xcm(origin: AccountId, xcm: Xcm) -> DispatchResult {
+// 		XcmHandler::execute_xcm(origin, xcm)
+// 	}
+// }
+// 
+// impl orml_xtokens::Config for Runtime {
+// 	type Event = Event;
+// 	type Balance = Balance;
+// 	type ToRelayChainBalance = Identity;
+// 	type AccountId32Convert = AccountId32Convert;
+// 	//TODO: change network id if kusama
+// 	type RelayChainNetworkId = PolkadotNetworkId;
+// 	type ParaId = ParachainInfo;
+// 	type XcmHandler = HandleXcm;
+// }
+// 
+// impl orml_unknown_tokens::Config for Runtime {
+// 	type Event = Event;
+// }
 
 #[allow(clippy::large_enum_variant)]
 construct_runtime!(
@@ -938,68 +951,67 @@ construct_runtime!(
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 3,
 
 		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 4,
-		Currencies: setheum_currencies::{Pallet, Call, Event<T>} = 6,
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 7,
-		Vesting: orml_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 8,
+		Currencies: setheum_currencies::{Pallet, Call, Event<T>} = 5,
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 6,
+		Vesting: orml_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 7,
 
-		SetheumTreasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 9,
-		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 10,
-		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 11,
+		SetheumTreasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 8,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 9,
+		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 10,
 
 		// Utility
-		Utility: pallet_utility::{Pallet, Call, Event} = 12,
-		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 13,
-		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 14,
-		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 15,
-		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 16,
+		Utility: pallet_utility::{Pallet, Call, Event} = 11,
+		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 12,
+		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 13,
+		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 14,
+		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 15,
 
-		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 17,
+		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 16,
 
 		// Governance
-		GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 19,
-		GeneralCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 20,
+		GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 17,
+		GeneralCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 18,
 		//TODO: Add the Shura Council, and rename Serp Council to "Monetary Council" and then add the Financial Council.
-		//	SerpCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 21,
-		//	SerpCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
-		TechnicalCommittee: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 25,
-		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 26,
+		//	SerpCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 19,
+		//	SerpCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 20,
+		TechnicalCommittee: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 21,
+		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
 
-		Authority: orml_authority::{Pallet, Call, Event<T>, Origin<T>} = 27,
-		ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>} = 28,
+		Authority: orml_authority::{Pallet, Call, Event<T>, Origin<T>} = 23,
+		ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>} = 24,
 
 		// Oracle
-		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Config<T>, Event<T>} = 29,
-		SecondOracle: orml_oracle::<Instance2>::{Pallet, Storage, Call, Config<T>, Event<T>} = 30,
+		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Config<T>, Event<T>} = 25,
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		OperatorMembershipsetheum: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 31,
-		OperatorMembershipBand: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 32,
+		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 26,
 
 		// ORML Core
-		Rewards: orml_rewards::{Pallet, Storage, Call} = 34,
-		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 35,
+		Rewards: orml_rewards::{Pallet, Storage, Call} = 27,
+		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 28,
 
 		// setheum Core
-		Prices: setheum_prices::{Pallet, Storage, Call, Event<T>} = 36,
+		Prices: setheum_prices::{Pallet, Storage, Call, Event<T>} = 29,
 
 		// DEX
-		HalalSwap: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 37,
+		HalalSwap: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 30,
 
 		// Setheum Other
-		Incentives: setheum_incentives::{Pallet, Storage, Call, Event<T>} = 49,
-		NFT: setheum_nft::{Pallet, Call, Event<T>} = 50,
+		Incentives: setheum_incentives::{Pallet, Storage, Call, Event<T>} = 31,
+		NFT: setheum_nft::{Pallet, Call, Event<T>} = 32,
 
 		//TODO: Add Ink! Contracts Pallet
 		// Smart contracts
 
 		// Parachain
-		ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event} = 54,
-		ParachainInfo: parachain_info::{Pallet, Storage, Config} = 55,
-		XcmHandler: cumulus_pallet_xcm_handler::{Pallet, Event<T>, Origin} = 56,
-		XTokens: orml_xtokens::{Pallet, Storage, Call, Event<T>} = 57,
-		UnknownTokens: orml_unknown_tokens::{Pallet, Storage, Event} = 58,
+		ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event} = 33,
+		ParachainInfo: parachain_info::{Pallet, Storage, Config} = 34,
+		// XcmHandler: cumulus_pallet_xcm_handler::{Pallet, Event<T>, Origin} = 35,
+		// XTokens: orml_xtokens::{Pallet, Storage, Call, Event<T>} = 36,
+		// UnknownTokens: orml_unknown_tokens::{Pallet, Storage, Event} = 37,
+		Aura: pallet_aura::{Pallet, Config<T>} = 38,
 
 		// Dev
-		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 59,
+		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 39,
 	}
 );
 
@@ -1095,6 +1107,16 @@ impl_runtime_apis! {
 		}
 	}
 
+	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
+		fn slot_duration() -> sp_consensus_aura::SlotDuration {
+			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
+		}
+
+		fn authorities() -> Vec<AuraId> {
+			Aura::authorities()
+		}
+	}
+
 	impl sp_session::SessionKeys<Block> for Runtime {
 		fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
 			SessionKeys::generate(seed)
@@ -1135,7 +1157,6 @@ impl_runtime_apis! {
 		fn get_value(provider_id: DataProviderId ,key: CurrencyId) -> Option<TimeStampedPrice> {
 			match provider_id {
 				DataProviderId::setheum => SetheumOracle::get_no_op(&key),
-				DataProviderId::Band => SecondOracle::get_no_op(&key),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_no_op(&key)
 			}
 		}
@@ -1143,7 +1164,6 @@ impl_runtime_apis! {
 		fn get_all_values(provider_id: DataProviderId) -> Vec<(CurrencyId, Option<TimeStampedPrice>)> {
 			match provider_id {
 				DataProviderId::setheum => SetheumOracle::get_all_values(),
-				DataProviderId::Band => SecondOracle::get_all_values(),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_all_values()
 			}
 		}
