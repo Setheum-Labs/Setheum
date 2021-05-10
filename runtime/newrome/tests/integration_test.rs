@@ -19,6 +19,8 @@
 #![cfg(test)]
 
 use codec::Encode;
+// use cumulus_primitives_core::{DownwardMessageHandler, InboundDownwardMessage,
+// XcmpMessageHandler};
 use frame_support::{
 	assert_noop, assert_ok,
 	traits::{schedule::DispatchTime, Currency, GenesisBuild, OnFinalize, OnInitialize, OriginTrait},
@@ -35,9 +37,22 @@ use orml_authority::DelayedOrigin;
 use orml_traits::{Change, MultiCurrency};
 use sp_io::hashing::keccak_256;
 use sp_runtime::{
-	traits::{AccountIdConversion, BadOrigin},
+	traits::{AccountIdConversion, BadOrigin, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, MultiAddress,
 };
+
+use std::str::FromStr;
+// use xcm::{
+// 	v0::{
+// 		Junction::{self, *},
+// 		MultiAsset,
+// 		MultiLocation::{self, *},
+// 		NetworkId, Order, Xcm,
+// 	},
+// 	VersionedXcm,
+// };
+
+// use primitives::currency::*;
 
 const ORACLE1: [u8; 32] = [0u8; 32];
 const ORACLE2: [u8; 32] = [1u8; 32];
@@ -568,103 +583,103 @@ fn test_nft_module() {
 		});
 }
 
-#[cfg(not(feature = "standalone"))]
-mod parachain_tests {
-	use super::*;
+// #[cfg(not(feature = "standalone"))]
+// mod parachain_tests {
+// 	use super::*;
 
-	use codec::Encode;
-	use cumulus_primitives_core::{
-		DownwardMessageHandler, HrmpMessageHandler, InboundDownwardMessage, InboundHrmpMessage,
-	};
-	use polkadot_parachain::primitives::Sibling;
-	use xcm::{
-		v0::{Junction, MultiAsset, MultiLocation, NetworkId, Order, Xcm},
-		VersionedXcm,
-	};
+// 	use codec::Encode;
+// 	use cumulus_primitives_core::{
+// 		DownwardMessageHandler, HrmpMessageHandler, InboundDownwardMessage, InboundHrmpMessage,
+// 	};
+// 	use polkadot_parachain::primitives::Sibling;
+// 	use xcm::{
+// 		v0::{Junction, MultiAsset, MultiLocation, NetworkId, Order, Xcm},
+// 		VersionedXcm,
+// 	};
 
-	use newrome_runtime::{Tokens, XcmHandler, PLM};
+// 	use newrome_runtime::{Tokens, XcmHandler, PLM};
 
-	#[test]
-	fn receive_cross_chain_assets() {
-		ExtBuilder::default().build().execute_with(|| {
-			let dot_amount = 1000 * dollar(DOT);
+// 	#[test]
+// 	fn receive_cross_chain_assets() {
+// 		ExtBuilder::default().build().execute_with(|| {
+// 			let dot_amount = 1000 * dollar(DOT);
 
-			// receive relay chain token
-			let msg: VersionedXcm = Xcm::ReserveAssetDeposit {
-				assets: vec![MultiAsset::ConcreteFungible {
-					id: MultiLocation::X1(Junction::Parent),
-					amount: dot_amount,
-				}],
-				effects: vec![Order::DepositAsset {
-					assets: vec![MultiAsset::All],
-					dest: MultiLocation::X1(Junction::AccountId32 {
-						network: NetworkId::Named("setheum".into()),
-						id: ALICE,
-					}),
-				}],
-			}
-			.into();
-			XcmHandler::handle_downward_message(InboundDownwardMessage {
-				sent_at: 10,
-				msg: msg.encode(),
-			});
-			assert_eq!(Tokens::free_balance(DOT, &ALICE.into()), dot_amount);
+// 			// receive relay chain token
+// 			let msg: VersionedXcm = Xcm::ReserveAssetDeposit {
+// 				assets: vec![MultiAsset::ConcreteFungible {
+// 					id: MultiLocation::X1(Junction::Parent),
+// 					amount: dot_amount,
+// 				}],
+// 				effects: vec![Order::DepositAsset {
+// 					assets: vec![MultiAsset::All],
+// 					dest: MultiLocation::X1(Junction::AccountId32 {
+// 						network: NetworkId::Named("setheum".into()),
+// 						id: ALICE,
+// 					}),
+// 				}],
+// 			}
+// 			.into();
+// 			XcmHandler::handle_downward_message(InboundDownwardMessage {
+// 				sent_at: 10,
+// 				msg: msg.encode(),
+// 			});
+// 			assert_eq!(Tokens::free_balance(DOT, &ALICE.into()), dot_amount);
 
-			let sibling_para_id = 5000;
-			let sibling_parachain_acc: AccountId = Sibling::from(sibling_para_id).into_account();
+// 			let sibling_para_id = 5000;
+// 			let sibling_parachain_acc: AccountId = Sibling::from(sibling_para_id).into_account();
 
-			// receive owned token
-			let dnr_amount = 1000 * dollar(DNAR);
-			assert_ok!(Currencies::deposit(DNAR, &sibling_parachain_acc, 1100 * dollar(DNAR)));
+// 			// receive owned token
+// 			let dnr_amount = 1000 * dollar(DNAR);
+// 			assert_ok!(Currencies::deposit(DNAR, &sibling_parachain_acc, 1100 * dollar(DNAR)));
 
-			let msg1: VersionedXcm = Xcm::WithdrawAsset {
-				assets: vec![MultiAsset::ConcreteFungible {
-					id: MultiLocation::X1(Junction::GeneralKey("DNAR".into())),
-					amount: dnr_amount,
-				}],
-				effects: vec![Order::DepositAsset {
-					assets: vec![MultiAsset::All],
-					dest: MultiLocation::X1(Junction::AccountId32 {
-						network: NetworkId::Named("setheum".into()),
-						id: ALICE,
-					}),
-				}],
-			}
-			.into();
-			XcmHandler::handle_hrmp_message(
-				sibling_para_id.into(),
-				InboundHrmpMessage {
-					sent_at: 10,
-					data: msg1.encode(),
-				},
-			);
-			assert_eq!(Currencies::free_balance(DNAR, &sibling_parachain_acc), 100 * dollar(DNAR));
-			assert_eq!(Currencies::free_balance(DNAR, &ALICE.into()), dnr_amount);
+// 			let msg1: VersionedXcm = Xcm::WithdrawAsset {
+// 				assets: vec![MultiAsset::ConcreteFungible {
+// 					id: MultiLocation::X1(Junction::GeneralKey("DNAR".into())),
+// 					amount: dnr_amount,
+// 				}],
+// 				effects: vec![Order::DepositAsset {
+// 					assets: vec![MultiAsset::All],
+// 					dest: MultiLocation::X1(Junction::AccountId32 {
+// 						network: NetworkId::Named("setheum".into()),
+// 						id: ALICE,
+// 					}),
+// 				}],
+// 			}
+// 			.into();
+// 			XcmHandler::handle_hrmp_message(
+// 				sibling_para_id.into(),
+// 				InboundHrmpMessage {
+// 					sent_at: 10,
+// 					data: msg1.encode(),
+// 				},
+// 			);
+// 			assert_eq!(Currencies::free_balance(DNAR, &sibling_parachain_acc), 100 * dollar(DNAR));
+// 			assert_eq!(Currencies::free_balance(DNAR, &ALICE.into()), dnr_amount);
 
-			// receive non-owned token
-			let plm_amount = 1000 * dollar(PLM);
-			let msg2: VersionedXcm = Xcm::ReserveAssetDeposit {
-				assets: vec![MultiAsset::ConcreteFungible {
-					id: MultiLocation::X1(Junction::GeneralKey("PLM".into())),
-					amount: plm_amount,
-				}],
-				effects: vec![Order::DepositAsset {
-					assets: vec![MultiAsset::All],
-					dest: MultiLocation::X1(Junction::AccountId32 {
-						network: NetworkId::Named("setheum".into()),
-						id: ALICE,
-					}),
-				}],
-			}
-			.into();
-			XcmHandler::handle_hrmp_message(
-				sibling_para_id.into(),
-				InboundHrmpMessage {
-					sent_at: 10,
-					data: msg2.encode(),
-				},
-			);
-			assert_eq!(Currencies::free_balance(PLM, &ALICE.into()), plm_amount);
-		});
-	}
-}
+// 			// receive non-owned token
+// 			let plm_amount = 1000 * dollar(PLM);
+// 			let msg2: VersionedXcm = Xcm::ReserveAssetDeposit {
+// 				assets: vec![MultiAsset::ConcreteFungible {
+// 					id: MultiLocation::X1(Junction::GeneralKey("PLM".into())),
+// 					amount: plm_amount,
+// 				}],
+// 				effects: vec![Order::DepositAsset {
+// 					assets: vec![MultiAsset::All],
+// 					dest: MultiLocation::X1(Junction::AccountId32 {
+// 						network: NetworkId::Named("setheum".into()),
+// 						id: ALICE,
+// 					}),
+// 				}],
+// 			}
+// 			.into();
+// 			XcmHandler::handle_hrmp_message(
+// 				sibling_para_id.into(),
+// 				InboundHrmpMessage {
+// 					sent_at: 10,
+// 					data: msg2.encode(),
+// 				},
+// 			);
+// 			assert_eq!(Currencies::free_balance(PLM, &ALICE.into()), plm_amount);
+// 		});
+// 	}
+// }
