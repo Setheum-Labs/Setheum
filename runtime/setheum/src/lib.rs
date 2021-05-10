@@ -349,8 +349,8 @@ parameter_types! {
 	pub const OracleMaxMembers: u32 = 100;
 }
 
-type OperatorMembershipInstancesetheum = pallet_membership::Instance5;
-impl pallet_membership::Config<OperatorMembershipInstancesetheum> for Runtime {
+type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
+impl pallet_membership::Config<OperatorMembershipInstanceSetheum> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
