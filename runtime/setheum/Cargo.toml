@@ -61,26 +61,26 @@ polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = 
 # xcm-builder = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1", default-features = false }
 # cumulus-pallet-xcm-handler = { git = "https://github.com/paritytech/cumulus", branch = "rococo-v1", default-features = false }
 
-orml-authority = { path = "../../modules/authority", default-features = false }
-orml-benchmarking = { path = "../../modules/benchmarking", default-features = false, optional = true }
-orml-oracle = { path = "../../modules/oracle", default-features = false }
-orml-oracle-rpc-runtime-api = { path = "../../modules/oracle/rpc/runtime-api", default-features = false }
-orml-tokens = { path = "../../modules/tokens", default-features = false }
-orml-traits = { path = "../../modules/traits", default-features = false }
-orml-vesting = { path = "../../modules/vesting", default-features = false }
-orml-rewards = { path = "../../modules/rewards", default-features = false }
-orml-nft= { path = "../../modules/nft", default-features = false }
+orml-authority = { path = "../../pallets-orml/authority", default-features = false }
+orml-benchmarking = { path = "../../pallets-orml/benchmarking", default-features = false, optional = true }
+orml-oracle = { path = "../../pallets-orml/oracle", default-features = false }
+orml-oracle-rpc-runtime-api = { path = "../../pallets-orml/oracle/rpc/runtime-api", default-features = false }
+orml-tokens = { path = "../../pallets-orml/tokens", default-features = false }
+orml-traits = { path = "../../pallets-orml/traits", default-features = false }
+orml-vesting = { path = "../../pallets-orml/vesting", default-features = false }
+orml-rewards = { path = "../../pallets-orml/rewards", default-features = false }
+orml-nft= { path = "../../pallets-orml/nft", default-features = false }
 # orml-xtokens = { path = "../../orml/xtokens", default-features = false }
 # orml-unknown-tokens = { path = "../../orml/unknown-tokens", default-features = false }
 # orml-xcm-support = { path = "../../orml/xcm-support", default-features = false }
 
-setheum-transaction-payment = { path = "../../serml/transaction-payment", default-features = false }
-setheum-airdrop = { path = "../../serml/airdrop", default-features = false }
-setheum-dex = { path = "../../serml/dex", default-features = false }
-setheum-currencies = { path = "../../serml/currencies", default-features = false }
-setheum-nft = { path = "../../serml/nft", default-features = false }
-setheum-prices = { path = "../../serml/prices", default-features = false }
-setheum-support = { path = "../../serml/support", default-features = false }
+setheum-transaction-payment = { path = "../../pallets-serml/transaction-payment", default-features = false }
+setheum-airdrop = { path = "../../pallets-serml/airdrop", default-features = false }
+setheum-dex = { path = "../../pallets-serml/dex", default-features = false }
+setheum-currencies = { path = "../../pallets-serml/currencies", default-features = false }
+setheum-nft = { path = "../../pallets-serml/nft", default-features = false }
+setheum-prices = { path = "../../pallets-serml/prices", default-features = false }
+setheum-support = { path = "../../pallets-serml/support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 runtime-common = { path = "../common", default-features = false }
 

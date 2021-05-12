@@ -27,7 +27,7 @@ inspect = { package = "setheum-inspect", path = "../../inspect" }
 service = { package = "setheum-service", path = "../service", default-features = false, optional = true }
 
 [build-dependencies]
-orml-build-script-utils = { path = "../../modules/build-script-utils"}
+orml-build-script-utils = { path = "../../pallets-orml/build-script-utils"}
 
 [features]
 default = [ "wasmtime", "cli", "with-newrome-runtime" ]

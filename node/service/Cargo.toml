@@ -61,8 +61,8 @@ cumulus-test-relay-sproof-builder = { git = "https://github.com/paritytech/cumul
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1" }
 polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1", features = ["real-overseer"] }
 
-module-nft = { path = "../../serml/nft" }
-orml-oracle-rpc = { path = "../../modules/oracle/rpc" }
+module-nft = { path = "../../pallets-serml/nft" }
+orml-oracle-rpc = { path = "../../pallets-orml/oracle/rpc" }
 setheum-primitives = { path = "../../primitives" }
 setheum-rpc = { path = "../../rpc" }
 
