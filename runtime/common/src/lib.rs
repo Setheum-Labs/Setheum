@@ -208,12 +208,12 @@ parameter_types! {
 	];
 }
 
-pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
-/// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
-/// used by  Operational  extrinsics.
-const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-/// We allow for 2 seconds of compute with a 6 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
+// TODO: somehow estimate this value. Start from a conservative value.
+pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
+/// The ratio that `Normal` extrinsics should occupy. Start from a conservative value.
+const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(70);
+/// Parachain only have 0.5 second of computation time.
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 500 * WEIGHT_PER_MILLIS;
 
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
 
@@ -278,5 +278,6 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 }
 
 pub fn deposit(items: u32, bytes: u32, currency_id: CurrencyId) -> Balance {
+	// TODO: come up with some value for this
 	items as Balance * 15 * cent(currency_id) + (bytes as Balance) * 6 * cent(currency_id)
 }
