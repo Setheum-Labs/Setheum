@@ -39,7 +39,7 @@ use sp_runtime::{
 use static_assertions::const_assert;
 
 pub use primitives::currency::{
-	GetDecimals, DNAR, JUSD, JEUR, JGBP, NEOM, JSAR, JCHF, JNGN, SETN, HALAL,
+	GetDecimals, DNAR, JUSD, JEUR, JGBP, NEOM, JSAR, JCHF, JNGN, SDEX, HALAL,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
