@@ -21,6 +21,7 @@ pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "r
 pallet-bounties = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 pallet-elections-phragmen = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+pallet-grandpa = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 pallet-indices = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 pallet-membership = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 pallet-multisig = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
@@ -47,7 +48,6 @@ sp-io = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1",
 sp-offchain = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-session = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-sp-staking = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
 sp-version = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
@@ -71,8 +71,8 @@ orml-vesting = { path = "../../pallets-orml/vesting", default-features = false }
 orml-rewards = { path = "../../pallets-orml/rewards", default-features = false }
 orml-nft= { path = "../../pallets-orml/nft", default-features = false }
 # orml-xtokens = { path = "../../orml/xtokens", default-features = false }
-# orml-unknown-tokens = { path = "../../orml/unknown-tokens", default-features = false }
 # orml-xcm-support = { path = "../../orml/xcm-support", default-features = false }
+# orml-unknown-tokens = { path = "../../orml/unknown-tokens", default-features = false }
 
 setheum-transaction-payment = { path = "../../pallets-serml/transaction-payment", default-features = false }
 setheum-airdrop = { path = "../../pallets-serml/airdrop", default-features = false }
@@ -130,7 +130,6 @@ std = [
 	"sp-offchain/std",
 	"sp-runtime/std",
 	"sp-session/std",
-	"sp-staking/std",
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
@@ -161,8 +160,8 @@ std = [
 
 	"setheum-transaction-payment/std",
 	"setheum-airdrop/std",
-	"setheum-currencies/std",
 	"setheum-dex/std",
+	"setheum-currencies/std",
 	"setheum-nft/std",
 	"setheum-prices/std",
 	"setheum-support/std",
@@ -178,8 +177,7 @@ runtime-benchmarks = [
 	"pallet-collective/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"orml-authority/runtime-benchmarks",
-
-	"dex/runtime-benchmarks",
+	"setheum-dex/runtime-benchmarks",
 	"setheum-nft/runtime-benchmarks",
 ]
 # When enabled, the runtime api will not be build.
