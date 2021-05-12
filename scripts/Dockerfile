@@ -1,7 +1,7 @@
 # Based from https://github.com/paritytech/substrate/blob/master/.maintain/Dockerfile
 
-FROM phusion/baseimage:0.10.2 as builder
-LABEL maintainer="hello@setheum.network"
+FROM phusion/baseimage:bionic-1.0.0 as builder
+LABEL maintainer="jbashir52@gmail.com"
 LABEL description="This is the build stage for Setheum node. Here we create the binary."
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -9,6 +9,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG PROFILE=release
 ARG GIT_COMMIT=
 ENV GIT_COMMIT=$GIT_COMMIT
+ARG CARGO_BUILD_ARGS=
+ENV CARGO_BUILD_ARGS=$CARGO_BUILD_ARGS
 WORKDIR /setheum
 
 COPY . /setheum
@@ -21,12 +23,12 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
 	export PATH="$PATH:$HOME/.cargo/bin" && \
 	rustup default nightly-2021-03-04 && \
 	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-04 && \
-	cargo build "--$PROFILE" --manifest-path bin/setheum-dev/Cargo.toml
+	cargo build "--$PROFILE" $BUILD_ARGS
 
 # ===== SECOND STAGE ======
 
-FROM phusion/baseimage:0.10.2
-LABEL maintainer="hello@setheum.network"
+FROM phusion/baseimage:bionic-1.0.0
+LABEL maintainer="jbashir52@gmail.com"
 LABEL description="This is the 2nd stage: a very small image where we copy the Setheum node binary."
 ARG PROFILE=release
 
@@ -35,11 +37,11 @@ RUN mv /usr/share/ca* /tmp && \
 	mv /tmp/ca-certificates /usr/share/ && \
 	useradd -m -u 1000 -U -s /bin/sh -d /setheum setheum
 
-COPY --from=builder /setheum/bin/setheum-dev/target/release/setheum-dev /usr/local/bin
+COPY --from=builder /setheum/target/$PROFILE/setheum /usr/local/bin
 
 # checks
-RUN ldd /usr/local/bin/setheum-dev && \
-	/usr/local/bin/setheum-dev --version
+RUN ldd /usr/local/bin/setheum && \
+	/usr/local/bin/setheum --version
 
 # Shrinking
 RUN rm -rf /usr/lib/python* && \
@@ -52,4 +54,4 @@ RUN mkdir /setheum/data
 
 VOLUME ["/setheum/data"]
 
-ENTRYPOINT ["/usr/local/bin/setheum-dev"]
+ENTRYPOINT ["/usr/local/bin/setheum"]
