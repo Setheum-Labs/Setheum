@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{SetheumOracle, CollateralCurrencyId, CurrencyId, Origin, Price, Prices, Runtime, DNAR};
+use crate::{SetheumOracle, CollateralCurrencyId, CurrencyId, Origin, Price, Prices, Runtime, NEOM};
 
 use frame_system::RawOrigin;
 use orml_benchmarking::runtime_benchmarks;
@@ -24,49 +24,29 @@ use sp_runtime::traits::One;
 use sp_std::prelude::*;
 
 runtime_benchmarks! {
-	{ Runtime, setheum_prices }
-
-	_ {}
+	{ Runtime, module_prices }
 
 	lock_price {
 		let currency_id: CurrencyId = CollateralCurrencyId::get()[0];
 
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
-	}: _(RawOrigin::Root, DNAR)
+	}: _(RawOrigin::Root, NEOM)
 
 	unlock_price {
 		let currency_id: CurrencyId = CollateralCurrencyId::get()[0];
 
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
-		Prices::lock_price(Origin::root(), DNAR)?;
-	}: _(RawOrigin::Root, DNAR)
+		Prices::lock_price(Origin::root(), NEOM)?;
+	}: _(RawOrigin::Root, NEOM)
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use frame_support::assert_ok;
+	use crate::benchmarking::utils::tests::new_test_ext;
+	use orml_benchmarking::impl_benchmark_test_suite;
 
-	fn new_test_ext() -> sp_io::TestExternalities {
-		frame_system::GenesisConfig::default()
-			.build_storage::<Runtime>()
-			.unwrap()
-			.into()
-	}
-
-	#[test]
-	fn test_lock_price() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_lock_price());
-		});
-	}
-
-	#[test]
-	fn test_unlock_price() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_unlock_price());
-		});
-	}
+	impl_benchmark_test_suite!(new_test_ext(),);
 }

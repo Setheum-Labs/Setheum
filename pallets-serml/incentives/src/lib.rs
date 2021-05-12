@@ -190,7 +190,7 @@ pub mod module {
 			Ok(().into())
 		}
 
-		//TODO: Turn this match statement into a simple for loop and remove `AbhaIncentive`
+		//TODO: Update
 		#[pallet::weight(<T as Config>::WeightInfo::update_incentive_rewards(updates.len() as u32))]
 		#[transactional]
 		pub fn update_incentive_rewards(
