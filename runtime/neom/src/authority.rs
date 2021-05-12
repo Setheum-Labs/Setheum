@@ -18,11 +18,12 @@
 
 //! An orml_authority trait implementation.
 
+//TODO: Add the SERPReserve `EnsureRootOrHalfSerpCouncil` and the 2 other Councils.
 use crate::{
 	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, 
 	SIFModuleId, DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, 
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil, EnsureRootOrTwoThirdsTechnicalCommittee, 
-	OneDay, Origin, OriginCaller, SevenDays, ZeroDay, HOURS, //TODO: Add the SERPReserve `EnsureRootOrHalfSerpCouncil` and the 2 other Councils.
+	OneDay, Origin, OriginCaller, SevenDays, ZeroDay, HOURS, 
 };
 pub use frame_support::traits::{schedule::Priority, EnsureOrigin, OriginTrait};
 use frame_system::ensure_root;
@@ -30,11 +31,11 @@ use orml_authority::EnsureDelayed;
 
 //
 pub struct AuthorityConfigImpl;
+//TODO: Add the SERPReserve
 impl orml_authority::AuthorityConfig<Origin, OriginCaller, BlockNumber> for AuthorityConfigImpl {
 	fn check_schedule_dispatch(origin: Origin, _priority: Priority) -> DispatchResult {
 		EnsureRoot::<AccountId>::try_origin(origin)
 			.or_else(|o| EnsureRootOrHalfGeneralCouncil::try_origin(o).map(|_| ()))
-			//TODO: Add the SERPReserve
 			//	.or_else(|o| EnsureRootOrHalfSerpCouncil::try_origin(o).map(|_| ())) 
 			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 	}
@@ -81,7 +82,7 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 			AuthoritysOriginId::SetheumTreasury => Origin::signed(SetheumTreasuryModuleId::get().into_account())
 				.caller()
 				.clone(),
-			//TODO: Add the SERPReserve
+			//TODO: Add the SERPReserve: maybe no need for the SERPReserve here.
 			//	AuthoritysOriginId::SerpReserve => Origin::signed(SerpReserveModuleId::get().into_account())
 			//		.caller()
 			//		.clone(),
