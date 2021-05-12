@@ -124,8 +124,6 @@ pallet-randomness-collective-flip = { git = "https://github.com/paritytech//subs
 pallet-recovery = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 pallet-scheduler = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 pallet-session = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
-pallet-staking = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
-pallet-staking-reward-curve = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 pallet-sudo = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 pallet-timestamp = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
@@ -161,7 +159,7 @@ sp-arithmetic = { git = "https://github.com/paritytech//substrate", rev = "2be8f
 sp-block-builder = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-blockchain = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-consensus = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
-sp-consensus-babe = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
+sp-consensus-aura = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-core = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-finality-grandpa = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-inherents = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
@@ -171,7 +169,6 @@ sp-rpc = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d
 sp-runtime = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-runtime-interface = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-session = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
-sp-staking = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-std = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-storage = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 sp-timestamp = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
@@ -231,9 +228,9 @@ sp-consensus-aura = { git = "https://github.com/paritytech//substrate", rev = "2
 sc-consensus-aura = { git = "https://github.com/paritytech//substrate", rev = "2be8fcc4236d32786c62f6f27a98e7fe7e550807" }
 
 [patch."https://github.com/paritytech/polkadot"]
-xcm = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
-xcm-executor = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
-xcm-builder = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
+# xcm = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
+# xcm-executor = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
+# xcm-builder = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
 polkadot-parachain = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
 polkadot-primitives = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
 polkadot-core-primitives = { git = "https://github.com/paritytech//polkadot", rev = "127eb17a25bbe2a9f2731ff11a65d7f8170f2373" }
