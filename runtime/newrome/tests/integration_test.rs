@@ -19,6 +19,8 @@
 #![cfg(test)]
 
 use codec::Encode;
+// use cumulus_primitives_core::{DownwardMessageHandler, InboundDownwardMessage,
+// XcmpMessageHandler};
 use frame_support::{
 	assert_noop, assert_ok,
 	traits::{schedule::DispatchTime, Currency, GenesisBuild, OnFinalize, OnInitialize, OriginTrait},
@@ -26,18 +28,31 @@ use frame_support::{
 use frame_system::RawOrigin;
 use newrome_runtime::{
 	dollar, get_all_module_accounts, AccountId, AuthoritysOriginId, Balance, Balances, BlockNumber, Call,
-	CreateClassDeposit, CreateTokenDeposit, CurrencyId, SIFModuleId, EnabledTradingPairs, Event, SevmAccounts,
+	CreateClassDeposit, CreateTokenDeposit, CurrencyId, SIFModuleId, EnabledTradingPairs, Event, 
 	GetNativeCurrencyId, NativeTokenExistentialDeposit, NftModuleId, Origin, OriginCaller, Perbill, Proxy, Runtime,
-	SevenDays, System, TokenSymbol, DNAR, JUSD, DOT, EVM, JEUR, NFT, JCHF,
+	SevenDays, System, TokenSymbol, DNAR, JUSD, DOT, JEUR, NFT, JCHF,
 };
 use setheum_support::{SetheumDexManager, Price, Rate, Ratio};
 use orml_authority::DelayedOrigin;
 use orml_traits::{Change, MultiCurrency};
 use sp_io::hashing::keccak_256;
 use sp_runtime::{
-	traits::{AccountIdConversion, BadOrigin},
+	traits::{AccountIdConversion, BadOrigin, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, MultiAddress,
 };
+
+use std::str::FromStr;
+// use xcm::{
+// 	v0::{
+// 		Junction::{self, *},
+// 		MultiAsset,
+// 		MultiLocation::{self, *},
+// 		NetworkId, Order, Xcm,
+// 	},
+// 	VersionedXcm,
+// };
+
+// use primitives::currency::*;
 
 const ORACLE1: [u8; 32] = [0u8; 32];
 const ORACLE2: [u8; 32] = [1u8; 32];
@@ -168,50 +183,6 @@ fn alice() -> secp256k1::SecretKey {
 
 fn bob() -> secp256k1::SecretKey {
 	secp256k1::SecretKey::parse(&keccak_256(b"Bob")).unwrap()
-}
-
-pub fn evm_alice_account_id() -> AccountId {
-	let address = SevmAccounts::eth_address(&alice());
-	let mut data = [0u8; 32];
-	data[0..4].copy_from_slice(b"evm:");
-	data[4..24].copy_from_slice(&address[..]);
-	AccountId::from(Into::<[u8; 32]>::into(data))
-}
-
-pub fn evm_bob_account_id() -> AccountId {
-	let address = SevmAccounts::eth_address(&bob());
-	let mut data = [0u8; 32];
-	data[0..4].copy_from_slice(b"evm:");
-	data[4..24].copy_from_slice(&address[..]);
-	AccountId::from(Into::<[u8; 32]>::into(data))
-}
-
-#[cfg(not(feature = "with-ethereum-compatibility"))]
-use sp_core::H160;
-#[cfg(not(feature = "with-ethereum-compatibility"))]
-fn deploy_contract(account: AccountId) -> Result<H160, DispatchError> {
-	// pragma solidity ^0.5.0;
-	//
-	// contract Factory {
-	//     Contract[] newContracts;
-	//
-	//     function createContract () public payable {
-	//         Contract newContract = new Contract();
-	//         newContracts.push(newContract);
-	//     }
-	// }
-	//
-	// contract Contract {}
-	let contract = hex_literal::hex!("608060405234801561001057600080fd5b5061016f806100206000396000f3fe608060405260043610610041576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063412a5a6d14610046575b600080fd5b61004e610050565b005b600061005a6100e2565b604051809103906000f080158015610076573d6000803e3d6000fd5b50905060008190806001815401808255809150509060018203906000526020600020016000909192909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050565b6040516052806100f28339019056fe6080604052348015600f57600080fd5b50603580601d6000396000f3fe6080604052600080fdfea165627a7a7230582092dc1966a8880ddf11e067f9dd56a632c11a78a4afd4a9f05924d427367958cc0029a165627a7a723058202b2cc7384e11c452cdbf39b68dada2d5e10a632cc0174a354b8b8c83237e28a40029").to_vec();
-
-	EVM::create(Origin::signed(account), contract, 0, 1000000000, 1000000000)
-		.map_or_else(|e| Err(e.error), |_| Ok(()))?;
-
-	if let Event::evm(evm::Event::Created(address)) = System::events().iter().last().unwrap().event {
-		Ok(address)
-	} else {
-		Err("deploy_contract failed".into())
-	}
 }
 
 #[test]
@@ -612,243 +583,103 @@ fn test_nft_module() {
 		});
 }
 
-#[test]
-fn test_evm_accounts_module() {
-	ExtBuilder::default()
-		.balances(vec![(evm_bob_account_id(), DNAR, 1_000 * dollar(DNAR))])
-		.build()
-		.execute_with(|| {
-			assert_eq!(Balances::free_balance(AccountId::from(ALICE)), 0);
-			assert_eq!(Balances::free_balance(evm_bob_account_id()), 1_000 * dollar(DNAR));
-			assert_ok!(SevmAccounts::claim_account(
-				Origin::signed(AccountId::from(ALICE)),
-				SevmAccounts::eth_address(&alice()),
-				SevmAccounts::eth_sign(&alice(), &AccountId::from(ALICE).encode(), &[][..])
-			));
-			let event = Event::evm_accounts(evm_accounts::Event::ClaimAccount(
-				AccountId::from(ALICE),
-				SevmAccounts::eth_address(&alice()),
-			));
-			assert_eq!(last_event(), event);
+// #[cfg(not(feature = "standalone"))]
+// mod parachain_tests {
+// 	use super::*;
 
-			// claim another eth address
-			assert_noop!(
-				SevmAccounts::claim_account(
-					Origin::signed(AccountId::from(ALICE)),
-					SevmAccounts::eth_address(&alice()),
-					SevmAccounts::eth_sign(&alice(), &AccountId::from(ALICE).encode(), &[][..])
-				),
-				evm_accounts::Error::<Runtime>::AccountIdHasMapped
-			);
-			assert_noop!(
-				SevmAccounts::claim_account(
-					Origin::signed(AccountId::from(BOB)),
-					SevmAccounts::eth_address(&alice()),
-					SevmAccounts::eth_sign(&alice(), &AccountId::from(BOB).encode(), &[][..])
-				),
-				evm_accounts::Error::<Runtime>::EthAddressHasMapped
-			);
-		});
-}
+// 	use codec::Encode;
+// 	use cumulus_primitives_core::{
+// 		DownwardMessageHandler, HrmpMessageHandler, InboundDownwardMessage, InboundHrmpMessage,
+// 	};
+// 	use polkadot_parachain::primitives::Sibling;
+// 	use xcm::{
+// 		v0::{Junction, MultiAsset, MultiLocation, NetworkId, Order, Xcm},
+// 		VersionedXcm,
+// 	};
 
-#[cfg(not(feature = "with-ethereum-compatibility"))]
-#[test]
-fn test_evm_module() {
-	ExtBuilder::default()
-		.balances(vec![
-			(evm_alice_account_id(), DNAR, 1_000 * dollar(DNAR)),
-			(evm_bob_account_id(), DNAR, 1_000 * dollar(DNAR)),
-		])
-		.build()
-		.execute_with(|| {
-			assert_eq!(Balances::free_balance(evm_alice_account_id()), 1_000 * dollar(DNAR));
-			assert_eq!(Balances::free_balance(evm_bob_account_id()), 1_000 * dollar(DNAR));
+// 	use newrome_runtime::{Tokens, XcmHandler, PLM};
 
-			let _alice_address = SevmAccounts::eth_address(&alice());
-			let bob_address = SevmAccounts::eth_address(&bob());
+// 	#[test]
+// 	fn receive_cross_chain_assets() {
+// 		ExtBuilder::default().build().execute_with(|| {
+// 			let dot_amount = 1000 * dollar(DOT);
 
-			let contract = deploy_contract(evm_alice_account_id()).unwrap();
-			let event = Event::evm(evm::Event::Created(contract));
-			assert_eq!(last_event(), event);
+// 			// receive relay chain token
+// 			let msg: VersionedXcm = Xcm::ReserveAssetDeposit {
+// 				assets: vec![MultiAsset::ConcreteFungible {
+// 					id: MultiLocation::X1(Junction::Parent),
+// 					amount: dot_amount,
+// 				}],
+// 				effects: vec![Order::DepositAsset {
+// 					assets: vec![MultiAsset::All],
+// 					dest: MultiLocation::X1(Junction::AccountId32 {
+// 						network: NetworkId::Named("setheum".into()),
+// 						id: ALICE,
+// 					}),
+// 				}],
+// 			}
+// 			.into();
+// 			XcmHandler::handle_downward_message(InboundDownwardMessage {
+// 				sent_at: 10,
+// 				msg: msg.encode(),
+// 			});
+// 			assert_eq!(Tokens::free_balance(DOT, &ALICE.into()), dot_amount);
 
-			assert_ok!(EVM::transfer_maintainer(
-				Origin::signed(evm_alice_account_id()),
-				contract,
-				bob_address
-			));
-			let event = Event::evm(evm::Event::TransferredMaintainer(contract, bob_address));
-			assert_eq!(last_event(), event);
+// 			let sibling_para_id = 5000;
+// 			let sibling_parachain_acc: AccountId = Sibling::from(sibling_para_id).into_account();
 
-			// test SevmAccounts Lookup
-			assert_eq!(Balances::free_balance(evm_alice_account_id()), 9_999_998_963_300_000);
-			assert_eq!(Balances::free_balance(evm_bob_account_id()), 1_000 * dollar(DNAR));
-			let to = SevmAccounts::eth_address(&alice());
-			assert_ok!(Currencies::transfer(
-				Origin::signed(evm_bob_account_id()),
-				MultiAddress::Address20(to.0),
-				DNAR,
-				10 * dollar(DNAR)
-			));
-			assert_eq!(Balances::free_balance(evm_alice_account_id()), 10_099_998_963_300_000);
-			assert_eq!(
-				Balances::free_balance(evm_bob_account_id()),
-				1_000 * dollar(DNAR) - 10 * dollar(DNAR)
-			);
-		});
-}
+// 			// receive owned token
+// 			let dnr_amount = 1000 * dollar(DNAR);
+// 			assert_ok!(Currencies::deposit(DNAR, &sibling_parachain_acc, 1100 * dollar(DNAR)));
 
-#[cfg(feature = "with-ethereum-compatibility")]
-#[test]
-fn test_evm_module() {
-	ExtBuilder::default()
-		.balances(vec![
-			(evm_alice_account_id(), DNAR, 1_000 * dollar(DNAR)),
-			(evm_bob_account_id(), DNAR, 1_000 * dollar(DNAR)),
-		])
-		.build()
-		.execute_with(|| {
-			assert_eq!(Balances::free_balance(evm_alice_account_id()), 1_000 * dollar(DNAR));
-			assert_eq!(Balances::free_balance(evm_bob_account_id()), 1_000 * dollar(DNAR));
+// 			let msg1: VersionedXcm = Xcm::WithdrawAsset {
+// 				assets: vec![MultiAsset::ConcreteFungible {
+// 					id: MultiLocation::X1(Junction::GeneralKey("DNAR".into())),
+// 					amount: dnr_amount,
+// 				}],
+// 				effects: vec![Order::DepositAsset {
+// 					assets: vec![MultiAsset::All],
+// 					dest: MultiLocation::X1(Junction::AccountId32 {
+// 						network: NetworkId::Named("setheum".into()),
+// 						id: ALICE,
+// 					}),
+// 				}],
+// 			}
+// 			.into();
+// 			XcmHandler::handle_hrmp_message(
+// 				sibling_para_id.into(),
+// 				InboundHrmpMessage {
+// 					sent_at: 10,
+// 					data: msg1.encode(),
+// 				},
+// 			);
+// 			assert_eq!(Currencies::free_balance(DNAR, &sibling_parachain_acc), 100 * dollar(DNAR));
+// 			assert_eq!(Currencies::free_balance(DNAR, &ALICE.into()), dnr_amount);
 
-			use std::fs::{self, File};
-			use std::io::Read;
-
-			let paths = fs::read_dir("../../runtime/newrome/tests/solidity_test").unwrap();
-			let file_names = paths
-				.filter_map(|entry| entry.ok().and_then(|e| e.path().to_str().map(|s| String::from(s))))
-				.collect::<Vec<String>>();
-
-			for file in file_names {
-				let mut f = File::open(&file).expect("File not found");
-				let mut contents = String::new();
-				f.read_to_string(&mut contents)
-					.expect("Something went wrong reading the file.");
-				let json: serde_json::Value = serde_json::from_str(&contents).unwrap();
-
-				let bytecode_str = serde_json::to_string(&json["bytecode"]).unwrap();
-				let bytecode_str = bytecode_str.replace("\"", "");
-
-				let bytecode = hex::decode(bytecode_str).unwrap();
-				assert_ok!(EVM::create(
-					Origin::signed(evm_alice_account_id()),
-					bytecode,
-					0,
-					u64::MAX,
-					u32::MAX
-				));
-
-				match System::events().iter().last().unwrap().event {
-					Event::evm(evm::Event::Created(_)) => {}
-					_ => {
-						println!(
-							"contract {:?} create failed, event: {:?}",
-							file,
-							System::events().iter().last().unwrap().event
-						);
-						assert!(false);
-					}
-				};
-			}
-		});
-}
-
-#[cfg(not(feature = "standalone"))]
-mod parachain_tests {
-	use super::*;
-
-	use codec::Encode;
-	use cumulus_primitives_core::{
-		DownwardMessageHandler, HrmpMessageHandler, InboundDownwardMessage, InboundHrmpMessage,
-	};
-	use polkadot_parachain::primitives::Sibling;
-	use xcm::{
-		v0::{Junction, MultiAsset, MultiLocation, NetworkId, Order, Xcm},
-		VersionedXcm,
-	};
-
-	use newrome_runtime::{Tokens, XcmHandler, PLM};
-
-	#[test]
-	fn receive_cross_chain_assets() {
-		ExtBuilder::default().build().execute_with(|| {
-			let dot_amount = 1000 * dollar(DOT);
-
-			// receive relay chain token
-			let msg: VersionedXcm = Xcm::ReserveAssetDeposit {
-				assets: vec![MultiAsset::ConcreteFungible {
-					id: MultiLocation::X1(Junction::Parent),
-					amount: dot_amount,
-				}],
-				effects: vec![Order::DepositAsset {
-					assets: vec![MultiAsset::All],
-					dest: MultiLocation::X1(Junction::AccountId32 {
-						network: NetworkId::Named("setheum".into()),
-						id: ALICE,
-					}),
-				}],
-			}
-			.into();
-			XcmHandler::handle_downward_message(InboundDownwardMessage {
-				sent_at: 10,
-				msg: msg.encode(),
-			});
-			assert_eq!(Tokens::free_balance(DOT, &ALICE.into()), dot_amount);
-
-			let sibling_para_id = 5000;
-			let sibling_parachain_acc: AccountId = Sibling::from(sibling_para_id).into_account();
-
-			// receive owned token
-			let dnr_amount = 1000 * dollar(DNAR);
-			assert_ok!(Currencies::deposit(DNAR, &sibling_parachain_acc, 1100 * dollar(DNAR)));
-
-			let msg1: VersionedXcm = Xcm::WithdrawAsset {
-				assets: vec![MultiAsset::ConcreteFungible {
-					id: MultiLocation::X1(Junction::GeneralKey("DNAR".into())),
-					amount: dnr_amount,
-				}],
-				effects: vec![Order::DepositAsset {
-					assets: vec![MultiAsset::All],
-					dest: MultiLocation::X1(Junction::AccountId32 {
-						network: NetworkId::Named("setheum".into()),
-						id: ALICE,
-					}),
-				}],
-			}
-			.into();
-			XcmHandler::handle_hrmp_message(
-				sibling_para_id.into(),
-				InboundHrmpMessage {
-					sent_at: 10,
-					data: msg1.encode(),
-				},
-			);
-			assert_eq!(Currencies::free_balance(DNAR, &sibling_parachain_acc), 100 * dollar(DNAR));
-			assert_eq!(Currencies::free_balance(DNAR, &ALICE.into()), dnr_amount);
-
-			// receive non-owned token
-			let plm_amount = 1000 * dollar(PLM);
-			let msg2: VersionedXcm = Xcm::ReserveAssetDeposit {
-				assets: vec![MultiAsset::ConcreteFungible {
-					id: MultiLocation::X1(Junction::GeneralKey("PLM".into())),
-					amount: plm_amount,
-				}],
-				effects: vec![Order::DepositAsset {
-					assets: vec![MultiAsset::All],
-					dest: MultiLocation::X1(Junction::AccountId32 {
-						network: NetworkId::Named("setheum".into()),
-						id: ALICE,
-					}),
-				}],
-			}
-			.into();
-			XcmHandler::handle_hrmp_message(
-				sibling_para_id.into(),
-				InboundHrmpMessage {
-					sent_at: 10,
-					data: msg2.encode(),
-				},
-			);
-			assert_eq!(Currencies::free_balance(PLM, &ALICE.into()), plm_amount);
-		});
-	}
-}
+// 			// receive non-owned token
+// 			let plm_amount = 1000 * dollar(PLM);
+// 			let msg2: VersionedXcm = Xcm::ReserveAssetDeposit {
+// 				assets: vec![MultiAsset::ConcreteFungible {
+// 					id: MultiLocation::X1(Junction::GeneralKey("PLM".into())),
+// 					amount: plm_amount,
+// 				}],
+// 				effects: vec![Order::DepositAsset {
+// 					assets: vec![MultiAsset::All],
+// 					dest: MultiLocation::X1(Junction::AccountId32 {
+// 						network: NetworkId::Named("setheum".into()),
+// 						id: ALICE,
+// 					}),
+// 				}],
+// 			}
+// 			.into();
+// 			XcmHandler::handle_hrmp_message(
+// 				sibling_para_id.into(),
+// 				InboundHrmpMessage {
+// 					sent_at: 10,
+// 					data: msg2.encode(),
+// 				},
+// 			);
+// 			assert_eq!(Currencies::free_balance(PLM, &ALICE.into()), plm_amount);
+// 		});
+// 	}
+// }

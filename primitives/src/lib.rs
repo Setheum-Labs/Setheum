@@ -21,7 +21,6 @@
 #![allow(clippy::upper_case_acronyms)]
 
 pub mod currency;
-pub mod evm;
 pub mod mocks;
 
 use codec::{Decode, Encode};
@@ -143,20 +142,5 @@ impl TradingPair {
 		CurrencyId::join_dex_share_currency_id(self.0, self.1)
 	}
 }
-
-/// Ethereum precompiles
-/// 0 - 0x400
-/// Setheum precompiles
-/// 0x400 - 0x800
-pub const PRECOMPILE_ADDRESS_START: u64 = 0x400;
-/// Predeployed system contracts (except Mirrored ERC20)
-/// 0x800 - 0x1000
-pub const PREDEPLOY_ADDRESS_START: u64 = 0x800;
-/// Mirrored Tokens
-/// 0x01000000
-pub const MIRRORED_TOKENS_ADDRESS_START: u64 = 0x01000000;
-/// Mirrored NFT
-/// 0x02000000
-pub const MIRRORED_NFT_ADDRESS_START: u64 = 0x02000000;
 
 pub type NFTBalance = u128;

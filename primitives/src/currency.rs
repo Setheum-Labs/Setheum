@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::evm::EvmAddress;
 use bstringify::bstringify;
 use codec::{Decode, Encode};
 use sp_runtime::RuntimeDebug;
@@ -137,7 +136,6 @@ pub trait GetDecimals {
 pub enum CurrencyId {
 	Token(TokenSymbol),
 	DEXShare(TokenSymbol, TokenSymbol),
-	ERC20(EvmAddress),
 }
 
 impl CurrencyId {
@@ -168,8 +166,6 @@ impl CurrencyId {
 	}
 }
 
-/// Note the pre-deployed ERC20 contracts depend on `CurrencyId` implementation,
-/// and need to be updated if any change.
 impl TryFrom<[u8; 32]> for CurrencyId {
 	type Error = ();
 
@@ -194,8 +190,6 @@ impl TryFrom<[u8; 32]> for CurrencyId {
 	}
 }
 
-/// Note the pre-deployed ERC20 contracts depend on `CurrencyId` implementation,
-/// and need to be updated if any change.
 impl From<CurrencyId> for [u8; 32] {
 	fn from(val: CurrencyId) -> Self {
 		let mut bytes = [0u8; 32];

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! A set of constant values used in dev runtime.
+//! A set of constant values used in setheum runtime.
 
 /// Time and blocks.
 pub mod time {
@@ -31,7 +31,7 @@ pub mod time {
 	pub const DAYS: BlockNumber = HOURS * 24;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
-
+ 
 	// 1 in 4 blocks (on average, not counting collisions) will be primary BABE
 	// blocks.
 	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);

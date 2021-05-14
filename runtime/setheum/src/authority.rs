@@ -35,7 +35,7 @@ impl orml_authority::AuthorityConfig<Origin, OriginCaller, BlockNumber> for Auth
 	fn check_schedule_dispatch(origin: Origin, _priority: Priority) -> DispatchResult {
 		EnsureRoot::<AccountId>::try_origin(origin)
 			.or_else(|o| EnsureRootOrHalfGeneralCouncil::try_origin(o).map(|_| ()))
-			//TODO: Add the SERP
+			//TODO: Add the SERP and the 2 other councils
 			//	.or_else(|o| EnsureRootOrHalfSerpCouncil::try_origin(o).map(|_| ()))
 			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 	}
