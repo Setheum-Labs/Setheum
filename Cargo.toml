@@ -6,7 +6,6 @@ members = [
 	"node/cli",
 	"node/service",
 
-	"pallets-orml/*",
 	"inspect",
 	"primitives",
 	"rpc",
