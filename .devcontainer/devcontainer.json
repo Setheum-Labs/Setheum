@@ -14,8 +14,11 @@
     3000,
     9944
   ],
-  "preCreateCommand": "cargo build --release && cargo check",
-  "postStartCommand": "./target/release/node-template --dev --ws-external",
+  "preCreateCommand": [
+    "cargo build",
+    "cargo check"
+  ],
+  "postStartCommand": "./target/debug/node-template --dev --ws-external",
   "menuActions": [
     {
       "id": "polkadotjs",
@@ -25,6 +28,5 @@
         "https://polkadot.js.org/apps/?rpc=wss%3A%2F%2F/$HOST/wss"
       ]
     }
-  ],
-  "image": "paritytech/substrate-playground-template-node-template:latest"
+  ]
 }
