@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/node/env bash
 
 set -e
 
 # cargo clean
-WASM_BUILD_TYPE=release cargo run --manifest-path bin/setheum-dev/Cargo.toml -- build-spec --raw --chain newrome-latest > ./resources/newrome-dist.json
+WASM_BUILD_TYPE=release cargo run --manifest-path node/setheum-dev/Cargo.toml -- build-spec --raw --chain newrome-latest > ./resources/newrome-dist.json
