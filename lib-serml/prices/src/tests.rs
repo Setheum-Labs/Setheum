@@ -50,16 +50,6 @@ fn get_price_of_stable_currency_id() {
 }
 
 #[test]
-fn get_price_of_liquid_currency_id() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			PricesModule::get_price(LDNAR),
-			Some(Price::saturating_from_integer(5000000000u128))
-		); // 50 USD, right shift the decimal point (18-12) places
-	});
-}
-
-#[test]
 fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(MockSetheumDex::get_liquidity_pool(USDJ, DNAR), (10000, 200));
@@ -97,11 +87,11 @@ fn get_relative_price_work() {
 			                                                     * (12-8) places */
 		);
 		assert_eq!(
-			PricesModule::get_relative_price(LDNAR, DNAR),
-			Some(Price::saturating_from_rational(1, 2)) // 1LDNAR = 1/2DNAR, right shift the decimal point (10-10) places
+			PricesModule::get_relative_price(JUSD, DNAR),
+			Some(Price::saturating_from_rational(1, 2)) // 1JUSD = 1/2DNAR, right shift the decimal point (10-10) places
 		);
 		assert_eq!(
-			PricesModule::get_relative_price(USDJ, USDJ),
+			PricesModule::get_relative_price(JUSD, USDJ),
 			Some(Price::saturating_from_rational(1, 1)) // 1USDJ = 1USDJ, right shift the decimal point (10-10) places
 		);
 		assert_eq!(PricesModule::get_relative_price(USDJ, DNAR), None);

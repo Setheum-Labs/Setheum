@@ -92,8 +92,7 @@ pub use primitives::{
 };
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, DNAR, USDJ, DOT, LDNAR,
-	PHA, PLM, POLKABTC, GBPJ, CHFJ,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, DNAR, SETT, USDJ,
 };
 
 mod authority;
@@ -887,7 +886,7 @@ where
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![DOT, LDNAR, CHFJ, GBPJ, POLKABTC, PLM, PHA];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![DNAR];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -933,13 +932,8 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(USDJ, DNAR),
-		TradingPair::new(USDJ, DOT),
-		TradingPair::new(USDJ, LDNAR),
-		TradingPair::new(USDJ, CHFJ),
-		TradingPair::new(USDJ, GBPJ),
-		TradingPair::new(USDJ, POLKABTC),
-		TradingPair::new(USDJ, PLM),
-		TradingPair::new(USDJ, PHA),
+		TradingPair::new(USDJ, SETT),
+		TradingPair::new(SETT, DNAR),
 	];
 }
 
@@ -971,8 +965,8 @@ impl serp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	// All currency types except for native currency, Sort by fee charge order
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![USDJ, LDNAR, DOT, CHFJ, GBPJ, POLKABTC, PLM, PHA];
+	// All currency types except for native currency, Sort by fee charge order. aT THE MOMENT IT'S just USDJ
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![USDJ];
 }
 
 impl setheum_transaction_payment::Config for Runtime {
@@ -1020,23 +1014,6 @@ impl setheum_incentives::Config for Runtime {
 
 impl setheum_airdrop::Config for Runtime {
 	type Event = Event;
-}
-
-
-parameter_types! {
-	pub MinCouncilBondThreshold: Balance = dollar(LDNAR);
-	pub const NominateesCount: u32 = 7;
-	pub const MaxUnlockingChunks: u32 = 7;
-	pub const NomineesElectionBondingDuration: EraIndex = 7;
-}
-
-impl setheum_nominees_election::Config for Runtime {
-	type Currency = Currency<Runtime, GetLiquidCurrencyId>;
-	type PolkadotAccountId = AccountId;
-	type MinBondThreshold = MinCouncilBondThreshold;
-	type BondingDuration = NomineesElectionBondingDuration;
-	type NominateesCount = NominateesCount;
-	type MaxUnlockingChunks = MaxUnlockingChunks;
 }
 
 parameter_types! {

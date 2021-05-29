@@ -90,12 +90,11 @@ pub use primitives::{
 	AccountId, AccountIndex, Amount, AuctionId, AuthoritysOriginId, Balance, BlockNumber, CurrencyId, DataProviderId,
 	EraIndex, Hash, Moment, Nonce, Share, Signature, TokenSymbol, TradingPair,
 };
-pub use runtime_common::{
+pub use runtime_common::{ //TODO: add settin-dex token
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, DNAR, USDJ, DOT, LDNAR,
-	PHA, POLKABTC, GBPJ, SDN, CHFJ,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, DNAR, SETT, USDJ, // add settin-dex token
 };
-
+//TODO: add settin-dex token ^^^^^^^^^^^^^^
 mod authority;
 mod constants;
 
@@ -887,7 +886,7 @@ where
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![DOT, LDNAR, CHFJ, GBPJ, POLKABTC, SDN, PHA];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -933,13 +932,8 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(USDJ, DNAR),
-		TradingPair::new(USDJ, DOT),
-		TradingPair::new(USDJ, LDNAR),
-		TradingPair::new(USDJ, CHFJ),
-		TradingPair::new(USDJ, GBPJ),
-		TradingPair::new(USDJ, POLKABTC),
-		TradingPair::new(USDJ, SDN),
-		TradingPair::new(USDJ, PHA),
+		TradingPair::new(USDJ, SETT),
+		TradingPair::new(SETT, DNAR),
 	];
 }
 
@@ -972,7 +966,7 @@ impl serp_treasury::Config for Runtime {
 
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![USDJ, LDNAR, DOT, CHFJ, GBPJ, POLKABTC, SDN, PHA];
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![USDJ];
 }
 
 impl setheum_transaction_payment::Config for Runtime {

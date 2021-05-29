@@ -91,8 +91,7 @@ pub use primitives::{
 };
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, KSM, JUSD, LKSM,
-	PLM, GBPJ,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, JSETT, JUSD,
 };
 
 mod authority;
@@ -885,7 +884,7 @@ where
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![KSM, LKSM, PLM];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -931,9 +930,8 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(JUSD, NEOM),
-		TradingPair::new(JUSD, KSM),
-		TradingPair::new(JUSD, LKSM),
-		TradingPair::new(JUSD, PLM),
+		TradingPair::new(JUSD, JSETT),
+		TradingPair::new(JSETT, NEOM),
 	];
 }
 
@@ -966,7 +964,7 @@ impl serp_treasury::Config for Runtime {
 
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![JUSD, LKSM, KSM, PLM];
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![JUSD];
 }
 
 impl setheum_transaction_payment::Config for Runtime {

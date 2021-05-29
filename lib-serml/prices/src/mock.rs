@@ -40,7 +40,7 @@ pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const JCHF: CurrencyId = CurrencyId::Token(TokenSymbol::JCHF);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const LDNAR: CurrencyId = CurrencyId::Token(TokenSymbol::LDNAR);
+pub const JUSD: CurrencyId = CurrencyId::Token(TokenSymbol::JUSD);
 pub const LP_JCHF_USDJ: CurrencyId = CurrencyId::DEXShare(TokenSymbol::JCHF, TokenSymbol::USDJ);
 pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DEXShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
 

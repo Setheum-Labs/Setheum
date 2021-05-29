@@ -83,27 +83,15 @@ create_currency_id! {
 	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		// Polkadot Ecosystem
+		// Setheum Network
 		DNAR(13) = 0,
 		USDJ(12) = 1,
-		DOT(10) = 2,
-		LDNAR(10) = 3,
-		CHFJ(8) = 4,
-		GBPJ(8) = 5,
-		POLKABTC(8) = 6,
-		PLM(18) = 7,
-		PHA(18) = 8,
+		SETT(10) = 2,
 
-		// Kusama Ecosystem
+		// Neom Network
 		NEOM(12) = 128,
 		JUSD(12) = 129,
-		KSM(12) = 130,
-		LKSM(12) = 131,
-		// Reserve for CHFJ = 132
-		// Reserve for GBPJ = 133
-		// Reserve for POLKABTC = 134
-		SDN(18) = 135,
-		// Reserve for PHA = 136
+		JSETT(12) = 130,
 	}
 }
 

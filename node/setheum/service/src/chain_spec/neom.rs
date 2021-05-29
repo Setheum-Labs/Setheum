@@ -122,7 +122,7 @@ fn neom_genesis(
 		GeneralCouncilMembershipConfig, GrandpaConfig, SettwayCouncilMembershipConfig,
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
 		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
-		TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, NEOM, KSM, JUSD, LKSM, GBPJ,
+		TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, NEOM, JSETT, JUSD,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -218,35 +218,19 @@ fn neom_genesis(
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),
 		serp_treasury: Some(SerpTreasuryConfig {
 			reserve_auction_maximum_size: vec![
-				(KSM, dollar(KSM)), // (currency_id, max size of a reserve auction)
+				(SETT, dollar(SETT)), // (currency_id, max size of a reserve auction)
 				(GBPJ, 5 * cent(GBPJ)),
 			],
 		}),
 		setheum_settmint_engine: Some(SettmintEngineConfig {
 			reserve_params: vec![
 				(
-					KSM,
+					SETT,
 					Some(FixedU128::zero()),                             // stability fee for this reserve
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
 					10_000_000 * dollar(JUSD),                           // maximum standard value in USDj (cap)
-				),
-				(
-					LKSM,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(120, 100)),
-					Some(FixedU128::saturating_from_rational(10, 100)),
-					Some(FixedU128::saturating_from_rational(130, 100)),
-					10_000_000 * dollar(JUSD),
-				),
-				(
-					GBPJ,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(110, 100)),
-					Some(FixedU128::saturating_from_rational(4, 100)),
-					Some(FixedU128::saturating_from_rational(115, 100)),
-					10_000_000 * dollar(JUSD),
 				),
 			],
 			global_stability_fee: FixedU128::saturating_from_rational(618_850_393, 100_000_000_000_000_000_u128), /* 5% APR */
