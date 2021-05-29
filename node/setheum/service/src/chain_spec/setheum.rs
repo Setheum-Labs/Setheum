@@ -122,7 +122,7 @@ fn setheum_genesis(
 		GeneralCouncilMembershipConfig, GrandpaConfig,SettwayCouncilMembershipConfig,
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
 		OrmlNFTConfig, RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
-		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, DNAR, USDJ, DOT, LDNAR, GBPJ,
+		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, DNAR, SETT, USDJ,
 		CHFJ,
 	};
 	#[cfg(feature = "std")]
@@ -222,7 +222,7 @@ fn setheum_genesis(
 		}),
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),
 		serp_treasury: Some(SerpTreasuryConfig {
-			reserve_auction_maximum_size: vec![
+			expected_reserve_auction_size: vec![
 				(DOT, dollar(DOT)), // (currency_id, max size of a reserve auction)
 				(CHFJ, 5 * cent(CHFJ)),
 				(GBPJ, 5 * cent(GBPJ)),
@@ -231,36 +231,12 @@ fn setheum_genesis(
 		setheum_settmint_engine: Some(SettmintEngineConfig {
 			reserve_params: vec![
 				(
-					DOT,
+					SETT,
 					Some(FixedU128::zero()),                             // stability fee for this reserve
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
 					10_000_000 * dollar(USDJ),                           // maximum standard value in USDj (cap)
-				),
-				(
-					CHFJ,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(110, 100)),
-					Some(FixedU128::saturating_from_rational(4, 100)),
-					Some(FixedU128::saturating_from_rational(115, 100)),
-					10_000_000 * dollar(USDJ),
-				),
-				(
-					LDNAR,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(120, 100)),
-					Some(FixedU128::saturating_from_rational(10, 100)),
-					Some(FixedU128::saturating_from_rational(130, 100)),
-					10_000_000 * dollar(USDJ),
-				),
-				(
-					GBPJ,
-					Some(FixedU128::zero()),
-					Some(FixedU128::saturating_from_rational(110, 100)),
-					Some(FixedU128::saturating_from_rational(4, 100)),
-					Some(FixedU128::saturating_from_rational(115, 100)),
-					10_000_000 * dollar(USDJ),
 				),
 			],
 			global_stability_fee: FixedU128::saturating_from_rational(618_850_393, 100_000_000_000_000_000_u128), /* 5% APR */

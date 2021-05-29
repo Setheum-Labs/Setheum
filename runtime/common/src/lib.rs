@@ -44,7 +44,7 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::currency::{
-	GetDecimals, DNAR, USDJ, DOT, NEOM, KSM, JUSD, LDNAR, LKSM, PHA, PLM, POLKABTC, GBPJ, SDN, CHFJ,
+	GetDecimals, DNAR, SETT, USDJ, NEOM, JSETT, JUSD,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;

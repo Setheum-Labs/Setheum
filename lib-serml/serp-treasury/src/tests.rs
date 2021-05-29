@@ -250,7 +250,7 @@ fn swap_exact_reserve_in_auction_to_stable_work() {
 fn create_reserve_auctions_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Currencies::deposit(BTC, &SerpTreasuryModule::account_id(), 10000));
-		assert_eq!(SerpTreasuryModule::reserve_auction_maximum_size(BTC), 0);
+		assert_eq!(SerpTreasuryModule::expected_reserve_auction_size(BTC), 0);
 		assert_noop!(
 			SerpTreasuryModule::create_reserve_auctions(BTC, 10001, 1000, ALICE, true),
 			Error::<Runtime>::ReserveNotEnough,
@@ -264,7 +264,7 @@ fn create_reserve_auctions_work() {
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 1000);
 
 		// set reserve auction maximum size
-		assert_ok!(SerpTreasuryModule::set_reserve_auction_maximum_size(
+		assert_ok!(SerpTreasuryModule::set_expected_reserve_auction_size(
 			Origin::signed(1),
 			BTC,
 			300
@@ -327,24 +327,24 @@ fn auction_standard_work() {
 }
 
 #[test]
-fn set_reserve_auction_maximum_size_work() {
+fn set_expected_reserve_auction_size_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_eq!(SerpTreasuryModule::reserve_auction_maximum_size(BTC), 0);
+		assert_eq!(SerpTreasuryModule::expected_reserve_auction_size(BTC), 0);
 		assert_noop!(
-			SerpTreasuryModule::set_reserve_auction_maximum_size(Origin::signed(5), BTC, 200),
+			SerpTreasuryModule::set_expected_reserve_auction_size(Origin::signed(5), BTC, 200),
 			BadOrigin
 		);
-		assert_ok!(SerpTreasuryModule::set_reserve_auction_maximum_size(
+		assert_ok!(SerpTreasuryModule::set_expected_reserve_auction_size(
 			Origin::signed(1),
 			BTC,
 			200
 		));
 
-		let update_reserve_auction_maximum_size_event =
-			Event::serp_treasury(crate::Event::ReserveAuctionMaximumSizeUpdated(BTC, 200));
+		let update_expected_reserve_auction_size_event =
+			Event::serp_treasury(crate::Event::ExpectedReserveAuctionSizeUpdated(BTC, 200));
 		assert!(System::events()
 			.iter()
-			.any(|record| record.event == update_reserve_auction_maximum_size_event));
+			.any(|record| record.event == update_expected_reserve_auction_size_event));
 	});
 }

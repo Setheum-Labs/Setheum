@@ -91,8 +91,7 @@ pub use primitives::{
 };
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, KSM, JUSD, LKSM,
-	PLM, GBPJ,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, JSETT, JUSD,
 };
 
 mod authority;
@@ -648,31 +647,6 @@ impl orml_authority::Config for Runtime {
 }
 
 parameter_types! {
-	pub CandidacyBond: Balance = 10 * dollar(LKSM);
-	pub VotingBondBase: Balance = 2 * dollar(LKSM);
-	pub VotingBondFactor: Balance = dollar(LKSM);
-	pub const TermDuration: BlockNumber = 7 * DAYS;
-	pub const DesiredMembers: u32 = 13;
-	pub const DesiredRunnersUp: u32 = 7;
-}
-
-impl pallet_elections_phragmen::Config for Runtime {
-	type ModuleId = ElectionsPhragmenModuleId;
-	type Event = Event;
-	type Currency = CurrencyAdapter<Runtime, GetLiquidCurrencyId>;
-	type CurrencyToVote = U128CurrencyToVote;
-	type CandidacyBond = CandidacyBond;
-	type VotingBondBase = VotingBondBase;
-	type VotingBondFactor = VotingBondFactor;
-	type TermDuration = TermDuration;
-	type DesiredMembers = DesiredMembers;
-	type DesiredRunnersUp = DesiredRunnersUp;
-	type LoserCandidate = ();
-	type KickedMember = ();
-	type WeightInfo = ();
-}
-
-parameter_types! {
 	pub const MinimumCount: u32 = 1;
 	pub const ExpiresIn: Moment = 1000 * 60 * 60; // 60 mins
 	pub ZeroAccountId: AccountId = AccountId::from([0u8; 32]);
@@ -910,7 +884,7 @@ where
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![KSM, LKSM, PLM];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -956,9 +930,8 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(JUSD, NEOM),
-		TradingPair::new(JUSD, KSM),
-		TradingPair::new(JUSD, LKSM),
-		TradingPair::new(JUSD, PLM),
+		TradingPair::new(JUSD, JSETT),
+		TradingPair::new(JSETT, NEOM),
 	];
 }
 
@@ -991,7 +964,7 @@ impl serp_treasury::Config for Runtime {
 
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![JUSD, LKSM, KSM, PLM];
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![JUSD];
 }
 
 impl setheum_transaction_payment::Config for Runtime {
@@ -1134,7 +1107,6 @@ construct_runtime!(
 		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>},
 
 		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>},
-		ElectionsPhragmen: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
 
 		// Oracle
 		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>},

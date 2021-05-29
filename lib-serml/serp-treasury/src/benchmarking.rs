@@ -24,7 +24,6 @@ use super::*;
 use frame_benchmarking::benchmarks;
 use frame_system::RawOrigin;
 use primitives::{Balance, CurrencyId, TokenSymbol};
-use sp_std::prelude::*;
 
 pub fn dollar(d: u32) -> Balance {
 	let d: Balance = d.into();
@@ -32,7 +31,7 @@ pub fn dollar(d: u32) -> Balance {
 }
 
 benchmarks! {
-	set_reserve_auction_maximum_size {
+	set_expected_reserve_auction_size {
 		let u in 0 .. 1000;
 	}: _(RawOrigin::Root, CurrencyId::Token(TokenSymbol::DOT), dollar(100))
 }
@@ -44,9 +43,9 @@ mod tests {
 	use frame_support::assert_ok;
 
 	#[test]
-	fn set_reserve_auction_maximum_size() {
+	fn set_expected_reserve_auction_size() {
 		ExtBuilder::default().build().execute_with(|| {
-			assert_ok!(test_benchmark_set_reserve_auction_maximum_size::<Runtime>());
+			assert_ok!(test_benchmark_set_expected_reserve_auction_size::<Runtime>());
 		});
 	}
 }
