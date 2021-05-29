@@ -158,8 +158,6 @@ std = [
 	"setheum-prices/std",
 	"setheum-incentives/std",
 	"setheum-support/std",
-	"setheum-nominees-election/std",
-	"setheum-polkadot-bridge/std",
 	"primitives/std",
 	"runtime-common/std",
 ]
