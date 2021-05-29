@@ -1,7 +1,7 @@
 [package]
 name = "neom-runtime"
 version = "0.7.9"
-authors = ["Setheum Developers"]
+authors = ["Setheum Labs"]
 edition = "2018"
 build = "build.rs"
 
