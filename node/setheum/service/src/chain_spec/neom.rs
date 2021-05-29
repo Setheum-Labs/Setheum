@@ -217,7 +217,7 @@ fn neom_genesis(
 		}),
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),
 		serp_treasury: Some(SerpTreasuryConfig {
-			reserve_auction_maximum_size: vec![
+			expected_reserve_auction_size: vec![
 				(SETT, dollar(SETT)), // (currency_id, max size of a reserve auction)
 				(GBPJ, 5 * cent(GBPJ)),
 			],

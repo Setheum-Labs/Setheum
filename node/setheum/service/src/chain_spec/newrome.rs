@@ -298,7 +298,7 @@ fn testnet_genesis(
 		}),
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),
 		serp_treasury: Some(SerpTreasuryConfig {
-			reserve_auction_maximum_size: vec![
+			expected_reserve_auction_size: vec![
 				(DOT, dollar(DOT)), // (currency_id, max size of a reserve auction)
 				(CHFJ, dollar(CHFJ)),
 				(GBPJ, dollar(GBPJ)),
@@ -445,7 +445,7 @@ fn newrome_genesis(
 		}),
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),
 		serp_treasury: Some(SerpTreasuryConfig {
-			reserve_auction_maximum_size: vec![
+			expected_reserve_auction_size: vec![
 				(DOT, dollar(DOT)), // (currency_id, max size of a reserve auction)
 				(CHFJ, 5 * cent(CHFJ)),
 				(GBPJ, 5 * cent(GBPJ)),
