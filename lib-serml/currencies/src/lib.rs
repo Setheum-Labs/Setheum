@@ -179,7 +179,6 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		} else {
 			T::MultiCurrency::minimum_balance(currency_id)
 		}
-		
 	}
 
 	fn total_issuance(currency_id: Self::CurrencyId) -> Self::Balance {
