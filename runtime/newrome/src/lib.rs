@@ -650,31 +650,6 @@ impl orml_authority::Config for Runtime {
 }
 
 parameter_types! {
-	pub CandidacyBond: Balance = 10 * dollar(LDNAR);
-	pub VotingBondBase: Balance = 2 * dollar(LDNAR);
-	pub VotingBondFactor: Balance = dollar(LDNAR);
-	pub const TermDuration: BlockNumber = 7 * DAYS;
-	pub const DesiredMembers: u32 = 13;
-	pub const DesiredRunnersUp: u32 = 7;
-}
-
-impl pallet_elections_phragmen::Config for Runtime {
-	type ModuleId = ElectionsPhragmenModuleId;
-	type Event = Event;
-	type Currency = CurrencyAdapter<Runtime, GetLiquidCurrencyId>;
-	type CurrencyToVote = U128CurrencyToVote;
-	type CandidacyBond = CandidacyBond;
-	type VotingBondBase = VotingBondBase;
-	type VotingBondFactor = VotingBondFactor;
-	type TermDuration = TermDuration;
-	type DesiredMembers = DesiredMembers;
-	type DesiredRunnersUp = DesiredRunnersUp;
-	type LoserCandidate = ();
-	type KickedMember = ();
-	type WeightInfo = ();
-}
-
-parameter_types! {
 	pub const MinimumCount: u32 = 1;
 	pub const ExpiresIn: Moment = 1000 * 60 * 60; // 60 mins
 	pub ZeroAccountId: AccountId = AccountId::from([0u8; 32]);
@@ -1161,7 +1136,6 @@ construct_runtime!(
 		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>},
 
 		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>},
-		ElectionsPhragmen: pallet_elections_phragmen::{Module, Call, Storage, Event<T>},
 
 		// Oracle
 		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>},
