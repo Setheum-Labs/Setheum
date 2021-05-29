@@ -1,0 +1,36 @@
+name: Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Install toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly-2021-03-04
+        components: rustfmt
+        target: wasm32-unknown-unknown
+        default: true
+    - name: Install clippy
+      run: rustup component add clippy
+    - name: Run clippy
+      run: cargo clippy -- -D warnings
+    - name: Build
+      run: make build-setheum
+    - name: Run tests
+      run: make test-all
+    - name: Run benchmarking tests
+      run: make test-benchmarking

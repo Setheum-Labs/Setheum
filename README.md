@@ -3,25 +3,25 @@
 Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and SERML, ready for hacking :rocket:
 <div align="center">
 
-[![Setheum version](https://img.shields.io/badge/Setheum-0.4.1-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
-[![Substrate version](https://img.shields.io/badge/Substrate-2.0.1-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
+[![Setheum version](https://img.shields.io/badge/Setheum-0.4.3-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
+[![Substrate version](https://img.shields.io/badge/Substrate-3.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
 [![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=green)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
  <br />
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FSetheum)](https://twitter.com/Setheum)
-[![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/HDdQJy9v)
 [![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](https://t.me/SetheumNetwork)
 [![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](https://medium.com/setheum-labs)
+[![Setheum](https://img.shields.io/badge/Setheum-blue?logo=Parity%20Substrate)](https://setheum.xyz)
+
 </div>
 
-
-## Getting Started
+# Getting Started
 
 This project contains some configuration files to help get started :hammer_and_wrench:
 
 ### Rust Setup
 
 Follow the [Rust setup instructions](./doc/rust-setup.md) before using the included Makefile to
-build the Setheum Node.
+build the Setheum node.
 
 ### Makefile
 
@@ -37,15 +37,82 @@ The init script and Makefile both specify the version of the
 [Rust nightly compiler](https://substrate.dev/docs/en/knowledgebase/getting-started/#rust-nightly-toolchain)
 that this project depends on.
 
-### Build
+## Build
 
-The `make run` command will perform an initial build. Use the following command to build the node
-without launching it:
 
-```sh
-make build
+Install Rust:
+
+```bash
+curl https://sh.rustup.rs -sSf | sh
 ```
+
+Make sure you have `submodule.recurse` set to true to make life with submodule easier.
+
+```bash
+git config --global submodule.recurse true
+```
+
+Install required tools and install git hooks:
+
+```bash
+make init
+```
+
+Build Newrome native code:
+
+```bash
+make build-dev
+```
+
 ## Run
 
-The `make run` command will launch a temporary node and its state will be discarded after you
-terminate the process. After the project has been built, there are other ways to launch the node.
+You can start a development chain with:
+
+```bash
+make run
+```
+
+## Development
+
+To type check:
+
+```bash
+make check-all
+```
+
+To purge old chain data:
+
+```bash
+make purge
+```
+
+To purge old chain data and run
+
+```bash
+make restart
+```
+
+Update ORML
+
+```bash
+make update
+```
+
+__Note:__ All build command from Makefile are designed for local development purposes and hence have `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.
+
+## 6. Bench Bot
+Bench bot can take care of syncing branch with `master` and generating WeightInfos for module or runtime.
+
+### Generate module weights
+
+Comment on a PR `/bench runtime module <module_name>` i.e.: `setheum_prices`
+
+Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
+
+### Generate runtime weights
+
+Comment on a PR `/bench runtime <runtime> <module_name>` i.e.: `/bench runtime newrome setheum_currencies`.
+
+To generate weights for all modules just pass `*` as `module_name` i.e: `/bench runtime newrome *`
+
+Bench bot will do the benchmarking, generate weights file push changes into your branch.

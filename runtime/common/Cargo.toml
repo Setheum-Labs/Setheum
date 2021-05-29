@@ -1,0 +1,58 @@
+[package]
+name = "runtime-common"
+version = "0.4.3"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[dependencies]
+static_assertions = "1.1.0"
+
+serde = { version = "1.0.124", optional = true, default-features = false }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+pallet-scheduler  = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+
+setheum-support = { path = "../../pallets-serml/support", default-features = false }
+setheum-transaction-payment = { path = "../../pallets-serml/transaction-payment", default-features = false }
+setheum-prices = { path = "../../pallets-serml/prices", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+
+orml-oracle = { path = "../../pallets-orml/oracle", default-features = false }
+orml-traits = { path = "../../pallets-orml/traits", default-features = false }
+
+[dev-dependencies]
+serde_json = "1.0.64"
+hex-literal = "0.3.1"
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
+orml-tokens = { path = "../../pallets-orml/tokens" }
+orml-nft = { path = "../../pallets-orml/nft" }
+setheum-currencies = { path = "../../pallets-serml/currencies" }
+setheum-nft = { path = "../../pallets-serml/nft" }
+setheum-dex = { path = "../../pallets-serml/dex" }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"sp-core/std",
+	"sp-std/std",
+	"sp-runtime/std",
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-scheduler/std",
+	"orml-oracle/std",
+	"orml-traits/std",
+	"setheum-support/std",
+	"primitives/std",
+	"setheum-transaction-payment/std",
+	"setheum-prices/std",
+]
