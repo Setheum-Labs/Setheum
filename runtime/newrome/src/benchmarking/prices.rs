@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{SetheumOracle, CollateralCurrencyId, CurrencyId, Origin, Price, Prices, Runtime, DNAR};
+use crate::{SetheumOracle, ReserveCurrencyIds, CurrencyId, Origin, Price, Prices, Runtime, DOT};
 
 use frame_system::RawOrigin;
 use orml_benchmarking::runtime_benchmarks;
-use sp_runtime::traits::One;
+use sp_runtime::FixedPointNumber;
 use sp_std::prelude::*;
 
 runtime_benchmarks! {
@@ -29,19 +29,19 @@ runtime_benchmarks! {
 	_ {}
 
 	lock_price {
-		let currency_id: CurrencyId = CollateralCurrencyId::get()[0];
+		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
 
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
-	}: _(RawOrigin::Root, DNAR)
+	}: _(RawOrigin::Root, DOT)
 
 	unlock_price {
-		let currency_id: CurrencyId = CollateralCurrencyId::get()[0];
+		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
 
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
-		Prices::lock_price(Origin::root(), DNAR)?;
-	}: _(RawOrigin::Root, DNAR)
+		Prices::lock_price(Origin::root(), DOT)?;
+	}: _(RawOrigin::Root, DOT)
 }
 
 #[cfg(test)]

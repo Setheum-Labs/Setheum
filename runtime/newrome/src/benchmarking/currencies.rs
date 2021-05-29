@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::utils::{lookup_of_account, set_balance};
-use crate::{dollar, AccountId, Amount, Balance, Currencies, NativeTokenExistentialDeposit, Runtime, DNAR, JGBP};
+use crate::{dollar, AccountId, Amount, Balance, Currencies, NativeTokenExistentialDeposit, Runtime, DNAR, DOT};
 
 use sp_std::prelude::*;
 
@@ -37,7 +37,7 @@ runtime_benchmarks! {
 
 	// `transfer` non-native currency
 	transfer_non_native_currency {
-		let currency_id = JGBP;
+		let currency_id = DOT;
 		let amount: Balance = 1_000 * dollar(currency_id);
 		let from = account("from", 0, SEED);
 		set_balance(currency_id, &from, amount);
@@ -84,7 +84,7 @@ runtime_benchmarks! {
 
 	// `update_balance` for non-native currency
 	update_balance_non_native_currency {
-		let currency_id = JGBP;
+		let currency_id = DOT;
 		let balance: Balance = 2 * dollar(currency_id);
 		let amount: Amount = balance.unique_saturated_into();
 		let who: AccountId = account("who", 0, SEED);

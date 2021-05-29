@@ -1,0 +1,80 @@
+[package]
+name = "setheum-dev-service"
+version = "0.7.9"
+authors = ["Setheum Developers"]
+edition = "2018"
+
+[dependencies]
+hex-literal = "0.3.1"
+serde = { version = "1.0.102", features = ["derive"] }
+serde_json = "1.0.41"
+codec = { package = "parity-scale-codec", version = "2.0.0" }
+sp-api = { version = "3.0.0" }
+sp-consensus = { version = "0.9.0" }
+sp-consensus-babe = { version = "0.9.0" }
+sp-core = { version = "3.0.0" }
+sp-finality-grandpa = { version = "3.0.0" }
+sp-runtime = { version = "3.0.0" }
+sp-inherents = { version = "3.0.0" }
+sc-finality-grandpa = { version = "0.9.0" }
+sc-chain-spec = { version = "3.0.0" }
+sc-client-api = { version = "3.0.0" }
+sc-telemetry = { version = "3.0.0" }
+sc-service = { version = "0.9.0" }
+sc-executor = { version = "0.9.0" }
+sc-consensus = { version = "0.9.0" }
+sc-consensus-babe = { version = "0.9.0" }
+sc-consensus-manual-seal = { version = "0.9.0" }
+sc-consensus-slots = { version = "0.9.0" }
+sc-transaction-pool = { version = "3.0.0" }
+sc-basic-authorship = { version = "0.9.0" }
+sc-network = { version = "0.9.0" }
+frame-benchmarking = { version = "3.0.0" }
+sp-trie = { version = "3.0.0" }
+prometheus-endpoint = { package = "substrate-prometheus-endpoint", version = "0.9.0"}
+
+sp-block-builder = { version = "3.0.0" }
+frame-system-rpc-runtime-api = { version = "3.0.0" }
+pallet-transaction-payment-rpc-runtime-api = { version = "3.0.0" }
+sp-offchain = { version = "3.0.0" }
+sp-session = { version = "3.0.0" }
+sp-storage = { version = "3.0.0" }
+sp-transaction-pool = { version = "3.0.0" }
+sp-blockchain = { version = "3.0.0" }
+sp-std = { version = "3.0.0" }
+
+setheum-nft = { path = "../../../lib-serml/nft" }
+orml-oracle-rpc = { path = "../../../lib-orml/oracle/rpc" }
+setheum-primitives = { path = "../../../primitives" }
+setheum-rpc = { path = "../../../rpc" }
+
+runtime-common = { path = "../../../runtime/common" }
+newrome-runtime = { path = "../../../runtime/newrome", optional = true }
+neom-runtime = { path = "../../../runtime/neom", optional = true }
+setheum-runtime = { path = "../../../runtime/setheum", optional = true }
+
+[dev-dependencies]
+sc-consensus-babe = { version = "0.9.0", features = ["test-helpers"] }
+
+[features]
+default = ["std", "with-newrome-runtime"]
+std = []
+runtime-benchmarks = [
+	"newrome-runtime/runtime-benchmarks",
+	"neom-runtime/runtime-benchmarks",
+	"setheum-runtime/runtime-benchmarks",
+]
+with-newrome-runtime = [
+	"newrome-runtime",
+]
+with-neom-runtime = [
+	"neom-runtime",
+]
+with-setheum-runtime = [
+	"setheum-runtime",
+]
+with-all-runtime = [
+	"with-newrome-runtime",
+	"with-neom-runtime",
+	"with-setheum-runtime",
+]

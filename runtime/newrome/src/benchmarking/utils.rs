@@ -33,8 +33,8 @@ pub fn set_balance(currency_id: CurrencyId, who: &AccountId, balance: Balance) {
 	);
 }
 
-pub fn set_jusd_balance(who: &AccountId, balance: Balance) {
-	set_balance(CurrencyId::Token(TokenSymbol::JUSD), who, balance)
+pub fn set_usdj_balance(who: &AccountId, balance: Balance) {
+	set_balance(CurrencyId::Token(TokenSymbol::USDJ), who, balance)
 }
 
 pub fn set_dnar_balance(who: &AccountId, balance: Balance) {

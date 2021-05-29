@@ -26,13 +26,13 @@ use sp_std::prelude::*;
 const SEED: u32 = 0;
 
 runtime_benchmarks! {
-	{ Runtime, module_transaction_payment }
+	{ Runtime, setheum_transaction_payment }
 
 	_ {}
 
 	set_default_fee_token {
 		let caller: AccountId = account("caller", 0, SEED);
-		let currency_id = CurrencyId::Token(TokenSymbol::JUSD);
+		let currency_id = CurrencyId::Token(TokenSymbol::USDJ);
 	}: _(RawOrigin::Signed(caller.clone()), Some(currency_id))
 	verify {
 		assert_eq!(TransactionPayment::default_fee_currency_id(&caller), Some(currency_id));
