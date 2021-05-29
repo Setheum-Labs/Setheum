@@ -19,16 +19,22 @@
 #![cfg(feature = "runtime-benchmarks")]
 
 // module benchmarking
+pub mod auction_manager;
+pub mod settmint_engine;
+pub mod serp_treasury;
 pub mod dex;
-pub mod staking;
+pub mod emergency_shutdown;
+pub mod settway;
 pub mod incentives;
 pub mod prices;
 pub mod transaction_payment;
 
 // orml benchmarking
+pub mod auction;
 pub mod authority;
 pub mod currencies;
 pub mod oracle;
+pub mod rewards;
 pub mod tokens;
 pub mod utils;
 pub mod vesting;

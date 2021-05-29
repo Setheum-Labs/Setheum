@@ -16,13 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! A set of constant values used in newrome runtime.
+//! A set of constant values used in dev runtime.
 
 /// Time and blocks.
 pub mod time {
 	use primitives::{BlockNumber, Moment};
 
-	pub const SECS_PER_BLOCK: Moment = 6;
+	pub const SECS_PER_BLOCK: Moment = 4;
 	pub const MILLISECS_PER_BLOCK: Moment = SECS_PER_BLOCK * 1000;
 
 	// These time units are defined in number of blocks.
@@ -73,15 +73,15 @@ pub mod fee {
 	impl WeightToFeePolynomial for WeightToFee {
 		type Balance = Balance;
 		fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-			// in setheum, extrinsic base weight (smallest non-zero weight) is mapped to 1/10
+			// in Setheum, extrinsic base weight (smallest non-zero weight) is mapped to 1/10
 			// CENT:
 			let p = cent(DNAR) / 10; // 10_000_000_000;
 			let q = Balance::from(ExtrinsicBaseWeight::get()); // 125_000_000
 			smallvec![WeightToFeeCoefficient {
 				degree: 1,
 				negative: false,
-				coeff_frac: Perbill::from_rational(p % q, q), // zero
-				coeff_integer: p / q,                         // 80
+				coeff_frac: Perbill::from_rational_approximation(p % q, q), // zero
+				coeff_integer: p / q,                                       // 80
 			}]
 		}
 	}

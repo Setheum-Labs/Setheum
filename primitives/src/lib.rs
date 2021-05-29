@@ -21,7 +21,6 @@
 #![allow(clippy::upper_case_acronyms)]
 
 pub mod currency;
-pub mod mocks;
 
 use codec::{Decode, Encode};
 use sp_runtime::{
@@ -35,9 +34,6 @@ pub use currency::{CurrencyId, TokenSymbol};
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-
-#[cfg(test)]
-mod tests;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -77,6 +73,9 @@ pub type Balance = u128;
 /// Signed version of Balance
 pub type Amount = i128;
 
+/// Auction ID
+pub type AuctionId = u32;
+
 /// Share type
 pub type Share = u128;
 
@@ -104,8 +103,7 @@ pub enum AirDropCurrencyId {
 pub enum AuthoritysOriginId {
 	Root,
 	SetheumTreasury,
-	SerpReserve,
-	AbhaTreasury,
+	SettwayTreasury,
 	SIF,
 }
 
@@ -142,5 +140,3 @@ impl TradingPair {
 		CurrencyId::join_dex_share_currency_id(self.0, self.1)
 	}
 }
-
-pub type NFTBalance = u128;

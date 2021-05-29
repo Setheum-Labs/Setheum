@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/node/env sh
 
 # Script for building only the WASM binary of the given project.
 
@@ -17,4 +17,4 @@ else
   export WASM_TARGET_DIRECTORY=$2
 fi
 
-cargo build --manifest-path bin/setheum/Cargo.toml --release -p $1
+cargo build --manifest-path node/setheum-dev/Cargo.toml --release -p $1 --features with-$1

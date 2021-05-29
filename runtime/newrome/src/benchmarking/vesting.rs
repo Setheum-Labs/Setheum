@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use super::utils::{lookup_of_account, set_dnr_balance};
+use super::utils::{lookup_of_account, set_dnar_balance};
 use crate::{
 	dollar, SetheumTreasuryModuleId, AccountId, AccountIdConversion, Balance, BlockNumber, Currencies, MinVestedTransfer,
 	Runtime, System, Vesting, DNAR,
@@ -50,7 +50,7 @@ runtime_benchmarks! {
 
 		// extra 1 dollar to pay fees
 		let from: AccountId = SetheumTreasuryModuleId::get().into_account();
-		set_dnr_balance(&from, schedule.total_amount().unwrap() + dollar(DNAR));
+		set_dnar_balance(&from, schedule.total_amount().unwrap() + dollar(DNAR));
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to.clone());
@@ -74,7 +74,7 @@ runtime_benchmarks! {
 
 		let from: AccountId = SetheumTreasuryModuleId::get().into_account();
 		// extra 1 dollar to pay fees
-		set_dnr_balance(&from, schedule.total_amount().unwrap() * i as u128 + dollar(DNAR));
+		set_dnar_balance(&from, schedule.total_amount().unwrap() * i as u128 + dollar(DNAR));
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to.clone());
@@ -103,7 +103,7 @@ runtime_benchmarks! {
 		};
 
 		let to: AccountId = account("to", 0, SEED);
-		set_dnr_balance(&to, schedule.total_amount().unwrap() * i as u128);
+		set_dnar_balance(&to, schedule.total_amount().unwrap() * i as u128);
 		let to_lookup = lookup_of_account(to.clone());
 
 		let mut schedules = vec![];

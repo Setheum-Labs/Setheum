@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-
-set -e
+#!/usr/node/env bash
 
 VERSION=$1
 
@@ -9,6 +7,6 @@ if [[ -z "$1" ]] ; then
     exit 1
 fi
 
-docker build -f scripts/Dockerfile-dev . -t setheum/setheum-node:$1 -t setheum/setheum-node:latest --build-arg GIT_COMMIT=${VERSION}
+docker build . -t setheum/setheum-node:$1 -t setheum/setheum-node:latest
 docker push setheum/setheum-node:$1
 docker push setheum/setheum-node:latest

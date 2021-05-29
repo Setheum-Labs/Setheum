@@ -19,12 +19,11 @@
 //! An orml_authority trait implementation.
 
 use crate::{
-	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, 
-	SIFModuleId, DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, 
-	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil, EnsureRootOrTwoThirdsTechnicalCommittee,  
-	OneDay, Origin, OriginCaller, SevenDays, ZeroDay, HOURS,
-	//TODO: Add the SERP `SerpReserveModuleId, EnsureRootOrHalfSerpCouncil,`.
-
+	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, SIFModuleId,
+	DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, 
+	EnsureRootOrHalfSettwayCouncil, EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
+	EnsureRootOrTwoThirdsTechnicalCommittee, SettwayTreasuryModuleId, OneDay, Origin,
+	OriginCaller, SevenDays, ZeroDay, HOURS,
 };
 pub use frame_support::traits::{schedule::Priority, EnsureOrigin, OriginTrait};
 use frame_system::ensure_root;
@@ -35,8 +34,7 @@ impl orml_authority::AuthorityConfig<Origin, OriginCaller, BlockNumber> for Auth
 	fn check_schedule_dispatch(origin: Origin, _priority: Priority) -> DispatchResult {
 		EnsureRoot::<AccountId>::try_origin(origin)
 			.or_else(|o| EnsureRootOrHalfGeneralCouncil::try_origin(o).map(|_| ()))
-			//TODO: Add the SERP and the 2 other councils
-			//	.or_else(|o| EnsureRootOrHalfSerpCouncil::try_origin(o).map(|_| ()))
+			.or_else(|o| EnsureRootOrHalfSettwayCouncil::try_origin(o).map(|_| ()))
 			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 	}
 
@@ -82,10 +80,9 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 			AuthoritysOriginId::SetheumTreasury => Origin::signed(SetheumTreasuryModuleId::get().into_account())
 				.caller()
 				.clone(),
-			//TODO: Add the SERP
-			//	AuthoritysOriginId::SerpReserve => Origin::signed(SerpReserveModuleId::get().into_account())
-			//		.caller()
-			//		.clone(),
+			AuthoritysOriginId::SettwayTreasury => Origin::signed(SettwayTreasuryModuleId::get().into_account())
+				.caller()
+				.clone(),
 			AuthoritysOriginId::SIF => Origin::signed(SIFModuleId::get().into_account()).caller().clone(),
 		}
 	}
@@ -106,13 +103,12 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 				>>::ensure_origin(origin)
 				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 			}
-			//TODO: Add the SERP
-			//	AuthoritysOriginId::SerpReserve => {
-			//		<EnsureDelayed<OneDay, EnsureRootOrHalfSerpCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
-			//			Origin,
-			//		>>::ensure_origin(origin)
-			//		.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
-			//	}
+			AuthoritysOriginId::SettwayTreasury => {
+				<EnsureDelayed<OneDay, EnsureRootOrHalfSettwayCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
+					Origin,
+				>>::ensure_origin(origin)
+				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
+			}
 			AuthoritysOriginId::SIF => {
 				<EnsureDelayed<ZeroDay, EnsureRoot<AccountId>, BlockNumber, OriginCaller> as EnsureOrigin<
 						Origin,
