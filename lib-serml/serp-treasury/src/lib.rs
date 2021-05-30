@@ -299,28 +299,41 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::issue_standard(&Self::account_id(), amount, true)
 	}
 
-	fn issue_standard(who: &T::AccountId, standard: Self::Balance, backed: bool) -> DispatchResult {
-		// increase system standard if the standard is unbacked
-		if !backed {
-			Self::on_system_standard(standard)?;
-		}
+	/// TODO: update to `currency_id` which is any `SettCurrency`.
+	fn issue_standard(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::GetStableCurrencyId::get(), who, standard)?;
-
 		Ok(())
 	}
 
+	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn burn_standard(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::GetStableCurrencyId::get(), who, standard)
 	}
 
+	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
+	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
+		T::Currency::deposit(T::GetStableCurrencyId::get(), who, dexer)?;
+		Ok(())
+	}
+
+	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
+	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
+		T::Currency::withdraw(T::GetStableCurrencyId::get(), who, dexer)
+	}
+
+	/// TODO: update to `currency_id` which is either `SETT` or any `SettCurrency`.
 	fn deposit_surplus(from: &T::AccountId, surplus: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetStableCurrencyId::get(), from, &Self::account_id(), surplus)
 	}
 
+	/// TODO: update to `T::GetSetterCurrencyId::get()` which is `SETT`. Rename `reserve` to `setter`.
 	fn deposit_reserve(from: &T::AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(currency_id, from, &Self::account_id(), amount)
 	}
 
+	/// TODO: update to `T::GetSetterCurrencyId::get()` which is `SETT`. Rename `reserve` to `setter`.
 	fn withdraw_reserve(to: &T::AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(currency_id, &Self::account_id(), to, amount)
 	}

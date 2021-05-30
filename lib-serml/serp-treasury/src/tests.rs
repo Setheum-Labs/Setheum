@@ -26,7 +26,7 @@ use mock::{Event, *};
 use sp_runtime::traits::BadOrigin;
 
 #[test]
-fn surplus_pool_work() {
+fn surplus_pool_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 0);
 		assert_ok!(Currencies::deposit(
@@ -39,7 +39,7 @@ fn surplus_pool_work() {
 }
 
 #[test]
-fn total_reserves_work() {
+fn total_reserves_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
 		assert_ok!(Currencies::deposit(BTC, &SerpTreasuryModule::account_id(), 10));
@@ -48,7 +48,7 @@ fn total_reserves_work() {
 }
 
 #[test]
-fn on_system_standard_work() {
+fn on_system_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 		assert_ok!(SerpTreasuryModule::on_system_standard(1000));
@@ -61,7 +61,7 @@ fn on_system_standard_work() {
 }
 
 #[test]
-fn on_system_surplus_work() {
+fn on_system_surplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 0);
@@ -72,7 +72,7 @@ fn on_system_surplus_work() {
 }
 
 #[test]
-fn offset_surplus_and_standard_on_finalize_work() {
+fn offset_surplus_and_standard_on_finalize_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 0);
@@ -100,23 +100,23 @@ fn offset_surplus_and_standard_on_finalize_work() {
 }
 
 #[test]
-fn issue_standard_work() {
+fn issue_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 
-		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000, true));
+		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 2000);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 
-		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000, false));
+		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 3000);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 1000);
 	});
 }
 
 #[test]
-fn burn_standard_work() {
+fn burn_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
@@ -127,7 +127,29 @@ fn burn_standard_work() {
 }
 
 #[test]
-fn deposit_surplus_work() {
+fn issue_dexer_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 1000);
+
+		assert_ok!(SerpTreasuryModule::issue_dexer(&ALICE, 1000));
+		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 2000);
+
+		assert_ok!(SerpTreasuryModule::issue_dexer(&ALICE, 1000));
+		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 3000);
+	});
+}
+
+#[test]
+fn burn_dexer_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 1000);
+		assert_ok!(SerpTreasuryModule::burn_dexer(&ALICE, 300));
+		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 700);
+	});
+}
+
+#[test]
+fn deposit_surplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
@@ -140,7 +162,7 @@ fn deposit_surplus_work() {
 }
 
 #[test]
-fn deposit_reserve_work() {
+fn deposit_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
 		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 0);
@@ -154,7 +176,7 @@ fn deposit_reserve_work() {
 }
 
 #[test]
-fn withdraw_reserve_work() {
+fn withdraw_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 500));
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 500);
@@ -169,7 +191,7 @@ fn withdraw_reserve_work() {
 }
 
 #[test]
-fn get_total_reserves_work() {
+fn get_total_reserves_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 500));
 		assert_eq!(SerpTreasuryModule::get_total_reserves(BTC), 500);
@@ -177,7 +199,7 @@ fn get_total_reserves_work() {
 }
 
 #[test]
-fn get_standard_proportion_work() {
+fn get_standard_proportion_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			SerpTreasuryModule::get_standard_proportion(100),
@@ -187,7 +209,7 @@ fn get_standard_proportion_work() {
 }
 
 #[test]
-fn swap_reserve_not_in_auction_with_exact_stable_work() {
+fn swap_reserve_not_in_auction_with_exact_stable_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(DEXModule::add_liquidity(
 			Origin::signed(ALICE),
@@ -215,7 +237,7 @@ fn swap_reserve_not_in_auction_with_exact_stable_work() {
 }
 
 #[test]
-fn swap_exact_reserve_in_auction_to_stable_work() {
+fn swap_exact_reserve_in_auction_to_stable_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(DEXModule::add_liquidity(
 			Origin::signed(ALICE),
@@ -247,7 +269,7 @@ fn swap_exact_reserve_in_auction_to_stable_work() {
 }
 
 #[test]
-fn create_reserve_auctions_work() {
+fn create_reserve_auctions_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Currencies::deposit(BTC, &SerpTreasuryModule::account_id(), 10000));
 		assert_eq!(SerpTreasuryModule::expected_reserve_auction_size(BTC), 0);
@@ -297,7 +319,7 @@ fn create_reserve_auctions_work() {
 }
 
 #[test]
-fn auction_surplus_work() {
+fn auction_surplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(SerpTreasuryModule::auction_surplus(Origin::signed(5), 100), BadOrigin,);
 		assert_noop!(
@@ -312,7 +334,7 @@ fn auction_surplus_work() {
 }
 
 #[test]
-fn auction_standard_work() {
+fn auction_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(SerpTreasuryModule::auction_standard(Origin::signed(5), 100, 200), BadOrigin,);
 		assert_noop!(
@@ -327,7 +349,7 @@ fn auction_standard_work() {
 }
 
 #[test]
-fn set_expected_reserve_auction_size_work() {
+fn set_expected_reserve_auction_size_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_eq!(SerpTreasuryModule::expected_reserve_auction_size(BTC), 0);

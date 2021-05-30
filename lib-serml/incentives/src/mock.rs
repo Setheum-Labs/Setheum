@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the incentives module.
+//! Mocks for the incentive module.
 
 #![cfg(test)]
 
@@ -28,11 +28,11 @@ use frame_support::{
 };
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::TokenSymbol;
-use sp_core::H256;
+use primitives::{DexShare, TokenSymbol};
+use sp_core::{H160, H256};
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 use sp_std::cell::RefCell;
-pub use support::{DEXManager, Price, Ratio};
+pub use support::{SerpTreasury, DEXManager, Price, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -42,9 +42,12 @@ pub const BOB: AccountId = 2;
 pub const VAULT: AccountId = 10;
 pub const VALIDATOR: AccountId = 3;
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
-pub const DOT_USDJ_LP: CurrencyId = CurrencyId::DEXShare(TokenSymbol::DOT, TokenSymbol::USDJ);
+pub const CHFJ_USDJ_LP: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::CHFJ), DexShare::Token(TokenSymbol::USDJ));
+pub const DNAR_USDJ_LP: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::USDJ));
 
 mod incentives {
 	pub use super::super::*;
@@ -77,6 +80,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -93,18 +97,81 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+}
+
+pub struct MockSerpTreasury;
+impl SerpTreasury<AccountId> for MockSerpTreasury {
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+
+	fn get_surplus_pool() -> Balance {
+		unimplemented!()
+	}
+
+	fn get_standard_pool() -> Balance {
+		unimplemented!()
+	}
+
+	fn get_total_reserves(_: CurrencyId) -> Balance {
+		unimplemented!()
+	}
+
+	fn get_standard_proportion(_: Balance) -> Ratio {
+		unimplemented!()
+	}
+
+	fn on_system_standard(_: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn on_system_surplus(_: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn issue_standard(who: &AccountId, standard: Balance) -> DispatchResult {
+		TokensModule::deposit(AUSD, who, standard)
+	}
+
+	fn burn_standard(_: &AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn issue_dexer(who: &AccountId, dexer: Balance) -> DispatchResult {
+		TokensModule::deposit(AUSD, who, dexer)
+	}
+
+	fn burn_dexer(_: &AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn deposit_surplus(_: &AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn deposit_reserve(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn withdraw_reserve(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
 }
 
 pub struct MockSetheumDex;
 impl DEXManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
-			(USDJ, JCHF) => (500, 100),
-			(USDJ, DOT) => (400, 100),
-			(JCHF, USDJ) => (100, 500),
-			(DOT, USDJ) => (100, 400),
+			(SETT, CHFJ) => (500, 100),
+			(SETT, DNAR) => (400, 100),
+			(CHFJ, SETT) => (100, 500),
+			(DNAR, SETT) => (100, 400),
 			_ => (0, 0),
 		}
+	}
+
+	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
+		unimplemented!()
 	}
 
 	fn get_swap_target_amount(_: &[CurrencyId], _: Balance, _: Option<Ratio>) -> Option<Balance> {
@@ -144,6 +211,21 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 	}
 }
 
+thread_local! {
+	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
+}
+
+pub fn mock_shutdown() {
+	IS_SHUTDOWN.with(|v| *v.borrow_mut() = true)
+}
+
+pub struct MockEmergencyShutdown;
+impl EmergencyShutdown for MockEmergencyShutdown {
+	fn is_shutdown() -> bool {
+		IS_SHUTDOWN.with(|v| *v.borrow_mut())
+	}
+}
+
 impl orml_rewards::Config for Runtime {
 	type Share = Balance;
 	type Balance = Balance;
@@ -152,13 +234,12 @@ impl orml_rewards::Config for Runtime {
 }
 
 parameter_types! {
-	// add rewards vault `pub const RewardsVaultAccountId: AccountId = VAULT;`
-	pub const SettersIncentivePool: AccountId = 10;
+	pub const RewardsVaultAccountId: AccountId = VAULT;
 	pub const DexIncentivePool: AccountId = 11;
 	pub const AccumulatePeriod: BlockNumber = 10;
-	pub const IncentiveCurrencyId: CurrencyId = DNAR; // change to Dex governance token
-	pub const SavingCurrencyId: CurrencyId = USDJ; // change name to ""ProvidedCurrencyId"
-	pub const IncentivesModuleId: ModuleId = ModuleId(*b"dnr/inct");
+	pub const DexCurrencyId: CurrencyId = SDEX;
+	pub const StableCurrencyId: CurrencyId = SETT;
+	pub const IncentivesPalletId: PalletId = PalletId(*b"dnr/inct");
 }
 
 ord_parameter_types! {
@@ -168,16 +249,17 @@ ord_parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type SettersIncentivePool = SettersIncentivePool;
+	type RewardsVaultAccountId = RewardsVaultAccountId;
 	type DexIncentivePool = DexIncentivePool;
 	type AccumulatePeriod = AccumulatePeriod;
-	type IncentiveCurrencyId = IncentiveCurrencyId;
-	type SavingCurrencyId = SavingCurrencyId;
+	type DexCurrencyId = DexCurrencyId;
+	type StableCurrencyId = StableCurrencyId;
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;
 	type SerpTreasury = MockSerpTreasury;
 	type Currency = TokensModule;
 	type DEX = MockDEX;
 	type EmergencyShutdown = MockEmergencyShutdown;
-	type ModuleId = IncentivesModuleId;
+	type PalletId = IncentivesPalletId;
 	type WeightInfo = ();
 }
 
@@ -197,14 +279,28 @@ construct_runtime!(
 	}
 );
 
-#[derive(Default)]
-pub struct ExtBuilder;
+pub struct ExtBuilder {
+	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+}
+
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		Self {
+			endowed_accounts: vec![(DNAR, 10_000)],
+		}
+	}
+}
 
 impl ExtBuilder {
 	pub fn build(self) -> sp_io::TestExternalities {
-		let t = frame_system::GenesisConfig::default()
+		let mut t = frame_system::GenesisConfig::default()
 			.build_storage::<Runtime>()
 			.unwrap();
+		orml_tokens::GenesisConfig::<Runtime> {
+			endowed_accounts: self.endowed_accounts,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
 		t.into()
 	}
 }
