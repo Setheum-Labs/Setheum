@@ -61,7 +61,7 @@ neom-runtime = { path = "../../../runtime/neom", optional = true }
 setheum-runtime = { path = "../../../runtime/setheum", optional = true }
 
 [dev-dependencies]
-sc-consensus-babe = { version = "0.9.0", features = ["test-helpers"], git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-consensus-babe = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
 [features]
 default = ["std", "with-newrome-runtime"]
