@@ -299,6 +299,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::issue_standard(&Self::account_id(), amount, true)
 	}
 
+	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn issue_standard(who: &T::AccountId, standard: Self::Balance, backed: bool) -> DispatchResult {
 		// increase system standard if the standard is unbacked
 		if !backed {
@@ -309,18 +310,22 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn burn_standard(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::GetStableCurrencyId::get(), who, standard)
 	}
 
+	/// TODO: update to `currency_id` which is either `SETT` or any `SettCurrency`.
 	fn deposit_surplus(from: &T::AccountId, surplus: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetStableCurrencyId::get(), from, &Self::account_id(), surplus)
 	}
 
+	/// TODO: update to `T::GetSetterCurrencyId::get()` which is `SETT`. Rename `reserve` to `setter`.
 	fn deposit_reserve(from: &T::AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(currency_id, from, &Self::account_id(), amount)
 	}
 
+	/// TODO: update to `T::GetSetterCurrencyId::get()` which is `SETT`. Rename `reserve` to `setter`.
 	fn withdraw_reserve(to: &T::AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(currency_id, &Self::account_id(), to, amount)
 	}
