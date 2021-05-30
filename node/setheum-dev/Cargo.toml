@@ -1,6 +1,6 @@
 [package]
 name = "setheum-dev"
-version = "0.7.9"
+version = "0.5.0"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -9,8 +9,11 @@ name = "setheum-dev"
 path = "src/main.rs"
 
 [dependencies]
+# external dependencies
 futures = "0.3.4"
 parity-util-mem = { version = "0.9.0", default-features = false, features = ["jemalloc-global"] }
+
+# local dependencies
 setheum-dev-cli = { path = "cli" }
 setheum-dev-service = { path = "service" }
 

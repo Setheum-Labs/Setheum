@@ -76,7 +76,7 @@ pub mod module {
 		/// Risk manager is used to limit the standard size of Settmint
 		type RiskManager: RiskManager<Self::AccountId, CurrencyId, Balance, Balance>;
 
-		/// Settmint treasury for issuing/burning stable currency adjust standard value
+		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
@@ -139,7 +139,7 @@ impl<T: Config> Pallet<T> {
 		T::ModuleId::get().into_account()
 	}
 
-	/// confiscate reserve and standard to settmint treasury.
+	/// confiscate reserve and standard to SERP Treasury.
 	///
 	/// Ensured atomic.
 	#[transactional]
@@ -153,10 +153,10 @@ impl<T: Config> Pallet<T> {
 		let reserve_adjustment = Self::amount_try_from_balance(reserve_confiscate)?;
 		let standard_adjustment = Self::amount_try_from_balance(standard_decrease)?;
 
-		// transfer reserve to settmint treasury
+		// transfer reserve to SERP Treasury
 		T::SerpTreasury::deposit_reserve(&Self::account_id(), currency_id, reserve_confiscate)?;
 
-		// deposit standard to settmint treasury
+		// deposit standard to SERP Treasury
 		let bad_standard_value = T::RiskManager::get_bad_standard_value(currency_id, standard_decrease);
 		T::SerpTreasury::on_system_standard(bad_standard_value)?;
 
@@ -204,11 +204,11 @@ impl<T: Config> Pallet<T> {
 			// check standard cap when increase standard
 			T::RiskManager::check_standard_cap(currency_id, Self::total_positions(currency_id).standard)?;
 
-			// issue standard with reserve backed by settmint treasury
+			// issue standard with reserve backed by SERP Treasury
 			T::SerpTreasury::issue_standard(who, T::Convert::convert((currency_id, standard_balance_adjustment)), true)?;
 		} else if standard_adjustment.is_negative() {
 			// repay standard
-			// burn standard by settmint treasury
+			// burn standard by SERP Treasury
 			T::SerpTreasury::burn_standard(who, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		}
 

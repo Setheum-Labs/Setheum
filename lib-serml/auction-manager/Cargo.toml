@@ -5,23 +5,23 @@ authors = ["Setheum Labs"]
 edition = "2018"
 
 [dependencies]
-// external dependencies
+# external dependencies
 serde = { version = "1.0.101", optional = true }
 codec = { default-features = false, package = "parity-scale-codec", version = "2.0.0" }
 
-// Substrate dependencies
+# Substrate dependencies
 frame-support = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 frame-system = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 sp-io = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 sp-runtime = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 sp-std = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
-// orml dependencies
+# orml dependencies
 orml-tokens = { path = "../../lib-orml/tokens", default-features = false }
 orml-traits = { path = "../../lib-orml/traits", default-features = false }
 orml-utilities = { path = "../../lib-orml/utilities", default-features = false }
 
-// local dependencies
+# local dependencies
 support = { package = "setheum-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
