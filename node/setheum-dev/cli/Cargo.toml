@@ -1,16 +1,20 @@
 [package]
 name = "setheum-dev-cli"
-version = "0.7.9"
-authors = ["Setheum Developers"]
+version = "0.5.0"
+authors = ["Setheum Labs"]
 edition = "2018"
 
 [dependencies]
+# external dependencies
 structopt = "0.3.8"
-sp-core = { version = "3.0.0", optional = true }
-sc-cli = { version = "0.9.0", optional = true }
-sc-service = { version = "0.9.0", optional = true }
-frame-benchmarking-cli = { version = "3.0.0", optional = true }
 
+# Substrate dependencies
+sp-core = { version = "3.0.0", optional = true, git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-cli = { version = "0.9.0", optional = true, git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-service = { version = "0.9.0", optional = true, git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-benchmarking-cli = { version = "3.0.0", optional = true, git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+
+# local dependencies
 inspect = { package = "setheum-inspect", path = "../../../inspect" }
 service = { package = "setheum-dev-service", path = "../service", default-features = false, optional = true }
 

@@ -20,14 +20,13 @@
 //!
 //! ## Overview
 //!
-//! Auction the assets of the system for maintain the normal operation of the
-//! business. Auction types include:
-//!   - `reserve auction`: sell reserve assets for getting stable currency
-//!     to eliminate the system's bad standard by auction
-//!   - `surplus auction`: sell excessive surplus for getting native coin to
-//!     burn by auction
-//!   - `standard auction`: inflation some native token to sell for getting stable
-//!     coin to eliminate excessive bad standard by auction
+//! Auction the assets of the system to maintain the normal operation of the
+//! business.
+//! Auction types include:
+//!   - `reserve auction`: sell reserve asset (Setter) to buy back SettCurrency.
+//!   - `surplus auction`: sell SettCurrency surplus to buy back native coin.
+//!   - `standard auction`: mint some native coin for sale to buy back Setter
+//!     for burning excess standard
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -69,7 +68,7 @@ pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/auction-manager/max-
 pub const LOCK_DURATION: u64 = 100;
 pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 
-/// Information of an reserve auction
+/// Information of a reserve auction
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
 pub struct ReserveAuctionItem<AccountId, BlockNumber> {
@@ -204,7 +203,7 @@ pub mod module {
 		/// Auction to manager the auction process
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
 
-		/// Settmint treasury to escrow assets related to auction
+		/// SERP Treasury to escrow assets related to auction
 		type SerpTreasury: SerpTreasuryExtended<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// DEX to get exchange info
@@ -557,7 +556,7 @@ impl<T: Config> Pallet<T> {
 		};
 		let refund_reserve_amount = reserve_auction.amount.saturating_sub(confiscate_reserve_amount);
 
-		// refund remain reserve to refund recipient from Settmint treasury
+		// refund remaining reserve to `refund_recipient` from SERP Treasury
 		T::SerpTreasury::withdraw_reserve(
 			&reserve_auction.refund_recipient,
 			reserve_auction.currency_id,
@@ -673,11 +672,11 @@ impl<T: Config> Pallet<T> {
 						.ok_or(Error::<T>::InvalidBidPrice)?;
 				}
 
-				// transfer remain payment from new bidder to Settmint treasury
+				// transfer remain payment from new bidder to SERP Treasury
 				T::SerpTreasury::deposit_surplus(&new_bidder, payment)?;
 
 				// if reserve auction will be in reverse stage, refund reserve to it's
-				// origin from auction Settmint treasury
+				// origin from auction SERP Treasury
 				if reserve_auction.in_reverse_stage(new_bid_price) {
 					let new_reserve_amount = reserve_auction.reserve_amount(last_bid_price, new_bid_price);
 					let refund_reserve_amount = reserve_auction.amount.saturating_sub(new_reserve_amount);
@@ -743,7 +742,7 @@ impl<T: Config> Pallet<T> {
 						standard_auction.fix,
 					)?;
 				} else {
-					// there's no bid before, transfer stablecoin to Settmint treasury
+					// there's no bid before, transfer stablecoin to SERP Treasury
 					T::SerpTreasury::deposit_surplus(&new_bidder, standard_auction.fix)?;
 				}
 
@@ -856,7 +855,7 @@ impl<T: Config> Pallet<T> {
 			}
 
 			if should_deal {
-				// transfer reserve to winner from Settmint treasury, it shouldn't fail and affect
+				// transfer reserve to winner from SERP Treasury, it shouldn't fail and affect
 				// the process. but even it failed, just the winner did not get the amount. it
 				// can be fixed by treasury council.
 				let _ = T::SerpTreasury::withdraw_reserve(
@@ -918,7 +917,7 @@ impl<T: Config> Pallet<T> {
 		winner: Option<(T::AccountId, Balance)>,
 	) {
 		if let Some((bidder, bid_price)) = winner {
-			// deposit unbacked stable token to winner by Settmint treasury, it shouldn't fail
+			// deposit unbacked stable token to winner by SERP Treasury, it shouldn't fail
 			// and affect the process. but even it failed, just the winner did not get the
 			// amount. it can be fixed by treasury council.
 			let _ = T::SerpTreasury::issue_standard(&bidder, surplus_auction.amount, false);

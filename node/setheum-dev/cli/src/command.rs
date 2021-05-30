@@ -38,7 +38,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn author() -> String {
-		"Setheum Developers".into()
+		"Setheum Labs".into()
 	}
 
 	fn support_url() -> String {

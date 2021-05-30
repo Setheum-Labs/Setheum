@@ -61,7 +61,7 @@ pub mod module {
 		/// Price source to freeze currencies' price
 		type PriceSource: PriceProvider<CurrencyId>;
 
-		/// Settmint treasury to escrow reserve assets after settlement
+		/// SERP Treasury to escrow reserve assets after settlement
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// Check the auction cancellation to decide whether to open the final
@@ -198,11 +198,11 @@ pub mod module {
 			let refund_ratio: Ratio = <T as Config>::SerpTreasury::get_standard_proportion(amount);
 			let reserve_currency_ids = T::ReserveCurrencyIds::get();
 
-			// burn caller's stable currency by Settmint treasury
+			// burn caller's stable currency by SERP Treasury
 			<T as Config>::SerpTreasury::burn_standard(&who, amount)?;
 
 			let mut refund_assets: Vec<(CurrencyId, Balance)> = vec![];
-			// refund reserves to caller by Settmint treasury
+			// refund reserves to caller by SERP Treasury
 			for currency_id in reserve_currency_ids {
 				let refund_amount =
 					refund_ratio.saturating_mul_int(<T as Config>::SerpTreasury::get_total_reserves(currency_id));

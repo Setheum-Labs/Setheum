@@ -1,7 +1,7 @@
 [package]
 name = "setheum"
-version = "0.7.9"
-authors = ["Setheum Developers"]
+version = "0.5.0"
+authors = ["Setheum Labs"]
 edition = "2018"
 
 [[bin]]
@@ -9,8 +9,11 @@ name = "setheum"
 path = "src/main.rs"
 
 [dependencies]
+# external dependencies
 futures = "0.3.4"
 parity-util-mem = { version = "0.9.0", default-features = false, features = ["jemalloc-global"] }
+
+# local dependencies
 setheum-cli = { path = "cli" }
 setheum-service = { path = "service" }
 newrome-runtime = { path = "../../runtime/newrome", optional = true }

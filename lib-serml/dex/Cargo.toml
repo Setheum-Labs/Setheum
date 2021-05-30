@@ -1,27 +1,33 @@
 [package]
 name = "setheum-dex"
-version = "0.4.3"
+version = "0.5.0"
 authors = ["Setheum Labs"]
 edition = "2018"
 
 [dependencies]
+# external dependencies
 serde = { version = "1.0.124", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false, optional = true }
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+
+# Substrate dependencies
+sp-core = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+sp-runtime = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+frame-benchmarking = { default-features = false, version = '3.0.0', optional = true, git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-support = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+frame-system = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+sp-std = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+
+# orml dependencies
 orml-traits = { path = "../../lib-orml/traits", default-features = false }
 orml-tokens = { path = "../../lib-orml/tokens", default-features = false }
 support = { package = "setheum-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
+# local dependencies
 [dev-dependencies]
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-core = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+sp-io = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+pallet-balances = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
 
 [features]
 default = ["std"]
