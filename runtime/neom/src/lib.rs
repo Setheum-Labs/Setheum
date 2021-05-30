@@ -135,7 +135,6 @@ parameter_types! {
 	pub const IncentivesModuleId: ModuleId = ModuleId(*b"set/inct");
 	// Decentralized Sovereign Wealth Fund
 	pub const SIFModuleId: ModuleId = ModuleId(*b"set/dsif");
-	pub const ElectionsPhragmenModuleId: LockIdentifier = *b"set/phre";
 	pub const NftModuleId: ModuleId = ModuleId(*b"set/aNFT");
 }
 
