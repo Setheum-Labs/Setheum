@@ -300,19 +300,27 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_standard(who: &T::AccountId, standard: Self::Balance, backed: bool) -> DispatchResult {
-		// increase system standard if the standard is unbacked
-		if !backed {
-			Self::on_system_standard(standard)?;
-		}
+	fn issue_standard(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::GetStableCurrencyId::get(), who, standard)?;
-
 		Ok(())
 	}
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn burn_standard(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::GetStableCurrencyId::get(), who, standard)
+	}
+
+	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
+	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
+		T::Currency::deposit(T::GetStableCurrencyId::get(), who, dexer)?;
+		Ok(())
+	}
+
+	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
+	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
+		T::Currency::withdraw(T::GetStableCurrencyId::get(), who, dexer)
 	}
 
 	/// TODO: update to `currency_id` which is either `SETT` or any `SettCurrency`.
