@@ -97,7 +97,7 @@ x25519-dalek = { opt-level = 3 }
 yamux = { opt-level = 3 }
 zeroize = { opt-level = 3 }
 
-[patch.crates-io]
+[patch."https://github.com/paritytech/substrate"]
 frame-benchmarking = { git = "https://github.com/paritytech/substrate.git", rev = "e03ca38d45f438932ec92bf69a40b6b16b6ec643" }
 frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate.git", rev = "e03ca38d45f438932ec92bf69a40b6b16b6ec643" }
 frame-executive = { git = "https://github.com/paritytech/substrate.git", rev = "e03ca38d45f438932ec92bf69a40b6b16b6ec643" }
