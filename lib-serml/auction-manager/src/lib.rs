@@ -21,12 +21,11 @@
 //! ## Overview
 //!
 //! Auction the assets of the system to maintain the normal operation of the
-//! business.
+//! system.
 //! Auction types include:
 //!   - `reserve auction`: sell reserve asset (Setter) to buy back SettCurrency.
-//!   - `surplus auction`: sell SettCurrency surplus to buy back native coin.
-//!   - `standard auction`: mint some native coin for sale to buy back Setter
-//!     for burning excess standard
+//!   - `surplus auction`: sell SettCurrency and Setter surplus to buy back native currency.
+//!   - `standard auction`: mint some NativeCurrency to buy back Setter.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -72,7 +71,7 @@ pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
 pub struct ReserveAuctionItem<AccountId, BlockNumber> {
-	/// Refund recipient for may receive refund
+	/// Refund recipient in case the system may pass refunds.
 	refund_recipient: AccountId,
 	/// Reserve type for sale
 	currency_id: CurrencyId,
@@ -92,8 +91,10 @@ pub struct ReserveAuctionItem<AccountId, BlockNumber> {
 	start_time: BlockNumber,
 }
 
+/// TODO: Rename `ReserveAuction` to `SetterAuction`.
+/// Because the Sether is the only reserve currency in Settmint.
 impl<AccountId, BlockNumber> ReserveAuctionItem<AccountId, BlockNumber> {
-	/// Return the reserve auction will never be reverse stage
+	/// Return `true` if the reserve auction will never be reverse stage.
 	fn always_forward(&self) -> bool {
 		self.target.is_zero()
 	}
@@ -104,7 +105,7 @@ impl<AccountId, BlockNumber> ReserveAuctionItem<AccountId, BlockNumber> {
 		!self.always_forward() && bid_price >= self.target
 	}
 
-	/// Return the actual number of stablecoins to be paid
+	/// Return the actual number of settcurrency to be paid to the Serp.
 	fn payment_amount(&self, bid_price: Balance) -> Balance {
 		if self.always_forward() {
 			bid_price
@@ -126,18 +127,17 @@ impl<AccountId, BlockNumber> ReserveAuctionItem<AccountId, BlockNumber> {
 	}
 }
 
-/// Information of an standard auction
+/// Information of a standard auction
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
 pub struct StandardAuctionItem<BlockNumber> {
-	/// Initial amount of native currency for sale
+	/// Initial amount of native currency for sale to buy back Setter stablecoin.
 	#[codec(compact)]
 	initial_amount: Balance,
-	/// Current amount of native currency for sale
+	/// Current amount of native currency for sale to buy back Setter stablecoin.
 	#[codec(compact)]
 	amount: Balance,
-	/// Fix amount of standard value(stable currency) which want to get by this
-	/// auction
+	/// Fix amount of Setter stablecoin value needed to be got back by this auction.
 	#[codec(compact)]
 	fix: Balance,
 	/// Auction start time
@@ -161,7 +161,7 @@ impl<BlockNumber> StandardAuctionItem<BlockNumber> {
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
 pub struct SurplusAuctionItem<BlockNumber> {
-	/// Fixed amount of surplus(stable currency) for sale
+	/// Fixed amount of surplus(stable currency) for sale to get back native currency.
 	#[codec(compact)]
 	amount: Balance,
 	/// Auction start time
@@ -197,10 +197,10 @@ pub mod module {
 		/// The native currency id
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
-		/// Currency to transfer assets
+		/// Currency identifier to transfer assets
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		/// Auction to manager the auction process
+		/// Auction identifier to manager the auction process
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
 
 		/// SERP Treasury to escrow assets related to auction
