@@ -296,7 +296,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	fn on_system_surplus(amount: Self::Balance) -> DispatchResult {
-		Self::issue_standard(&Self::account_id(), amount, true)
+		Self::issue_standard(&Self::account_id(), amount)
 	}
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
