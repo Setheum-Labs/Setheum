@@ -76,10 +76,6 @@ pub type SettersOf<T> = setters::Module<T>;
 /// Risk management params
 #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, Default)]
 pub struct RiskManagementParams {
-	/// Maximum total standard value generated, when the hard cap is reached,
-	/// SettMint standard owner cannot issue more settcurrency under the reserve type.
-	pub maximum_total_standard_value: Balance,
-
 	/// Extra stability fee rate, `None` value means not set
 	pub stability_fee: Option<Rate>,
 
@@ -142,8 +138,6 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// The total standard value of reserve type exceeds the hard cap
-		ExceedStandardValueHardCap,
 		/// The reserve ratio is below the required reserve ratio
 		BelowRequiredReserveRatio,
 		/// Invalid reserve type
@@ -173,9 +167,6 @@ pub mod module {
 		/// The required reserve ratio for the reserve type (change to `standard type`)
 		/// updated. \[reserve_type, new_required_reserve_ratio\]
 		RequiredReserveRatioUpdated(CurrencyId, Option<Ratio>),
-		/// The hard cap of total standard value for the reserve type
-		/// updated. \[reserve_type, new_total_standard_value\]
-		MaximumTotalStandardValueUpdated(CurrencyId, Balance),
 		/// The global stability fee for the reserve updated.
 		/// \[new_global_stability_fee\]
 		GlobalStabilityFeeUpdated(Rate),
@@ -229,12 +220,10 @@ pub mod module {
 					currency_id,
 					stability_fee,
 					required_reserve_ratio,
-					maximum_total_standard_value,
 				)| {
 					ReserveParams::<T>::insert(
 						currency_id,
 						RiskManagementParams {
-							maximum_total_standard_value: *maximum_total_standard_value,
 							stability_fee: *stability_fee,
 							required_reserve_ratio: *required_reserve_ratio,
 						},
@@ -334,7 +323,6 @@ pub mod module {
 		///   update, `Some(None)` means update it to `None`.
 		/// - `required_reserve_ratio`: required reserve ratio, `None`
 		///   means do not update, `Some(None)` means update it to `None`.
-		/// - `maximum_total_standard_value`: maximum total standard value.
 		#[pallet::weight((T::WeightInfo::set_reserve_params(), DispatchClass::Operational))]
 		#[transactional]
 		pub fn set_reserve_params(
@@ -342,7 +330,6 @@ pub mod module {
 			currency_id: CurrencyId,
 			stability_fee: ChangeOptionRate,
 			required_reserve_ratio: ChangeOptionRatio,
-			maximum_total_standard_value: ChangeBalance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
@@ -358,10 +345,6 @@ pub mod module {
 			if let Change::NewValue(update) = required_reserve_ratio {
 				reserve_params.required_reserve_ratio = update;
 				Self::deposit_event(Event::RequiredReserveRatioUpdated(currency_id, update));
-			}
-			if let Change::NewValue(val) = maximum_total_standard_value {
-				reserve_params.maximum_total_standard_value = val;
-				Self::deposit_event(Event::MaximumTotalStandardValueUpdated(currency_id, val));
 			}
 			ReserveParams::<T>::insert(currency_id, reserve_params);
 			Ok(().into())
@@ -503,10 +486,6 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	pub fn maximum_total_standard_value(currency_id: CurrencyId) -> Balance {
-		Self::reserve_params(currency_id).maximum_total_standard_value
-	}
-
 	pub fn required_reserve_ratio(currency_id: CurrencyId) -> Option<Ratio> {
 		Self::reserve_params(currency_id).required_reserve_ratio
 	}
@@ -581,15 +560,6 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 				Error::<T>::RemainStandardValueTooSmall,
 			);
 		}
-
-		Ok(())
-	}
-
-	fn check_standard_cap(currency_id: CurrencyId, total_standard_balance: Balance) -> DispatchResult {
-		let hard_cap = Self::maximum_total_standard_value(currency_id);
-		let total_standard_value = Self::get_standard_value(currency_id, total_standard_balance);
-
-		ensure!(total_standard_value <= hard_cap, Error::<T>::ExceedStandardValueHardCap,);
 
 		Ok(())
 	}

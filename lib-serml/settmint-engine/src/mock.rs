@@ -43,9 +43,8 @@ pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::XBTC);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
-pub const LDOT: CurrencyId = CurrencyId::Token(TokenSymbol::LDOT);
 
 mod settmint_engine {
 	pub use super::super::*;
@@ -150,8 +149,8 @@ impl MockPriceSource {
 impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
 		match (base, quote) {
-			(USDJ, BTC) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(BTC, USDJ) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
+			(USDJ, SETT) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
+			(SETT, USDJ) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			_ => None,
 		}
 	}
@@ -231,7 +230,7 @@ parameter_types! {
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, BTC), TradingPair::new(USDJ, DOT)];
+	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT), TradingPair::new(USDJ, DOT)];
 }
 
 impl setheum_dex::Config for Runtime {
@@ -269,7 +268,7 @@ parameter_types! {
 	pub const MinimumStandardValue: Balance = 2;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![BTC, DOT];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT, DOT];
 }
 
 impl Config for Runtime {
@@ -327,9 +326,9 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			endowed_accounts: vec![
-				(ALICE, BTC, 1000),
-				(BOB, BTC, 1000),
-				(CAROL, BTC, 100),
+				(ALICE, SETT, 1000),
+				(BOB, SETT, 1000),
+				(CAROL, SETT, 100),
 				(ALICE, DOT, 1000),
 				(BOB, DOT, 1000),
 				(CAROL, USDJ, 1000),
