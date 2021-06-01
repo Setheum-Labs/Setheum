@@ -74,14 +74,11 @@ pub mod module {
 		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		#[pallet::constant]
-		/// The cap of lots number when create reserve auction on a
-		/// liquidation or to create standard/surplus auction on block end.
-		/// If set to 0, does not work.
+		/// The cap of lots when an auction is created
 		type MaxAuctionsCount: Get<u32>;
 
 		#[pallet::constant]
-		/// The SERP Treasury's module id, keep surplus and reserve assets
-		/// from liquidation.
+		/// The SERP Treasury's module id, keeps surplus and reserve asset.
 		type ModuleId: Get<ModuleId>;
 
 		/// Weight information for the extrinsics in this module.
@@ -254,7 +251,7 @@ impl<T: Config> Pallet<T> {
 	fn offset_surplus_and_standard() {
 		let offset_amount = sp_std::cmp::min(Self::standard_pool(), Self::surplus_pool());
 
-		// Burn the amount that is equal to offset amount of stable currency.
+		// Burn the amount that is equal to offset_amount of settcurrency.
 		if !offset_amount.is_zero()
 			&& T::Currency::withdraw(T::GetStableCurrencyId::get(), &Self::account_id(), offset_amount).is_ok()
 		{

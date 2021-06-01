@@ -265,9 +265,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(3, 2);
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
-	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(10, 100);
 	pub const MinimumStandardValue: Balance = 2;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
@@ -278,9 +276,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type PriceSource = MockPriceSource;
 	type ReserveCurrencyIds = ReserveCurrencyIds;
-	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
-	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;

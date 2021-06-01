@@ -719,9 +719,7 @@ impl setheum_prices::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
 	type GetStakingCurrencyId = GetStakingCurrencyId;
-	type GetLiquidCurrencyId = GetLiquidCurrencyId;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type LiquidStakingExchangeRateProvider = LiquidStakingExchangeRateProvider;
 	type DEX = Dex;
 	type Currency = Currencies;
 	type WeightInfo = weights::setheum_prices::WeightInfo<Runtime>;
@@ -884,9 +882,7 @@ where
 
 parameter_types! {
 	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
-	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
-	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
 	pub MinimumStandardValue: Balance = dollar(JUSD);
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(5, 100);
 }
@@ -895,9 +891,7 @@ impl setheum_settmint_engine::Config for Runtime {
 	type Event = Event;
 	type PriceSource = Prices;
 	type ReserveCurrencyIds = ReserveCurrencyIds;
-	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
-	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasury;

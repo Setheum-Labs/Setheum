@@ -321,9 +321,6 @@ fn testnet_genesis(
 				(
 					SETT,
 					Some(FixedU128::zero()),                             // stability fee for this reserve
-					Some(FixedU128::saturating_from_rational(150, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(10, 100)),  // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(150, 100)), // required liquidation ratio
 					10_000_000 * dollar(USDJ),                           // maximum standard value in USDj (cap)
 				),
 			],
@@ -475,9 +472,6 @@ fn newrome_genesis(
 				(
 					SETT,
 					Some(FixedU128::zero()),                             // stability fee for this reserve
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
 					10_000_000 * dollar(USDJ),                           // maximum standard value in USDj (cap)
 				),
 			],
