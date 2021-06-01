@@ -170,7 +170,7 @@ pub mod module {
 		/// The stability fee for the reserve type updated.
 		/// \[reserve_type, new_stability_fee\]
 		StabilityFeeUpdated(CurrencyId, Option<Rate>),
-		/// The required reserve penalty rate for the reserve type
+		/// The required reserve ratio for the reserve type (change to `standard type`)
 		/// updated. \[reserve_type, new_required_reserve_ratio\]
 		RequiredReserveRatioUpdated(CurrencyId, Option<Ratio>),
 		/// The hard cap of total standard value for the reserve type
