@@ -29,8 +29,8 @@ runtime_benchmarks! {
 
 	_ {}
 
-	auction_surplus {
-		SerpTreasury::on_system_surplus(100 * dollar(USDJ))?;
+	auction_serplus {
+		SerpTreasury::on_system_serplus(100 * dollar(USDJ))?;
 	}: _(RawOrigin::Root, 100 * dollar(USDJ))
 
 	auction_standard {
@@ -60,9 +60,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_auction_surplus() {
+	fn test_auction_serplus() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_auction_surplus());
+			assert_ok!(test_benchmark_auction_serplus());
 		});
 	}
 

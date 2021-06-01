@@ -105,7 +105,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
-	fn get_surplus_pool() -> Balance {
+	fn get_serpluspool() -> Balance {
 		unimplemented!()
 	}
 
@@ -125,7 +125,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn on_system_surplus(_: Balance) -> DispatchResult {
+	fn on_system_serplus(_: Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
@@ -145,7 +145,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn deposit_surplus(_: &AccountId, _: Balance) -> DispatchResult {
+	fn deposit_serplus(_: &AccountId, _: Balance) -> DispatchResult {
 		unimplemented!()
 	}
 

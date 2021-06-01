@@ -45,7 +45,7 @@ use sp_std::marker::PhantomData;
 /// Weight functions for setheum_auction_manager.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> setheum_auction_manager::WeightInfo for WeightInfo<T> {
-	fn cancel_surplus_auction() -> Weight {
+	fn cancel_serplus_auction() -> Weight {
 		(59_644_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))

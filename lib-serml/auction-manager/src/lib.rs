@@ -24,7 +24,7 @@
 //! system.
 //! Auction types include:
 //!   - `setter auction`: sell reserve asset (Setter) to buy back SettCurrency.
-//!   - `surplus auction`: sell SettCurrency and Setter surplus to buy back native currency.
+//!   - `serplus auction`: sell SettCurrency and Setter serplus to buy back native currency.
 //!   - `diamond auction`: mint some NativeCurrency to buy back Setter.
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -157,11 +157,11 @@ impl<BlockNumber> DiamondAuctionItem<BlockNumber> {
 	}
 }
 
-/// Information of an surplus auction
+/// Information of an serplus auction
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
-pub struct SurplusAuctionItem<BlockNumber> {
-	/// Fixed amount of surplus(stable currency) for sale to get back native currency.
+pub struct SerplusAuctionItem<BlockNumber> {
+	/// Fixed amount of serplus [serplus](stable currency) for sale to get back native currency.
 	#[codec(compact)]
 	amount: Balance,
 	/// Auction start time
@@ -251,16 +251,16 @@ pub mod module {
 		/// Diamond Auction created. \[auction_id, initial_supply_amount,
 		/// fix_payment_amount\]
 		NewDiamondAuction(AuctionId, Balance, Balance),
-		/// Surplus auction created. \[auction_id, fix_surplus_amount\]
-		NewSurplusAuction(AuctionId, Balance),
+		/// serplus auction created. \[auction_id, fix_serplusamount\]
+		NewSerplusAuction(AuctionId, Balance),
 		/// Active auction cancelled. \[auction_id\]
 		CancelAuction(AuctionId),
 		/// Reserve auction dealt. \[auction_id, reserve_type,
 		/// reserve_amount, winner, payment_amount\]
 		SetterAuctionDealt(AuctionId, CurrencyId, Balance, T::AccountId, Balance),
-		/// Surplus auction dealt. \[auction_id, surplus_amount, winner,
+		/// serplus auction dealt. \[auction_id, serplusamount, winner,
 		/// payment_amount\]
-		SurplusAuctionDealt(AuctionId, Balance, T::AccountId, Balance),
+		SerplusAuctionDealt(AuctionId, Balance, T::AccountId, Balance),
 		/// Diamond Auction dealt. \[auction_id, standard_currency_amount, winner,
 		/// payment_amount\]
 		DiamondAuctionDealt(AuctionId, Balance, T::AccountId, Balance),
@@ -281,11 +281,11 @@ pub mod module {
 	pub type DiamondAuctions<T: Config> =
 		StorageMap<_, Twox64Concat, AuctionId, DiamondAuctionItem<T::BlockNumber>, OptionQuery>;
 
-	/// Mapping from auction id to surplus auction info
+	/// Mapping from auction id to serplus auction info
 	#[pallet::storage]
-	#[pallet::getter(fn surplus_auctions)]
-	pub type SurplusAuctions<T: Config> =
-		StorageMap<_, Twox64Concat, AuctionId, SurplusAuctionItem<T::BlockNumber>, OptionQuery>;
+	#[pallet::getter(fn serplus_auctions)]
+	pub type SerplusAuctions<T: Config> =
+		StorageMap<_, Twox64Concat, AuctionId, SerplusAuctionItem<T::BlockNumber>, OptionQuery>;
 
 	/// Record of the total reserve amount of all active setter auctions
 	/// under specific reserve type ReserveType -> TotalAmount
@@ -303,10 +303,10 @@ pub mod module {
 	#[pallet::getter(fn total_standard_in_auction)]
 	pub type TotalStandardInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
-	/// Record of total surplus amount of all active surplus auctions
+	/// Record of total serplus amount of all active serplus auctions
 	#[pallet::storage]
-	#[pallet::getter(fn total_surplus_in_auction)]
-	pub type TotalSurplusInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
+	#[pallet::getter(fn total_serplusin_auction)]
+	pub type TotalSerplusInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
@@ -367,7 +367,7 @@ pub mod module {
 							return InvalidTransaction::Stale.into();
 						}
 					}
-				} else if !<SurplusAuctions<T>>::contains_key(auction_id)
+				} else if !<SerplusAuctions<T>>::contains_key(auction_id)
 					&& !<DiamondAuctions<T>>::contains_key(auction_id)
 				{
 					return InvalidTransaction::Stale.into();
@@ -430,7 +430,7 @@ impl<T: Config> Pallet<T> {
 
 		debug::debug!(target: "auction-manager offchain worker", "max iterations is {:?}", max_iterations);
 
-		// Randomly choose to start iterations to cancel reserve/surplus/standard
+		// Randomly choose to start iterations to cancel reserve/serplus/standard
 		// auctions
 		match auction_type_num {
 			0 => {
@@ -451,9 +451,9 @@ impl<T: Config> Pallet<T> {
 			}
 			1 => {
 				let mut iterator =
-					<SurplusAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((surplus_auction_id, _)) = iterator.next() {
-					Self::submit_cancel_auction_tx(surplus_auction_id);
+					<SerplusAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
+				while let Some((serplus_auction_id, _)) = iterator.next() {
+					Self::submit_cancel_auction_tx(serplus_auction_id);
 					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
 				}
 
@@ -495,7 +495,7 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	fn cancel_surplus_auction(id: AuctionId, surplus_auction: SurplusAuctionItem<T::BlockNumber>) -> DispatchResult {
+	fn cancel_serplus_auction(id: AuctionId, serplus_auction: SerplusAuctionItem<T::BlockNumber>) -> DispatchResult {
 		// if there's bid
 		if let Some((bidder, bid_price)) = Self::get_last_bid(id) {
 			// refund native token to the bidder
@@ -506,8 +506,8 @@ impl<T: Config> Pallet<T> {
 			frame_system::Module::<T>::dec_consumers(&bidder);
 		}
 
-		// decrease total surplus in auction
-		TotalSurplusInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(surplus_auction.amount));
+		// decrease total serplus in auction
+		TotalSerplusInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(serplus_auction.amount));
 
 		Ok(())
 	}
@@ -673,7 +673,7 @@ impl<T: Config> Pallet<T> {
 				}
 
 				// transfer remain payment from new bidder to SERP Treasury
-				T::SerpTreasury::deposit_surplus(&new_bidder, payment)?;
+				T::SerpTreasury::deposit_serplus(&new_bidder, payment)?;
 
 				// if setter auction will be in reverse stage, refund reserve to it's
 				// origin from auction SERP Treasury
@@ -743,7 +743,7 @@ impl<T: Config> Pallet<T> {
 					)?;
 				} else {
 					// there's no bid before, transfer stablecoin to SERP Treasury
-					T::SerpTreasury::deposit_surplus(&new_bidder, diamond_auction.fix)?;
+					T::SerpTreasury::deposit_serplus(&new_bidder, diamond_auction.fix)?;
 				}
 
 				Self::swap_bidders(&new_bidder, last_bidder);
@@ -755,12 +755,12 @@ impl<T: Config> Pallet<T> {
 		)
 	}
 
-	/// Handles surplus auction new bid. Returns `Ok(new_auction_end_time)`
+	/// Handles serplus auction new bid. Returns `Ok(new_auction_end_time)`
 	/// if bid accepted.
 	///
 	/// Ensured atomic.
 	#[transactional]
-	pub fn surplus_auction_bid_handler(
+	pub fn serplus_auction_bid_handler(
 		now: T::BlockNumber,
 		id: AuctionId,
 		new_bid: (T::AccountId, Balance),
@@ -769,7 +769,7 @@ impl<T: Config> Pallet<T> {
 		let (new_bidder, new_bid_price) = new_bid;
 		ensure!(!new_bid_price.is_zero(), Error::<T>::InvalidBidPrice);
 
-		let surplus_auction = Self::surplus_auctions(id).ok_or(Error::<T>::AuctionNotExists)?;
+		let serplus_auction = Self::serplus_auctions(id).ok_or(Error::<T>::AuctionNotExists)?;
 		let last_bid_price = last_bid.clone().map_or(Zero::zero(), |(_, price)| price); // get last bid price
 		let native_currency_id = T::GetNativeCurrencyId::get();
 
@@ -778,7 +778,7 @@ impl<T: Config> Pallet<T> {
 				new_bid_price,
 				last_bid_price,
 				Zero::zero(),
-				Self::get_minimum_increment_size(now, surplus_auction.start_time),
+				Self::get_minimum_increment_size(now, serplus_auction.start_time),
 			),
 			Error::<T>::InvalidBidPrice,
 		);
@@ -798,7 +798,7 @@ impl<T: Config> Pallet<T> {
 
 		Self::swap_bidders(&new_bidder, last_bidder);
 
-		Ok(now + Self::get_auction_time_to_close(now, surplus_auction.start_time))
+		Ok(now + Self::get_auction_time_to_close(now, serplus_auction.start_time))
 	}
 
 	fn setter_auction_end_handler(
@@ -911,20 +911,20 @@ impl<T: Config> Pallet<T> {
 		TotalStandardInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(diamond_auction.fix));
 	}
 
-	fn surplus_auction_end_handler(
+	fn serplus_auction_end_handler(
 		auction_id: AuctionId,
-		surplus_auction: SurplusAuctionItem<T::BlockNumber>,
+		serplus_auction: SerplusAuctionItem<T::BlockNumber>,
 		winner: Option<(T::AccountId, Balance)>,
 	) {
 		if let Some((bidder, bid_price)) = winner {
 			// deposit unbacked stable token to winner by SERP Treasury, it shouldn't fail
 			// and affect the process. but even it failed, just the winner did not get the
 			// amount. it can be fixed by treasury council.
-			let _ = T::SerpTreasury::issue_standard(&bidder, surplus_auction.amount, false);
+			let _ = T::SerpTreasury::issue_standard(&bidder, serplus_auction.amount, false);
 
-			Self::deposit_event(Event::SurplusAuctionDealt(
+			Self::deposit_event(Event::SerplusAuctionDealt(
 				auction_id,
-				surplus_auction.amount,
+				serplus_auction.amount,
 				bidder,
 				bid_price,
 			));
@@ -932,7 +932,7 @@ impl<T: Config> Pallet<T> {
 			Self::deposit_event(Event::CancelAuction(auction_id));
 		}
 
-		TotalSurplusInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(surplus_auction.amount));
+		TotalSerplusInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(serplus_auction.amount));
 	}
 
 	/// increment `new_bidder` reference and decrement `last_bidder`
@@ -965,8 +965,8 @@ impl<T: Config> AuctionHandler<T::AccountId, Balance, T::BlockNumber, AuctionId>
 			Self::setter_auction_bid_handler(now, id, new_bid, last_bid)
 		} else if <DiamondAuctions<T>>::contains_key(id) {
 			Self::diamond_auction_bid_handler(now, id, new_bid, last_bid)
-		} else if <SurplusAuctions<T>>::contains_key(id) {
-			Self::surplus_auction_bid_handler(now, id, new_bid, last_bid)
+		} else if <SerplusAuctions<T>>::contains_key(id) {
+			Self::serplus_auction_bid_handler(now, id, new_bid, last_bid)
 		} else {
 			Err(Error::<T>::AuctionNotExists.into())
 		};
@@ -988,8 +988,8 @@ impl<T: Config> AuctionHandler<T::AccountId, Balance, T::BlockNumber, AuctionId>
 			Self::setter_auction_end_handler(id, setter_auction, winner.clone());
 		} else if let Some(diamond_auction) = <DiamondAuctions<T>>::take(id) {
 			Self::diamond_auction_end_handler(id, diamond_auction, winner.clone());
-		} else if let Some(surplus_auction) = <SurplusAuctions<T>>::take(id) {
-			Self::surplus_auction_end_handler(id, surplus_auction, winner.clone());
+		} else if let Some(serplus_auction) = <SerplusAuctions<T>>::take(id) {
+			Self::serplus_auction_end_handler(id, serplus_auction, winner.clone());
 		}
 
 		if let Some((bidder, _)) = &winner {
@@ -1086,21 +1086,21 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	fn new_surplus_auction(amount: Self::Balance) -> DispatchResult {
+	fn new_serplus_auction(amount: Self::Balance) -> DispatchResult {
 		ensure!(!amount.is_zero(), Error::<T>::InvalidAmount,);
-		TotalSurplusInAuction::<T>::try_mutate(|total| -> DispatchResult {
+		TotalSerplusInAuction::<T>::try_mutate(|total| -> DispatchResult {
 			*total = total.checked_add(amount).ok_or(Error::<T>::InvalidAmount)?;
 			Ok(())
 		})?;
 
 		let start_time = <frame_system::Module<T>>::block_number();
 
-		// do not set end time for surplus auction
+		// do not set end time for serplus auction
 		let auction_id = T::Auction::new_auction(start_time, None)?;
 
-		<SurplusAuctions<T>>::insert(auction_id, SurplusAuctionItem { amount, start_time });
+		<SerplusAuctions<T>>::insert(auction_id, SerplusAuctionItem { amount, start_time });
 
-		Self::deposit_event(Event::NewSurplusAuction(auction_id, amount));
+		Self::deposit_event(Event::NewSerplusAuction(auction_id, amount));
 		Ok(())
 	}
 
@@ -1109,8 +1109,8 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			Self::cancel_setter_auction(id, setter_auction)?;
 		} else if let Some(diamond_auction) = <DiamondAuctions<T>>::take(id) {
 			Self::cancel_diamond_auction(id, diamond_auction)?;
-		} else if let Some(surplus_auction) = <SurplusAuctions<T>>::take(id) {
-			Self::cancel_surplus_auction(id, surplus_auction)?;
+		} else if let Some(serplus_auction) = <SerplusAuctions<T>>::take(id) {
+			Self::cancel_serplus_auction(id, serplus_auction)?;
 		} else {
 			return Err(Error::<T>::AuctionNotExists.into());
 		}
@@ -1122,8 +1122,8 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 		Self::total_reserve_in_auction(id)
 	}
 
-	fn get_total_surplus_in_auction() -> Self::Balance {
-		Self::total_surplus_in_auction()
+	fn get_total_serplusin_auction() -> Self::Balance {
+		Self::total_serplusin_auction()
 	}
 
 	fn get_total_standard_in_auction() -> Self::Balance {

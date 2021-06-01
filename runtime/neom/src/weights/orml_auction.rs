@@ -50,7 +50,7 @@ impl<T: frame_system::Config> orml_auction::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(11 as Weight))
 			.saturating_add(T::DbWeight::get().writes(13 as Weight))
 	}
-	fn bid_surplus_auction() -> Weight {
+	fn bid_serplus_auction() -> Weight {
 		(170_365_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))

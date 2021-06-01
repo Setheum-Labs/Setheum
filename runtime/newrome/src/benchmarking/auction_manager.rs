@@ -38,9 +38,9 @@ runtime_benchmarks! {
 
 	_ {}
 
-	// `cancel` a surplus auction, worst case:
+	// `cancel` a serplus auction, worst case:
 	// auction have been already bid
-	cancel_surplus_auction {
+	cancel_serplus_auction {
 		let bidder: AccountId = account("bidder", 0, SEED);
 		let native_currency_id = GetNativeCurrencyId::get();
 		let stable_currency_id = GetStableCurrencyId::get();
@@ -48,12 +48,12 @@ runtime_benchmarks! {
 		// set balance
 		set_balance(native_currency_id, &bidder, 10 * dollar(native_currency_id));
 
-		// create surplus auction
-		<AuctionManager as AuctionManagerTrait<AccountId>>::new_surplus_auction(dollar(stable_currency_id))?;
+		// create serplus auction
+		<AuctionManager as AuctionManagerTrait<AccountId>>::new_serplus_auction(dollar(stable_currency_id))?;
 		let auction_id: AuctionId = Default::default();
 
-		// bid surplus auction
-		let _ = AuctionManager::surplus_auction_bid_handler(1, auction_id, (bidder, dollar(native_currency_id)), None);
+		// bid serplus auction
+		let _ = AuctionManager::serplus_auction_bid_handler(1, auction_id, (bidder, dollar(native_currency_id)), None);
 
 		// shutdown
 		EmergencyShutdown::emergency_shutdown(RawOrigin::Root.into())?;
@@ -120,9 +120,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_cancel_surplus_auction() {
+	fn test_cancel_serplus_auction() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_cancel_surplus_auction());
+			assert_ok!(test_benchmark_cancel_serplus_auction());
 		});
 	}
 

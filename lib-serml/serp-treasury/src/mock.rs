@@ -139,7 +139,7 @@ thread_local! {
 	pub static TOTAL_SETTER_AUCTION: RefCell<u32> = RefCell::new(0);
 	pub static TOTAL_RESERVE_IN_AUCTION: RefCell<Balance> = RefCell::new(0);
 	pub static TOTAL_DIAMOND_AUCTION: RefCell<u32> = RefCell::new(0);
-	pub static TOTAL_SURPLUS_AUCTION: RefCell<u32> = RefCell::new(0);
+	pub static TOTAL_serplus_auction: RefCell<u32> = RefCell::new(0);
 }
 
 pub struct MockAuctionManager;
@@ -164,8 +164,8 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Ok(())
 	}
 
-	fn new_surplus_auction(_amount: Self::Balance) -> DispatchResult {
-		TOTAL_SURPLUS_AUCTION.with(|v| *v.borrow_mut() += 1);
+	fn new_serplus_auction(_amount: Self::Balance) -> DispatchResult {
+		TOTAL_serplus_auction.with(|v| *v.borrow_mut() += 1);
 		Ok(())
 	}
 
@@ -177,7 +177,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut())
 	}
 
-	fn get_total_surplus_in_auction() -> Self::Balance {
+	fn get_total_serplusin_auction() -> Self::Balance {
 		Default::default()
 	}
 

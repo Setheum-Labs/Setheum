@@ -79,33 +79,33 @@ runtime_benchmarks! {
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
-	// `bid` a surplus auction, best cases:
+	// `bid` a serplus auction, best cases:
 	// there's no bidder before
 	#[extra]
-	bid_surplus_auction_as_first_bidder {
+	bid_serplus_auction_as_first_bidder {
 		let bidder = account("bidder", 0, SEED);
 
-		let surplus_amount = 100 * dollar(USDJ);
+		let serplusamount = 100 * dollar(USDJ);
 		let bid_price = d * dollar(DNAR);
 		let auction_id: AuctionId = 0;
 
 		set_balance(DNAR, &bidder, bid_price);
-		AuctionManager::new_surplus_auction(surplus_amount)?;
+		AuctionManager::new_serplus_auction(serplusamount)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
-	// `bid` a surplus auction, worst cases:
+	// `bid` a serplus auction, worst cases:
 	// there's bidder before
-	bid_surplus_auction {
+	bid_serplus_auction {
 		let bidder = account("bidder", 0, SEED);
 		let previous_bidder = account("previous_bidder", 0, SEED);
-		let surplus_amount = 100 * dollar(USDJ);
+		let serplusamount = 100 * dollar(USDJ);
 		let bid_price = (d as u128 * 2u128) * dollar(DNAR);
 		let previous_bid_price = d * dollar(DNAR);
 		let auction_id: AuctionId = 0;
 
 		set_balance(DNAR, &bidder, bid_price);
 		set_balance(DNAR, &previous_bidder, previous_bid_price);
-		AuctionManager::new_surplus_auction(surplus_amount)?;
+		AuctionManager::new_serplus_auction(serplusamount)?;
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
@@ -186,16 +186,16 @@ mod tests {
 	}
 
 	#[test]
-	fn bid_surplus_auction_as_first_bidder() {
+	fn bid_serplus_auction_as_first_bidder() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_bid_surplus_auction_as_first_bidder());
+			assert_ok!(test_benchmark_bid_serplus_auction_as_first_bidder());
 		});
 	}
 
 	#[test]
-	fn bid_surplus_auction() {
+	fn bid_serplus_auction() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_bid_surplus_auction());
+			assert_ok!(test_benchmark_bid_serplus_auction());
 		});
 	}
 
