@@ -157,33 +157,3 @@ fn transfer_setter_should_work() {
 			.any(|record| record.event == transfer_setter_event));
 	});
 }
-
-#[test]
-fn confiscate_reserve_and_standard_work() {
-	ExtBuilder::default().build().execute_with(|| {
-		System::set_block_number(1);
-		assert_ok!(SettersModule::update_setter(&BOB, BTC, 5000, 1000));
-		assert_eq!(Currencies::free_balance(BTC, &SettersModule::account_id()), 0);
-
-		// have no sufficient balance
-		assert_eq!(
-			SettersModule::confiscate_reserve_and_standard(&BOB, BTC, 5000, 1000).is_ok(),
-			false,
-		);
-
-		assert_ok!(SettersModule::adjust_position(&ALICE, BTC, 500, 300));
-		assert_eq!(SerpTreasuryModule::get_total_reserves(BTC), 0);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 300);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 500);
-
-		assert_ok!(SettersModule::confiscate_reserve_and_standard(&ALICE, BTC, 300, 200));
-		assert_eq!(SerpTreasuryModule::get_total_reserves(BTC), 300);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 100);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 100);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 200);
-
-		let confiscate_event = Event::setters(crate::Event::ConfiscateReserveAndStandard(ALICE, BTC, 300, 200));
-		assert!(System::events().iter().any(|record| record.event == confiscate_event));
-	});
-}

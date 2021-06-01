@@ -65,12 +65,10 @@ pub mod module {
 		/// Stablecoin currency id
 		type GetStableCurrencyId: Get<CurrencyId>;
 
-		/// Auction manager creates different types of auction to handle system
-		/// surplus and standard, and confiscated reserve assets
+		/// Auction manager creates different types of auction to handle system surplus and standard.
 		type AuctionManagerHandler: AuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		/// Dex manager is used to swap confiscated reserve assets to stable
-		/// currency
+		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
 		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		#[pallet::constant]
