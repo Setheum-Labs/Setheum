@@ -1,0 +1,60 @@
+[package]
+name = "setheum-nft"
+version = "0.5.0"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[dependencies]
+# external dependencies
+serde = { version = "1.0.124", optional = true }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+enumflags2 = { version = "0.6.3" }
+
+# Substrate dependencies
+sp-std = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-runtime = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-support = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-system = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-benchmarking = { default-features = false, version = '3.0.0', optional = true, git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+pallet-proxy = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+pallet-timestamp = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+
+# orml dependencies
+orml-traits = { path = "../../lib-orml/traits", default-features = false }
+orml-nft = { path = "../../lib-orml/nft", default-features = false }
+
+# local dependencies
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+setheum-currencies = { path = "../currencies", default-features = false }
+
+[dev-dependencies]
+sp-core = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-io = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+pallet-balances = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+pallet-utility = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+setheum-currencies = { path = "../../lib-serml/currencies", default-features = false }
+orml-tokens = { path = "../../lib-orml/tokens", default-features = false }
+support = { package = "setheum-support", path = "../../lib-serml/support" }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"enumflags2/serde",
+	"sp-std/std",
+	"sp-runtime/std",
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-proxy/std",
+	"primitives/std",
+	"orml-traits/std",
+	"orml-nft/std",
+	"pallet-timestamp/std",
+	"setheum-currencies/std",
+]
+runtime-benchmarks = [
+	"frame-benchmarking",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+]

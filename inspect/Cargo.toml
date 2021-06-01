@@ -1,17 +1,20 @@
 [package]
 name = "setheum-inspect"
-version = "0.7.11"
+version = "0.5.0"
 authors = ["Setheum Labs"]
 edition = "2018"
 
 [dependencies]
+# external dependencies
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 derive_more = "0.99"
 log = "0.4.8"
-sc-cli = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
-sc-client-api = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
-sc-service = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
-sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 structopt = "0.3.8"
+
+# Substrate dependencies
+sc-cli = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-client-api = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-service = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-blockchain = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-core = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-runtime = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }

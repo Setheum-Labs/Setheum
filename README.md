@@ -1,6 +1,6 @@
 # Setheum Network Node
 
-Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and SERML, ready for hacking :rocket:
+Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Setheum SERML, ready for hacking :rocket:
 <div align="center">
 
 [![Setheum version](https://img.shields.io/badge/Setheum-0.4.3-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
@@ -14,7 +14,7 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and SE
 
 </div>
 
-# Getting Started
+# Getting Started 
 
 This project contains some configuration files to help get started :hammer_and_wrench:
 
@@ -39,7 +39,6 @@ that this project depends on.
 
 ## Build
 
-
 Install Rust:
 
 ```bash
@@ -58,10 +57,10 @@ Install required tools and install git hooks:
 make init
 ```
 
-Build Newrome native code:
+Build all native code:
 
 ```bash
-make build-dev
+make build
 ```
 
 ## Run
@@ -77,7 +76,7 @@ make run
 To type check:
 
 ```bash
-make check-all
+make check
 ```
 
 To purge old chain data:
@@ -105,14 +104,14 @@ Bench bot can take care of syncing branch with `master` and generating WeightInf
 
 ### Generate module weights
 
-Comment on a PR `/bench runtime module <module_name>` i.e.: `setheum_prices`
+Comment on a PR `/bench runtime module <setheum_name>` i.e.: `setheum_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
 
 ### Generate runtime weights
 
-Comment on a PR `/bench runtime <runtime> <module_name>` i.e.: `/bench runtime newrome setheum_currencies`.
+Comment on a PR `/bench runtime <runtime> <setheum_name>` i.e.: `/bench runtime newrome setheum_currencies`.
 
-To generate weights for all modules just pass `*` as `module_name` i.e: `/bench runtime newrome *`
+To generate weights for all modules just pass `*` as `setheum_name` i.e: `/bench runtime newrome *`
 
 Bench bot will do the benchmarking, generate weights file push changes into your branch.

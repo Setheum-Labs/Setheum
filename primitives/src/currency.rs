@@ -30,11 +30,11 @@ use serde::{Deserialize, Serialize};
 macro_rules! create_currency_id {
     ($(#[$meta:meta])*
 	$vis:vis enum TokenSymbol {
-        $($(#[$vmeta:meta])* $symbol:ident($name:expr, $deci:literal) = $val:literal,)*
+        $($(#[$vmeta:meta])* $vname:ident($deci:literal) = $val:literal,)*
     }) => {
         $(#[$meta])*
         $vis enum TokenSymbol {
-            $($(#[$vmeta])* $symbol = $val,)*
+            $($(#[$vmeta])* $vname = $val,)*
         }
 
         impl TryFrom<u8> for TokenSymbol {
@@ -42,7 +42,7 @@ macro_rules! create_currency_id {
 
             fn try_from(v: u8) -> Result<Self, Self::Error> {
                 match v {
-                    $($val => Ok(TokenSymbol::$symbol),)*
+                    $($val => Ok(TokenSymbol::$vname),)*
                     _ => Err(()),
                 }
             }
@@ -52,7 +52,7 @@ macro_rules! create_currency_id {
 			type Error = ();
 			fn try_from(v: Vec<u8>) -> Result<CurrencyId, ()> {
 				match v.as_slice() {
-					$(bstringify!($symbol) => Ok(CurrencyId::Token(TokenSymbol::$symbol)),)*
+					$(bstringify!($vname) => Ok(CurrencyId::Token(TokenSymbol::$vname)),)*
 					_ => Err(()),
 				}
 			}
@@ -61,7 +61,7 @@ macro_rules! create_currency_id {
 		impl GetDecimals for CurrencyId {
 			fn decimals(&self) -> u32 {
 				match self {
-					$(CurrencyId::Token(TokenSymbol::$symbol) => $deci,)*
+					$(CurrencyId::Token(TokenSymbol::$vname) => $deci,)*
 					CurrencyId::DEXShare(symbol_0, symbol_1) => sp_std::cmp::max(CurrencyId::Token(*symbol_0).decimals(), CurrencyId::Token(*symbol_1).decimals()),
 					// default decimals is 18
 					_ => 18,
@@ -69,40 +69,8 @@ macro_rules! create_currency_id {
 			}
 		}
 
-		$(pub const $symbol: CurrencyId = CurrencyId::Token(TokenSymbol::$symbol);)*
+		$(pub const $vname: CurrencyId = CurrencyId::Token(TokenSymbol::$vname);)*
 
-		impl TokenSymbol {
-			pub fn get_info() -> Vec<(&'static str, u32)> {
-				vec![
-					$((stringify!($symbol), $deci),)*
-				]
-			}
-		}
-
-		#[test]
-		#[ignore]
-		fn generate_token_resources() {
-			#[allow(non_snake_case)]
-			#[derive(Serialize, Deserialize)]
-			struct Token {
-				name: String,
-				symbol: String,
-				decimals: u8,
-				currencyId: u8,
-			}
-
-			let tokens = vec![
-				$(
-					Token {
-						name: $name.to_string(),
-						symbol: stringify!($symbol).to_string(),
-						decimals: $deci,
-						currencyId: $val,
-					},
-				)*
-			];
-			frame_support::assert_ok!(std::fs::write("../predeployed-contracts/resources/tokens.json", serde_json::to_string_pretty(&tokens).unwrap()));
-		}
     }
 }
 
@@ -115,15 +83,15 @@ create_currency_id! {
 	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		// Polkadot Ecosystem
-		DNAR("setheum", 13) = 0,
-		JUSD("setheum Dollar", 12) = 1,
-		DOT("Polkadot", 10) = 2,
+		// Setheum Network
+		DNAR(13) = 0,
+		USDJ(12) = 1,
+		SETT(10) = 2,
 
-		// Kusama Ecosystem
-		NEOM("Neom", 12) = 128,
-		JSAR("Setheum Saudi Riyal", 12) = 129,
-		KSM("Kusama", 12) = 130,
+		// Neom Network
+		NEOM(12) = 128,
+		JUSD(12) = 129,
+		JSETT(12) = 130,
 	}
 }
 
@@ -166,6 +134,8 @@ impl CurrencyId {
 	}
 }
 
+/// Note the pre-deployed ERC20 contracts depend on `CurrencyId` implementation,
+/// and need to be updated if any change.
 impl TryFrom<[u8; 32]> for CurrencyId {
 	type Error = ();
 
@@ -190,6 +160,8 @@ impl TryFrom<[u8; 32]> for CurrencyId {
 	}
 }
 
+/// Note the pre-deployed ERC20 contracts depend on `CurrencyId` implementation,
+/// and need to be updated if any change.
 impl From<CurrencyId> for [u8; 32] {
 	fn from(val: CurrencyId) -> Self {
 		let mut bytes = [0u8; 32];

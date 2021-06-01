@@ -1,0 +1,87 @@
+[package]
+name = "setheum-dev-service"
+version = "0.5.0"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[dependencies]
+# external dependencies
+hex-literal = "0.3.1"
+serde = { version = "1.0.102", features = ["derive"] }
+serde_json = "1.0.41"
+codec = { package = "parity-scale-codec", version = "2.0.0" }
+
+# Substrate dependencies
+sp-api = { version = "3.0.0" }
+sp-consensus = {version = '0.9.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-consensus-babe = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-core = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-finality-grandpa = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-runtime = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-inherents = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-finality-grandpa = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-chain-spec = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-client-api = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-telemetry = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-service = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-executor = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-consensus = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-consensus-babe = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-consensus-manual-seal = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-consensus-slots = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-transaction-pool = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-basic-authorship = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sc-network = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-benchmarking = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-trie = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+prometheus-endpoint = { package = "substrate-prometheus-endpoint", version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+
+sp-block-builder = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-system-rpc-runtime-api = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+pallet-transaction-payment-rpc-runtime-api = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-offchain = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-session = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-storage = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-transaction-pool = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-blockchain = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-std = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+
+# orml dependencies
+orml-oracle-rpc = { path = "../../../lib-orml/oracle/rpc" }
+
+# local dependencies
+setheum-nft = { path = "../../../lib-serml/nft" }
+setheum-primitives = { path = "../../../primitives" }
+setheum-rpc = { path = "../../../rpc" }
+
+# runtime dependencies
+runtime-common = { path = "../../../runtime/common" }
+newrome-runtime = { path = "../../../runtime/newrome", optional = true }
+neom-runtime = { path = "../../../runtime/neom", optional = true }
+setheum-runtime = { path = "../../../runtime/setheum", optional = true }
+
+[dev-dependencies]
+sc-consensus-babe = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+
+[features]
+default = ["std", "with-newrome-runtime"]
+std = []
+runtime-benchmarks = [
+	"newrome-runtime/runtime-benchmarks",
+	"neom-runtime/runtime-benchmarks",
+	"setheum-runtime/runtime-benchmarks",
+]
+with-newrome-runtime = [
+	"newrome-runtime",
+]
+with-neom-runtime = [
+	"neom-runtime",
+]
+with-setheum-runtime = [
+	"setheum-runtime",
+]
+with-all-runtime = [
+	"with-newrome-runtime",
+	"with-neom-runtime",
+	"with-setheum-runtime",
+]

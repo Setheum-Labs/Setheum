@@ -1,0 +1,41 @@
+[package]
+name = "setheum"
+version = "0.5.0"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[[bin]]
+name = "setheum"
+path = "src/main.rs"
+
+[dependencies]
+# external dependencies
+futures = "0.3.4"
+parity-util-mem = { version = "0.9.0", default-features = false, features = ["jemalloc-global"] }
+
+# local dependencies
+setheum-cli = { path = "cli" }
+setheum-service = { path = "service" }
+newrome-runtime = { path = "../../runtime/newrome", optional = true }
+
+[features]
+default = [ "with-newrome-runtime" ]
+runtime-benchmarks = [
+	"setheum-cli/runtime-benchmarks",
+]
+with-newrome-runtime = [
+	"setheum-service/with-newrome-runtime",
+	"setheum-cli/with-newrome-runtime",
+]
+with-neom-runtime = [
+	"setheum-service/with-neom-runtime",
+	"setheum-cli/with-neom-runtime",
+]
+with-setheum-runtime = [
+	"setheum-service/with-setheum-runtime",
+	"setheum-cli/with-setheum-runtime",
+]
+with-all-runtime = [
+	"setheum-service/with-all-runtime",
+	"setheum-cli/with-all-runtime",
+]

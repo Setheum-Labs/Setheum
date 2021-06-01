@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Common runtime code for Setheum, Neom and NewRome.
+//! Common runtime code for Setheum, Neom and Newrome.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -28,7 +28,7 @@ use frame_support::{
 	},
 };
 use frame_system::limits;
-pub use setheum_support::{ExchangeRate, Price, Rate, Ratio};
+pub use setheum_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{Balance, CurrencyId};
 use sp_core::H160;
 use sp_runtime::{
@@ -38,8 +38,13 @@ use sp_runtime::{
 };
 use static_assertions::const_assert;
 
+pub mod precompile;
+pub use precompile::{
+	AllPrecompiles, DexPrecompile, MultiCurrencyPrecompile, NFTPrecompile, OraclePrecompile, ScheduleCallPrecompile,
+	StateRentPrecompile,
+};
 pub use primitives::currency::{
-	GetDecimals, DNAR, JUSD, JEUR, JGBP, NEOM, JSAR, JCHF, JNGN, SDEX, HALAL,
+	GetDecimals, DNAR, SETT, USDJ, NEOM, JSETT, JUSD,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
@@ -47,6 +52,9 @@ pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Mom
 // Priority of unsigned transactions
 parameter_types! {
 	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+	pub const SettmintEngineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+	pub const AuctionManagerUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
 }
 
 parameter_types! {
@@ -208,21 +216,21 @@ parameter_types! {
 	];
 }
 
-// TODO: somehow estimate this value. Start from a conservative value.
-pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
-/// The ratio that `Normal` extrinsics should occupy. Start from a conservative value.
-const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(70);
-/// Parachain only have 0.5 second of computation time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 500 * WEIGHT_PER_MILLIS;
+pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
+/// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
+/// used by  Operational  extrinsics.
+const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+/// We allow for 2 seconds of compute with a 6 second average block time.
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
 
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
 
 parameter_types! {
 	/// Maximum length of block. Up to 5MB.
-	pub RuntimeBlockLength: limits::BlockLength =
+	pub BlockLength: limits::BlockLength =
 		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	/// Block weights base values and limits.
-	pub RuntimeBlockWeights: limits::BlockWeights = limits::BlockWeights::builder()
+	pub BlockWeights: limits::BlockWeights = limits::BlockWeights::builder()
 		.base_block(BlockExecutionWeight::get())
 		.for_class(DispatchClass::all(), |weights| {
 			weights.base_extrinsic = ExtrinsicBaseWeight::get();
@@ -247,18 +255,11 @@ parameter_types! {
 	///
 	/// We want to keep it as high as possible, but can't risk having it reject,
 	/// so we always subtract the base block execution weight.
-	pub OffchainSolutionWeightLimit: Weight = RuntimeBlockWeights::get()
+	pub OffchainSolutionWeightLimit: Weight = BlockWeights::get()
 		.get(DispatchClass::Normal)
 		.max_extrinsic
 		.expect("Normal extrinsics have weight limit configured by default; qed")
 		.saturating_sub(BlockExecutionWeight::get());
-}
-
-pub struct RelaychainValidatorFilter;
-impl<AccountId> orml_traits::Contains<AccountId> for RelaychainValidatorFilter {
-	fn contains(_: &AccountId) -> bool {
-		true
-	}
 }
 
 pub fn dollar(currency_id: CurrencyId) -> Balance {
@@ -278,6 +279,5 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 }
 
 pub fn deposit(items: u32, bytes: u32, currency_id: CurrencyId) -> Balance {
-	// TODO: come up with some value for this
 	items as Balance * 15 * cent(currency_id) + (bytes as Balance) * 6 * cent(currency_id)
 }

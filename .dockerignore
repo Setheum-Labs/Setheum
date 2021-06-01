@@ -4,6 +4,3 @@ doc
 Dockerfile
 .dockerignore
 .local
-.git
-.vscode/
-.github/

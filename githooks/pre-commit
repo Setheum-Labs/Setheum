@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/node/env bash
 
 set -e
 
