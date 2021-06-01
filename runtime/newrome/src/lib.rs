@@ -792,7 +792,7 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100);
+	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1.00% minimum increment
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 }
@@ -810,7 +810,6 @@ impl setheum_auction_manager::Config for Runtime {
 	type DEX = Dex;
 	type PriceSource = Prices;
 	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
-	type EmergencyShutdown = EmergencyShutdown;
 	type WeightInfo = weights::setheum_auction_manager::WeightInfo<Runtime>;
 }
 
@@ -901,23 +900,12 @@ impl setheum_settmint_engine::Config for Runtime {
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type DEX = Dex;
 	type UnsignedPriority = runtime_common::SettmintEngineUnsignedPriority;
-	type EmergencyShutdown = EmergencyShutdown;
 	type WeightInfo = weights::setheum_settmint_engine::WeightInfo<Runtime>;
 }
 
 impl setheum_settway::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = weights::setheum_settway::WeightInfo<Runtime>;
-}
-
-impl setheum_emergency_shutdown::Config for Runtime {
-	type Event = Event;
-	type ReserveCurrencyIds = ReserveCurrencyIds;
-	type PriceSource = Prices;
-	type SerpTreasury = SerpTreasury;
-	type AuctionManagerHandler = AuctionManager;
-	type ShutdownOrigin = EnsureRootOrHalfGeneralCouncil;
-	type WeightInfo = weights::setheum_emergency_shutdown::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -1000,7 +988,6 @@ impl setheum_incentives::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type DEX = Dex;
-	type EmergencyShutdown = EmergencyShutdown;
 	type ModuleId = IncentivesModuleId;
 	type WeightInfo = weights::setheum_incentives::WeightInfo<Runtime>;
 }
@@ -1131,7 +1118,6 @@ construct_runtime!(
 		Settway: setheum_settway::{Module, Storage, Call, Event<T>},
 		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>},
 		SettmintEngine: setheum_settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},
-		EmergencyShutdown: setheum_emergency_shutdown::{Module, Storage, Call, Event<T>},
 
 		// Setheum Other
 		Incentives: setheum_incentives::{Module, Storage, Call, Event<T>},
@@ -1408,7 +1394,6 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, setheum_dex, benchmarking::dex);
 			orml_add_benchmark!(params, batches, setheum_auction_manager, benchmarking::auction_manager);
 			orml_add_benchmark!(params, batches, setheum_settmint_engine, benchmarking::settmint_engine);
-			orml_add_benchmark!(params, batches, setheum_emergency_shutdown, benchmarking::emergency_shutdown);
 			orml_add_benchmark!(params, batches, setheum_settway, benchmarking::settway);
 			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			orml_add_benchmark!(params, batches, setheum_transaction_payment, benchmarking::transaction_payment);

@@ -133,18 +133,3 @@ fn adjust_setter_should_work() {
 		assert_eq!(SettersModule::positions(BTC, ALICE).standard, 50);
 	});
 }
-
-#[test]
-fn on_emergency_shutdown_should_work() {
-	ExtBuilder::default().build().execute_with(|| {
-		mock_shutdown();
-		assert_noop!(
-			SettwayModule::adjust_setter(Origin::signed(ALICE), BTC, 100, 50),
-			Error::<Runtime>::AlreadyShutdown,
-		);
-		assert_noop!(
-			SettwayModule::transfer_setter_from(Origin::signed(ALICE), BTC, BOB),
-			Error::<Runtime>::AlreadyShutdown,
-		);
-	});
-}

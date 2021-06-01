@@ -29,7 +29,7 @@ use sp_runtime::{
 	DispatchResult, FixedPointNumber, RuntimeDebug,
 };
 use sp_std::{fmt::Debug, vec::Vec};
-use support::{SerpTreasury, DEXIncentives, DEXManager, EmergencyShutdown, Rate};
+use support::{SerpTreasury, DEXIncentives, DEXManager, Rate};
 
 mod mock;
 mod tests;
@@ -94,9 +94,6 @@ pub mod module {
 		/// DEX to supply liquidity info
 		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// Emergency shutdown.
-		type EmergencyShutdown: EmergencyShutdown;
-
 		/// The module id, keep DexShare LP.
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
@@ -149,7 +146,7 @@ pub mod module {
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
 		fn on_initialize(now: T::BlockNumber) -> Weight {
 			// accumulate reward periodically
-			if !T::EmergencyShutdown::is_shutdown() && now % T::AccumulatePeriod::get() == Zero::zero() {
+			if now % T::AccumulatePeriod::get() == Zero::zero() {
 				let mut count: u32 = 0;
 				let dex_currency_id = T::T::DexCurrencyId::get();
 				let stable_currency_id = T::StableCurrencyId::get();

@@ -53,19 +53,4 @@ impl<T: frame_system::Config> setheum_settmint_engine::WeightInfo for WeightInfo
 	fn set_global_params() -> Weight {
 		(12_000_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn liquidate_by_auction() -> Weight {
-		(210_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(28 as Weight))
-			.saturating_add(T::DbWeight::get().writes(17 as Weight))
-	}
-	fn liquidate_by_dex() -> Weight {
-		(255_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(29 as Weight))
-			.saturating_add(T::DbWeight::get().writes(15 as Weight))
-	}
-	fn settle() -> Weight {
-		(99_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(11 as Weight))
-			.saturating_add(T::DbWeight::get().writes(8 as Weight))
-	}
 }

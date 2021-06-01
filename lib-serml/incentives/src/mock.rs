@@ -211,21 +211,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 	}
 }
 
-thread_local! {
-	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
-}
-
-pub fn mock_shutdown() {
-	IS_SHUTDOWN.with(|v| *v.borrow_mut() = true)
-}
-
-pub struct MockEmergencyShutdown;
-impl EmergencyShutdown for MockEmergencyShutdown {
-	fn is_shutdown() -> bool {
-		IS_SHUTDOWN.with(|v| *v.borrow_mut())
-	}
-}
-
 impl orml_rewards::Config for Runtime {
 	type Share = Balance;
 	type Balance = Balance;
@@ -258,7 +243,6 @@ impl Config for Runtime {
 	type SerpTreasury = MockSerpTreasury;
 	type Currency = TokensModule;
 	type DEX = MockDEX;
-	type EmergencyShutdown = MockEmergencyShutdown;
 	type PalletId = IncentivesPalletId;
 	type WeightInfo = ();
 }

@@ -27,43 +27,10 @@ use orml_traits::MultiCurrency;
 use sp_runtime::traits::BadOrigin;
 
 #[test]
-fn is_settmint_unsafe_work() {
-	fn is_user_safe(currency_id: CurrencyId, who: &AccountId) -> bool {
-		let Position { reserve, standard } = SettersModule::positions(currency_id, &who);
-		SettmintEngineModule::is_settmint_unsafe(currency_id, reserve, standard)
-	}
-
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettmintEngineModule::set_reserve_params(
-			Origin::signed(1),
-			BTC,
-			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
-			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
-			Change::NewValue(10000),
-		));
-		assert_eq!(is_user_safe(BTC, &ALICE), false);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 100, 50));
-		assert_eq!(is_user_safe(BTC, &ALICE), false);
-		assert_ok!(SettmintEngineModule::set_reserve_params(
-			Origin::signed(1),
-			BTC,
-			Change::NoChange,
-			Change::NewValue(Some(Ratio::saturating_from_rational(3, 1))),
-			Change::NoChange,
-			Change::NoChange,
-			Change::NoChange,
-		));
-		assert_eq!(is_user_safe(BTC, &ALICE), true);
-	});
-}
-
-#[test]
 fn get_standard_exchange_rate_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SettmintEngineModule::get_standard_exchange_rate(BTC),
+			SettmintEngineModule::get_standard_exchange_rate(SETT),
 			DefaultStandardExchangeRate::get()
 		);
 	});
@@ -102,7 +69,7 @@ fn set_reserve_params_work() {
 		assert_noop!(
 			SettmintEngineModule::set_reserve_params(
 				Origin::signed(1),
-				LDOT,
+				DNAR,
 				Change::NoChange,
 				Change::NoChange,
 				Change::NoChange,
@@ -116,7 +83,7 @@ fn set_reserve_params_work() {
 		assert_noop!(
 			SettmintEngineModule::set_reserve_params(
 				Origin::signed(5),
-				BTC,
+				SETT,
 				Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 				Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 				Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -127,7 +94,7 @@ fn set_reserve_params_work() {
 		);
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -136,21 +103,12 @@ fn set_reserve_params_work() {
 		));
 
 		let update_stability_fee_event = Event::settmint_engine(crate::Event::StabilityFeeUpdated(
-			BTC,
+			SETT,
 			Some(Rate::saturating_from_rational(1, 100000)),
 		));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == update_required_reserve_ratio_event));
-		let update_maximum_total_standard_value_event =
-			Event::settmint_engine(crate::Event::MaximumTotalStandardValueUpdated(BTC, 10000));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == update_maximum_total_standard_value_event));
-
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -158,7 +116,7 @@ fn set_reserve_params_work() {
 			Change::NewValue(10000),
 		));
 
-		let new_reserve_params = SettmintEngineModule::reserve_params(BTC);
+		let new_reserve_params = SettmintEngineModule::reserve_params(SETT);
 
 		assert_eq!(
 			new_reserve_params.stability_fee,
@@ -168,7 +126,6 @@ fn set_reserve_params_work() {
 			new_reserve_params.required_reserve_ratio,
 			Some(Ratio::saturating_from_rational(9, 5))
 		);
-		assert_eq!(new_reserve_params.maximum_total_standard_value, 10000);
 	});
 }
 
@@ -177,7 +134,7 @@ fn calculate_reserve_ratio_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -185,7 +142,7 @@ fn calculate_reserve_ratio_work() {
 			Change::NewValue(10000),
 		));
 		assert_eq!(
-			SettmintEngineModule::calculate_reserve_ratio(BTC, 100, 50, Price::saturating_from_rational(1, 1)),
+			SettmintEngineModule::calculate_reserve_ratio(SETT, 100, 50, Price::saturating_from_rational(1, 1)),
 			Ratio::saturating_from_rational(100, 50)
 		);
 	});
@@ -196,16 +153,16 @@ fn check_standard_cap_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
 			Change::NewValue(10000),
 		));
-		assert_ok!(SettmintEngineModule::check_standard_cap(BTC, 9999));
+		assert_ok!(SettmintEngineModule::check_standard_cap(SETT, 9999));
 		assert_noop!(
-			SettmintEngineModule::check_standard_cap(BTC, 10001),
+			SettmintEngineModule::check_standard_cap(SETT, 10001),
 			Error::<Runtime>::ExceedStandardValueHardCap,
 		);
 	});
@@ -216,7 +173,7 @@ fn check_position_valid_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(1, 1))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -226,12 +183,12 @@ fn check_position_valid_work() {
 
 		MockPriceSource::set_relative_price(None);
 		assert_noop!(
-			SettmintEngineModule::check_position_valid(BTC, 100, 50),
+			SettmintEngineModule::check_position_valid(SETT, 100, 50),
 			Error::<Runtime>::InvalidFeedPrice
 		);
 		MockPriceSource::set_relative_price(Some(Price::one()));
 
-		assert_ok!(SettmintEngineModule::check_position_valid(BTC, 100, 50));
+		assert_ok!(SettmintEngineModule::check_position_valid(SETT, 100, 50));
 	});
 }
 
@@ -240,7 +197,7 @@ fn check_position_valid_failed_when_remain_standard_value_too_small() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(1, 1))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -248,7 +205,7 @@ fn check_position_valid_failed_when_remain_standard_value_too_small() {
 			Change::NewValue(10000),
 		));
 		assert_noop!(
-			SettmintEngineModule::check_position_valid(BTC, 2, 1),
+			SettmintEngineModule::check_position_valid(SETT, 2, 1),
 			Error::<Runtime>::RemainStandardValueTooSmall,
 		);
 	});
@@ -259,7 +216,7 @@ fn check_position_valid_ratio_below_required_ratio() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -267,7 +224,7 @@ fn check_position_valid_ratio_below_required_ratio() {
 			Change::NewValue(10000),
 		));
 		assert_noop!(
-			SettmintEngineModule::check_position_valid(BTC, 89, 50),
+			SettmintEngineModule::check_position_valid(SETT, 89, 50),
 			Error::<Runtime>::BelowRequiredReserveRatio
 		);
 	});
@@ -278,7 +235,7 @@ fn adjust_position_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -289,21 +246,21 @@ fn adjust_position_work() {
 			SettmintEngineModule::adjust_position(&ALICE, DNAR, 100, 50),
 			Error::<Runtime>::InvalidReserveType,
 		);
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 0);
-		assert_eq!(SettersModule::positions(BTC, ALICE).standard, 0);
-		assert_eq!(SettersModule::positions(BTC, ALICE).reserve, 0);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 100, 50));
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
+		assert_eq!(SettersModule::positions(SETT, ALICE).standard, 0);
+		assert_eq!(SettersModule::positions(SETT, ALICE).reserve, 0);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 100, 50));
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 50);
-		assert_eq!(SettersModule::positions(BTC, ALICE).standard, 50);
-		assert_eq!(SettersModule::positions(BTC, ALICE).reserve, 100);
-		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, BTC, 0, 20).is_ok(), false);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 0, -20));
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
+		assert_eq!(SettersModule::positions(SETT, ALICE).standard, 50);
+		assert_eq!(SettersModule::positions(SETT, ALICE).reserve, 100);
+		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, 20).is_ok(), false);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, -20));
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 30);
-		assert_eq!(SettersModule::positions(BTC, ALICE).standard, 30);
-		assert_eq!(SettersModule::positions(BTC, ALICE).reserve, 100);
+		assert_eq!(SettersModule::positions(SETT, ALICE).standard, 30);
+		assert_eq!(SettersModule::positions(SETT, ALICE).reserve, 100);
 	});
 }
 
@@ -312,16 +269,16 @@ fn remain_standard_value_too_small_check() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
 			Change::NewValue(10000),
 		));
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 100, 50));
-		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, BTC, 0, -49).is_ok(), false);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, -100, -50));
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 100, 50));
+		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, -49).is_ok(), false);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, -100, -50));
 	});
 }
 
@@ -330,7 +287,7 @@ fn on_finalize_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			BTC,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(1, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -339,7 +296,7 @@ fn on_finalize_work() {
 		));
 		assert_ok!(SettmintEngineModule::set_reserve_params(
 			Origin::signed(1),
-			DOT,
+			SETT,
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
@@ -347,102 +304,31 @@ fn on_finalize_work() {
 			Change::NewValue(10000),
 		));
 		SettmintEngineModule::on_finalize(1);
-		assert_eq!(SettmintEngineModule::standard_exchange_rate(BTC), None);
-		assert_eq!(SettmintEngineModule::standard_exchange_rate(DOT), None);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 100, 30));
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
+		assert_eq!(SettmintEngineModule::standard_exchange_rate(SETT), None);
+		assert_eq!(SettmintEngineModule::standard_exchange_rate(SETT), None);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 100, 30));
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 30);
 		SettmintEngineModule::on_finalize(2);
 		assert_eq!(
-			SettmintEngineModule::standard_exchange_rate(BTC),
+			SettmintEngineModule::standard_exchange_rate(SETT),
 			Some(ExchangeRate::saturating_from_rational(101, 100))
 		);
-		assert_eq!(SettmintEngineModule::standard_exchange_rate(DOT), None);
+		assert_eq!(SettmintEngineModule::standard_exchange_rate(SETT), None);
 		SettmintEngineModule::on_finalize(3);
 		assert_eq!(
-			SettmintEngineModule::standard_exchange_rate(BTC),
+			SettmintEngineModule::standard_exchange_rate(SETT),
 			Some(ExchangeRate::saturating_from_rational(10201, 10000))
 		);
-		assert_eq!(SettmintEngineModule::standard_exchange_rate(DOT), None);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 0, -30));
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
+		assert_eq!(SettmintEngineModule::standard_exchange_rate(SETT), None);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, -30));
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 0);
 		SettmintEngineModule::on_finalize(4);
 		assert_eq!(
-			SettmintEngineModule::standard_exchange_rate(BTC),
+			SettmintEngineModule::standard_exchange_rate(SETT),
 			Some(ExchangeRate::saturating_from_rational(10201, 10000))
 		);
-		assert_eq!(SettmintEngineModule::standard_exchange_rate(DOT), None);
-	});
-}
-
-#[test]
-fn on_emergency_shutdown_work() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettmintEngineModule::set_reserve_params(
-			Origin::signed(1),
-			BTC,
-			Change::NewValue(Some(Rate::saturating_from_rational(1, 100))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
-			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
-			Change::NewValue(10000),
-		));
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 100, 30));
-		SettmintEngineModule::on_finalize(1);
-		assert_eq!(
-			SettmintEngineModule::standard_exchange_rate(BTC),
-			Some(ExchangeRate::saturating_from_rational(101, 100))
-		);
-		mock_shutdown();
-		assert_eq!(<Runtime as Config>::EmergencyShutdown::is_shutdown(), true);
-		SettmintEngineModule::on_finalize(2);
-		assert_eq!(
-			SettmintEngineModule::standard_exchange_rate(BTC),
-			Some(ExchangeRate::saturating_from_rational(101, 100))
-		);
-	});
-}
-
-#[test]
-fn settle_settmint_has_standard_work() {
-	ExtBuilder::default().build().execute_with(|| {
-		System::set_block_number(1);
-		assert_ok!(SettmintEngineModule::set_reserve_params(
-			Origin::signed(1),
-			BTC,
-			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
-			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
-			Change::NewValue(10000),
-		));
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 100, 0));
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
-		assert_eq!(SettersModule::positions(BTC, ALICE).standard, 0);
-		assert_eq!(SettersModule::positions(BTC, ALICE).reserve, 100);
-		assert_noop!(
-			SettmintEngineModule::settle_settmint_has_standard(ALICE, BTC),
-			Error::<Runtime>::NoStandardValue,
-		);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, BTC, 0, 50));
-		assert_eq!(SettersModule::positions(BTC, ALICE).standard, 50);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
-		assert_ok!(SettmintEngineModule::settle_settmint_has_standard(ALICE, BTC));
-
-		let settle_settmint_in_standard_event = Event::settmint_engine(crate::Event::SettleSettmintInStandard(BTC, ALICE));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == settle_settmint_in_standard_event));
-
-		assert_eq!(SettersModule::positions(BTC, ALICE).standard, 0);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 50);
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 50);
-
-		assert_noop!(
-			SettmintEngineModule::settle(Origin::none(), BTC, ALICE),
-			Error::<Runtime>::MustAfterShutdown
-		);
+		assert_eq!(SettmintEngineModule::standard_exchange_rate(SETT), None);
 	});
 }

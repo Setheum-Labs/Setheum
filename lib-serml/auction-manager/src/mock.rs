@@ -167,23 +167,8 @@ impl setheum_dex::Config for Runtime {
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
 
-thread_local! {
-	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
-}
-
-pub fn mock_shutdown() {
-	IS_SHUTDOWN.with(|v| *v.borrow_mut() = true)
-}
-
-pub struct MockEmergencyShutdown;
-impl EmergencyShutdown for MockEmergencyShutdown {
-	fn is_shutdown() -> bool {
-		IS_SHUTDOWN.with(|v| *v.borrow_mut())
-	}
-}
-
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 20);
+	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 20); // 5% increment
 	pub const AuctionTimeToClose: u64 = 100;
 	pub const AuctionDurationSoftCap: u64 = 2000;
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
@@ -203,7 +188,6 @@ impl Config for Runtime {
 	type DEX = DEXModule;
 	type PriceSource = MockPriceSource;
 	type UnsignedPriority = UnsignedPriority;
-	type EmergencyShutdown = MockEmergencyShutdown;
 	type WeightInfo = ();
 }
 

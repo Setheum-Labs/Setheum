@@ -52,7 +52,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedPointNumber, RandomNumberGenerator, RuntimeDebug,
 };
 use sp_std::prelude::*;
-use support::{AuctionManager, SerpTreasury, SerpTreasuryExtended, DEXManager, EmergencyShutdown, PriceProvider, Rate};
+use support::{AuctionManager, SerpTreasury, SerpTreasuryExtended, DEXManager, PriceProvider, Rate};
 
 mod mock;
 mod tests;
@@ -219,9 +219,6 @@ pub mod module {
 		/// multiple modules send unsigned transactions.
 		type UnsignedPriority: Get<TransactionPriority>;
 
-		/// Emergency shutdown.
-		type EmergencyShutdown: EmergencyShutdown;
-
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 	}
@@ -234,8 +231,6 @@ pub mod module {
 		InReverseStage,
 		/// Feed price is invalid
 		InvalidFeedPrice,
-		/// Must after system shutdown
-		MustAfterShutdown,
 		/// Bid price is invalid
 		InvalidBidPrice,
 		/// Invalid input amount
@@ -312,78 +307,11 @@ pub mod module {
 	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		/// Start offchain worker in order to submit unsigned tx to cancel
-		/// active auction after system shutdown.
-		fn offchain_worker(now: T::BlockNumber) {
-			if T::EmergencyShutdown::is_shutdown() && sp_io::offchain::is_validator() {
-				if let Err(e) = Self::_offchain_worker() {
-					debug::info!(
-						target: "auction-manager offchain worker",
-						"cannot run offchain worker at {:?}: {:?}",
-						now,
-						e,
-					);
-				} else {
-					debug::debug!(
-						target: "auction-manager offchain worker",
-						"offchain worker start at block: {:?} already done!",
-						now,
-					);
-				}
-			}
-		}
-	}
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {
-		/// Cancel active auction after system shutdown
-		///
-		/// The dispatch origin of this call must be _None_.
-		#[pallet::weight(T::WeightInfo::cancel_setter_auction())]
-		#[transactional]
-		pub fn cancel(origin: OriginFor<T>, id: AuctionId) -> DispatchResultWithPostInfo {
-			ensure_none(origin)?;
-			ensure!(T::EmergencyShutdown::is_shutdown(), Error::<T>::MustAfterShutdown);
-			<Self as AuctionManager<T::AccountId>>::cancel_auction(id)?;
-			Self::deposit_event(Event::CancelAuction(id));
-			Ok(().into())
-		}
-	}
+	impl<T: Config> Pallet<T> {}
 
-	#[pallet::validate_unsigned]
-	impl<T: Config> ValidateUnsigned for Pallet<T> {
-		type Call = Call<T>;
-		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
-			if let Call::cancel(auction_id) = call {
-				if !T::EmergencyShutdown::is_shutdown() {
-					return InvalidTransaction::Call.into();
-				}
-
-				if let Some(setter_auction) = Self::setter_auctions(auction_id) {
-					if let Some((_, bid_price)) = Self::get_last_bid(*auction_id) {
-						// if setter auction is in reverse stage, shouldn't cancel
-						if setter_auction.in_reverse_stage(bid_price) {
-							return InvalidTransaction::Stale.into();
-						}
-					}
-				} else if !<SerplusAuctions<T>>::contains_key(auction_id)
-					&& !<DiamondAuctions<T>>::contains_key(auction_id)
-				{
-					return InvalidTransaction::Stale.into();
-				}
-
-				ValidTransaction::with_tag_prefix("AuctionManagerOffchainWorker")
-					.priority(T::UnsignedPriority::get())
-					.and_provides(auction_id)
-					.longevity(64_u64)
-					.propagate(true)
-					.build()
-			} else {
-				InvalidTransaction::Call.into()
-			}
-		}
-	}
 }
 
 impl<T: Config> Pallet<T> {
@@ -1118,6 +1046,8 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+		/// Active auction cancelled. \[auction_id\]
+		CancelAuction(AuctionId),
 	fn get_total_reserve_in_auction(id: Self::CurrencyId) -> Self::Balance {
 		Self::total_reserve_in_auction(id)
 	}

@@ -22,8 +22,7 @@
 //!
 //! The core module of the Settmint protocol.
 //! The Settmint engine is responsible for handling
-//! internal processes of Settmint, including settlement and risk
-//! management.
+//! internal processes of Settmint.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -52,7 +51,7 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DEXManager, EmergencyShutdown, ExchangeRate, Price, PriceProvider, Rate, Ratio,
+	DEXManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
 	RiskManager,
 };
 
@@ -76,10 +75,6 @@ pub type SettersOf<T> = setters::Module<T>;
 /// Risk management params
 #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, Default)]
 pub struct RiskManagementParams {
-	/// Maximum total standard value generated, when the hard cap is reached,
-	/// SettMint standard owner cannot issue more settcurrency under the reserve type.
-	pub maximum_total_standard_value: Balance,
-
 	/// Extra stability fee rate, `None` value means not set
 	pub stability_fee: Option<Rate>,
 
@@ -133,17 +128,12 @@ pub mod module {
 		/// multiple modules send unsigned transactions.
 		type UnsignedPriority: Get<TransactionPriority>;
 
-		/// Emergency shutdown.
-		type EmergencyShutdown: EmergencyShutdown;
-
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// The total standard value of reserve type exceeds the hard cap
-		ExceedStandardValueHardCap,
 		/// The reserve ratio is below the required reserve ratio
 		BelowRequiredReserveRatio,
 		/// Invalid reserve type
@@ -152,30 +142,17 @@ pub mod module {
 		RemainStandardValueTooSmall,
 		/// Feed price is invalid
 		InvalidFeedPrice,
-		/// No standard value in Settmint so that it cannot be settled
-		NoStandardValue,
-		/// System has already been shutdown
-		AlreadyShutdown,
-		/// Must after system shutdown
-		MustAfterShutdown,
 	}
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Settle the Settmint that has standard. [reserve_type, owner]
-		SettleSettmintInStandard(CurrencyId, T::AccountId),
-		/// No need to Settle the Settmint that has standard. [reserve_type, owner]
-		NoNeedToSettle(CurrencyId, T::AccountId),
 		/// The stability fee for the reserve type updated.
 		/// \[reserve_type, new_stability_fee\]
 		StabilityFeeUpdated(CurrencyId, Option<Rate>),
 		/// The required reserve ratio for the reserve type (change to `standard type`)
 		/// updated. \[reserve_type, new_required_reserve_ratio\]
 		RequiredReserveRatioUpdated(CurrencyId, Option<Ratio>),
-		/// The hard cap of total standard value for the reserve type
-		/// updated. \[reserve_type, new_total_standard_value\]
-		MaximumTotalStandardValueUpdated(CurrencyId, Balance),
 		/// The global stability fee for the reserve updated.
 		/// \[new_global_stability_fee\]
 		GlobalStabilityFeeUpdated(Rate),
@@ -229,12 +206,10 @@ pub mod module {
 					currency_id,
 					stability_fee,
 					required_reserve_ratio,
-					maximum_total_standard_value,
 				)| {
 					ReserveParams::<T>::insert(
 						currency_id,
 						RiskManagementParams {
-							maximum_total_standard_value: *maximum_total_standard_value,
 							stability_fee: *stability_fee,
 							required_reserve_ratio: *required_reserve_ratio,
 						},
@@ -254,63 +229,21 @@ pub mod module {
 		/// standard when block finalizes at `on-finalize`, and update their standard exchange rate
 		fn on_finalize(_now: T::BlockNumber) {
 			// collect stability fee for the reserve
-			if !T::EmergencyShutdown::is_shutdown() {
-				for currency_id in T::ReserveCurrencyIds::get() {
-					let standard_exchange_rate = Self::get_standard_exchange_rate(currency_id);
-					let stability_fee_rate = Self::get_stability_fee(currency_id);
-					let total_standards = <SettersOf<T>>::total_positions(currency_id).standard;
-					if !stability_fee_rate.is_zero() && !total_standards.is_zero() {
-						let standard_exchange_rate_increment = standard_exchange_rate.saturating_mul(stability_fee_rate);
-						let total_standard_value = Self::get_standard_value(currency_id, total_standards);
-						let issued_stable_coin_balance =
-							standard_exchange_rate_increment.saturating_mul_int(total_standard_value);
-					}
+			for currency_id in T::ReserveCurrencyIds::get() {
+				let standard_exchange_rate = Self::get_standard_exchange_rate(currency_id);
+				let stability_fee_rate = Self::get_stability_fee(currency_id);
+				let total_standards = <SettersOf<T>>::total_positions(currency_id).standard;
+				if !stability_fee_rate.is_zero() && !total_standards.is_zero() {
+					let standard_exchange_rate_increment = standard_exchange_rate.saturating_mul(stability_fee_rate);
+					let total_standard_value = Self::get_standard_value(currency_id, total_standards);
+					let issued_stable_coin_balance =
+						standard_exchange_rate_increment.saturating_mul_int(total_standard_value);
 				}
 			}
 		}
 
-		/// Runs after every block. Start offchain worker to check Settmint and
-		/// submit unsigned tx to trigger settlement if in emergency shutdown.
-		fn offchain_worker(now: T::BlockNumber) {
-			if let Err(e) = Self::_offchain_worker() {
-				debug::info!(
-					target: "settmint-engine offchain worker",
-					"cannot run offchain worker at {:?}: {:?}",
-					now,
-					e,
-				);
-			} else {
-				debug::debug!(
-					target: "settmint-engine offchain worker",
-					"offchain worker start at block: {:?} already done!",
-					now,
-				);
-			}
-		}
-	}
-
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Settle Settmint that has standard after system shutdown
-		///
-		/// The dispatch origin of this call must be _None_.
-		///
-		/// - `currency_id`: Settmint's reserve type.
-		/// - `who`: Settmint's owner.
-		#[pallet::weight(T::WeightInfo::settle())]
-		#[transactional]
-		pub fn settle(
-			origin: OriginFor<T>,
-			currency_id: CurrencyId,
-			who: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResultWithPostInfo {
-			ensure_none(origin)?;
-			let who = T::Lookup::lookup(who)?;
-			ensure!(T::EmergencyShutdown::is_shutdown(), Error::<T>::MustAfterShutdown);
-			Self::settle_settmint_has_standard(who, currency_id)?;
-			Ok(().into())
-		}
-
 		/// Update global parameters related to risk management of Settmint
 		///
 		/// The dispatch origin of this call must be `UpdateOrigin`.
@@ -334,7 +267,6 @@ pub mod module {
 		///   update, `Some(None)` means update it to `None`.
 		/// - `required_reserve_ratio`: required reserve ratio, `None`
 		///   means do not update, `Some(None)` means update it to `None`.
-		/// - `maximum_total_standard_value`: maximum total standard value.
 		#[pallet::weight((T::WeightInfo::set_reserve_params(), DispatchClass::Operational))]
 		#[transactional]
 		pub fn set_reserve_params(
@@ -342,7 +274,6 @@ pub mod module {
 			currency_id: CurrencyId,
 			stability_fee: ChangeOptionRate,
 			required_reserve_ratio: ChangeOptionRatio,
-			maximum_total_standard_value: ChangeBalance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
@@ -359,154 +290,13 @@ pub mod module {
 				reserve_params.required_reserve_ratio = update;
 				Self::deposit_event(Event::RequiredReserveRatioUpdated(currency_id, update));
 			}
-			if let Change::NewValue(val) = maximum_total_standard_value {
-				reserve_params.maximum_total_standard_value = val;
-				Self::deposit_event(Event::MaximumTotalStandardValueUpdated(currency_id, val));
-			}
 			ReserveParams::<T>::insert(currency_id, reserve_params);
 			Ok(().into())
-		}
-	}
-
-	#[pallet::validate_unsigned]
-	impl<T: Config> ValidateUnsigned for Pallet<T> {
-		type Call = Call<T>;
-
-		/// make it an if else statement.
-		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
-			match call {
-				Call::settle(currency_id, who) => {
-					let account = T::Lookup::lookup(who.clone())?;
-					let Position { standard, .. } = <SettersOf<T>>::positions(currency_id, account);
-					if standard.is_zero() || !T::EmergencyShutdown::is_shutdown() {
-						return InvalidTransaction::Stale.into();
-					}
-
-					ValidTransaction::with_tag_prefix("SettmintEngineOffchainWorker")
-						.priority(T::UnsignedPriority::get())
-						.and_provides((currency_id, who))
-						.longevity(64_u64)
-						.propagate(true)
-						.build()
-				}
-				_ => InvalidTransaction::Call.into(),
-			}
 		}
 	}
 }
 
 impl<T: Config> Pallet<T> {
-	fn submit_unsigned_settlement_tx(currency_id: CurrencyId, who: T::AccountId) {
-		let who = T::Lookup::unlookup(who);
-		let call = Call::<T>::settle(currency_id, who.clone());
-		if SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).is_err() {
-			debug::info!(
-				target: "settmint-engine offchain worker",
-				"submit unsigned settlement tx for \nSettmint - AccountId {:?} CurrencyId {:?} \nfailed!",
-				who, currency_id,
-			);
-		}
-	}
-
-	fn _offchain_worker() -> Result<(), OffchainErr> {
-		let reserve_currency_ids = T::ReserveCurrencyIds::get();
-		if reserve_currency_ids.len().is_zero() {
-			return Ok(());
-		}
-
-		// check if we are a potential validator
-		if !sp_io::offchain::is_validator() {
-			return Err(OffchainErr::NotValidator);
-		}
-
-		// acquire offchain worker lock
-		let lock_expiration = Duration::from_millis(LOCK_DURATION);
-		let mut lock = StorageLock::<'_, Time>::with_deadline(&OFFCHAIN_WORKER_LOCK, lock_expiration);
-		let mut guard = lock.try_lock().map_err(|_| OffchainErr::OffchainLock)?;
-
-		let reserve_currency_ids = T::ReserveCurrencyIds::get();
-		let to_be_continue = StorageValueRef::persistent(&OFFCHAIN_WORKER_DATA);
-
-		// get to_be_continue record
-		let (reserve_position, start_key) =
-			if let Some(Some((last_reserve_position, maybe_last_iterator_previous_key))) =
-				to_be_continue.get::<(u32, Option<Vec<u8>>)>()
-			{
-				(last_reserve_position, maybe_last_iterator_previous_key)
-			} else {
-				let random_seed = sp_io::offchain::random_seed();
-				let mut rng = RandomNumberGenerator::<BlakeTwo256>::new(BlakeTwo256::hash(&random_seed[..]));
-				(
-					rng.pick_u32(reserve_currency_ids.len().saturating_sub(1) as u32),
-					None,
-				)
-			};
-
-		// get the max iterationns config
-		let max_iterations = StorageValueRef::persistent(&OFFCHAIN_WORKER_MAX_ITERATIONS)
-			.get::<u32>()
-			.unwrap_or(Some(DEFAULT_MAX_ITERATIONS));
-
-		let currency_id = reserve_currency_ids[(reserve_position as usize)];
-		let is_shutdown = T::EmergencyShutdown::is_shutdown();
-		let mut map_iterator = <setters::Positions<T> as IterableStorageDoubleMapExtended<_, _, _>>::iter_prefix(
-			currency_id,
-			max_iterations,
-			start_key.clone(),
-		);
-
-		let mut iteration_count = 0;
-		let iteration_start_time = sp_io::offchain::timestamp();
-		while let Some((who, Position { reserve, standard })) = map_iterator.next() {
-			if is_shutdown && !standard.is_zero() {
-				// settle Settmint with standard after emergency shutdown occurs.
-				Self::submit_unsigned_settlement_tx(currency_id, who);
-			} else {
-				Self::deposit_event(Event::NoNeedToSettle(currency_id, who));
-			}
-
-			iteration_count += 1;
-
-			// extend offchain worker lock
-			guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
-		}
-		let iteration_end_time = sp_io::offchain::timestamp();
-		debug::debug!(
-			target: "settmint-engine offchain worker",
-			"iteration info:\n max iterations is {:?}\n currency id: {:?}, start key: {:?}, iterate count: {:?}\n iteration start at: {:?}, end at: {:?}, execution time: {:?}\n",
-			max_iterations,
-			currency_id,
-			start_key,
-			iteration_count,
-			iteration_start_time,
-			iteration_end_time,
-			iteration_end_time.diff(&iteration_start_time)
-		);
-
-		/// if iteration for map storage finished, clear `to_be_continue` record
-		/// otherwise, update `to_be_continue` record
-		if map_iterator.finished {
-			let next_reserve_position =
-				if reserve_position < reserve_currency_ids.len().saturating_sub(1) as u32 {
-					reserve_position + 1
-				} else {
-					0
-				};
-			to_be_continue.set(&(next_reserve_position, Option::<Vec<u8>>::None));
-		} else {
-			to_be_continue.set(&(reserve_position, Some(map_iterator.map_iterator.previous_key)));
-		}
-
-		// Consume the guard but **do not** unlock the underlying lock.
-		guard.forget();
-
-		Ok(())
-	}
-
-	pub fn maximum_total_standard_value(currency_id: CurrencyId) -> Balance {
-		Self::reserve_params(currency_id).maximum_total_standard_value
-	}
-
 	pub fn required_reserve_ratio(currency_id: CurrencyId) -> Option<Ratio> {
 		Self::reserve_params(currency_id).required_reserve_ratio
 	}
@@ -581,15 +371,6 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 				Error::<T>::RemainStandardValueTooSmall,
 			);
 		}
-
-		Ok(())
-	}
-
-	fn check_standard_cap(currency_id: CurrencyId, total_standard_balance: Balance) -> DispatchResult {
-		let hard_cap = Self::maximum_total_standard_value(currency_id);
-		let total_standard_value = Self::get_standard_value(currency_id, total_standard_balance);
-
-		ensure!(total_standard_value <= hard_cap, Error::<T>::ExceedStandardValueHardCap,);
 
 		Ok(())
 	}

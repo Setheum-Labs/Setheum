@@ -17,8 +17,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, SetheumOracle, AccountId, Amount, Balance, SettmintEngine, CurrencyId, Dex, EmergencyShutdown,
-	GetStableCurrencyId, Indices, MaxSlippageSwapWithDEX, MinimumStandardValue, Price, Rate, Ratio, Runtime, USDJ, DOT,
+	dollar, SetheumOracle, AccountId, Amount, Balance, SettmintEngine, CurrencyId, Dex, GetStableCurrencyId,
+	Indices, MaxSlippageSwapWithDEX, MinimumStandardValue, Price, Rate, Ratio, Runtime, USDJ, DOT,
 };
 
 use super::utils::set_balance;
@@ -85,42 +85,6 @@ runtime_benchmarks! {
 		assert!(other_currency_amount > reserve_amount_in_dex);
 		assert!(base_currency_amount < base_amount_in_dex);
 	}
-
-	settle {
-		let owner: AccountId = account("owner", 0, SEED);
-		let owner_lookup = Indices::unlookup(owner.clone());
-		let currency_id: CurrencyId = DOT;
-		let min_standard_value = MinimumStandardValue::get();
-		let standard_exchange_rate = SettmintEngine::get_standard_exchange_rate(currency_id);
-		let reserve_price = Price::one();		// 1 USD
-		let min_standard_amount = standard_exchange_rate.reciprocal().unwrap().saturating_mul_int(min_standard_value);
-		let min_standard_amount: Amount = min_standard_amount.unique_saturated_into();
-		let reserve_value = 2 * min_standard_value;
-		let reserve_amount = Price::saturating_from_rational(dollar(DOT), dollar(USDJ)).saturating_mul_int(reserve_value);
-
-		// set balance
-		set_balance(currency_id, &owner, reserve_amount);
-
-		// feed price
-		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, reserve_price)])?;
-
-		// set risk params
-		SettmintEngine::set_reserve_params(
-			RawOrigin::Root.into(),
-			currency_id,
-			Change::NoChange,
-			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
-			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
-			Change::NewValue(min_standard_value * 100),
-		)?;
-
-		// adjust position
-		SettmintEngine::adjust_position(&owner, currency_id, reserve_amount.try_into().unwrap(), min_standard_amount)?;
-
-		// shutdown
-		EmergencyShutdown::emergency_shutdown(RawOrigin::Root.into())?;
-	}: _(RawOrigin::None, currency_id, owner_lookup)
 }
 
 #[cfg(test)]
@@ -146,13 +110,6 @@ mod tests {
 	fn test_set_global_params() {
 		new_test_ext().execute_with(|| {
 			assert_ok!(test_benchmark_set_global_params());
-		});
-	}
-
-	#[test]
-	fn test_settle() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_settle());
 		});
 	}
 }

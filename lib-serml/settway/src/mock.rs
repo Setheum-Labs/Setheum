@@ -195,21 +195,6 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	}
 }
 
-thread_local! {
-	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
-}
-
-pub fn mock_shutdown() {
-	IS_SHUTDOWN.with(|v| *v.borrow_mut() = true)
-}
-
-pub struct MockEmergencyShutdown;
-impl EmergencyShutdown for MockEmergencyShutdown {
-	fn is_shutdown() -> bool {
-		IS_SHUTDOWN.with(|v| *v.borrow_mut())
-	}
-}
-
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
@@ -252,7 +237,6 @@ impl settmint_engine::Config for Runtime {
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type DEX = ();
 	type UnsignedPriority = UnsignedPriority;
-	type EmergencyShutdown = MockEmergencyShutdown;
 	type WeightInfo = ();
 }
 

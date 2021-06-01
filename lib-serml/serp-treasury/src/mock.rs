@@ -169,10 +169,6 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Ok(())
 	}
 
-	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
-		Ok(())
-	}
-
 	fn get_total_reserve_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut())
 	}
@@ -197,10 +193,6 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
-}
-
-thread_local! {
-	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
 }
 
 impl Config for Runtime {
