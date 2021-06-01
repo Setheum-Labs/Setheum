@@ -78,7 +78,6 @@ setheum-settmint-engine = { path = "../../lib-serml/settmint-engine", default-fe
 serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = false }
 setheum-dex = { path = "../../lib-serml/dex", default-features = false }
 setheum-currencies = { path = "../../lib-serml/currencies", default-features = false }
-setheum-emergency-shutdown = { path = "../../lib-serml/emergency-shutdown", default-features = false }
 setheum-settway = { path = "../../lib-serml/settway", default-features = false }
 setheum-setters = { path = "../../lib-serml/setters", default-features = false }
 setheum-nft = { path = "../../lib-serml/nft", default-features = false }
@@ -157,7 +156,6 @@ std = [
 	"serp-treasury/std",
 	"setheum-dex/std",
 	"setheum-currencies/std",
-	"setheum-emergency-shutdown/std",
 	"setheum-settway/std",
 	"setheum-setters/std",
 	"setheum-nft/std",

@@ -23,8 +23,6 @@
 //! The entry of the Settmint protocol for users, user can manipulate their Settmint
 //! position to setter/payback, and can also authorize others to manage the their
 //! Settmint under specific reserve type.
-//!
-//! After system shutdown, some operations will be restricted.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -36,7 +34,6 @@ use sp_runtime::{
 	traits::{StaticLookup, Zero},
 	DispatchResult,
 };
-use support::EmergencyShutdown;
 
 mod mock;
 mod tests;
@@ -61,8 +58,6 @@ pub mod module {
 	pub enum Error<T> {
 		// No authorization
 		NoAuthorization,
-		// The system has been shutdown
-		AlreadyShutdown,
 	}
 
 	#[pallet::event]
@@ -113,11 +108,6 @@ pub mod module {
 			standard_adjustment: Amount,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-
-			// not allowed to adjust the standard after system shutdown
-			if !standard_adjustment.is_zero() {
-				ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
-			}
 			<settmint_engine::Module<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
 			Ok(().into())
 		}
@@ -137,7 +127,6 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
-			ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
 			Self::check_authorization(&from, &to, currency_id)?;
 			<setters::Module<T>>::transfer_setter(&from, &to, currency_id)?;
 			Ok(().into())

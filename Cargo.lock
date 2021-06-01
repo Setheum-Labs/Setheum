@@ -4105,7 +4105,6 @@ dependencies = [
  "setheum-auction-manager",
  "setheum-currencies",
  "setheum-dex",
- "setheum-emergency-shutdown",
  "setheum-incentives",
  "setheum-nft",
  "setheum-prices",
@@ -4198,7 +4197,6 @@ dependencies = [
  "setheum-auction-manager",
  "setheum-currencies",
  "setheum-dex",
- "setheum-emergency-shutdown",
  "setheum-incentives",
  "setheum-nft",
  "setheum-prices",
@@ -7520,28 +7518,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-emergency-shutdown"
-version = "0.5.0"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
- "frame-system 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
- "orml-currencies",
- "orml-tokens",
- "orml-traits",
- "pallet-balances 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "parity-scale-codec",
- "serde",
- "serp-treasury",
- "setheum-primitives",
- "setheum-setters",
- "setheum-support",
- "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
-]
-
-[[package]]
 name = "setheum-example"
 version = "0.5.0"
 dependencies = [
@@ -7729,7 +7705,6 @@ dependencies = [
  "setheum-auction-manager",
  "setheum-currencies",
  "setheum-dex",
- "setheum-emergency-shutdown",
  "setheum-incentives",
  "setheum-nft",
  "setheum-prices",
