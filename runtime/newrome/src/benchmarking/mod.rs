@@ -23,7 +23,6 @@ pub mod auction_manager;
 pub mod settmint_engine;
 pub mod serp_treasury;
 pub mod dex;
-pub mod emergency_shutdown;
 pub mod settway;
 pub mod incentives;
 pub mod prices;

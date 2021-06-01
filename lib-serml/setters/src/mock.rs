@@ -139,10 +139,6 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Ok(())
 	}
 
-	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
-		Ok(())
-	}
-
 	fn get_total_standard_in_auction() -> Self::Balance {
 		Default::default()
 	}

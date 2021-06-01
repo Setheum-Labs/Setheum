@@ -344,20 +344,5 @@ fn on_initialize_should_work() {
 		);
 		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(CHFJ_SETT_LP)).total_rewards, 10);
 		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(DNAR_SETT_LP)).total_rewards, 38);
-
-		mock_shutdown();
-		IncentivesModule::on_initialize(30);
-		assert_eq!(TokensModule::free_balance(SDEX, &VAULT), 4630);
-		assert_eq!(TokensModule::free_balance(SETT, &VAULT), 18);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexIncentive(CHFJ_SETT_LP)).total_rewards,
-			2200
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexIncentive(DNAR_SETT_LP)).total_rewards,
-			2400
-		);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(CHFJ_SETT_LP)).total_rewards, 10);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(DNAR_SETT_LP)).total_rewards, 38);
 	});
 }

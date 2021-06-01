@@ -49,9 +49,6 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
 	fn set_reserve_params() -> Weight;
 	fn set_global_params() -> Weight;
-	fn liquidate_by_auction() -> Weight;
-	fn liquidate_by_dex() -> Weight;
-	fn settle() -> Weight;
 }
 
 /// Weights for setheum_settmint_engine using the Setheum node and recommended hardware.
@@ -66,21 +63,6 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 		(11_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn liquidate_by_auction() -> Weight {
-		(203_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(28 as Weight))
-			.saturating_add(T::DbWeight::get().writes(17 as Weight))
-	}
-	fn liquidate_by_dex() -> Weight {
-		(252_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(29 as Weight))
-			.saturating_add(T::DbWeight::get().writes(15 as Weight))
-	}
-	fn settle() -> Weight {
-		(97_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(11 as Weight))
-			.saturating_add(T::DbWeight::get().writes(8 as Weight))
-	}
 }
 
 // For backwards compatibility and tests
@@ -93,20 +75,5 @@ impl WeightInfo for () {
 	fn set_global_params() -> Weight {
 		(11_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
-	fn liquidate_by_auction() -> Weight {
-		(203_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(28 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(17 as Weight))
-	}
-	fn liquidate_by_dex() -> Weight {
-		(252_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(29 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(15 as Weight))
-	}
-	fn settle() -> Weight {
-		(97_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(11 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(8 as Weight))
 	}
 }

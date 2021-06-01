@@ -32,7 +32,7 @@ use sp_runtime::{
 	ModuleId,
 };
 use sp_std::cell::RefCell;
-use support::{AuctionManager, EmergencyShutdown};
+use support::AuctionManager;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -244,21 +244,6 @@ impl setheum_dex::Config for Runtime {
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
 
-thread_local! {
-	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
-}
-
-pub fn mock_shutdown() {
-	IS_SHUTDOWN.with(|v| *v.borrow_mut() = true)
-}
-
-pub struct MockEmergencyShutdown;
-impl EmergencyShutdown for MockEmergencyShutdown {
-	fn is_shutdown() -> bool {
-		IS_SHUTDOWN.with(|v| *v.borrow_mut())
-	}
-}
-
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
@@ -283,7 +268,6 @@ impl Config for Runtime {
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type DEX = DEXModule;
 	type UnsignedPriority = UnsignedPriority;
-	type EmergencyShutdown = MockEmergencyShutdown;
 	type WeightInfo = ();
 }
 

@@ -24,7 +24,6 @@ pub mod setheum_settmint_engine;
 pub mod serp_treasury;
 pub mod setheum_currencies;
 pub mod setheum_dex;
-pub mod setheum_emergency_shutdown;
 pub mod setheum_settway;
 pub mod setheum_incentives;
 pub mod setheum_nft;
