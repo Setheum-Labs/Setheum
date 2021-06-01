@@ -183,7 +183,7 @@ impl EmergencyShutdown for MockEmergencyShutdown {
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 20);
+	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 20); // 5% increment
 	pub const AuctionTimeToClose: u64 = 100;
 	pub const AuctionDurationSoftCap: u64 = 2000;
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;

@@ -790,7 +790,7 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100);
+	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100); // 2.00% minimum increment
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 }
