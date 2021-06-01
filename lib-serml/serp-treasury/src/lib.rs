@@ -100,13 +100,13 @@ pub mod module {
 	pub enum Event<T: Config> {
 		/// The expected amount size for per lot collateral auction of the
 		/// reserve type updated. \[reserve_type, new_size\]
-		ExpectedReserveAuctionSizeUpdated(CurrencyId, Balance),
+		ExpectedSetterAuctionSizeUpdated(CurrencyId, Balance),
 	}
 
-	/// The maximum amount of reserve amount for sale per reserve auction
+	/// The maximum amount of reserve amount for sale per setter auction
 	#[pallet::storage]
-	#[pallet::getter(fn expected_reserve_auction_size)]
-	pub type ExpectedReserveAuctionSize<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
+	#[pallet::getter(fn expected_setter_auction_size)]
+	pub type ExpectedSetterAuctionSize<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	/// Current total standard value of system. It's not same as standard in Settmint
 	/// engine, it is the bad standard of the system.
@@ -116,14 +116,14 @@ pub mod module {
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig {
-		pub expected_reserve_auction_size: Vec<(CurrencyId, Balance)>,
+		pub expected_setter_auction_size: Vec<(CurrencyId, Balance)>,
 	}
 
 	#[cfg(feature = "std")]
 	impl Default for GenesisConfig {
 		fn default() -> Self {
 			GenesisConfig {
-				expected_reserve_auction_size: vec![],
+				expected_setter_auction_size: vec![],
 			}
 		}
 	}
@@ -131,10 +131,10 @@ pub mod module {
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig {
 		fn build(&self) {
-			self.expected_reserve_auction_size
+			self.expected_setter_auction_size
 				.iter()
 				.for_each(|(currency_id, size)| {
-					ExpectedReserveAuctionSize::<T>::insert(currency_id, size);
+					ExpectedSetterAuctionSize::<T>::insert(currency_id, size);
 				});
 		}
 	}
@@ -178,7 +178,7 @@ pub mod module {
 					>= standard_amount,
 				Error::<T>::StandardPoolNotEnough,
 			);
-			T::AuctionManagerHandler::new_standard_auction(initial_price, standard_amount)?;
+			T::AuctionManagerHandler::new_diamond_auction(initial_price, standard_amount)?;
 			Ok(().into())
 		}
 
@@ -192,7 +192,7 @@ pub mod module {
 			splited: bool,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			<Self as SerpTreasuryExtended<T::AccountId>>::create_reserve_auctions(
+			<Self as SerpTreasuryExtended<T::AccountId>>::create_setter_auctions(
 				currency_id,
 				amount,
 				target,
@@ -202,23 +202,23 @@ pub mod module {
 			Ok(().into())
 		}
 
-		/// Update parameters related to reserve auction under specific
+		/// Update parameters related to setter auction under specific
 		/// reserve type
 		///
 		/// The dispatch origin of this call must be `UpdateOrigin`.
 		///
 		/// - `currency_id`: reserve type
-		/// - `surplus_buffer_size`: reserve auction maximum size
-		#[pallet::weight((T::WeightInfo::set_expected_reserve_auction_size(), DispatchClass::Operational))]
+		/// - `surplus_buffer_size`: setter auction maximum size
+		#[pallet::weight((T::WeightInfo::set_expected_setter_auction_size(), DispatchClass::Operational))]
 		#[transactional]
-		pub fn set_expected_reserve_auction_size(
+		pub fn set_expected_setter_auction_size(
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			size: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			ExpectedReserveAuctionSize::<T>::insert(currency_id, size);
-			Self::deposit_event(Event::ExpectedReserveAuctionSizeUpdated(currency_id, size));
+			ExpectedSetterAuctionSize::<T>::insert(currency_id, size);
+			Self::deposit_event(Event::ExpectedSetterAuctionSizeUpdated(currency_id, size));
 			Ok(().into())
 		}
 	}
@@ -380,7 +380,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		)
 	}
 
-	fn create_reserve_auctions(
+	fn create_setter_auctions(
 		currency_id: CurrencyId,
 		amount: Balance,
 		target: Balance,
@@ -394,22 +394,22 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 
 		let mut unhandled_reserve_amount = amount;
 		let mut unhandled_target = target;
-		let expected_reserve_auction_size = Self::expected_reserve_auction_size(currency_id);
+		let expected_setter_auction_size = Self::expected_setter_auction_size(currency_id);
 		let max_auctions_count: Balance = T::MaxAuctionsCount::get().into();
 		let lots_count = if !splited
 			|| max_auctions_count.is_zero()
-			|| expected_reserve_auction_size.is_zero()
-			|| amount <= expected_reserve_auction_size
+			|| expected_setter_auction_size.is_zero()
+			|| amount <= expected_setter_auction_size
 		{
 			One::one()
 		} else {
 			let mut count = amount
-				.checked_div(expected_reserve_auction_size)
-				.expect("reserve auction maximum size is not zero; qed");
+				.checked_div(expected_setter_auction_size)
+				.expect("setter auction maximum size is not zero; qed");
 
 			let remainder = amount
-				.checked_rem(expected_reserve_auction_size)
-				.expect("reserve auction maximum size is not zero; qed");
+				.checked_rem(expected_setter_auction_size)
+				.expect("setter auction maximum size is not zero; qed");
 			if !remainder.is_zero() {
 				count = count.saturating_add(One::one());
 			}
@@ -428,7 +428,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				(average_amount_per_lot, average_target_per_lot)
 			};
 
-			T::AuctionManagerHandler::new_reserve_auction(
+			T::AuctionManagerHandler::new_setter_auction(
 				&refund_receiver,
 				currency_id,
 				lot_reserve_amount,

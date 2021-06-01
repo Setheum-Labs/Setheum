@@ -255,7 +255,7 @@ fn swap_exact_reserve_in_auction_to_stable_works() {
 			SerpTreasuryModule::swap_exact_reserve_in_auction_to_stable(BTC, 100, 500, None),
 			Error::<Runtime>::ReserveNotEnough,
 		);
-		assert_ok!(SerpTreasuryModule::create_reserve_auctions(
+		assert_ok!(SerpTreasuryModule::create_setter_auctions(
 			BTC, 100, 1000, ALICE, true
 		));
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 100);
@@ -269,51 +269,51 @@ fn swap_exact_reserve_in_auction_to_stable_works() {
 }
 
 #[test]
-fn create_reserve_auctions_works() {
+fn create_setter_auctions_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Currencies::deposit(BTC, &SerpTreasuryModule::account_id(), 10000));
-		assert_eq!(SerpTreasuryModule::expected_reserve_auction_size(BTC), 0);
+		assert_eq!(SerpTreasuryModule::expected_setter_auction_size(BTC), 0);
 		assert_noop!(
-			SerpTreasuryModule::create_reserve_auctions(BTC, 10001, 1000, ALICE, true),
+			SerpTreasuryModule::create_setter_auctions(BTC, 10001, 1000, ALICE, true),
 			Error::<Runtime>::ReserveNotEnough,
 		);
 
-		// without reserve auction maximum size
-		assert_ok!(SerpTreasuryModule::create_reserve_auctions(
+		// without setter auction maximum size
+		assert_ok!(SerpTreasuryModule::create_setter_auctions(
 			BTC, 1000, 1000, ALICE, true
 		));
-		assert_eq!(TOTAL_RESERVE_AUCTION.with(|v| *v.borrow_mut()), 1);
+		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 1);
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 1000);
 
-		// set reserve auction maximum size
-		assert_ok!(SerpTreasuryModule::set_expected_reserve_auction_size(
+		// set setter auction maximum size
+		assert_ok!(SerpTreasuryModule::set_expected_setter_auction_size(
 			Origin::signed(1),
 			BTC,
 			300
 		));
 
-		// amount < reserve auction maximum size
+		// amount < setter auction maximum size
 		// auction + 1
-		assert_ok!(SerpTreasuryModule::create_reserve_auctions(
+		assert_ok!(SerpTreasuryModule::create_setter_auctions(
 			BTC, 200, 1000, ALICE, true
 		));
-		assert_eq!(TOTAL_RESERVE_AUCTION.with(|v| *v.borrow_mut()), 2);
+		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 2);
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 1200);
 
 		// not exceed lots count cap
 		// auction + 4
-		assert_ok!(SerpTreasuryModule::create_reserve_auctions(
+		assert_ok!(SerpTreasuryModule::create_setter_auctions(
 			BTC, 1000, 1000, ALICE, true
 		));
-		assert_eq!(TOTAL_RESERVE_AUCTION.with(|v| *v.borrow_mut()), 6);
+		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 6);
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 2200);
 
 		// exceed lots count cap
 		// auction + 5
-		assert_ok!(SerpTreasuryModule::create_reserve_auctions(
+		assert_ok!(SerpTreasuryModule::create_setter_auctions(
 			BTC, 2000, 1000, ALICE, true
 		));
-		assert_eq!(TOTAL_RESERVE_AUCTION.with(|v| *v.borrow_mut()), 11);
+		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 11);
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 4200);
 	});
 }
@@ -342,31 +342,31 @@ fn auction_standard_works() {
 			Error::<Runtime>::StandardPoolNotEnough,
 		);
 		assert_ok!(SerpTreasuryModule::on_system_standard(100));
-		assert_eq!(TOTAL_STANDARD_AUCTION.with(|v| *v.borrow_mut()), 0);
+		assert_eq!(TOTAL_DIAMOND_AUCTION.with(|v| *v.borrow_mut()), 0);
 		assert_ok!(SerpTreasuryModule::auction_standard(Origin::signed(1), 100, 200));
-		assert_eq!(TOTAL_STANDARD_AUCTION.with(|v| *v.borrow_mut()), 1);
+		assert_eq!(TOTAL_DIAMOND_AUCTION.with(|v| *v.borrow_mut()), 1);
 	});
 }
 
 #[test]
-fn set_expected_reserve_auction_size_works() {
+fn set_expected_setter_auction_size_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_eq!(SerpTreasuryModule::expected_reserve_auction_size(BTC), 0);
+		assert_eq!(SerpTreasuryModule::expected_setter_auction_size(BTC), 0);
 		assert_noop!(
-			SerpTreasuryModule::set_expected_reserve_auction_size(Origin::signed(5), BTC, 200),
+			SerpTreasuryModule::set_expected_setter_auction_size(Origin::signed(5), BTC, 200),
 			BadOrigin
 		);
-		assert_ok!(SerpTreasuryModule::set_expected_reserve_auction_size(
+		assert_ok!(SerpTreasuryModule::set_expected_setter_auction_size(
 			Origin::signed(1),
 			BTC,
 			200
 		));
 
-		let update_expected_reserve_auction_size_event =
-			Event::serp_treasury(crate::Event::ExpectedReserveAuctionSizeUpdated(BTC, 200));
+		let update_expected_setter_auction_size_event =
+			Event::serp_treasury(crate::Event::ExpectedSetterAuctionSizeUpdated(BTC, 200));
 		assert!(System::events()
 			.iter()
-			.any(|record| record.event == update_expected_reserve_auction_size_event));
+			.any(|record| record.event == update_expected_setter_auction_size_event));
 	});
 }

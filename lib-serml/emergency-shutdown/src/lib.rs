@@ -151,7 +151,7 @@ pub mod module {
 			ensure!(Self::is_shutdown(), Error::<T>::MustAfterShutdown); // must after shutdown
 
 			// Ensure there's no standard and surplus auction now, they may bring uncertain
-			// surplus to system. Cancel all surplus auctions and standard auctions to pass the
+			// surplus to system. Cancel all surplus auctions and diamond auctions to pass the
 			// check!
 			ensure!(
 				<T as Config>::AuctionManagerHandler::get_total_standard_in_auction().is_zero()
@@ -159,13 +159,13 @@ pub mod module {
 				Error::<T>::ExistPotentialSurplus,
 			);
 
-			// Ensure all standards of Settmint have been settled, and all reserve auction has
+			// Ensure all standards of Settmint have been settled, and all setter auction has
 			// been done or canceled. Settle all reserves type Settmint which have standard,
-			// cancel all reserve auctions in forward stage and wait for all reserve
+			// cancel all setter auctions in forward stage and wait for all reserve
 			// auctions in reverse stage to be ended.
 			let reserve_currency_ids = T::ReserveCurrencyIds::get();
 			for currency_id in reserve_currency_ids {
-				// there's no reserve auction
+				// there's no setter auction
 				ensure!(
 					<T as Config>::AuctionManagerHandler::get_total_reserve_in_auction(currency_id).is_zero(),
 					Error::<T>::ExistPotentialSurplus,

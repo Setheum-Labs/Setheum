@@ -48,8 +48,8 @@ use sp_std::marker::PhantomData;
 /// Weight functions needed for setheum_auction_manager.
 pub trait WeightInfo {
 	fn cancel_surplus_auction() -> Weight;
-	fn cancel_standard_auction() -> Weight;
-	fn cancel_reserve_auction() -> Weight;
+	fn cancel_diamond_auction() -> Weight;
+	fn cancel_setter_auction() -> Weight;
 }
 
 /// Weights for setheum_auction_manager using the Setheum node and recommended hardware.
@@ -60,12 +60,12 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
-	fn cancel_standard_auction() -> Weight {
+	fn cancel_diamond_auction() -> Weight {
 		(35_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(5 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
-	fn cancel_reserve_auction() -> Weight {
+	fn cancel_setter_auction() -> Weight {
 		(78_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(9 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))
@@ -79,12 +79,12 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
 	}
-	fn cancel_standard_auction() -> Weight {
+	fn cancel_diamond_auction() -> Weight {
 		(35_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(5 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
 	}
-	fn cancel_reserve_auction() -> Weight {
+	fn cancel_setter_auction() -> Weight {
 		(78_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(9 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(7 as Weight))

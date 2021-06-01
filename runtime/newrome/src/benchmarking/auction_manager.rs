@@ -59,9 +59,9 @@ runtime_benchmarks! {
 		EmergencyShutdown::emergency_shutdown(RawOrigin::Root.into())?;
 	}: cancel(RawOrigin::None, auction_id)
 
-	// `cancel` a standard auction, worst case:
+	// `cancel` a diamond auction, worst case:
 	// auction have been already bid
-	cancel_standard_auction {
+	cancel_diamond_auction {
 		let bidder: AccountId = account("bidder", 0, SEED);
 		let native_currency_id = GetNativeCurrencyId::get();
 		let stable_currency_id = GetStableCurrencyId::get();
@@ -69,20 +69,20 @@ runtime_benchmarks! {
 		// set balance
 		set_balance(stable_currency_id, &bidder, 10 * dollar(stable_currency_id));
 
-		// create standard auction
-		<AuctionManager as AuctionManagerTrait<AccountId>>::new_standard_auction(dollar(native_currency_id), 10 * dollar(stable_currency_id))?;
+		// create diamond auction
+		<AuctionManager as AuctionManagerTrait<AccountId>>::new_diamond_auction(dollar(native_currency_id), 10 * dollar(stable_currency_id))?;
 		let auction_id: AuctionId = Default::default();
 
-		// bid standard auction
-		let _ = AuctionManager::standard_auction_bid_handler(1, auction_id, (bidder, 20 * dollar(stable_currency_id)), None);
+		// bid diamond auction
+		let _ = AuctionManager::diamond_auction_bid_handler(1, auction_id, (bidder, 20 * dollar(stable_currency_id)), None);
 
 		// shutdown
 		EmergencyShutdown::emergency_shutdown(RawOrigin::Root.into())?;
 	}: cancel(RawOrigin::None, auction_id)
 
-	// `cancel` a reserve auction, worst case:
+	// `cancel` a setter auction, worst case:
 	// auction have been already bid
-	cancel_reserve_auction {
+	cancel_setter_auction {
 		let bidder: AccountId = account("bidder", 0, SEED);
 		let funder: AccountId = account("funder", 0, SEED);
 		let stable_currency_id = GetStableCurrencyId::get();
@@ -95,12 +95,12 @@ runtime_benchmarks! {
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(DOT, Price::saturating_from_integer(120))])?;
 
-		// create reserve auction
-		AuctionManager::new_reserve_auction(&funder, DOT, dollar(DOT), 100 * dollar(stable_currency_id))?;
+		// create setter auction
+		AuctionManager::new_setter_auction(&funder, DOT, dollar(DOT), 100 * dollar(stable_currency_id))?;
 		let auction_id: AuctionId = Default::default();
 
-		// bid reserve auction
-		let _ = AuctionManager::reserve_auction_bid_handler(1, auction_id, (bidder, 80 * dollar(stable_currency_id)), None);
+		// bid setter auction
+		let _ = AuctionManager::setter_auction_bid_handler(1, auction_id, (bidder, 80 * dollar(stable_currency_id)), None);
 
 		// shutdown
 		EmergencyShutdown::emergency_shutdown(RawOrigin::Root.into())?;
@@ -127,16 +127,16 @@ mod tests {
 	}
 
 	#[test]
-	fn test_cancel_standard_auction() {
+	fn test_cancel_diamond_auction() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_cancel_standard_auction());
+			assert_ok!(test_benchmark_cancel_diamond_auction());
 		});
 	}
 
 	#[test]
-	fn test_cancel_reserve_auction() {
+	fn test_cancel_setter_auction() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_cancel_reserve_auction());
+			assert_ok!(test_benchmark_cancel_setter_auction());
 		});
 	}
 }

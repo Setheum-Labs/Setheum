@@ -136,9 +136,9 @@ impl setheum_dex::Config for Runtime {
 }
 
 thread_local! {
-	pub static TOTAL_RESERVE_AUCTION: RefCell<u32> = RefCell::new(0);
+	pub static TOTAL_SETTER_AUCTION: RefCell<u32> = RefCell::new(0);
 	pub static TOTAL_RESERVE_IN_AUCTION: RefCell<Balance> = RefCell::new(0);
-	pub static TOTAL_STANDARD_AUCTION: RefCell<u32> = RefCell::new(0);
+	pub static TOTAL_DIAMOND_AUCTION: RefCell<u32> = RefCell::new(0);
 	pub static TOTAL_SURPLUS_AUCTION: RefCell<u32> = RefCell::new(0);
 }
 
@@ -148,19 +148,19 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	type Balance = Balance;
 	type AuctionId = AuctionId;
 
-	fn new_reserve_auction(
+	fn new_setter_auction(
 		_refund_recipient: &AccountId,
 		_currency_id: Self::CurrencyId,
 		amount: Self::Balance,
 		_target: Self::Balance,
 	) -> DispatchResult {
-		TOTAL_RESERVE_AUCTION.with(|v| *v.borrow_mut() += 1);
+		TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut() += 1);
 		TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut() += amount);
 		Ok(())
 	}
 
-	fn new_standard_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
-		TOTAL_STANDARD_AUCTION.with(|v| *v.borrow_mut() += 1);
+	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
+		TOTAL_DIAMOND_AUCTION.with(|v| *v.borrow_mut() += 1);
 		Ok(())
 	}
 

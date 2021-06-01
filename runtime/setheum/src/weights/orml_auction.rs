@@ -45,7 +45,7 @@ use sp_std::marker::PhantomData;
 /// Weight functions for orml_auction.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> orml_auction::WeightInfo for WeightInfo<T> {
-	fn bid_reserve_auction() -> Weight {
+	fn bid_setter_auction() -> Weight {
 		(145_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(11 as Weight))
 			.saturating_add(T::DbWeight::get().writes(13 as Weight))
@@ -55,7 +55,7 @@ impl<T: frame_system::Config> orml_auction::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 	}
-	fn bid_standard_auction() -> Weight {
+	fn bid_diamond_auction() -> Weight {
 		(74_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(7 as Weight))
 			.saturating_add(T::DbWeight::get().writes(8 as Weight))

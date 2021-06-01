@@ -33,57 +33,57 @@ fn get_auction_time_to_close_work() {
 }
 
 #[test]
-fn reserve_auction_methods() {
+fn setter_auction_methods() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 10, 100));
-		let reserve_auction_with_positive_target = AuctionManagerModule::reserve_auctions(0).unwrap();
-		assert_eq!(reserve_auction_with_positive_target.always_forward(), false);
-		assert_eq!(reserve_auction_with_positive_target.in_reverse_stage(99), false);
-		assert_eq!(reserve_auction_with_positive_target.in_reverse_stage(100), true);
-		assert_eq!(reserve_auction_with_positive_target.in_reverse_stage(101), true);
-		assert_eq!(reserve_auction_with_positive_target.payment_amount(99), 99);
-		assert_eq!(reserve_auction_with_positive_target.payment_amount(100), 100);
-		assert_eq!(reserve_auction_with_positive_target.payment_amount(101), 100);
-		assert_eq!(reserve_auction_with_positive_target.reserve_amount(80, 100), 10);
-		assert_eq!(reserve_auction_with_positive_target.reserve_amount(100, 200), 5);
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
+		let setter_auction_with_positive_target = AuctionManagerModule::setter_auctions(0).unwrap();
+		assert_eq!(setter_auction_with_positive_target.always_forward(), false);
+		assert_eq!(setter_auction_with_positive_target.in_reverse_stage(99), false);
+		assert_eq!(setter_auction_with_positive_target.in_reverse_stage(100), true);
+		assert_eq!(setter_auction_with_positive_target.in_reverse_stage(101), true);
+		assert_eq!(setter_auction_with_positive_target.payment_amount(99), 99);
+		assert_eq!(setter_auction_with_positive_target.payment_amount(100), 100);
+		assert_eq!(setter_auction_with_positive_target.payment_amount(101), 100);
+		assert_eq!(setter_auction_with_positive_target.reserve_amount(80, 100), 10);
+		assert_eq!(setter_auction_with_positive_target.reserve_amount(100, 200), 5);
 
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 10, 0));
-		let reserve_auction_with_zero_target = AuctionManagerModule::reserve_auctions(1).unwrap();
-		assert_eq!(reserve_auction_with_zero_target.always_forward(), true);
-		assert_eq!(reserve_auction_with_zero_target.in_reverse_stage(0), false);
-		assert_eq!(reserve_auction_with_zero_target.in_reverse_stage(100), false);
-		assert_eq!(reserve_auction_with_zero_target.payment_amount(99), 99);
-		assert_eq!(reserve_auction_with_zero_target.payment_amount(101), 101);
-		assert_eq!(reserve_auction_with_zero_target.reserve_amount(100, 200), 10);
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 0));
+		let setter_auction_with_zero_target = AuctionManagerModule::setter_auctions(1).unwrap();
+		assert_eq!(setter_auction_with_zero_target.always_forward(), true);
+		assert_eq!(setter_auction_with_zero_target.in_reverse_stage(0), false);
+		assert_eq!(setter_auction_with_zero_target.in_reverse_stage(100), false);
+		assert_eq!(setter_auction_with_zero_target.payment_amount(99), 99);
+		assert_eq!(setter_auction_with_zero_target.payment_amount(101), 101);
+		assert_eq!(setter_auction_with_zero_target.reserve_amount(100, 200), 10);
 	});
 }
 
 #[test]
-fn standard_auction_methods() {
+fn diamond_auction_methods() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(AuctionManagerModule::new_standard_auction(200, 100));
-		let standard_auction = AuctionManagerModule::standard_auctions(0).unwrap();
-		assert_eq!(standard_auction.amount_for_sale(0, 100), 200);
-		assert_eq!(standard_auction.amount_for_sale(100, 200), 100);
-		assert_eq!(standard_auction.amount_for_sale(200, 1000), 40);
+		assert_ok!(AuctionManagerModule::new_diamond_auction(200, 100));
+		let diamond_auction = AuctionManagerModule::diamond_auctions(0).unwrap();
+		assert_eq!(diamond_auction.amount_for_sale(0, 100), 200);
+		assert_eq!(diamond_auction.amount_for_sale(100, 200), 100);
+		assert_eq!(diamond_auction.amount_for_sale(200, 1000), 40);
 	});
 }
 
 #[test]
-fn new_reserve_auction_work() {
+fn new_setter_auction_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		let ref_count_0 = System::consumers(&ALICE);
 		assert_noop!(
-			AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 0, 100),
+			AuctionManagerModule::new_setter_auction(&ALICE, BTC, 0, 100),
 			Error::<Runtime>::InvalidAmount,
 		);
 
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 10, 100));
-		let new_reserve_auction_event = Event::auction_manager(crate::Event::NewReserveAuction(0, BTC, 10, 100));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
+		let new_setter_auction_event = Event::auction_manager(crate::Event::NewSetterAuction(0, BTC, 10, 100));
 		assert!(System::events()
 			.iter()
-			.any(|record| record.event == new_reserve_auction_event));
+			.any(|record| record.event == new_setter_auction_event));
 
 		assert_eq!(AuctionManagerModule::total_reserve_in_auction(BTC), 10);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 100);
@@ -91,36 +91,36 @@ fn new_reserve_auction_work() {
 		assert_eq!(System::consumers(&ALICE), ref_count_0 + 1);
 
 		assert_noop!(
-			AuctionManagerModule::new_reserve_auction(&ALICE, BTC, Balance::max_value(), Balance::max_value()),
+			AuctionManagerModule::new_setter_auction(&ALICE, BTC, Balance::max_value(), Balance::max_value()),
 			Error::<Runtime>::InvalidAmount,
 		);
 	});
 }
 
 #[test]
-fn new_standard_auction_work() {
+fn new_diamond_auction_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_noop!(
-			AuctionManagerModule::new_standard_auction(0, 100),
+			AuctionManagerModule::new_diamond_auction(0, 100),
 			Error::<Runtime>::InvalidAmount,
 		);
 		assert_noop!(
-			AuctionManagerModule::new_standard_auction(200, 0),
+			AuctionManagerModule::new_diamond_auction(200, 0),
 			Error::<Runtime>::InvalidAmount,
 		);
 
-		assert_ok!(AuctionManagerModule::new_standard_auction(200, 100));
-		let new_standard_auction_event = Event::auction_manager(crate::Event::NewStandardAuction(0, 200, 100));
+		assert_ok!(AuctionManagerModule::new_diamond_auction(200, 100));
+		let new_diamond_auction_event = Event::auction_manager(crate::Event::NewDiamondAuction(0, 200, 100));
 		assert!(System::events()
 			.iter()
-			.any(|record| record.event == new_standard_auction_event));
+			.any(|record| record.event == new_diamond_auction_event));
 
 		assert_eq!(AuctionManagerModule::total_standard_in_auction(), 100);
 		assert_eq!(AuctionModule::auctions_index(), 1);
 
 		assert_noop!(
-			AuctionManagerModule::new_standard_auction(200, Balance::max_value()),
+			AuctionManagerModule::new_diamond_auction(200, Balance::max_value()),
 			Error::<Runtime>::InvalidAmount,
 		);
 	});
@@ -152,26 +152,26 @@ fn new_surplus_auction_work() {
 }
 
 #[test]
-fn reserve_auction_bid_handler_work() {
+fn setter_auction_bid_handler_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			AuctionManagerModule::reserve_auction_bid_handler(1, 0, (BOB, 4), None),
+			AuctionManagerModule::setter_auction_bid_handler(1, 0, (BOB, 4), None),
 			Error::<Runtime>::AuctionNotExists,
 		);
 
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 10));
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 10, 100));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 0);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 
 		let bob_ref_count_0 = System::consumers(&BOB);
 
 		assert_noop!(
-			AuctionManagerModule::reserve_auction_bid_handler(1, 0, (BOB, 4), None),
+			AuctionManagerModule::setter_auction_bid_handler(1, 0, (BOB, 4), None),
 			Error::<Runtime>::InvalidBidPrice,
 		);
 		assert_eq!(
-			AuctionManagerModule::reserve_auction_bid_handler(1, 0, (BOB, 5), None).is_ok(),
+			AuctionManagerModule::setter_auction_bid_handler(1, 0, (BOB, 5), None).is_ok(),
 			true
 		);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 5);
@@ -182,13 +182,13 @@ fn reserve_auction_bid_handler_work() {
 		let carol_ref_count_0 = System::consumers(&CAROL);
 
 		assert_eq!(
-			AuctionManagerModule::reserve_auction_bid_handler(2, 0, (CAROL, 10), Some((BOB, 5))).is_ok(),
+			AuctionManagerModule::setter_auction_bid_handler(2, 0, (CAROL, 10), Some((BOB, 5))).is_ok(),
 			true
 		);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 10);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &CAROL), 990);
-		assert_eq!(AuctionManagerModule::reserve_auctions(0).unwrap().amount, 10);
+		assert_eq!(AuctionManagerModule::setter_auctions(0).unwrap().amount, 10);
 
 		let bob_ref_count_2 = System::consumers(&BOB);
 		assert_eq!(bob_ref_count_2, bob_ref_count_1 - 1);
@@ -196,13 +196,13 @@ fn reserve_auction_bid_handler_work() {
 		assert_eq!(carol_ref_count_1, carol_ref_count_0 + 1);
 
 		assert_eq!(
-			AuctionManagerModule::reserve_auction_bid_handler(3, 0, (BOB, 200), Some((CAROL, 10))).is_ok(),
+			AuctionManagerModule::setter_auction_bid_handler(3, 0, (BOB, 200), Some((CAROL, 10))).is_ok(),
 			true
 		);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 900);
 		assert_eq!(Tokens::free_balance(USDJ, &CAROL), 1000);
-		assert_eq!(AuctionManagerModule::reserve_auctions(0).unwrap().amount, 5);
+		assert_eq!(AuctionManagerModule::setter_auctions(0).unwrap().amount, 5);
 
 		let bob_ref_count_3 = System::consumers(&BOB);
 		assert_eq!(bob_ref_count_3, bob_ref_count_2 + 1);
@@ -212,30 +212,30 @@ fn reserve_auction_bid_handler_work() {
 }
 
 #[test]
-fn standard_auction_bid_handler_work() {
+fn diamond_auction_bid_handler_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			AuctionManagerModule::standard_auction_bid_handler(1, 0, (BOB, 99), None),
+			AuctionManagerModule::diamond_auction_bid_handler(1, 0, (BOB, 99), None),
 			Error::<Runtime>::AuctionNotExists,
 		);
 
-		assert_ok!(AuctionManagerModule::new_standard_auction(200, 100));
+		assert_ok!(AuctionManagerModule::new_diamond_auction(200, 100));
 		assert_eq!(AuctionManagerModule::total_standard_in_auction(), 100);
-		assert_eq!(AuctionManagerModule::standard_auctions(0).unwrap().amount, 200);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0).unwrap().amount, 200);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 0);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 
 		let bob_ref_count_0 = System::consumers(&BOB);
 
 		assert_noop!(
-			AuctionManagerModule::standard_auction_bid_handler(1, 0, (BOB, 99), None),
+			AuctionManagerModule::diamond_auction_bid_handler(1, 0, (BOB, 99), None),
 			Error::<Runtime>::InvalidBidPrice,
 		);
 		assert_eq!(
-			AuctionManagerModule::standard_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),
+			AuctionManagerModule::diamond_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),
 			true
 		);
-		assert_eq!(AuctionManagerModule::standard_auctions(0).unwrap().amount, 200);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0).unwrap().amount, 200);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 900);
 
@@ -244,10 +244,10 @@ fn standard_auction_bid_handler_work() {
 		let carol_ref_count_0 = System::consumers(&CAROL);
 
 		assert_eq!(
-			AuctionManagerModule::standard_auction_bid_handler(2, 0, (CAROL, 200), Some((BOB, 100))).is_ok(),
+			AuctionManagerModule::diamond_auction_bid_handler(2, 0, (CAROL, 200), Some((BOB, 100))).is_ok(),
 			true
 		);
-		assert_eq!(AuctionManagerModule::standard_auctions(0).unwrap().amount, 100);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0).unwrap().amount, 100);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &CAROL), 900);
@@ -300,9 +300,9 @@ fn surplus_auction_bid_handler_work() {
 }
 
 #[test]
-fn bid_when_soft_cap_for_reserve_auction_work() {
+fn bid_when_soft_cap_for_setter_auction_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 10, 100));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
 		assert_eq!(
 			AuctionManagerModule::on_new_bid(1, 0, (BOB, 100), None).auction_end_change,
 			Change::NewValue(Some(101))
@@ -319,9 +319,9 @@ fn bid_when_soft_cap_for_reserve_auction_work() {
 }
 
 #[test]
-fn bid_when_soft_cap_for_standard_auction_work() {
+fn bid_when_soft_cap_for_diamond_auction_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(AuctionManagerModule::new_standard_auction(200, 100));
+		assert_ok!(AuctionManagerModule::new_diamond_auction(200, 100));
 		assert_eq!(
 			AuctionManagerModule::on_new_bid(1, 0, (BOB, 100), None).auction_end_change,
 			Change::NewValue(Some(101))
@@ -357,17 +357,17 @@ fn bid_when_soft_cap_for_surplus_auction_work() {
 }
 
 #[test]
-fn reserve_auction_end_handler_without_bid() {
+fn setter_auction_end_handler_without_bid() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 100, 200));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 100, 200));
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 200);
 		assert_eq!(AuctionManagerModule::total_reserve_in_auction(BTC), 100);
 		let alice_ref_count_0 = System::consumers(&ALICE);
 
-		assert_eq!(AuctionManagerModule::reserve_auctions(0).is_some(), true);
+		assert_eq!(AuctionManagerModule::setter_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, None);
 		let auction_passed_event = Event::auction_manager(crate::Event::CancelAuction(0));
 		assert!(System::events()
@@ -375,7 +375,7 @@ fn reserve_auction_end_handler_without_bid() {
 			.any(|record| record.event == auction_passed_event));
 
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
-		assert_eq!(AuctionManagerModule::reserve_auctions(0), None);
+		assert_eq!(AuctionManagerModule::setter_auctions(0), None);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 0);
 		assert_eq!(AuctionManagerModule::total_reserve_in_auction(BTC), 0);
 		let alice_ref_count_1 = System::consumers(&ALICE);
@@ -384,13 +384,13 @@ fn reserve_auction_end_handler_without_bid() {
 }
 
 #[test]
-fn reserve_auction_end_handler_in_reverse_stage() {
+fn setter_auction_end_handler_in_reverse_stage() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 100, 200));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 100, 200));
 		assert_eq!(
-			AuctionManagerModule::reserve_auction_bid_handler(2, 0, (BOB, 400), None).is_ok(),
+			AuctionManagerModule::setter_auction_bid_handler(2, 0, (BOB, 400), None).is_ok(),
 			true
 		);
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 50);
@@ -403,15 +403,15 @@ fn reserve_auction_end_handler_in_reverse_stage() {
 		let alice_ref_count_0 = System::consumers(&ALICE);
 		let bob_ref_count_0 = System::consumers(&BOB);
 
-		assert_eq!(AuctionManagerModule::reserve_auctions(0).is_some(), true);
+		assert_eq!(AuctionManagerModule::setter_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, Some((BOB, 400)));
-		let auction_dealt_event = Event::auction_manager(crate::Event::ReserveAuctionDealt(0, BTC, 50, BOB, 200));
+		let auction_dealt_event = Event::auction_manager(crate::Event::SetterAuctionDealt(0, BTC, 50, BOB, 200));
 		assert!(System::events()
 			.iter()
 			.any(|record| record.event == auction_dealt_event));
 
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
-		assert_eq!(AuctionManagerModule::reserve_auctions(0), None);
+		assert_eq!(AuctionManagerModule::setter_auctions(0), None);
 		assert_eq!(AuctionManagerModule::total_reserve_in_auction(BTC), 0);
 		assert_eq!(Tokens::free_balance(BTC, &ALICE), 1050);
 		assert_eq!(Tokens::free_balance(BTC, &BOB), 1050);
@@ -426,13 +426,13 @@ fn reserve_auction_end_handler_in_reverse_stage() {
 }
 
 #[test]
-fn reserve_auction_end_handler_by_dealing_which_target_not_zero() {
+fn setter_auction_end_handler_by_dealing_which_target_not_zero() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 100, 200));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 100, 200));
 		assert_eq!(
-			AuctionManagerModule::reserve_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),
+			AuctionManagerModule::setter_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),
 			true
 		);
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
@@ -445,15 +445,15 @@ fn reserve_auction_end_handler_by_dealing_which_target_not_zero() {
 		let alice_ref_count_0 = System::consumers(&ALICE);
 		let bob_ref_count_0 = System::consumers(&BOB);
 
-		assert_eq!(AuctionManagerModule::reserve_auctions(0).is_some(), true);
+		assert_eq!(AuctionManagerModule::setter_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, Some((BOB, 100)));
-		let auction_dealt_event = Event::auction_manager(crate::Event::ReserveAuctionDealt(0, BTC, 100, BOB, 100));
+		let auction_dealt_event = Event::auction_manager(crate::Event::SetterAuctionDealt(0, BTC, 100, BOB, 100));
 		assert!(System::events()
 			.iter()
 			.any(|record| record.event == auction_dealt_event));
 
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
-		assert_eq!(AuctionManagerModule::reserve_auctions(0), None);
+		assert_eq!(AuctionManagerModule::setter_auctions(0), None);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 0);
 		assert_eq!(AuctionManagerModule::total_reserve_in_auction(BTC), 0);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 0);
@@ -467,13 +467,13 @@ fn reserve_auction_end_handler_by_dealing_which_target_not_zero() {
 }
 
 #[test]
-fn reserve_auction_end_handler_by_dex_which_target_not_zero() {
+fn setter_auction_end_handler_by_dex_which_target_not_zero() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 100, 200));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 100, 200));
 		assert_eq!(
-			AuctionManagerModule::reserve_auction_bid_handler(1, 0, (BOB, 20), None).is_ok(),
+			AuctionManagerModule::setter_auction_bid_handler(1, 0, (BOB, 20), None).is_ok(),
 			true
 		);
 		assert_ok!(DEXModule::add_liquidity(
@@ -498,16 +498,16 @@ fn reserve_auction_end_handler_by_dex_which_target_not_zero() {
 		let alice_ref_count_0 = System::consumers(&ALICE);
 		let bob_ref_count_0 = System::consumers(&BOB);
 
-		assert_eq!(AuctionManagerModule::reserve_auctions(0).is_some(), true);
+		assert_eq!(AuctionManagerModule::setter_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, Some((BOB, 20)));
-		let dex_take_reserve_auction =
-			Event::auction_manager(crate::Event::DEXTakeReserveAuction(0, BTC, 100, 500));
+		let dex_take_setter_auction =
+			Event::auction_manager(crate::Event::DEXTakeSetterAuction(0, BTC, 100, 500));
 		assert!(System::events()
 			.iter()
-			.any(|record| record.event == dex_take_reserve_auction));
+			.any(|record| record.event == dex_take_setter_auction));
 
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
-		assert_eq!(AuctionManagerModule::reserve_auctions(0), None);
+		assert_eq!(AuctionManagerModule::setter_auctions(0), None);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 0);
 		assert_eq!(AuctionManagerModule::total_reserve_in_auction(BTC), 0);
 		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
@@ -524,31 +524,31 @@ fn reserve_auction_end_handler_by_dex_which_target_not_zero() {
 }
 
 #[test]
-fn standard_auction_end_handler_without_bid() {
+fn diamond_auction_end_handler_without_bid() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(AuctionManagerModule::new_standard_auction(300, 100));
+		assert_ok!(AuctionManagerModule::new_diamond_auction(300, 100));
 		assert_eq!(AuctionManagerModule::total_standard_in_auction(), 100);
 
-		assert_eq!(AuctionManagerModule::standard_auctions(0).is_some(), true);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, None);
 		let auction_passed_event = Event::auction_manager(crate::Event::CancelAuction(0));
 		assert!(System::events()
 			.iter()
 			.any(|record| record.event == auction_passed_event));
 
-		assert_eq!(AuctionManagerModule::standard_auctions(0), None);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0), None);
 		assert_eq!(AuctionManagerModule::total_standard_in_auction(), 0);
 	});
 }
 
 #[test]
-fn standard_auction_end_handler_with_bid() {
+fn diamond_auction_end_handler_with_bid() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(AuctionManagerModule::new_standard_auction(300, 100));
+		assert_ok!(AuctionManagerModule::new_diamond_auction(300, 100));
 		assert_eq!(
-			AuctionManagerModule::standard_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),
+			AuctionManagerModule::diamond_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),
 			true
 		);
 		assert_eq!(AuctionManagerModule::total_standard_in_auction(), 100);
@@ -557,16 +557,16 @@ fn standard_auction_end_handler_with_bid() {
 
 		let bob_ref_count_0 = System::consumers(&BOB);
 
-		assert_eq!(AuctionManagerModule::standard_auctions(0).is_some(), true);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, Some((BOB, 100)));
-		let standard_auction_deal_event = Event::auction_manager(crate::Event::StandardAuctionDealt(0, 300, BOB, 100));
+		let diamond_auction_deal_event = Event::auction_manager(crate::Event::DiamondAuctionDealt(0, 300, BOB, 100));
 		assert!(System::events()
 			.iter()
-			.any(|record| record.event == standard_auction_deal_event));
+			.any(|record| record.event == diamond_auction_deal_event));
 
 		assert_eq!(Tokens::free_balance(DNAR, &BOB), 1300);
 		assert_eq!(Tokens::total_issuance(DNAR), 3300);
-		assert_eq!(AuctionManagerModule::standard_auctions(0), None);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0), None);
 		assert_eq!(AuctionManagerModule::total_standard_in_auction(), 0);
 
 		let bob_ref_count_1 = System::consumers(&BOB);
@@ -693,13 +693,13 @@ fn cancel_surplus_auction_work() {
 }
 
 #[test]
-fn cancel_standard_auction_work() {
+fn cancel_diamond_auction_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 
-		assert_ok!(AuctionManagerModule::new_standard_auction(200, 100));
+		assert_ok!(AuctionManagerModule::new_diamond_auction(200, 100));
 		assert_ok!(AuctionModule::bid(Origin::signed(BOB), 0, 100));
-		assert_eq!(AuctionManagerModule::standard_auctions(0).is_some(), true);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0).is_some(), true);
 		assert_eq!(AuctionManagerModule::total_standard_in_auction(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 900);
 
@@ -717,7 +717,7 @@ fn cancel_standard_auction_work() {
 			.iter()
 			.any(|record| record.event == cancel_auction_event));
 
-		assert_eq!(AuctionManagerModule::standard_auctions(0).is_some(), false);
+		assert_eq!(AuctionManagerModule::diamond_auctions(0).is_some(), false);
 		assert_eq!(AuctionManagerModule::total_standard_in_auction(), 0);
 		assert_eq!(AuctionModule::auction_info(0).is_some(), false);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
@@ -728,36 +728,36 @@ fn cancel_standard_auction_work() {
 }
 
 #[test]
-fn cancel_reserve_auction_failed() {
+fn cancel_setter_auction_failed() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 10));
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 10, 100));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
 		MockPriceSource::set_relative_price(None);
 		assert_noop!(
-			AuctionManagerModule::cancel_reserve_auction(0, AuctionManagerModule::reserve_auctions(0).unwrap()),
+			AuctionManagerModule::cancel_setter_auction(0, AuctionManagerModule::setter_auctions(0).unwrap()),
 			Error::<Runtime>::InvalidFeedPrice,
 		);
 		MockPriceSource::set_relative_price(Some(Price::one()));
 
 		assert_ok!(AuctionModule::bid(Origin::signed(ALICE), 0, 100));
-		let reserve_auction = AuctionManagerModule::reserve_auctions(0).unwrap();
-		assert_eq!(reserve_auction.always_forward(), false);
+		let setter_auction = AuctionManagerModule::setter_auctions(0).unwrap();
+		assert_eq!(setter_auction.always_forward(), false);
 		assert_eq!(AuctionManagerModule::get_last_bid(0), Some((ALICE, 100)));
-		assert_eq!(reserve_auction.in_reverse_stage(100), true);
+		assert_eq!(setter_auction.in_reverse_stage(100), true);
 		assert_noop!(
-			AuctionManagerModule::cancel_reserve_auction(0, reserve_auction),
+			AuctionManagerModule::cancel_setter_auction(0, setter_auction),
 			Error::<Runtime>::InReverseStage,
 		);
 	});
 }
 
 #[test]
-fn cancel_reserve_auction_work() {
+fn cancel_setter_auction_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 10));
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 10);
-		assert_ok!(AuctionManagerModule::new_reserve_auction(&ALICE, BTC, 10, 100));
+		assert_ok!(AuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
 		assert_eq!(AuctionManagerModule::total_reserve_in_auction(BTC), 10);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 100);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 0);
@@ -785,7 +785,7 @@ fn cancel_reserve_auction_work() {
 		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 10);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 80);
 		assert_eq!(SerpTreasuryModule::surplus_pool(), 80);
-		assert_eq!(AuctionManagerModule::reserve_auctions(0).is_some(), false);
+		assert_eq!(AuctionManagerModule::setter_auctions(0).is_some(), false);
 		assert_eq!(AuctionModule::auction_info(0).is_some(), false);
 
 		let alice_ref_count_1 = System::consumers(&ALICE);

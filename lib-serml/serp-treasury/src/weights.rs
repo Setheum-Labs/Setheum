@@ -51,7 +51,7 @@ pub trait WeightInfo {
 	fn auction_surplus() -> Weight;
 	fn auction_standard() -> Weight;
 	fn auction_reserve() -> Weight;
-	fn set_expected_reserve_auction_size() -> Weight;
+	fn set_expected_setter_auction_size() -> Weight;
 }
 
 /// Weights for serp_treasury using the Setheum node and recommended hardware.
@@ -72,7 +72,7 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(204 as Weight))
 	}
-	fn set_expected_reserve_auction_size() -> Weight {
+	fn set_expected_setter_auction_size() -> Weight {
 		(14_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
@@ -95,7 +95,7 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(204 as Weight))
 	}
-	fn set_expected_reserve_auction_size() -> Weight {
+	fn set_expected_setter_auction_size() -> Weight {
 		(14_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}

@@ -50,12 +50,12 @@ impl<T: frame_system::Config> setheum_auction_manager::WeightInfo for WeightInfo
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
-	fn cancel_standard_auction() -> Weight {
+	fn cancel_diamond_auction() -> Weight {
 		(61_230_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(5 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
-	fn cancel_reserve_auction() -> Weight {
+	fn cancel_setter_auction() -> Weight {
 		(151_099_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(9 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))
