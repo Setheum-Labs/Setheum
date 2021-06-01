@@ -122,7 +122,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	type Balance = Balance;
 	type AuctionId = AuctionId;
 
-	fn new_reserve_auction(
+	fn new_setter_auction(
 		_refund_recipient: &AccountId,
 		_currency_id: Self::CurrencyId,
 		_amount: Self::Balance,
@@ -131,11 +131,11 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Ok(())
 	}
 
-	fn new_standard_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
+	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
 		Ok(())
 	}
 
-	fn new_surplus_auction(_amount: Self::Balance) -> DispatchResult {
+	fn new_serplus_auction(_amount: Self::Balance) -> DispatchResult {
 		Ok(())
 	}
 
@@ -155,7 +155,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Default::default()
 	}
 
-	fn get_total_surplus_in_auction() -> Self::Balance {
+	fn get_total_serplusin_auction() -> Self::Balance {
 		Default::default()
 	}
 }

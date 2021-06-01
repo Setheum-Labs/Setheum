@@ -298,8 +298,8 @@ fn testnet_genesis(
 		}),
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),
 		serp_treasury: Some(SerpTreasuryConfig {
-			expected_reserve_auction_size: vec![
-				(DOT, dollar(DOT)), // (currency_id, max size of a reserve auction)
+			expected_setter_auction_size: vec![
+				(DOT, dollar(DOT)), // (currency_id, max size of a setter auction)
 				(CHFJ, dollar(CHFJ)),
 				(GBPJ, dollar(GBPJ)),
 			],
@@ -309,9 +309,6 @@ fn testnet_genesis(
 				(
 					SETT,
 					Some(FixedU128::zero()),                             // stability fee for this reserve
-					Some(FixedU128::saturating_from_rational(150, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(10, 100)),  // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(150, 100)), // required liquidation ratio
 					10_000_000 * dollar(USDJ),                           // maximum standard value in USDj (cap)
 				),
 			],
@@ -344,13 +341,12 @@ fn newrome_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
-		cent, dollar, get_all_setheum_accounts, SetheumOracleConfig, AirDropConfig, AirDropCurrencyId, BabeConfig,
-		Balance, BalancesConfig, BandOracleConfig, SettmintEngineConfig, SerpTreasuryConfig, DexConfig,
-		EnabledTradingPairs, GeneralCouncilMembershipConfig, GrandpaConfig, 
-		SettwayCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
-		OperatorMembershipBandConfig, OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig,
-		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		DNAR, SETT, USDJ,
+		cent, dollar, get_all_setheum_accounts, SetheumOracleConfig, AirDropConfig, AirDropCurrencyId,
+		BabeConfig, Balance, BalancesConfig, BandOracleConfig, SettmintEngineConfig, SerpTreasuryConfig,
+		DexConfig, EnabledTradingPairs, GeneralCouncilMembershipConfig, GrandpaConfig, SettwayCouncilMembershipConfig,
+		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
+		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig,
+		TokensConfig, VestingConfig, DNAR, SETT, USDJ,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -445,8 +441,8 @@ fn newrome_genesis(
 		}),
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),
 		serp_treasury: Some(SerpTreasuryConfig {
-			expected_reserve_auction_size: vec![
-				(DOT, dollar(DOT)), // (currency_id, max size of a reserve auction)
+			expected_setter_auction_size: vec![
+				(DOT, dollar(DOT)), // (currency_id, max size of a setter auction)
 				(CHFJ, 5 * cent(CHFJ)),
 				(GBPJ, 5 * cent(GBPJ)),
 			],
@@ -456,9 +452,6 @@ fn newrome_genesis(
 				(
 					SETT,
 					Some(FixedU128::zero()),                             // stability fee for this reserve
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
 					10_000_000 * dollar(USDJ),                           // maximum standard value in USDj (cap)
 				),
 			],

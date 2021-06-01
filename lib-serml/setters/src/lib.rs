@@ -43,7 +43,7 @@ mod tests;
 
 pub use module::*;
 
-/// A reserveized standard position.
+/// A reserved standard position.
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default)]
 pub struct Position {
 	/// The amount of reserve.
@@ -103,23 +103,21 @@ pub mod module {
 		/// Position updated. \[owner, reserve_type, reserve_adjustment,
 		/// standard_adjustment\]
 		PositionUpdated(T::AccountId, CurrencyId, Amount, Amount),
-		/// Confiscate Settmint's reserve assets and eliminate its standard. \[owner,
-		/// reserve_type, confiscated_reserve_amount,
-		/// deduct_standard_amount\]
-		ConfiscateReserveAndStandard(T::AccountId, CurrencyId, Balance, Balance),
 		/// Transfer setter. \[from, to, currency_id\]
 		TransferSetter(T::AccountId, T::AccountId, CurrencyId),
 	}
 
-	/// The reserveized standard positions, map from
+	/// The reserved standard positions, map from
 	/// Owner -> ReserveType -> Position
 	#[pallet::storage]
 	#[pallet::getter(fn positions)]
 	pub type Positions<T: Config> =
 		StorageDoubleMap<_, Twox64Concat, CurrencyId, Twox64Concat, T::AccountId, Position, ValueQuery>;
 
-	/// The total reserveized standard positions, map from
-	/// ReserveType -> Position
+	/// The total reserved standard positions, map from
+	/// `ReserveType -> Position`
+	///
+	/// TODO: Change to map from `ReserveType -> Position`
 	#[pallet::storage]
 	#[pallet::getter(fn total_positions)]
 	pub type TotalPositions<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Position, ValueQuery>;
@@ -137,44 +135,6 @@ pub mod module {
 impl<T: Config> Pallet<T> {
 	pub fn account_id() -> T::AccountId {
 		T::ModuleId::get().into_account()
-	}
-
-	/// confiscate reserve and standard to SERP Treasury.
-	///
-	/// Ensured atomic.
-	#[transactional]
-	pub fn confiscate_reserve_and_standard(
-		who: &T::AccountId,
-		currency_id: CurrencyId,
-		reserve_confiscate: Balance,
-		standard_decrease: Balance,
-	) -> DispatchResult {
-		// convert balance type to amount type
-		let reserve_adjustment = Self::amount_try_from_balance(reserve_confiscate)?;
-		let standard_adjustment = Self::amount_try_from_balance(standard_decrease)?;
-
-		// transfer reserve to SERP Treasury
-		T::SerpTreasury::deposit_reserve(&Self::account_id(), currency_id, reserve_confiscate)?;
-
-		// deposit standard to SERP Treasury
-		let bad_standard_value = T::RiskManager::get_bad_standard_value(currency_id, standard_decrease);
-		T::SerpTreasury::on_system_standard(bad_standard_value)?;
-
-		// update setter
-		Self::update_setter(
-			&who,
-			currency_id,
-			reserve_adjustment.saturating_neg(),
-			standard_adjustment.saturating_neg(),
-		)?;
-
-		Self::deposit_event(Event::ConfiscateReserveAndStandard(
-			who.clone(),
-			currency_id,
-			reserve_confiscate,
-			standard_decrease,
-		));
-		Ok(())
 	}
 
 	/// adjust the position.
@@ -319,18 +279,6 @@ impl<T: Config> Pallet<T> {
 		})?;
 
 		TotalPositions::<T>::try_mutate(currency_id, |total_positions| -> DispatchResult {
-			total_positions.reserve = if reserve_adjustment.is_positive() {
-				total_positions
-					.reserve
-					.checked_add(reserve_balance)
-					.ok_or(Error::<T>::ReserveOverflow)
-			} else {
-				total_positions
-					.reserve
-					.checked_sub(reserve_balance)
-					.ok_or(Error::<T>::ReserveTooLow)
-			}?;
-
 			total_positions.standard = if standard_adjustment.is_positive() {
 				total_positions
 					.standard
@@ -341,6 +289,18 @@ impl<T: Config> Pallet<T> {
 					.standard
 					.checked_sub(standard_balance)
 					.ok_or(Error::<T>::StandardTooLow)
+			}?;
+
+			total_positions.reserve = if reserve_adjustment.is_positive() {
+				total_positions
+					.reserve
+					.checked_add(reserve_balance)
+					.ok_or(Error::<T>::ReserveOverflow)
+			} else {
+				total_positions
+					.reserve
+					.checked_sub(reserve_balance)
+					.ok_or(Error::<T>::ReserveTooLow)
 			}?;
 
 			Ok(())

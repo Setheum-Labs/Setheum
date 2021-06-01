@@ -29,8 +29,8 @@ runtime_benchmarks! {
 
 	_ {}
 
-	auction_surplus {
-		SerpTreasury::on_system_surplus(100 * dollar(USDJ))?;
+	auction_serplus {
+		SerpTreasury::on_system_serplus(100 * dollar(USDJ))?;
 	}: _(RawOrigin::Root, 100 * dollar(USDJ))
 
 	auction_standard {
@@ -42,7 +42,7 @@ runtime_benchmarks! {
 		Currencies::deposit(currency_id, &SerpTreasury::account_id(), 10_000 * dollar(currency_id))?;
 	}: _(RawOrigin::Root, currency_id, 1_000 * dollar(currency_id), 1_000 * dollar(USDJ), true)
 
-	set_expected_reserve_auction_size {
+	set_expected_setter_auction_size {
 		let currency_id: CurrencyId = DOT;
 	}: _(RawOrigin::Root, currency_id, 200 * dollar(currency_id))
 }
@@ -60,9 +60,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_auction_surplus() {
+	fn test_auction_serplus() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_auction_surplus());
+			assert_ok!(test_benchmark_auction_serplus());
 		});
 	}
 
@@ -81,9 +81,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_set_expected_reserve_auction_size() {
+	fn test_set_expected_setter_auction_size() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_set_expected_reserve_auction_size());
+			assert_ok!(test_benchmark_set_expected_setter_auction_size());
 		});
 	}
 }

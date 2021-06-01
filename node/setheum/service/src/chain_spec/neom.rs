@@ -217,8 +217,8 @@ fn neom_genesis(
 		}),
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),
 		serp_treasury: Some(SerpTreasuryConfig {
-			expected_reserve_auction_size: vec![
-				(SETT, dollar(SETT)), // (currency_id, max size of a reserve auction)
+			expected_setter_auction_size: vec![
+				(SETT, dollar(SETT)), // (currency_id, max size of a setter auction)
 				(GBPJ, 5 * cent(GBPJ)),
 			],
 		}),
@@ -226,10 +226,7 @@ fn neom_genesis(
 			reserve_params: vec![
 				(
 					SETT,
-					Some(FixedU128::zero()),                             // stability fee for this reserve
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+					Some(FixedU128::zero()),                             // stability fee for this reserve. change to "for this standard".
 					10_000_000 * dollar(JUSD),                           // maximum standard value in USDj (cap)
 				),
 			],

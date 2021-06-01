@@ -157,7 +157,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	type CurrencyId = CurrencyId;
 	type AuctionId = AuctionId;
 
-	fn new_reserve_auction(
+	fn new_setter_auction(
 		_refund_recipient: &AccountId,
 		_currency_id: Self::CurrencyId,
 		_amount: Self::Balance,
@@ -166,11 +166,11 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Ok(())
 	}
 
-	fn new_standard_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
+	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
 		Ok(())
 	}
 
-	fn new_surplus_auction(_amount: Self::Balance) -> DispatchResult {
+	fn new_serplus_auction(_amount: Self::Balance) -> DispatchResult {
 		Ok(())
 	}
 
@@ -190,7 +190,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Default::default()
 	}
 
-	fn get_total_surplus_in_auction() -> Self::Balance {
+	fn get_total_serplusin_auction() -> Self::Balance {
 		Default::default()
 	}
 }
@@ -234,9 +234,7 @@ impl serp_treasury::Config for Runtime {
 
 parameter_types! {
 	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![BTC, DOT];
-	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(3, 2);
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
-	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(10, 100);
 	pub const MinimumStandardValue: Balance = 2;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
@@ -246,9 +244,7 @@ impl settmint_engine::Config for Runtime {
 	type Event = Event;
 	type PriceSource = MockPriceSource;
 	type ReserveCurrencyIds = ReserveCurrencyIds;
-	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
-	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
