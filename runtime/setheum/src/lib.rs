@@ -792,7 +792,9 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(3, 100); // 3% minimum increment
+	pub DiamondAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(3 : 100); // 3% increment
+	pub SetterAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1 : 50); // 2% increment
+	pub SerplusAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1% increment
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 }
@@ -801,7 +803,9 @@ impl serp_auction::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type Auction = Auction;
-	type MinimumIncrementSize = MinimumIncrementSize;
+	type DiamondAuctionMinimumIncrementSize = DiamondAuctionMinimumIncrementSize;
+	type SetterAuctionMinimumIncrementSize = SetterAuctionMinimumIncrementSize;
+	type SerplusAuctionMinimumIncrementSize = SerplusAuctionMinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
 	type GetStableCurrencyId = GetStableCurrencyId;

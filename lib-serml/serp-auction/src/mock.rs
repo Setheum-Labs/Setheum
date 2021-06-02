@@ -168,7 +168,9 @@ impl setheum_dex::Config for Runtime {
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 20); // 5% increment
+	pub DiamondAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(3 : 100); // 3% increment
+	pub SetterAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1 : 50); // 2% increment
+	pub SerplusAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1% increment
 	pub const AuctionTimeToClose: u64 = 100;
 	pub const AuctionDurationSoftCap: u64 = 2000;
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
@@ -179,7 +181,9 @@ impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
 	type Auction = AuctionModule;
-	type MinimumIncrementSize = MinimumIncrementSize;
+	type DiamondAuctionMinimumIncrementSize = DiamondAuctionMinimumIncrementSize;
+	type SetterAuctionMinimumIncrementSize = SetterAuctionMinimumIncrementSize;
+	type SerplusAuctionMinimumIncrementSize = SerplusAuctionMinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
 	type GetStableCurrencyId = GetStableCurrencyId;
