@@ -30,7 +30,7 @@ pallet-balances = "3.0.0"
 orml-auction = { path = "../../lib-orml/auction" }
 serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
 setheum-dex = { path = "../dex" }
-orml-tokens = { path = "../../orml/tokens" }
+orml-tokens = { path = "../../lib-orml/tokens" }
 
 [features]
 default = ["std"]
