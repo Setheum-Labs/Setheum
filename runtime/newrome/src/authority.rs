@@ -19,9 +19,9 @@
 //! An orml_authority trait implementation.
 
 use crate::{
-	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, SIFModuleId,
-	DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, 
-	EnsureRootOrHalfSettwayCouncil, EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
+	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber,
+	SIFModuleId, DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, EnsureRootOrHalfSettwayCouncil,
+	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
 	EnsureRootOrTwoThirdsTechnicalCommittee, SettwayTreasuryModuleId, OneDay, Origin,
 	OriginCaller, SevenDays, ZeroDay, HOURS,
 };

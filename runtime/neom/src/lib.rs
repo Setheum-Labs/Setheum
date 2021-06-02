@@ -91,7 +91,7 @@ pub use primitives::{
 };
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, JSETT, JUSD,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, NSETT, JUSD,
 };
 
 mod authority;
@@ -911,8 +911,8 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(JUSD, NEOM),
-		TradingPair::new(JUSD, JSETT),
-		TradingPair::new(JSETT, NEOM),
+		TradingPair::new(JUSD, NSETT),
+		TradingPair::new(NSETT, NEOM),
 	];
 }
 

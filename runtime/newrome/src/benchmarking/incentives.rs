@@ -18,7 +18,7 @@
 
 use crate::{
 	dollar, AccountId, ReserveCurrencyIds, CurrencyId, GetStableCurrencyId, Incentives, Rate, Rewards, Runtime,
-	TokenSymbol, DNAR, USDJ, DOT,
+	TokenSymbol, ROME, rUSD, rSETT,
 };
 
 use super::utils::set_balance;
@@ -29,7 +29,7 @@ use orml_benchmarking::runtime_benchmarks;
 use sp_std::prelude::*;
 
 const SEED: u32 = 0;
-const BTC_USDJ_LP: CurrencyId = CurrencyId::DEXShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
+const ROME_rUSD_LP: CurrencyId = CurrencyId::DEXShare(TokenSymbol::CHFJ, TokenSymbol::rUSD);
 
 runtime_benchmarks! {
 	{ Runtime, setheum_incentives }
@@ -38,22 +38,22 @@ runtime_benchmarks! {
 
 	deposit_dex_share {
 		let caller: AccountId = account("caller", 0, SEED);
-		set_balance(BTC_USDJ_LP, &caller, 10_000 * dollar(USDJ));
-	}: _(RawOrigin::Signed(caller), BTC_USDJ_LP, 10_000 * dollar(USDJ))
+		set_balance(ROME_rUSD_LP, &caller, 10_000 * dollar(rUSD));
+	}: _(RawOrigin::Signed(caller), ROME_rUSD_LP, 10_000 * dollar(rUSD))
 
 	withdraw_dex_share {
 		let caller: AccountId = account("caller", 0, SEED);
-		set_balance(BTC_USDJ_LP, &caller, 10_000 * dollar(USDJ));
+		set_balance(ROME_rUSD_LP, &caller, 10_000 * dollar(rUSD));
 		Incentives::deposit_dex_share(
 			RawOrigin::Signed(caller.clone()).into(),
-			BTC_USDJ_LP,
-			10_000 * dollar(USDJ)
+			ROME_rUSD_LP,
+			10_000 * dollar(rUSD)
 		)?;
-	}: _(RawOrigin::Signed(caller), BTC_USDJ_LP, 8000 * dollar(USDJ))
+	}: _(RawOrigin::Signed(caller), ROME_rUSD_LP, 8000 * dollar(rUSD))
 
 	claim_rewards {
 		let caller: AccountId = account("caller", 0, SEED);
-		let pool_id = PoolId::Setters(DOT);
+		let pool_id = PoolId::Setters(rSETT);
 
 		Rewards::add_share(&caller, pool_id, 100);
 		orml_rewards::Pools::<Runtime>::mutate(pool_id, |pool_info| {
@@ -68,7 +68,7 @@ runtime_benchmarks! {
 
 		for i in 0 .. c {
 			let currency_id = currency_ids[i as usize];
-			values.push((currency_id, 100 * dollar(DNAR)));
+			values.push((currency_id, 100 * dollar(ROME)));
 		}
 	}: _(RawOrigin::Root, values)
 
@@ -87,7 +87,7 @@ runtime_benchmarks! {
 				}
 				_ => return Err("invalid currency id"),
 			};
-			values.push((lp_share_currency_id, 100 * dollar(DNAR)));
+			values.push((lp_share_currency_id, 100 * dollar(ROME)));
 		}
 	}: _(RawOrigin::Root, values)
 
