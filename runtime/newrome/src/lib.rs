@@ -92,7 +92,7 @@ pub use primitives::{
 };
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, ROME, SETT, jUSD,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, ROME, rSETT, rUSD,
 };
 
 mod authority;
@@ -729,7 +729,7 @@ impl setheum_prices::Config for Runtime {
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = ROME;
-	pub const GetStableCurrencyId: CurrencyId = jUSD;
+	pub const GetStableCurrencyId: CurrencyId = rUSD;
 }
 
 impl setheum_currencies::Config for Runtime {
@@ -884,7 +884,7 @@ where
 parameter_types! {
 	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![ROME];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
-	pub MinimumStandardValue: Balance = dollar(jUSD);
+	pub MinimumStandardValue: Balance = dollar(rUSD);
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(5, 100);
 }
 
@@ -912,9 +912,9 @@ parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::new(jUSD, ROME),
-		TradingPair::new(jUSD, SETT),
-		TradingPair::new(SETT, ROME),
+		TradingPair::new(rUSD, ROME),
+		TradingPair::new(rUSD, rSETT),
+		TradingPair::new(rSETT, ROME),
 	];
 }
 
@@ -946,8 +946,8 @@ impl serp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	// All currency types except for native currency, Sort by fee charge order. aT THE MOMENT IT'S just jUSD
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![jUSD];
+	// All currency types except for native currency, Sort by fee charge order. aT THE MOMENT IT'S just rUSD
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![rUSD];
 }
 
 impl setheum_transaction_payment::Config for Runtime {

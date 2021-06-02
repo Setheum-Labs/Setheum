@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::utils::{lookup_of_account, set_usdj_balance};
-use crate::{dollar, AccountId, Balance, Runtime, Tokens, jUSD};
+use crate::{dollar, AccountId, Balance, Runtime, Tokens, rUSD};
 
 use sp_std::prelude::*;
 
@@ -37,29 +37,29 @@ runtime_benchmarks! {
 	}
 
 	transfer {
-		let amount: Balance = d * dollar(jUSD);
+		let amount: Balance = d * dollar(rUSD);
 
 		let from = account("from", 0, SEED);
 		set_usdj_balance(&from, amount);
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to.clone());
-	}: _(RawOrigin::Signed(from), to_lookup, jUSD, amount)
+	}: _(RawOrigin::Signed(from), to_lookup, rUSD, amount)
 	verify {
-		assert_eq!(<Tokens as MultiCurrency<_>>::total_balance(jUSD, &to), amount);
+		assert_eq!(<Tokens as MultiCurrency<_>>::total_balance(rUSD, &to), amount);
 	}
 
 	transfer_all {
-		let amount: Balance = d * dollar(jUSD);
+		let amount: Balance = d * dollar(rUSD);
 
 		let from = account("from", 0, SEED);
 		set_usdj_balance(&from, amount);
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to);
-	}: _(RawOrigin::Signed(from.clone()), to_lookup, jUSD)
+	}: _(RawOrigin::Signed(from.clone()), to_lookup, rUSD)
 	verify {
-		assert_eq!(<Tokens as MultiCurrency<_>>::total_balance(jUSD, &from), 0);
+		assert_eq!(<Tokens as MultiCurrency<_>>::total_balance(rUSD, &from), 0);
 	}
 }
 

@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, Auction, AuctionId, SerpAuction, AuctionTimeToClose, SerpTreasury, Runtime, System, ROME, jUSD, jSETT,
+	dollar, Auction, AuctionId, SerpAuction, AuctionTimeToClose, SerpTreasury, Runtime, System, ROME, rUSD, rSETT,
 };
 
 use super::utils::set_balance;
@@ -46,14 +46,14 @@ runtime_benchmarks! {
 	bid_setter_auction_as_first_bidder {
 		let bidder = account("bidder", 0, SEED);
 		let funder = account("funder", 0, SEED);
-		let currency_id = jSETT;
+		let currency_id = rSETT;
 		let reserve_amount = 100 * dollar(currency_id);
-		let target_amount = 10_000 * dollar(jUSD);
-		let bid_price = (5_000u128 + d as u128) * dollar(jUSD);
+		let target_amount = 10_000 * dollar(rUSD);
+		let bid_price = (5_000u128 + d as u128) * dollar(rUSD);
 		let auction_id: AuctionId = 0;
 
 		set_balance(currency_id, &funder, reserve_amount);
-		set_balance(jUSD, &bidder, bid_price);
+		set_balance(rUSD, &bidder, bid_price);
 		<SerpTreasury as SerpTreasury<_>>::deposit_reserve(&funder, currency_id, reserve_amount)?;
 		SerpAuction::new_setter_auction(&funder, currency_id, reserve_amount, target_amount)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
@@ -64,16 +64,16 @@ runtime_benchmarks! {
 		let bidder = account("bidder", 0, SEED);
 		let previous_bidder = account("previous_bidder", 0, SEED);
 		let funder = account("funder", 0, SEED);
-		let currency_id = jSETT;
+		let currency_id = rSETT;
 		let reserve_amount = 100 * dollar(currency_id);
-		let target_amount = 10_000 * dollar(jUSD);
-		let previous_bid_price = (5_000u128 + d as u128) * dollar(jUSD);
-		let bid_price = (10_000u128 + d as u128) * dollar(jUSD);
+		let target_amount = 10_000 * dollar(rUSD);
+		let previous_bid_price = (5_000u128 + d as u128) * dollar(rUSD);
+		let bid_price = (10_000u128 + d as u128) * dollar(rUSD);
 		let auction_id: AuctionId = 0;
 
 		set_balance(currency_id, &funder, reserve_amount);
-		set_balance(jUSD, &bidder, bid_price);
-		set_balance(jUSD, &previous_bidder, previous_bid_price);
+		set_balance(rUSD, &bidder, bid_price);
+		set_balance(rUSD, &previous_bidder, previous_bid_price);
 		<SerpTreasury as SerpTreasury<_>>::deposit_reserve(&funder, currency_id, reserve_amount)?;
 		SerpAuction::new_setter_auction(&funder, currency_id, reserve_amount, target_amount)?;
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
@@ -85,7 +85,7 @@ runtime_benchmarks! {
 	bid_serplus_auction_as_first_bidder {
 		let bidder = account("bidder", 0, SEED);
 
-		let serplusamount = 100 * dollar(jUSD);
+		let serplusamount = 100 * dollar(rUSD);
 		let bid_price = d * dollar(ROME);
 		let auction_id: AuctionId = 0;
 
@@ -98,7 +98,7 @@ runtime_benchmarks! {
 	bid_serplus_auction {
 		let bidder = account("bidder", 0, SEED);
 		let previous_bidder = account("previous_bidder", 0, SEED);
-		let serplusamount = 100 * dollar(jUSD);
+		let serplusamount = 100 * dollar(rUSD);
 		let bid_price = (d as u128 * 2u128) * dollar(ROME);
 		let previous_bid_price = d * dollar(ROME);
 		let auction_id: AuctionId = 0;
@@ -115,11 +115,11 @@ runtime_benchmarks! {
 	bid_diamond_auction_as_first_bidder {
 		let bidder = account("bidder", 0, SEED);
 
-		let fix_standard_amount = 100 * dollar(jUSD);
+		let fix_standard_amount = 100 * dollar(rUSD);
 		let initial_amount = 10 * dollar(ROME);
 		let auction_id: AuctionId = 0;
 
-		set_balance(jUSD, &bidder, fix_standard_amount);
+		set_balance(rUSD, &bidder, fix_standard_amount);
 		SerpAuction::new_diamond_auction(initial_amount ,fix_standard_amount)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, fix_standard_amount)
 
@@ -128,14 +128,14 @@ runtime_benchmarks! {
 	bid_diamond_auction {
 		let bidder = account("bidder", 0, SEED);
 		let previous_bidder = account("previous_bidder", 0, SEED);
-		let fix_standard_amount = 100 * dollar(jUSD);
+		let fix_standard_amount = 100 * dollar(rUSD);
 		let initial_amount = 10 * dollar(ROME);
 		let previous_bid_price = fix_standard_amount;
 		let bid_price = fix_standard_amount * 2;
 		let auction_id: AuctionId = 0;
 
-		set_balance(jUSD, &bidder, bid_price);
-		set_balance(jUSD, &previous_bidder, previous_bid_price);
+		set_balance(rUSD, &bidder, bid_price);
+		set_balance(rUSD, &previous_bidder, previous_bid_price);
 		SerpAuction::new_diamond_auction(initial_amount ,fix_standard_amount)?;
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
@@ -144,10 +144,10 @@ runtime_benchmarks! {
 		let c in ...;
 
 		let bidder = account("bidder", 0, SEED);
-		let fix_standard_amount = 100 * dollar(jUSD);
+		let fix_standard_amount = 100 * dollar(rUSD);
 		let initial_amount = 10 * dollar(ROME);
 		let auction_id: AuctionId = 0;
-		set_balance(jUSD, &bidder, fix_standard_amount * c as u128);
+		set_balance(rUSD, &bidder, fix_standard_amount * c as u128);
 
 		System::set_block_number(1);
 		for auction_id in 0 .. c {
