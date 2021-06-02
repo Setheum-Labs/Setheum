@@ -71,7 +71,7 @@ orml-nft= { path = "../../lib-orml/nft", default-features = false }
 # local dependencies
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
 setheum-airdrop = { path = "../../lib-serml/airdrop", default-features = false }
-setheum-auction-manager = { path = "../../lib-serml/auction-manager", default-features = false }
+serp-auction = { path = "../../lib-serml/serp-auction", default-features = false }
 setheum-settmint-engine = { path = "../../lib-serml/settmint-engine", default-features = false }
 serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = false }
 setheum-dex = { path = "../../lib-serml/dex", default-features = false }
@@ -147,7 +147,7 @@ std = [
 
 	"setheum-transaction-payment/std",
 	"setheum-airdrop/std",
-	"setheum-auction-manager/std",
+	"serp-auction/std",
 	"setheum-settmint-engine/std",
 	"serp-treasury/std",
 	"setheum-dex/std",

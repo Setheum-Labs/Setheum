@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the auction manager module.
+//! Mocks for the serp auction module.
 
 #![cfg(test)]
 
@@ -46,7 +46,7 @@ pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::XBTC);
 
-mod auction_manager {
+mod serp_auction {
 	pub use super::super::*;
 }
 
@@ -99,7 +99,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = AuctionManagerModule;
+	type Handler = SerpAuctionModule;
 	type WeightInfo = ();
 }
 
@@ -117,7 +117,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = AuctionManagerModule;
+	type SerpAuctionHandler = SerpAuctionModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -201,7 +201,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		AuctionManagerModule: auction_manager::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SerpAuctionModule: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		AuctionModule: orml_auction::{Module, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Event<T>},

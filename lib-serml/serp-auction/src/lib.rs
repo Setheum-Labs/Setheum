@@ -52,7 +52,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedPointNumber, RandomNumberGenerator, RuntimeDebug,
 };
 use sp_std::prelude::*;
-use support::{AuctionManager, SerpTreasury, SerpTreasuryExtended, DEXManager, PriceProvider, Rate};
+use support::{SerpAuction, SerpTreasury, SerpTreasuryExtended, DEXManager, PriceProvider, Rate};
 
 mod mock;
 mod tests;
@@ -61,9 +61,9 @@ pub mod weights;
 pub use module::*;
 pub use weights::WeightInfo;
 
-pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/auction-manager/data/";
-pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/auction-manager/lock/";
-pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/auction-manager/max-iterations/";
+pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/serp-auction/data/";
+pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/serp-auction/lock/";
+pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/serp-auction/max-iterations/";
 pub const LOCK_DURATION: u64 = 100;
 pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 
@@ -323,7 +323,7 @@ impl<T: Config> Pallet<T> {
 		let call = Call::<T>::cancel(auction_id);
 		if let Err(err) = SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()) {
 			debug::info!(
-				target: "auction-manager offchain worker",
+				target: "serp-auction offchain worker",
 				"submit unsigned auction cancel tx for \nAuctionId {:?} \nfailed: {:?}",
 				auction_id,
 				err,
@@ -356,7 +356,7 @@ impl<T: Config> Pallet<T> {
 			.get::<u32>()
 			.unwrap_or(Some(DEFAULT_MAX_ITERATIONS));
 
-		debug::debug!(target: "auction-manager offchain worker", "max iterations is {:?}", max_iterations);
+		debug::debug!(target: "serp-auction offchain worker", "max iterations is {:?}", max_iterations);
 
 		// Randomly choose to start iterations to cancel reserve/serplus/standard
 		// auctions
@@ -927,7 +927,7 @@ impl<T: Config> AuctionHandler<T::AccountId, Balance, T::BlockNumber, AuctionId>
 	}
 }
 
-impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
+impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 	type CurrencyId = CurrencyId;
 	type Balance = Balance;
 	type AuctionId = AuctionId;

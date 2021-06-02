@@ -92,17 +92,6 @@ runtime_benchmarks! {
 
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, reserve_price)])?;
-
-		// set risk params
-		SettmintEngine::set_reserve_params(
-			RawOrigin::Root.into(),
-			currency_id,
-			Change::NoChange,
-			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
-			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
-			Change::NewValue(standard_value * 100),
-		)?;
 	}: _(RawOrigin::Signed(caller), currency_id, reserve_amount.try_into().unwrap(), standard_amount)
 
 	transfer_setter_from {
@@ -125,17 +114,6 @@ runtime_benchmarks! {
 
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
-
-		// set risk params
-		SettmintEngine::set_reserve_params(
-			RawOrigin::Root.into(),
-			currency_id,
-			Change::NoChange,
-			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
-			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
-			Change::NewValue(standard_value * 100),
-		)?;
 
 		// initialize sender's setter
 		Settway::adjust_setter(

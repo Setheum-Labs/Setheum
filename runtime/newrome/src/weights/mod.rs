@@ -19,7 +19,7 @@
 //! A list of the different weight modules for our runtime.
 #![allow(clippy::unnecessary_cast)]
 
-pub mod setheum_auction_manager;
+pub mod serp_auction;
 pub mod setheum_settmint_engine;
 pub mod serp_treasury;
 pub mod setheum_currencies;

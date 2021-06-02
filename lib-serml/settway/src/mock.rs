@@ -32,7 +32,7 @@ use sp_runtime::{
 	FixedPointNumber, ModuleId,
 };
 use sp_std::cell::RefCell;
-use support::{AuctionManager, ExchangeRate, Price, PriceProvider, Rate, Ratio};
+use support::{SerpAuction, ExchangeRate, Price, PriceProvider, Rate, Ratio};
 
 mod settway {
 	pub use super::super::*;
@@ -130,7 +130,7 @@ impl setters::Config for Runtime {
 	type Event = Event;
 	type Convert = settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Tokens;
-	type RiskManager = SettmintEngineModule;
+	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type ModuleId = SettersModuleId;
 	type OnUpdateSetter = ();
@@ -151,8 +151,8 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
-pub struct MockAuctionManager;
-impl AuctionManager<AccountId> for MockAuctionManager {
+pub struct MockSerpAuction;
+impl SerpAuction<AccountId> for MockSerpAuction {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 	type AuctionId = AuctionId;
@@ -209,7 +209,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = MockAuctionManager;
+	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
