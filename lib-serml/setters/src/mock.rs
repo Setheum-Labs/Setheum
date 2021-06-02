@@ -27,7 +27,7 @@ use orml_traits::parameter_type_with_key;
 use primitives::TokenSymbol;
 use sp_core::H256;
 use sp_runtime::{testing::Header, traits::IdentityLookup, ModuleId};
-use support::{SerpAuction, RiskManager};
+use support::{SerpAuction, StandardValidator};
 
 pub type AccountId = u128;
 pub type AuctionId = u32;
@@ -186,30 +186,18 @@ impl Convert<(CurrencyId, Balance), Balance> for MockConvert {
 	}
 }
 
-// mock risk manager
-pub struct MockRiskManager;
-impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
-	fn get_bad_standard_value(currency_id: CurrencyId, standard_balance: Balance) -> Balance {
-		MockConvert::convert((currency_id, standard_balance))
-	}
-
+// mock standard validator (checks if a standard is still valid or not)
+pub struct MockStandardValidator;
+impl StandardValidator<AccountId, CurrencyId, Balance, Balance> for MockStandardValidator {
 	fn check_position_valid(
 		currency_id: CurrencyId,
 		_reserve_balance: Balance,
 		_standard_balance: Balance,
 	) -> DispatchResult {
 		match currency_id {
-			DOT => Err(sp_runtime::DispatchError::Other("mock error")),
-			BTC => Ok(()),
+			SETT => Err(sp_runtime::DispatchError::Other("mock error")),
+			SETT => Ok(()),
 			_ => Err(sp_runtime::DispatchError::Other("mock error")),
-		}
-	}
-
-	fn check_standard_cap(currency_id: CurrencyId, total_standard_balance: Balance) -> DispatchResult {
-		match (currency_id, total_standard_balance) {
-			(DOT, 1000) => Err(sp_runtime::DispatchError::Other("mock error")),
-			(BTC, 1000) => Err(sp_runtime::DispatchError::Other("mock error")),
-			(_, _) => Ok(()),
 		}
 	}
 }
@@ -222,7 +210,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type Convert = MockConvert;
 	type Currency = Currencies;
-	type RiskManager = MockRiskManager;
+	type StandardValidator = MockStandardValidator;
 	type SerpTreasury = SerpTreasuryModule;
 	type ModuleId = SettersModuleId;
 	type OnUpdateSetter = ();
@@ -254,10 +242,8 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			endowed_accounts: vec![
-				(ALICE, DOT, 1000),
-				(ALICE, BTC, 1000),
-				(BOB, DOT, 1000),
-				(BOB, BTC, 1000),
+				(ALICE, SETT, 1000),
+				(BOB, SETT, 1000),
 			],
 		}
 	}

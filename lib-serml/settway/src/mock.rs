@@ -130,7 +130,7 @@ impl setters::Config for Runtime {
 	type Event = Event;
 	type Convert = settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Tokens;
-	type RiskManager = SettmintEngineModule;
+	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type ModuleId = SettersModuleId;
 	type OnUpdateSetter = ();

@@ -815,7 +815,7 @@ impl setheum_setters::Config for Runtime {
 	type Event = Event;
 	type Convert = setheum_settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
-	type RiskManager = SettmintEngine;
+	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
 	type ModuleId = SettersModuleId;
 	type OnUpdateSetter = setheum_incentives::OnUpdateSetter<Runtime>;

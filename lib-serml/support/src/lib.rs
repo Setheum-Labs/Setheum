@@ -38,6 +38,26 @@ pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
+pub trait StandardManager<AccountId, CurrencyId, Balance, Balance> {
+	fn check_position_valid(
+		currency_id: CurrencyId,
+		reserve_balance: Balance,
+		standard_balance: Balance,
+	) -> DispatchResult;
+}
+
+impl<AccountId, CurrencyId, Balance: Default, Balance> StandardManager<AccountId, CurrencyId, Balance, Balance>
+	for ()
+{
+	fn check_position_valid(
+		_currency_id: CurrencyId,
+		_reserve_balance: Balance,
+		_standard_balance: Balance,
+	) -> DispatchResult {
+		Ok(())
+	}
+}
+
 pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
