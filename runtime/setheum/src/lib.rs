@@ -631,7 +631,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = AuctionManager;
+	type Handler = SerpAuction;
 	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
 }
 
@@ -797,7 +797,7 @@ parameter_types! {
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 }
 
-impl setheum_auction_manager::Config for Runtime {
+impl serp_auction::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type Auction = Auction;
@@ -809,8 +809,8 @@ impl setheum_auction_manager::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type DEX = Dex;
 	type PriceSource = Prices;
-	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
-	type WeightInfo = weights::setheum_auction_manager::WeightInfo<Runtime>;
+	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
+	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
 }
 
 impl setheum_setters::Config for Runtime {
@@ -937,7 +937,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = AuctionManager;
+	type SerpAuctionHandler = SerpAuction;
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -1109,7 +1109,7 @@ construct_runtime!(
 		Dex: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
 
 		// Settway
-		AuctionManager: setheum_auction_manager::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SerpAuction: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 		Setters: setheum_setters::{Module, Storage, Call, Event<T>},
 		Settway: setheum_settway::{Module, Storage, Call, Event<T>},
 		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>},
@@ -1387,7 +1387,7 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
 			// orml_add_benchmark!(params, batches, dex, benchmarking::dex);
-			// orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);
+			// orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
 			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
 			// orml_add_benchmark!(params, batches, settway, benchmarking::settway);
 			// orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);

@@ -27,7 +27,7 @@ use orml_traits::parameter_type_with_key;
 use primitives::TokenSymbol;
 use sp_core::H256;
 use sp_runtime::{testing::Header, traits::IdentityLookup, ModuleId};
-use support::{AuctionManager, RiskManager};
+use support::{SerpAuction, RiskManager};
 
 pub type AccountId = u128;
 pub type AuctionId = u32;
@@ -116,8 +116,8 @@ impl orml_currencies::Config for Runtime {
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
-pub struct MockAuctionManager;
-impl AuctionManager<AccountId> for MockAuctionManager {
+pub struct MockSerpAuction;
+impl SerpAuction<AccountId> for MockSerpAuction {
 	type CurrencyId = CurrencyId;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
@@ -170,7 +170,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = MockAuctionManager;
+	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = ();
 	type MaxAuctionsCount = MaxAuctionsCount;

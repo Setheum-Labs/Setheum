@@ -19,7 +19,7 @@
 #![cfg(feature = "runtime-benchmarks")]
 
 // module benchmarking
-pub mod auction_manager;
+pub mod serp_auction;
 pub mod settmint_engine;
 pub mod serp_treasury;
 pub mod dex;

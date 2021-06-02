@@ -142,8 +142,8 @@ thread_local! {
 	pub static TOTAL_serplus_auction: RefCell<u32> = RefCell::new(0);
 }
 
-pub struct MockAuctionManager;
-impl AuctionManager<AccountId> for MockAuctionManager {
+pub struct MockSerpAuction;
+impl SerpAuction<AccountId> for MockSerpAuction {
 	type CurrencyId = CurrencyId;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
@@ -199,7 +199,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = MockAuctionManager;
+	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;

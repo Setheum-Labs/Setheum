@@ -36,7 +36,7 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, ModuleId,
 };
-use support::{AuctionManager, SerpTreasury, SerpTreasuryExtended, DEXManager, Ratio};
+use support::{SerpAuction, SerpTreasury, SerpTreasuryExtended, DEXManager, Ratio};
 
 mod benchmarking;
 mod mock;
@@ -66,7 +66,7 @@ pub mod module {
 		type GetStableCurrencyId: Get<CurrencyId>;
 
 		/// Auction manager creates different types of auction to handle system serplus and standard.
-		type AuctionManagerHandler: AuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
+		type SerpAuctionHandler: SerpAuction<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
 		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
@@ -158,10 +158,10 @@ pub mod module {
 		pub fn auction_serplus(origin: OriginFor<T>, amount: Balance) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
-				Self::serpluspool().saturating_sub(T::AuctionManagerHandler::get_total_serplusin_auction()) >= amount,
+				Self::serpluspool().saturating_sub(T::SerpAuctionHandler::get_total_serplusin_auction()) >= amount,
 				Error::<T>::SerplusPoolNotEnough,
 			);
-			T::AuctionManagerHandler::new_serplus_auction(amount)?;
+			T::SerpAuctionHandler::new_serplus_auction(amount)?;
 			Ok(().into())
 		}
 
@@ -174,11 +174,11 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
-				Self::standard_pool().saturating_sub(T::AuctionManagerHandler::get_total_standard_in_auction())
+				Self::standard_pool().saturating_sub(T::SerpAuctionHandler::get_total_standard_in_auction())
 					>= standard_amount,
 				Error::<T>::StandardPoolNotEnough,
 			);
-			T::AuctionManagerHandler::new_diamond_auction(initial_price, standard_amount)?;
+			T::SerpAuctionHandler::new_diamond_auction(initial_price, standard_amount)?;
 			Ok(().into())
 		}
 
@@ -243,7 +243,7 @@ impl<T: Config> Pallet<T> {
 	/// Get reserve amount not in auction
 	pub fn total_reserves_not_in_auction(currency_id: CurrencyId) -> Balance {
 		T::Currency::free_balance(currency_id, &Self::account_id())
-			.saturating_sub(T::AuctionManagerHandler::get_total_reserve_in_auction(currency_id))
+			.saturating_sub(T::SerpAuctionHandler::get_total_reserve_in_auction(currency_id))
 	}
 
 	fn offset_serplusand_standard() {
@@ -345,7 +345,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		ensure!(
 			Self::total_reserves(currency_id) >= supply_amount
-				&& T::AuctionManagerHandler::get_total_reserve_in_auction(currency_id) >= supply_amount,
+				&& T::SerpAuctionHandler::get_total_reserve_in_auction(currency_id) >= supply_amount,
 			Error::<T>::ReserveNotEnough,
 		);
 
@@ -428,7 +428,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				(average_amount_per_lot, average_target_per_lot)
 			};
 
-			T::AuctionManagerHandler::new_setter_auction(
+			T::SerpAuctionHandler::new_setter_auction(
 				&refund_receiver,
 				currency_id,
 				lot_reserve_amount,
