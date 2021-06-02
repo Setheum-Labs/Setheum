@@ -158,7 +158,7 @@ pub mod module {
 		pub fn auction_serplus(origin: OriginFor<T>, amount: Balance) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
-				Self::serpluspool().saturating_sub(T::SerpAuctionHandler::get_total_serplusin_auction()) >= amount,
+				Self::serpluspool().saturating_sub(T::SerpAuctionHandler::get_total_serplus_in_auction()) >= amount,
 				Error::<T>::SerplusPoolNotEnough,
 			);
 			T::SerpAuctionHandler::new_serplus_auction(amount)?;
@@ -266,7 +266,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
-	fn get_serpluspool() -> Self::Balance {
+	fn get_serplus_pool() -> Self::Balance {
 		Self::serpluspool()
 	}
 

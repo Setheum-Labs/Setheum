@@ -246,14 +246,14 @@ pub mod module {
 		/// Diamond Auction created. \[auction_id, initial_supply_amount,
 		/// fix_payment_amount\]
 		NewDiamondAuction(AuctionId, Balance, Balance),
-		/// serplus auction created. \[auction_id, fix_serplusamount\]
+		/// serplus auction created. \[auction_id, fix_serplus_amount\]
 		NewSerplusAuction(AuctionId, Balance),
 		/// Active auction cancelled. \[auction_id\]
 		CancelAuction(AuctionId),
 		/// Reserve auction dealt. \[auction_id, reserve_type,
 		/// reserve_amount, winner, payment_amount\]
 		SetterAuctionDealt(AuctionId, CurrencyId, Balance, T::AccountId, Balance),
-		/// serplus auction dealt. \[auction_id, serplusamount, winner,
+		/// serplus auction dealt. \[auction_id, serplus_amount, winner,
 		/// payment_amount\]
 		SerplusAuctionDealt(AuctionId, Balance, T::AccountId, Balance),
 		/// Diamond Auction dealt. \[auction_id, standard_currency_amount, winner,
@@ -300,7 +300,7 @@ pub mod module {
 
 	/// Record of total serplus amount of all active serplus auctions
 	#[pallet::storage]
-	#[pallet::getter(fn total_serplusin_auction)]
+	#[pallet::getter(fn total_serplus_in_auction)]
 	pub type TotalSerplusInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	#[pallet::pallet]
@@ -1050,8 +1050,8 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		Self::total_reserve_in_auction(id)
 	}
 
-	fn get_total_serplusin_auction() -> Self::Balance {
-		Self::total_serplusin_auction()
+	fn get_total_serplus_in_auction() -> Self::Balance {
+		Self::total_serplus_in_auction()
 	}
 
 	fn get_total_standard_in_auction() -> Self::Balance {

@@ -85,12 +85,12 @@ runtime_benchmarks! {
 	bid_serplus_auction_as_first_bidder {
 		let bidder = account("bidder", 0, SEED);
 
-		let serplusamount = 100 * dollar(rUSD);
+		let serplus_amount = 100 * dollar(rUSD);
 		let bid_price = d * dollar(ROME);
 		let auction_id: AuctionId = 0;
 
 		set_balance(ROME, &bidder, bid_price);
-		SerpAuction::new_serplus_auction(serplusamount)?;
+		SerpAuction::new_serplus_auction(serplus_amount)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
 	// `bid` a serplus auction, worst cases:
@@ -98,14 +98,14 @@ runtime_benchmarks! {
 	bid_serplus_auction {
 		let bidder = account("bidder", 0, SEED);
 		let previous_bidder = account("previous_bidder", 0, SEED);
-		let serplusamount = 100 * dollar(rUSD);
+		let serplus_amount = 100 * dollar(rUSD);
 		let bid_price = (d as u128 * 2u128) * dollar(ROME);
 		let previous_bid_price = d * dollar(ROME);
 		let auction_id: AuctionId = 0;
 
 		set_balance(ROME, &bidder, bid_price);
 		set_balance(ROME, &previous_bidder, previous_bid_price);
-		SerpAuction::new_serplus_auction(serplusamount)?;
+		SerpAuction::new_serplus_auction(serplus_amount)?;
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
