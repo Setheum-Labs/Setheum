@@ -122,7 +122,7 @@ fn neom_genesis(
 		GeneralCouncilMembershipConfig, GrandpaConfig, SettwayCouncilMembershipConfig,
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
 		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
-		TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, NEOM, JSETT, JUSD,
+		TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, NEOM, NSETT, JUSD,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
