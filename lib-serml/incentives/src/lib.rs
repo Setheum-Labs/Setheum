@@ -273,7 +273,7 @@ pub mod module {
 		#[transactional]
 		pub fn claim_rewards(
 			origin: OriginFor<T>,
-			pool_id: pool_id: T::PoolId
+			pool_id: T::PoolId,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			<orml_rewards::Pallet<T>>::claim_rewards(&who, &pool_id);
