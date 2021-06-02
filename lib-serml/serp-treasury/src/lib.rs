@@ -147,7 +147,7 @@ pub mod module {
 		/// Handle excessive serplus or standards of system when block end
 		fn on_finalize(_now: T::BlockNumber) {
 			// offset the same amount between standard pool and serplus pool
-			Self::offset_serplusand_standard();
+			Self::offset_serplus_and_standard();
 		}
 	}
 
@@ -246,7 +246,7 @@ impl<T: Config> Pallet<T> {
 			.saturating_sub(T::SerpAuctionHandler::get_total_reserve_in_auction(currency_id))
 	}
 
-	fn offset_serplusand_standard() {
+	fn offset_serplus_and_standard() {
 		let offset_amount = sp_std::cmp::min(Self::standard_pool(), Self::serpluspool());
 
 		// Burn the amount that is equal to offset_amount of settcurrency.

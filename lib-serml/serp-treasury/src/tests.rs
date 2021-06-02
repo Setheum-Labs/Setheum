@@ -72,7 +72,7 @@ fn on_system_serplusworks() {
 }
 
 #[test]
-fn offset_serplusand_standard_on_finalize_works() {
+fn offset_serplus_and_standard_on_finalize_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
 		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
