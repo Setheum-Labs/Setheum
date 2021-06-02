@@ -141,7 +141,7 @@ fn new_serplus_auction_work() {
 			.iter()
 			.any(|record| record.event == new_serplus_auction_event));
 
-		assert_eq!(SerpAuctionModule::total_serplusin_auction(), 100);
+		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 100);
 		assert_eq!(AuctionModule::auctions_index(), 1);
 
 		assert_noop!(
@@ -579,7 +579,7 @@ fn serplus_auction_end_handler_without_bid() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpAuctionModule::new_serplus_auction(100));
-		assert_eq!(SerpAuctionModule::total_serplusin_auction(), 100);
+		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 100);
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, None);
@@ -589,7 +589,7 @@ fn serplus_auction_end_handler_without_bid() {
 			.any(|record| record.event == auction_passed_event));
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0), None);
-		assert_eq!(SerpAuctionModule::total_serplusin_auction(), 0);
+		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 0);
 	});
 }
 
@@ -604,7 +604,7 @@ fn serplus_auction_end_handler_with_bid() {
 			true
 		);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
-		assert_eq!(SerpAuctionModule::total_serplusin_auction(), 100);
+		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(DNAR, &BOB), 500);
 		assert_eq!(Tokens::total_issuance(DNAR), 2500);
@@ -620,7 +620,7 @@ fn serplus_auction_end_handler_with_bid() {
 
 		assert_eq!(SerpTreasuryModule::standard_pool(), 100);
 		assert_eq!(SerpAuctionModule::serplus_auctions(0), None);
-		assert_eq!(SerpAuctionModule::total_serplusin_auction(), 0);
+		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 0);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1100);
 		assert_eq!(Tokens::total_issuance(DNAR), 2500);
 

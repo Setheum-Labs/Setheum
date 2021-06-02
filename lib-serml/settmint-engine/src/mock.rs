@@ -203,7 +203,7 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		Default::default()
 	}
 
-	fn get_total_serplusin_auction() -> Self::Balance {
+	fn get_total_serplus_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }
@@ -253,13 +253,15 @@ parameter_types! {
 	pub const MinimumStandardValue: Balance = 2;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT, DOT];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
+	pub StandardCurrencyIds: Vec<CurrencyId> = vec![USDJ];
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type PriceSource = MockPriceSource;
 	type ReserveCurrencyIds = ReserveCurrencyIds;
+	type StandardCurrencyIds = StandardCurrencyIds;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;

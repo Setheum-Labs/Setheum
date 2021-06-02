@@ -151,7 +151,7 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		Default::default()
 	}
 
-	fn get_total_serplusin_auction() -> Self::Balance {
+	fn get_total_serplus_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }
