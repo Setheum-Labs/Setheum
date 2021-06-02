@@ -20,8 +20,7 @@
 //!
 //! ## Overview
 //!
-//! Setters module manages Settmint's reserve assets and the standards backed by these
-//! assets.
+//! Setters module manages Settmint's reserve asset (Setter) and the standards backed by the asset (SettCurrencies).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
