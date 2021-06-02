@@ -880,7 +880,7 @@ where
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![NSETT];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub MinimumStandardValue: Balance = dollar(JUSD);
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(5, 100);
