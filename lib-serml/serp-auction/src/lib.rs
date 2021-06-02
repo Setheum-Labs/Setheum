@@ -1046,8 +1046,6 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-		/// Active auction cancelled. \[auction_id\]
-		CancelAuction(AuctionId),
 	fn get_total_reserve_in_auction(id: Self::CurrencyId) -> Self::Balance {
 		Self::total_reserve_in_auction(id)
 	}
