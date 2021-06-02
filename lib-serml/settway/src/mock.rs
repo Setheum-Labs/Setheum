@@ -218,7 +218,7 @@ impl serp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![BTC, DOT];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);

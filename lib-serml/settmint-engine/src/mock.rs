@@ -253,7 +253,7 @@ parameter_types! {
 	pub const MinimumStandardValue: Balance = 2;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT, DOT];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
 }
 
 impl Config for Runtime {
