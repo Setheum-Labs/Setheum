@@ -386,12 +386,14 @@ impl<T: Config> Pallet<T> {
 			}
 			1 => {
 				let mut iterator =
-					<SerplusAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((serplus_auction_id, _)) = iterator.next() {
-					Self::submit_cancel_auction_tx(serplus_auction_id);
+					<SetterAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
+				while let Some((setter_auction_id, _)) = iterator.next() {
+					Self::submit_cancel_auction_tx(setter_auction_id);
 					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
 				}
 
+				// if iteration for map storage finished, clear to be continue record
+				// otherwise, update to be continue record
 				if iterator.finished {
 					to_be_continue.clear();
 				} else {
@@ -400,22 +402,14 @@ impl<T: Config> Pallet<T> {
 			}
 			_ => {
 				let mut iterator =
-					<SetterAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((setter_auction_id, _)) = iterator.next() {
-					if let (Some(setter_auction), Some((_, last_bid_price))) = (
-						Self::setter_auctions(setter_auction_id),
-						Self::get_last_bid(setter_auction_id),
-					) {
-						// if setter auction has already been in reverse stage,
-						// should skip it.
-						if setter_auction.in_reverse_stage(last_bid_price) {
-							continue;
-						}
-					}
-					Self::submit_cancel_auction_tx(setter_auction_id);
+					<SerplusAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
+				while let Some((serplus_auction_id, _)) = iterator.next() {
+					Self::submit_cancel_auction_tx(serplus_auction_id);
 					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
 				}
 
+				// if iteration for map storage finished, clear to be continue record
+				// otherwise, update to be continue record
 				if iterator.finished {
 					to_be_continue.clear();
 				} else {
