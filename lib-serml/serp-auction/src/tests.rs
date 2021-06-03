@@ -161,7 +161,7 @@ fn setter_auction_bid_handler_work() {
 
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 10));
 		assert_ok!(SerpAuctionModule::new_setter_auction(&ALICE, BTC, 10, 100));
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 
 		let bob_ref_count_0 = System::consumers(&BOB);
@@ -174,7 +174,7 @@ fn setter_auction_bid_handler_work() {
 			SerpAuctionModule::setter_auction_bid_handler(1, 0, (BOB, 5), None).is_ok(),
 			true
 		);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 5);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 5);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 995);
 
 		let bob_ref_count_1 = System::consumers(&BOB);
@@ -185,7 +185,7 @@ fn setter_auction_bid_handler_work() {
 			SerpAuctionModule::setter_auction_bid_handler(2, 0, (CAROL, 10), Some((BOB, 5))).is_ok(),
 			true
 		);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 10);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 10);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &CAROL), 990);
 		assert_eq!(SerpAuctionModule::setter_auctions(0).unwrap().amount, 10);
@@ -199,7 +199,7 @@ fn setter_auction_bid_handler_work() {
 			SerpAuctionModule::setter_auction_bid_handler(3, 0, (BOB, 200), Some((CAROL, 10))).is_ok(),
 			true
 		);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 100);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 900);
 		assert_eq!(Tokens::free_balance(USDJ, &CAROL), 1000);
 		assert_eq!(SerpAuctionModule::setter_auctions(0).unwrap().amount, 5);
@@ -222,7 +222,7 @@ fn diamond_auction_bid_handler_work() {
 		assert_ok!(SerpAuctionModule::new_diamond_auction(200, 100));
 		assert_eq!(SerpAuctionModule::total_standard_in_auction(), 100);
 		assert_eq!(SerpAuctionModule::diamond_auctions(0).unwrap().amount, 200);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 
 		let bob_ref_count_0 = System::consumers(&BOB);
@@ -236,7 +236,7 @@ fn diamond_auction_bid_handler_work() {
 			true
 		);
 		assert_eq!(SerpAuctionModule::diamond_auctions(0).unwrap().amount, 200);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 100);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 900);
 
 		let bob_ref_count_1 = System::consumers(&BOB);
@@ -248,7 +248,7 @@ fn diamond_auction_bid_handler_work() {
 			true
 		);
 		assert_eq!(SerpAuctionModule::diamond_auctions(0).unwrap().amount, 100);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 100);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &CAROL), 900);
 		let bob_ref_count_2 = System::consumers(&BOB);
@@ -362,7 +362,7 @@ fn setter_auction_end_handler_without_bid() {
 		System::set_block_number(1);
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
 		assert_ok!(SerpAuctionModule::new_setter_auction(&ALICE, BTC, 100, 200));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
 		assert_eq!(SerpAuctionModule::total_target_in_auction(), 200);
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 100);
 		let alice_ref_count_0 = System::consumers(&ALICE);
@@ -374,7 +374,7 @@ fn setter_auction_end_handler_without_bid() {
 			.iter()
 			.any(|record| record.event == auction_passed_event));
 
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
 		assert_eq!(SerpAuctionModule::setter_auctions(0), None);
 		assert_eq!(SerpAuctionModule::total_target_in_auction(), 0);
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 0);
@@ -393,12 +393,12 @@ fn setter_auction_end_handler_in_reverse_stage() {
 			SerpAuctionModule::setter_auction_bid_handler(2, 0, (BOB, 400), None).is_ok(),
 			true
 		);
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 50);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 50);
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 50);
 		assert_eq!(Tokens::free_balance(BTC, &ALICE), 1050);
 		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 800);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 200);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 200);
 
 		let alice_ref_count_0 = System::consumers(&ALICE);
 		let bob_ref_count_0 = System::consumers(&BOB);
@@ -410,13 +410,13 @@ fn setter_auction_end_handler_in_reverse_stage() {
 			.iter()
 			.any(|record| record.event == auction_dealt_event));
 
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_eq!(SerpAuctionModule::setter_auctions(0), None);
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 0);
 		assert_eq!(Tokens::free_balance(BTC, &ALICE), 1050);
 		assert_eq!(Tokens::free_balance(BTC, &BOB), 1050);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 800);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 200);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 200);
 
 		let alice_ref_count_1 = System::consumers(&ALICE);
 		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
@@ -435,12 +435,12 @@ fn setter_auction_end_handler_by_dealing_which_target_not_zero() {
 			SerpAuctionModule::setter_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),
 			true
 		);
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
 		assert_eq!(SerpAuctionModule::total_target_in_auction(), 200);
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 100);
 		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 900);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 100);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 100);
 
 		let alice_ref_count_0 = System::consumers(&ALICE);
 		let bob_ref_count_0 = System::consumers(&BOB);
@@ -452,7 +452,7 @@ fn setter_auction_end_handler_by_dealing_which_target_not_zero() {
 			.iter()
 			.any(|record| record.event == auction_dealt_event));
 
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_eq!(SerpAuctionModule::setter_auctions(0), None);
 		assert_eq!(SerpAuctionModule::total_target_in_auction(), 0);
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 0);
@@ -486,14 +486,13 @@ fn setter_auction_end_handler_by_dex_which_target_not_zero() {
 		));
 		assert_eq!(DEXModule::get_swap_target_amount(&[BTC, USDJ], 100, None).unwrap(), 500);
 
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
 		assert_eq!(SerpAuctionModule::total_target_in_auction(), 200);
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 100);
 		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 980);
 		assert_eq!(Tokens::free_balance(USDJ, &ALICE), 1000);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 20);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 20);
 
 		let alice_ref_count_0 = System::consumers(&ALICE);
 		let bob_ref_count_0 = System::consumers(&BOB);
@@ -506,15 +505,14 @@ fn setter_auction_end_handler_by_dex_which_target_not_zero() {
 			.iter()
 			.any(|record| record.event == dex_take_setter_auction));
 
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_eq!(SerpAuctionModule::setter_auctions(0), None);
 		assert_eq!(SerpAuctionModule::total_target_in_auction(), 0);
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 0);
 		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &ALICE), 1300);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 320);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 520);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 520);
 
 		let alice_ref_count_1 = System::consumers(&ALICE);
 		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
@@ -603,7 +601,6 @@ fn serplus_auction_end_handler_with_bid() {
 			SerpAuctionModule::serplus_auction_bid_handler(1, 0, (BOB, 500), None).is_ok(),
 			true
 		);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(DNAR, &BOB), 500);
@@ -618,7 +615,6 @@ fn serplus_auction_end_handler_with_bid() {
 			.iter()
 			.any(|record| record.event == serplus_auction_deal_event));
 
-		assert_eq!(SerpTreasuryModule::standard_pool(), 100);
 		assert_eq!(SerpAuctionModule::serplus_auctions(0), None);
 		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 0);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1100);

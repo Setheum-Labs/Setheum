@@ -202,10 +202,6 @@ pub mod module {
 		type AuctionDurationSoftCap: Get<Self::BlockNumber>;
 
 		#[pallet::constant]
-		/// The stable currency id
-		type GetStableCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
 		/// The native currency id
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
@@ -566,15 +562,15 @@ impl<T: Config> Pallet<T> {
 				let last_bidder = last_bid.as_ref().map(|(who, _)| who);
 
 				if let Some(last_bidder) = last_bidder {
-					// there's bid before, transfer the stablecoin from new bidder to last bidder
+					// there's bid before, transfer the diamonds (native currency) from new bidder to last bidder
 					T::Currency::transfer(
-						T::GetStableCurrencyId::get(),
+						T::GetNativeCurrencyId::get(),
 						&new_bidder,
 						last_bidder,
 						diamond_auction.fix,
 					)?;
 				} else {
-					// there's no bid before, transfer stablecoin to SERP Treasury
+					// there's no bid before, transfer diamonds (native currency) to SERP Treasury
 					T::SerpTreasury::deposit_serplus(&new_bidder, diamond_auction.fix)?;
 				}
 
@@ -604,7 +600,7 @@ impl<T: Config> Pallet<T> {
 				let mut setter_auction = setter_auction.as_mut().ok_or(Error::<T>::AuctionNonExistent)?;
 				let (new_bidder, new_bid_price) = new_bid;
 				let last_bid_price = last_bid.clone().map_or(Zero::zero(), |(_, price)| price); // get last bid price
-
+				let settcurrency_currency_id: CurrencyId;
 				ensure!(
 					Self::check_minimum_increment(
 						new_bid_price,
@@ -614,14 +610,18 @@ impl<T: Config> Pallet<T> {
 					) && new_bid_price >= setter_auction.fix,
 					Error::<T>::InvalidBidPrice,
 				);
+				ensure!(
+					T::SettCurrencyIds::get().contains(settcurrency_currency_id),
+					Error::<T>::InvalidSettCyrrencyType,
+				);
 
 				let last_bidder = last_bid.as_ref().map(|(who, _)| who);
 
 				if let Some(last_bidder) = last_bidder {
 					// there's bid before, transfer the stablecoin from new bidder to last bidder
 					T::Currency::transfer(
-						/// change to `T::GetSettCurrencyId::get()`
-						T::GetStableCurrencyId::get(),
+						/// change to `T::SettCurrencyIds::get()`
+						settcurrency_currency_id,
 						&new_bidder,
 						last_bidder,
 						setter_auction.fix,
