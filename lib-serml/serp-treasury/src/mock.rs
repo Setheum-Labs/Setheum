@@ -116,11 +116,28 @@ impl orml_currencies::Config for Runtime {
 	type WeightInfo = ();
 }
 
+		/// SerpUp ratio for Serplus Auctions / Swaps
+		type SerplusSerpupRatio: Get<Rate>;
+
+		/// SerpUp ratio for SettPay Cashdrops
+		type SettPaySerpupRatio: Get<Rate>;
+
+		/// SerpUp ratio for Setheum Treasury
+		type SetheumTreasurySerpupRatio: Get<Rate>;
+
+		/// SerpUp ratio for Setheum Foundation's Charity Fund
+		type CharityFundSerpupRatio: Get<Rate>;
+
+		/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
+		type SIFSerpupRatio: Get<Rate>;
+
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = USDJ;
+	pub SettCurrencyIds: Vec<CurrencyId> = vec![USDJ];
+	pub const GetSetterCurrencyId: CurrencyId = SETT;
+	pub const GetDexerCurrencyId: CurrencyId = SDEX;
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, BTC)];
+	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT)];
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 }
 
@@ -169,7 +186,7 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		Ok(())
 	}
 
-	fn get_total_reserve_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+	fn get_total_setter_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut())
 	}
 
@@ -193,12 +210,24 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
+	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
+	pub SIFSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type SettCurrencyIds = SettCurrencyIds;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerplusSerpupRatio = SerplusSerpupRatio;
+	type SettPaySerpupRatio = SettPaySerpupRatio;
+	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SIFSerpupRatio = SIFSerpupRatio;
 	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;

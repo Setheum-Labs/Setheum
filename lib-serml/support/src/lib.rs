@@ -135,8 +135,78 @@ where
 	}
 }
 
+/// An abstraction of serp treasury for the SERP (Setheum Elastic Reserve Protocol).
+pub trait SerpTreasury<AccountId> {
+	type Balance;
+	type CurrencyId;
+
+	/// get surplus amount of serp treasury
+	fn get_surplus_pool() -> Self::Balance;
+
+	/// get standard amount of serp treasury
+	fn get_standard_pool() -> Self::Balance;
+
+	/// get serpup amount of serp treasury
+	fn get_surpup_pool() -> Self::Balance;
+
+	/// get standard assets amount of serp treasury
+	fn get_total_standard(id: Self::CurrencyId) -> Self::Balance;
+
+	/// get reserve asset amount of serp treasury
+	fn get_total_reserve(id: Self::CurrencyId) -> Self::Balance;
+
+	/// calculate the proportion of specific standard amount for the whole system
+	fn get_standard_proportion(amount: Self::Balance) -> Ratio;
+
+	/// issue standard for serp treasury
+	fn on_system_standard(id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// issue surplus(stable currencies) for serp treasury
+	fn on_system_surplus(id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// issue standard to `who`
+	fn issue_standard(who: &AccountId, standard: Self::Balance) -> DispatchResult;
+
+	/// burn standard(stable currency) of `who`
+	fn burn_standard(who: &AccountId, standard: Self::Balance) -> DispatchResult;
+
+	/// deposit surplus(propperstable currency) to serp treasury by `from`
+	fn deposit_surplus(from: &AccountId, surplus: Self::Balance) -> DispatchResult;
+
+	/// deposit reserve assets to serp treasury by `who`
+	fn deposit_reserve(from: &AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// withdraw reserve assets of serp treasury to `who`
+	fn withdraw_reserve(to: &AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+}
+
+pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
+	fn swap_exact_setter_in_auction_to_settcurrency(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+		min_target_amount: Self::Balance,
+		price_impact_limit: Option<Ratio>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	fn swap_setter_not_in_auction_with_exact_settcurrency(
+		currency_id: Self::CurrencyId,
+		target_amount: Self::Balance,
+		max_supply_amount: Self::Balance,
+		price_impact_limit: Option<Ratio>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	fn create_reserve_auctions(
+		currency_id: Self::CurrencyId,
+		amount: Self::Balance,
+		target: Self::Balance,
+		refund_receiver: AccountId,
+		splited: bool,
+	) -> DispatchResult;
+}
+
 pub trait PriceProvider<CurrencyId> {
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
+	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
 	fn lock_price(currency_id: CurrencyId);
 	fn unlock_price(currency_id: CurrencyId);

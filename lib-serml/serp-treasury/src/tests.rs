@@ -26,24 +26,24 @@ use mock::{Event, *};
 use sp_runtime::traits::BadOrigin;
 
 #[test]
-fn serpluspool_works() {
+fn serplus_pool_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_ok!(Currencies::deposit(
 			GetStableCurrencyId::get(),
 			&SerpTreasuryModule::account_id(),
 			500
 		));
-		assert_eq!(SerpTreasuryModule::serpluspool(), 500);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 500);
 	});
 }
 
 #[test]
-fn total_reserves_works() {
+fn total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_ok!(Currencies::deposit(BTC, &SerpTreasuryModule::account_id(), 10));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 10);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 10);
 	});
 }
 
@@ -61,13 +61,13 @@ fn on_system_standard_works() {
 }
 
 #[test]
-fn on_system_serplusworks() {
+fn on_system_serplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_ok!(SerpTreasuryModule::on_system_serplus(1000));
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 1000);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 1000);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 1000);
 	});
 }
 
@@ -75,26 +75,26 @@ fn on_system_serplusworks() {
 fn offset_serplus_and_standard_on_finalize_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 		assert_ok!(SerpTreasuryModule::on_system_serplus(1000));
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 1000);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 1000);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 1000);
 		SerpTreasuryModule::on_finalize(1);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 1000);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 1000);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 1000);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 		assert_ok!(SerpTreasuryModule::on_system_standard(300));
 		assert_eq!(SerpTreasuryModule::standard_pool(), 300);
 		SerpTreasuryModule::on_finalize(2);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 700);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 700);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 700);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 		assert_ok!(SerpTreasuryModule::on_system_standard(800));
 		assert_eq!(SerpTreasuryModule::standard_pool(), 800);
 		SerpTreasuryModule::on_finalize(3);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 100);
 	});
 }
@@ -149,27 +149,27 @@ fn burn_dexer_works() {
 }
 
 #[test]
-fn deposit_serplusworks() {
+fn deposit_serplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_ok!(SerpTreasuryModule::deposit_serplus(&ALICE, 300));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 700);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 300);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 300);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 300);
 	});
 }
 
 #[test]
 fn deposit_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
 		assert_eq!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 10000).is_ok(), false);
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 500));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 500);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 500);
 		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 500);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 500);
 	});
@@ -179,22 +179,22 @@ fn deposit_reserve_works() {
 fn withdraw_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 500));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 500);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 500);
 		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 500);
 		assert_eq!(Currencies::free_balance(BTC, &BOB), 1000);
 		assert_eq!(SerpTreasuryModule::withdraw_reserve(&BOB, BTC, 501).is_ok(), false);
 		assert_ok!(SerpTreasuryModule::withdraw_reserve(&BOB, BTC, 400));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
 		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 100);
 		assert_eq!(Currencies::free_balance(BTC, &BOB), 1400);
 	});
 }
 
 #[test]
-fn get_total_reserves_works() {
+fn get_total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 500));
-		assert_eq!(SerpTreasuryModule::get_total_reserves(BTC), 500);
+		assert_eq!(SerpTreasuryModule::get_total_reserve(BTC), 500);
 	});
 }
 
@@ -209,7 +209,7 @@ fn get_standard_proportion_works() {
 }
 
 #[test]
-fn swap_reserve_not_in_auction_with_exact_stable_works() {
+fn swap_exact_setter_in_auction_to_settcurrency_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(DEXModule::add_liquidity(
 			Origin::signed(ALICE),
@@ -219,52 +219,24 @@ fn swap_reserve_not_in_auction_with_exact_stable_works() {
 			1000,
 			false
 		));
-		assert_eq!(SerpTreasuryModule::total_reserves_not_in_auction(BTC), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&BOB, BTC, 100));
-		assert_eq!(SerpTreasuryModule::total_reserves_not_in_auction(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
 		assert_noop!(
-			SerpTreasuryModule::swap_reserve_not_in_auction_with_exact_stable(BTC, 499, 101, None),
-			Error::<Runtime>::ReserveNotEnough,
-		);
-
-		assert_ok!(SerpTreasuryModule::swap_reserve_not_in_auction_with_exact_stable(
-			BTC, 499, 100, None
-		));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 499);
-	});
-}
-
-#[test]
-fn swap_exact_reserve_in_auction_to_stable_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(ALICE),
-			BTC,
-			USDJ,
-			100,
-			1000,
-			false
-		));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 0);
-		assert_ok!(SerpTreasuryModule::deposit_reserve(&BOB, BTC, 100));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 100);
-		assert_noop!(
-			SerpTreasuryModule::swap_exact_reserve_in_auction_to_stable(BTC, 100, 500, None),
-			Error::<Runtime>::ReserveNotEnough,
+			SerpTreasuryModule::swap_exact_setter_in_auction_to_settcurrency(BTC, 100, 500, None),
+			Error::<Runtime>::SetterNotEnough,
 		);
 		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			BTC, 100, 1000, ALICE, true
+			100, 1000, ALICE, true
 		));
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 100);
 
-		assert_ok!(SerpTreasuryModule::swap_exact_reserve_in_auction_to_stable(
+		assert_ok!(SerpTreasuryModule::swap_exact_setter_in_auction_to_stable(
 			BTC, 100, 500, None
 		));
-		assert_eq!(SerpTreasuryModule::total_reserves(BTC), 0);
-		assert_eq!(SerpTreasuryModule::serpluspool(), 500);
+		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
+		assert_eq!(SerpTreasuryModule::serplus_pool(), 500);
 	});
 }
 
@@ -273,14 +245,9 @@ fn create_setter_auctions_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Currencies::deposit(BTC, &SerpTreasuryModule::account_id(), 10000));
 		assert_eq!(SerpTreasuryModule::expected_setter_auction_size(BTC), 0);
-		assert_noop!(
-			SerpTreasuryModule::create_setter_auctions(BTC, 10001, 1000, ALICE, true),
-			Error::<Runtime>::ReserveNotEnough,
-		);
-
 		// without setter auction maximum size
 		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			BTC, 1000, 1000, ALICE, true
+			1000, 1000, ALICE, true
 		));
 		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 1);
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 1000);
@@ -295,7 +262,7 @@ fn create_setter_auctions_works() {
 		// amount < setter auction maximum size
 		// auction + 1
 		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			BTC, 200, 1000, ALICE, true
+			200, 1000, ALICE, true
 		));
 		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 2);
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 1200);
@@ -303,7 +270,7 @@ fn create_setter_auctions_works() {
 		// not exceed lots count cap
 		// auction + 4
 		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			BTC, 1000, 1000, ALICE, true
+			1000, 1000, ALICE, true
 		));
 		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 6);
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 2200);
@@ -311,7 +278,7 @@ fn create_setter_auctions_works() {
 		// exceed lots count cap
 		// auction + 5
 		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			BTC, 2000, 1000, ALICE, true
+			2000, 1000, ALICE, true
 		));
 		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 11);
 		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 4200);
@@ -319,7 +286,7 @@ fn create_setter_auctions_works() {
 }
 
 #[test]
-fn auction_serplusworks() {
+fn auction_serplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(SerpTreasuryModule::auction_serplus(Origin::signed(5), 100), BadOrigin,);
 		assert_noop!(
