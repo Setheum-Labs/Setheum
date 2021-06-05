@@ -174,6 +174,13 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		Self::locked_price(fiat_id).or_else(|| T::Source::get(&fiat_id));
 	}
 
+	fn get_setheum_usd_fixed_price() -> Option<Price>{
+		let currency_id = T::GetSettUSDCurrencyId::get();
+		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
+		let fixed_price = Self::get_fiat_price(&currency_id);
+		fixed_price
+	}
+
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>{
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
