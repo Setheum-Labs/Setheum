@@ -49,8 +49,22 @@ pub const KYDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KYDJ); // Setheum KY
 pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OMR (Omani Riyal stablecoin)
 pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
 pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
+
+// LP tokens constants - CurrencyId/TokenSymbol : DEX Shares
 pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DEXShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
 pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DEXShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
+
+// Currencies constants - FiatCurrencyIds
+pub const USD: FiatCurrencyId = USD; // US Dollar 			  (Fiat - only for price feed)
+pub const GBP: FiatCurrencyId = GBP; // Pound Sterling 		  (Fiat - only for price feed)
+pub const EUR: FiatCurrencyId = EUR; // Euro 				  (Fiat - only for price feed)
+pub const KWD: FiatCurrencyId = KWD; // Kuwaiti Dinar 		  (Fiat - only for price feed)
+pub const JOD: FiatCurrencyId = JOD; // Jordanian Dinar 	  (Fiat - only for price feed)
+pub const BHD: FiatCurrencyId = BHD; // Bahraini Dirham 	  (Fiat - only for price feed)
+pub const KYD: FiatCurrencyId = KYD; // Cayman Islands Dollar (Fiat - only for price feed)
+pub const OMR: FiatCurrencyId = OMR; // Omani Riyal 		  (Fiat - only for price feed)
+pub const CHF: FiatCurrencyId = CHF; // Swiss Franc 		  (Fiat - only for price feed)
+pub const GIP: FiatCurrencyId = GIP; // Gibraltar Pound 	  (Fiat - only for price feed)
 
 mod setheum_prices {
 	pub use super::super::*;
@@ -153,6 +167,22 @@ impl SetheumDexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
+	};
+
+	pub PegCurrencyIds: |_currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&USDJ => &USD,
+			&GBPJ => &GBP,
+			&EURJ => &EUR,
+			&KWDJ => &KWD,
+			&JODJ => &JOD,
+			&BHDJ => &BHD,
+			&KYDJ => &KYD,
+			&OMRJ => &OMR,
+			&CHFJ => &CHF,
+			&GIPJ => &GIP,
+			_ => 0,
+		}
 	};
 }
 

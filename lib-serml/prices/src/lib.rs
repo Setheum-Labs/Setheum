@@ -73,6 +73,9 @@ pub mod module {
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
+		/// The peg currency of a stablecoin.
+		type PegCurrencyIds: GetByKey<Self::CurrencyId, Self::FiatCurrencyId>;
+
 		#[pallet::constant]
 		/// The list of valid Fiat currency types that define the stablecoin pegs
 		type FiatCurrencyIds: Get<Vec<CurrencyId>>;
@@ -88,6 +91,16 @@ pub mod module {
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
+	}
+
+	#[pallet::error]
+	pub enum Error<T> {
+		/// Invalid fiat currency id
+		InvalidFiatCurrencyType,
+		/// Invalid stable currency id
+		InvalidStableCurrencyType,
+		/// Invalid peg pair (peg-to-currency-by-key-pair)
+		InvalidPegPair,
 	}
 
 	#[pallet::event]
@@ -141,6 +154,36 @@ pub mod module {
 }
 
 impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
+	/// get stablecoin's fiat peg currency type by id
+	fn get_peg_currency_by_currency_id(currency_id: Self::CurrencyId) -> Self::FiatCurrencyId {
+		T::PegCurrencyIds::get(&currency_id)
+	}
+
+	/// get the price of a stablecoin's fiat peg
+	fn get_fiat_price(fiat_id: FiatCurrencyId, currency_id: CurrencyId) -> Option<Price>{
+		ensure!(
+			T::FiatCurrencyIds::get().contains(&fiat_id),
+			Error::<T>::InvalidFiatCurrencyType,
+		);
+		ensure!(
+			T::StableCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStableCurrencyType,
+		);
+		ensure!(
+			T::PegCurrencyIds::get(&currency_id) == &fiat_id,
+			Error::<T>::InvalidPegPair,
+		);
+		// if locked price exists, return it, otherwise return latest price from oracle.
+		Self::locked_price(fiat_id).or_else(|| T::Source::get(&fiat_id));
+
+		let maybe_adjustment_multiplier = 10u128.checked_pow(currency_id.decimals());
+		if let (Some(feed_price), Some(adjustment_multiplier)) = (maybe_feed_price, maybe_adjustment_multiplier) {
+			Price::checked_from_rational(feed_price.into_inner(), adjustment_multiplier)
+		} else {
+			None
+		}
+	}
+
 	/// get exchange rate between two currency types
 	/// Note: this returns the price for 1 basic unit
 	fn get_relative_price(base_currency_id: CurrencyId, quote_currency_id: CurrencyId) -> Option<Price> {
