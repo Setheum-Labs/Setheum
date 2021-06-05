@@ -211,7 +211,6 @@ pub trait PriceProvider<CurrencyId> {
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
 	fn lock_price(currency_id: CurrencyId);
 	fn unlock_price(currency_id: CurrencyId);
