@@ -70,6 +70,42 @@ pub mod module {
 		type GetSettUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
+		/// The SettGBP currency id, it should be GBPJ in Setheum.
+		type GetSettGBPCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SettEUR currency id, it should be EURJ in Setheum.
+		type GetSettEURCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SettKWD currency id, it should be KWDJ in Setheum.
+		type GetSettKWDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SettJOD currency id, it should be JODJ in Setheum.
+		type GetSettJODCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SettBHD currency id, it should be BHDJ in Setheum.
+		type GetSettBHDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SettKYD currency id, it should be KYDJ in Setheum.
+		type GetSettKYDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SettOMR currency id, it should be OMRJ in Setheum.
+		type GetSettOMRCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SettCHF currency id, it should be CHFJ in Setheum.
+		type GetSettCHFCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SettGIP currency id, it should be GIPJ in Setheum.
+		type GetSettGIPCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
 		/// The fixed price of SettUSD currency, it should be 1 USD in Setheum.
 		type SettUSDFixedPrice: Get<Price>;
 
@@ -229,18 +265,28 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 
 	/// get the price of a Setter (SETT basket coin - basket of currencies)
-	fn get_setter_basket_peg_price(
-		peg_one_currency_id: CurrencyId,
-		peg_two_currency_id: CurrencyId,
-		peg_three_currency_id: CurrencyId,
-		peg_four_currency_id: CurrencyId,
-		peg_five_currency_id: CurrencyId,
-		peg_six_currency_id: CurrencyId,
-		peg_seven_currency_id: CurrencyId,
-		peg_eight_currency_id: CurrencyId,
-		peg_nine_currency_id: CurrencyId,
-		peg_ten_currency_id: CurrencyId,
-	) -> Option<Price>{
+	fn get_setter_basket_peg_price() -> Option<Price>{
+		/// pegged to US Dollar (USD)
+		let peg_one_currency_id: CurrencyId = T::GetSettUSDCurrencyId::get();
+		/// pegged to Pound Sterling (GBP)
+		let peg_two_currency_id: CurrencyId = T::GetSettGBPCurrencyId::get();
+		/// pegged to Euro (EUR)
+		let peg_three_currency_id: CurrencyId = T::GetSettEURCurrencyId::get();
+		/// pegged to Kuwaiti Dinar (KWD)
+		let peg_four_currency_id: CurrencyId = T::GetSettKWDCurrencyId::get();
+		/// pegged to Jordanian Dinar (JOD)
+		let peg_five_currency_id: CurrencyId = T::GetSettJODCurrencyId::get();
+		/// pegged to Bahraini Dirham (BHD)
+		let peg_six_currency_id: CurrencyId = T::GetSettBHDCurrencyId::get();
+		/// pegged to Cayman Islands Dollar (KYD)
+		let peg_seven_currency_id: CurrencyId = T::GetSettKYDCurrencyId::get();
+		/// pegged to Omani Riyal (OMR)
+		let peg_eight_currency_id: CurrencyId = T::GetSettOMRCurrencyId::get();
+		/// pegged to Swiss Franc (CHF)
+		let peg_nine_currency_id: CurrencyId = T::GetSettCHFCurrencyId::get();
+		/// pegged to Gibraltar Pound (GIP)
+		let peg_ten_currency_id: CurrencyId = T::GetSettGIPCurrencyId::get();
+
 		let peg_one_price = Self::get_stablecoin_fixed_price(peg_one_currency_id);
 		let peg_two_price = Self::get_stablecoin_fixed_price(peg_two_currency_id);
 		let peg_three_price = Self::get_stablecoin_fixed_price(peg_three_currency_id);

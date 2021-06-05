@@ -203,6 +203,15 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetSetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
+	pub const GetSettGBPCurrencyId: CurrencyId = GBPJ; // SettGBP currency ticker is GBPJ
+	pub const GetSettEURCurrencyId: CurrencyId = EURJ; // SettEUR currency ticker is EURJ
+	pub const GetSettKWDCurrencyId: CurrencyId = KWDJ; // SettKWD currency ticker is KWDJ
+	pub const GetSettJODCurrencyId: CurrencyId = JODJ; // SettJOD currency ticker is JODJ
+	pub const GetSettBHDCurrencyId: CurrencyId = BHDJ; // SettBHD currency ticker is BHDJ
+	pub const GetSettKYDCurrencyId: CurrencyId = KYDJ; // SettKYD currency ticker is KYDJ
+	pub const GetSettOMRCurrencyId: CurrencyId = OMRJ; // SettOMR currency ticker is OMRJ
+	pub const GetSettCHFCurrencyId: CurrencyId = CHFJ; // SettCHF currency ticker is CHFJ
+	pub const GetSettGIPCurrencyId: CurrencyId = GIPJ; // SettGIP currency ticker is GIPJ
 	pub SettUSDFixedPrice: Price = Price::one(); // All prices are in USD. USDJ is pegged 1:1 to USD
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
@@ -236,6 +245,15 @@ impl Config for Runtime {
 	type Source = MockDataProvider;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetSettGBPCurrencyId = GetSettGBPCurrencyId;
+	type GetSettEURCurrencyId = GetSettEURCurrencyId;
+	type GetSettKWDCurrencyId = GetSettKWDCurrencyId;
+	type GetSettJODCurrencyId = GetSettJODCurrencyId;
+	type GetSettBHDCurrencyId = GetSettBHDCurrencyId;
+	type GetSettKYDCurrencyId = GetSettKYDCurrencyId;
+	type GetSettOMRCurrencyId = GetSettOMRCurrencyId;
+	type GetSettCHFCurrencyId = GetSettCHFCurrencyId;
+	type GetSettGIPCurrencyId = GetSettGIPCurrencyId;
 	type SettUSDFixedPrice = SettUSDFixedPrice;
 	type StableCurrencyIds = StableCurrencyIds;
 	type FiatCurrencyIds = FiatCurrencyIds;
