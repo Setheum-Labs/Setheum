@@ -216,9 +216,9 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if currency_id == T::GetSetterCurrencyId::get() {
+		let maybe_feed_price = if currency_id == T::GetSettUSDCurrencyId::get() {
 			// if is setter stable currency, return fixed price
-			Some(T::SetterCurrencyFixedPrice::get())
+			Some(T::SettUSDFixedPrice::get())
 		} else if let CurrencyId::DEXShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = CurrencyId::Token(symbol_0);
 			let token_1 = CurrencyId::Token(symbol_1);
