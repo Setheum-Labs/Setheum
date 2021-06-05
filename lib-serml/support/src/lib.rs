@@ -207,6 +207,7 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 
 pub trait PriceProvider<CurrencyId> {
 	fn get_fiat_price(fiat_id: FiatCurrencyId, currency_id: CurrencyId) -> Option<Price>;
+	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
 	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;

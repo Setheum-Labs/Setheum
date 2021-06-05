@@ -184,6 +184,15 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		}
 	}
 
+	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>{
+		ensure!(
+			T::StableCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStableCurrencyType,
+		);
+		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
+		Self::get_relative_price(&currency_id, &fiat_id)
+	}
+
 	/// get exchange rate between two currency types
 	/// Note: this returns the price for 1 basic unit
 	fn get_relative_price(base_currency_id: CurrencyId, quote_currency_id: CurrencyId) -> Option<Price> {
