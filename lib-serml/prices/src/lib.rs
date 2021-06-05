@@ -202,9 +202,10 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		Self::get_relative_price(&currency_id, &fiat_id)
+		let coin_to_peg = Self::get_relative_price(&currency_id, &fiat_id);
+		coin_to_peg
 	}
-	
+
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
