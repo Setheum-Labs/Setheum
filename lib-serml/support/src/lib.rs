@@ -23,12 +23,13 @@ use codec::{Decode, Encode, FullCodec, HasCompact};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use sp_core::H160;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize},
+	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
+	convert::TryInto,
 	fmt::Debug,
 	prelude::*,
 };
@@ -211,6 +212,19 @@ pub trait PriceProvider<CurrencyId> {
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
+	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>;
+	fn get_setter_basket_peg_price(
+		peg_one: FiatCurrencyId,
+		peg_two: FiatCurrencyId,
+		peg_three: FiatCurrencyId,
+		peg_four: FiatCurrencyId,
+		peg_five: FiatCurrencyId,
+		peg_six: FiatCurrencyId,
+		peg_seven: FiatCurrencyId,
+		peg_eight: FiatCurrencyId,
+		peg_nine: FiatCurrencyId,
+		peg_ten: FiatCurrencyId,
+	) -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
 	fn lock_price(currency_id: CurrencyId);
 	fn unlock_price(currency_id: CurrencyId);

@@ -54,6 +54,10 @@ pub mod module {
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
+		/// Convert currency amount (Balance) in the setter basket currency aggregation
+		/// to price (Price )value (setter stable currency (SETT))
+		type Convert: Convert<(Price, Balance), Balance>;
+
 		/// The data source, such as Oracle.
 		type Source: DataProvider<CurrencyId, Price> + DataFeeder<CurrencyId, Price, Self::AccountId>;
 
@@ -101,6 +105,8 @@ pub mod module {
 		InvalidStableCurrencyType,
 		/// Invalid peg pair (peg-to-currency-by-key-pair)
 		InvalidPegPair,
+		/// Converting Setter basket currency amount to Price has failed
+		PriceConvertFailed,
 	}
 
 	#[pallet::event]
@@ -213,6 +219,55 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		coin_to_peg
 	}
 
+	/// aggregate the setter price.
+	/// the final price = total_price_of_basket(all currencies prices combined)-
+	/// divided by the amount of currencies in the basket.
+	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>{
+		let currency_convert = Self::price_try_from_balance(currencies_amount)?;
+		let setter_basket_final = total_basket_worth.saturating_div_int(currency_convert);
+		setter_basket_final
+	}
+
+	/// get the price of a Setter (SETT basket coin - basket of currencies)
+	fn get_setter_basket_peg_price(
+		peg_one_currency_id: CurrencyId,
+		peg_two_currency_id: CurrencyId,
+		peg_three_currency_id: CurrencyId,
+		peg_four_currency_id: CurrencyId,
+		peg_five_currency_id: CurrencyId,
+		peg_six_currency_id: CurrencyId,
+		peg_seven_currency_id: CurrencyId,
+		peg_eight_currency_id: CurrencyId,
+		peg_nine_currency_id: CurrencyId,
+		peg_ten_currency_id: CurrencyId,
+	) -> Option<Price>{
+		let peg_one_price = Self::get_stablecoin_fixed_price(peg_one_currency_id);
+		let peg_two_price = Self::get_stablecoin_fixed_price(peg_two_currency_id);
+		let peg_three_price = Self::get_stablecoin_fixed_price(peg_three_currency_id);
+		let peg_four_price = Self::get_stablecoin_fixed_price(peg_four_currency_id);
+		let peg_five_price = Self::get_stablecoin_fixed_price(peg_five_currency_id);
+		let peg_six_price = Self::get_stablecoin_fixed_price(peg_six_currency_id);
+		let peg_seven_price = Self::get_stablecoin_fixed_price(peg_seven_currency_id);
+		let peg_eight_price = Self::get_stablecoin_fixed_price(peg_eight_currency_id);
+		let peg_nine_price = Self::get_stablecoin_fixed_price(peg_nine_currency_id);
+		let peg_ten_price = Self::get_stablecoin_fixed_price(peg_ten_currency_id);
+
+		let total_basket_worth: Price = peg_one_price
+										+ peg_two_price
+										+ peg_three_price
+										+ peg_four_price
+										+ peg_five_price
+										+ peg_six_price
+										+ peg_seven_price
+										+ peg_eight_price
+										+ peg_nine_price
+										+ peg_ten_price;
+		let currencies_amount: Balance = 10;
+		let basket_setter_price = Self::aggregate_setter_basket(total_basket_worth, currencies_amount);
+
+		basket_setter_price
+	}
+
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
@@ -261,5 +316,17 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn unlock_price(currency_id: CurrencyId) {
 		LockedPrice::<T>::remove(currency_id);
 		<Pallet<T>>::deposit_event(Event::UnlockPrice(currency_id));
+	}
+}
+
+impl<T: Config> Pallet<T> {
+	/// Convert `Balance` to `Price`.
+	fn price_try_from_balance(b: Balance) -> result::Result<Price, Error<T>> {
+		TryInto::<Price>::try_into(b).map_err(|_| Error::<T>::PriceConvertFailed)
+	}
+
+	/// Convert the absolute value of `Price` to `Balance`.
+	fn balance_try_from_price_abs(p: Price) -> result::Result<Balance, Error<T>> {
+		TryInto::<Balance>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::PriceConvertFailed)
 	}
 }
