@@ -160,15 +160,12 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 
 	/// get the price of a stablecoin's fiat peg
-	fn get_fiat_price(fiat_id: FiatCurrencyId, currency_id: CurrencyId) -> Option<Price>{
-		ensure!(
-			T::FiatCurrencyIds::get().contains(&fiat_id),
-			Error::<T>::InvalidFiatCurrencyType,
-		);
+	fn get_fiat_price(currency_id: CurrencyId) -> Option<Price>{
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStableCurrencyType,
 		);
+		let fiat_id = get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
 			T::PegCurrencyIds::get(&currency_id) == &fiat_id,
 			Error::<T>::InvalidPegPair,
