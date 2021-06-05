@@ -91,6 +91,10 @@ pub mod module {
 		type ReserveCurrencyIds: Get<Vec<CurrencyId>>;
 
 		#[pallet::constant]
+		/// The list of valid standard currency types
+		type StandardCurrencyIds: Get<Vec<CurrencyId>>;
+
+		#[pallet::constant]
 		/// The default standard exchange rate for all reserve types
 		type DefaultStandardExchangeRate: Get<ExchangeRate>;
 
