@@ -314,6 +314,11 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		basket_setter_price
 	}
 
+	/// get the price of Setter currency (SETT)
+	fn get_setter_price() -> Option<Price>{
+		Self::get_setter_basket_peg_price();
+	}
+
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {

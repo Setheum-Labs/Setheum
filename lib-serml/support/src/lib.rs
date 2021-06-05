@@ -214,6 +214,7 @@ pub trait PriceProvider<CurrencyId> {
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
 	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>;
 	fn get_setter_basket_peg_price() -> Option<Price>;
+	fn get_setter_price() -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
 	fn lock_price(currency_id: CurrencyId);
 	fn unlock_price(currency_id: CurrencyId);
