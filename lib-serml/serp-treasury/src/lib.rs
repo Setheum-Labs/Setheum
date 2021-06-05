@@ -334,6 +334,33 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::issue_propper(who, amount)
 	}
 
+		///
+		/// TODO: SerpTreasury should specify that:-
+		///
+		/// fn serp_tes(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
+		/// 	if peg_price_difference_amount.is_positive() {
+		/// 		T::SerpTreasury::on_serpup(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
+		/// 	} else if peg_price_difference_amount.is_negative() {
+		/// 		T::SerpTreasury::on_serpdown(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
+		/// 	}
+		/// }
+		///
+		/// On SerpUp
+		/// fn on_serpup(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
+		///	 	let serpup_ratio = Ratio::checked_from_rational(peg_price_difference_amount, 100); // in percentage (%)
+		///     let total_issuance = T::Currency::total_issuance(currency_id);
+		/// 	let serpup_balance = total_issuance.checked_mul(&serpup_ratio);
+		/// 	Self::serpup_now(currency_id, serpup_balance);
+		/// }
+		///
+		/// On SerpDown
+		/// fn on_serpdown(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
+		///	 	let serpdown_ratio = Ratio::checked_from_rational(peg_price_difference_amount, 100); // in percentage (%)
+		///     let total_issuance = T::Currency::total_issuance(currency_id);
+		/// 	let serpdown_balance = total_issuance.checked_mul(&serpdown_ratio);
+		/// 	Self::serpdown_now(currency_id, serpdown_balance);
+		/// }
+
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn issue_standard(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(currency_id, who, standard)?;

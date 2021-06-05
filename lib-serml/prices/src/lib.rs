@@ -37,6 +37,7 @@ use sp_runtime::{
 	traits::{CheckedDiv, CheckedMul},
 	FixedPointNumber,
 };
+use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{SetheumDexManager, ExchangeRateProvider, Price, PriceProvider};
 
 mod mock;
@@ -135,13 +136,15 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
+		/// Converting Amount has failed
+		AmountConvertFailed,
 		/// Invalid fiat currency id
 		InvalidFiatCurrencyType,
 		/// Invalid stable currency id
 		InvalidStableCurrencyType,
 		/// Invalid peg pair (peg-to-currency-by-key-pair)
 		InvalidPegPair,
-		/// Converting Setter basket currency amount to Price has failed
+		/// Converting Price has failed
 		PriceConvertFailed,
 	}
 
@@ -242,6 +245,45 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		Self::get_price(currency_id);
 	}
 
+	fn get_peg_price_difference(currency_id: CurrencyId) -> result::Result<Amount, Error<T>> {
+		ensure!(
+			T::StableCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStableCurrencyType,
+		);
+		let fixed_price = Self::get_stablecoin_fixed_price(&currency_id);
+		let market_price = Self::get_stablecoin_market_price(&currency_id);
+
+		let fixed_convert_to_amount = Self::amount_try_from_price_abs(fixed_price)?;
+		let market_convert_to_amount = Self::amount_try_from_price_abs(market_price)?;
+		difference_amount = fixed_price.checked_div(&market_price);
+		///
+		/// TODO: SerpTreasury should specify that:-
+		///
+		/// fn serp_tes(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
+		/// 	if peg_price_difference_amount.is_positive() {
+		/// 		T::SerpTreasury::on_serpup(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
+		/// 	} else if peg_price_difference_amount.is_negative() {
+		/// 		T::SerpTreasury::on_serpdown(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
+		/// 	}
+		/// }
+		///
+		/// On SerpUp
+		/// fn on_serpup(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
+		///	 	let serpup_ratio = Ratio::checked_from_rational(peg_price_difference_amount, 100); // in percentage (%)
+		///     let total_issuance = T::Currency::total_issuance(currency_id);
+		/// 	let serpup_balance = total_issuance.checked_mul(&serpup_ratio);
+		/// 	Self::serpup_now(currency_id, serpup_balance);
+		/// }
+		///
+		/// On SerpDown
+		/// fn on_serpdown(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
+		///	 	let serpdown_ratio = Ratio::checked_from_rational(peg_price_difference_amount, 100); // in percentage (%)
+		///     let total_issuance = T::Currency::total_issuance(currency_id);
+		/// 	let serpdown_balance = total_issuance.checked_mul(&serpdown_ratio);
+		/// 	Self::serpdown_now(currency_id, serpdown_balance);
+		/// }
+	}
+
 	/// get exchange rate between two currency types
 	/// Note: this returns the price for 1 basic unit
 	fn get_relative_price(base_currency_id: CurrencyId, quote_currency_id: CurrencyId) -> Option<Price> {
@@ -268,7 +310,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// divided by the amount of currencies in the basket.
 	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>{
 		let currency_convert = Self::price_try_from_balance(currencies_amount)?;
-		total_basket_worth.saturating_div_int(currency_convert);
+		total_basket_worth.checked_div(currency_convert);
 	}
 
 	/// get the price of a Setter (SETT basket coin - basket of currencies)
@@ -381,5 +423,15 @@ impl<T: Config> Pallet<T> {
 	/// Convert the absolute value of `Price` to `Balance`.
 	fn balance_try_from_price_abs(p: Price) -> result::Result<Balance, Error<T>> {
 		TryInto::<Balance>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::PriceConvertFailed)
+	}
+
+	/// Convert `Amount` to `Price`.
+	fn price_try_from_amount(b: Amount) -> result::Result<Price, Error<T>> {
+		TryInto::<Price>::try_into(b).map_err(|_| Error::<T>::AmountConvertFailed)
+	}
+
+	/// Convert the absolute value of `Price` to `Amount`.
+	fn amount_try_from_price_abs(p: Price) -> result::Result<Amount, Error<T>> {
+		TryInto::<Amount>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::AmountConvertFailed)
 	}
 }

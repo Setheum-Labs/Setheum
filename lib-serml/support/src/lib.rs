@@ -211,6 +211,7 @@ pub trait PriceProvider<CurrencyId> {
 	fn get_setheum_usd_fixed_price() -> Option<Price>;
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_stablecoin_market_price(currency_id: CurrencyId) -> Option<Price>;
+	fn get_peg_price_difference(currency_id: CurrencyId) -> sp_std::result::Result<Balance, DispatchError>;
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
 	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>;
