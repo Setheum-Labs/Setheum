@@ -58,12 +58,24 @@ pub mod module {
 		type Source: DataProvider<CurrencyId, Price> + DataFeeder<CurrencyId, Price, Self::AccountId>;
 
 		#[pallet::constant]
-		/// The stable currency id, it should be USDJ in Setheum.
-		type GetStableCurrencyId: Get<CurrencyId>;
+		/// The Setter currency id, it should be SETT in Setheum.
+		type GetSetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The fixed prices of stable currency, it should be 1 USD in Setheum.
-		type StableCurrencyFixedPrice: Get<Price>;
+		/// The SettUSD currency id, it should be USDJ in Setheum.
+		type GetSettUSDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The fixed price of SettUSD currency, it should be 1 USD in Setheum.
+		type SettUSDFixedPrice: Get<Price>;
+
+		#[pallet::constant]
+		/// The stable currency ids
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
+
+		#[pallet::constant]
+		/// The list of valid Fiat currency types that define the stablecoin pegs
+		type FiatCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The origin which may lock and unlock prices feed to system.
 		type LockOrigin: EnsureOrigin<Self::Origin>;
@@ -144,9 +156,9 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if currency_id == T::GetStableCurrencyId::get() {
-			// if is stable currency, return fixed price
-			Some(T::StableCurrencyFixedPrice::get())
+		let maybe_feed_price = if currency_id == T::GetSetterCurrencyId::get() {
+			// if is setter stable currency, return fixed price
+			Some(T::SetterCurrencyFixedPrice::get())
 		} else if let CurrencyId::DEXShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = CurrencyId::Token(symbol_0);
 			let token_1 = CurrencyId::Token(symbol_1);

@@ -36,12 +36,20 @@ use support::{ExchangeRate, Ratio};
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
+// Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const JCHF: CurrencyId = CurrencyId::Token(TokenSymbol::JCHF);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const JUSD: CurrencyId = CurrencyId::Token(TokenSymbol::JUSD);
-pub const LP_JCHF_USDJ: CurrencyId = CurrencyId::DEXShare(TokenSymbol::JCHF, TokenSymbol::USDJ);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ); // Setheum EUR (Euro stablecoin)
+pub const KWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KWDJ); // Setheum KWD (Kuwaiti Dinar stablecoin)
+pub const JODJ: CurrencyId = CurrencyId::Token(TokenSymbol::JODJ); // Setheum JOD (Jordanian Dinar stablecoin)
+pub const BHDJ: CurrencyId = CurrencyId::Token(TokenSymbol::BHDJ); // Setheum BHD (Bahraini Dirham stablecoin)
+pub const KYDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KYDJ); // Setheum KYD (Cayman Islands Dollar stablecoin)
+pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OMR (Omani Riyal stablecoin)
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
+pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
+pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DEXShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
 pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DEXShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
 
 mod setheum_prices {
@@ -82,7 +90,7 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 	fn get(currency_id: &CurrencyId) -> Option<Price> {
 		match *currency_id {
 			USDJ => Some(Price::saturating_from_rational(99, 100)),
-			JCHF => Some(Price::saturating_from_integer(50000)),
+			CHFJ => Some(Price::saturating_from_integer(50000)),
 			DNAR => Some(Price::saturating_from_integer(100)),
 			DNAR => Some(Price::zero()),
 			_ => None,
@@ -163,15 +171,44 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = USDJ;
-	pub StableCurrencyFixedPrice: Price = Price::one();
+	pub const GetSetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
+	pub SettUSDFixedPrice: Price = Price::one(); // All prices are in USD. USDJ is pegged 1:1 to USD
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
+		USDJ, // Setheum USD (US Dollar stablecoin)
+		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
+		EURJ, // Setheum EUR (Euro stablecoin)
+		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
+		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
+		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
+		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
+		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
+		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
+		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+		];
+	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
+		USD, // US Dollar 			  (Fiat - only for price feed)
+		GBP, // Pound Sterling 		  (Fiat - only for price feed)
+		EUR, // Euro 				  (Fiat - only for price feed)
+		KWD, // Kuwaiti Dinar 		  (Fiat - only for price feed)
+		JOD, // Jordanian Dinar 	  (Fiat - only for price feed)
+		BHD, // Bahraini Dirham 	  (Fiat - only for price feed)
+		KYD, // Cayman Islands Dollar (Fiat - only for price feed)
+		OMR, // Omani Riyal 		  (Fiat - only for price feed)
+		CHF, // Swiss Franc 		  (Fiat - only for price feed)
+		GIP, // Gibraltar Pound 	  (Fiat - only for price feed)
+		];
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Source = MockDataProvider;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type SettUSDFixedPrice = SettUSDFixedPrice;
+	type StableCurrencyIds = StableCurrencyIds;
+	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = MockSetheumDex;
 	type Currency = Tokens;

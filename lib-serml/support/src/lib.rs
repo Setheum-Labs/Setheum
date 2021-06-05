@@ -34,6 +34,7 @@ use sp_std::{
 };
 
 pub type Price = FixedU128;
+pub type FiatCurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord;
 pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;

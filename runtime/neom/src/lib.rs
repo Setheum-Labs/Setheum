@@ -710,14 +710,14 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub StableCurrencyFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	pub SettUSDFixedPrice: Price = Price::saturating_from_rational(1, 1);
 }
 
 impl setheum_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
+	type SettUSDFixedPrice = SettUSDFixedPrice;
 	type GetStakingCurrencyId = GetStakingCurrencyId;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type DEX = Dex;
