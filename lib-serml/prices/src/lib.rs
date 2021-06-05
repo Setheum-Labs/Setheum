@@ -219,18 +219,27 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn get_setheum_usd_fixed_price() -> Option<Price>{
 		let currency_id = T::GetSettUSDCurrencyId::get();
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		let fixed_price = Self::get_fiat_price(&currency_id);
-		fixed_price
+		Self::get_fiat_price(&currency_id);
 	}
 
+	/// get the fixed price of a specific settcurrency/stablecoin currency type
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>{
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		let fixed_price = Self::get_fiat_price(&currency_id, &fiat_id);
-		fixed_price
+		Self::get_fiat_price(&currency_id, &fiat_id);
+	}
+
+	/// get the market price (not fixed price, for SERP-TES) of a
+	/// specific settcurrency/stablecoin currency type from oracle.
+	fn get_stablecoin_market_price(currency_id: CurrencyId) -> Option<Price>{
+		ensure!(
+			T::StableCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStableCurrencyType,
+		);
+		Self::get_price(currency_id);
 	}
 
 	/// get exchange rate between two currency types
@@ -251,8 +260,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		let coin_to_peg = Self::get_relative_price(&currency_id, &fiat_id);
-		coin_to_peg
+		Self::get_relative_price(&currency_id, &fiat_id);
 	}
 
 	/// aggregate the setter price.
@@ -260,8 +268,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// divided by the amount of currencies in the basket.
 	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>{
 		let currency_convert = Self::price_try_from_balance(currencies_amount)?;
-		let setter_basket_final = total_basket_worth.saturating_div_int(currency_convert);
-		setter_basket_final
+		total_basket_worth.saturating_div_int(currency_convert);
 	}
 
 	/// get the price of a Setter (SETT basket coin - basket of currencies)
@@ -309,9 +316,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 										+ peg_nine_price
 										+ peg_ten_price;
 		let currencies_amount: Balance = 10;
-		let basket_setter_price = Self::aggregate_setter_basket(total_basket_worth, currencies_amount);
-
-		basket_setter_price
+		Self::aggregate_setter_basket(total_basket_worth, currencies_amount);
 	}
 
 	/// get the price of Setter currency (SETT)
@@ -322,10 +327,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if currency_id == T::GetSettUSDCurrencyId::get() {
-			// if is setter stable currency, return fixed price
-			Some(T::SettUSDFixedPrice::get())
-		} else if let CurrencyId::DEXShare(symbol_0, symbol_1) = currency_id {
+		let maybe_feed_price = if let CurrencyId::DEXShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = CurrencyId::Token(symbol_0);
 			let token_1 = CurrencyId::Token(symbol_1);
 			let (pool_0, _) = T::DEX::get_liquidity_pool(token_0, token_1);
