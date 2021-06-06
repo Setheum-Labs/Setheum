@@ -147,7 +147,7 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		Default::default()
 	}
 
-	fn get_total_reserve_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+	fn get_total_setter_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 

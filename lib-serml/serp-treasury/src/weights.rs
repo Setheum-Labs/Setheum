@@ -50,7 +50,7 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
 	fn auction_serplus() -> Weight;
 	fn auction_standard() -> Weight;
-	fn auction_reserve() -> Weight;
+	fn auction_setter() -> Weight;
 	fn set_expected_setter_auction_size() -> Weight;
 }
 
@@ -67,7 +67,7 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 	}
-	fn auction_reserve() -> Weight {
+	fn auction_setter() -> Weight {
 		(2_124_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(204 as Weight))
@@ -90,7 +90,7 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
 	}
-	fn auction_reserve() -> Weight {
+	fn auction_setter() -> Weight {
 		(2_124_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(204 as Weight))

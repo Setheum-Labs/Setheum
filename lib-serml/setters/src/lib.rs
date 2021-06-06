@@ -72,7 +72,7 @@ pub mod module {
 			Amount = Amount,
 		>;
 
-		/// Standard manager is used to know the validity  of Settmint standards.
+		/// Standard manager is used to know the validity of Settmint standards.
 		type StandardValidator: StandardValidator<Self::AccountId, CurrencyId, Balance, Balance>;
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
