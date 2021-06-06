@@ -31,7 +31,7 @@
 use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
-use primitives::{Balance, CurrencyId};
+use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, ModuleId,
@@ -152,6 +152,8 @@ pub mod module {
 		CurrencySerpedUp(Balance, CurrencyId),
 		/// Currency SerpDown has been triggered successfully.
 		CurrencySerpDownTriggered(Balance, CurrencyId),
+		/// The Stablecoin Price is stable and indifferent from peg
+		PriceIsStable(CurrencyId, Price),
 	}
 
 	/// The maximum amount of reserve amount for sale per setter auction
@@ -274,6 +276,7 @@ impl<T: Config> Pallet<T> {
 }
 
 impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
+	type Amount = Amount;
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
@@ -428,17 +431,33 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-		///
-		/// TODO: SerpTreasury should specify that:-
-		///
-		/// fn on_serp_tes(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
-		/// 	if peg_price_difference_amount.is_positive() {
-		/// 		T::SerpTreasury::on_system_serpup(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
-		/// 	} else if peg_price_difference_amount.is_negative() {
-		/// 		T::SerpTreasury::on_system_serpdown(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
-		/// 	}
-		/// }
-		///
+	/// Determines whether to SerpUp or SerpDown based on price swing (+/-)).
+	/// positive means "Serp Up", negative means "Serp Down".
+	/// Then it calls the necessary option to serp the currency supply (up/down).
+	fn on_serp_tes(currency_id: CurrencyId) -> DispatchResult {
+
+		let differed_amount = T::Prices::get_peg_price_difference(&currency_id);
+		let price = T::Prices::get_stablecoin_market_price(&currency_id);
+
+		/// ensure that the differed amount is not zero
+		ensure!(
+			!differed_amount.is_zero(),
+			Self::deposit_event(Event::PriceIsStable(price, currency_id));
+		);
+
+		/// if price difference is positive -> SerpUp, else if negative ->SerpDown.
+		if differed_amount.is_positive() {
+			T::SerpTreasury::on_system_serpup(
+				&currency_id, &differed_amount,
+				T::Convert::convert((&differed_amount)))?;
+		} else if differed_amount.is_negative() {
+			T::SerpTreasury::on_system_serpdown(
+				&currency_id, &differed_amount,
+				T::Convert::convert((&differed_amount)))?;
+		}
+
+		Ok(())
+	}
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn issue_standard(currency_id: CurrencyId, who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
