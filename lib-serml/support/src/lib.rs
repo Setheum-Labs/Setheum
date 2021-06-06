@@ -236,30 +236,6 @@ pub trait SerpTreasury<AccountId> {
 	fn withdraw_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
 }
 
-pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
-	fn swap_exact_setter_in_auction_to_settcurrency(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-		min_target_amount: Self::Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
-
-	fn swap_setter_not_in_auction_with_exact_settcurrency(
-		currency_id: Self::CurrencyId,
-		target_amount: Self::Balance,
-		max_supply_amount: Self::Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
-
-	fn create_reserve_auctions(
-		currency_id: Self::CurrencyId,
-		amount: Self::Balance,
-		target: Self::Balance,
-		refund_receiver: AccountId,
-		splited: bool,
-	) -> DispatchResult;
-}
-
 pub trait PriceProvider<CurrencyId> {
 	fn get_fiat_price(fiat_id: FiatCurrencyId, currency_id: CurrencyId) -> Option<Price>;
 	fn get_setheum_usd_fixed_price() -> Option<Price>;

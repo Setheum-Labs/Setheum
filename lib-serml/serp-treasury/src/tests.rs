@@ -209,38 +209,6 @@ fn get_standard_proportion_works() {
 }
 
 #[test]
-fn swap_exact_setter_in_auction_to_settcurrency_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(ALICE),
-			BTC,
-			USDJ,
-			100,
-			1000,
-			false
-		));
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
-		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
-		assert_ok!(SerpTreasuryModule::deposit_reserve(&BOB, BTC, 100));
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
-		assert_noop!(
-			SerpTreasuryModule::swap_exact_setter_in_auction_to_settcurrency(BTC, 100, 500, None),
-			Error::<Runtime>::SetterNotEnough,
-		);
-		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			100, 1000, ALICE, true
-		));
-		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 100);
-
-		assert_ok!(SerpTreasuryModule::swap_exact_setter_in_auction_to_stable(
-			BTC, 100, 500, None
-		));
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
-		assert_eq!(SerpTreasuryModule::serplus_pool(), 500);
-	});
-}
-
-#[test]
 fn auction_serplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(SerpTreasuryModule::auction_serplus(Origin::signed(5), 100), BadOrigin,);

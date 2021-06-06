@@ -36,7 +36,7 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, ModuleId,
 };
-use support::{SerpAuction, SerpTreasury, SerpTreasuryExtended, DEXManager, Ratio};
+use support::{SerpAuction, SerpTreasury, DEXManager, Ratio};
 
 mod benchmarking;
 mod mock;
@@ -660,35 +660,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	fn withdraw_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), to, amount)
-	}
-}
-
-impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
-	/// Swap exact amount of setter in auction to settcurrency,
-	/// return actual target settcurrency amount
-	fn swap_exact_setter_in_auction_to_settcurrency(
-		currency_id: T::GetSetterCurrencyId::get(),
-		supply_amount: Balance,
-		min_target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		let settcurrency_currency_id: CurrencyId;
-		ensure!(
-			T::SerpAuctionHandler::get_total_setter_in_auction() >= supply_amount,
-			Error::<T>::SetterNotEnough,
-		);
-		ensure!(
-			T::StableCurrencyIds::get().contains(settcurrency_currency_id),
-			Error::<T>::InvalidSettCyrrencyType,
-		);
-
-		T::DEX::swap_with_exact_supply(
-			&Self::account_id(),
-			&[T::GetSetterCurrencyId::get(), settcurrency_currency_id],
-			supply_amount,
-			min_target_amount,
-			price_impact_limit,
-		)
 	}
 }
 
