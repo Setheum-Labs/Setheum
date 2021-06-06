@@ -146,6 +146,12 @@ pub mod module {
 		/// The expected amount size for per lot collateral auction of the
 		/// reserve type updated. \[reserve_type, new_size\]
 		ExpectedSetterAuctionSizeUpdated(CurrencyId, Balance),
+		/// Currency SerpUp has been delivered successfully.
+		CurrencySerpUpDelivered(Balance, CurrencyId),
+		/// Currency SerpUp has been completed successfully.
+		CurrencySerpedUp(Balance, CurrencyId),
+		/// Currency SerpDown has been triggered successfully.
+		CurrencySerpDownTriggered(Balance, CurrencyId),
 	}
 
 	/// The maximum amount of reserve amount for sale per setter auction
@@ -287,58 +293,68 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// calculate the proportion of specific standard amount for the whole system
-	fn get_standard_proportion(amount: Self::Balance) -> Ratio {
+	fn get_standard_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio {
 		let stable_total_supply = T::Currency::total_issuance(T::GetStableCurrencyId::get());
 		Ratio::checked_from_rational(amount, stable_total_supply).unwrap_or_default()
 	}
 
 	/// SerpUp ratio for Serplus Auctions / Swaps
-	fn get_serplus_serpup(amount: Balance) -> DispatchResult {
+	fn get_serplus_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Serplus SerpUp Pool - 10%
 		let serplus_account = &Self::account_id();
 		let serplus_ratio = T::SerplusSerpupRatio::get();
 		let serplus_propper = amount.checked_mul(&serplus_ratio);
 		Self::issue_propper(currency_id, serplus_account, serplus_propper);
+
+		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
 		Ok(())
 	}
 
 	/// SerpUp ratio for SettPay Cashdrops
-	fn get_settpay_serpup(amount: Balance) -> DispatchResult {
+	fn get_settpay_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// SettPay SerpUp Pool - 10%
 		let settpay_account = T::SettPayTreasuryAcc::get();
 		let settpay_ratio = T::SettPaySerpupRatio::get();
 		let settpay_propper = amount.checked_mul(&settpay_ratio);
 		Self::issue_propper(currency_id, settpay_account, settpay_propper);
+
+		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
 		Ok(())
 	}
 
 	/// SerpUp ratio for Setheum Treasury
-	fn get_treasury_serpup(amount: Balance) -> DispatchResult {
+	fn get_treasury_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Setheum Treasury SerpUp Pool - 10%
 		let treasury_account = T::SetheumTreasuryAcc::get();
 		let treasury_ratio = T::SetheumTreasurySerpupRatio::get();
 		let treasury_propper = amount.checked_mul(&treasury_ratio);
 		Self::issue_propper(currency_id, treasury_account, treasury_propper);
+
+		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
 		Ok(())
 	}
 
 	/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-	fn get_sif_serpup(amount: Balance) -> DispatchResult {
+	fn get_sif_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// SIF SerpUp Pool - 10%
 		let sif_account = T::SIFAcc::get();
 		let sif_ratio = T::SIFSerpupRatio::get();
 		let sif_propper = amount.checked_mul(&sif_ratio);
 		Self::issue_propper(currency_id, sif_account, sif_propper);
+
+		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
 		Ok(())
 	}
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serpup(amount: Balance) -> DispatchResult {
+	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Charity Fund SerpUp Pool - 10%
 		let charity_fund_account = T::CharityFundAcc::get();
 		let charity_fund_ratio = T::CharityFundSerpupRatio::get();
 		let charity_fund_propper = amount.checked_mul(&charity_fund_ratio);
 		Self::issue_propper(currency_id, charity_fund_account, charity_fund_propper);
+
+		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
 		Ok(())
 	}
 
@@ -353,11 +369,13 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
-		get_serplus_serpup(amount);
-		get_settpay_serpup(amount);
-		get_treasury_serpup(amount);
-		get_sif_serpup(amount);
-		get_charity_fund_serpup(amount);
+		get_serplus_serpup(amount, currency_id);
+		get_settpay_serpup(amount, currency_id);
+		get_treasury_serpup(amount, currency_id);
+		get_sif_serpup(amount, currency_id);
+		get_charity_fund_serpup(amount, currency_id);
+
+		Self::deposit_event(Event::CurrencySerpedUp(amount, currency_id));
 		Ok(())
 	}
 
@@ -403,9 +421,10 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				Error::<T>::InvalidAmount,
 			);
 			/// Setter Auction if it's not to serpdown Setter.
-			T::SerpAuctionHandler::new_setter_auction(&initial_amount, fix_settcurrency, currency_id)
+			T::SerpAuctionHandler::new_setter_auction(&initial_amount, &amount, &currency_id)
 		}
 
+		Self::deposit_event(Event::CurrencySerpDownTriggered(amount, currency_id));
 		Ok(())
 	}
 

@@ -155,19 +155,19 @@ pub trait SerpTreasury<AccountId> {
 	fn get_standard_proportion(amount: Self::Balance) -> Ratio;
 
 	/// SerpUp ratio for Serplus Auctions / Swaps
-	fn get_serplus_serpup(amount: Balance) -> DispatchResult;
+	fn get_serplus_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for SettPay Cashdrops
-	fn get_settpay_serpup(amount: Balance) -> DispatchResult;
+	fn get_settpay_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Treasury
-	fn get_treasury_serpup(amount: Balance) -> DispatchResult;
+	fn get_treasury_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-	fn get_sif_serpup(amount: Balance) -> DispatchResult;
+	fn get_sif_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serpup(amount: Balance) -> DispatchResult;
+	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// issue surplus(stable currencies) for serp treasury
 	/// allocates the serp_up and calls serpup_now.
