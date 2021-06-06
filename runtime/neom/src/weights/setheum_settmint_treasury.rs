@@ -55,7 +55,7 @@ impl<T: frame_system::Config> serp_treasury::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 	}
-	fn auction_reserve() -> Weight {
+	fn auction_setter() -> Weight {
 		(3_527_771_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(204 as Weight))

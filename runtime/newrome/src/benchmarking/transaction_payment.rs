@@ -32,7 +32,7 @@ runtime_benchmarks! {
 
 	set_default_fee_token {
 		let caller: AccountId = account("caller", 0, SEED);
-		let currency_id = CurrencyId::Token(TokenSymbol::USDJ);
+		let currency_id = CurrencyId::Token(TokenSymbol::rUSD);
 	}: _(RawOrigin::Signed(caller.clone()), Some(currency_id))
 	verify {
 		assert_eq!(TransactionPayment::default_fee_currency_id(&caller), Some(currency_id));

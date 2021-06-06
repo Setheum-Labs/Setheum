@@ -20,8 +20,7 @@
 //!
 //! ## Overview
 //!
-//! Setters module manages Settmint's reserve assets and the standards backed by these
-//! assets.
+//! Setters module manages Settmint's reserve asset (Setter) and the standards backed by the asset (SettCurrencies).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -36,7 +35,7 @@ use sp_runtime::{
 	DispatchResult, ModuleId, RuntimeDebug,
 };
 use sp_std::{convert::TryInto, result};
-use support::{SerpTreasury, RiskManager};
+use support::{SerpTreasury, StandardValidator};
 
 mod mock;
 mod tests;
@@ -73,8 +72,8 @@ pub mod module {
 			Amount = Amount,
 		>;
 
-		/// Risk manager is used to limit the standard size of Settmint
-		type RiskManager: RiskManager<Self::AccountId, CurrencyId, Balance, Balance>;
+		/// Standard manager is used to know the validity of Settmint standards.
+		type StandardValidator: StandardValidator<Self::AccountId, CurrencyId, Balance, Balance>;
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
@@ -161,9 +160,6 @@ impl<T: Config> Pallet<T> {
 		}
 
 		if standard_adjustment.is_positive() {
-			// check standard cap when increase standard
-			T::RiskManager::check_standard_cap(currency_id, Self::total_positions(currency_id).standard)?;
-
 			// issue standard with reserve backed by SERP Treasury
 			T::SerpTreasury::issue_standard(who, T::Convert::convert((currency_id, standard_balance_adjustment)), true)?;
 		} else if standard_adjustment.is_negative() {
@@ -172,9 +168,9 @@ impl<T: Config> Pallet<T> {
 			T::SerpTreasury::burn_standard(who, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		}
 
-		// ensure pass risk check
+		// ensure it passes StandardValidator check
 		let Position { reserve, standard } = Self::positions(currency_id, who);
-		T::RiskManager::check_position_valid(currency_id, reserve, standard)?;
+		T::StandardValidator::check_position_valid(currency_id, reserve, standard)?;
 
 		Self::deposit_event(Event::PositionUpdated(
 			who.clone(),
@@ -185,7 +181,7 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	/// transfer whole setter of `from` to `to`
+	/// transfer whole setter reserve of `from` to `to`
 	pub fn transfer_setter(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		// get `from` position data
 		let Position { reserve, standard } = Self::positions(currency_id, from);
@@ -202,7 +198,7 @@ impl<T: Config> Pallet<T> {
 			.expect("existing standard balance cannot overflow; qed");
 
 		// check new position
-		T::RiskManager::check_position_valid(currency_id, new_to_reserve_balance, new_to_standard_balance)?;
+		T::StandardValidator::check_position_valid(currency_id, new_to_reserve_balance, new_to_standard_balance)?;
 
 		// balance -> amount
 		let reserve_adjustment = Self::amount_try_from_balance(reserve)?;

@@ -122,7 +122,7 @@ fn neom_genesis(
 		GeneralCouncilMembershipConfig, GrandpaConfig, SettwayCouncilMembershipConfig,
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
 		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
-		TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, NEOM, JSETT, JUSD,
+		TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, NEOM, NSETT, JUSD,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -221,16 +221,6 @@ fn neom_genesis(
 				(SETT, dollar(SETT)), // (currency_id, max size of a setter auction)
 				(GBPJ, 5 * cent(GBPJ)),
 			],
-		}),
-		setheum_settmint_engine: Some(SettmintEngineConfig {
-			reserve_params: vec![
-				(
-					SETT,
-					Some(FixedU128::zero()),                             // stability fee for this reserve. change to "for this standard".
-					10_000_000 * dollar(JUSD),                           // maximum standard value in USDj (cap)
-				),
-			],
-			global_stability_fee: FixedU128::saturating_from_rational(618_850_393, 100_000_000_000_000_000_u128), /* 5% APR */
 		}),
 		orml_oracle_Instance1: Some(SetheumOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership

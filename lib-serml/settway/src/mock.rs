@@ -32,7 +32,7 @@ use sp_runtime::{
 	FixedPointNumber, ModuleId,
 };
 use sp_std::cell::RefCell;
-use support::{AuctionManager, ExchangeRate, Price, PriceProvider, Rate, Ratio};
+use support::{SerpAuction, ExchangeRate, Price, PriceProvider, Rate, Ratio};
 
 mod settway {
 	pub use super::super::*;
@@ -130,7 +130,7 @@ impl setters::Config for Runtime {
 	type Event = Event;
 	type Convert = settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Tokens;
-	type RiskManager = SettmintEngineModule;
+	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type ModuleId = SettersModuleId;
 	type OnUpdateSetter = ();
@@ -151,8 +151,8 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
-pub struct MockAuctionManager;
-impl AuctionManager<AccountId> for MockAuctionManager {
+pub struct MockSerpAuction;
+impl SerpAuction<AccountId> for MockSerpAuction {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 	type AuctionId = AuctionId;
@@ -186,11 +186,11 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Default::default()
 	}
 
-	fn get_total_reserve_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+	fn get_total_setter_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 
-	fn get_total_serplusin_auction() -> Self::Balance {
+	fn get_total_serplus_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }
@@ -209,7 +209,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = MockAuctionManager;
+	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -218,7 +218,7 @@ impl serp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![BTC, DOT];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);

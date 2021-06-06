@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the auction manager module.
+//! Mocks for the serp auction module.
 
 #![cfg(test)]
 
@@ -43,10 +43,11 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::XBTC);
 
-mod auction_manager {
+mod serp_auction {
 	pub use super::super::*;
 }
 
@@ -99,7 +100,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = AuctionManagerModule;
+	type Handler = SerpAuctionModule;
 	type WeightInfo = ();
 }
 
@@ -108,6 +109,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![USDJ, EURJ];
 	pub const GetStableCurrencyId: CurrencyId = USDJ;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
@@ -117,7 +119,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = AuctionManagerModule;
+	type SerpAuctionHandler = SerpAuctionModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -168,7 +170,9 @@ impl setheum_dex::Config for Runtime {
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 20); // 5% increment
+	pub DiamondAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(3 : 100); // 3% increment
+	pub SetterAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1 : 50); // 2% increment
+	pub SerplusAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1% increment
 	pub const AuctionTimeToClose: u64 = 100;
 	pub const AuctionDurationSoftCap: u64 = 2000;
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
@@ -179,10 +183,12 @@ impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
 	type Auction = AuctionModule;
-	type MinimumIncrementSize = MinimumIncrementSize;
+	type DiamondAuctionMinimumIncrementSize = DiamondAuctionMinimumIncrementSize;
+	type SetterAuctionMinimumIncrementSize = SetterAuctionMinimumIncrementSize;
+	type SerplusAuctionMinimumIncrementSize = SerplusAuctionMinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type DEX = DEXModule;
@@ -201,7 +207,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		AuctionManagerModule: auction_manager::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SerpAuctionModule: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		AuctionModule: orml_auction::{Module, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Event<T>},

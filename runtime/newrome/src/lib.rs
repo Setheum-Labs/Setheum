@@ -92,7 +92,7 @@ pub use primitives::{
 };
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, DNAR, SETT, USDJ,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, ROME, rSETT, rUSD,
 };
 
 mod authority;
@@ -221,7 +221,7 @@ impl pallet_grandpa::Config for Runtime {
 }
 
 parameter_types! {
-	pub IndexDeposit: Balance = dollar(DNAR);
+	pub IndexDeposit: Balance = dollar(ROME);
 }
 
 impl pallet_indices::Config for Runtime {
@@ -273,7 +273,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 parameter_types! {
-	pub TransactionByteFee: Balance = 10 * millicent(DNAR);
+	pub TransactionByteFee: Balance = 10 * millicent(ROME);
 	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
 	pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(1, 100_000);
 	pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
@@ -441,8 +441,8 @@ impl pallet_utility::Config for Runtime {
 }
 
 parameter_types! {
-	pub MultisigDepositBase: Balance = 500 * millicent(DNAR);
-	pub MultisigDepositFactor: Balance = 100 * millicent(DNAR);
+	pub MultisigDepositBase: Balance = 500 * millicent(ROME);
+	pub MultisigDepositFactor: Balance = 100 * millicent(ROME);
 	pub const MaxSignatories: u16 = 100;
 }
 
@@ -483,21 +483,21 @@ impl ContainsLengthBound for GeneralCouncilProvider {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub ProposalBondMinimum: Balance = dollar(DNAR);
+	pub ProposalBondMinimum: Balance = dollar(ROME);
 	pub const SpendPeriod: BlockNumber = DAYS;
 	pub const Burn: Permill = Permill::from_percent(0);
 	pub const TipCountdown: BlockNumber = DAYS;
 	pub const TipFindersFee: Percent = Percent::from_percent(10);
-	pub TipReportDepositBase: Balance = dollar(DNAR);
+	pub TipReportDepositBase: Balance = dollar(ROME);
 	pub const SevenDays: BlockNumber = 7 * DAYS;
 	pub const ZeroDay: BlockNumber = 0;
 	pub const OneDay: BlockNumber = DAYS;
-	pub BountyDepositBase: Balance = dollar(DNAR);
+	pub BountyDepositBase: Balance = dollar(ROME);
 	pub const BountyDepositPayoutDelay: BlockNumber = DAYS;
 	pub const BountyUpdatePeriod: BlockNumber = 14 * DAYS;
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub BountyValueMinimum: Balance = 5 * dollar(DNAR);
-	pub DataDepositPerByte: Balance = cent(DNAR);
+	pub BountyValueMinimum: Balance = 5 * dollar(ROME);
+	pub DataDepositPerByte: Balance = cent(ROME);
 	pub const MaximumReasonLength: u32 = 16384;
 }
 
@@ -612,10 +612,10 @@ impl pallet_staking::Config for Runtime {
 }
 
 parameter_types! {
-	pub ConfigDepositBase: Balance = 10 * cent(DNAR);
-	pub FriendDepositFactor: Balance = cent(DNAR);
+	pub ConfigDepositBase: Balance = 10 * cent(ROME);
+	pub FriendDepositFactor: Balance = cent(ROME);
 	pub const MaxFriends: u16 = 9;
-	pub RecoveryDeposit: Balance = 10 * cent(DNAR);
+	pub RecoveryDeposit: Balance = 10 * cent(ROME);
 }
 
 impl pallet_recovery::Config for Runtime {
@@ -632,7 +632,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = AuctionManager;
+	type Handler = SerpAuction;
 	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
 }
 
@@ -712,14 +712,14 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub StableCurrencyFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	pub SettUSDFixedPrice: Price = Price::saturating_from_rational(1, 1);
 }
 
 impl setheum_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
+	type SettUSDFixedPrice = SettUSDFixedPrice;
 	type GetStakingCurrencyId = GetStakingCurrencyId;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type DEX = Dex;
@@ -728,8 +728,8 @@ impl setheum_prices::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = DNAR;
-	pub const GetStableCurrencyId: CurrencyId = USDJ;
+	pub const GetNativeCurrencyId: CurrencyId = ROME;
+	pub const GetStableCurrencyId: CurrencyId = rUSD;
 }
 
 impl setheum_currencies::Config for Runtime {
@@ -764,7 +764,7 @@ impl EnsureOrigin<Origin> for EnsureRootOrSetheumTreasury {
 }
 
 parameter_types! {
-	pub MinVestedTransfer: Balance = 100 * dollar(DNAR);
+	pub MinVestedTransfer: Balance = 100 * dollar(ROME);
 }
 
 impl orml_vesting::Config for Runtime {
@@ -792,16 +792,20 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1.00% minimum increment
+	pub DiamondAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(3 : 100); // 3% increment
+	pub SetterAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1 : 50); // 2% increment
+	pub SerplusAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1% increment
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 }
 
-impl setheum_auction_manager::Config for Runtime {
+impl serp_auction::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type Auction = Auction;
-	type MinimumIncrementSize = MinimumIncrementSize;
+	type DiamondAuctionMinimumIncrementSize = DiamondAuctionMinimumIncrementSize;
+	type SetterAuctionMinimumIncrementSize = SetterAuctionMinimumIncrementSize;
+	type SerplusAuctionMinimumIncrementSize = SerplusAuctionMinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
 	type GetStableCurrencyId = GetStableCurrencyId;
@@ -809,15 +813,15 @@ impl setheum_auction_manager::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type DEX = Dex;
 	type PriceSource = Prices;
-	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
-	type WeightInfo = weights::setheum_auction_manager::WeightInfo<Runtime>;
+	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
+	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
 }
 
 impl setheum_setters::Config for Runtime {
 	type Event = Event;
 	type Convert = setheum_settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
-	type RiskManager = SettmintEngine;
+	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
 	type ModuleId = SettersModuleId;
 	type OnUpdateSetter = setheum_incentives::OnUpdateSetter<Runtime>;
@@ -882,9 +886,9 @@ where
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![DNAR];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![rSETT];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
-	pub MinimumStandardValue: Balance = dollar(USDJ);
+	pub MinimumStandardValue: Balance = dollar(rUSD);
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(5, 100);
 }
 
@@ -912,9 +916,9 @@ parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::new(USDJ, DNAR),
-		TradingPair::new(USDJ, SETT),
-		TradingPair::new(SETT, DNAR),
+		TradingPair::new(rUSD, ROME),
+		TradingPair::new(rUSD, rSETT),
+		TradingPair::new(rSETT, ROME),
 	];
 }
 
@@ -931,13 +935,25 @@ impl setheum_dex::Config for Runtime {
 
 parameter_types! {
 	pub const MaxAuctionsCount: u32 = 100;
+	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
+	pub SIFSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
 }
 
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = AuctionManager;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerplusSerpupRatio = SerplusSerpupRatio;
+	type SettPaySerpupRatio = SettPaySerpupRatio;
+	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SIFSerpupRatio = SIFSerpupRatio;
+	type SerpAuctionHandler = SerpAuction;
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -946,8 +962,8 @@ impl serp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	// All currency types except for native currency, Sort by fee charge order. aT THE MOMENT IT'S just USDJ
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![USDJ];
+	// All currency types except for native currency, Sort by fee charge order. aT THE MOMENT IT'S just rUSD
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![rUSD];
 }
 
 impl setheum_transaction_payment::Config for Runtime {
@@ -997,8 +1013,8 @@ impl setheum_airdrop::Config for Runtime {
 }
 
 parameter_types! {
-	pub CreateClassDeposit: Balance = 500 * millicent(DNAR);
-	pub CreateTokenDeposit: Balance = 100 * millicent(DNAR);
+	pub CreateClassDeposit: Balance = 500 * millicent(ROME);
+	pub CreateTokenDeposit: Balance = 100 * millicent(ROME);
 }
 
 impl setheum_nft::Config for Runtime {
@@ -1019,12 +1035,12 @@ impl orml_nft::Config for Runtime {
 
 parameter_types! {
 	// One storage item; key size 32, value size 8; .
-	pub ProxyDepositBase: Balance = deposit(1, 8, DNAR);
+	pub ProxyDepositBase: Balance = deposit(1, 8, ROME);
 	// Additional storage item size of 33 bytes.
-	pub ProxyDepositFactor: Balance = deposit(0, 33, DNAR);
+	pub ProxyDepositFactor: Balance = deposit(0, 33, ROME);
 	pub const MaxProxies: u16 = 32;
-	pub AnnouncementDepositBase: Balance = deposit(1, 8, DNAR);
-	pub AnnouncementDepositFactor: Balance = deposit(0, 66, DNAR);
+	pub AnnouncementDepositBase: Balance = deposit(1, 8, ROME);
+	pub AnnouncementDepositFactor: Balance = deposit(0, 66, ROME);
 	pub const MaxPending: u16 = 32;
 }
 
@@ -1113,7 +1129,7 @@ construct_runtime!(
 		Dex: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
 
 		// Settway
-		AuctionManager: setheum_auction_manager::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SerpAuction: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 		Setters: setheum_setters::{Module, Storage, Call, Event<T>},
 		Settway: setheum_settway::{Module, Storage, Call, Event<T>},
 		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>},
@@ -1392,7 +1408,7 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, setheum_nft, NftBench::<Runtime>);
 			orml_add_benchmark!(params, batches, setheum_dex, benchmarking::dex);
-			orml_add_benchmark!(params, batches, setheum_auction_manager, benchmarking::auction_manager);
+			orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
 			orml_add_benchmark!(params, batches, setheum_settmint_engine, benchmarking::settmint_engine);
 			orml_add_benchmark!(params, batches, setheum_settway, benchmarking::settway);
 			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);

@@ -91,7 +91,7 @@ create_currency_id! {
 		// Neom Network
 		NEOM(12) = 128,
 		JUSD(12) = 129,
-		JSETT(12) = 130,
+		NSETT(12) = 130,
 	}
 }
 

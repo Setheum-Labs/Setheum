@@ -91,7 +91,7 @@ pub use primitives::{
 };
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, JSETT, JUSD,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, NSETT, JUSD,
 };
 
 mod authority;
@@ -630,7 +630,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = AuctionManager;
+	type Handler = SerpAuction;
 	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
 }
 
@@ -710,14 +710,14 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub StableCurrencyFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	pub SettUSDFixedPrice: Price = Price::saturating_from_rational(1, 1);
 }
 
 impl setheum_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
+	type SettUSDFixedPrice = SettUSDFixedPrice;
 	type GetStakingCurrencyId = GetStakingCurrencyId;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type DEX = Dex;
@@ -790,16 +790,20 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100); // 2.00% minimum increment
+	pub DiamondAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(3 : 100); // 3% increment
+	pub SetterAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1 : 50); // 2% increment
+	pub SerplusAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1% increment
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 }
 
-impl setheum_auction_manager::Config for Runtime {
+impl serp_auction::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type Auction = Auction;
-	type MinimumIncrementSize = MinimumIncrementSize;
+	type DiamondAuctionMinimumIncrementSize = DiamondAuctionMinimumIncrementSize;
+	type SetterAuctionMinimumIncrementSize = SetterAuctionMinimumIncrementSize;
+	type SerplusAuctionMinimumIncrementSize = SerplusAuctionMinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
 	type GetStableCurrencyId = GetStableCurrencyId;
@@ -807,15 +811,15 @@ impl setheum_auction_manager::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type DEX = Dex;
 	type PriceSource = Prices;
-	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
-	type WeightInfo = weights::setheum_auction_manager::WeightInfo<Runtime>;
+	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
+	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
 }
 
 impl setheum_setters::Config for Runtime {
 	type Event = Event;
 	type Convert = setheum_settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
-	type RiskManager = SettmintEngine;
+	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
 	type ModuleId = SettersModuleId;
 	type OnUpdateSetter = setheum_incentives::OnUpdateSetter<Runtime>;
@@ -880,7 +884,7 @@ where
 }
 
 parameter_types! {
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![NSETT];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub MinimumStandardValue: Balance = dollar(JUSD);
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(5, 100);
@@ -911,8 +915,8 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(JUSD, NEOM),
-		TradingPair::new(JUSD, JSETT),
-		TradingPair::new(JSETT, NEOM),
+		TradingPair::new(JUSD, NSETT),
+		TradingPair::new(NSETT, NEOM),
 	];
 }
 
@@ -929,13 +933,25 @@ impl setheum_dex::Config for Runtime {
 
 parameter_types! {
 	pub const MaxAuctionsCount: u32 = 100;
+	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
+	pub SIFSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
 }
 
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = AuctionManager;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerplusSerpupRatio = SerplusSerpupRatio;
+	type SettPaySerpupRatio = SettPaySerpupRatio;
+	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SIFSerpupRatio = SIFSerpupRatio;
+	type SerpAuctionHandler = SerpAuction;
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -1107,7 +1123,7 @@ construct_runtime!(
 		Dex: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
 
 		// Settway
-		AuctionManager: setheum_auction_manager::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SerpAuction: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 		Setters: setheum_setters::{Module, Storage, Call, Event<T>},
 		Settway: setheum_settway::{Module, Storage, Call, Event<T>},
 		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>},
@@ -1384,7 +1400,7 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
 			// orml_add_benchmark!(params, batches, dex, benchmarking::dex);
-			// orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);
+			// orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
 			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
 			// orml_add_benchmark!(params, batches, settway, benchmarking::settway);
 			// orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);

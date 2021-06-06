@@ -20,8 +20,8 @@
 
 use crate::{
 	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, SIFModuleId,
-	DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, 
-	EnsureRootOrHalfSettwayCouncil, EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
+	DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, EnsureRootOrHalfSettwayCouncil,
+	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
 	EnsureRootOrTwoThirdsTechnicalCommittee, SettwayTreasuryModuleId, OneDay, Origin,
 	OriginCaller, SevenDays, ZeroDay, HOURS,
 };

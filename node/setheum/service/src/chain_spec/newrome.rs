@@ -203,7 +203,7 @@ fn testnet_genesis(
 		GeneralCouncilMembershipConfig, GrandpaConfig, SettwayCouncilMembershipConfig,
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
 		OrmlNFTConfig, RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
-		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, DNAR, SETT, USDJ, 
+		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, DNAR, SETT, USDJ,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -303,16 +303,6 @@ fn testnet_genesis(
 				(CHFJ, dollar(CHFJ)),
 				(GBPJ, dollar(GBPJ)),
 			],
-		}),
-		setheum_settmint_engine: Some(SettmintEngineConfig {
-			reserve_params: vec![
-				(
-					SETT,
-					Some(FixedU128::zero()),                             // stability fee for this reserve
-					10_000_000 * dollar(USDJ),                           // maximum standard value in USDj (cap)
-				),
-			],
-			global_stability_fee: FixedU128::saturating_from_rational(618_850_393, 100_000_000_000_000_000_u128), /* 5% APR */
 		}),
 		setheum_airdrop: Some(AirDropConfig {
 			airdrop_accounts: vec![],
@@ -446,16 +436,6 @@ fn newrome_genesis(
 				(CHFJ, 5 * cent(CHFJ)),
 				(GBPJ, 5 * cent(GBPJ)),
 			],
-		}),
-		setheum_settmint_engine: Some(SettmintEngineConfig {
-			reserve_params: vec![
-				(
-					SETT,
-					Some(FixedU128::zero()),                             // stability fee for this reserve
-					10_000_000 * dollar(USDJ),                           // maximum standard value in USDj (cap)
-				),
-			],
-			global_stability_fee: FixedU128::saturating_from_rational(618_850_393, 100_000_000_000_000_000_u128), /* 5% APR */
 		}),
 		setheum_airdrop: Some(AirDropConfig {
 			airdrop_accounts: {

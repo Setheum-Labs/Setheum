@@ -44,7 +44,7 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::currency::{
-	GetDecimals, DNAR, SETT, USDJ, NEOM, JSETT, JUSD,
+	GetDecimals, DNAR, SETT, USDJ, NEOM, NSETT, JUSD, ROME, rSETT, rUSD,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
@@ -54,7 +54,7 @@ parameter_types! {
 	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const SettmintEngineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-	pub const AuctionManagerUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
+	pub const SerpAuctionUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
 }
 
 parameter_types! {

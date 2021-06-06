@@ -32,7 +32,7 @@ use sp_runtime::{
 	ModuleId,
 };
 use sp_std::cell::RefCell;
-use support::AuctionManager;
+use support::SerpAuction;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -130,7 +130,7 @@ impl setters::Config for Runtime {
 	type Event = Event;
 	type Convert = StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
-	type RiskManager = SettmintEngineModule;
+	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type ModuleId = SettersModuleId;
 	type OnUpdateSetter = ();
@@ -164,8 +164,8 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
-pub struct MockAuctionManager;
-impl AuctionManager<AccountId> for MockAuctionManager {
+pub struct MockSerpAuction;
+impl SerpAuction<AccountId> for MockSerpAuction {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 	type AuctionId = AuctionId;
@@ -199,11 +199,11 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Default::default()
 	}
 
-	fn get_total_reserve_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+	fn get_total_setter_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 
-	fn get_total_serplusin_auction() -> Self::Balance {
+	fn get_total_serplus_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }
@@ -218,7 +218,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = MockAuctionManager;
+	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -253,13 +253,15 @@ parameter_types! {
 	pub const MinimumStandardValue: Balance = 2;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT, DOT];
+	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
+	pub StandardCurrencyIds: Vec<CurrencyId> = vec![USDJ];
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type PriceSource = MockPriceSource;
 	type ReserveCurrencyIds = ReserveCurrencyIds;
+	type StandardCurrencyIds = StandardCurrencyIds;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;

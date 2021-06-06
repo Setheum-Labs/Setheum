@@ -31,14 +31,14 @@ use support::{Rate, Ratio};
 fn authorize_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), BTC, BOB));
+		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
 
-		let authorization_event = Event::settway(crate::Event::Authorization(ALICE, BOB, BTC));
+		let authorization_event = Event::settway(crate::Event::Authorization(ALICE, BOB, SETT));
 		assert!(System::events()
 			.iter()
 			.any(|record| record.event == authorization_event));
 
-		assert_ok!(SettwayModule::check_authorization(&ALICE, &BOB, BTC));
+		assert_ok!(SettwayModule::check_authorization(&ALICE, &BOB, SETT));
 	});
 }
 
@@ -46,17 +46,17 @@ fn authorize_should_work() {
 fn unauthorize_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), BTC, BOB));
-		assert_ok!(SettwayModule::check_authorization(&ALICE, &BOB, BTC));
-		assert_ok!(SettwayModule::unauthorize(Origin::signed(ALICE), BTC, BOB));
+		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
+		assert_ok!(SettwayModule::check_authorization(&ALICE, &BOB, SETT));
+		assert_ok!(SettwayModule::unauthorize(Origin::signed(ALICE), SETT, BOB));
 
-		let unauthorization_event = Event::settway(crate::Event::UnAuthorization(ALICE, BOB, BTC));
+		let unauthorization_event = Event::settway(crate::Event::UnAuthorization(ALICE, BOB, SETT));
 		assert!(System::events()
 			.iter()
 			.any(|record| record.event == unauthorization_event));
 
 		assert_noop!(
-			SettwayModule::check_authorization(&ALICE, &BOB, BTC),
+			SettwayModule::check_authorization(&ALICE, &BOB, SETT),
 			Error::<Runtime>::NoAuthorization
 		);
 	});
@@ -66,8 +66,8 @@ fn unauthorize_should_work() {
 fn unauthorize_all_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), BTC, BOB));
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), DOT, CAROL));
+		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
+		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, CAROL));
 		assert_ok!(SettwayModule::unauthorize_all(Origin::signed(ALICE)));
 
 		let unauthorization_all_event = Event::settway(crate::Event::UnAuthorizationAll(ALICE));
@@ -76,11 +76,11 @@ fn unauthorize_all_should_work() {
 			.any(|record| record.event == unauthorization_all_event));
 
 		assert_noop!(
-			SettwayModule::check_authorization(&ALICE, &BOB, BTC),
+			SettwayModule::check_authorization(&ALICE, &BOB, SETT),
 			Error::<Runtime>::NoAuthorization
 		);
 		assert_noop!(
-			SettwayModule::check_authorization(&ALICE, &BOB, DOT),
+			SettwayModule::check_authorization(&ALICE, &BOB, SETT),
 			Error::<Runtime>::NoAuthorization
 		);
 	});
@@ -89,20 +89,11 @@ fn unauthorize_all_should_work() {
 #[test]
 fn transfer_setter_from_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettmintEngineModule::set_reserve_params(
-			Origin::signed(1),
-			BTC,
-			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
-			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
-			Change::NewValue(10000),
-		));
-		assert_ok!(SettwayModule::adjust_setter(Origin::signed(ALICE), BTC, 100, 50));
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), BTC, BOB));
-		assert_ok!(SettwayModule::transfer_setter_from(Origin::signed(BOB), BTC, ALICE));
-		assert_eq!(SettersModule::positions(BTC, BOB).reserve, 100);
-		assert_eq!(SettersModule::positions(BTC, BOB).standard, 50);
+		assert_ok!(SettwayModule::adjust_setter(Origin::signed(ALICE), SETT, 100, 50));
+		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
+		assert_ok!(SettwayModule::transfer_setter_from(Origin::signed(BOB), SETT, ALICE));
+		assert_eq!(SettersModule::positions(SETT, BOB).reserve, 100);
+		assert_eq!(SettersModule::positions(SETT, BOB).standard, 50);
 	});
 }
 
@@ -110,7 +101,7 @@ fn transfer_setter_from_should_work() {
 fn transfer_unauthorization_setters_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			SettwayModule::transfer_setter_from(Origin::signed(ALICE), BTC, BOB),
+			SettwayModule::transfer_setter_from(Origin::signed(ALICE), SETT, BOB),
 			Error::<Runtime>::NoAuthorization,
 		);
 	});
@@ -119,17 +110,8 @@ fn transfer_unauthorization_setters_should_not_work() {
 #[test]
 fn adjust_setter_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettmintEngineModule::set_reserve_params(
-			Origin::signed(1),
-			BTC,
-			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
-			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
-			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
-			Change::NewValue(10000),
-		));
-		assert_ok!(SettwayModule::adjust_setter(Origin::signed(ALICE), BTC, 100, 50));
-		assert_eq!(SettersModule::positions(BTC, ALICE).reserve, 100);
-		assert_eq!(SettersModule::positions(BTC, ALICE).standard, 50);
+		assert_ok!(SettwayModule::adjust_setter(Origin::signed(ALICE), SETT, 100, 50));
+		assert_eq!(SettersModule::positions(SETT, ALICE).reserve, 100);
+		assert_eq!(SettersModule::positions(SETT, ALICE).standard, 50);
 	});
 }

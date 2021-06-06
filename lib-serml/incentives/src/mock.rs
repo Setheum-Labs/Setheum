@@ -105,15 +105,11 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
-	fn get_serpluspool() -> Balance {
+	fn get_serplus_pool() -> Balance { 
 		unimplemented!()
 	}
 
-	fn get_standard_pool() -> Balance {
-		unimplemented!()
-	}
-
-	fn get_total_reserves(_: CurrencyId) -> Balance {
+	fn get_total_setter(_: CurrencyId) -> Balance {
 		unimplemented!()
 	}
 
@@ -121,24 +117,40 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn on_system_standard(_: Balance) -> DispatchResult {
+	fn on_system_serpdown(_: Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn on_system_serplus(_: Balance) -> DispatchResult {
+	fn on_system_serpup(_: Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
 	fn issue_standard(who: &AccountId, standard: Balance) -> DispatchResult {
-		TokensModule::deposit(AUSD, who, standard)
+		TokensModule::deposit(USDJ, who, standard)
 	}
 
 	fn burn_standard(_: &AccountId, _: Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
+	fn issue_propper(who: &AccountId, propper: Balance) -> DispatchResult {
+		TokensModule::deposit(USDJ, who, propper)
+	}
+
+	fn burn_propper(_: &AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn issue_setter(who: &AccountId, setter: Balance) -> DispatchResult {
+		TokensModule::deposit(SETT, who, setter)
+	}
+
+	fn burn_setter(_: &AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
 	fn issue_dexer(who: &AccountId, dexer: Balance) -> DispatchResult {
-		TokensModule::deposit(AUSD, who, dexer)
+		TokensModule::deposit(SDEX, who, dexer)
 	}
 
 	fn burn_dexer(_: &AccountId, _: Balance) -> DispatchResult {
