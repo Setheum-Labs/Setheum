@@ -337,8 +337,8 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		Self::aggregate_setter_basket(total_basket_worth, currencies_amount);
 	}
 
-	/// get the price of Setter currency (SETT)
-	fn get_setter_price() -> Option<Price>{
+	/// Get the fixed price of Setter currency (SETT)
+	fn get_setter_fixed_price() -> Option<Price>{
 		Self::get_setter_basket_peg_price();
 	}
 
