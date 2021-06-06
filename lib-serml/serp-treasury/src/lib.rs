@@ -31,7 +31,7 @@
 use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
-use primitives::{Amount, Balance, CurrencyId};
+use primitives::{Amount, Balance, BlockNumber, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, ModuleId,
@@ -68,6 +68,11 @@ pub mod module {
 		#[pallet::constant]
 		/// Setter (SETT) currency Stablecoin currency id
 		type GetSetterCurrencyId: Get<CurrencyId>;
+
+		/// SERP-TES Adjustment Frequency.
+		/// Schedule for when to trigger SERP-TES
+		/// (Blocktime/BlockNumber - every blabla block)
+		type SerpTesSchedule: Get<BlockNumber>;
 
 		/// SerpUp ratio for Serplus Auctions / Swaps
 		type SerplusSerpupRatio: Get<Rate>;
@@ -190,7 +195,28 @@ pub mod module {
 	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
+		///
+		/// NOTE: This function is called BEFORE ANY extrinsic in a block is applied,
+		/// including inherent extrinsics. Hence for instance, if you runtime includes
+		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
+		/// Handle excessive surplus or debits of system when block end
+		///
+		/// Triggers Serping for all system stablecoins at every block.
+		fn on_initialize(_now: T::BlockNumber) {
+			/// SERP-TES Adjustment Frequency.
+			/// Schedule for when to trigger SERP-TES
+			/// (Blocktime/BlockNumber - every blabla block)
+			let adjustment_frequency = T::SerpTesSchedule::get();
+			if _now + adjustment_frequency == now {
+				// SERP TES (Token Elasticity of Supply).
+				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
+				Self::on_serp_tes();
+			} else {
+				Ok(())
+			}
+		}
+	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -259,6 +285,10 @@ impl<T: Config> Pallet<T> {
 		T::ModuleId::get().into_account()
 	}
 
+	pub fn adjustment_frequency() -> BlockNumber {
+		T::SerpTesSchedule::get()
+	}
+
 	/// Get current total serplus of specific currency type in the system.
 	pub fn serplus_pool(currency_id: CurrencyId) -> Balance {
 		T::Currency::free_balance(currency_id, &Self::account_id())
@@ -279,6 +309,10 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	type Amount = Amount;
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+
+	fn get_adjustment_frequency() -> BlockNumber {
+		Self::adjustment_frequency()
+	}
 
 	/// get surplus amount of serp treasury
 	fn get_serplus_pool() -> Self::Balance {
@@ -396,7 +430,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn on_serpdown(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
 		/// ensure that the currency is a SettCurrency
 		ensure!(
-			T::SettCurrencyIds::get().contains(&currency_id),
+			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidSettCyrrencyType,
 		);
 		let setter_fixed_price = T::Price::get_setter_fixed_price();
@@ -431,10 +465,16 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	/// Trigger SERP-TES for all stablecoins
+	fn on_serp_tes() -> DispatchRsult {
+		/// Check all stablecoins stability and serp to stabilise the unstable one(s).
+		check_all_stablecoin_stability()
+	}
+
 	/// Determines whether to SerpUp or SerpDown based on price swing (+/-)).
 	/// positive means "Serp Up", negative means "Serp Down".
 	/// Then it calls the necessary option to serp the currency supply (up/down).
-	fn on_serp_tes(currency_id: CurrencyId) -> DispatchResult {
+	fn serp_tes(currency_id: CurrencyId) -> DispatchResult {
 
 		let differed_amount = T::Prices::get_peg_price_difference(&currency_id);
 		let price = T::Prices::get_stablecoin_market_price(&currency_id);
@@ -459,6 +499,59 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	fn check_all_stablecoin_stability() -> DispatchResult {
+		/// pegged to US Dollar (USD)
+		let peg_one_currency_id: CurrencyId = T::GetSettUSDCurrencyId::get();
+		let peg_one_checked_price = Self::get_peg_price_difference(&peg_one_currency_id);
+		Self::serp_tes(peg_one_currency_id);
+
+		/// pegged to Pound Sterling (GBP)
+		let peg_two_currency_id: CurrencyId = T::GetSettGBPCurrencyId::get();
+		let peg_two_checked_price = Self::get_peg_price_difference(&peg_two_currency_id);
+		Self::serp_tes(peg_two_currency_id);
+
+		/// pegged to Euro (EUR)
+		let peg_three_currency_id: CurrencyId = T::GetSettEURCurrencyId::get();
+		let peg_three_checked_price = Self::get_peg_price_difference(&peg_three_currency_id);
+		Self::serp_tes(peg_three_currency_id);
+
+		/// pegged to Kuwaiti Dinar (KWD)
+		let peg_four_currency_id: CurrencyId = T::GetSettKWDCurrencyId::get();
+		let peg_four_checked_price = Self::get_peg_price_difference(&peg_four_currency_id);
+		Self::serp_tes(peg_four_currency_id);
+
+		/// pegged to Jordanian Dinar (JOD)
+		let peg_five_currency_id: CurrencyId = T::GetSettJODCurrencyId::get();
+		let peg_five_checked_price = Self::get_peg_price_difference(&peg_five_currency_id);
+		Self::serp_tes(peg_five_currency_id);
+
+		/// pegged to Bahraini Dirham (BHD)
+		let peg_six_currency_id: CurrencyId = T::GetSettBHDCurrencyId::get();
+		let peg_six_checked_price = Self::get_peg_price_difference(&peg_six_currency_id);
+		Self::serp_tes(peg_six_currency_id);
+
+		/// pegged to Cayman Islands Dollar (KYD)
+		let peg_seven_currency_id: CurrencyId = T::GetSettKYDCurrencyId::get();
+		let peg_seven_checked_price = Self::get_peg_price_difference(&peg_seven_currency_id);
+		Self::serp_tes(peg_seven_currency_id);
+
+		/// pegged to Omani Riyal (OMR)
+		let peg_eight_currency_id: CurrencyId = T::GetSettOMRCurrencyId::get();
+		let peg_eight_checked_price = Self::get_peg_price_difference(&peg_eight_currency_id);
+		Self::serp_tes(peg_eight_currency_id);
+
+		/// pegged to Swiss Franc (CHF)
+		let peg_nine_currency_id: CurrencyId = T::GetSettCHFCurrencyId::get();
+		let peg_nine_checked_price = Self::get_peg_price_difference(&peg_nine_currency_id);
+		Self::serp_tes(peg_nine_currency_id);
+
+		/// pegged to Gibraltar Pound (GIP)
+		let peg_ten_currency_id: CurrencyId = T::GetSettGIPCurrencyId::get();
+		let peg_ten_checked_price = Self::get_peg_price_difference(&peg_ten_currency_id);
+		Self::serp_tes(peg_ten_currency_id);
+
+		Ok(())
+	}
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn issue_standard(currency_id: CurrencyId, who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(currency_id, who, standard)?;
@@ -530,7 +623,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			Error::<T>::SetterNotEnough,
 		);
 		ensure!(
-			T::SettCurrencyIds::get().contains(settcurrency_currency_id),
+			T::StableCurrencyIds::get().contains(settcurrency_currency_id),
 			Error::<T>::InvalidSettCyrrencyType,
 		);
 

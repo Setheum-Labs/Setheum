@@ -185,10 +185,13 @@ pub trait SerpTreasury<AccountId> {
 	/// Create the necessary serp down parameters and starts new auction.
 	fn on_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
+	/// Triggers SERP-TES for Serping to stabilize stablecoin prices.
+	fn on_serp_tes() -> DispatchResult;
+
 	/// Determines whether to SerpUp or SerpDown based on price swing (+/-)).
 	/// positive means "Serp Up", negative means "Serp Down".
 	/// Then it calls the necessary option to serp the currency supply (up/down).
-	fn on_serp_tes(currency_id: Self::CurrencyId) -> DispatchResult;
+	fn serp_tes(currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// issue standard to `who`
 	fn issue_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;

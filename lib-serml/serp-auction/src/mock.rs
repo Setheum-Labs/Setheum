@@ -109,7 +109,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub SettCurrencyIds: Vec<CurrencyId> = vec![USDJ, EURJ];
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![USDJ, EURJ];
 	pub const GetStableCurrencyId: CurrencyId = USDJ;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
@@ -188,7 +188,7 @@ impl Config for Runtime {
 	type SerplusAuctionMinimumIncrementSize = SerplusAuctionMinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type SettCurrencyIds = SettCurrencyIds;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type DEX = DEXModule;

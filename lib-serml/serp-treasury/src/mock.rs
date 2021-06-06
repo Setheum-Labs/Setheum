@@ -116,28 +116,13 @@ impl orml_currencies::Config for Runtime {
 	type WeightInfo = ();
 }
 
-		/// SerpUp ratio for Serplus Auctions / Swaps
-		type SerplusSerpupRatio: Get<Rate>;
-
-		/// SerpUp ratio for SettPay Cashdrops
-		type SettPaySerpupRatio: Get<Rate>;
-
-		/// SerpUp ratio for Setheum Treasury
-		type SetheumTreasurySerpupRatio: Get<Rate>;
-
-		/// SerpUp ratio for Setheum Foundation's Charity Fund
-		type CharityFundSerpupRatio: Get<Rate>;
-
-		/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-		type SIFSerpupRatio: Get<Rate>;
-
 parameter_types! {
-	pub SettCurrencyIds: Vec<CurrencyId> = vec![USDJ];
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![USDJ];
 	pub const GetSetterCurrencyId: CurrencyId = SETT;
 	pub const GetDexerCurrencyId: CurrencyId = SDEX;
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT)];
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT)];
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 }
 
@@ -210,6 +195,7 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
 	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
@@ -220,9 +206,10 @@ parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type SettCurrencyIds = SettCurrencyIds;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
