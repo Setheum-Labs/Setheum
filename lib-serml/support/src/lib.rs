@@ -169,29 +169,20 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Balance) -> DispatchResult;
 
-	/// buy back and burn surplus(stable currencies) with auction / dex-swap
-	/// calls for what to do before serpdown then calls on_system_serpdown.
-	fn on_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
-	/// issue surplus(stable currencies) for serp treasury
-	/// calls for what to do before serpup then calls on_system_serpup.
-	fn on_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
-	/// buy back and burn surplus(stable currencies) with auction / dex-swap
-	/// allocates the serp_up and calls serpup_now.
-	fn on_system_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
 	/// issue surplus(stable currencies) for serp treasury
 	/// allocates the serp_up and calls serpup_now.
 	fn on_system_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
-	/// buy back and burn surplus(stable currencies) with auction / dex-swap
-	/// calls for immediate serping up.
-	fn surpdown_now(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
-	/// issue surplus(stable currencies) for serp treasury
-	/// calls for immediate serping up.
-	fn surpup_now(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	/// buy back and burn surplus(stable currencies) with auction
+	/// allocates the serp_down and calls on_serpdown.
+	fn on_system_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// buy back and burn surplus(stable currencies) with auction
+	/// Create the necessary serp down parameters and starts new auction.
+	fn on_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// issue standard to `who`
 	fn issue_standard(currency_id: CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;

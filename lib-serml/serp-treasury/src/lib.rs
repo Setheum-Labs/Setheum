@@ -351,8 +351,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let serpup_balance = total_issuance.checked_mul(&serpup_ratio);
 		Self::on_serpup(currency_id, serpup_balance);
 	}
-	/// issue surplus(stable currencies) for serp treasury
-	/// calls for what to do before serpup then calls on_system_serpup.
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
 		get_serplus_serpup(amount);
 		get_settpay_serpup(amount);
@@ -362,18 +361,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// buy back and burn surplus(stable currencies) with auction / dex-swap
-	/// allocates the serp_down and calls auction depending on the currency_id.
-	fn on_system_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
-		let origin: OriginFor<T>;
-		let amount: Balance;
-		let target: Balance;
-		let splited: bool;
-		Self::auction_setter(origin, amount, target, true)
-	}
-
-	/// issue surplus(stable currencies) for serp treasury
-	/// allocates the serp_up and calls on_serpup.
+	/// buy back and burn surplus(stable currencies) with auction
+	/// allocates the serp_down and calls on_serpdown.
 	fn on_system_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
 
 		let serpdown_ratio = Ratio::checked_from_rational(amount, 100); // in percentage (%)
@@ -381,31 +370,53 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let serpdown_balance = total_issuance.checked_mul(&serpdown_ratio);
 		Self::on_serpdown(currency_id, serpdown_balance);
 	}
-	/// issue surplus(stable currencies) for serp treasury
-	/// calls for what to do before serpup then calls on_system_serpup.
+	/// buy back and burn surplus(stable currencies) with auction
+	/// Create the necessary serp down parameters and starts new auction.
 	fn on_serpdown(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
+		/// ensure that the currency is a SettCurrency
 		ensure!(
-			T::SettCurrencyIds::get().contains(currency_id),
+			T::SettCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidSettCyrrencyType,
 		);
+		let setter_fixed_price = T::Price::get_setter_fixed_price();
+
 		if currency_id == T::GetSetterCurrencyId::get() {
+			let dinar = T::GetNativeCurrencyId::get();
+			let dinar_price = T::Price::get_price(&dinar);
+			let relative_price = setter_fixed_price.checked_div(&dinar_price);
+			let initial_amount = relative_price.checked_mul(&amount);
+			/// ensure that the amounts are not zero
+			ensure!(
+				!initial_amount.is_zero() && !amount.is_zero(),
+				Error::<T>::InvalidAmount,
+			);
+			/// Diamond Auction if it's to serpdown Setter.
+			T::SerpAuctionHandler::new_diamond_auction(&initial_amount, &amount)
 
 		} else {
-
+			let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id);
+			let relative_price = settcurrency_fixed_price.checked_div(&setter_fixed_price);
+			let initial_amount = relative_price.checked_mul(&amount);
+			/// ensure that the amounts are not zero
+			ensure!(
+				!initial_amount.is_zero() && !amount.is_zero(),
+				Error::<T>::InvalidAmount,
+			);
+			/// Setter Auction if it's not to serpdown Setter.
+			T::SerpAuctionHandler::new_setter_auction(&initial_amount, fix_settcurrency, currency_id)
 		}
 
 		Ok(())
 	}
 
-
 		///
 		/// TODO: SerpTreasury should specify that:-
 		///
-		/// fn serp_tes(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
+		/// fn on_serp_tes(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
 		/// 	if peg_price_difference_amount.is_positive() {
-		/// 		T::SerpTreasury::on_serpup(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
+		/// 		T::SerpTreasury::on_system_serpup(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
 		/// 	} else if peg_price_difference_amount.is_negative() {
-		/// 		T::SerpTreasury::on_serpdown(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
+		/// 		T::SerpTreasury::on_system_serpdown(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
 		/// 	}
 		/// }
 		///
