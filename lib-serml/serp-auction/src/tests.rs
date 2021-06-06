@@ -595,7 +595,7 @@ fn serplus_auction_end_handler_without_bid() {
 fn serplus_auction_end_handler_with_bid() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SerpTreasuryModule::on_system_serplus(100));
+		assert_ok!(SerpTreasuryModule::on_system_serpup(100));
 		assert_ok!(SerpAuctionModule::new_serplus_auction(100));
 		assert_eq!(
 			SerpAuctionModule::serplus_auction_bid_handler(1, 0, (BOB, 500), None).is_ok(),

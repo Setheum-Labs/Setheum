@@ -943,7 +943,7 @@ parameter_types! {
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type SettCurrencyIds = SettCurrencyIds;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
 	type SerplusSerpupRatio = SerplusSerpupRatio;

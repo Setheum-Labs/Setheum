@@ -591,7 +591,7 @@ impl<T: Config> Pallet<T> {
 					Error::<T>::InvalidBidPrice,
 				);
 				ensure!(
-					T::SettCurrencyIds::get().contains(settcurrency_currency_id),
+					T::StableCurrencyIds::get().contains(settcurrency_currency_id),
 					Error::<T>::InvalidSettCyrrencyType,
 				);
 
@@ -600,7 +600,7 @@ impl<T: Config> Pallet<T> {
 				if let Some(last_bidder) = last_bidder {
 					// there's bid before, transfer the stablecoin from new bidder to last bidder
 					T::Currency::transfer(
-						/// change to `T::SettCurrencyIds::get()`
+						/// change to `T::StableCurrencyIds::get()`
 						settcurrency_currency_id,
 						&new_bidder,
 						last_bidder,
@@ -849,7 +849,7 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 			Error::<T>::InvalidAmount,
 		);
 		ensure!(
-			T::SettCurrencyIds::get().contains(settcurrency_id),
+			T::StableCurrencyIds::get().contains(settcurrency_id),
 			Error::<T>::InvalidSettCyrrencyType,
 		);
 		TotalSettCurrencyInAuction::<T>::try_mutate(|total| -> DispatchResult {

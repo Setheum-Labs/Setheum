@@ -34,6 +34,7 @@ use sp_std::{
 	prelude::*,
 };
 
+pub type BlockNumber = u32;
 pub type Price = FixedU128;
 pub type FiatCurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord;
 pub type ExchangeRate = FixedU128;
@@ -139,8 +140,12 @@ where
 
 /// An abstraction of serp treasury for the SERP (Setheum Elastic Reserve Protocol).
 pub trait SerpTreasury<AccountId> {
+	type Amount;
 	type Balance;
 	type CurrencyId;
+	type BlockNumber;
+
+	fn get_adjustment_frequency() -> Self::BlockNumber;
 
 	/// get surplus amount of serp treasury
 	fn get_surplus_pool() -> Self::Balance;
@@ -155,55 +160,54 @@ pub trait SerpTreasury<AccountId> {
 	fn get_standard_proportion(amount: Self::Balance) -> Ratio;
 
 	/// SerpUp ratio for Serplus Auctions / Swaps
-	fn get_serplus_serpup(amount: Balance) -> DispatchResult;
+	fn get_serplus_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for SettPay Cashdrops
-	fn get_settpay_serpup(amount: Balance) -> DispatchResult;
+	fn get_settpay_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Treasury
-	fn get_treasury_serpup(amount: Balance) -> DispatchResult;
+	fn get_treasury_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-	fn get_sif_serpup(amount: Balance) -> DispatchResult;
+	fn get_sif_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serpup(amount: Balance) -> DispatchResult;
-
-	/// buy back and burn surplus(stable currencies) with auction / dex-swap
-	/// calls for what to do before serpdown then calls on_system_serpdown.
-	fn on_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
-	/// issue surplus(stable currencies) for serp treasury
-	/// calls for what to do before serpup then calls on_system_serpup.
-	fn on_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
-	/// buy back and burn surplus(stable currencies) with auction / dex-swap
-	/// allocates the serp_up and calls serpup_now.
-	fn on_system_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// issue surplus(stable currencies) for serp treasury
 	/// allocates the serp_up and calls serpup_now.
 	fn on_system_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
-	/// buy back and burn surplus(stable currencies) with auction / dex-swap
-	/// calls for immediate serping up.
-	fn surpdown_now(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
-	/// issue surplus(stable currencies) for serp treasury
-	/// calls for immediate serping up.
-	fn surpup_now(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	/// buy back and burn surplus(stable currencies) with auction
+	/// allocates the serp_down and calls on_serpdown.
+	fn on_system_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// buy back and burn surplus(stable currencies) with auction
+	/// Create the necessary serp down parameters and starts new auction.
+	fn on_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// Triggers SERP-TES for Serping to stabilize stablecoin prices.
+	fn on_serp_tes() -> DispatchResult;
+
+	/// Determines whether to SerpUp or SerpDown based on price swing (+/-)).
+	/// positive means "Serp Up", negative means "Serp Down".
+	/// Then it calls the necessary option to serp the currency supply (up/down).
+	fn serp_tes(currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// issue standard to `who`
-	fn issue_standard(currency_id: CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
+	fn issue_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
 
 	/// burn standard(stable currency) of `who`
-	fn burn_standard(currency_id: CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
+	fn burn_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_propper(currency_id: CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
+	fn issue_propper(currency_id: Self::CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_propper(currency_id: CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
+	fn burn_propper(currency_id: Self::CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult;
@@ -220,7 +224,7 @@ pub trait SerpTreasury<AccountId> {
 	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// deposit surplus(propperstable currency) to serp treasury by `from`
-	fn deposit_surplus(currency_id: CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
+	fn deposit_surplus(currency_id: Self::CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
 
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
 	fn deposit_reserve(from: &AccountId, amount: Self::Balance) -> DispatchResult;
@@ -266,7 +270,7 @@ pub trait PriceProvider<CurrencyId> {
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
 	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>;
 	fn get_setter_basket_peg_price() -> Option<Price>;
-	fn get_setter_price() -> Option<Price>;
+	fn get_setter_fixed_price() -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
 	fn lock_price(currency_id: CurrencyId);
 	fn unlock_price(currency_id: CurrencyId);
