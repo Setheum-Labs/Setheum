@@ -309,8 +309,9 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	type Amount = Amount;
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+	type BlockNumber = BlockNumber;
 
-	fn get_adjustment_frequency() -> BlockNumber {
+	fn get_adjustment_frequency() -> Self::BlockNumber {
 		Self::adjustment_frequency()
 	}
 

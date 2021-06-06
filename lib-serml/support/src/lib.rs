@@ -34,6 +34,7 @@ use sp_std::{
 	prelude::*,
 };
 
+pub type BlockNumber = u32;
 pub type Price = FixedU128;
 pub type FiatCurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord;
 pub type ExchangeRate = FixedU128;
@@ -142,6 +143,9 @@ pub trait SerpTreasury<AccountId> {
 	type Amount;
 	type Balance;
 	type CurrencyId;
+	type BlockNumber;
+
+	fn get_adjustment_frequency() -> Self::BlockNumber;
 
 	/// get surplus amount of serp treasury
 	fn get_surplus_pool() -> Self::Balance;
