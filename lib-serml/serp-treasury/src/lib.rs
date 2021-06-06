@@ -344,11 +344,6 @@ impl<T: Config> Pallet<T> {
 		T::Currency::free_balance(currency_id, &Self::account_id())
 	}
 
-	/// Get current total serpup of specific currency type in the system.
-	pub fn serpup_pool(currency_id: CurrencyId) -> Balance {
-		T::Currency::free_balance(currency_id, &Self::account_id())
-	}
-
 	/// Get total reserve amount of SERP Treasury module.
 	pub fn total_reserve() -> Balance {
 		T::Currency::free_balance(T::GetSetterCurrencyId, &Self::account_id())
@@ -368,11 +363,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// get surplus amount of serp treasury
 	fn get_serplus_pool() -> Self::Balance {
 		Self::serplus_pool()
-	}
-
-	/// get serpup amount of serp treasury
-	fn get_serpup_pool() -> Self::Balance {
-		Self::serpup_pool()
 	}
 
 	/// get reserve asset amount of serp treasury

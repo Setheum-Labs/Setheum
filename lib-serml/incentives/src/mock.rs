@@ -105,7 +105,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
-	fn get_serplus_pool() -> Balance { 
+	fn get_serplus_pool() -> Balance {
 		unimplemented!()
 	}
 
