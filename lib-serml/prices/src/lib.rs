@@ -110,7 +110,6 @@ pub mod module {
 		/// The fixed price of SettUSD currency, it should be 1 USD in Setheum.
 		type SettUSDFixedPrice: Get<Price>;
 
-		#[pallet::constant]
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 

@@ -61,9 +61,8 @@ pub mod module {
 		/// The Currency for managing assets related to Settmint
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		#[pallet::constant]
-		/// Stablecoin currency id
-		type GetStableCurrencyId: Get<CurrencyId>;
+		/// The stable currency ids
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
 		#[pallet::constant]
 		/// Setter (SETT) currency Stablecoin currency id
@@ -157,7 +156,6 @@ pub mod module {
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
 		type CharityFundAcc: Get<AccountId>;
-
 
 		/// Auction manager creates different types of auction to handle system serplus and standard.
 		type SerpAuctionHandler: SerpAuction<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
