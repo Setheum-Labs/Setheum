@@ -225,7 +225,7 @@ parameter_types! {
 		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
 		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
 		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
-		];
+	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
 		USD, // US Dollar 			  (Fiat - only for price feed)
 		GBP, // Pound Sterling 		  (Fiat - only for price feed)

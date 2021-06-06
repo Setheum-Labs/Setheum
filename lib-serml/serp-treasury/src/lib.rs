@@ -69,6 +69,56 @@ pub mod module {
 		/// Setter (SETT) currency Stablecoin currency id
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
+		#[pallet::constant]
+		/// SettUSD (USDJ) currency Stablecoin currency id
+		/// pegged to US Dollar (USD)
+		type GetSettUSDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettGBP (GBPJ) currency Stablecoin currency id
+		/// pegged to Pound Sterling (GBP)
+		type GetSettGBPCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettEUR (EURJ) currency Stablecoin currency id
+		/// pegged to Euro (EUR)
+		type GetSettEURCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettKWD (KWDJ) currency Stablecoin currency id
+		/// pegged to Kuwaiti Dinar (KWD)
+		type GetSettKWDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettJOD (JODJ) currency Stablecoin currency id
+		/// pegged to Jordanian Dinar (JOD)
+		type GetSettJODCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettBHD (BHDJ) currency Stablecoin currency id
+		/// pegged to Bahraini Dirham (BHD)
+		type GetSettBHDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettKYD (KYDJ) currency Stablecoin currency id
+		/// pegged to Cayman Islands Dollar (KYD)
+		type GetSettKYDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettOMR (OMRJ) currency Stablecoin currency id
+		/// pegged to Omani Riyal (OMR)
+		type GetSettOMRCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettCHF (CHFJ) currency Stablecoin currency id
+		/// pegged to Swiss Franc (CHF)
+		type GetSettCHFCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettGIP (GIPJ) currency Stablecoin currency id
+		/// pegged to Gibraltar Pound (GIP)
+		type GetSettGIPCurrencyId: Get<CurrencyId>;
+
 		/// SERP-TES Adjustment Frequency.
 		/// Schedule for when to trigger SERP-TES
 		/// (Blocktime/BlockNumber - every blabla block)
