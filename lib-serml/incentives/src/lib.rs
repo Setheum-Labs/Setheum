@@ -74,10 +74,6 @@ pub mod module {
 		#[pallet::constant]
 		type StableCurrencyId: Get<CurrencyId>;
 
-		/// The source account for native token rewards.
-		#[pallet::constant]
-		type NativeRewardsSource: Get<Self::AccountId>;
-
 		/// The vault account to keep rewards.
 		#[pallet::constant]
 		type RewardsVaultAccountId: Get<Self::AccountId>;
@@ -395,7 +391,7 @@ impl<T: Config> RewardHandler<T::AccountId> for Pallet<T> {
 
 		// payout the reward to user from the pool. it should not affect the
 		// process, ignore the result to continue. if it fails, just the user will not
-		// be rewarded, there will not increase user balance.
+		// be rewarded, there will not be increase in user balance.
 		let res = T::Currency::transfer(currency_id, &T::RewardsVaultAccountId::get(), &who, amount);
 		if let Err(e) = res {
 			log::warn!(
