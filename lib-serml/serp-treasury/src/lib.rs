@@ -382,7 +382,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// calculate the proportion of specific standard amount for the whole system
 	fn get_standard_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio {
-		let stable_total_supply = T::Currency::total_issuance(T::GetStableCurrencyId::get());
+		ensure!(
+			T::StableCurrencyIds::get().contains(currency_id),
+			Error::<T>::InvalidSettCyrrencyType,
+		);
+		let stable_total_supply = T::Currency::total_issuance(currency_id);
 		Ratio::checked_from_rational(amount, stable_total_supply).unwrap_or_default()
 	}
 
