@@ -245,6 +245,8 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		Self::get_price(currency_id);
 	}
 
+	/// This is used to determin the price change and fluctuation between peg-price and
+	/// stablecoin price for SERP to stabilize with SERP TES Elast in the SerpTreasury.
 	fn get_peg_price_difference(currency_id: CurrencyId) -> result::Result<Amount, Error<T>> {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -256,32 +258,6 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		let fixed_convert_to_amount = Self::amount_try_from_price_abs(fixed_price)?;
 		let market_convert_to_amount = Self::amount_try_from_price_abs(market_price)?;
 		difference_amount = fixed_price.checked_div(&market_price);
-		///
-		/// TODO: SerpTreasury should specify that:-
-		///
-		/// fn serp_tes(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
-		/// 	if peg_price_difference_amount.is_positive() {
-		/// 		T::SerpTreasury::on_serpup(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
-		/// 	} else if peg_price_difference_amount.is_negative() {
-		/// 		T::SerpTreasury::on_serpdown(currency_id, peg_price_difference_amount, T::Convert::convert((peg_price_difference_amount)))?;
-		/// 	}
-		/// }
-		///
-		/// On SerpUp
-		/// fn on_serpup(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
-		///	 	let serpup_ratio = Ratio::checked_from_rational(peg_price_difference_amount, 100); // in percentage (%)
-		///     let total_issuance = T::Currency::total_issuance(currency_id);
-		/// 	let serpup_balance = total_issuance.checked_mul(&serpup_ratio);
-		/// 	Self::serpup_now(currency_id, serpup_balance);
-		/// }
-		///
-		/// On SerpDown
-		/// fn on_serpdown(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
-		///	 	let serpdown_ratio = Ratio::checked_from_rational(peg_price_difference_amount, 100); // in percentage (%)
-		///     let total_issuance = T::Currency::total_issuance(currency_id);
-		/// 	let serpdown_balance = total_issuance.checked_mul(&serpdown_ratio);
-		/// 	Self::serpdown_now(currency_id, serpdown_balance);
-		/// }
 	}
 
 	/// get exchange rate between two currency types
