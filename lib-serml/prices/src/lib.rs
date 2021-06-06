@@ -246,7 +246,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 
 	/// This is used to determin the price change and fluctuation between peg-price and
-	/// stablecoin price for SERP to stabilize with SERP TES Elast in the SerpTreasury.
+	/// stablecoin-price for SERP to stabilize with SERP-TES on_serp_tes in the SerpTreasury.
 	fn get_peg_price_difference(currency_id: CurrencyId) -> result::Result<Amount, Error<T>> {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -255,9 +255,10 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		let fixed_price = Self::get_stablecoin_fixed_price(&currency_id);
 		let market_price = Self::get_stablecoin_market_price(&currency_id);
 
-		let fixed_convert_to_amount = Self::amount_try_from_price_abs(fixed_price)?;
-		let market_convert_to_amount = Self::amount_try_from_price_abs(market_price)?;
+		let fixed_convert_to_amount = Self::amount_try_from_price_abs(&fixed_price)?;
+		let market_convert_to_amount = Self::amount_try_from_price_abs(&market_price)?;
 		difference_amount = fixed_price.checked_div(&market_price);
+		Ok(())
 	}
 
 	/// get exchange rate between two currency types
@@ -286,7 +287,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// divided by the amount of currencies in the basket.
 	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>{
 		let currency_convert = Self::price_try_from_balance(currencies_amount)?;
-		total_basket_worth.checked_div(currency_convert);
+		total_basket_worth.checked_div(&currency_convert);
 	}
 
 	/// get the price of a Setter (SETT basket coin - basket of currencies)
@@ -312,16 +313,16 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		/// pegged to Gibraltar Pound (GIP)
 		let peg_ten_currency_id: CurrencyId = T::GetSettGIPCurrencyId::get();
 
-		let peg_one_price = Self::get_stablecoin_fixed_price(peg_one_currency_id);
-		let peg_two_price = Self::get_stablecoin_fixed_price(peg_two_currency_id);
-		let peg_three_price = Self::get_stablecoin_fixed_price(peg_three_currency_id);
-		let peg_four_price = Self::get_stablecoin_fixed_price(peg_four_currency_id);
-		let peg_five_price = Self::get_stablecoin_fixed_price(peg_five_currency_id);
-		let peg_six_price = Self::get_stablecoin_fixed_price(peg_six_currency_id);
-		let peg_seven_price = Self::get_stablecoin_fixed_price(peg_seven_currency_id);
-		let peg_eight_price = Self::get_stablecoin_fixed_price(peg_eight_currency_id);
-		let peg_nine_price = Self::get_stablecoin_fixed_price(peg_nine_currency_id);
-		let peg_ten_price = Self::get_stablecoin_fixed_price(peg_ten_currency_id);
+		let peg_one_price = Self::get_stablecoin_fixed_price(&peg_one_currency_id);
+		let peg_two_price = Self::get_stablecoin_fixed_price(&peg_two_currency_id);
+		let peg_three_price = Self::get_stablecoin_fixed_price(&peg_three_currency_id);
+		let peg_four_price = Self::get_stablecoin_fixed_price(&peg_four_currency_id);
+		let peg_five_price = Self::get_stablecoin_fixed_price(&peg_five_currency_id);
+		let peg_six_price = Self::get_stablecoin_fixed_price(&peg_six_currency_id);
+		let peg_seven_price = Self::get_stablecoin_fixed_price(&peg_seven_currency_id);
+		let peg_eight_price = Self::get_stablecoin_fixed_price(&peg_eight_currency_id);
+		let peg_nine_price = Self::get_stablecoin_fixed_price(&peg_nine_currency_id);
+		let peg_ten_price = Self::get_stablecoin_fixed_price(&peg_ten_currency_id);
 
 		let total_basket_worth: Price = peg_one_price
 										+ peg_two_price
@@ -334,7 +335,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 										+ peg_nine_price
 										+ peg_ten_price;
 		let currencies_amount: Balance = 10;
-		Self::aggregate_setter_basket(total_basket_worth, currencies_amount);
+		Self::aggregate_setter_basket(&total_basket_worth, &currencies_amount);
 	}
 
 	/// Get the fixed price of Setter currency (SETT)
