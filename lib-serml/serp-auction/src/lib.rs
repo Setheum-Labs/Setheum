@@ -67,40 +67,6 @@ pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/serp-auction/max-ite
 pub const LOCK_DURATION: u64 = 100;
 pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 
-impl<AccountId, BlockNumber> SetterAuctionItem<AccountId, BlockNumber> {
-	/// Return `true` if the setter auction will never be reverse stage.
-	fn always_forward(&self) -> bool {
-		self.target.is_zero()
-	}
-
-	/// Return whether the setter auction is in reverse stage at
-	/// specific bid price
-	fn in_reverse_stage(&self, bid_price: Balance) -> bool {
-		!self.always_forward() && bid_price >= self.target
-	}
-
-	/// Return the actual number of settcurrency to be paid to the Serp.
-	fn payment_amount(&self, bid_price: Balance) -> Balance {
-		if self.always_forward() {
-			bid_price
-		} else {
-			sp_std::cmp::min(self.target, bid_price)
-		}
-	}
-
-	/// Return new reserve amount at specific last bid price and new bid
-	/// price
-	fn reserve_amount(&self, last_bid_price: Balance, new_bid_price: Balance) -> Balance {
-		if self.in_reverse_stage(new_bid_price) && new_bid_price > last_bid_price {
-			Rate::checked_from_rational(sp_std::cmp::max(last_bid_price, self.target), new_bid_price)
-				.and_then(|n| n.checked_mul_int(self.amount))
-				.unwrap_or(self.amount)
-		} else {
-			self.amount
-		}
-	}
-}
-
 /// Information of a diamond auction
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
@@ -111,6 +77,9 @@ pub struct DiamondAuctionItem<BlockNumber> {
 	/// Current amount of native currency for sale to buy back Setter stablecoin.
 	#[codec(compact)]
 	amount: Balance,
+	/// Currency type accepted for the diamond auction. // Always just and only Setter (SETT).
+	#[codec(compact)]
+	setter: CurrencyId,
 	/// Fix amount of Setter stablecoin value needed to be got back by this auction.
 	#[codec(compact)]
 	fix: Balance,
@@ -141,6 +110,10 @@ pub struct SetterAuctionItem<BlockNumber> {
 	/// Current amount of setter stablecurrency for sale to buy back SettCurrency stablecoin.
 	#[codec(compact)]
 	amount: Balance,
+	/// Currency type accepted for the setter auction.
+	/// Always just and only SettCurrencies/stablecoins.
+	#[codec(compact)]
+	currency: CurrencyId,
 	/// Fix amount of SettCurrency stablecoin value needed to be got back by this auction.
 	#[codec(compact)]
 	fix: Balance,
@@ -205,6 +178,14 @@ pub mod module {
 		/// The native currency id
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
+		#[pallet::constant]
+		/// Setter (SETT) currency Stablecoin currency id
+		type GetSetterCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The stable currency ids
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
+
 		/// Currency identifier to transfer assets
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
@@ -235,6 +216,8 @@ pub mod module {
 	pub enum Error<T> {
 		/// The auction dose not exist
 		AuctionNonExistent,
+		/// Currency Not Accepted
+		CurrencyNotAccepted,
 		/// The setter auction is in reverse stage now
 		InReverseStage,
 		/// Feed price is invalid
@@ -249,11 +232,11 @@ pub mod module {
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Diamond Auction created. \[auction_id, initial_supply_amount,
-		/// fix_payment_amount\]
-		NewDiamondAuction(AuctionId, Balance, Balance),
-		/// Setter auction created. \[auction_id, reserve_type,
-		/// reserve_amount, target_bid_price\]
-		NewSetterAuction(AuctionId, CurrencyId, Balance, Balance),
+		/// setter_currency_id, fix_payment_amount\]
+		NewDiamondAuction(AuctionId, Balance, CurrencyId, Balance),
+		/// Setter auction created. \[auction_id, initial_supply_amount,
+		/// setter_currency_id, fix_payment_amount\]
+		NewSetterAuction(AuctionId, Balance, CurrencyId, Balance),
 		/// serplus auction created. \[auction_id, fix_serplus_amount\]
 		NewSerplusAuction(AuctionId, Balance),
 		/// Active auction cancelled. \[auction_id\]
@@ -267,9 +250,6 @@ pub mod module {
 		/// serplus auction dealt. \[auction_id, serplus_amount, winner,
 		/// payment_amount\]
 		SerplusAuctionDealt(AuctionId, Balance, T::AccountId, Balance),
-		/// Dex take setter auction. \[auction_id, reserve_type,
-		/// reserve_amount, turnover\]
-		DEXTakeSetterAuction(AuctionId, CurrencyId, Balance, Balance),
 	}
 
 	/// Mapping from auction id to diamond auction info
@@ -594,7 +574,7 @@ impl<T: Config> Pallet<T> {
 		new_bid: (T::AccountId, Balance),
 		last_bid: Option<(T::AccountId, Balance)>,
 	) -> sp_std::result::Result<T::BlockNumber, DispatchError> {
-		<DiamondAuctions<T>>::try_mutate_exists(
+		<SetterAuctions<T>>::try_mutate_exists(
 			id,
 			|setter_auction| -> sp_std::result::Result<T::BlockNumber, DispatchError> {
 				let mut setter_auction = setter_auction.as_mut().ok_or(Error::<T>::AuctionNonExistent)?;
@@ -716,10 +696,10 @@ impl<T: Config> Pallet<T> {
 		winner: Option<(T::AccountId, Balance)>,
 	) {
 		if let Some((bidder, _)) = winner {
-			// issue native token to winner, it shouldn't fail and affect the process.
+			// issue Setter currency (SETT) to winner, it shouldn't fail and affect the process.
 			// but even it failed, just the winner did not get the amount. it can be fixed
 			// by treasury council. TODO: transfer from RESERVED TREASURY instead of issuing
-			let _ = T::Currency::deposit(T::GetNativeCurrencyId::get(), &bidder, setter_auction.amount);
+			let _ = T::Currency::deposit(T::GetSetterCurrencyId::get(), &bidder, setter_auction.amount);
 
 			Self::deposit_event(Event::SetterAuctionDealt(
 				auction_id,
@@ -843,24 +823,34 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		// set ending time for Diamond Auction
 		let auction_id = T::Auction::new_auction(start_time, Some(end_block))?;
 
-		<DiamondAuctions<T>>::insert(
-			auction_id,
-			DiamondAuctionItem {
-				initial_amount,
-				amount: initial_amount,
-				fix: fix_setter,
-				start_time,
-			},
-		);
+		// set setter currency_id accepted for diamond auction (Only Setter is accepted (SETT))
+		if setter_currency_id = T::GetSetterCurrencyId::get() {
+			<DiamondAuctions<T>>::insert(
+				auction_id,
+				DiamondAuctionItem {
+					initial_amount,
+					amount: initial_amount,
+					setter: setter_currency_id,
+					fix: fix_setter,
+					start_time,
+				},
+			);
+		} else {
+			return Err(Error::<T>::CurrencyNotAccepted.into());
+		}
 
-		Self::deposit_event(Event::NewDiamondAuction(auction_id, initial_amount, fix_setter));
+		Self::deposit_event(Event::NewDiamondAuction(auction_id, initial_amount, setter_currency_id, fix_setter));
 		Ok(())
 	}
 
-	fn new_setter_auction(initial_amount: Self::Balance, fix_settcurrency: Self::Balance) -> DispatchResult {
+	fn new_setter_auction(initial_amount: Self::Balance, fix_settcurrency: Self::Balance, settcurrency_id: Self::CurrencyId) -> DispatchResult {
 		ensure!(
 			!initial_amount.is_zero() && !fix_settcurrency.is_zero(),
 			Error::<T>::InvalidAmount,
+		);
+		ensure!(
+			T::SettCurrencyIds::get().contains(settcurrency_id),
+			Error::<T>::InvalidSettCyrrencyType,
 		);
 		TotalSettCurrencyInAuction::<T>::try_mutate(|total| -> DispatchResult {
 			*total = total.checked_add(fix_settcurrency).ok_or(Error::<T>::InvalidAmount)?;
@@ -873,17 +863,23 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		// set ending time for Setter Auction
 		let auction_id = T::Auction::new_auction(start_time, Some(end_block))?;
 
-		<SetterAuctions<T>>::insert(
-			auction_id,
-			SetterAuctionItem {
-				initial_amount,
-				amount: initial_amount,
-				fix: fix_settcurrency,
-				start_time,
-			},
-		);
+		// set setter currency_id accepted for diamond auction (Only Setter is accepted (SETT))
+		if !settcurrency_id = T::GetSetterCurrencyId::get() {
+			<SetterAuctions<T>>::insert(
+				auction_id,
+				SetterAuctionItem {
+					initial_amount,
+					amount: initial_amount,
+					currency: settcurrency_id,
+					fix: fix_settcurrency,
+					start_time,
+				},
+			);
+		} else {
+			return Err(Error::<T>::CurrencyNotAccepted.into());
+		}
 
-		Self::deposit_event(Event::NewSetterAuction(auction_id, initial_amount, fix_settcurrency));
+		Self::deposit_event(Event::NewSetterAuction(auction_id, initial_amount, settcurrency_id, fix_settcurrency));
 		Ok(())
 	}
 

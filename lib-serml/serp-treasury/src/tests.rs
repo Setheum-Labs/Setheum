@@ -191,10 +191,10 @@ fn withdraw_reserve_works() {
 }
 
 #[test]
-fn get_total_reserve_works() {
+fn get_total_setter_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 500));
-		assert_eq!(SerpTreasuryModule::get_total_reserve(BTC), 500);
+		assert_eq!(SerpTreasuryModule::get_total_setter(BTC), 500);
 	});
 }
 
@@ -237,51 +237,6 @@ fn swap_exact_setter_in_auction_to_settcurrency_works() {
 		));
 		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 500);
-	});
-}
-
-#[test]
-fn create_setter_auctions_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Currencies::deposit(BTC, &SerpTreasuryModule::account_id(), 10000));
-		assert_eq!(SerpTreasuryModule::expected_setter_auction_size(BTC), 0);
-		// without setter auction maximum size
-		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			1000, 1000, ALICE, true
-		));
-		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 1);
-		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 1000);
-
-		// set setter auction maximum size
-		assert_ok!(SerpTreasuryModule::set_expected_setter_auction_size(
-			Origin::signed(1),
-			BTC,
-			300
-		));
-
-		// amount < setter auction maximum size
-		// auction + 1
-		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			200, 1000, ALICE, true
-		));
-		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 2);
-		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 1200);
-
-		// not exceed lots count cap
-		// auction + 4
-		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			1000, 1000, ALICE, true
-		));
-		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 6);
-		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 2200);
-
-		// exceed lots count cap
-		// auction + 5
-		assert_ok!(SerpTreasuryModule::create_setter_auctions(
-			2000, 1000, ALICE, true
-		));
-		assert_eq!(TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut()), 11);
-		assert_eq!(TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut()), 4200);
 	});
 }
 

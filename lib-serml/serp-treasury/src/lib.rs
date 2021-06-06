@@ -65,7 +65,8 @@ pub mod module {
 		/// Stablecoin currency id
 		type GetStableCurrencyId: Get<CurrencyId>;
 
-		/// Stablecoin currency id
+		#[pallet::constant]
+		/// Setter (SETT) currency Stablecoin currency id
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
 		/// SerpUp ratio for Serplus Auctions / Swaps
@@ -82,6 +83,26 @@ pub mod module {
 
 		/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
 		type SIFSerpupRatio: Get<Rate>;
+
+		#[pallet::constant]
+		/// SerpUp pool/account for receiving funds SettPay Cashdrops
+		/// SettPayTreasury account.
+		type SettPayTreasuryAcc: Get<ModuleId>;
+
+		#[pallet::constant]
+		/// SerpUp pool/account for receiving funds Setheum Treasury
+		/// SetheumTreasury account.
+		type SetheumTreasuryAcc: Get<ModuleId>;
+
+		#[pallet::constant]
+		/// SerpUp pool/account for receiving funds Setheum Investment Fund (SIF) DAO
+		/// SIF account.
+		type SIFAcc: Get<ModuleId>;
+
+		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
+		/// CharityFund account.
+		type CharityFundAcc: Get<AccountId>;
+
 
 		/// Auction manager creates different types of auction to handle system serplus and standard.
 		type SerpAuctionHandler: SerpAuction<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -185,10 +206,6 @@ pub mod module {
 			initial_price: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			ensure!(
-				Self::serplus_pool().saturating_sub(T::SerpAuctionHandler::get_total_setter_in_auction()) >= setter_amount,
-				Error::<T>::StandardPoolNotEnough,
-			);
 			T::SerpAuctionHandler::new_diamond_auction(initial_price, setter_amount)?;
 			Ok(().into())
 		}
@@ -197,17 +214,12 @@ pub mod module {
 		#[transactional]
 		pub fn auction_setter(
 			origin: OriginFor<T>,
-			amount: Balance,
-			target: Balance,
-			splited: bool,
+			accepted_currency: CurrencyId,
+			currency_amount: Balance,
+			initial_price: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			<Self as SerpTreasuryExtended<T::AccountId>>::create_setter_auctions(
-				amount,
-				target,
-				Self::account_id(),
-				splited,
-			)?;
+			T::SerpAuctionHandler::new_setter_auction(accepted_currency, initial_price, currency_amount)?;
 			Ok(().into())
 		}
 
@@ -259,32 +271,100 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
+	/// get surplus amount of serp treasury
 	fn get_serplus_pool() -> Self::Balance {
 		Self::serplus_pool()
 	}
 
-	fn get_standard_pool() -> Self::Balance {
-		Self::standard_pool()
-	}
-
+	/// get serpup amount of serp treasury
 	fn get_serpup_pool() -> Self::Balance {
 		Self::serpup_pool()
 	}
 
-	fn get_total_reserve() -> Self::Balance {
+	/// get reserve asset amount of serp treasury
+	fn get_total_setter() -> Self::Balance {
 		Self::total_reserve()
 	}
 
+	/// calculate the proportion of specific standard amount for the whole system
 	fn get_standard_proportion(amount: Self::Balance) -> Ratio {
 		let stable_total_supply = T::Currency::total_issuance(T::GetStableCurrencyId::get());
 		Ratio::checked_from_rational(amount, stable_total_supply).unwrap_or_default()
 	}
 
-	fn on_system_serplus(amount: Self::Balance) -> DispatchResult {
-		Self::issue_standard(&Self::account_id(), amount)
+	/// SerpUp ratio for Serplus Auctions / Swaps
+	fn get_serplus_serpup(amount: Balance) -> DispatchResult {
+		// Serplus SerpUp Pool - 10%
+		let serplus_account = &Self::account_id();
+		let serplus_ratio = T::SerplusSerpupRatio::get();
+		let serplus_propper = amount.checked_mul(&serplus_ratio);
+		Self::issue_propper(currency_id, serplus_account, serplus_propper);
+		Ok(())
 	}
 
-	fn on_system_serpdown(amount: Self::Balance) -> DispatchResult {
+	/// SerpUp ratio for SettPay Cashdrops
+	fn get_settpay_serpup(amount: Balance) -> DispatchResult {
+		// SettPay SerpUp Pool - 10%
+		let settpay_account = T::SettPayTreasuryAcc::get();
+		let settpay_ratio = T::SettPaySerpupRatio::get();
+		let settpay_propper = amount.checked_mul(&settpay_ratio);
+		Self::issue_propper(currency_id, settpay_account, settpay_propper);
+		Ok(())
+	}
+
+	/// SerpUp ratio for Setheum Treasury
+	fn get_treasury_serpup(amount: Balance) -> DispatchResult {
+		// Setheum Treasury SerpUp Pool - 10%
+		let treasury_account = T::SetheumTreasuryAcc::get();
+		let treasury_ratio = T::SetheumTreasurySerpupRatio::get();
+		let treasury_propper = amount.checked_mul(&treasury_ratio);
+		Self::issue_propper(currency_id, treasury_account, treasury_propper);
+		Ok(())
+	}
+
+	/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
+	fn get_sif_serpup(amount: Balance) -> DispatchResult {
+		// SIF SerpUp Pool - 10%
+		let sif_account = T::SIFAcc::get();
+		let sif_ratio = T::SIFSerpupRatio::get();
+		let sif_propper = amount.checked_mul(&sif_ratio);
+		Self::issue_propper(currency_id, sif_account, sif_propper);
+		Ok(())
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serpup(amount: Balance) -> DispatchResult {
+		// Charity Fund SerpUp Pool - 10%
+		let charity_fund_account = T::CharityFundAcc::get();
+		let charity_fund_ratio = T::CharityFundSerpupRatio::get();
+		let charity_fund_propper = amount.checked_mul(&charity_fund_ratio);
+		Self::issue_propper(currency_id, charity_fund_account, charity_fund_propper);
+		Ok(())
+	}
+
+	/// issue surplus(stable currencies) for serp treasury
+	/// allocates the serp_up and calls on_serpup.
+	fn on_system_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
+
+		let serpup_ratio = Ratio::checked_from_rational(amount, 100); // in percentage (%)
+		let total_issuance = T::Currency::total_issuance(currency_id);
+		let serpup_balance = total_issuance.checked_mul(&serpup_ratio);
+		Self::on_serpup(currency_id, serpup_balance);
+	}
+	/// issue surplus(stable currencies) for serp treasury
+	/// calls for what to do before serpup then calls on_system_serpup.
+	fn on_serpup(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
+		get_serplus_serpup(amount);
+		get_settpay_serpup(amount);
+		get_treasury_serpup(amount);
+		get_sif_serpup(amount);
+		get_charity_fund_serpup(amount);
+		Ok(())
+	}
+
+	/// buy back and burn surplus(stable currencies) with auction / dex-swap
+	/// allocates the serp_down and calls auction depending on the currency_id.
+	fn on_system_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
 		let origin: OriginFor<T>;
 		let amount: Balance;
 		let target: Balance;
@@ -292,47 +372,31 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::auction_setter(origin, amount, target, true)
 	}
 
-	fn on_system_serpup(amount: Self::Balance) -> DispatchResult {
+	/// issue surplus(stable currencies) for serp treasury
+	/// allocates the serp_up and calls on_serpup.
+	fn on_system_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
 
-		// Serplus SerpUp Pool - 10%
-		SerplusPool::<T>::try_mutate(|serplus_pool| -> DispatchResult {
-			let serpup_amount = SerplusSerpupRatio;
-			*serplus_pool = serplus_pool.checked_add(serpup_amount).ok_or(Error::<T>::SerplusPoolOverflow)?;
-			Ok(())
-		});
+		let serpdown_ratio = Ratio::checked_from_rational(amount, 100); // in percentage (%)
+		let total_issuance = T::Currency::total_issuance(currency_id);
+		let serpdown_balance = total_issuance.checked_mul(&serpdown_ratio);
+		Self::on_serpdown(currency_id, serpdown_balance);
+	}
+	/// issue surplus(stable currencies) for serp treasury
+	/// calls for what to do before serpup then calls on_system_serpup.
+	fn on_serpdown(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
+		ensure!(
+			T::SettCurrencyIds::get().contains(currency_id),
+			Error::<T>::InvalidSettCyrrencyType,
+		);
+		if currency_id == T::GetSetterCurrencyId::get() {
 
-		// SettPay Treasury SerpUp Pool - 60%
-		SettPayTreasuryPool::<T>::try_mutate(|cashdrop_pool| -> DispatchResult {
-			let serpup_amount = SettPaySerpupRatio;
-			*cashdrop_pool = cashdrop_pool.checked_add(serpup_amount).ok_or(Error::<T>::SettPayTreasuryPoolOverflow)?;
-			Ok(())
-		});
+		} else {
 
-		// Setheum Treasury SerpUp Pool - 10%
-		SetheumTreasuryPool::<T>::try_mutate(|treasury_pool| -> DispatchResult {
-			let serpup_amount = SetheumTreasurySerpupRatio;
-			*treasury_pool = treasury_pool.checked_add(serpup_amount).ok_or(Error::<T>::SetheumTreasuryPoolOverflow)?;
-			Ok(())
-		});
+		}
 
-		// Charity Fund SerpUp Pool - 10%
-		CharityFundPool::<T>::try_mutate(|charity_pool| -> DispatchResult {
-			let serpup_amount = CharityFundSerpupRatio;
-			*charity_pool = charity_pool.checked_add(serpup_amount).ok_or(Error::<T>::CharityFundPoolOverflow)?;
-			Ok(())
-		});
-
-		// Setheum Incestment Fund (SIF) SerpUp Pool - 10%
-		SIFPool::<T>::try_mutate(|sif_pool| -> DispatchResult {
-			let serpup_amount = SIFSerpupRatio;
-			*sif_pool = sif_pool.checked_add(serpup_amount).ok_or(Error::<T>::SIFPoolOverflow)?;
-			Ok(())
-		});
+		Ok(())
 	}
 
-	fn on_serpup(who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
-		Self::issue_propper(who, amount)
-	}
 
 		///
 		/// TODO: SerpTreasury should specify that:-
@@ -345,80 +409,59 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		/// 	}
 		/// }
 		///
-		/// On SerpUp
-		/// fn on_serpup(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
-		///	 	let serpup_ratio = Ratio::checked_from_rational(peg_price_difference_amount, 100); // in percentage (%)
-		///     let total_issuance = T::Currency::total_issuance(currency_id);
-		/// 	let serpup_balance = total_issuance.checked_mul(&serpup_ratio);
-		/// 	Self::serpup_now(currency_id, serpup_balance);
-		/// }
-		///
-		/// On SerpDown
-		/// fn on_serpdown(currency_id: CurrencyId, peg_price_difference_amount: Amount) -> DispatchResult {
-		///	 	let serpdown_ratio = Ratio::checked_from_rational(peg_price_difference_amount, 100); // in percentage (%)
-		///     let total_issuance = T::Currency::total_issuance(currency_id);
-		/// 	let serpdown_balance = total_issuance.checked_mul(&serpdown_ratio);
-		/// 	Self::serpdown_now(currency_id, serpdown_balance);
-		/// }
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_standard(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
+	fn issue_standard(currency_id: CurrencyId, who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(currency_id, who, standard)?;
 		Ok(())
 	}
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_standard(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
+	fn burn_standard(currency_id: CurrencyId, who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(currency_id, who, standard)
 	}
 
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_propper(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
-		T::Currency::deposit(currency_id, who, standard)?;
+	fn issue_propper(currency_id: CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult {
+		T::Currency::deposit(currency_id, who, propper)?;
 		Ok(())
 	}
 
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_propper(who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(currency_id, who, standard)
+	fn burn_propper(currency_id: CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult {
+		T::Currency::withdraw(currency_id, who, propper)
 	}
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::GetSetterCurrencyId::get(), who, setter)?;
 		Ok(())
 	}
 
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn burn_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, setter)
 	}
 
 	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
-	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::GetDexerCurrencyId::get(), who, dexer)?;
 		Ok(())
 	}
 
 	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
-	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
 	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::GetDexerCurrencyId::get(), who, dexer)
 	}
 
-	fn deposit_serplus(from: &T::AccountId, serplus: Self::Balance) -> DispatchResult {
+	fn deposit_serplus(currency_id: CurrencyId, from: &T::AccountId, serplus: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(currency_id, from, &Self::account_id(), serplus)
 	}
 
-	fn deposit_reserve(from: &T::AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
+	fn deposit_reserve(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetSetterCurrencyId::get(), from, &Self::account_id(), amount)
 	}
 
-	fn burn_reserve(to: &T::AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
+	fn burn_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), to, amount)
 	}
 
-	fn withdraw_reserve(to: &T::AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
+	fn withdraw_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), to, amount)
 	}
 }
@@ -449,62 +492,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			min_target_amount,
 			price_impact_limit,
 		)
-	}
-
-	fn create_setter_auctions(
-		amount: Balance,
-		target: Balance,
-		refund_receiver: T::AccountId,
-		splited: bool,
-	) -> DispatchResult {
-
-		let mut unhandled_reserve_amount = amount;
-		let mut unhandled_target = target;
-		let expected_setter_auction_size = Self::expected_setter_auction_size(T::GetSetterCurrencyId::get());
-		let max_auctions_count: Balance = T::MaxAuctionsCount::get().into();
-		let lots_count = if !splited
-			|| max_auctions_count.is_zero()
-			|| expected_setter_auction_size.is_zero()
-			|| amount <= expected_setter_auction_size
-		{
-			One::one()
-		} else {
-			let mut count = amount
-				.checked_div(expected_setter_auction_size)
-				.expect("setter auction maximum size is not zero; qed");
-
-			let remainder = amount
-				.checked_rem(expected_setter_auction_size)
-				.expect("setter auction maximum size is not zero; qed");
-			if !remainder.is_zero() {
-				count = count.saturating_add(One::one());
-			}
-			sp_std::cmp::min(count, max_auctions_count)
-		};
-		let average_amount_per_lot = amount.checked_div(lots_count).expect("lots count is at least 1; qed");
-		let average_target_per_lot = target.checked_div(lots_count).expect("lots count is at least 1; qed");
-		let mut created_lots: Balance = Zero::zero();
-
-		while !unhandled_reserve_amount.is_zero() {
-			created_lots = created_lots.saturating_add(One::one());
-			let (lot_reserve_amount, lot_target) = if created_lots == lots_count {
-				// the last lot may be have some remnant than average
-				(unhandled_reserve_amount, unhandled_target)
-			} else {
-				(average_amount_per_lot, average_target_per_lot)
-			};
-
-			T::SerpAuctionHandler::new_setter_auction(
-				&refund_receiver,
-				currency_id,
-				lot_reserve_amount,
-				lot_target,
-			)?;
-
-			unhandled_reserve_amount = unhandled_reserve_amount.saturating_sub(lot_reserve_amount);
-			unhandled_target = unhandled_target.saturating_sub(lot_target);
-		}
-		Ok(())
 	}
 }
 

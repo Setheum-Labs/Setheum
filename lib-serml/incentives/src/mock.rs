@@ -105,23 +105,15 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
-	fn get_serplus_pool() -> Balance {
+	fn get_serplus_pool() -> Balance { 
 		unimplemented!()
 	}
 
-	fn get_total_reserve(_: CurrencyId) -> Balance {
+	fn get_total_setter(_: CurrencyId) -> Balance {
 		unimplemented!()
 	}
 
 	fn get_standard_proportion(_: Balance) -> Ratio {
-		unimplemented!()
-	}
-
-	fn on_system_standard(_: Balance) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn on_system_serplus(_: Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
