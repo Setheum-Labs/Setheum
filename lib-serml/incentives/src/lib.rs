@@ -148,7 +148,6 @@ pub mod module {
 			// accumulate reward periodically
 			if now % T::AccumulatePeriod::get() == Zero::zero() {
 				let mut count: u32 = 0;
-				let dex_currency_id = T::T::DexCurrencyId::get();
 				let stable_currency_id = T::StableCurrencyId::get();
 
 				for (pool_id, pool_info) in orml_rewards::Pools::<T>::iter() {
