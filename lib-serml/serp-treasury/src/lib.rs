@@ -251,12 +251,11 @@ pub mod module {
 		/// Handle excessive surplus or debits of system when block end
 		///
 		/// Triggers Serping for all system stablecoins at every block.
-		fn on_initialize(_now: T::BlockNumber) {
+		fn on_initialize(now: T::BlockNumber) {
 			/// SERP-TES Adjustment Frequency.
 			/// Schedule for when to trigger SERP-TES
 			/// (Blocktime/BlockNumber - every blabla block)
-			let adjustment_frequency = T::SerpTesSchedule::get();
-			if _now + adjustment_frequency == now {
+			if now % T::SerpTesSchedule::get() == Zero::zero() {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				Self::on_serp_tes();
