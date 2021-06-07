@@ -278,7 +278,7 @@ parameter_types! {
 	pub const DexPremiumPool: AccountId = 11;
 	pub const DexPlusPool: AccountId = 12;
 	pub const DexBonusPool: AccountId = 13;
-	pub const AccumulatePeriod: BlockNumber = 10;
+	pub const AccumulatePeriod: BlockNumber = 20;
 	pub const IncentiveCurrencyId: CurrencyId = SDEX;
 	pub const PremiumCurrencyId: CurrencyId = SETT;
 	pub const PlusCurrencyId: CurrencyId = USDJ;
