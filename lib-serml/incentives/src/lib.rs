@@ -41,14 +41,21 @@ pub use weights::WeightInfo;
 /// PoolId for various rewards pools
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
 pub enum PoolId<AccountId> {
-
-	/// Rewards pool(DexCurrencyId) (SDEX or HALAL) for market makers who provide Dex
-	/// liquidity
+	/// Rewards pool(DexCurrencyId) (SDEX or HALAL) for market makers who provide Dex liquidity
+	/// for all pools.
 	DexIncentive(CurrencyId),
 
-	/// Rewards pool(SetterCurrencyId) for LPs who provide Dex liquidity
-	/// for Setter (SETT) pools only.
-	DexSetterReward(CurrencyId),
+	/// Rewards pool(SetterCurrencyId) (SETT) for market makers who provide Dex liquidity
+	/// for NativeCurrency (DNAR or NEOM) pools only.
+	DexPremium(CurrencyId),
+
+	/// Rewards pool(SettUSDCurrencyId) (USDJ or JUSD) for market makers who provide Dex liquidity
+	/// for all SettCurrency (all system stablecoins) pools only.
+	DexPlus(CurrencyId),
+
+	/// Rewards pool(SetterCurrencyId) (SETT) for market makers who provide Dex liquidity
+	/// for DexCurrency / Dexer (SDEX or HALAL) pools only.
+	DexBonus(CurrencyId),
 }
 
 #[frame_support::pallet]
@@ -62,21 +69,62 @@ pub mod module {
 	{
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
+		/// The vault account to keep rewards for type DexIncentive PoolId
+		/// (Receives SettinDex - SDEX/HALAL/RDEX)
+		/// For all LPs
+		#[pallet::constant]
+		type DexIncentivePool: Get<Self::AccountId>;
+
+		/// The vault account to keep rewards for type DexPremium PoolId
+		/// (Receives Setter - SETT/NSETT/rSETT)
+		/// For Dinar (NativeCurrencyId - DNAR/NEOM/ROME) LPs
+		#[pallet::constant]
+		type DexPremiumPool: Get<Self::AccountId>;
+
+		/// The vault account to keep rewards for type DexPlus PoolId
+		/// (Receives SettUSD - USDJ/JUSD/rUSD)
+		/// For SettCurrency (System StableCurrencies) LPs
+		#[pallet::constant]
+		type DexPlusPool: Get<Self::AccountId>;
+
+		/// The vault account to keep rewards for type DexBonus PoolId
+		/// (Receives Setter - SETT/NSETT/rSETT)
+		/// For SettinDex (IncentiveCurrencyId - SDEX/HALAL/RDEX) LPs
+		#[pallet::constant]
+		type DexBonusPool: Get<Self::AccountId>;
+
 		/// The period to accumulate rewards
 		#[pallet::constant]
 		type AccumulatePeriod: Get<Self::BlockNumber>;
 
-		/// The reward type for incentive.
-		#[pallet::constant]
-		type DexCurrencyId: Get<CurrencyId>;
+		/// The stable currency ids (SettCurrencies)
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
-		/// The reward type for `dex_setter`, rename to `SetterCurrencyId`.
+		/// The Incentive reward type (SDEX/HALAL/RDEX)
+		/// SDEX in Setheum, HALAL in Neom, RDEX in NewRome
+		/// For all LPs
 		#[pallet::constant]
-		type StableCurrencyId: Get<CurrencyId>;
+		type IncentiveCurrencyId: Get<CurrencyId>;
 
-		/// The vault account to keep rewards.
+		/// The Premium reward type (SETT/NSETT/rSETT)
+		/// SETT in Setheum, NSETT in Neom, rSETT in NewRome
+		/// For Dinar (NativeCurrencyId - DNAR/NEOM/ROME) LPs
+		/// DNAR in Setheum, NEOM in Neom, ROME in NewRome
 		#[pallet::constant]
-		type RewardsVaultAccountId: Get<Self::AccountId>;
+		type PremiumCurrencyId: Get<CurrencyId>;
+
+		/// The Plus reward type (USDJ/JUSD/rUSD)
+		/// USDJ in Setheum, JUSD in Neom, rUSD in NewRome
+		/// For SettCurrency (System StableCurrencies) LPs
+		#[pallet::constant]
+		type PlusCurrencyId: Get<CurrencyId>;
+
+		/// The Bonus reward type (SETT/NSETT/rSETT)
+		/// SETT in Setheum, NSETT in Neom, rSETT in NewRome
+		/// For SettinDex (IncentiveCurrencyId - SDEX/HALAL/RDEX) LPs
+		/// SDEX in Setheum, HALAL in Neom, RDEX in NewRome
+		#[pallet::constant]
+		type BonusCurrencyId: Get<CurrencyId>;
 
 		/// The origin which may update incentive related params
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
@@ -105,7 +153,7 @@ pub mod module {
 		/// Invalid currency id
 		InvalidCurrencyId,
 		/// Invalid pool id
-		InvalidPoolId,
+		InvalidPoolId, // Remove this
 	}
 
 	#[pallet::event]
@@ -119,124 +167,35 @@ pub mod module {
 		ClaimRewards(T::AccountId, T::PoolId),
 	}
 
-	/// Mapping from pool to its fixed reward amount per period.
-	///
-	/// IncentiveRewardAmount: map PoolId => Balance
+	/// Mapping from dex liquidity currency type to its Incentive rewards
+	/// amount per period
 	#[pallet::storage]
-	#[pallet::getter(fn incentive_reward_amount)]
-	pub type IncentiveRewardAmount<T: Config> =
-		StorageMap<_, Twox64Concat, PoolId, Balance, ValueQuery>;
+	#[pallet::getter(fn dex_incentive_rewards)]
+	pub type DexIncentiveRewards<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
-	/// Mapping from pool to its fixed reward rate per period.
-	///
-	/// DexSetterRewardRate: map PoolId => Rate
+	/// Mapping from native currency type to its Premium rewards
+	/// amount per period
 	#[pallet::storage]
-	#[pallet::getter(fn dex_setter_reward_rate)]
-	pub type DexSetterRewardRate<T: Config> =
-		StorageMap<_, Twox64Concat, PoolId, Rate, ValueQuery>;
+	#[pallet::getter(fn dex_premium_rewards)]
+	pub type DexPremiumRewards<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
+
+	/// Mapping from settcurrency type to its Plus rewards
+	/// amount per period
+	#[pallet::storage]
+	#[pallet::getter(fn dex_plus_rewards)]
+	pub type DexPlusRewards<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
+
+	/// Mapping from dex incentive currency type to its Bonus rewards
+	/// amount per period
+	#[pallet::storage]
+	#[pallet::getter(fn dex_bonus_rewards)]
+	pub type DexBonusRewards<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		fn on_initialize(now: T::BlockNumber) -> Weight {
-			// accumulate reward periodically
-			if now % T::AccumulatePeriod::get() == Zero::zero() {
-				let mut count: u32 = 0;
-				let stable_currency_id = T::StableCurrencyId::get();
-
-				for (pool_id, pool_info) in orml_rewards::Pools::<T>::iter() {
-					if !pool_info.total_shares.is_zero() {
-						match pool_id {
-							PoolId::DexIncentive(_) => {
-								count += 1;
-								let incentive_reward_amount = Self::incentive_reward_amount(pool_id.clone());
-
-								/// issue SettinDex (SDEX).
-								if !incentive_reward_amount.is_zero() {
-									let res = T::SerpTreasury::issue_dexer(
-										&T::RewardsVaultAccountId::get(),
-										incentive_reward_amount,
-										false,
-									);
-									match res {
-										Ok(_) => {
-											<orml_rewards::Pallet<T>>::accumulate_reward(
-												&pool_id,
-												incentive_reward_amount,
-											);
-										}
-										Err(e) => {
-											log::warn!(
-												target: "incentives",
-												"issue_dexer: failed to issue {:?} dexer to {:?}: {:?}. \
-														This is unexpected but should be safe",
-												incentive_reward_amount, T::RewardsVaultAccountId::get(), e
-											);
-										}
-									}
-								}
-							}
-
-							PoolId::DexSetterReward(lp_currency_id) => {
-								count += 1;
-								let dex_setter_reward_rate = Self::dex_setter_reward_rate(pool_id.clone());
-
-								if !dex_setter_reward_rate.is_zero() {
-									if let Some((currency_id_a, currency_id_b)) =
-										lp_currency_id.split_dex_share_currency_id()
-									{
-										// accumulate dex_setter reward only for liquidity pool of stable currency id
-										let dex_setter_reward_base = if currency_id_a == stable_currency_id {
-											T::DEX::get_liquidity_pool(stable_currency_id, currency_id_b).0
-										} else if currency_id_b == stable_currency_id {
-											T::DEX::get_liquidity_pool(stable_currency_id, currency_id_a).0
-										} else {
-											Zero::zero()
-										};
-										let dex_setter_reward_amount =
-											dex_setter_reward_rate.saturating_mul_int(dex_setter_reward_base);
-
-										// issue Setter (SETT).
-										if !dex_setter_reward_amount.is_zero() {
-											let res = T::SerpTreasury::issue_standard( // update to `issue_reserve`
-												&T::RewardsVaultAccountId::get(),
-												dex_setter_reward_amount,
-												false,
-											);
-											match res {
-												Ok(_) => {
-													<orml_rewards::Pallet<T>>::accumulate_reward(
-														&pool_id,
-														dex_setter_reward_amount,
-													);
-												}
-												Err(e) => {
-													log::warn!(
-														target: "incentives",
-														"issue_standard: failed to issue {:?} Setter to {:?}: {:?}. \
-														This is unexpected but should be safe",
-														dex_setter_reward_amount, T::RewardsVaultAccountId::get(), e
-													);
-												}
-											}
-										}
-									}
-								}
-							}
-
-							_ => {}
-						}
-					}
-				}
-
-				T::WeightInfo::on_initialize(count)
-			} else {
-				0
-			}
-		}
-	}
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -276,41 +235,61 @@ pub mod module {
 			Ok(().into())
 		}
 
-		#[pallet::weight(<T as Config>::WeightInfo::update_incentive_rewards(updates.len() as u32))]
+		#[pallet::weight(<T as Config>::WeightInfo::update_dex_incentive_rewards(updates.len() as u32))]
 		#[transactional]
-		pub fn update_incentive_rewards(
+		pub fn update_dex_incentive_rewards(
 			origin: OriginFor<T>,
-			updates: Vec<(T::PoolId, Balance)>,
+			updates: Vec<(CurrencyId, Balance)>,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			for (pool_id, amount) in updates {
-				if pool_id == PoolId::DexIncentive(currency_id) {
-					ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
-				} else {
-					return Err(Error::<T>::InvalidPoolId.into());
-				}
-				IncentiveRewardAmount::<T>::insert(pool_id, amount);
+			for (currency_id, amount) in updates {
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
+				DexIncentiveRewards::<T>::insert(currency_id, amount);
 			}
 			Ok(().into())
 		}
 
-		#[pallet::weight(<T as Config>::WeightInfo::update_dex_setter_rewards(updates.len() as u32))]
+		#[pallet::weight(<T as Config>::WeightInfo::update_dex_premium_rewards(updates.len() as u32))]
 		#[transactional]
-		pub fn update_dex_setter_rewards(
+		pub fn update_dex_premium_rewards(
 			origin: OriginFor<T>,
-			updates: Vec<(T::PoolId, Rate)>,
+			updates: Vec<(CurrencyId, Balance)>,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			for (pool_id, rate) in updates {
-				if pool_id == PoolId::DexSetterReward(currency_id) {
-						ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
-				} else {
-					return Err(Error::<T>::InvalidPoolId.into());
-				}
-				DexSetterRewardRate::<T>::insert(pool_id, rate);
+			for (currency_id, amount) in updates {
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
+				DexIncentiveRewards::<T>::insert(currency_id, amount);
 			}
 			Ok(().into())
 		}
+		#[pallet::weight(<T as Config>::WeightInfo::update_dex_plus_rewards(updates.len() as u32))]
+		#[transactional]
+		pub fn update_dex_plus_rewards(
+			origin: OriginFor<T>,
+			updates: Vec<(CurrencyId, Balance)>,
+		) -> DispatchResultWithPostInfo {
+			T::UpdateOrigin::ensure_origin(origin)?;
+			for (currency_id, amount) in updates {
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
+				DexIncentiveRewards::<T>::insert(currency_id, amount);
+			}
+			Ok(().into())
+		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::update_dex_bonus_rewards(updates.len() as u32))]
+		#[transactional]
+		pub fn update_dex_bonus_rewards(
+			origin: OriginFor<T>,
+			updates: Vec<(CurrencyId, Balance)>,
+		) -> DispatchResultWithPostInfo {
+			T::UpdateOrigin::ensure_origin(origin)?;
+			for (currency_id, amount) in updates {
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
+				DexIncentiveRewards::<T>::insert(currency_id, amount);
+			}
+			Ok(().into())
+		}
+
 	}
 }
 
@@ -327,11 +306,9 @@ impl<T: Config> DEXIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 		T::Currency::transfer(lp_currency_id, who, &Self::account_id(), amount)?;
 		<orml_rewards::Pallet<T>>::add_share(
 			who,
-			&PoolId::DexIncentive(lp_currency_id),
+			PoolId::DexIncentive(lp_currency_id),
 			amount.unique_saturated_into(),
 		);
-		<orml_rewards::Pallet<T>>::add_share(who, &PoolId::DexSetterReward(lp_currency_id), amount);
-
 		Self::deposit_event(Event::DepositDexShare(who.clone(), lp_currency_id, amount));
 		Ok(())
 	}
@@ -339,68 +316,141 @@ impl<T: Config> DEXIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	fn do_withdraw_dex_share(who: &T::AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		ensure!(lp_currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 		ensure!(
-			<orml_rewards::Pallet<T>>::share_and_withdrawn_reward(&PoolId::DexIncentive(lp_currency_id), &who).0
-				>= amount && <orml_rewards::Pallet<T>>::share_and_withdrawn_reward(
-				&PoolId::DexSetterReward(lp_currency_id),
-				&who
-			)
-			.0 >= amount,
+			<orml_rewards::Pallet<T>>::share_and_withdrawn_reward(PoolId::DexIncentive(lp_currency_id), &who).0 >= amount,
 			Error::<T>::NotEnough,
 		);
 
 		T::Currency::transfer(lp_currency_id, &Self::account_id(), &who, amount)?;
 		<orml_rewards::Pallet<T>>::remove_share(
 			who,
-			&PoolId::DexIncentive(lp_currency_id),
+			PoolId::DexIncentive(lp_currency_id),
 			amount.unique_saturated_into(),
 		);
-		<orml_rewards::Pallet<T>>::remove_share(who, &PoolId::DexSetterReward(lp_currency_id), amount);
-
 		Self::deposit_event(Event::WithdrawDexShare(who.clone(), lp_currency_id, amount));
 		Ok(())
 	}
 }
 
-pub struct OnUpdateLoan<T>(sp_std::marker::PhantomData<T>);
-impl<T: Config> Happened<(T::AccountId, CurrencyId, Amount, Balance)> for OnUpdateLoan<T> {
-	fn happened(info: &(T::AccountId, CurrencyId, Amount, Balance)) {
-		let (who, currency_id, adjustment, previous_amount) = info;
-		let adjustment_abs =
-			sp_std::convert::TryInto::<Balance>::try_into(adjustment.saturating_abs()).unwrap_or_default();
-
-		if !adjustment_abs.is_zero() {
-			let new_share_amount = if adjustment.is_positive() {
-				previous_amount.saturating_add(adjustment_abs)
-			} else {
-				previous_amount.saturating_sub(adjustment_abs)
-			};
-
-			<orml_rewards::Pallet<T>>::set_share(who, &PoolId::StandardIncentive(*currency_id), new_share_amount);
-		}
-	}
-}
-
 impl<T: Config> RewardHandler<T::AccountId> for Pallet<T> {
 	type Balance = Balance;
+	type CurrencyId = CurrencyId;
 	type PoolId = T::PoolId;
+	type Share = Balance;
 
-	fn payout(who: &T::AccountId, pool_id: &Self::PoolId, amount: Self::Balance) {
-		let currency_id = match pool_id {
-			PoolId::DexIncentive(_) | PoolId::DexSetterReward(_) => T::StableCurrencyId::get(), /// TODO: Update to `T::SetterCurrencyId::get()`.
+	fn accumulate_reward(now: T::BlockNumber, mut callback: impl FnMut(PoolId, Balance)) -> Vec<(CurrencyId, Balance)> {
+		let mut accumulated_rewards: Vec<(CurrencyId, Balance)> = vec![];
+
+		// accumulate reward periodically
+		if now % T::AccumulatePeriod::get() == Zero::zero() {
+			let mut accumulated_incentive: Balance = Zero::zero();
+			let mut accumulated_premium: Balance = Zero::zero();
+			let mut accumulated_plus: Balance = Zero::zero();
+			let mut accumulated_bonus: Balance = Zero::zero();
+			let incentive_currency_id = T::IncentiveCurrencyId::get();
+			let premium_currency_id = T::PremiumCurrencyId::get();
+			let plus_currency_id = T::PlusCurrencyId::get();
+			let bonus_currency_id = T::BonusCurrencyId::get();
+
+			for (pool_id, pool_info) in orml_rewards::Pools::<T>::iter() {
+				if !pool_info.total_shares.is_zero() {
+					match pool_id {
+						PoolId::DexIncentive(currency_id) => {
+							let incentive_reward = Self::dex_incentive_rewards(currency_id);
+
+							/// issue Dex Incentive Currency
+							if !incentive_reward.is_zero()
+								&& T::Currency::deposit(
+									incentive_currency_id,
+									&T::DexIncentivePool::get(),
+									incentive_reward,
+								)
+								.is_ok()
+							{
+								callback(pool_id, incentive_reward);
+								accumulated_incentive = accumulated_incentive.saturating_add(incentive_reward);
+							}
+						}
+
+						PoolId::DexPremium(currency_id) => {
+							let premium_reward = Self::dex_premium_rewards(currency_id);
+
+							/// issue Dex Premium Currency
+							if !premium_reward.is_zero()
+								&& T::Currency::deposit(
+									premium_currency_id,
+									&T::DexPremiumPool::get(),
+									premium_reward,
+								)
+								.is_ok()
+							{
+								callback(pool_id, premium_reward);
+								accumulated_premium = accumulated_premium.saturating_add(premium_reward);
+							}
+						}
+
+						PoolId::DexPlus(currency_id) => {
+							let plus_reward = Self::dex_plus_rewards(currency_id);
+
+							/// issue Dex Plus Currency
+							if !plus_reward.is_zero()
+								&& T::Currency::deposit(
+									plus_currency_id,
+									&T::DexPlusPool::get(),
+									plus_reward,
+								)
+								.is_ok()
+							{
+								callback(pool_id, plus_reward);
+								accumulated_plus = accumulated_plus.saturating_add(plus_reward);
+							}
+						}
+
+						PoolId::DexBonus(currency_id) => {
+							let bonus_reward = Self::dex_bonus_rewards(currency_id);
+
+							/// issue Dex Bonus Currency
+							if !bonus_reward.is_zero()
+								&& T::Currency::deposit(
+									bonus_currency_id,
+									&T::DexBonusPool::get(),
+									bonus_reward,
+								)
+								.is_ok()
+							{
+								callback(pool_id, bonus_reward);
+								accumulated_bonus = accumulated_bonus.saturating_add(bonus_reward);
+							}
+						}
+					}
+				}
+			}
+			if !accumulated_incentive.is_zero() {
+				accumulated_rewards.push((incentive_currency_id, accumulated_incentive));
+			}
+			if !accumulated_premium.is_zero() {
+				accumulated_rewards.push((premium_currency_id, accumulated_premium));
+			}
+			if !accumulated_plus.is_zero() {
+				accumulated_rewards.push((plus_currency_id, accumulated_plus));
+			}
+			if !accumulated_bonus.is_zero() {
+				accumulated_rewards.push((bonus_currency_id, accumulated_bonus));
+			}
+		}
+
+		accumulated_rewards
+	}
+	fn payout(who: &T::AccountId, pool_id: PoolId, amount: Balance) {
+		let (pool_account, currency_id) = match pool_id {
+			PoolId::DexIncentive(_) => (T::DexIncentivePool::get(), T::IncentiveCurrencyId::get()),
+			PoolId::DexPremium(_) => (T::DexPremiumPool::get(), T::PremiumCurrencyId::get()),
+			PoolId::DexPlus(_) => (T::DexPlusPool::get(), T::PlusCurrencyId::get()),
+			PoolId::DexIBonus(_) => (T::DexBonusPool::get(), T::BonusCurrencyId::get()),
 		};
 
 		// payout the reward to user from the pool. it should not affect the
 		// process, ignore the result to continue. if it fails, just the user will not
 		// be rewarded, there will not be increase in user balance.
-		let res = T::Currency::transfer(currency_id, &T::RewardsVaultAccountId::get(), &who, amount);
-		if let Err(e) = res {
-			log::warn!(
-				target: "incentives",
-				"transfer: failed to transfer {:?} {:?} from {:?} to {:?}: {:?}. \
-				This is unexpected but should be safe",
-				amount, currency_id, T::RewardsVaultAccountId::get(), who, e
-			);
-			debug_assert!(false);
-		}
+		let _ = T::Currency::transfer(currency_id, &pool_account, &who, amount);
 	}
 }
