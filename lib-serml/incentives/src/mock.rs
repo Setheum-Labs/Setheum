@@ -281,8 +281,8 @@ parameter_types! {
 	pub const AccumulatePeriod: BlockNumber = 20;
 	pub const IncentiveCurrencyId: CurrencyId = SDEX;
 	pub const PremiumCurrencyId: CurrencyId = SETT;
-	pub const PlusCurrencyId: CurrencyId = USDJ;
-	pub const BonusCurrencyId: CurrencyId = SETT;
+	pub const PlusCurrencyId: CurrencyId = SETT;
+	pub const BonusCurrencyId: CurrencyId = USDJ;
 	pub const IncentivesPalletId: PalletId = PalletId(*b"dnr/inct");
 }
 
