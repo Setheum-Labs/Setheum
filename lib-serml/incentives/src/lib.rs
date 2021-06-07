@@ -271,6 +271,13 @@ pub mod module {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			for (currency_id, amount) in updates {
 				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
+				/// ensure it is only offered to DexCurrency (dex incentive currency) pools
+				/// therefore only the DexCurrency (dex incentive currency) could be
+				/// added/updated to/in this rewards pool.
+				ensure!(
+                    currency_id == T::DexCurrencyId::get(),
+                    Error::<T>::InvalidCurrencyType,
+                );
 				DexIncentiveRewards::<T>::insert(currency_id, amount);
 			}
 			Ok(().into())
@@ -286,6 +293,8 @@ pub mod module {
 			for (currency_id, amount) in updates {
 				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
 				/// ensure it is only offered to SettCurrencies (system stablecoins) pools
+				/// therefore only the the SettCurrencies (system stablecoins) could be
+				/// added/updated to/in this rewards pool.
 				ensure!(
                     T::StableCurrencyIds::get().contains(&currency_id),
                     Error::<T>::InvalidCurrencyType,
