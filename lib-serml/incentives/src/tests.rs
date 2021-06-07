@@ -193,10 +193,10 @@ fn withdraw_dex_share_works() {
 }
 
 #[test]
-fn update_incentive_rewards_works() {
+fn update_dex_incentive_rewards_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			IncentivesModule::update_incentive_rewards(Origin::signed(ALICE), vec![]),
+			IncentivesModule::update_dex_incentive_rewards(Origin::signed(ALICE), vec![]),
 			BadOrigin
 		);
 
@@ -205,7 +205,7 @@ fn update_incentive_rewards_works() {
 			0
 		);
 
-		assert_ok!(IncentivesModule::update_incentive_rewards(
+		assert_ok!(IncentivesModule::update_dex_incentive_rewards(
 			Origin::signed(4),
 			vec![
 				(PoolId::DexIncentive(DNAR_SETT_LP), 1000)
@@ -217,7 +217,7 @@ fn update_incentive_rewards_works() {
 		);
 
 		assert_noop!(
-			IncentivesModule::update_incentive_rewards(Origin::signed(4), vec![(PoolId::DexIncentive(DNAR), 800)],),
+			IncentivesModule::update_dex_incentive_rewards(Origin::signed(4), vec![(PoolId::DexIncentive(DNAR), 800)],),
 			Error::<Runtime>::InvalidCurrencyId
 		);
 	});
@@ -283,7 +283,7 @@ fn pay_out_works() {
 #[test]
 fn on_initialize_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(IncentivesModule::update_incentive_rewards(
+		assert_ok!(IncentivesModule::update_dex_incentive_rewards(
 			Origin::signed(4),
 			vec![
 				(PoolId::DexIncentive(CHFJ_SETT_LP), 100),
