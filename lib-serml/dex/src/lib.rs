@@ -136,7 +136,7 @@ pub mod module {
 		/// The increment of liquidity is invalid
 		InvalidLiquidityIncrement,
 		/// Invalid currency id
-		InvalidCurrencyId,
+		InvalidCurrencyType,
 		/// Invalid trading path length
 		InvalidTradingPathLength,
 		/// Target amount is less to min_target_amount
@@ -350,7 +350,7 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			let trading_pair = TradingPair::from_token_currency_ids(currency_id_a, currency_id_b)
-				.ok_or(Error::<T>::InvalidCurrencyId)?;
+				.ok_or(Error::<T>::InvalidCurrencyType)?;
 
 			match Self::trading_pair_statuses(trading_pair) {
 				TradingPairStatus::<_, _>::Enabled => Self::do_add_liquidity(
@@ -414,10 +414,10 @@ pub mod module {
 			T::ListingOrigin::ensure_origin(origin)?;
 
 			let trading_pair = TradingPair::from_token_currency_ids(currency_id_a, currency_id_b)
-				.ok_or(Error::<T>::InvalidCurrencyId)?;
+				.ok_or(Error::<T>::InvalidCurrencyType)?;
 			let dex_share_currency_id = trading_pair
 				.get_dex_share_currency_id()
-				.ok_or(Error::<T>::InvalidCurrencyId)?;
+				.ok_or(Error::<T>::InvalidCurrencyType)?;
 			ensure!(
 				matches!(
 					Self::trading_pair_statuses(trading_pair),
@@ -467,7 +467,7 @@ pub mod module {
 			T::ListingOrigin::ensure_origin(origin)?;
 
 			let trading_pair = TradingPair::from_token_currency_ids(currency_id_a, currency_id_b)
-				.ok_or(Error::<T>::InvalidCurrencyId)?;
+				.ok_or(Error::<T>::InvalidCurrencyType)?;
 			ensure!(
 				matches!(
 					Self::trading_pair_statuses(trading_pair),
@@ -490,7 +490,7 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			T::ListingOrigin::ensure_origin(origin)?;
 			let trading_pair = TradingPair::from_token_currency_ids(currency_id_a, currency_id_b)
-				.ok_or(Error::<T>::InvalidCurrencyId)?;
+				.ok_or(Error::<T>::InvalidCurrencyType)?;
 
 			match Self::trading_pair_statuses(trading_pair) {
 				// will disable Enabled trading_pair
@@ -679,7 +679,7 @@ impl<T: Config> Pallet<T> {
 		let trading_pair = TradingPair::new(currency_id_a, currency_id_b);
 		let lp_share_currency_id = trading_pair
 			.get_dex_share_currency_id()
-			.ok_or(Error::<T>::InvalidCurrencyId)?;
+			.ok_or(Error::<T>::InvalidCurrencyType)?;
 		ensure!(
 			matches!(
 				Self::trading_pair_statuses(trading_pair),
@@ -774,10 +774,10 @@ impl<T: Config> Pallet<T> {
 			return Ok(());
 		}
 		let trading_pair =
-			TradingPair::from_token_currency_ids(currency_id_a, currency_id_b).ok_or(Error::<T>::InvalidCurrencyId)?;
+			TradingPair::from_token_currency_ids(currency_id_a, currency_id_b).ok_or(Error::<T>::InvalidCurrencyType)?;
 		let lp_share_currency_id = trading_pair
 			.get_dex_share_currency_id()
-			.ok_or(Error::<T>::InvalidCurrencyId)?;
+			.ok_or(Error::<T>::InvalidCurrencyType)?;
 
 		LiquidityPool::<T>::try_mutate(trading_pair, |(pool_0, pool_1)| -> DispatchResult {
 			let total_shares = T::Currency::total_issuance(lp_share_currency_id);

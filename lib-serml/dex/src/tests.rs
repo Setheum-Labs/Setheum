@@ -765,7 +765,7 @@ fn remove_liquidity_work() {
 					100_000_000,
 					false,
 				),
-				Error::<Runtime>::InvalidCurrencyId
+				Error::<Runtime>::InvalidCurrencyType
 			);
 
 			assert_eq!(
