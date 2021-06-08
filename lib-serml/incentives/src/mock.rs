@@ -39,11 +39,23 @@ pub type BlockNumber = u64;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
+
+// Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
+pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ); // Setheum EUR (Euro stablecoin)
+pub const KWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KWDJ); // Setheum KWD (Kuwaiti Dinar stablecoin)
+pub const JODJ: CurrencyId = CurrencyId::Token(TokenSymbol::JODJ); // Setheum JOD (Jordanian Dinar stablecoin)
+pub const BHDJ: CurrencyId = CurrencyId::Token(TokenSymbol::BHDJ); // Setheum BHD (Bahraini Dirham stablecoin)
+pub const KYDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KYDJ); // Setheum KYD (Cayman Islands Dollar stablecoin)
+pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OMR (Omani Riyal stablecoin)
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
+pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
+
+// LP tokens constants - CurrencyId/TokenSymbol : DEX Shares
 pub const CHFJ_USDJ_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
 pub const CHFJ_SETT_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
 pub const DNAR_USDJ_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::DNAR, TokenSymbol::USDJ);
@@ -282,12 +294,27 @@ parameter_types! {
 	pub const DexPlusPool: AccountId = 12;
 	pub const DexBonusPool: AccountId = 13;
 	pub const DexExtraPool: AccountId = 14;
-	pub const AccumulatePeriod: BlockNumber = 20;
+	pub const AccumulatePeriod: BlockNumber = 20; /// 20 every blocks
 	pub const IncentiveCurrencyId: CurrencyId = SDEX;
 	pub const PremiumCurrencyId: CurrencyId = SETT;
 	pub const PlusCurrencyId: CurrencyId = SETT;
 	pub const BonusCurrencyId: CurrencyId = USDJ;
 	pub const ExtraCurrencyId: CurrencyId = EURJ;
+	pub const DexCurrencyId: CurrencyId = SDEX;
+	pub const NativeCurrencyId: CurrencyId = DNAR;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
+		USDJ, // Setheum USD (US Dollar stablecoin)
+		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
+		EURJ, // Setheum EUR (Euro stablecoin)
+		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
+		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
+		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
+		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
+		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
+		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
+		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+	];
 	pub const IncentivesPalletId: PalletId = PalletId(*b"dnr/inct");
 }
 
@@ -302,7 +329,8 @@ impl Config for Runtime {
 	type DexIncentivePool = DexIncentivePool;
 	type AccumulatePeriod = AccumulatePeriod;
 	type DexCurrencyId = DexCurrencyId;
-	type StableCurrencyId = StableCurrencyId;
+	type NativeCurrencyId = NativeCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;
 	type SerpTreasury = MockSerpTreasury;
 	type Currency = TokensModule;
