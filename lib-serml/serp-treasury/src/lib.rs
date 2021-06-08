@@ -36,7 +36,7 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, ModuleId,
 };
-use support::{SerpAuction, SerpTreasury, SerpTreasuryExtended, DEXManager, Ratio};
+use support::{SerpAuction, SerpTreasury, DEXManager, Ratio};
 
 mod benchmarking;
 mod mock;
@@ -61,13 +61,62 @@ pub mod module {
 		/// The Currency for managing assets related to Settmint
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		#[pallet::constant]
-		/// Stablecoin currency id
-		type GetStableCurrencyId: Get<CurrencyId>;
+		/// The stable currency ids
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
 		#[pallet::constant]
 		/// Setter (SETT) currency Stablecoin currency id
 		type GetSetterCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettUSD (USDJ) currency Stablecoin currency id
+		/// pegged to US Dollar (USD)
+		type GetSettUSDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettGBP (GBPJ) currency Stablecoin currency id
+		/// pegged to Pound Sterling (GBP)
+		type GetSettGBPCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettEUR (EURJ) currency Stablecoin currency id
+		/// pegged to Euro (EUR)
+		type GetSettEURCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettKWD (KWDJ) currency Stablecoin currency id
+		/// pegged to Kuwaiti Dinar (KWD)
+		type GetSettKWDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettJOD (JODJ) currency Stablecoin currency id
+		/// pegged to Jordanian Dinar (JOD)
+		type GetSettJODCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettBHD (BHDJ) currency Stablecoin currency id
+		/// pegged to Bahraini Dirham (BHD)
+		type GetSettBHDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettKYD (KYDJ) currency Stablecoin currency id
+		/// pegged to Cayman Islands Dollar (KYD)
+		type GetSettKYDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettOMR (OMRJ) currency Stablecoin currency id
+		/// pegged to Omani Riyal (OMR)
+		type GetSettOMRCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettCHF (CHFJ) currency Stablecoin currency id
+		/// pegged to Swiss Franc (CHF)
+		type GetSettCHFCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettGIP (GIPJ) currency Stablecoin currency id
+		/// pegged to Gibraltar Pound (GIP)
+		type GetSettGIPCurrencyId: Get<CurrencyId>;
 
 		/// SERP-TES Adjustment Frequency.
 		/// Schedule for when to trigger SERP-TES
@@ -107,7 +156,6 @@ pub mod module {
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
 		type CharityFundAcc: Get<AccountId>;
-
 
 		/// Auction manager creates different types of auction to handle system serplus and standard.
 		type SerpAuctionHandler: SerpAuction<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -203,12 +251,11 @@ pub mod module {
 		/// Handle excessive surplus or debits of system when block end
 		///
 		/// Triggers Serping for all system stablecoins at every block.
-		fn on_initialize(_now: T::BlockNumber) {
+		fn on_initialize(now: T::BlockNumber) {
 			/// SERP-TES Adjustment Frequency.
 			/// Schedule for when to trigger SERP-TES
 			/// (Blocktime/BlockNumber - every blabla block)
-			let adjustment_frequency = T::SerpTesSchedule::get();
-			if _now + adjustment_frequency == now {
+			if now % T::SerpTesSchedule::get() == Zero::zero() {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				Self::on_serp_tes();
@@ -294,11 +341,6 @@ impl<T: Config> Pallet<T> {
 		T::Currency::free_balance(currency_id, &Self::account_id())
 	}
 
-	/// Get current total serpup of specific currency type in the system.
-	pub fn serpup_pool(currency_id: CurrencyId) -> Balance {
-		T::Currency::free_balance(currency_id, &Self::account_id())
-	}
-
 	/// Get total reserve amount of SERP Treasury module.
 	pub fn total_reserve() -> Balance {
 		T::Currency::free_balance(T::GetSetterCurrencyId, &Self::account_id())
@@ -320,11 +362,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::serplus_pool()
 	}
 
-	/// get serpup amount of serp treasury
-	fn get_serpup_pool() -> Self::Balance {
-		Self::serpup_pool()
-	}
-
 	/// get reserve asset amount of serp treasury
 	fn get_total_setter() -> Self::Balance {
 		Self::total_reserve()
@@ -332,7 +369,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// calculate the proportion of specific standard amount for the whole system
 	fn get_standard_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio {
-		let stable_total_supply = T::Currency::total_issuance(T::GetStableCurrencyId::get());
+		ensure!(
+			T::StableCurrencyIds::get().contains(currency_id),
+			Error::<T>::InvalidSettCyrrencyType,
+		);
+		let stable_total_supply = T::Currency::total_issuance(currency_id);
 		Ratio::checked_from_rational(amount, stable_total_supply).unwrap_or_default()
 	}
 
@@ -606,35 +647,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	fn withdraw_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), to, amount)
-	}
-}
-
-impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
-	/// Swap exact amount of setter in auction to settcurrency,
-	/// return actual target settcurrency amount
-	fn swap_exact_setter_in_auction_to_settcurrency(
-		currency_id: T::GetSetterCurrencyId::get(),
-		supply_amount: Balance,
-		min_target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		let settcurrency_currency_id: CurrencyId;
-		ensure!(
-			T::SerpAuctionHandler::get_total_setter_in_auction() >= supply_amount,
-			Error::<T>::SetterNotEnough,
-		);
-		ensure!(
-			T::StableCurrencyIds::get().contains(settcurrency_currency_id),
-			Error::<T>::InvalidSettCyrrencyType,
-		);
-
-		T::DEX::swap_with_exact_supply(
-			&Self::account_id(),
-			&[T::GetSetterCurrencyId::get(), settcurrency_currency_id],
-			supply_amount,
-			min_target_amount,
-			price_impact_limit,
-		)
 	}
 }
 

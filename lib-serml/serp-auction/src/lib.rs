@@ -52,7 +52,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedPointNumber, RandomNumberGenerator, RuntimeDebug,
 };
 use sp_std::prelude::*;
-use support::{SerpAuction, SerpTreasury, SerpTreasuryExtended, DEXManager, PriceProvider, Rate};
+use support::{SerpAuction, SerpTreasury, DEXManager, PriceProvider, Rate};
 
 mod mock;
 mod tests;
@@ -182,7 +182,6 @@ pub mod module {
 		/// Setter (SETT) currency Stablecoin currency id
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
-		#[pallet::constant]
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
@@ -193,7 +192,7 @@ pub mod module {
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
 
 		/// SERP Treasury to escrow assets related to auction
-		type SerpTreasury: SerpTreasuryExtended<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// DEX to get exchange info
 		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
@@ -218,8 +217,6 @@ pub mod module {
 		AuctionNonExistent,
 		/// Currency Not Accepted
 		CurrencyNotAccepted,
-		/// The setter auction is in reverse stage now
-		InReverseStage,
 		/// Feed price is invalid
 		InvalidFeedPrice,
 		/// Bid price is invalid

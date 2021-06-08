@@ -28,7 +28,7 @@ use frame_support::{
 };
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{DexShare, TokenSymbol};
+use primitives::TokenSymbol;
 use sp_core::{H160, H256};
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 use sp_std::cell::RefCell;
@@ -39,15 +39,27 @@ pub type BlockNumber = u64;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
-pub const VAULT: AccountId = 10;
-pub const VALIDATOR: AccountId = 3;
+
+// Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const CHFJ_USDJ_LP: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::CHFJ), DexShare::Token(TokenSymbol::USDJ));
-pub const DNAR_USDJ_LP: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::USDJ));
+pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ); // Setheum EUR (Euro stablecoin)
+pub const KWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KWDJ); // Setheum KWD (Kuwaiti Dinar stablecoin)
+pub const JODJ: CurrencyId = CurrencyId::Token(TokenSymbol::JODJ); // Setheum JOD (Jordanian Dinar stablecoin)
+pub const BHDJ: CurrencyId = CurrencyId::Token(TokenSymbol::BHDJ); // Setheum BHD (Bahraini Dirham stablecoin)
+pub const KYDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KYDJ); // Setheum KYD (Cayman Islands Dollar stablecoin)
+pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OMR (Omani Riyal stablecoin)
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
+pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
+
+// LP tokens constants - CurrencyId/TokenSymbol : DEX Shares
+pub const CHFJ_USDJ_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
+pub const CHFJ_SETT_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
+pub const DNAR_USDJ_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::DNAR, TokenSymbol::USDJ);
+pub const DNAR_SETT_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::DNAR, TokenSymbol::USDJ);
 
 mod incentives {
 	pub use super::super::*;
@@ -102,70 +114,119 @@ impl orml_tokens::Config for Runtime {
 
 pub struct MockSerpTreasury;
 impl SerpTreasury<AccountId> for MockSerpTreasury {
+	type Amount = Amount;
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+	type BlockNumber = BlockNumber;
 
-	fn get_serplus_pool() -> Balance { 
+	fn get_adjustment_frequency() -> BlockNumber {
 		unimplemented!()
 	}
 
-	fn get_total_setter(_: CurrencyId) -> Balance {
+	fn get_serplus_pool() -> Balance {
 		unimplemented!()
 	}
 
-	fn get_standard_proportion(_: Balance) -> Ratio {
+	fn get_total_setter() -> Balance {
 		unimplemented!()
 	}
 
-	fn on_system_serpdown(_: Balance) -> DispatchResult {
+	fn get_standard_proportion(_: Balance, _: CurrencyId) -> Ratio {
 		unimplemented!()
 	}
 
-	fn on_system_serpup(_: Balance) -> DispatchResult {
+	fn get_serplus_serpup(_: Balance, _: CurrencyId) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn issue_standard(who: &AccountId, standard: Balance) -> DispatchResult {
-		TokensModule::deposit(USDJ, who, standard)
-	}
-
-	fn burn_standard(_: &AccountId, _: Balance) -> DispatchResult {
+	fn get_settpay_serpup(_: Balance, _: CurrencyId) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn issue_propper(who: &AccountId, propper: Balance) -> DispatchResult {
-		TokensModule::deposit(USDJ, who, propper)
-	}
-
-	fn burn_propper(_: &AccountId, _: Balance) -> DispatchResult {
+	fn get_treasury_serpup(_: Balance, _: CurrencyId) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn issue_setter(who: &AccountId, setter: Balance) -> DispatchResult {
-		TokensModule::deposit(SETT, who, setter)
-	}
-
-	fn burn_setter(_: &AccountId, _: Balance) -> DispatchResult {
+	fn get_sif_serpup(_: Balance, _: CurrencyId) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn issue_dexer(who: &AccountId, dexer: Balance) -> DispatchResult {
-		TokensModule::deposit(SDEX, who, dexer)
-	}
-
-	fn burn_dexer(_: &AccountId, _: Balance) -> DispatchResult {
+	fn get_charity_fund_serpup(_: Balance, _: CurrencyId) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn deposit_serplus(_: &AccountId, _: Balance) -> DispatchResult {
+	fn on_system_serpup(_: CurrencyId, _: Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn deposit_reserve(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
+	fn on_serpup(_: CurrencyId, _: Amount) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn withdraw_reserve(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
+	fn on_system_serpdown(_: CurrencyId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn on_serpdown(_: CurrencyId, _: Amount) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn on_serp_tes() -> DispatchRsult {
+		unimplemented!()
+	}
+
+	fn serp_tes(_: CurrencyId) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn check_all_stablecoin_stability() -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn issue_standard(_: CurrencyId, _: AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn burn_standard(_: CurrencyId, _: AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn issue_propper(_: CurrencyId, _: AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn burn_propper(_: CurrencyId, _: AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+	fn issue_setter(_: AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn burn_setter(_: AccountId, _:Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn issue_dexer(_: AccountId, _:Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn burn_dexer(_: AccountId, _:Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn deposit_serplus(_: CurrencyId, _: AccountId, _: Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn deposit_reserve(_: AccountId, _:Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn burn_reserve(_: AccountId, _:Balance) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn withdraw_reserve(_: AccountId, _:Balance) -> DispatchResult {
 		unimplemented!()
 	}
 }
@@ -180,10 +241,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 			(DNAR, SETT) => (100, 400),
 			_ => (0, 0),
 		}
-	}
-
-	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
-		unimplemented!()
 	}
 
 	fn get_swap_target_amount(_: &[CurrencyId], _: Balance, _: Option<Ratio>) -> Option<Balance> {
@@ -226,16 +283,38 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 impl orml_rewards::Config for Runtime {
 	type Share = Balance;
 	type Balance = Balance;
-	type PoolId = PoolId<AccountId>;
+	type PoolId = PoolId;
 	type Handler = IncentivesModule;
+	type WeightInfo = ();
 }
 
 parameter_types! {
-	pub const RewardsVaultAccountId: AccountId = VAULT;
-	pub const DexIncentivePool: AccountId = 11;
-	pub const AccumulatePeriod: BlockNumber = 10;
+	pub const DexIncentivePool: AccountId = 10;
+	pub const DexPremiumPool: AccountId = 11;
+	pub const DexPlusPool: AccountId = 12;
+	pub const DexBonusPool: AccountId = 13;
+	pub const DexExtraPool: AccountId = 14;
+	pub const AccumulatePeriod: BlockNumber = 20; /// 20 every blocks
+	pub const IncentiveCurrencyId: CurrencyId = SDEX;
+	pub const PremiumCurrencyId: CurrencyId = SETT;
+	pub const PlusCurrencyId: CurrencyId = SETT;
+	pub const BonusCurrencyId: CurrencyId = USDJ;
+	pub const ExtraCurrencyId: CurrencyId = EURJ;
 	pub const DexCurrencyId: CurrencyId = SDEX;
-	pub const StableCurrencyId: CurrencyId = SETT;
+	pub const NativeCurrencyId: CurrencyId = DNAR;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
+		USDJ, // Setheum USD (US Dollar stablecoin)
+		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
+		EURJ, // Setheum EUR (Euro stablecoin)
+		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
+		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
+		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
+		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
+		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
+		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
+		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+	];
 	pub const IncentivesPalletId: PalletId = PalletId(*b"dnr/inct");
 }
 
@@ -250,7 +329,8 @@ impl Config for Runtime {
 	type DexIncentivePool = DexIncentivePool;
 	type AccumulatePeriod = AccumulatePeriod;
 	type DexCurrencyId = DexCurrencyId;
-	type StableCurrencyId = StableCurrencyId;
+	type NativeCurrencyId = NativeCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;
 	type SerpTreasury = MockSerpTreasury;
 	type Currency = TokensModule;
@@ -275,28 +355,14 @@ construct_runtime!(
 	}
 );
 
-pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
-}
-
-impl Default for ExtBuilder {
-	fn default() -> Self {
-		Self {
-			endowed_accounts: vec![(DNAR, 10_000)],
-		}
-	}
-}
+#[derive(Default)]
+pub struct ExtBuilder;
 
 impl ExtBuilder {
 	pub fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default()
+		let t = frame_system::GenesisConfig::default()
 			.build_storage::<Runtime>()
 			.unwrap();
-		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
 		t.into()
 	}
 }

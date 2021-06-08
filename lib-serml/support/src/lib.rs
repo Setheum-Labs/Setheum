@@ -61,7 +61,7 @@ impl<AccountId, CurrencyId, Balance: Default, Balance> StandardManager<AccountId
 	}
 }
 
-pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
+pub trait DexManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_swap_target_amount(
@@ -93,7 +93,7 @@ pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
 	) -> sp_std::result::Result<Balance, DispatchError>;
 }
 
-impl<AccountId, CurrencyId, Balance> SetheumDexManager<AccountId, CurrencyId, Balance> for ()
+impl<AccountId, CurrencyId, Balance> DexManager<AccountId, CurrencyId, Balance> for ()
 where
 	Balance: Default,
 {
@@ -234,30 +234,6 @@ pub trait SerpTreasury<AccountId> {
 
 	/// Withdraw reserve asset (Setter (SETT)) of serp treasury to `who`
 	fn withdraw_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
-}
-
-pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
-	fn swap_exact_setter_in_auction_to_settcurrency(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-		min_target_amount: Self::Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
-
-	fn swap_setter_not_in_auction_with_exact_settcurrency(
-		currency_id: Self::CurrencyId,
-		target_amount: Self::Balance,
-		max_supply_amount: Self::Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
-
-	fn create_reserve_auctions(
-		currency_id: Self::CurrencyId,
-		amount: Self::Balance,
-		target: Self::Balance,
-		refund_receiver: AccountId,
-		splited: bool,
-	) -> DispatchResult;
 }
 
 pub trait PriceProvider<CurrencyId> {
