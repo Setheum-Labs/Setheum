@@ -307,7 +307,7 @@ pub mod module {
 		///
 		/// - `path`: trading path.
 		/// - `target_amount`: exact target amount.
-		/// - `max_supply_amount`: acceptable maxmum supply amount.
+		/// - `max_supply_amount`: acceptable maximum supply amount.
 		#[pallet::weight(<T as Config>::WeightInfo::swap_with_exact_target(path.len().try_into().unwrap()))]
 		#[transactional]
 		pub fn swap_with_exact_target(
