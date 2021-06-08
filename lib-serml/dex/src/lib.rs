@@ -30,14 +30,14 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::collapsible_if)]
 
-use frame_support::{log, pallet_prelude::*, transactional};
+use frame_support::{log, pallet_prelude::*, traits::MaxEncodedLen, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
-use sp_core::U256;
+use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, UniqueSaturatedInto, Zero},
-	DispatchError, DispatchResult, FixedPointNumber, ModuleId, RuntimeDebug, SaturatedConversion,
+	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{DexIncentives, DexManager, Price, Ratio};
@@ -50,7 +50,7 @@ pub use module::*;
 pub use weights::WeightInfo;
 
 /// Parameters of TradingPair in Provisioning status
-#[derive(Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq)]
+#[derive(Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq, MaxEncodedLen)]
 pub struct TradingPairProvisionParameters<Balance, BlockNumber> {
 	/// limit contribution per time.
 	min_contribution: (Balance, Balance),
@@ -63,7 +63,7 @@ pub struct TradingPairProvisionParameters<Balance, BlockNumber> {
 }
 
 /// Status for TradingPair
-#[derive(Clone, Copy, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+#[derive(Clone, Copy, Encode, Decode, RuntimeDebug, PartialEq, Eq, MaxEncodedLen)]
 pub enum TradingPairStatus<Balance, BlockNumber> {
 	/// Default status,
 	/// can withdraw liquidity, re-enable and list this trading pair.
@@ -105,14 +105,14 @@ pub mod module {
 		#[pallet::constant]
 		type TradingPathLimit: Get<u32>;
 
-		/// TheSetheumDex's module id, keep all assets in SetheumDex.
+		/// The DEX's module id, keep all assets in DEX.
 		#[pallet::constant]
-		type ModuleId: Get<ModuleId>;
+		type PalletId: Get<PalletId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
-		/// SetheumDex incentives
+		/// DEX incentives
 		type DexIncentives: DexIncentives<Self::AccountId, CurrencyId, Balance>;
 
 		/// The origin which may list, enable or disable trading pairs.
@@ -525,7 +525,7 @@ pub mod module {
 
 impl<T: Config> Pallet<T> {
 	fn account_id() -> T::AccountId {
-		T::ModuleId::get().into_account()
+		T::PalletId::get().into_account()
 	}
 
 	/// Access status of specific trading_pair,
