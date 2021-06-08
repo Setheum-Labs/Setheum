@@ -23,7 +23,7 @@
 use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{
-	SetheumDex, Event, ExtBuilder, ListingOrigin, Origin, Runtime, System, Tokens, DNAR, ALICE, USDJ, USDJ_DNAR_PAIR,
+	Dex, Event, ExtBuilder, ListingOrigin, Origin, Runtime, System, Tokens, DNAR, ALICE, USDJ, USDJ_DNAR_PAIR,
 	USDJ_JCHF_PAIR, BOB, DNAR, JCHF,
 };
 use orml_traits::MultiReservableCurrency;
@@ -35,21 +35,21 @@ fn enable_new_trading_pair_work() {
 		System::set_block_number(1);
 
 		assert_noop!(
-			SetheumDex::enable_trading_pair(Origin::signed(ALICE), USDJ, DNAR),
+			Dex::enable_trading_pair(Origin::signed(ALICE), USDJ, DNAR),
 			BadOrigin
 		);
 
 		assert_eq!(
-			SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+			Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 			TradingPairStatus::<_, _>::NotEnabled
 		);
-		assert_ok!(SetheumDex::enable_trading_pair(
+		assert_ok!(Dex::enable_trading_pair(
 			Origin::signed(ListingOrigin::get()),
 			USDJ,
 			DNAR
 		));
 		assert_eq!(
-			SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+			Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 			TradingPairStatus::<_, _>::Enabled
 		);
 
@@ -59,7 +59,7 @@ fn enable_new_trading_pair_work() {
 			.any(|record| record.event == enable_trading_pair_event));
 
 		assert_noop!(
-			SetheumDex::enable_trading_pair(Origin::signed(ListingOrigin::get()), DNAR, USDJ),
+			Dex::enable_trading_pair(Origin::signed(ListingOrigin::get()), DNAR, USDJ),
 			Error::<Runtime>::MustBeNotEnabled
 		);
 	});
@@ -71,7 +71,7 @@ fn list_new_trading_pair_work() {
 		System::set_block_number(1);
 
 		assert_noop!(
-			SetheumDex::list_trading_pair(
+			Dex::list_trading_pair(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -85,10 +85,10 @@ fn list_new_trading_pair_work() {
 		);
 
 		assert_eq!(
-			SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+			Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 			TradingPairStatus::<_, _>::NotEnabled
 		);
-		assert_ok!(SetheumDex::list_trading_pair(
+		assert_ok!(Dex::list_trading_pair(
 			Origin::signed(ListingOrigin::get()),
 			USDJ,
 			DNAR,
@@ -99,7 +99,7 @@ fn list_new_trading_pair_work() {
 			10,
 		));
 		assert_eq!(
-			SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+			Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 			TradingPairStatus::<_, _>::Provisioning(TradingPairProvisionParameters {
 				min_contribution: (1_000_000_000_000u128, 1_000_000_000_000u128),
 				target_provision: (5_000_000_000_000u128, 2_000_000_000_000u128),
@@ -114,7 +114,7 @@ fn list_new_trading_pair_work() {
 			.any(|record| record.event == list_trading_pair_event));
 
 		assert_noop!(
-			SetheumDex::list_trading_pair(
+			Dex::list_trading_pair(
 				Origin::signed(ListingOrigin::get()),
 				USDJ,
 				DNAR,
@@ -134,28 +134,28 @@ fn disable_enabled_trading_pair_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 
-		assert_ok!(SetheumDex::enable_trading_pair(
+		assert_ok!(Dex::enable_trading_pair(
 			Origin::signed(ListingOrigin::get()),
 			USDJ,
 			DNAR
 		));
 		assert_eq!(
-			SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+			Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 			TradingPairStatus::<_, _>::Enabled
 		);
 
 		assert_noop!(
-			SetheumDex::disable_trading_pair(Origin::signed(ALICE), USDJ, DNAR),
+			Dex::disable_trading_pair(Origin::signed(ALICE), USDJ, DNAR),
 			BadOrigin
 		);
 
-		assert_ok!(SetheumDex::disable_trading_pair(
+		assert_ok!(Dex::disable_trading_pair(
 			Origin::signed(ListingOrigin::get()),
 			USDJ,
 			DNAR
 		));
 		assert_eq!(
-			SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+			Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 			TradingPairStatus::<_, _>::NotEnabled
 		);
 
@@ -165,7 +165,7 @@ fn disable_enabled_trading_pair_work() {
 			.any(|record| record.event == disable_trading_pair_event));
 
 		assert_noop!(
-			SetheumDex::disable_trading_pair(Origin::signed(ListingOrigin::get()), USDJ, DNAR),
+			Dex::disable_trading_pair(Origin::signed(ListingOrigin::get()), USDJ, DNAR),
 			Error::<Runtime>::NotEnabledTradingPair
 		);
 	});
@@ -179,7 +179,7 @@ fn disable_provisioning_trading_pair_work() {
 		.execute_with(|| {
 			System::set_block_number(1);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -187,7 +187,7 @@ fn disable_provisioning_trading_pair_work() {
 				0,
 				false
 			));
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(BOB),
 				USDJ,
 				DNAR,
@@ -201,23 +201,23 @@ fn disable_provisioning_trading_pair_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 999_995_000_000_000_000u128);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_999_000_000_000_000u128);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				10_000_000_000_000u128
 			);
 			assert_eq!(
-				Tokens::free_balance(DNAR, &SetheumDex::account_id()),
+				Tokens::free_balance(DNAR, &Dex::account_id()),
 				1_000_000_000_000u128
 			);
 			assert_eq!(
-				SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, ALICE),
+				Dex::provisioning_pool(USDJ_DNAR_PAIR, ALICE),
 				(5_000_000_000_000u128, 0)
 			);
 			assert_eq!(
-				SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, BOB),
+				Dex::provisioning_pool(USDJ_DNAR_PAIR, BOB),
 				(5_000_000_000_000u128, 1_000_000_000_000u128)
 			);
 			assert_eq!(
-				SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+				Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 				TradingPairStatus::<_, _>::Provisioning(TradingPairProvisionParameters {
 					min_contribution: (5_000_000_000_000u128, 1_000_000_000_000u128),
 					target_provision: (5_000_000_000_000_000u128, 1_000_000_000_000_000u128),
@@ -228,7 +228,7 @@ fn disable_provisioning_trading_pair_work() {
 			let alice_ref_count_0 = System::consumers(&ALICE);
 			let bob_ref_count_0 = System::consumers(&BOB);
 
-			assert_ok!(SetheumDex::disable_trading_pair(
+			assert_ok!(Dex::disable_trading_pair(
 				Origin::signed(ListingOrigin::get()),
 				USDJ,
 				DNAR
@@ -237,12 +237,12 @@ fn disable_provisioning_trading_pair_work() {
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000u128);
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_000_000_000_000_000u128);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000u128);
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 0);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 0);
-			assert_eq!(SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, ALICE), (0, 0));
-			assert_eq!(SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, BOB), (0, 0));
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 0);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 0);
+			assert_eq!(Dex::provisioning_pool(USDJ_DNAR_PAIR, ALICE), (0, 0));
+			assert_eq!(Dex::provisioning_pool(USDJ_DNAR_PAIR, BOB), (0, 0));
 			assert_eq!(
-				SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+				Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 				TradingPairStatus::<_, _>::NotEnabled
 			);
 			assert_eq!(System::consumers(&ALICE), alice_ref_count_0 - 1);
@@ -259,7 +259,7 @@ fn add_provision_work() {
 			System::set_block_number(1);
 
 			assert_noop!(
-				SetheumDex::add_liquidity(
+				Dex::add_liquidity(
 					Origin::signed(ALICE),
 					USDJ,
 					DNAR,
@@ -272,7 +272,7 @@ fn add_provision_work() {
 
 			// alice add provision
 			assert_eq!(
-				SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+				Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 				TradingPairStatus::<_, _>::Provisioning(TradingPairProvisionParameters {
 					min_contribution: (5_000_000_000_000u128, 1_000_000_000_000u128),
 					target_provision: (5_000_000_000_000_000u128, 1_000_000_000_000_000u128),
@@ -280,14 +280,14 @@ fn add_provision_work() {
 					not_before: 10,
 				})
 			);
-			assert_eq!(SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, ALICE), (0, 0));
+			assert_eq!(Dex::provisioning_pool(USDJ_DNAR_PAIR, ALICE), (0, 0));
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 1_000_000_000_000_000_000u128);
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000u128);
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 0);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 0);
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 0);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 0);
 			let alice_ref_count_0 = System::consumers(&ALICE);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -296,7 +296,7 @@ fn add_provision_work() {
 				false
 			));
 			assert_eq!(
-				SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+				Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 				TradingPairStatus::<_, _>::Provisioning(TradingPairProvisionParameters {
 					min_contribution: (5_000_000_000_000u128, 1_000_000_000_000u128),
 					target_provision: (5_000_000_000_000_000u128, 1_000_000_000_000_000u128),
@@ -305,16 +305,16 @@ fn add_provision_work() {
 				})
 			);
 			assert_eq!(
-				SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, ALICE),
+				Dex::provisioning_pool(USDJ_DNAR_PAIR, ALICE),
 				(5_000_000_000_000u128, 0)
 			);
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 999_995_000_000_000_000u128);
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000u128);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				5_000_000_000_000u128
 			);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 0);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 0);
 			let alice_ref_count_1 = System::consumers(&ALICE);
 			assert_eq!(alice_ref_count_1, alice_ref_count_0 + 1);
 
@@ -325,12 +325,12 @@ fn add_provision_work() {
 				.any(|record| record.event == add_provision_event_0));
 
 			// bob add provision
-			assert_eq!(SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, BOB), (0, 0));
+			assert_eq!(Dex::provisioning_pool(USDJ_DNAR_PAIR, BOB), (0, 0));
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_000_000_000_000_000u128);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000u128);
 			let bob_ref_count_0 = System::consumers(&BOB);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(BOB),
 				DNAR,
 				USDJ,
@@ -339,7 +339,7 @@ fn add_provision_work() {
 				false
 			));
 			assert_eq!(
-				SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+				Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 				TradingPairStatus::<_, _>::Provisioning(TradingPairProvisionParameters {
 					min_contribution: (5_000_000_000_000u128, 1_000_000_000_000u128),
 					target_provision: (5_000_000_000_000_000u128, 1_000_000_000_000_000u128),
@@ -348,17 +348,17 @@ fn add_provision_work() {
 				})
 			);
 			assert_eq!(
-				SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, BOB),
+				Dex::provisioning_pool(USDJ_DNAR_PAIR, BOB),
 				(0, 1_000_000_000_000_000u128)
 			);
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_000_000_000_000_000u128);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_000_000_000_000_000u128);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				5_000_000_000_000u128
 			);
 			assert_eq!(
-				Tokens::free_balance(DNAR, &SetheumDex::account_id()),
+				Tokens::free_balance(DNAR, &Dex::account_id()),
 				1_000_000_000_000_000u128
 			);
 			let bob_ref_count_1 = System::consumers(&BOB);
@@ -388,7 +388,7 @@ fn add_provision_work() {
 			);
 
 			System::set_block_number(10);
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -399,11 +399,11 @@ fn add_provision_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 999_000_000_000_000_000u128);
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 999_000_000_000_000_000u128);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				1_000_000_000_000_000u128
 			);
 			assert_eq!(
-				Tokens::free_balance(DNAR, &SetheumDex::account_id()),
+				Tokens::free_balance(DNAR, &Dex::account_id()),
 				2_000_000_000_000_000u128
 			);
 			assert_eq!(
@@ -418,10 +418,10 @@ fn add_provision_work() {
 				Tokens::free_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &BOB),
 				1_000_000_000_000_000,
 			);
-			assert_eq!(SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, ALICE), (0, 0));
-			assert_eq!(SetheumDex::provisioning_pool(USDJ_DNAR_PAIR, BOB), (0, 0));
+			assert_eq!(Dex::provisioning_pool(USDJ_DNAR_PAIR, ALICE), (0, 0));
+			assert_eq!(Dex::provisioning_pool(USDJ_DNAR_PAIR, BOB), (0, 0));
 			assert_eq!(
-				SetheumDex::trading_pair_statuses(USDJ_DNAR_PAIR),
+				Dex::trading_pair_statuses(USDJ_DNAR_PAIR),
 				TradingPairStatus::<_, _>::Enabled
 			);
 
@@ -441,35 +441,35 @@ fn add_provision_work() {
 fn get_liquidity_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		LiquidityPool::<Runtime>::insert(USDJ_DNAR_PAIR, (1000, 20));
-		assert_eq!(SetheumDex::liquidity_pool(USDJ_DNAR_PAIR), (1000, 20));
-		assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (1000, 20));
-		assert_eq!(SetheumDex::get_liquidity(DNAR, USDJ), (20, 1000));
+		assert_eq!(Dex::liquidity_pool(USDJ_DNAR_PAIR), (1000, 20));
+		assert_eq!(Dex::get_liquidity(USDJ, DNAR), (1000, 20));
+		assert_eq!(Dex::get_liquidity(DNAR, USDJ), (20, 1000));
 	});
 }
 
 #[test]
 fn get_target_amount_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SetheumDex::get_target_amount(10000, 0, 1000), 0);
-		assert_eq!(SetheumDex::get_target_amount(0, 20000, 1000), 0);
-		assert_eq!(SetheumDex::get_target_amount(10000, 20000, 0), 0);
-		assert_eq!(SetheumDex::get_target_amount(10000, 1, 1000000), 0);
-		assert_eq!(SetheumDex::get_target_amount(10000, 20000, 10000), 9949);
-		assert_eq!(SetheumDex::get_target_amount(10000, 20000, 1000), 1801);
+		assert_eq!(Dex::get_target_amount(10000, 0, 1000), 0);
+		assert_eq!(Dex::get_target_amount(0, 20000, 1000), 0);
+		assert_eq!(Dex::get_target_amount(10000, 20000, 0), 0);
+		assert_eq!(Dex::get_target_amount(10000, 1, 1000000), 0);
+		assert_eq!(Dex::get_target_amount(10000, 20000, 10000), 9949);
+		assert_eq!(Dex::get_target_amount(10000, 20000, 1000), 1801);
 	});
 }
 
 #[test]
 fn get_supply_amount_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SetheumDex::get_supply_amount(10000, 0, 1000), 0);
-		assert_eq!(SetheumDex::get_supply_amount(0, 20000, 1000), 0);
-		assert_eq!(SetheumDex::get_supply_amount(10000, 20000, 0), 0);
-		assert_eq!(SetheumDex::get_supply_amount(10000, 1, 1), 0);
-		assert_eq!(SetheumDex::get_supply_amount(10000, 20000, 9949), 9999);
-		assert_eq!(SetheumDex::get_target_amount(10000, 20000, 9999), 9949);
-		assert_eq!(SetheumDex::get_supply_amount(10000, 20000, 1801), 1000);
-		assert_eq!(SetheumDex::get_target_amount(10000, 20000, 1000), 1801);
+		assert_eq!(Dex::get_supply_amount(10000, 0, 1000), 0);
+		assert_eq!(Dex::get_supply_amount(0, 20000, 1000), 0);
+		assert_eq!(Dex::get_supply_amount(10000, 20000, 0), 0);
+		assert_eq!(Dex::get_supply_amount(10000, 1, 1), 0);
+		assert_eq!(Dex::get_supply_amount(10000, 20000, 9949), 9999);
+		assert_eq!(Dex::get_target_amount(10000, 20000, 9999), 9949);
+		assert_eq!(Dex::get_supply_amount(10000, 20000, 1801), 1000);
+		assert_eq!(Dex::get_target_amount(10000, 20000, 1000), 1801);
 	});
 }
 
@@ -482,39 +482,39 @@ fn get_target_amounts_work() {
 			LiquidityPool::<Runtime>::insert(USDJ_DNAR_PAIR, (50000, 10000));
 			LiquidityPool::<Runtime>::insert(USDJ_JCHF_PAIR, (100000, 10));
 			assert_noop!(
-				SetheumDex::get_target_amounts(&vec![DNAR], 10000, None),
+				Dex::get_target_amounts(&vec![DNAR], 10000, None),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				SetheumDex::get_target_amounts(&vec![DNAR, USDJ, JCHF, DNAR], 10000, None),
+				Dex::get_target_amounts(&vec![DNAR, USDJ, JCHF, DNAR], 10000, None),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				SetheumDex::get_target_amounts(&vec![DNAR, USDJ, DNAR], 10000, None),
+				Dex::get_target_amounts(&vec![DNAR, USDJ, DNAR], 10000, None),
 				Error::<Runtime>::MustBeEnabled,
 			);
 			assert_eq!(
-				SetheumDex::get_target_amounts(&vec![DNAR, USDJ], 10000, None),
+				Dex::get_target_amounts(&vec![DNAR, USDJ], 10000, None),
 				Ok(vec![10000, 24874])
 			);
 			assert_eq!(
-				SetheumDex::get_target_amounts(&vec![DNAR, USDJ], 10000, Ratio::checked_from_rational(50, 100)),
+				Dex::get_target_amounts(&vec![DNAR, USDJ], 10000, Ratio::checked_from_rational(50, 100)),
 				Ok(vec![10000, 24874])
 			);
 			assert_noop!(
-				SetheumDex::get_target_amounts(&vec![DNAR, USDJ], 10000, Ratio::checked_from_rational(49, 100)),
+				Dex::get_target_amounts(&vec![DNAR, USDJ], 10000, Ratio::checked_from_rational(49, 100)),
 				Error::<Runtime>::ExceedPriceImpactLimit,
 			);
 			assert_eq!(
-				SetheumDex::get_target_amounts(&vec![DNAR, USDJ, JCHF], 10000, None),
+				Dex::get_target_amounts(&vec![DNAR, USDJ, JCHF], 10000, None),
 				Ok(vec![10000, 24874, 1])
 			);
 			assert_noop!(
-				SetheumDex::get_target_amounts(&vec![DNAR, USDJ, JCHF], 100, None),
+				Dex::get_target_amounts(&vec![DNAR, USDJ, JCHF], 100, None),
 				Error::<Runtime>::ZeroTargetAmount,
 			);
 			assert_noop!(
-				SetheumDex::get_target_amounts(&vec![DNAR, JCHF], 100, None),
+				Dex::get_target_amounts(&vec![DNAR, JCHF], 100, None),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 		});
@@ -528,7 +528,7 @@ fn calculate_amount_for_big_number_work() {
 			(171_000_000_000_000_000_000_000, 56_000_000_000_000_000_000_000),
 		);
 		assert_eq!(
-			SetheumDex::get_supply_amount(
+			Dex::get_supply_amount(
 				171_000_000_000_000_000_000_000,
 				56_000_000_000_000_000_000_000,
 				1_000_000_000_000_000_000_000
@@ -536,7 +536,7 @@ fn calculate_amount_for_big_number_work() {
 			3_140_495_867_768_595_041_323
 		);
 		assert_eq!(
-			SetheumDex::get_target_amount(
+			Dex::get_target_amount(
 				171_000_000_000_000_000_000_000,
 				56_000_000_000_000_000_000_000,
 				3_140_495_867_768_595_041_323
@@ -555,35 +555,35 @@ fn get_supply_amounts_work() {
 			LiquidityPool::<Runtime>::insert(USDJ_DNAR_PAIR, (50000, 10000));
 			LiquidityPool::<Runtime>::insert(USDJ_JCHF_PAIR, (100000, 10));
 			assert_noop!(
-				SetheumDex::get_supply_amounts(&vec![DNAR], 10000, None),
+				Dex::get_supply_amounts(&vec![DNAR], 10000, None),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				SetheumDex::get_supply_amounts(&vec![DNAR, USDJ, JCHF, DNAR], 10000, None),
+				Dex::get_supply_amounts(&vec![DNAR, USDJ, JCHF, DNAR], 10000, None),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				SetheumDex::get_supply_amounts(&vec![DNAR, USDJ, DNAR], 10000, None),
+				Dex::get_supply_amounts(&vec![DNAR, USDJ, DNAR], 10000, None),
 				Error::<Runtime>::MustBeEnabled,
 			);
 			assert_eq!(
-				SetheumDex::get_supply_amounts(&vec![DNAR, USDJ], 24874, None),
+				Dex::get_supply_amounts(&vec![DNAR, USDJ], 24874, None),
 				Ok(vec![10000, 24874])
 			);
 			assert_eq!(
-				SetheumDex::get_supply_amounts(&vec![DNAR, USDJ], 25000, Ratio::checked_from_rational(50, 100)),
+				Dex::get_supply_amounts(&vec![DNAR, USDJ], 25000, Ratio::checked_from_rational(50, 100)),
 				Ok(vec![10102, 25000])
 			);
 			assert_noop!(
-				SetheumDex::get_supply_amounts(&vec![DNAR, USDJ], 25000, Ratio::checked_from_rational(49, 100)),
+				Dex::get_supply_amounts(&vec![DNAR, USDJ], 25000, Ratio::checked_from_rational(49, 100)),
 				Error::<Runtime>::ExceedPriceImpactLimit,
 			);
 			assert_noop!(
-				SetheumDex::get_supply_amounts(&vec![DNAR, USDJ, JCHF], 10000, None),
+				Dex::get_supply_amounts(&vec![DNAR, USDJ, JCHF], 10000, None),
 				Error::<Runtime>::ZeroSupplyAmount,
 			);
 			assert_noop!(
-				SetheumDex::get_supply_amounts(&vec![DNAR, JCHF], 10000, None),
+				Dex::get_supply_amounts(&vec![DNAR, JCHF], 10000, None),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 		});
@@ -597,11 +597,11 @@ fn _swap_work() {
 		.execute_with(|| {
 			LiquidityPool::<Runtime>::insert(USDJ_DNAR_PAIR, (50000, 10000));
 
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (50000, 10000));
-			SetheumDex::_swap(USDJ, DNAR, 1000, 1000);
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (51000, 9000));
-			SetheumDex::_swap(DNAR, USDJ, 100, 800);
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (50200, 9100));
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (50000, 10000));
+			Dex::_swap(USDJ, DNAR, 1000, 1000);
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (51000, 9000));
+			Dex::_swap(DNAR, USDJ, 100, 800);
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (50200, 9100));
 		});
 }
 
@@ -614,13 +614,13 @@ fn _swap_by_path_work() {
 			LiquidityPool::<Runtime>::insert(USDJ_DNAR_PAIR, (50000, 10000));
 			LiquidityPool::<Runtime>::insert(USDJ_JCHF_PAIR, (100000, 10));
 
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (50000, 10000));
-			assert_eq!(SetheumDex::get_liquidity(USDJ, JCHF), (100000, 10));
-			SetheumDex::_swap_by_path(&vec![DNAR, USDJ], &vec![10000, 25000]);
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (25000, 20000));
-			SetheumDex::_swap_by_path(&vec![DNAR, USDJ, JCHF], &vec![4000, 10000, 2]);
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (15000, 24000));
-			assert_eq!(SetheumDex::get_liquidity(USDJ, JCHF), (110000, 8));
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (50000, 10000));
+			assert_eq!(Dex::get_liquidity(USDJ, JCHF), (100000, 10));
+			Dex::_swap_by_path(&vec![DNAR, USDJ], &vec![10000, 25000]);
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (25000, 20000));
+			Dex::_swap_by_path(&vec![DNAR, USDJ, JCHF], &vec![4000, 10000, 2]);
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (15000, 24000));
+			assert_eq!(Dex::get_liquidity(USDJ, JCHF), (110000, 8));
 		});
 }
 
@@ -633,17 +633,17 @@ fn add_liquidity_work() {
 			System::set_block_number(1);
 
 			assert_noop!(
-				SetheumDex::add_liquidity(Origin::signed(ALICE), DNAR, USDJ, 100_000_000, 100_000_000, false),
+				Dex::add_liquidity(Origin::signed(ALICE), DNAR, USDJ, 100_000_000, 100_000_000, false),
 				Error::<Runtime>::NotEnabledTradingPair
 			);
 			assert_noop!(
-				SetheumDex::add_liquidity(Origin::signed(ALICE), USDJ, DNAR, 0, 100_000_000, false),
+				Dex::add_liquidity(Origin::signed(ALICE), USDJ, DNAR, 0, 100_000_000, false),
 				Error::<Runtime>::InvalidLiquidityIncrement
 			);
 
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (0, 0));
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 0);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 0);
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (0, 0));
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 0);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 0);
 			assert_eq!(
 				Tokens::free_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &ALICE),
 				0
@@ -655,7 +655,7 @@ fn add_liquidity_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -676,11 +676,11 @@ fn add_liquidity_work() {
 				.any(|record| record.event == add_liquidity_event_1));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(5_000_000_000_000, 1_000_000_000_000)
 			);
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 5_000_000_000_000);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 1_000_000_000_000);
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 5_000_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 1_000_000_000_000);
 			assert_eq!(
 				Tokens::free_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &ALICE),
 				10_000_000_000_000
@@ -702,7 +702,7 @@ fn add_liquidity_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(BOB),
 				USDJ,
 				DNAR,
@@ -723,11 +723,11 @@ fn add_liquidity_work() {
 				.any(|record| record.event == add_liquidity_event_2));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(45_000_000_000_000, 9_000_000_000_000)
 			);
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 45_000_000_000_000);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 9_000_000_000_000);
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 45_000_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 9_000_000_000_000);
 			assert_eq!(
 				Tokens::free_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &BOB),
 				0
@@ -749,7 +749,7 @@ fn remove_liquidity_work() {
 		.execute_with(|| {
 			System::set_block_number(1);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -758,7 +758,7 @@ fn remove_liquidity_work() {
 				false
 			));
 			assert_noop!(
-				SetheumDex::remove_liquidity(
+				Dex::remove_liquidity(
 					Origin::signed(ALICE),
 					USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(),
 					DNAR,
@@ -769,11 +769,11 @@ fn remove_liquidity_work() {
 			);
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(5_000_000_000_000, 1_000_000_000_000)
 			);
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 5_000_000_000_000);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 1_000_000_000_000);
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 5_000_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 1_000_000_000_000);
 			assert_eq!(
 				Tokens::free_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &ALICE),
 				10_000_000_000_000
@@ -781,7 +781,7 @@ fn remove_liquidity_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 999_995_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 999_999_000_000_000_000);
 
-			assert_ok!(SetheumDex::remove_liquidity(
+			assert_ok!(Dex::remove_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -801,11 +801,11 @@ fn remove_liquidity_work() {
 				.any(|record| record.event == remove_liquidity_event_1));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(1_000_000_000_000, 200_000_000_000)
 			);
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 1_000_000_000_000);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 200_000_000_000);
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 1_000_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 200_000_000_000);
 			assert_eq!(
 				Tokens::free_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &ALICE),
 				2_000_000_000_000
@@ -813,7 +813,7 @@ fn remove_liquidity_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 999_999_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 999_999_800_000_000_000);
 
-			assert_ok!(SetheumDex::remove_liquidity(
+			assert_ok!(Dex::remove_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -832,9 +832,9 @@ fn remove_liquidity_work() {
 				.iter()
 				.any(|record| record.event == remove_liquidity_event_2));
 
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (0, 0));
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 0);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 0);
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (0, 0));
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 0);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 0);
 			assert_eq!(
 				Tokens::free_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &ALICE),
 				0
@@ -842,7 +842,7 @@ fn remove_liquidity_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(BOB),
 				USDJ,
 				DNAR,
@@ -858,7 +858,7 @@ fn remove_liquidity_work() {
 				Tokens::reserved_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &BOB),
 				10_000_000_000_000
 			);
-			assert_ok!(SetheumDex::remove_liquidity(
+			assert_ok!(Dex::remove_liquidity(
 				Origin::signed(BOB),
 				USDJ,
 				DNAR,
@@ -884,7 +884,7 @@ fn do_swap_with_exact_supply_work() {
 		.execute_with(|| {
 			System::set_block_number(1);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -892,7 +892,7 @@ fn do_swap_with_exact_supply_work() {
 				100_000_000_000_000,
 				false,
 			));
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				JCHF,
@@ -902,25 +902,25 @@ fn do_swap_with_exact_supply_work() {
 			));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(500_000_000_000_000, 100_000_000_000_000)
 			);
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, JCHF),
+				Dex::get_liquidity(USDJ, JCHF),
 				(100_000_000_000_000, 10_000_000_000)
 			);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				600_000_000_000_000
 			);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 100_000_000_000_000);
-			assert_eq!(Tokens::free_balance(JCHF, &SetheumDex::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 100_000_000_000_000);
+			assert_eq!(Tokens::free_balance(JCHF, &Dex::account_id()), 10_000_000_000);
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(JCHF, &BOB), 1_000_000_000_000_000_000);
 
 			assert_noop!(
-				SetheumDex::do_swap_with_exact_supply(
+				Dex::do_swap_with_exact_supply(
 					&BOB,
 					&[DNAR, USDJ],
 					100_000_000_000_000,
@@ -930,7 +930,7 @@ fn do_swap_with_exact_supply_work() {
 				Error::<Runtime>::InsufficientTargetAmount
 			);
 			assert_noop!(
-				SetheumDex::do_swap_with_exact_supply(
+				Dex::do_swap_with_exact_supply(
 					&BOB,
 					&[DNAR, USDJ],
 					100_000_000_000_000,
@@ -940,15 +940,15 @@ fn do_swap_with_exact_supply_work() {
 				Error::<Runtime>::ExceedPriceImpactLimit,
 			);
 			assert_noop!(
-				SetheumDex::do_swap_with_exact_supply(&BOB, &[DNAR, USDJ, JCHF, DNAR], 100_000_000_000_000, 0, None),
+				Dex::do_swap_with_exact_supply(&BOB, &[DNAR, USDJ, JCHF, DNAR], 100_000_000_000_000, 0, None),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				SetheumDex::do_swap_with_exact_supply(&BOB, &[DNAR, DNAR], 100_000_000_000_000, 0, None),
+				Dex::do_swap_with_exact_supply(&BOB, &[DNAR, DNAR], 100_000_000_000_000, 0, None),
 				Error::<Runtime>::MustBeEnabled,
 			);
 
-			assert_ok!(SetheumDex::do_swap_with_exact_supply(
+			assert_ok!(Dex::do_swap_with_exact_supply(
 				&BOB,
 				&[DNAR, USDJ],
 				100_000_000_000_000,
@@ -964,24 +964,24 @@ fn do_swap_with_exact_supply_work() {
 			assert!(System::events().iter().any(|record| record.event == swap_event_1));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(251_256_281_407_036, 200_000_000_000_000)
 			);
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, JCHF),
+				Dex::get_liquidity(USDJ, JCHF),
 				(100_000_000_000_000, 10_000_000_000)
 			);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				351_256_281_407_036
 			);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 200_000_000_000_000);
-			assert_eq!(Tokens::free_balance(JCHF, &SetheumDex::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 200_000_000_000_000);
+			assert_eq!(Tokens::free_balance(JCHF, &Dex::account_id()), 10_000_000_000);
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_248_743_718_592_964);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_900_000_000_000_000);
 			assert_eq!(Tokens::free_balance(JCHF, &BOB), 1_000_000_000_000_000_000);
 
-			assert_ok!(SetheumDex::do_swap_with_exact_supply(
+			assert_ok!(Dex::do_swap_with_exact_supply(
 				&BOB,
 				&[DNAR, USDJ, JCHF],
 				200_000_000_000_000,
@@ -997,19 +997,19 @@ fn do_swap_with_exact_supply_work() {
 			assert!(System::events().iter().any(|record| record.event == swap_event_2));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(126_259_437_892_983, 400_000_000_000_000)
 			);
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, JCHF),
+				Dex::get_liquidity(USDJ, JCHF),
 				(224_996_843_514_053, 4_469_336_163)
 			);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				351_256_281_407_036
 			);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 400_000_000_000_000);
-			assert_eq!(Tokens::free_balance(JCHF, &SetheumDex::account_id()), 4_469_336_163);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 400_000_000_000_000);
+			assert_eq!(Tokens::free_balance(JCHF, &Dex::account_id()), 4_469_336_163);
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_248_743_718_592_964);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_700_000_000_000_000);
 			assert_eq!(Tokens::free_balance(JCHF, &BOB), 1_000_000_005_530_663_837);
@@ -1024,7 +1024,7 @@ fn do_swap_with_exact_target_work() {
 		.execute_with(|| {
 			System::set_block_number(1);
 
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
@@ -1032,7 +1032,7 @@ fn do_swap_with_exact_target_work() {
 				100_000_000_000_000,
 				false,
 			));
-			assert_ok!(SetheumDex::add_liquidity(
+			assert_ok!(Dex::add_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				JCHF,
@@ -1042,25 +1042,25 @@ fn do_swap_with_exact_target_work() {
 			));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(500_000_000_000_000, 100_000_000_000_000)
 			);
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, JCHF),
+				Dex::get_liquidity(USDJ, JCHF),
 				(100_000_000_000_000, 10_000_000_000)
 			);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				600_000_000_000_000
 			);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 100_000_000_000_000);
-			assert_eq!(Tokens::free_balance(JCHF, &SetheumDex::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 100_000_000_000_000);
+			assert_eq!(Tokens::free_balance(JCHF, &Dex::account_id()), 10_000_000_000);
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(JCHF, &BOB), 1_000_000_000_000_000_000);
 
 			assert_noop!(
-				SetheumDex::do_swap_with_exact_target(
+				Dex::do_swap_with_exact_target(
 					&BOB,
 					&[DNAR, USDJ],
 					250_000_000_000_000,
@@ -1070,7 +1070,7 @@ fn do_swap_with_exact_target_work() {
 				Error::<Runtime>::ExcessiveSupplyAmount
 			);
 			assert_noop!(
-				SetheumDex::do_swap_with_exact_target(
+				Dex::do_swap_with_exact_target(
 					&BOB,
 					&[DNAR, USDJ],
 					250_000_000_000_000,
@@ -1080,7 +1080,7 @@ fn do_swap_with_exact_target_work() {
 				Error::<Runtime>::ExceedPriceImpactLimit,
 			);
 			assert_noop!(
-				SetheumDex::do_swap_with_exact_target(
+				Dex::do_swap_with_exact_target(
 					&BOB,
 					&[DNAR, USDJ, JCHF, DNAR],
 					250_000_000_000_000,
@@ -1090,11 +1090,11 @@ fn do_swap_with_exact_target_work() {
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				SetheumDex::do_swap_with_exact_target(&BOB, &[DNAR, DNAR], 250_000_000_000_000, 200_000_000_000_000, None),
+				Dex::do_swap_with_exact_target(&BOB, &[DNAR, DNAR], 250_000_000_000_000, 200_000_000_000_000, None),
 				Error::<Runtime>::MustBeEnabled,
 			);
 
-			assert_ok!(SetheumDex::do_swap_with_exact_target(
+			assert_ok!(Dex::do_swap_with_exact_target(
 				&BOB,
 				&[DNAR, USDJ],
 				250_000_000_000_000,
@@ -1110,24 +1110,24 @@ fn do_swap_with_exact_target_work() {
 			assert!(System::events().iter().any(|record| record.event == swap_event_1));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(250_000_000_000_000, 201_010_101_010_102)
 			);
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, JCHF),
+				Dex::get_liquidity(USDJ, JCHF),
 				(100_000_000_000_000, 10_000_000_000)
 			);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				350_000_000_000_000
 			);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 201_010_101_010_102);
-			assert_eq!(Tokens::free_balance(JCHF, &SetheumDex::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 201_010_101_010_102);
+			assert_eq!(Tokens::free_balance(JCHF, &Dex::account_id()), 10_000_000_000);
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_250_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_898_989_898_989_898);
 			assert_eq!(Tokens::free_balance(JCHF, &BOB), 1_000_000_000_000_000_000);
 
-			assert_ok!(SetheumDex::do_swap_with_exact_target(
+			assert_ok!(Dex::do_swap_with_exact_target(
 				&BOB,
 				&[DNAR, USDJ, JCHF],
 				5_000_000_000,
@@ -1143,19 +1143,19 @@ fn do_swap_with_exact_target_work() {
 			assert!(System::events().iter().any(|record| record.event == swap_event_2));
 
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, DNAR),
+				Dex::get_liquidity(USDJ, DNAR),
 				(148_989_898_989_898, 338_664_681_397_095)
 			);
 			assert_eq!(
-				SetheumDex::get_liquidity(USDJ, JCHF),
+				Dex::get_liquidity(USDJ, JCHF),
 				(201_010_101_010_102, 5_000_000_000)
 			);
 			assert_eq!(
-				Tokens::free_balance(USDJ, &SetheumDex::account_id()),
+				Tokens::free_balance(USDJ, &Dex::account_id()),
 				350_000_000_000_000
 			);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 338_664_681_397_095);
-			assert_eq!(Tokens::free_balance(JCHF, &SetheumDex::account_id()), 5_000_000_000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 338_664_681_397_095);
+			assert_eq!(Tokens::free_balance(JCHF, &Dex::account_id()), 5_000_000_000);
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_250_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_761_335_318_602_905);
 			assert_eq!(Tokens::free_balance(JCHF, &BOB), 1_000_000_005_000_000_000);
@@ -1171,9 +1171,9 @@ fn initialize_added_liquidity_pools_genesis_work() {
 		.execute_with(|| {
 			System::set_block_number(1);
 
-			assert_eq!(SetheumDex::get_liquidity(USDJ, DNAR), (1000000, 2000000));
-			assert_eq!(Tokens::free_balance(USDJ, &SetheumDex::account_id()), 2000000);
-			assert_eq!(Tokens::free_balance(DNAR, &SetheumDex::account_id()), 3000000);
+			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (1000000, 2000000));
+			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 2000000);
+			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 3000000);
 			assert_eq!(
 				Tokens::free_balance(USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(), &ALICE),
 				4000000
