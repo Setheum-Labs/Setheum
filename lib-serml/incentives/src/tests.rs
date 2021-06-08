@@ -134,7 +134,31 @@ fn withdraw_dex_share_works() {
 			}
 		);
 		assert_eq!(
-			RewardsModule::pools(PoolId::DexSetterReward(CHFJ_SETT_LP)),
+			RewardsModule::pools(PoolId::DexPremium(CHFJ_SETT_LP)),
+			PoolInfo {
+				total_shares: 10000,
+				total_rewards: 0,
+				total_withdrawn_rewards: 0
+			}
+		);
+		assert_eq!(
+			RewardsModule::pools(PoolId::DexPlus(CHFJ_SETT_LP)),
+			PoolInfo {
+				total_shares: 10000,
+				total_rewards: 0,
+				total_withdrawn_rewards: 0
+			}
+		);
+		assert_eq!(
+			RewardsModule::pools(PoolId::DexBonus(CHFJ_SETT_LP)),
+			PoolInfo {
+				total_shares: 10000,
+				total_rewards: 0,
+				total_withdrawn_rewards: 0
+			}
+		);
+		assert_eq!(
+			RewardsModule::pools(PoolId::DexExtra(CHFJ_SETT_LP)),
 			PoolInfo {
 				total_shares: 10000,
 				total_rewards: 0,
@@ -146,7 +170,19 @@ fn withdraw_dex_share_works() {
 			(10000, 0)
 		);
 		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexSetterReward(CHFJ_SETT_LP), ALICE),
+			RewardsModule::share_and_withdrawn_reward(PoolId::DexPremium(CHFJ_SETT_LP), ALICE),
+			(10000, 0)
+		);
+		assert_eq!(
+			RewardsModule::share_and_withdrawn_reward(PoolId::DexPlus(CHFJ_SETT_LP), ALICE),
+			(10000, 0)
+		);
+		assert_eq!(
+			RewardsModule::share_and_withdrawn_reward(PoolId::DexBonus(CHFJ_SETT_LP), ALICE),
+			(10000, 0)
+		);
+		assert_eq!(
+			RewardsModule::share_and_withdrawn_reward(PoolId::DexExtra(CHFJ_SETT_LP), ALICE),
 			(10000, 0)
 		);
 
@@ -174,7 +210,31 @@ fn withdraw_dex_share_works() {
 			}
 		);
 		assert_eq!(
-			RewardsModule::pools(PoolId::DexSetterReward(CHFJ_SETT_LP)),
+			RewardsModule::pools(PoolId::DexPremium(CHFJ_SETT_LP)),
+			PoolInfo {
+				total_shares: 2000,
+				total_rewards: 0,
+				total_withdrawn_rewards: 0
+			}
+		);
+		assert_eq!(
+			RewardsModule::pools(PoolId::DexPlus(CHFJ_SETT_LP)),
+			PoolInfo {
+				total_shares: 2000,
+				total_rewards: 0,
+				total_withdrawn_rewards: 0
+			}
+		);
+		assert_eq!(
+			RewardsModule::pools(PoolId::DexBonus(CHFJ_SETT_LP)),
+			PoolInfo {
+				total_shares: 2000,
+				total_rewards: 0,
+				total_withdrawn_rewards: 0
+			}
+		);
+		assert_eq!(
+			RewardsModule::pools(PoolId::DexExtra(CHFJ_SETT_LP)),
 			PoolInfo {
 				total_shares: 2000,
 				total_rewards: 0,
@@ -186,7 +246,19 @@ fn withdraw_dex_share_works() {
 			(2000, 0)
 		);
 		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexSetterReward(CHFJ_SETT_LP), ALICE),
+			RewardsModule::share_and_withdrawn_reward(PoolId::DexPremium(CHFJ_SETT_LP), ALICE),
+			(2000, 0)
+		);
+		assert_eq!(
+			RewardsModule::share_and_withdrawn_reward(PoolId::DexPlus(CHFJ_SETT_LP), ALICE),
+			(2000, 0)
+		);
+		assert_eq!(
+			RewardsModule::share_and_withdrawn_reward(PoolId::DexBonus(CHFJ_SETT_LP), ALICE),
+			(2000, 0)
+		);
+		assert_eq!(
+			RewardsModule::share_and_withdrawn_reward(PoolId::DexExtra(CHFJ_SETT_LP), ALICE),
 			(2000, 0)
 		);
 	});
