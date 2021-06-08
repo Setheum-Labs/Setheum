@@ -1127,4 +1127,49 @@ impl<T: Config> DexManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Self::do_swap_with_exact_target(who, path, target_amount, max_supply_amount, price_impact_limit)
 	}
+
+	// `do_add_liquidity` is used in genesis_build,
+	// but transactions are not supported by BasicExternalities,
+	// put `transactional` here
+	/// Ensured atomic.
+	#[transactional]
+	fn add_liquidity(
+		who: &T::AccountId,
+		currency_id_a: CurrencyId,
+		currency_id_b: CurrencyId,
+		max_amount_a: Balance,
+		max_amount_b: Balance,
+		min_share_increment: Balance,
+		deposit_increment_share: bool,
+	) -> DispatchResult {
+		Self::do_add_liquidity(
+			who,
+			currency_id_a,
+			currency_id_b,
+			max_amount_a,
+			max_amount_b,
+			min_share_increment,
+			deposit_increment_share,
+		)
+	}
+
+	fn remove_liquidity(
+		who: &T::AccountId,
+		currency_id_a: CurrencyId,
+		currency_id_b: CurrencyId,
+		remove_share: Balance,
+		min_withdrawn_a: Balance,
+		min_withdrawn_b: Balance,
+		by_withdraw: bool,
+	) -> DispatchResult {
+		Self::do_remove_liquidity(
+			who,
+			currency_id_a,
+			currency_id_b,
+			remove_share,
+			min_withdrawn_a,
+			min_withdrawn_b,
+			by_withdraw,
+		)
+	}
 }
