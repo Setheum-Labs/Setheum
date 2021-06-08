@@ -199,150 +199,115 @@ fn update_dex_incentive_rewards_works() {
 			IncentivesModule::update_dex_incentive_rewards(Origin::signed(ALICE), vec![]),
 			BadOrigin
 		);
-
-		assert_eq!(
-			IncentivesModule::incentive_reward_amount(PoolId::DexIncentive(DNAR_SETT_LP)),
-			0
+		assert_noop!(
+			IncentivesModule::update_dex_incentive_rewards(Origin::signed(4), vec![(DNAR, 200), (SETT, 1000)],),
+			Error::<Runtime>::InvalidCurrencyType
 		);
+
+		assert_eq!(IncentivesModule::incentive_reward_amount(DNAR_USDJ_LP), 0);
 
 		assert_ok!(IncentivesModule::update_dex_incentive_rewards(
 			Origin::signed(4),
-			vec![
-				(PoolId::DexIncentive(DNAR_SETT_LP), 1000)
-			],
+			vec![(DNAR_USDJ_LP, 200), (DNAR_SETT_LP, 1000)],
 		));
-		assert_eq!(
-			IncentivesModule::incentive_reward_amount(PoolId::DexIncentive(DNAR_SETT_LP)),
-			1000
-		);
+		assert_eq!(IncentivesModule::incentive_reward_amount(DNAR_USDJ_LP), 200);
+		assert_eq!(IncentivesModule::incentive_reward_amount(DNAR_SETT_LP), 1000);
 
-		assert_noop!(
-			IncentivesModule::update_dex_incentive_rewards(Origin::signed(4), vec![(PoolId::DexIncentive(DNAR), 800)],),
-			Error::<Runtime>::InvalidCurrencyId
-		);
-	});
-}
-
-#[test]
-fn update_dex_setter_rewards_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(
-			IncentivesModule::update_dex_setter_rewards(Origin::signed(ALICE), vec![]),
-			BadOrigin
-		);
-		assert_noop!(
-			IncentivesModule::update_dex_setter_rewards(
-				Origin::signed(4),
-				vec![(PoolId::DexIncentive(DNAR_SETT_LP), Rate::zero())]
-			),
-			Error::<Runtime>::InvalidPoolId
-		);
-		assert_noop!(
-			IncentivesModule::update_dex_setter_rewards(
-				Origin::signed(4),
-				vec![(PoolId::DexSetterReward(DNAR), Rate::zero())]
-			),
-			Error::<Runtime>::InvalidCurrencyId
-		);
-
-		assert_eq!(
-			IncentivesModule::dex_setter_reward_rate(PoolId::DexSetterReward(DNAR_SETT_LP)),
-			Rate::zero()
-		);
-		assert_ok!(IncentivesModule::update_dex_setter_rewards(
+		assert_ok!(IncentivesModule::update_dex_incentive_rewards(
 			Origin::signed(4),
-			vec![(PoolId::DexSetterReward(DNAR_SETT_LP), Rate::saturating_from_rational(1, 100)),]
+			vec![(DNAR_SETT_LP, 100), (DNAR_SETT_LP, 300), (DNAR_SETT_LP, 500)],
 		));
-		assert_eq!(
-			IncentivesModule::dex_setter_reward_rate(PoolId::DexSetterReward(DNAR_SETT_LP)),
-			Rate::saturating_from_rational(1, 100)
-		);
+		assert_eq!(IncentivesModule::incentive_reward_amount(DNAR_SETT_LP), 500);
 	});
 }
 
 #[test]
 fn pay_out_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(TokensModule::deposit(SDEX, &VAULT, 10000));
-		assert_ok!(TokensModule::deposit(SETT, &VAULT, 10000));
+		assert_ok!(TokensModule::deposit(SDEX, &DexIncentivePool::get(), 10000));
+		assert_ok!(TokensModule::deposit(SETT, &DexPremiumPool::get(), 10000));
+		assert_ok!(TokensModule::deposit(SETT, &DexPlusPool::get(), 10000));
+		assert_ok!(TokensModule::deposit(USDJ, &DexBonusPool::get(), 10000));
+		assert_ok!(TokensModule::deposit(EURJ, &DexExtraPool::get(), 10000));
 
-		assert_eq!(TokensModule::free_balance(SDEX, &VAULT), 10000);
-		assert_eq!(TokensModule::free_balance(SDEX, &BOB), 0);
-		IncentivesModule::payout(&BOB, PoolId::DexIncentive(DNAR_SETT_LP), 1000);
-		assert_eq!(TokensModule::free_balance(SDEX, &VAULT), 9000);
-		assert_eq!(TokensModule::free_balance(SDEX, &BOB), 1000);
+		assert_eq!(TokensModule::free_balance(SDEX, &DexIncentivePool::get()), 10000);
+		assert_eq!(TokensModule::free_balance(SDEX, &ALICE), 0);
+		IncentivesModule::payout(&ALICE, PoolId::DexIncentive(DNAR), 1000);
+		assert_eq!(TokensModule::free_balance(SDEX, &DexIncentivePool::get()), 9000);
+		assert_eq!(TokensModule::free_balance(SDEX, &ALICE), 1000);
 
-		assert_eq!(TokensModule::free_balance(SETT, &VAULT), 10000);
+		assert_eq!(TokensModule::free_balance(SETT, &DexPremiumPool::get()), 10000);
 		assert_eq!(TokensModule::free_balance(SETT, &ALICE), 0);
-		IncentivesModule::payout(&ALICE, PoolId::DexSetterReward(DBAR_SETT_LP), 1000);
-		assert_eq!(TokensModule::free_balance(SETT, &VAULT), 9000);
+		IncentivesModule::payout(&ALICE, PoolId::DexPremium(DNAR), 1000);
+		assert_eq!(TokensModule::free_balance(SETT, &DexPremiumPool::get()), 9000);
 		assert_eq!(TokensModule::free_balance(SETT, &ALICE), 1000);
+
+		assert_eq!(TokensModule::free_balance(SETT, &DexPlusPool::get()), 10000);
+		assert_eq!(TokensModule::free_balance(SETT, &ALICE), 0);
+		IncentivesModule::payout(&ALICE, PoolId::DexPlus(DNAR), 1000);
+		assert_eq!(TokensModule::free_balance(SETT, &DexPlusPool::get()), 9000);
+		assert_eq!(TokensModule::free_balance(SETT, &ALICE), 1000);
+
+		assert_eq!(TokensModule::free_balance(USDJ, &DexBonusPool::get()), 10000);
+		assert_eq!(TokensModule::free_balance(USDJ, &ALICE), 0);
+		IncentivesModule::payout(&ALICE, PoolId::DexBonus(DNAR), 1000);
+		assert_eq!(TokensModule::free_balance(USDJ, &DexBonusPool::get()), 9000);
+		assert_eq!(TokensModule::free_balance(USDJ, &ALICE), 1000);
+
+		assert_eq!(TokensModule::free_balance(EURJ, &DexExtraPool::get()), 10000);
+		assert_eq!(TokensModule::free_balance(EURJ, &ALICE), 0);
+		IncentivesModule::payout(&ALICE, PoolId::DexExtra(DNAR), 1000);
+		assert_eq!(TokensModule::free_balance(EURJ, &DexExtraPool::get()), 9000);
+		assert_eq!(TokensModule::free_balance(EURJ, &ALICE), 1000);
 	});
 }
 
 #[test]
-fn on_initialize_should_work() {
+fn accumulate_reward_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(IncentivesModule::update_dex_incentive_rewards(
 			Origin::signed(4),
-			vec![
-				(PoolId::DexIncentive(CHFJ_SETT_LP), 100),
-				(PoolId::DexIncentive(DNAR_SETT_LP), 200),
-			],
+			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
 		));
-		assert_ok!(IncentivesModule::update_dex_setter_rewards(
+		assert_ok!(IncentivesModule::update_dex_premium_rewards(
 			Origin::signed(4),
-			vec![
-				(PoolId::DexSetterReward(CHFJ_SETT_LP), Rate::saturating_from_rational(1, 100)),
-				(PoolId::DexSetterReward(DNAR_SETT_LP), Rate::saturating_from_rational(1, 100)),
-			],
+			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
+		));
+		assert_ok!(IncentivesModule::update_dex_plus_rewards(
+			Origin::signed(4),
+			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
+		));
+		assert_ok!(IncentivesModule::update_dex_bonus_rewards(
+			Origin::signed(4),
+			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
+		));
+		assert_ok!(IncentivesModule::update_dex_extra_rewards(
+			Origin::signed(4),
+			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
 		));
 
-		RewardsModule::add_share(&ALICE, &PoolId::DexIncentive(CHFJ_SETT_LP), 1);
-		RewardsModule::add_share(&ALICE, &PoolId::DexIncentive(DNAR_SETT_LP), 1);
-		RewardsModule::add_share(&ALICE, &PoolId::DexSetterReward(CHFJ_SETT_LP), 1);
-		RewardsModule::add_share(&ALICE, &PoolId::DexSetterReward(DNAR_SETT_LP), 1);
-		assert_eq!(TokensModule::free_balance(SDEX, &VAULT), 0);
-		assert_eq!(TokensModule::free_balance(SETT, &VAULT), 0);
-		assert_eq!(RewardsModule::pools(PoolId::DexIncentive(CHFJ_SETT_LP)).total_rewards, 0);
-		assert_eq!(RewardsModule::pools(PoolId::DexIncentive(DNAR_SETT_LP)).total_rewards, 0);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(CHFJ_SETT_LP)).total_rewards, 0);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(DNAR_SETT_LP)).total_rewards, 0);
+		assert_eq!(IncentivesModule::accumulate_reward(10, |_, _| {}), vec![]);
 
-		IncentivesModule::on_initialize(9);
-		assert_eq!(TokensModule::free_balance(SDEX, &VAULT), 0);
-		assert_eq!(TokensModule::free_balance(SETT, &VAULT), 0);
-		assert_eq!(RewardsModule::pools(PoolId::DexIncentive(CHFJ_SETT_LP)).total_rewards, 0);
-		assert_eq!(RewardsModule::pools(PoolId::DexIncentive(DNAR_SETT_LP)).total_rewards, 0);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(CHFJ_SETT_LP)).total_rewards, 0);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(DNAR_SETT_LP)).total_rewards, 0);
+		RewardsModule::add_share(&ALICE, PoolId::DexIncentive(DNAR_USDJ_LP), 1);
+		RewardsModule::add_share(&ALICE, PoolId::DexPremium(DNAR_USDJ_LP), 1);
+		RewardsModule::add_share(&ALICE, PoolId::DexPlus(DNAR_USDJ_LP), 1);
+		RewardsModule::add_share(&ALICE, PoolId::DexBonus(DNAR_USDJ_LP), 1);
+		RewardsModule::add_share(&ALICE, PoolId::DexExtra(DNAR_USDJ_LP), 1);
+		assert_eq!(
+			IncentivesModule::accumulate_reward(40, |_, _| {}),
+			vec![(SDEX, 3100), (SETT, 3100), (SETT, 3100), (USDJ, 5), (EURJ, 5)]
+		);
 
-		IncentivesModule::on_initialize(10);
-		assert_eq!(TokensModule::free_balance(SDEX, &VAULT), 1300);
-		assert_eq!(TokensModule::free_balance(SETT, &VAULT), 9);
+		RewardsModule::add_share(&ALICE, PoolId::DexIncentive(DNAR_USDJ_LP), 1);
+		RewardsModule::add_share(&ALICE, PoolId::DexPremium(DNAR_USDJ_LP), 1);
+		RewardsModule::add_share(&ALICE, PoolId::DexPlus(DNAR_USDJ_LP), 1);
+		RewardsModule::add_share(&ALICE, PoolId::DexBonus(DNAR_USDJ_LP), 1);
+		RewardsModule::add_share(&ALICE, PoolId::DexExtra(DNAR_USDJ_LP), 1);
 		assert_eq!(
-			RewardsModule::pools(PoolId::DexIncentive(CHFJ_SETT_LP)).total_rewards,
-			1100
+			IncentivesModule::accumulate_reward(40, |_, _| {}),
+			vec![(SDEX, 3300), (SETT, 3300), (SETT, 3300), (USDJ, 9), (EURJ, 9)]
 		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexIncentive(DNAR_SETT_LP)).total_rewards,
-			1500
-		);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(CHFJ_SETT_LP)).total_rewards, 5);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(DNAR_SETT_LP)).total_rewards, 4);
 
-		IncentivesModule::on_initialize(20);
-		assert_eq!(TokensModule::free_balance(SDEX, &VAULT), 4630);
-		assert_eq!(TokensModule::free_balance(SETT, &VAULT), 18);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexIncentive(CHFJ_SETT_LP)).total_rewards,
-			2200
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexIncentive(DNAR_SETT_LP)).total_rewards,
-			2400
-		);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(CHFJ_SETT_LP)).total_rewards, 10);
-		assert_eq!(RewardsModule::pools(PoolId::DexSetterReward(DNAR_SETT_LP)).total_rewards, 38);
+		assert_eq!(IncentivesModule::accumulate_reward(59, |_, _| {}), vec![]);
 	});
 }
