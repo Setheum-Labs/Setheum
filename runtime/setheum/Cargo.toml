@@ -67,6 +67,7 @@ orml-traits = { path = "../../lib-orml/traits", default-features = false }
 orml-vesting = { path = "../../lib-orml/vesting", default-features = false }
 orml-rewards = { path = "../../lib-orml/rewards", default-features = false }
 orml-nft= { path = "../../lib-orml/nft", default-features = false }
+orml-unknown-tokens = { path = "../../lib-orml/unknown-tokens", default-features = false }
 
 # local dependencies
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
@@ -144,6 +145,7 @@ std = [
 	"orml-vesting/std",
 	"orml-rewards/std",
 	"orml-nft/std",
+	"orml-unknown-tokens/std",
 
 	"setheum-transaction-payment/std",
 	"setheum-airdrop/std",

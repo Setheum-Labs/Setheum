@@ -1056,6 +1056,10 @@ impl pallet_proxy::Config for Runtime {
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
 }
 
+impl orml_unknown_tokens::Config for Runtime {
+	type Event = Event;
+}
+
 #[allow(clippy::large_enum_variant)]
 construct_runtime!(
 	pub enum Runtime where
@@ -1118,6 +1122,7 @@ construct_runtime!(
 		Auction: orml_auction::{Module, Storage, Call, Event<T>},
 		Rewards: orml_rewards::{Module, Storage, Call},
 		OrmlNFT: orml_nft::{Module, Storage, Config<T>},
+		UnknownTokens: orml_unknown_tokens::{Module, Storage, Event},
 
 		// Setheum Core
 		Prices: setheum_prices::{Module, Storage, Call, Event<T>},
