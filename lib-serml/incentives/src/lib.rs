@@ -258,7 +258,14 @@ pub mod module {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			for (currency_id, amount) in updates {
 				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
-				DexIncentiveRewards::<T>::insert(currency_id, amount);
+				/// ensure it is only offered to NativeCurrency (native incentive currency) pools
+				/// therefore only the NativeCurrency (native incentive currency) could be
+				/// added/updated to/in this rewards pool.
+				ensure!(
+                    currency_id == T::NativeCurrencyId::get(),
+                    Error::<T>::InvalidCurrencyType,
+                );
+				DexPremiumRewards::<T>::insert(currency_id, amount);
 			}
 			Ok(().into())
 		}
@@ -278,7 +285,7 @@ pub mod module {
                     currency_id == T::DexCurrencyId::get(),
                     Error::<T>::InvalidCurrencyType,
                 );
-				DexIncentiveRewards::<T>::insert(currency_id, amount);
+				DexPlusRewards::<T>::insert(currency_id, amount);
 			}
 			Ok(().into())
 		}
@@ -299,7 +306,7 @@ pub mod module {
                     T::StableCurrencyIds::get().contains(&currency_id),
                     Error::<T>::InvalidCurrencyType,
                 );
-				DexIncentiveRewards::<T>::insert(currency_id, amount);
+				DexBonusRewards::<T>::insert(currency_id, amount);
 			}
 			Ok(().into())
 		}
