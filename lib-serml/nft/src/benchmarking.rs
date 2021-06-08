@@ -257,6 +257,7 @@ mod mock {
 		type WeightInfo = ();
 		type ExistentialDeposits = ExistentialDeposits;
 		type OnDust = ();
+		type MaxLocks = ();
 	}
 
 	impl setheum_currencies::Config for Runtime {
@@ -280,11 +281,18 @@ mod mock {
 		type WeightInfo = ();
 	}
 
+	parameter_types! {
+		pub const MaxClassMetadata: u32 = 1024;
+		pub const MaxTokenMetadata: u32 = 1024;
+	}
+
 	impl orml_nft::Config for Runtime {
 		type ClassId = u32;
 		type TokenId = u64;
 		type ClassData = ClassData;
 		type TokenData = TokenData;
+		type MaxClassMetadata = MaxClassMetadata;
+		type MaxTokenMetadata = MaxTokenMetadata;
 	}
 
 	type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;

@@ -156,6 +156,7 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
 }
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -186,11 +187,18 @@ impl Config for Runtime {
 	type WeightInfo = ();
 }
 
+	parameter_types! {
+		pub const MaxClassMetadata: u32 = 1024;
+		pub const MaxTokenMetadata: u32 = 1024;
+	}
+
 impl orml_nft::Config for Runtime {
 	type ClassId = u32;
 	type TokenId = u64;
 	type ClassData = ClassData;
 	type TokenData = TokenData;
+	type MaxClassMetadata = MaxClassMetadata;
+	type MaxTokenMetadata = MaxTokenMetadata;
 }
 
 use frame_system::Call as SystemCall;
