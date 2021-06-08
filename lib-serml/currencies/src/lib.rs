@@ -109,7 +109,7 @@ pub mod module {
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -382,7 +382,7 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 	}
 }
 
-pub struct Currency<T, GetCurrencyId>(marker::PhantomData<T>, marker::PhantomData<GetCurrencyId>);
+pub struct Currency<T, GetCurrencyId>(marker::_, marker::PhantomData<GetCurrencyId>);
 
 impl<T, GetCurrencyId> BasicCurrency<T::AccountId> for Currency<T, GetCurrencyId>
 where

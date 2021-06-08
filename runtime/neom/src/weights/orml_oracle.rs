@@ -43,7 +43,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions for orml_oracle.
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> orml_oracle::WeightInfo for WeightInfo<T> {
 	fn feed_values(c: u32) -> Weight {
 		(34_392_000 as Weight)

@@ -44,7 +44,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions for setheum_nft.
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> setheum_nft::WeightInfo for WeightInfo<T> {
 	fn create_class() -> Weight {
 		(197_240_000 as Weight)

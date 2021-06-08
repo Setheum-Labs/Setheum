@@ -43,7 +43,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions for setheum_dex.
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> setheum_dex::WeightInfo for WeightInfo<T> {
 	fn enable_trading_pair() -> Weight {
 		(20_000_000 as Weight)

@@ -55,7 +55,7 @@ pub trait WeightInfo {
 }
 
 /// Weights for serp_treasury using the Setheum node and recommended hardware.
-pub struct SetheumWeight<T>(PhantomData<T>);
+pub struct SetheumWeight<T>(_);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn auction_serplus() -> Weight {
 		(27_000_000 as Weight)

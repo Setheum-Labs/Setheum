@@ -58,7 +58,7 @@ pub trait WeightInfo {
 }
 
 /// Weights for setheum_incentives using the Setheum node and recommended hardware.
-pub struct SetheumWeight<T>(PhantomData<T>);
+pub struct SetheumWeight<T>(_);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn on_initialize(c: u32) -> Weight {
 		(33_360_000 as Weight)
