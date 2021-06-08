@@ -41,10 +41,6 @@ runtime_benchmarks! {
 	auction_setter {
 		Currencies::deposit(rSETT, &SerpTreasury::account_id(), 10_000 * dollar(rSETT))?;
 	}: _(RawOrigin::Root, rSETT, 1_000 * dollar(rSETT), 1_000 * dollar(rUSD), true)
-
-	set_expected_setter_auction_size {
-		let currency_id: CurrencyId = rSETT;
-	}: _(RawOrigin::Root, currency_id, 200 * dollar(currency_id))
 }
 
 #[cfg(test)]
@@ -77,13 +73,6 @@ mod tests {
 	fn test_auction_setter() {
 		new_test_ext().execute_with(|| {
 			assert_ok!(test_benchmark_auction_setter());
-		});
-	}
-
-	#[test]
-	fn test_set_expected_setter_auction_size() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_set_expected_setter_auction_size());
 		});
 	}
 }
