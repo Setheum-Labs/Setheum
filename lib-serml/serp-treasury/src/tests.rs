@@ -237,26 +237,3 @@ fn auction_standard_works() {
 		assert_eq!(TOTAL_DIAMOND_AUCTION.with(|v| *v.borrow_mut()), 1);
 	});
 }
-
-#[test]
-fn set_expected_setter_auction_size_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		System::set_block_number(1);
-		assert_eq!(SerpTreasuryModule::expected_setter_auction_size(BTC), 0);
-		assert_noop!(
-			SerpTreasuryModule::set_expected_setter_auction_size(Origin::signed(5), BTC, 200),
-			BadOrigin
-		);
-		assert_ok!(SerpTreasuryModule::set_expected_setter_auction_size(
-			Origin::signed(1),
-			BTC,
-			200
-		));
-
-		let update_expected_setter_auction_size_event =
-			Event::serp_treasury(crate::Event::ExpectedSetterAuctionSizeUpdated(BTC, 200));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == update_expected_setter_auction_size_event));
-	});
-}

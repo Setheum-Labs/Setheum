@@ -303,26 +303,6 @@ pub mod module {
 			T::SerpAuctionHandler::new_setter_auction(accepted_currency, initial_price, currency_amount)?;
 			Ok(().into())
 		}
-
-		/// Update parameters related to setter auction under specific
-		/// reserve type
-		///
-		/// The dispatch origin of this call must be `UpdateOrigin`.
-		///
-		/// - `T::GetSetterCurrencyId::get()`: reserve type
-		/// - `serplusbuffer_size`: setter auction maximum size
-		#[pallet::weight((T::WeightInfo::set_expected_setter_auction_size(), DispatchClass::Operational))]
-		#[transactional]
-		pub fn set_expected_setter_auction_size(
-			origin: OriginFor<T>,
-			currency_id: T::GetSetterCurrencyId::get(),
-			size: Balance,
-		) -> DispatchResultWithPostInfo {
-			T::UpdateOrigin::ensure_origin(origin)?;
-			ExpectedSetterAuctionSize::<T>::insert(T::GetSetterCurrencyId::get(), size);
-			Self::deposit_event(Event::ExpectedSetterAuctionSizeUpdated(T::GetSetterCurrencyId::get(), size));
-			Ok(().into())
-		}
 	}
 }
 

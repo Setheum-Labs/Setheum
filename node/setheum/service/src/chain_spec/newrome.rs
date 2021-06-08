@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use setheum_primitives::AccountId;
+use setheum_primitives::{AccountId, TokenSymbol};
 use hex_literal::hex;
 use sc_chain_spec::ChainType;
 use sc_telemetry::TelemetryEndpoints;
@@ -39,8 +39,15 @@ fn newrome_session_keys(grandpa: GrandpaId, babe: BabeId) -> newrome_runtime::Se
 /// Development testnet config (single validator Alice)
 pub fn development_testnet_config() -> Result<ChainSpec, String> {
 	let mut properties = Map::new();
-	properties.insert("tokenSymbol".into(), "DNAR".into());
-	properties.insert("tokenDecimals".into(), 13.into());
+
+	let mut token_symbol: Vec<String> = vec![];
+	let mut token_decimals: Vec<u32> = vec![];
+	TokenSymbol::get_info().iter().for_each(|(symbol_name, decimals)| {
+		token_symbol.push(symbol_name.to_string());
+		token_decimals.push(*decimals);
+	});
+	properties.insert("tokenSymbol".into(), token_symbol.into());
+	properties.insert("tokenDecimals".into(), token_decimals.into());
 
 	let wasm_binary = newrome_runtime::WASM_BINARY.unwrap_or_default();
 
@@ -75,9 +82,15 @@ pub fn development_testnet_config() -> Result<ChainSpec, String> {
 /// Local testnet config (multivalidator Alice + Bob)
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	let mut properties = Map::new();
-	properties.insert("tokenSymbol".into(), "DNAR".into());
-	properties.insert("tokenDecimals".into(), 13.into());
 
+	let mut token_symbol: Vec<String> = vec![];
+	let mut token_decimals: Vec<u32> = vec![];
+	TokenSymbol::get_info().iter().for_each(|(symbol_name, decimals)| {
+		token_symbol.push(symbol_name.to_string());
+		token_decimals.push(*decimals);
+	});
+	properties.insert("tokenSymbol".into(), token_symbol.into());
+	properties.insert("tokenDecimals".into(), token_decimals.into());
 	let wasm_binary = newrome_runtime::WASM_BINARY.ok_or("Dev runtime wasm binary not available")?;
 
 	Ok(ChainSpec::from_genesis(
@@ -118,9 +131,16 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 
 pub fn latest_newrome_testnet_config() -> Result<ChainSpec, String> {
 	let mut properties = Map::new();
-	properties.insert("tokenSymbol".into(), "DNAR".into());
-	properties.insert("tokenDecimals".into(), 13.into());
 
+	let mut token_symbol: Vec<String> = vec![];
+	let mut token_decimals: Vec<u32> = vec![];
+	TokenSymbol::get_info().iter().for_each(|(symbol_name, decimals)| {
+		token_symbol.push(symbol_name.to_string());
+		token_decimals.push(*decimals);
+	});
+	properties.insert("tokenSymbol".into(), token_symbol.into());
+	properties.insert("tokenDecimals".into(), token_decimals.into());
+	
 	let wasm_binary = newrome_runtime::WASM_BINARY.ok_or("Newrome runtime wasm binary not available")?;
 
 	Ok(ChainSpec::from_genesis(
