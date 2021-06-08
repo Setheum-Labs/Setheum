@@ -107,36 +107,46 @@ pub mod module {
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The Incentive reward type (SDEX/HALAL/RDEX)
-		/// SDEX in Setheum, HALAL in Neom, RDEX in NewRome
+		/// SDEX in Setheum, HALAL in Neom, RDEX in NewRome testnet
 		/// For all LPs
 		#[pallet::constant]
 		type IncentiveCurrencyId: Get<CurrencyId>;
 
 		/// The Premium reward type (SETT/NSETT/rSETT)
-		/// SETT in Setheum, NSETT in Neom, rSETT in NewRome
+		/// SETT in Setheum, NSETT in Neom, rSETT in NewRome testnet
 		/// For Dinar (NativeCurrencyId - DNAR/NEOM/ROME) LPs
-		/// DNAR in Setheum, NEOM in Neom, ROME in NewRome
+		/// DNAR in Setheum, NEOM in Neom, ROME in NewRome testnet
 		#[pallet::constant]
 		type PremiumCurrencyId: Get<CurrencyId>;
 
 		/// The Plus reward type (USDJ/JUSD/rUSD)
-		/// USDJ in Setheum, JUSD in Neom, rUSD in NewRome
+		/// USDJ in Setheum, JUSD in Neom, rUSD in NewRome testnet
 		/// For SettCurrency (System StableCurrencies) LPs
 		#[pallet::constant]
 		type PlusCurrencyId: Get<CurrencyId>;
 
 		/// The Bonus reward type (SETT/NSETT/rSETT)
-		/// SETT in Setheum, NSETT in Neom, rSETT in NewRome
+		/// SETT in Setheum, NSETT in Neom, rSETT in NewRome testnet
 		/// For SettinDex (IncentiveCurrencyId - SDEX/HALAL/RDEX) LPs
-		/// SDEX in Setheum, HALAL in Neom, RDEX in NewRome
+		/// SDEX in Setheum, HALAL in Neom, RDEX in NewRome testnet
 		#[pallet::constant]
 		type BonusCurrencyId: Get<CurrencyId>;
 
 		/// The Extra reward type (EURJ/JEUR/rEUR)
-		/// EURJ in Setheum, JEUR in Neom, rEUR in NewRome
+		/// EURJ in Setheum, JEUR in Neom, rEUR in NewRome testnet
 		/// For Certain Strategic Currencies LPs, e.g. DOT, XBTC et al.
 		#[pallet::constant]
 		type ExtraCurrencyId: Get<CurrencyId>;
+
+		/// The Native Currency type (DNAR/NEOM/ROME)
+		/// DNAR in Setheum, NEOM in Neom, ROME in NewRome testnet
+		#[pallet::constant]
+		type NativeCurrencyId: Get<CurrencyId>;
+
+		/// The Dex governance currency type (SDEX/HALAL/rDEX)
+		/// SDEX in Setheum, HALAL in Neom, rDEX in NewRome testnet
+		#[pallet::constant]
+		type DexCurrencyId: Get<CurrencyId>;
 
 		/// The origin which may update incentive related params
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
