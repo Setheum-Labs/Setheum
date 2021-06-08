@@ -374,7 +374,7 @@ fn add_provision_work() {
 				DNAR,
 				1_000_000_000_000_000u128,
 			)));
-			
+
 			// alice add provision again and trigger trading pair convert to Enabled from
 			// Provisioning
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 999_995_000_000_000_000u128);
@@ -1139,7 +1139,7 @@ fn do_swap_with_exact_target_work() {
 				101_010_101_010_102,
 				250_000_000_000_000,
 			)));
-			
+
 			assert_eq!(
 				Dex::get_liquidity(USDJ, DNAR),
 				(250_000_000_000_000, 201_010_101_010_102)
