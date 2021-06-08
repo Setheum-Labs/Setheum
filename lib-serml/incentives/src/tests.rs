@@ -345,7 +345,7 @@ fn update_dex_incentive_rewards_works() {
 		);
 		assert_noop!(
 			IncentivesModule::update_dex_incentive_rewards(Origin::signed(4), vec![(DNAR, 200), (SETT, 1000)],),
-			Error::<Runtime>::InvalidCurrencyType
+			Error::<Runtime>::InvalidCurrencyId
 		);
 
 		assert_eq!(IncentivesModule::incentive_reward_amount(DNAR_USDJ_LP), 0);
