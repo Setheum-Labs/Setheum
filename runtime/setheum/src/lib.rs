@@ -49,7 +49,7 @@ use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{AccountIdConversion, Zero},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, DispatchResult, FixedPointNumber, ModuleId,
+	ApplyExtrinsicResult, DispatchResult, FixedPointNumber,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -75,7 +75,7 @@ pub use frame_support::{
 		Randomness, U128CurrencyToVote,
 	},
 	weights::{constants::RocksDbWeight, IdentityFee, Weight},
-	StorageValue,
+	StorageValue, PalletId,
 };
 
 pub use pallet_staking::StakerStatus;
@@ -128,26 +128,26 @@ impl_opaque_keys! {
 
 // Module accounts of runtime
 parameter_types! {
-	pub const SetheumTreasuryModuleId: ModuleId = ModuleId(*b"set/trsy");
-	pub const SettersModuleId: ModuleId = ModuleId(*b"set/setter");
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
-	pub const SettwayTreasuryModuleId: ModuleId = ModuleId(*b"set/hztr");
-	pub const IncentivesModuleId: ModuleId = ModuleId(*b"set/inct");
+	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
+	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/hztr");
+	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	// Decentralized Sovereign Wealth Fund
-	pub const SIFModuleId: ModuleId = ModuleId(*b"set/dsif");
-	pub const NftModuleId: ModuleId = ModuleId(*b"set/aNFT");
+	pub const SIFPalletId: PalletId = PalletId(*b"set/dsif");
+	pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
 }
 
 pub fn get_all_setheum_accounts() -> Vec<AccountId> {
 	vec![
-		SetheumTreasuryModuleId::get().into_account(),
-		SettersModuleId::get().into_account(),
-		DEXModuleId::get().into_account(),
-		SerpTreasuryModuleId::get().into_account(),
-		SettwayTreasuryModuleId::get().into_account(),
-		IncentivesModuleId::get().into_account(),
-		SIFModuleId::get().into_account(),
+		SetheumTreasuryPalletId::get().into_account(),
+		SettersPalletId::get().into_account(),
+		DEXPalletId::get().into_account(),
+		SerpTreasuryPalletId::get().into_account(),
+		SettwayTreasuryPalletId::get().into_account(),
+		IncentivesPalletId::get().into_account(),
+		SIFPalletId::get().into_account(),
 		ZeroAccountId::get(),
 	]
 }
@@ -501,7 +501,7 @@ parameter_types! {
 }
 
 impl pallet_treasury::Config for Runtime {
-	type ModuleId = SetheumTreasuryModuleId;
+	type PalletId = SetheumTreasuryPalletId;
 	type Currency = Balances;
 	type ApproveOrigin = EnsureRootOrHalfGeneralCouncil;
 	type RejectOrigin = EnsureRootOrHalfGeneralCouncil;
@@ -697,7 +697,7 @@ parameter_type_with_key! {
 }
 
 parameter_types! {
-	pub TreasuryModuleAccount: AccountId = SetheumTreasuryModuleId::get().into_account();
+	pub TreasuryModuleAccount: AccountId = SetheumTreasuryPalletId::get().into_account();
 }
 
 impl orml_tokens::Config for Runtime {
@@ -744,9 +744,9 @@ impl EnsureOrigin<Origin> for EnsureRootOrSetheumTreasury {
 
 	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
-			RawOrigin::Root => Ok(SetheumTreasuryModuleId::get().into_account()),
+			RawOrigin::Root => Ok(SetheumTreasuryPalletId::get().into_account()),
 			RawOrigin::Signed(caller) => {
-				if caller == SetheumTreasuryModuleId::get().into_account() {
+				if caller == SetheumTreasuryPalletId::get().into_account() {
 					Ok(caller)
 				} else {
 					Err(Origin::from(Some(caller)))
@@ -823,7 +823,7 @@ impl setheum_setters::Config for Runtime {
 	type Currency = Currencies;
 	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
-	type ModuleId = SettersModuleId;
+	type PalletId = SettersPalletId;
 	type OnUpdateSetter = setheum_incentives::OnUpdateSetter<Runtime>;
 }
 
@@ -927,7 +927,7 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = DEXModuleId;
+	type PalletId = DEXPalletId;
 	type DEXIncentives = Incentives;
 	type WeightInfo = weights::setheum_dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
@@ -935,7 +935,7 @@ impl setheum_dex::Config for Runtime {
 
 parameter_types! {
 	pub const MaxAuctionsCount: u32 = 100;
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
 	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
@@ -958,7 +958,7 @@ impl serp_treasury::Config for Runtime {
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = SerpTreasuryModuleId;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
 
@@ -1005,7 +1005,7 @@ impl setheum_incentives::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type DEX = Dex;
-	type ModuleId = IncentivesModuleId;
+	type PalletId = IncentivesPalletId;
 	type WeightInfo = weights::setheum_incentives::WeightInfo<Runtime>;
 }
 
@@ -1018,7 +1018,7 @@ impl setheum_nft::Config for Runtime {
 	type Event = Event;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
-	type ModuleId = NftModuleId;
+	type PalletId = NftPalletId;
 	type Currency = Currency<Runtime, GetNativeCurrencyId>;
 	type WeightInfo = weights::setheum_nft::WeightInfo<Runtime>;
 }

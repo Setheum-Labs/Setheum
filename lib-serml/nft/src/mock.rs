@@ -25,7 +25,7 @@ use codec::{Decode, Encode};
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{Filter, InstanceFilter},
-	RuntimeDebug,
+	RuntimeDebug, PalletId
 };
 use orml_traits::parameter_type_with_key;
 use primitives::{mocks::MockAddressMapping, Amount, BlockNumber, CurrencyId, TokenSymbol};
@@ -176,13 +176,13 @@ impl setheum_currencies::Config for Runtime {
 parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
-	pub const NftModuleId: ModuleId = ModuleId(*b"dnr/sNFT");
+	pub const NftPalletId: PalletId = PalletId(*b"dnr/sNFT");
 }
 impl Config for Runtime {
 	type Event = Event;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
-	type ModuleId = NftModuleId;
+	type PalletId = NftPalletId;
 	type Currency = NativeCurrency;
 	type WeightInfo = ();
 }

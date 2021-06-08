@@ -21,7 +21,7 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
 use primitives::{TokenSymbol, TradingPair};
@@ -29,7 +29,6 @@ use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
 	traits::IdentityLookup,
-	ModuleId,
 };
 use sp_std::cell::RefCell;
 pub use support::Price;
@@ -114,7 +113,7 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![USDJ, EURJ];
 	pub const GetStableCurrencyId: CurrencyId = USDJ;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 }
 
 impl serp_treasury::Config for Runtime {
@@ -125,7 +124,7 @@ impl serp_treasury::Config for Runtime {
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = SerpTreasuryModuleId;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 
@@ -154,7 +153,7 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, BTC)];
@@ -165,7 +164,7 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Tokens;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = DEXModuleId;
+	type PalletId = DEXPalletId;
 	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;

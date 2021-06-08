@@ -21,7 +21,7 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
 use primitives::{TokenSymbol, TradingPair};
@@ -146,7 +146,7 @@ parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT)];
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
 }
 
 impl setheum_dex::Config for Runtime {
@@ -154,7 +154,7 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = DEXModuleId;
+	type PalletId = DEXPalletId;
 	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
@@ -217,7 +217,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
@@ -252,7 +252,7 @@ impl Config for Runtime {
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = SerpTreasuryModuleId;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 

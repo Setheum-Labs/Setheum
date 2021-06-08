@@ -28,13 +28,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional};
+use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, BlockNumber, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
-	DispatchError, DispatchResult, FixedPointNumber, ModuleId,
+	DispatchError, DispatchResult, FixedPointNumber,
 };
 use support::{SerpAuction, SerpTreasury, DEXManager, Ratio};
 
@@ -141,17 +141,17 @@ pub mod module {
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds SettPay Cashdrops
 		/// SettPayTreasury account.
-		type SettPayTreasuryAcc: Get<ModuleId>;
+		type SettPayTreasuryAcc: Get<PalletId>;
 
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds Setheum Treasury
 		/// SetheumTreasury account.
-		type SetheumTreasuryAcc: Get<ModuleId>;
+		type SetheumTreasuryAcc: Get<PalletId>;
 
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds Setheum Investment Fund (SIF) DAO
 		/// SIF account.
-		type SIFAcc: Get<ModuleId>;
+		type SIFAcc: Get<PalletId>;
 
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
@@ -169,7 +169,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
-		type ModuleId: Get<ModuleId>;
+		type PalletId: Get<PalletId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -309,7 +309,7 @@ pub mod module {
 impl<T: Config> Pallet<T> {
 	/// Get account of SERP Treasury module.
 	pub fn account_id() -> T::AccountId {
-		T::ModuleId::get().into_account()
+		T::PalletId::get().into_account()
 	}
 
 	pub fn adjustment_frequency() -> BlockNumber {
