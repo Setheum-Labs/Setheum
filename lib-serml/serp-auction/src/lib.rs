@@ -217,8 +217,6 @@ pub mod module {
 		AuctionNonExistent,
 		/// Currency Not Accepted
 		CurrencyNotAccepted,
-		/// The setter auction is in reverse stage now
-		InReverseStage,
 		/// Feed price is invalid
 		InvalidFeedPrice,
 		/// Bid price is invalid
