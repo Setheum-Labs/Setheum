@@ -19,10 +19,10 @@
 //! An orml_authority trait implementation.
 
 use crate::{
-	SetheumTreasuryModuleId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber,
-	SIFModuleId, DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, EnsureRootOrHalfSettwayCouncil,
+	SetheumTreasuryPalletId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber,
+	SIFPalletId, DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, EnsureRootOrHalfSettwayCouncil,
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
-	EnsureRootOrTwoThirdsTechnicalCommittee, SettwayTreasuryModuleId, OneDay, Origin,
+	EnsureRootOrTwoThirdsTechnicalCommittee, SettwayTreasuryPalletId, OneDay, Origin,
 	OriginCaller, SevenDays, ZeroDay, HOURS,
 };
 pub use frame_support::traits::{schedule::Priority, EnsureOrigin, OriginTrait};
@@ -77,13 +77,13 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 	fn into_origin(self) -> OriginCaller {
 		match self {
 			AuthoritysOriginId::Root => Origin::root().caller().clone(),
-			AuthoritysOriginId::SetheumTreasury => Origin::signed(SetheumTreasuryModuleId::get().into_account())
+			AuthoritysOriginId::SetheumTreasury => Origin::signed(SetheumTreasuryPalletId::get().into_account())
 				.caller()
 				.clone(),
-			AuthoritysOriginId::SettwayTreasury => Origin::signed(SettwayTreasuryModuleId::get().into_account())
+			AuthoritysOriginId::SettwayTreasury => Origin::signed(SettwayTreasuryPalletId::get().into_account())
 				.caller()
 				.clone(),
-			AuthoritysOriginId::SIF => Origin::signed(SIFModuleId::get().into_account()).caller().clone(),
+			AuthoritysOriginId::SIF => Origin::signed(SIFPalletId::get().into_account()).caller().clone(),
 		}
 	}
 

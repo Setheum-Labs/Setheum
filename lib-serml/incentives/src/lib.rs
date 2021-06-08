@@ -173,7 +173,7 @@ pub mod module {
 		/// Share amount is not enough
 		NotEnough,
 		/// Invalid currency id
-		InvalidCurrencyType,
+		InvalidCurrencyId,
 		/// Invalid pool id
 		InvalidPoolId, // Remove this
 	}
@@ -271,7 +271,7 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			for (currency_id, amount) in updates {
-				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 				DexIncentiveRewards::<T>::insert(currency_id, amount);
 			}
 			Ok(().into())
@@ -285,13 +285,13 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			for (currency_id, amount) in updates {
-				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 				/// ensure it is only offered to NativeCurrency (native incentive currency) pools
 				/// therefore only the NativeCurrency (native incentive currency) could be
 				/// added/updated to/in this rewards pool.
 				ensure!(
                     currency_id == T::NativeCurrencyId::get(),
-                    Error::<T>::InvalidCurrencyType,
+                    Error::<T>::InvalidCurrencyId,
                 );
 				DexPremiumRewards::<T>::insert(currency_id, amount);
 			}
@@ -305,13 +305,13 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			for (currency_id, amount) in updates {
-				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 				/// ensure it is only offered to DexCurrency (dex incentive currency) pools
 				/// therefore only the DexCurrency (dex incentive currency) could be
 				/// added/updated to/in this rewards pool.
 				ensure!(
                     currency_id == T::DexCurrencyId::get(),
-                    Error::<T>::InvalidCurrencyType,
+                    Error::<T>::InvalidCurrencyId,
                 );
 				DexPlusRewards::<T>::insert(currency_id, amount);
 			}
@@ -326,13 +326,13 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			for (currency_id, amount) in updates {
-				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 				/// ensure it is only offered to SettCurrencies (system stablecoins) pools
 				/// therefore only the the SettCurrencies (system stablecoins) could be
 				/// added/updated to/in this rewards pool.
 				ensure!(
                     T::StableCurrencyIds::get().contains(&currency_id),
-                    Error::<T>::InvalidCurrencyType,
+                    Error::<T>::InvalidCurrencyId,
                 );
 				DexBonusRewards::<T>::insert(currency_id, amount);
 			}
@@ -347,7 +347,7 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			for (currency_id, amount) in updates {
-				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
+				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 				DexExtraRewards::<T>::insert(currency_id, amount);
 			}
 			Ok(().into())
@@ -363,7 +363,7 @@ impl<T: Config> Pallet<T> {
 
 impl<T: Config> DEXIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	fn do_deposit_dex_share(who: &T::AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
-		ensure!(lp_currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
+		ensure!(lp_currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 
 		T::Currency::transfer(lp_currency_id, who, &Self::account_id(), amount)?;
 		<orml_rewards::Pallet<T>>::add_share(
@@ -396,7 +396,7 @@ impl<T: Config> DEXIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	}
 
 	fn do_withdraw_dex_share(who: &T::AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
-		ensure!(lp_currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyType);
+		ensure!(lp_currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 		ensure!(
 			<orml_rewards::Pallet<T>>::share_and_withdrawn_reward(
 				PoolId::DexIncentive(lp_currency_id), &who

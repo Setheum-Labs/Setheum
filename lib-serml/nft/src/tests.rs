@@ -33,7 +33,7 @@ fn reserved_balance(who: &AccountId) -> Balance {
 }
 
 fn class_id_account() -> AccountId {
-	<Runtime as Config>::ModuleId::get().into_sub_account(CLASS_ID)
+	<Runtime as Config>::PalletId::get().into_sub_account(CLASS_ID)
 }
 
 #[test]
@@ -44,8 +44,7 @@ fn create_class_should_work() {
 			vec![1],
 			Default::default()
 		));
-		let event = Event::setheum_nft(crate::Event::CreatedClass(class_id_account(), CLASS_ID));
-		assert_eq!(last_event(), event);
+		System::assert_last_event(Event::setheum_nft(crate::Event::CreatedClass(class_id_account(), CLASS_ID)));
 
 		assert_eq!(
 			reserved_balance(&class_id_account()),
@@ -76,8 +75,7 @@ fn mint_should_work() {
 			vec![1],
 			Properties(ClassProperty::Transferable | ClassProperty::Burnable)
 		));
-		let event = Event::setheum_nft(crate::Event::CreatedClass(class_id_account(), CLASS_ID));
-		assert_eq!(last_event(), event);
+		System::assert_last_event(Event::setheum_nft(crate::Event::CreatedClass(class_id_account(), CLASS_ID)));
 
 		assert_eq!(
 			Balances::deposit_into_existing(&class_id_account(), 2 * <Runtime as Config>::CreateTokenDeposit::get())
@@ -91,8 +89,7 @@ fn mint_should_work() {
 			vec![1],
 			2
 		));
-		let event = Event::setheum_nft(crate::Event::MintedToken(class_id_account(), BOB, CLASS_ID, 2));
-		assert_eq!(last_event(), event);
+		System::assert_last_event(Event::setheum_nft(crate::Event::MintedToken(class_id_account(), BOB, CLASS_ID, 2)));
 
 		assert_eq!(
 			reserved_balance(&class_id_account()),
@@ -163,12 +160,10 @@ fn transfer_should_work() {
 		));
 
 		assert_ok!(SetheumNFT::transfer(Origin::signed(BOB), ALICE, (CLASS_ID, TOKEN_ID)));
-		let event = Event::setheum_nft(crate::Event::TransferredToken(BOB, ALICE, CLASS_ID, TOKEN_ID));
-		assert_eq!(last_event(), event);
+		System::assert_last_event(Event::setheum_nft(crate::Event::TransferredToken(BOB, ALICE, CLASS_ID, TOKEN_ID)));
 
 		assert_ok!(SetheumNFT::transfer(Origin::signed(ALICE), BOB, (CLASS_ID, TOKEN_ID)));
-		let event = Event::setheum_nft(crate::Event::TransferredToken(ALICE, BOB, CLASS_ID, TOKEN_ID));
-		assert_eq!(last_event(), event);
+		System::assert_last_event(Event::setheum_nft(crate::Event::TransferredToken(ALICE, BOB, CLASS_ID, TOKEN_ID)));
 	});
 }
 
@@ -252,8 +247,7 @@ fn burn_should_work() {
 			1
 		));
 		assert_ok!(SetheumNFT::burn(Origin::signed(BOB), (CLASS_ID, TOKEN_ID)));
-		let event = Event::setheum_nft(crate::Event::BurnedToken(BOB, CLASS_ID, TOKEN_ID));
-		assert_eq!(last_event(), event);
+		System::assert_last_event(Event::setheum_nft(crate::Event::BurnedToken(BOB, CLASS_ID, TOKEN_ID)));
 
 		assert_eq!(
 			reserved_balance(&class_id_account()),
@@ -352,8 +346,7 @@ fn destroy_class_should_work() {
 			CLASS_ID,
 			BOB
 		));
-		let event = Event::setheum_nft(crate::Event::DestroyedClass(class_id_account(), CLASS_ID, BOB));
-		assert_eq!(last_event(), event);
+		System::assert_last_event(Event::setheum_nft(crate::Event::DestroyedClass(class_id_account(), CLASS_ID, BOB)));
 
 		assert_eq!(reserved_balance(&class_id_account()), 2);
 		assert_eq!(free_balance(&ALICE), 99700 + 100 - 2);

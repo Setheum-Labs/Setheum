@@ -85,10 +85,7 @@ fn adjust_position_should_work() {
 		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 500);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 150);
 
-		let update_position_event = Event::setters(crate::Event::PositionUpdated(ALICE, BTC, 500, 300));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == update_position_event));
+		System::assert_last_event(Event::setters(crate::Event::PositionUpdated(ALICE, BTC, 500, 300)));
 	});
 }
 
@@ -151,9 +148,6 @@ fn transfer_setter_should_work() {
 		assert_eq!(SettersModule::positions(BTC, &BOB).standard, 1100);
 		assert_eq!(SettersModule::positions(BTC, &BOB).reserve, 500);
 
-		let transfer_setter_event = Event::setters(crate::Event::TransferSetter(ALICE, BOB, BTC));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == transfer_setter_event));
+		System::assert_last_event(Event::setters(crate::Event::TransferSetter(ALICE, BOB, BTC)));
 	});
 }

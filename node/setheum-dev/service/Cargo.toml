@@ -71,6 +71,11 @@ runtime-benchmarks = [
 	"neom-runtime/runtime-benchmarks",
 	"setheum-runtime/runtime-benchmarks",
 ]
+try-runtime = [
+	"newrome-runtime/try-runtime",
+	"neom-runtime/try-runtime",
+	"setheum-runtime/try-runtime",
+]
 with-newrome-runtime = [
 	"newrome-runtime",
 ]

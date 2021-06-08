@@ -59,7 +59,7 @@ pub trait WeightInfo {
 }
 
 /// Weights for setheum-dex using the Setheum node and recommended hardware.
-pub struct SetheumWeight<T>(PhantomData<T>);
+pub struct SetheumWeight<T>(_);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn enable_trading_pair() -> Weight {
 		(28_975_000 as Weight)

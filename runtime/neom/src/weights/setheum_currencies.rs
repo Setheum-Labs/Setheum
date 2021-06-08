@@ -43,7 +43,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions for setheum_currencies.
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> setheum_currencies::WeightInfo for WeightInfo<T> {
 	fn transfer_non_native_currency() -> Weight {
 		(125_538_000 as Weight)

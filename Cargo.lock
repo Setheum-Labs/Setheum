@@ -829,15 +829,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "clear_on_drop"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9cc5db465b294c3fa986d5bbb0f3017cd850bff6dd6c52f9ccff8b4d21b7b08"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "cloudabi"
 version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7405,7 +7396,6 @@ dependencies = [
 name = "setheum-currencies"
 version = "0.5.0"
 dependencies = [
- "clear_on_drop",
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "orml-tokens",

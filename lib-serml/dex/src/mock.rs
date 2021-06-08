@@ -71,6 +71,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -87,6 +88,7 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
 }
 
 pub struct MockDexIncentives;
@@ -108,7 +110,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub const SetheumDexModuleId: ModuleId = ModuleId(*b"dnr/sdex");
+	pub const SetheumDexPalletId: PalletId = PalletId(*b"dnr/sdex");
 }
 
 impl Config for Runtime {
@@ -116,7 +118,7 @@ impl Config for Runtime {
 	type Currency = Tokens;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = SetheumDexModuleId;
+	type PalletId = SetheumDexPalletId;
 	type WeightInfo = ();
 	type DexIncentives = MockDexIncentives;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;

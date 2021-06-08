@@ -28,13 +28,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional};
+use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, BlockNumber, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
-	DispatchError, DispatchResult, FixedPointNumber, ModuleId,
+	DispatchError, DispatchResult, FixedPointNumber,
 };
 use support::{SerpAuction, SerpTreasury, DEXManager, Ratio};
 
@@ -141,17 +141,17 @@ pub mod module {
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds SettPay Cashdrops
 		/// SettPayTreasury account.
-		type SettPayTreasuryAcc: Get<ModuleId>;
+		type SettPayTreasuryAcc: Get<PalletId>;
 
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds Setheum Treasury
 		/// SetheumTreasury account.
-		type SetheumTreasuryAcc: Get<ModuleId>;
+		type SetheumTreasuryAcc: Get<PalletId>;
 
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds Setheum Investment Fund (SIF) DAO
 		/// SIF account.
-		type SIFAcc: Get<ModuleId>;
+		type SIFAcc: Get<PalletId>;
 
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
@@ -169,7 +169,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
-		type ModuleId: Get<ModuleId>;
+		type PalletId: Get<PalletId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -240,7 +240,7 @@ pub mod module {
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
@@ -303,33 +303,13 @@ pub mod module {
 			T::SerpAuctionHandler::new_setter_auction(accepted_currency, initial_price, currency_amount)?;
 			Ok(().into())
 		}
-
-		/// Update parameters related to setter auction under specific
-		/// reserve type
-		///
-		/// The dispatch origin of this call must be `UpdateOrigin`.
-		///
-		/// - `T::GetSetterCurrencyId::get()`: reserve type
-		/// - `serplusbuffer_size`: setter auction maximum size
-		#[pallet::weight((T::WeightInfo::set_expected_setter_auction_size(), DispatchClass::Operational))]
-		#[transactional]
-		pub fn set_expected_setter_auction_size(
-			origin: OriginFor<T>,
-			currency_id: T::GetSetterCurrencyId::get(),
-			size: Balance,
-		) -> DispatchResultWithPostInfo {
-			T::UpdateOrigin::ensure_origin(origin)?;
-			ExpectedSetterAuctionSize::<T>::insert(T::GetSetterCurrencyId::get(), size);
-			Self::deposit_event(Event::ExpectedSetterAuctionSizeUpdated(T::GetSetterCurrencyId::get(), size));
-			Ok(().into())
-		}
 	}
 }
 
 impl<T: Config> Pallet<T> {
 	/// Get account of SERP Treasury module.
 	pub fn account_id() -> T::AccountId {
-		T::ModuleId::get().into_account()
+		T::PalletId::get().into_account()
 	}
 
 	pub fn adjustment_frequency() -> BlockNumber {

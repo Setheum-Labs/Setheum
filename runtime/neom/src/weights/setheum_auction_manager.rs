@@ -43,7 +43,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions for serp_auction.
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> serp_auction::WeightInfo for WeightInfo<T> {
 	fn cancel_serplus_auction() -> Weight {
 		(59_644_000 as Weight)

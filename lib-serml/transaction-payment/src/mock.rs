@@ -22,16 +22,16 @@
 
 use super::*;
 use crate as transaction_payment;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients, PalletId};
 use orml_traits::parameter_type_with_key;
 use primitives::{Amount, TokenSymbol, TradingPair};
 use smallvec::smallvec;
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
-	testing::Header, 
-	traits::{IdentityLookup, One}, 
-	DispatchError, DispatchResult, 
-	FixedPointNumber, ModuleId, 
+	testing::Header,
+	traits::{IdentityLookup, One},
+	DispatchError, DispatchResult,
+	FixedPointNumber,
 	Perbill,
 };
 use sp_std::cell::RefCell;
@@ -105,6 +105,7 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -140,7 +141,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const DEXModuleId: ModuleId = ModuleId(*b"dnr/sdex");
+	pub const DEXPalletId: PalletId = PalletId(*b"dnr/sdex");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, DNAR), TradingPair::new(USDJ, DOT)];
@@ -151,7 +152,7 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = SetheumDexModuleId;
+	type PalletId = SetheumDexPalletId;
 	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = frame_system::EnsureSignedBy<Zero, AccountId>;
@@ -174,7 +175,7 @@ impl Config for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = ();
-	type DEX = SetheumDex;
+	type DEX = Dex;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type WeightInfo = ();
 }

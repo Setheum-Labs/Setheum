@@ -28,6 +28,7 @@ members = [
 	"lib-orml/traits",
 	"lib-orml/utilities",
 	"lib-orml/vesting",
+	"lib-orml/unknown-tokens",
 
 ]
 

@@ -63,7 +63,7 @@ benchmarks! {
 		let base_currency_amount = dollar(1000);
 		<T as setheum_currencies::Config>::NativeCurrency::update_balance(&caller, base_currency_amount.unique_saturated_into())?;
 
-		let setheum_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
+		let setheum_account: T::AccountId = T::PalletId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
 		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 		<T as setheum_currencies::Config>::NativeCurrency::update_balance(&setheum_account, base_currency_amount.unique_saturated_into())?;
 	}: _(RawOrigin::Signed(setheum_account), to_lookup, 0u32.into(), vec![1], i)
@@ -78,7 +78,7 @@ benchmarks! {
 		let base_currency_amount = dollar(1000);
 		<T as setheum_currencies::Config>::NativeCurrency::update_balance(&caller, base_currency_amount.unique_saturated_into())?;
 
-		let setheum_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
+		let setheum_account: T::AccountId = T::PalletId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
 		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 		<T as setheum_currencies::Config>::NativeCurrency::update_balance(&setheum_account, base_currency_amount.unique_saturated_into())?;
 		crate::Pallet::<T>::mint(RawOrigin::Signed(setheum_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
@@ -93,7 +93,7 @@ benchmarks! {
 		let base_currency_amount = dollar(1000);
 		<T as setheum_currencies::Config>::NativeCurrency::update_balance(&caller, base_currency_amount.unique_saturated_into())?;
 
-		let setheum_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
+		let setheum_account: T::AccountId = T::PalletId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
 		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 		<T as setheum_currencies::Config>::NativeCurrency::update_balance(&setheum_account, base_currency_amount.unique_saturated_into())?;
 		crate::Pallet::<T>::mint(RawOrigin::Signed(setheum_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
@@ -109,7 +109,7 @@ benchmarks! {
 
 		<T as setheum_currencies::Config>::NativeCurrency::update_balance(&caller, base_currency_amount.unique_saturated_into())?;
 
-		let setheum_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
+		let setheum_account: T::AccountId = T::PalletId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
 		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 	}: _(RawOrigin::Signed(setheum_account), 0u32.into(), to_lookup)
 }
@@ -131,7 +131,7 @@ mod mock {
 	use sp_runtime::{
 		testing::Header,
 		traits::{BlakeTwo256, IdentityLookup},
-		DispatchError, DispatchResult, ModuleId, Perbill,
+		DispatchError, DispatchResult, PalletId, Perbill,
 	};
 
 	parameter_types! {
@@ -257,6 +257,7 @@ mod mock {
 		type WeightInfo = ();
 		type ExistentialDeposits = ExistentialDeposits;
 		type OnDust = ();
+		type MaxLocks = ();
 	}
 
 	impl setheum_currencies::Config for Runtime {
@@ -269,15 +270,20 @@ mod mock {
 	parameter_types! {
 		pub const CreateClassDeposit: Balance = 200;
 		pub const CreateTokenDeposit: Balance = 100;
-		pub const NftModuleId: ModuleId = ModuleId(*b"dnr/sNFT");
+		pub const NftPalletId: PalletId = PalletId(*b"dnr/sNFT");
 	}
 	impl crate::Config for Runtime {
 		type Event = ();
 		type CreateClassDeposit = CreateClassDeposit;
 		type CreateTokenDeposit = CreateTokenDeposit;
-		type ModuleId = NftModuleId;
+		type PalletId = NftPalletId;
 		type Currency = NativeCurrency;
 		type WeightInfo = ();
+	}
+
+	parameter_types! {
+		pub const MaxClassMetadata: u32 = 1024;
+		pub const MaxTokenMetadata: u32 = 1024;
 	}
 
 	impl orml_nft::Config for Runtime {
@@ -285,6 +291,8 @@ mod mock {
 		type TokenId = u64;
 		type ClassData = ClassData;
 		type TokenData = TokenData;
+		type MaxClassMetadata = MaxClassMetadata;
+		type MaxTokenMetadata = MaxTokenMetadata;
 	}
 
 	type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;

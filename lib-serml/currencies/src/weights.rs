@@ -56,7 +56,7 @@ pub trait WeightInfo {
 }
 
 /// Weights for setheum_currencies using the Setheum node and recommended hardware.
-pub struct SetheumWeight<T>(PhantomData<T>);
+pub struct SetheumWeight<T>(_);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn transfer_non_native_currency() -> Weight {
 		(65_000_000 as Weight)

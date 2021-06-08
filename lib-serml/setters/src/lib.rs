@@ -26,13 +26,12 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::collapsible_if)]
 
-use frame_support::pallet_prelude::*;
-use frame_support::transactional;
+use frame_support::{pallet_prelude::*, transactional, PalletId};
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, Zero},
-	DispatchResult, ModuleId, RuntimeDebug,
+	DispatchResult, PalletId, RuntimeDebug,
 };
 use sp_std::{convert::TryInto, result};
 use support::{SerpTreasury, StandardValidator};
@@ -81,7 +80,7 @@ pub mod module {
 
 		/// The setter's module id, keep all reserves of Settmint.
 		#[pallet::constant]
-		type ModuleId: Get<ModuleId>;
+		type PalletId: Get<PalletId>;
 
 		/// Event handler which calls when update setter.
 		type OnUpdateSetter: Happened<(Self::AccountId, CurrencyId, Amount, Balance)>;
@@ -122,7 +121,7 @@ pub mod module {
 	pub type TotalPositions<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Position, ValueQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -133,7 +132,7 @@ pub mod module {
 
 impl<T: Config> Pallet<T> {
 	pub fn account_id() -> T::AccountId {
-		T::ModuleId::get().into_account()
+		T::PalletId::get().into_account()
 	}
 
 	/// adjust the position.

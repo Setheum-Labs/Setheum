@@ -21,12 +21,12 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
 use primitives::TokenSymbol;
 use sp_core::H256;
-use sp_runtime::{testing::Header, traits::IdentityLookup, ModuleId};
+use sp_runtime::{testing::Header, traits::IdentityLookup};
 use support::{SerpAuction, StandardValidator};
 
 pub type AccountId = u128;
@@ -87,6 +87,7 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -163,7 +164,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetStableCurrencyId: CurrencyId = USDJ;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 }
 
 impl serp_treasury::Config for Runtime {
@@ -174,7 +175,7 @@ impl serp_treasury::Config for Runtime {
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = SerpTreasuryModuleId;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 
@@ -203,7 +204,7 @@ impl StandardValidator<AccountId, CurrencyId, Balance, Balance> for MockStandard
 }
 
 parameter_types! {
-	pub const SettersModuleId: ModuleId = ModuleId(*b"set/setter");
+	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
 }
 
 impl Config for Runtime {
@@ -212,7 +213,7 @@ impl Config for Runtime {
 	type Currency = Currencies;
 	type StandardValidator = MockStandardValidator;
 	type SerpTreasury = SerpTreasuryModule;
-	type ModuleId = SettersModuleId;
+	type PalletId = SettersPalletId;
 	type OnUpdateSetter = ();
 }
 
