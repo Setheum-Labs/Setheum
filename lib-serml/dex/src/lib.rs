@@ -40,7 +40,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedPointNumber, ModuleId, RuntimeDebug, SaturatedConversion,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{DexIncentives, SetheumDexManager, Price, Ratio};
+use support::{DexIncentives, DexManager, Price, Ratio};
 
 mod mock;
 mod tests;
@@ -1039,7 +1039,7 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> SetheumDexManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
+impl<T: Config> DexManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		Self::get_liquidity(currency_id_a, currency_id_b)
 	}

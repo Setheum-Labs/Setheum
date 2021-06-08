@@ -61,7 +61,7 @@ impl<AccountId, CurrencyId, Balance: Default, Balance> StandardManager<AccountId
 	}
 }
 
-pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
+pub trait DexManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_swap_target_amount(
@@ -93,7 +93,7 @@ pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
 	) -> sp_std::result::Result<Balance, DispatchError>;
 }
 
-impl<AccountId, CurrencyId, Balance> SetheumDexManager<AccountId, CurrencyId, Balance> for ()
+impl<AccountId, CurrencyId, Balance> DexManager<AccountId, CurrencyId, Balance> for ()
 where
 	Balance: Default,
 {

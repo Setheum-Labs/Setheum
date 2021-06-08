@@ -120,7 +120,7 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 }
 
 pub struct MockSetheumDex;
-impl SetheumDexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
+impl DexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USDJ, DNAR) => (10000, 200),

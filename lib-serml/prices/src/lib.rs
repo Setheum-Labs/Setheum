@@ -38,7 +38,7 @@ use sp_runtime::{
 	FixedPointNumber,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{SetheumDexManager, ExchangeRateProvider, Price, PriceProvider};
+use support::{DexManager, ExchangeRateProvider, Price, PriceProvider};
 
 mod mock;
 mod tests;
@@ -124,7 +124,7 @@ pub mod module {
 		type LockOrigin: EnsureOrigin<Self::Origin>;
 
 		/// DEX provide liquidity info.
-		type DEX = SetheumDexManager<Self::AccountId, CurrencyId, Balance>;
+		type DEX = DexManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// Currency provide the total insurance of LPToken.
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
