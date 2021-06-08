@@ -1173,7 +1173,7 @@ pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Call, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
 pub type Executive =
-	frame_executive::Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllModules>;
+	frame_executive::Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllModules, ()>;
 
 #[cfg(not(feature = "disable-runtime-api"))]
 impl_runtime_apis! {
@@ -1368,6 +1368,14 @@ impl_runtime_apis! {
 				DataProviderId::Band => BandOracle::get_all_values(),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_all_values()
 			}
+		}
+	}
+
+	#[cfg(feature = "try-runtime")]
+	impl frame_try_runtime::TryRuntime<Block> for Runtime {
+		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
+			let weight = Executive::try_runtime_upgrade()?;
+			Ok((weight, RuntimeBlockWeights::get().max_block))
 		}
 	}
 

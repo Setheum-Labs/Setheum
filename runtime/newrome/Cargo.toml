@@ -102,11 +102,12 @@ std = [
 	"codec/std",
 	"serde",
 
+	"frame-benchmarking/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",
 	"frame-system/std",
-	"frame-benchmarking/std",
+	"frame-try-runtime/std",
 	"pallet-babe/std",
 	"pallet-balances/std",
 	"pallet-bounties/std",
@@ -188,3 +189,65 @@ runtime-benchmarks = [
 # runtime without clashing with the runtime api exported functions
 # in WASM.
 disable-runtime-api = []
+
+# A feature that should be enabled when the runtime should be build for on-chain
+# deployment. This will disable stuff that shouldn't be part of the on-chain wasm
+# to make it smaller like logging for example.
+on-chain-release-build = [
+	"sp-api/disable-logging",
+]
+
+try-runtime = [
+	"frame-try-runtime",
+	"frame-executive/try-runtime",
+	"frame-support/try-runtime",
+	"frame-system-rpc-runtime-api/try-runtime",
+	"frame-system/try-runtime",
+	"frame-try-runtime/try-runtime",
+	"pallet-babe/try-runtime",
+	"pallet-balances/try-runtime",
+	"pallet-bounties/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-grandpa/try-runtime",
+	"pallet-indices/try-runtime",
+	"pallet-membership/try-runtime",
+	"pallet-multisig/try-runtime",
+	"pallet-proxy/try-runtime",
+	"pallet-randomness-collective-flip/try-runtime",
+	"pallet-recovery/try-runtime",
+	"pallet-scheduler/try-runtime",
+	"pallet-session/try-runtime",
+	"pallet-staking/try-runtime",
+	"pallet-sudo/try-runtime",
+	"pallet-timestamp/try-runtime",
+	"pallet-tips/try-runtime",
+	"pallet-transaction-payment-rpc-runtime-api/try-runtime",
+	"pallet-treasury/try-runtime",
+	"pallet-utility/try-runtime",
+
+	"orml-auction/try-runtime",
+	"orml-authority/try-runtime",
+	"orml-oracle-rpc-runtime-api/try-runtime",
+	"orml-oracle/try-runtime",
+	"orml-tokens/try-runtime",
+	"orml-vesting/try-runtime",
+	"orml-rewards/stry-runtime",
+	"orml-nft/try-runtime",
+	"orml-unknown-tokens/try-runtime",
+
+	"setheum-transaction-payment/try-runtime",
+	"setheum-airdrop/try-runtime",
+	"serp-auction/try-runtime",
+	"setheum-settmint-engine/try-runtime",
+	"serp-treasury/try-runtime",
+	"setheum-currencies/try-runtime",
+	"setheum-dex/try-runtime",
+	"setheum-settway/try-runtime",
+	"setheum-setters/try-runtime",
+	"setheum-nft/try-runtime",
+	"setheum-prices/try-runtime",
+	"setheum-incentives/try-runtime",
+	"setheum-support/try-runtime",
+	"primitives/try-runtime",
+	"runtime-common/try-runtime",
+]
