@@ -43,8 +43,11 @@ pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
 pub const CHFJ_USDJ_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
+pub const CHFJ_SETT_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
 pub const DNAR_USDJ_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::DNAR, TokenSymbol::USDJ);
+pub const DNAR_SETT_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::DNAR, TokenSymbol::USDJ);
 
 mod incentives {
 	pub use super::super::*;
@@ -278,11 +281,13 @@ parameter_types! {
 	pub const DexPremiumPool: AccountId = 11;
 	pub const DexPlusPool: AccountId = 12;
 	pub const DexBonusPool: AccountId = 13;
+	pub const DexExtraPool: AccountId = 14;
 	pub const AccumulatePeriod: BlockNumber = 20;
 	pub const IncentiveCurrencyId: CurrencyId = SDEX;
 	pub const PremiumCurrencyId: CurrencyId = SETT;
 	pub const PlusCurrencyId: CurrencyId = SETT;
 	pub const BonusCurrencyId: CurrencyId = USDJ;
+	pub const ExtraCurrencyId: CurrencyId = EURJ;
 	pub const IncentivesPalletId: PalletId = PalletId(*b"dnr/inct");
 }
 
