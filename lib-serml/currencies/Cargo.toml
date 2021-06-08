@@ -31,8 +31,6 @@ pallet-balances = { default-features = false, version = '3.0.0', git = 'https://
 pallet-timestamp = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
 tokens = { package = "orml-tokens", path = "../../lib-orml/tokens" }
 
-clear_on_drop = { version = "0.2.4", features = ["no_cc"] }	# https://github.com/paritytech/substrate/issues/4179
-
 [features]
 default = ["std"]
 std = [
