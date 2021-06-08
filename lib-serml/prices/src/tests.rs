@@ -120,8 +120,7 @@ fn lock_price_call_work() {
 		assert_noop!(PricesModule::lock_price(Origin::signed(5), JCHF), BadOrigin,);
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), JCHF));
 
-		let lock_price_event = Event::prices(crate::Event::LockPrice(JCHF, Price::saturating_from_integer(50000)));
-		assert!(System::events().iter().any(|record| record.event == lock_price_event));
+		System::assert_last_event(Event::prices(crate::Event::LockPrice(JCHF, Price::saturating_from_integer(50000))));
 		assert_eq!(
 			PricesModule::locked_price(JCHF),
 			Some(Price::saturating_from_integer(50000))
@@ -137,8 +136,7 @@ fn unlock_price_call_work() {
 		assert_noop!(PricesModule::unlock_price(Origin::signed(5), JCHF), BadOrigin,);
 		assert_ok!(PricesModule::unlock_price(Origin::signed(1), JCHF));
 
-		let unlock_price_event = Event::prices(crate::Event::UnlockPrice(JCHF));
-		assert!(System::events().iter().any(|record| record.event == unlock_price_event));
+		System::assert_last_event(Event::prices(crate::Event::UnlockPrice(JCHF)));
 
 		assert_eq!(PricesModule::locked_price(JCHF), None);
 	});

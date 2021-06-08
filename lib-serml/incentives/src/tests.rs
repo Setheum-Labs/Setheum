@@ -103,10 +103,7 @@ fn deposit_dex_share_works() {
 			CHFJ_SETT_LP,
 			10000
 		));
-		let deposit_dex_share_event = Event::incentives(crate::Event::DepositDEXShare(ALICE, CHFJ_SETT_LP, 10000));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == deposit_dex_share_event));
+		System::assert_last_event(Event::incentives(crate::Event::DepositDEXShare(ALICE, CHFJ_SETT_LP, 10000)));
 
 		assert_eq!(TokensModule::free_balance(CHFJ_SETT_LP, &ALICE), 0);
 		assert_eq!(
@@ -263,11 +260,8 @@ fn withdraw_dex_share_works() {
 			CHFJ_SETT_LP,
 			8000
 		));
-		let withdraw_dex_share_event = Event::incentives(crate::Event::WithdrawDEXShare(ALICE, CHFJ_SETT_LP, 8000));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == withdraw_dex_share_event));
-
+		System::assert_last_event(Event::incentives(crate::Event::WithdrawDEXShare(ALICE, CHFJ_SETT_LP, 8000)));
+		
 		assert_eq!(TokensModule::free_balance(CHFJ_SETT_LP, &ALICE), 8000);
 		assert_eq!(
 			TokensModule::free_balance(CHFJ_SETT_LP, &IncentivesModule::account_id()),

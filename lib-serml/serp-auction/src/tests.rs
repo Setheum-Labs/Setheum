@@ -80,10 +80,7 @@ fn new_setter_auction_work() {
 		);
 
 		assert_ok!(SerpAuctionModule::new_setter_auction(&ALICE, BTC, 10, 100));
-		let new_setter_auction_event = Event::serp_auction(crate::Event::NewSetterAuction(0, BTC, 10, 100));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == new_setter_auction_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::NewSetterAuction(0, BTC, 10, 100)));
 
 		assert_eq!(SerpAuctionModule::total_reserve_in_auction(BTC), 10);
 		assert_eq!(SerpAuctionModule::total_target_in_auction(), 100);
@@ -111,10 +108,7 @@ fn new_diamond_auction_work() {
 		);
 
 		assert_ok!(SerpAuctionModule::new_diamond_auction(200, 100));
-		let new_diamond_auction_event = Event::serp_auction(crate::Event::NewDiamondAuction(0, 200, 100));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == new_diamond_auction_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::NewDiamondAuction(0, 200, 100)));
 
 		assert_eq!(SerpAuctionModule::total_standard_in_auction(), 100);
 		assert_eq!(AuctionModule::auctions_index(), 1);
@@ -136,10 +130,7 @@ fn new_serplus_auction_work() {
 		);
 
 		assert_ok!(SerpAuctionModule::new_serplus_auction(100));
-		let new_serplus_auction_event = Event::serp_auction(crate::Event::NewSerplusAuction(0, 100));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == new_serplus_auction_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::NewSerplusAuction(0, 100)));
 
 		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 100);
 		assert_eq!(AuctionModule::auctions_index(), 1);
@@ -369,10 +360,7 @@ fn setter_auction_end_handler_without_bid() {
 
 		assert_eq!(SerpAuctionModule::setter_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, None);
-		let auction_passed_event = Event::serp_auction(crate::Event::CancelAuction(0));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == auction_passed_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::CancelAuction(0)));
 
 		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
 		assert_eq!(SerpAuctionModule::setter_auctions(0), None);
@@ -405,10 +393,7 @@ fn setter_auction_end_handler_in_reverse_stage() {
 
 		assert_eq!(SerpAuctionModule::setter_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, Some((BOB, 400)));
-		let auction_dealt_event = Event::serp_auction(crate::Event::SetterAuctionDealt(0, BTC, 50, BOB, 200));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == auction_dealt_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::SetterAuctionDealt(0, BTC, 50, BOB, 200)));
 
 		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_eq!(SerpAuctionModule::setter_auctions(0), None);
@@ -447,10 +432,7 @@ fn setter_auction_end_handler_by_dealing_which_target_not_zero() {
 
 		assert_eq!(SerpAuctionModule::setter_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, Some((BOB, 100)));
-		let auction_dealt_event = Event::serp_auction(crate::Event::SetterAuctionDealt(0, BTC, 100, BOB, 100));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == auction_dealt_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::SetterAuctionDealt(0, BTC, 100, BOB, 100)));
 
 		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_eq!(SerpAuctionModule::setter_auctions(0), None);
@@ -530,10 +512,7 @@ fn diamond_auction_end_handler_without_bid() {
 
 		assert_eq!(SerpAuctionModule::diamond_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, None);
-		let auction_passed_event = Event::serp_auction(crate::Event::CancelAuction(0));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == auction_passed_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::CancelAuction(0)));
 
 		assert_eq!(SerpAuctionModule::diamond_auctions(0), None);
 		assert_eq!(SerpAuctionModule::total_standard_in_auction(), 0);
@@ -557,10 +536,7 @@ fn diamond_auction_end_handler_with_bid() {
 
 		assert_eq!(SerpAuctionModule::diamond_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, Some((BOB, 100)));
-		let diamond_auction_deal_event = Event::serp_auction(crate::Event::DiamondAuctionDealt(0, 300, BOB, 100));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == diamond_auction_deal_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::DiamondAuctionDealt(0, 300, BOB, 100)));
 
 		assert_eq!(Tokens::free_balance(DNAR, &BOB), 1300);
 		assert_eq!(Tokens::total_issuance(DNAR), 3300);
@@ -581,10 +557,7 @@ fn serplus_auction_end_handler_without_bid() {
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, None);
-		let auction_passed_event = Event::serp_auction(crate::Event::CancelAuction(0));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == auction_passed_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::CancelAuction(0)));
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0), None);
 		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 0);
@@ -610,10 +583,7 @@ fn serplus_auction_end_handler_with_bid() {
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, Some((BOB, 500)));
-		let serplus_auction_deal_event = Event::serp_auction(crate::Event::SerplusAuctionDealt(0, 100, BOB, 500));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == serplus_auction_deal_event));
+		System::assert_last_event(Event::serp_auction(crate::Event::SerplusAuctionDealt(0, 100, BOB, 500)));
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0), None);
 		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 0);
