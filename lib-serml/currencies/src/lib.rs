@@ -382,7 +382,7 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 	}
 }
 
-pub struct Currency<T, GetCurrencyId>(marker::_, marker::PhantomData<GetCurrencyId>);
+pub struct Currency<T, GetCurrencyId>(marker::PhantomData<T>, marker::PhantomData<GetCurrencyId>);
 
 impl<T, GetCurrencyId> BasicCurrency<T::AccountId> for Currency<T, GetCurrencyId>
 where
