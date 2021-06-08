@@ -43,6 +43,7 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::XBTC);
@@ -176,6 +177,7 @@ parameter_types! {
 	pub const AuctionTimeToClose: u64 = 100;
 	pub const AuctionDurationSoftCap: u64 = 2000;
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+	pub const GetSetterCurrencyId: CurrencyId = SETT;
 	pub const UnsignedPriority: u64 = 1 << 20;
 }
 
@@ -190,6 +192,7 @@ impl Config for Runtime {
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type DEX = DEXModule;
 	type PriceSource = MockPriceSource;
