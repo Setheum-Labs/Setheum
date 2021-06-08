@@ -107,7 +107,6 @@ std = [
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",
 	"frame-system/std",
-	"frame-try-runtime/std",
 	"pallet-babe/std",
 	"pallet-balances/std",
 	"pallet-bounties/std",
