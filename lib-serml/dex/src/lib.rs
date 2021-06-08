@@ -16,13 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # SetheumDex Module
+//! # DEX Module
 //!
 //! ## Overview
 //!
 //! Built-in decentralized exchange modules in setheum network, the swap
 //! mechanism refers to the design of Uniswap V2. In addition to being used for
-//! trading, SetheumDex also participates in transaction fee liquidation.
+//! trading, DEX also participates in transaction fee liquidation.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::too_many_arguments)]
@@ -151,6 +151,10 @@ pub mod module {
 		ZeroSupplyAmount,
 		/// The target amount is zero
 		ZeroTargetAmount,
+		/// The share increment is unacceptable
+		UnacceptableShareIncrement,
+		/// The liquidity withdrawn is unacceptable
+		UnacceptableLiquidityWithdrawn,
 	}
 
 	#[pallet::event]
@@ -281,7 +285,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Trading with SetheumDex, swap with exact supply amount
+		/// Trading with DEX, swap with exact supply amount
 		///
 		/// - `path`: trading path.
 		/// - `supply_amount`: exact supply amount.
@@ -299,7 +303,7 @@ pub mod module {
 			Ok(().into())
 		}
 
-		/// Trading with SetheumDex, swap with exact target amount
+		/// Trading with DEX, swap with exact target amount
 		///
 		/// - `path`: trading path.
 		/// - `target_amount`: exact target amount.
