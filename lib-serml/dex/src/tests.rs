@@ -53,10 +53,7 @@ fn enable_new_trading_pair_work() {
 			TradingPairStatus::<_, _>::Enabled
 		);
 
-		let enable_trading_pair_event = Event::dex(crate::Event::EnableTradingPair(USDJ_DNAR_PAIR));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == enable_trading_pair_event));
+		System::assert_last_event(Event::dex(crate::Event::EnableTradingPair(USDJ_DNAR_PAIR)));
 
 		assert_noop!(
 			Dex::enable_trading_pair(Origin::signed(ListingOrigin::get()), DNAR, USDJ),
@@ -108,10 +105,20 @@ fn list_new_trading_pair_work() {
 			})
 		);
 
-		let list_trading_pair_event = Event::dex(crate::Event::ListTradingPair(USDJ_DNAR_PAIR));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == list_trading_pair_event));
+		System::assert_last_event(Event::dex(crate::Event::ListTradingPair(USDJ_DNAR_PAIR)));
+		assert_noop!(
+			Dex::list_trading_pair(
+				Origin::signed(ListingOrigin::get()),
+				DNAR,
+				DNAR,
+				1_000_000_000_000u128,
+				1_000_000_000_000u128,
+				5_000_000_000_000u128,
+				2_000_000_000_000u128,
+				10,
+			),
+			Error::<Runtime>::NotAllowedList
+		);
 
 		assert_noop!(
 			Dex::list_trading_pair(
@@ -159,11 +166,7 @@ fn disable_enabled_trading_pair_work() {
 			TradingPairStatus::<_, _>::NotEnabled
 		);
 
-		let disable_trading_pair_event = Event::dex(crate::Event::DisableTradingPair(USDJ_DNAR_PAIR));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == disable_trading_pair_event));
-
+		System::assert_last_event(Event::dex(crate::Event::DisableTradingPair(USDJ_DNAR_PAIR)));
 		assert_noop!(
 			Dex::disable_trading_pair(Origin::signed(ListingOrigin::get()), USDJ, DNAR),
 			Error::<Runtime>::NotEnabledTradingPair
@@ -317,12 +320,13 @@ fn add_provision_work() {
 			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 0);
 			let alice_ref_count_1 = System::consumers(&ALICE);
 			assert_eq!(alice_ref_count_1, alice_ref_count_0 + 1);
-
-			let add_provision_event_0 =
-				Event::dex(crate::Event::AddProvision(ALICE, USDJ, 5_000_000_000_000u128, DNAR, 0));
-			assert!(System::events()
-				.iter()
-				.any(|record| record.event == add_provision_event_0));
+			System::assert_last_event(Event::dex(crate::Event::AddProvision(
+				ALICE,
+				USDJ,
+				5_000_000_000_000u128,
+				DNAR,
+				0,
+			)));
 
 			// bob add provision
 			assert_eq!(Dex::provisioning_pool(USDJ_DNAR_PAIR, BOB), (0, 0));
@@ -363,13 +367,14 @@ fn add_provision_work() {
 			);
 			let bob_ref_count_1 = System::consumers(&BOB);
 			assert_eq!(bob_ref_count_1, bob_ref_count_0 + 1);
-
-			let add_provision_event_1 =
-				Event::dex(crate::Event::AddProvision(BOB, USDJ, 0, DNAR, 1_000_000_000_000_000u128));
-			assert!(System::events()
-				.iter()
-				.any(|record| record.event == add_provision_event_1));
-
+			System::assert_last_event(Event::dex(crate::Event::AddProvision(
+				BOB,
+				USDJ,
+				0,
+				DNAR,
+				1_000_000_000_000_000u128,
+			)));
+			
 			// alice add provision again and trigger trading pair convert to Enabled from
 			// Provisioning
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 999_995_000_000_000_000u128);
@@ -425,15 +430,12 @@ fn add_provision_work() {
 				TradingPairStatus::<_, _>::Enabled
 			);
 
-			let provisioning_to_enabled_event = Event::dex(crate::Event::ProvisioningToEnabled(
+			System::assert_last_event(Event::dex(crate::Event::ProvisioningToEnabled(
 				USDJ_DNAR_PAIR,
 				1_000_000_000_000_000u128,
 				2_000_000_000_000_000u128,
 				4_000_000_000_000_000u128,
-			));
-			assert!(System::events()
-				.iter()
-				.any(|record| record.event == provisioning_to_enabled_event));
+			)));
 		});
 }
 
@@ -486,11 +488,11 @@ fn get_target_amounts_work() {
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				Dex::get_target_amounts(&vec![DNAR, USDJ, JCHF, DNAR], 10000, None),
+				Dex::get_target_amounts(&vec![DNAR, USDJ, JCHF], 10000, None),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				Dex::get_target_amounts(&vec![DNAR, USDJ, DNAR], 10000, None),
+				Dex::get_target_amounts(&vec![DNAR, USDJ], 10000, None),
 				Error::<Runtime>::MustBeEnabled,
 			);
 			assert_eq!(
@@ -559,11 +561,11 @@ fn get_supply_amounts_work() {
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				Dex::get_supply_amounts(&vec![DNAR, USDJ, JCHF, DNAR], 10000, None),
+				Dex::get_supply_amounts(&vec![DNAR, USDJ, JCHF], 10000, None),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				Dex::get_supply_amounts(&vec![DNAR, USDJ, DNAR], 10000, None),
+				Dex::get_supply_amounts(&vec![DNAR, USDJ], 10000, None),
 				Error::<Runtime>::MustBeEnabled,
 			);
 			assert_eq!(
@@ -663,18 +665,14 @@ fn add_liquidity_work() {
 				1_000_000_000_000,
 				false,
 			));
-			let add_liquidity_event_1 = Event::dex(crate::Event::AddLiquidity(
+			System::assert_last_event(Event::dex(crate::Event::AddLiquidity(
 				ALICE,
 				USDJ,
 				5_000_000_000_000,
 				DNAR,
 				1_000_000_000_000,
 				10_000_000_000_000,
-			));
-			assert!(System::events()
-				.iter()
-				.any(|record| record.event == add_liquidity_event_1));
-
+			)));
 			assert_eq!(
 				Dex::get_liquidity(USDJ, DNAR),
 				(5_000_000_000_000, 1_000_000_000_000)
@@ -702,26 +700,35 @@ fn add_liquidity_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &BOB), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
 
+			assert_noop!(
+				Dex::add_liquidity(
+					Origin::signed(BOB),
+					USDJ,
+					DNAR,
+					50_000_000_000_000,
+					8_000_000_000_000,
+					80_000_000_000_001,
+					true,
+				),
+				Error::<Runtime>::UnacceptableShareIncrement
+			);
 			assert_ok!(Dex::add_liquidity(
-				Origin::signed(BOB),
-				USDJ,
-				DNAR,
-				50_000_000_000_000,
-				8_000_000_000_000,
-				true,
-			));
-			let add_liquidity_event_2 = Event::dex(crate::Event::AddLiquidity(
+					Origin::signed(BOB),
+					USDJ,
+					DNAR,
+					50_000_000_000_000,
+					8_000_000_000_000,
+					80_000_000_000_001,
+					true,
+				));
+			System::assert_last_event(Event::dex(crate::Event::AddLiquidity(
 				BOB,
 				USDJ,
 				40_000_000_000_000,
 				DNAR,
 				8_000_000_000_000,
 				80_000_000_000_000,
-			));
-			assert!(System::events()
-				.iter()
-				.any(|record| record.event == add_liquidity_event_2));
-
+			)));
 			assert_eq!(
 				Dex::get_liquidity(USDJ, DNAR),
 				(45_000_000_000_000, 9_000_000_000_000)
@@ -763,6 +770,8 @@ fn remove_liquidity_work() {
 					USDJ_DNAR_PAIR.get_dex_share_currency_id().unwrap(),
 					DNAR,
 					100_000_000,
+					0,
+					0,
 					false,
 				),
 				Error::<Runtime>::InvalidCurrencyId
@@ -781,25 +790,47 @@ fn remove_liquidity_work() {
 			assert_eq!(Tokens::free_balance(USDJ, &ALICE), 999_995_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 999_999_000_000_000_000);
 
+			assert_noop!(
+				Dex::remove_liquidity(
+					Origin::signed(ALICE),
+					USDJ,
+					DNAR,
+					8_000_000_000_000,
+					4_000_000_000_001,
+					800_000_000_000,
+					false,
+				),
+				Error::<Runtime>::UnacceptableLiquidityWithdrawn
+			);
+			assert_noop!(
+				Dex::remove_liquidity(
+					Origin::signed(ALICE),
+					USDJ,
+					DNAR,
+					8_000_000_000_000,
+					4_000_000_000_000,
+					800_000_000_001,
+					false,
+				),
+				Error::<Runtime>::UnacceptableLiquidityWithdrawn
+			);
 			assert_ok!(Dex::remove_liquidity(
 				Origin::signed(ALICE),
 				USDJ,
 				DNAR,
 				8_000_000_000_000,
+				4_000_000_000_000,
+				800_000_000_000,
 				false,
 			));
-			let remove_liquidity_event_1 = Event::dex(crate::Event::RemoveLiquidity(
+			System::assert_last_event(Event::dex(crate::Event::RemoveLiquidity(
 				ALICE,
 				USDJ,
 				4_000_000_000_000,
 				DNAR,
 				800_000_000_000,
 				8_000_000_000_000,
-			));
-			assert!(System::events()
-				.iter()
-				.any(|record| record.event == remove_liquidity_event_1));
-
+			)));
 			assert_eq!(
 				Dex::get_liquidity(USDJ, DNAR),
 				(1_000_000_000_000, 200_000_000_000)
@@ -818,20 +849,18 @@ fn remove_liquidity_work() {
 				USDJ,
 				DNAR,
 				2_000_000_000_000,
+				0,
+				0,
 				false,
 			));
-			let remove_liquidity_event_2 = Event::dex(crate::Event::RemoveLiquidity(
+			System::assert_last_event(Event::dex(crate::Event::RemoveLiquidity(
 				ALICE,
 				USDJ,
 				1_000_000_000_000,
 				DNAR,
 				200_000_000_000,
 				2_000_000_000_000,
-			));
-			assert!(System::events()
-				.iter()
-				.any(|record| record.event == remove_liquidity_event_2));
-
+			)));
 			assert_eq!(Dex::get_liquidity(USDJ, DNAR), (0, 0));
 			assert_eq!(Tokens::free_balance(USDJ, &Dex::account_id()), 0);
 			assert_eq!(Tokens::free_balance(DNAR, &Dex::account_id()), 0);
@@ -848,6 +877,7 @@ fn remove_liquidity_work() {
 				DNAR,
 				5_000_000_000_000,
 				1_000_000_000_000,
+				0,
 				true
 			));
 			assert_eq!(
@@ -863,6 +893,8 @@ fn remove_liquidity_work() {
 				USDJ,
 				DNAR,
 				2_000_000_000_000,
+				0,
+				0,
 				true,
 			));
 			assert_eq!(
@@ -890,6 +922,7 @@ fn do_swap_with_exact_supply_work() {
 				DNAR,
 				500_000_000_000_000,
 				100_000_000_000_000,
+				0,
 				false,
 			));
 			assert_ok!(Dex::add_liquidity(
@@ -898,6 +931,7 @@ fn do_swap_with_exact_supply_work() {
 				JCHF,
 				100_000_000_000_000,
 				10_000_000_000,
+				0,
 				false,
 			));
 
@@ -940,11 +974,11 @@ fn do_swap_with_exact_supply_work() {
 				Error::<Runtime>::ExceedPriceImpactLimit,
 			);
 			assert_noop!(
-				Dex::do_swap_with_exact_supply(&BOB, &[DNAR, USDJ, JCHF, DNAR], 100_000_000_000_000, 0, None),
+				Dex::do_swap_with_exact_supply(&BOB, &[DNAR, USDJ, JCHF], 100_000_000_000_000, 0, None),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				Dex::do_swap_with_exact_supply(&BOB, &[DNAR, DNAR], 100_000_000_000_000, 0, None),
+				Dex::do_swap_with_exact_supply(&BOB, &[JCHF, DNAR], 100_000_000_000_000, 0, None),
 				Error::<Runtime>::MustBeEnabled,
 			);
 
@@ -955,14 +989,12 @@ fn do_swap_with_exact_supply_work() {
 				200_000_000_000_000,
 				None
 			));
-			let swap_event_1 = Event::dex(crate::Event::Swap(
+			System::assert_last_event(Event::dex(crate::Event::Swap(
 				BOB,
 				vec![DNAR, USDJ],
 				100_000_000_000_000,
 				248_743_718_592_964,
-			));
-			assert!(System::events().iter().any(|record| record.event == swap_event_1));
-
+			)));
 			assert_eq!(
 				Dex::get_liquidity(USDJ, DNAR),
 				(251_256_281_407_036, 200_000_000_000_000)
@@ -988,14 +1020,12 @@ fn do_swap_with_exact_supply_work() {
 				1,
 				None
 			));
-			let swap_event_2 = Event::dex(crate::Event::Swap(
+			System::assert_last_event(Event::dex(crate::Event::Swap(
 				BOB,
 				vec![DNAR, USDJ, JCHF],
 				200_000_000_000_000,
 				5_530_663_837,
-			));
-			assert!(System::events().iter().any(|record| record.event == swap_event_2));
-
+			)));
 			assert_eq!(
 				Dex::get_liquidity(USDJ, DNAR),
 				(126_259_437_892_983, 400_000_000_000_000)
@@ -1030,6 +1060,7 @@ fn do_swap_with_exact_target_work() {
 				DNAR,
 				500_000_000_000_000,
 				100_000_000_000_000,
+				0,
 				false,
 			));
 			assert_ok!(Dex::add_liquidity(
@@ -1038,6 +1069,7 @@ fn do_swap_with_exact_target_work() {
 				JCHF,
 				100_000_000_000_000,
 				10_000_000_000,
+				0,
 				false,
 			));
 
@@ -1082,7 +1114,7 @@ fn do_swap_with_exact_target_work() {
 			assert_noop!(
 				Dex::do_swap_with_exact_target(
 					&BOB,
-					&[DNAR, USDJ, JCHF, DNAR],
+					&[DNAR, USDJ, JCHF],
 					250_000_000_000_000,
 					200_000_000_000_000,
 					None
@@ -1090,7 +1122,7 @@ fn do_swap_with_exact_target_work() {
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				Dex::do_swap_with_exact_target(&BOB, &[DNAR, DNAR], 250_000_000_000_000, 200_000_000_000_000, None),
+				Dex::do_swap_with_exact_target(&BOB, &[JCHF, DNAR], 250_000_000_000_000, 200_000_000_000_000, None),
 				Error::<Runtime>::MustBeEnabled,
 			);
 
@@ -1101,14 +1133,13 @@ fn do_swap_with_exact_target_work() {
 				200_000_000_000_000,
 				None
 			));
-			let swap_event_1 = Event::dex(crate::Event::Swap(
+			System::assert_last_event(Event::dex(crate::Event::Swap(
 				BOB,
 				vec![DNAR, USDJ],
 				101_010_101_010_102,
 				250_000_000_000_000,
-			));
-			assert!(System::events().iter().any(|record| record.event == swap_event_1));
-
+			)));
+			
 			assert_eq!(
 				Dex::get_liquidity(USDJ, DNAR),
 				(250_000_000_000_000, 201_010_101_010_102)
@@ -1134,14 +1165,12 @@ fn do_swap_with_exact_target_work() {
 				2_000_000_000_000_000,
 				None
 			));
-			let swap_event_2 = Event::dex(crate::Event::Swap(
+			System::assert_last_event(Event::dex(crate::Event::Swap(
 				BOB,
 				vec![DNAR, USDJ, JCHF],
 				137_654_580_386_993,
 				5_000_000_000,
-			));
-			assert!(System::events().iter().any(|record| record.event == swap_event_2));
-
+			)));
 			assert_eq!(
 				Dex::get_liquidity(USDJ, DNAR),
 				(148_989_898_989_898, 338_664_681_397_095)
