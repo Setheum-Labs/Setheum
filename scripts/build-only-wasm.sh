@@ -1,4 +1,4 @@
-#!/usr/node/env sh
+#!/usr/bin/env sh
 
 # Script for building only the WASM binary of the given project.
 
