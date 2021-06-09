@@ -49,7 +49,7 @@ use sp_std::marker::PhantomData;
 /// Weight functions needed for serp_treasury.
 pub trait WeightInfo {
 	fn auction_serplus() -> Weight;
-	fn auction_standard() -> Weight;
+	fn auction_diamond() -> Weight;
 	fn auction_setter() -> Weight;
 }
 
@@ -61,7 +61,7 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
-	fn auction_standard() -> Weight {
+	fn auction_diamond() -> Weight {
 		(26_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
@@ -80,7 +80,7 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
 	}
-	fn auction_standard() -> Weight {
+	fn auction_diamond() -> Weight {
 		(26_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(5 as Weight))

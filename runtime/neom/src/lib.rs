@@ -78,7 +78,6 @@ pub use frame_support::{
 };
 
 pub use pallet_staking::StakerStatus;
-pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill, Perquintill};
@@ -90,8 +89,8 @@ pub use primitives::{
 	EraIndex, Hash, Moment, Nonce, Share, Signature, TokenSymbol, TradingPair,
 };
 pub use runtime_common::{
-	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, NSETT, JUSD,
+	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, ExchangeRate,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, TimeStampedPrice, NEOM, NSETT, JUSD,
 };
 
 mod authority;
@@ -926,7 +925,7 @@ impl setheum_dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
-	type DEXIncentives = Incentives;
+	type DexIncentives = Incentives;
 	type WeightInfo = weights::setheum_dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
 }
