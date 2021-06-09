@@ -165,7 +165,7 @@ impl setheum_dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
-	type DEXIncentives = ();
+	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
@@ -178,7 +178,6 @@ parameter_types! {
 	pub const AuctionDurationSoftCap: u64 = 2000;
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 	pub const GetSetterCurrencyId: CurrencyId = SETT;
-	pub const UnsignedPriority: u64 = 1 << 20;
 }
 
 impl Config for Runtime {
