@@ -283,7 +283,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// aggregate the setter price.
 	/// the final price = total_price_of_basket(all currencies prices combined)-
 	/// divided by the amount of currencies in the basket.
-	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price> {
+	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Option<Price> {
 		let currency_convert = Self::price_try_from_balance(currencies_amount)?;
 		total_basket_worth.checked_div(&currency_convert);
 	}
