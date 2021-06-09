@@ -214,7 +214,6 @@ try-runtime = [
 	"pallet-sudo/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-tips/try-runtime",
-	"pallet-transaction-payment-rpc-runtime-api/try-runtime",
 	"pallet-treasury/try-runtime",
 	"pallet-utility/try-runtime",
 
@@ -223,7 +222,7 @@ try-runtime = [
 	"orml-oracle/try-runtime",
 	"orml-tokens/try-runtime",
 	"orml-vesting/try-runtime",
-	"orml-rewards/stry-runtime",
+	"orml-rewards/try-runtime",
 	"orml-nft/try-runtime",
 	"orml-unknown-tokens/try-runtime",
 
@@ -239,7 +238,4 @@ try-runtime = [
 	"setheum-nft/try-runtime",
 	"setheum-prices/try-runtime",
 	"setheum-incentives/try-runtime",
-	"setheum-support/try-runtime",
-	"primitives/try-runtime",
-	"runtime-common/try-runtime",
 ]

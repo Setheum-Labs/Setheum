@@ -1206,6 +1206,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "derivative"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fcc3dd5e9e9c0b295d6e1e4d811fb6f157d5ffd784b8d202fc62eac8035a770b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "derive_more"
 version = "0.99.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2043,6 +2054,18 @@ source = "git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05#70
 dependencies = [
  "parity-scale-codec",
  "sp-api 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+]
+
+[[package]]
+name = "frame-try-runtime"
+version = "0.9.0"
+source = "git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05#70ef0afc86cdef0cba09336acffb08bff08540aa"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+ "parity-scale-codec",
+ "sp-api 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
 ]
 
 [[package]]
@@ -4054,6 +4077,7 @@ dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "frame-system-rpc-runtime-api",
+ "frame-try-runtime",
  "hex-literal 0.3.1",
  "orml-auction",
  "orml-authority",
@@ -4064,6 +4088,7 @@ dependencies = [
  "orml-rewards",
  "orml-tokens",
  "orml-traits",
+ "orml-unknown-tokens",
  "orml-vesting",
  "pallet-authorship",
  "pallet-babe",
@@ -4091,9 +4116,9 @@ dependencies = [
  "parity-scale-codec",
  "runtime-common",
  "serde",
+ "serp-auction",
  "serp-treasury",
  "setheum-airdrop",
- "serp-auction",
  "setheum-currencies",
  "setheum-dex",
  "setheum-incentives",
@@ -4143,6 +4168,7 @@ dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "frame-system-rpc-runtime-api",
+ "frame-try-runtime",
  "hex",
  "hex-literal 0.3.1",
  "libsecp256k1",
@@ -4155,6 +4181,7 @@ dependencies = [
  "orml-rewards",
  "orml-tokens",
  "orml-traits",
+ "orml-unknown-tokens",
  "orml-vesting",
  "pallet-authorship",
  "pallet-babe",
@@ -4183,9 +4210,9 @@ dependencies = [
  "runtime-common",
  "serde",
  "serde_json",
+ "serp-auction",
  "serp-treasury",
  "setheum-airdrop",
- "serp-auction",
  "setheum-currencies",
  "setheum-dex",
  "setheum-incentives",
@@ -4532,6 +4559,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "orml-unknown-tokens"
+version = "0.4.1-dev"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "orml-xcm-support",
+ "parity-scale-codec",
+ "serde",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "xcm",
+]
+
+[[package]]
 name = "orml-utilities"
 version = "0.4.1-dev"
 dependencies = [
@@ -4558,6 +4601,19 @@ dependencies = [
  "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+]
+
+[[package]]
+name = "orml-xcm-support"
+version = "0.4.1-dev"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "orml-traits",
+ "parity-scale-codec",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "xcm",
+ "xcm-executor",
 ]
 
 [[package]]
@@ -7308,6 +7364,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "serp-auction"
+version = "0.5.0"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+ "frame-system 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+ "orml-auction",
+ "orml-tokens",
+ "orml-traits",
+ "orml-utilities",
+ "pallet-balances 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec",
+ "serde",
+ "serp-treasury",
+ "setheum-dex",
+ "setheum-primitives",
+ "setheum-support",
+ "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+]
+
+[[package]]
 name = "serp-treasury"
 version = "0.5.0"
 dependencies = [
@@ -7353,29 +7432,6 @@ dependencies = [
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "sp-io 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
-]
-
-[[package]]
-name = "serp-auction"
-version = "0.5.0"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
- "frame-system 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
- "orml-auction",
- "orml-tokens",
- "orml-traits",
- "orml-utilities",
- "pallet-balances 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "parity-scale-codec",
- "serde",
- "serp-treasury",
- "setheum-dex",
- "setheum-primitives",
- "setheum-support",
- "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-io 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
 ]
 
 [[package]]
@@ -7529,13 +7585,13 @@ dependencies = [
  "orml-rewards",
  "orml-tokens",
  "orml-traits",
- "pallet-balances 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pallet-balances 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "parity-scale-codec",
  "serde",
  "setheum-primitives",
  "setheum-support",
- "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
 ]
@@ -7653,6 +7709,7 @@ dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate.git?tag=monthly-2021-05)",
  "frame-system-rpc-runtime-api",
+ "frame-try-runtime",
  "hex-literal 0.3.1",
  "orml-auction",
  "orml-authority",
@@ -7663,6 +7720,7 @@ dependencies = [
  "orml-rewards",
  "orml-tokens",
  "orml-traits",
+ "orml-unknown-tokens",
  "orml-vesting",
  "pallet-authorship",
  "pallet-babe",
@@ -7690,9 +7748,9 @@ dependencies = [
  "parity-scale-codec",
  "runtime-common",
  "serde",
+ "serp-auction",
  "serp-treasury",
  "setheum-airdrop",
- "serp-auction",
  "setheum-currencies",
  "setheum-dex",
  "setheum-incentives",
@@ -11357,6 +11415,33 @@ dependencies = [
  "curve25519-dalek 3.1.0",
  "rand_core 0.5.1",
  "zeroize",
+]
+
+[[package]]
+name = "xcm"
+version = "0.9.3"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.3#aa386760948574af4078c59decf558d16efe15e2"
+dependencies = [
+ "derivative",
+ "impl-trait-for-tuples 0.2.1",
+ "parity-scale-codec",
+]
+
+[[package]]
+name = "xcm-executor"
+version = "0.9.3"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.3#aa386760948574af4078c59decf558d16efe15e2"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "impl-trait-for-tuples 0.2.1",
+ "log",
+ "parity-scale-codec",
+ "sp-arithmetic 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.3)",
+ "xcm",
 ]
 
 [[package]]
