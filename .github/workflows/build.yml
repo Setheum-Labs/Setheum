@@ -1,4 +1,4 @@
-name: Test
+name: Build
 
 on:
   push:
@@ -23,7 +23,3 @@ jobs:
         default: true
     - name: Build
       run: make build-all
-    - name: Run tests
-      run: make test-all
-    - name: Run benchmarking tests
-      run: make test-benchmarking

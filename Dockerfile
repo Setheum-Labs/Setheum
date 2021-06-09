@@ -18,8 +18,8 @@ RUN apt-get update && \
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
 	export PATH="$PATH:$HOME/.cargo/bin" && \
-	rustup default nightly-2021-03-04 && \
-	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-04 && \
+	rustup default nightly-2021-03-15 && \
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-15 && \
 	cargo build "--$PROFILE" --manifest-path node/setheum-dev/Cargo.toml
 
 # ===== SECOND STAGE ======
