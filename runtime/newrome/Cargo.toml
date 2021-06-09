@@ -203,7 +203,6 @@ try-runtime = [
 	"frame-executive/try-runtime",
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
-	"frame-try-runtime/try-runtime",
 	"pallet-babe/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-bounties/try-runtime",
