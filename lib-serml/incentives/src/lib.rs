@@ -29,7 +29,7 @@ use sp_runtime::{
 	DispatchResult, FixedPointNumber, RuntimeDebug,
 };
 use sp_std::{fmt::Debug, vec::Vec};
-use support::{SerpTreasury, DEXIncentives, DEXManager, Rate};
+use support::{SerpTreasury, DexIncentives, DexManager, Rate};
 
 mod mock;
 mod tests;
@@ -158,7 +158,7 @@ pub mod module {
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// DEX to supply liquidity info
-		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
+		type DEX: DexManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// The module id, keep DexShare LP.
 		#[pallet::constant]
@@ -359,7 +359,7 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> DEXIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
+impl<T: Config> DexIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	fn do_deposit_dex_share(who: &T::AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		ensure!(lp_currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 

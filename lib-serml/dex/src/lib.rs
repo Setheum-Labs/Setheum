@@ -779,7 +779,7 @@ impl<T: Config> Pallet<T> {
 			*pool_1 = pool_1.saturating_add(pool_1_increment);
 
 			if deposit_increment_share {
-				T::DEXIncentives::do_deposit_dex_share(who, lp_share_currency_id, share_increment)?;
+				T::DexIncentives::do_deposit_dex_share(who, lp_share_currency_id, share_increment)?;
 			}
 
 			Self::deposit_event(Event::AddLiquidity(
@@ -831,7 +831,7 @@ impl<T: Config> Pallet<T> {
 			);
 
 			if by_withdraw {
-				T::DEXIncentives::do_withdraw_dex_share(who, lp_share_currency_id, remove_share)?;
+				T::DexIncentives::do_withdraw_dex_share(who, lp_share_currency_id, remove_share)?;
 			}
 			T::Currency::withdraw(lp_share_currency_id, &who, remove_share)?;
 			T::Currency::transfer(trading_pair.0, &module_account_id, &who, pool_0_decrement)?;
