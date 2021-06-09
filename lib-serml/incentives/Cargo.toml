@@ -24,9 +24,9 @@ support = { package = "setheum-support", path = "../support", default-features =
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
-sp-core = {"3.0.0", version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
-sp-io = {"3.0.0", version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
-pallet-balances = {"3.0.0", version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+sp-core = {version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+sp-io = {version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
+pallet-balances = {version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
 orml-tokens = { path = "../../lib-orml/tokens" }
 orml-rewards = { path = "../../lib-orml/rewards" }
 
@@ -44,3 +44,4 @@ std = [
 	"support/std",
 	"primitives/std",
 ]
+try-runtime = ["frame-support/try-runtime"]

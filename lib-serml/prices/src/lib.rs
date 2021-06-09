@@ -38,7 +38,7 @@ use sp_runtime::{
 	FixedPointNumber,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{SetheumDexManager, ExchangeRateProvider, Price, PriceProvider};
+use support::{DexManager, ExchangeRateProvider, Price, PriceProvider};
 
 mod mock;
 mod tests;
@@ -110,7 +110,6 @@ pub mod module {
 		/// The fixed price of SettUSD currency, it should be 1 USD in Setheum.
 		type SettUSDFixedPrice: Get<Price>;
 
-		#[pallet::constant]
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
@@ -125,7 +124,7 @@ pub mod module {
 		type LockOrigin: EnsureOrigin<Self::Origin>;
 
 		/// DEX provide liquidity info.
-		type DEX = SetheumDexManager<Self::AccountId, CurrencyId, Balance>;
+		type DEX = DexManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// Currency provide the total insurance of LPToken.
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -163,7 +162,7 @@ pub mod module {
 	pub type LockedPrice<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Price, OptionQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -221,8 +220,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 
 	fn get_setheum_usd_fixed_price() -> Option<Price>{
 		let currency_id = T::GetSettUSDCurrencyId::get();
-		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		Self::get_fiat_price(&currency_id);
+		Self::get_fiat_price(&currency_id)
 	}
 
 	/// get the fixed price of a specific settcurrency/stablecoin currency type
@@ -232,7 +230,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		Self::get_fiat_price(&currency_id, &fiat_id);
+		Self::get_fiat_price(&currency_id)
 	}
 
 	/// get the market price (not fixed price, for SERP-TES) of a
@@ -242,7 +240,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStableCurrencyType,
 		);
-		Self::get_price(currency_id);
+		Self::get_price(currency_id)
 	}
 
 	/// This is used to determin the price change and fluctuation between peg-price and
@@ -279,13 +277,13 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		Self::get_relative_price(&currency_id, &fiat_id);
+		Self::get_relative_price(&currency_id, &fiat_id)
 	}
 
 	/// aggregate the setter price.
 	/// the final price = total_price_of_basket(all currencies prices combined)-
 	/// divided by the amount of currencies in the basket.
-	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price> {
+	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Option<Price> {
 		let currency_convert = Self::price_try_from_balance(currencies_amount)?;
 		total_basket_worth.checked_div(&currency_convert);
 	}
@@ -340,7 +338,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 
 	/// Get the fixed price of Setter currency (SETT)
 	fn get_setter_fixed_price() -> Option<Price> {
-		Self::get_setter_basket_peg_price();
+		Self::get_setter_basket_peg_price()
 	}
 
 	/// get the exchange rate of specific currency to USD

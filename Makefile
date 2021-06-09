@@ -32,6 +32,10 @@ check-tests: githooks
 .PHONY: check-all
 check-all: check-dev check-setheum
 
+.PHONY: check-runtimes
+check-runtimes:
+	SKIP_WASM_BUILD= cargo check --tests --all --features with-all-runtime
+
 .PHONY: check-dev
 check-dev:
 	SKIP_WASM_BUILD= cargo check --manifest-path node/setheum-dev/Cargo.toml --tests --all
@@ -43,6 +47,10 @@ check-setheum:
 .PHONY: check-debug
 check-debug:
 	RUSTFLAGS="-Z macro-backtrace" SKIP_WASM_BUILD= cargo +nightly check
+
+.PHONY: check-try-runtime
+check-try-runtime:
+	SKIP_WASM_BUILD= cargo check --features try-runtime --features with-all-runtime
 
 .PHONY: test
 test: githooks

@@ -9,14 +9,14 @@ build = "build.rs"
 # external dependencies
 smallvec = "1.4.0"
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
-serde = { version = "1.0.101", optional = true }
+serde = { version = "1.0.101", optional = true, features = ["derive"] }
 hex-literal = { version = "0.3.1" }
-
 # Substrate dependencies
 frame-benchmarking = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05', optional = true }
 frame-executive = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 frame-support = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 frame-system = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-try-runtime = { default-features = false, optional = true, version = '0.9.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 frame-system-rpc-runtime-api = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 pallet-authorship = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 pallet-babe = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
@@ -67,6 +67,7 @@ orml-traits = { path = "../../lib-orml/traits", default-features = false }
 orml-vesting = { path = "../../lib-orml/vesting", default-features = false }
 orml-rewards = { path = "../../lib-orml/rewards", default-features = false }
 orml-nft= { path = "../../lib-orml/nft", default-features = false }
+orml-unknown-tokens = { path = "../../lib-orml/unknown-tokens", default-features = false }
 
 # local dependencies
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
@@ -97,11 +98,12 @@ std = [
 	"codec/std",
 	"serde",
 
+	"frame-benchmarking/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",
 	"frame-system/std",
-	"frame-benchmarking/std",
+	"frame-try-runtime/std",
 	"pallet-babe/std",
 	"pallet-balances/std",
 	"pallet-bounties/std",
@@ -144,6 +146,7 @@ std = [
 	"orml-vesting/std",
 	"orml-rewards/std",
 	"orml-nft/std",
+	"orml-unknown-tokens/std",
 
 	"setheum-transaction-payment/std",
 	"setheum-airdrop/std",
@@ -173,6 +176,9 @@ runtime-benchmarks = [
 
 	"serp-treasury/runtime-benchmarks",
 	"setheum-dex/runtime-benchmarks",
+	"setheum-nft/runtime-benchmarks",
+
+	"sp-api/disable-logging",
 ]
 # When enabled, the runtime api will not be build.
 #
@@ -180,3 +186,58 @@ runtime-benchmarks = [
 # runtime without clashing with the runtime api exported functions
 # in WASM.
 disable-runtime-api = []
+
+# A feature that should be enabled when the runtime should be build for on-chain
+# deployment. This will disable stuff that shouldn't be part of the on-chain wasm
+# to make it smaller like logging for example.
+on-chain-release-build = [
+	"sp-api/disable-logging",
+]
+
+try-runtime = [
+	"frame-try-runtime",
+	"frame-executive/try-runtime",
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"pallet-babe/try-runtime",
+	"pallet-balances/try-runtime",
+	"pallet-bounties/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-grandpa/try-runtime",
+	"pallet-indices/try-runtime",
+	"pallet-membership/try-runtime",
+	"pallet-multisig/try-runtime",
+	"pallet-proxy/try-runtime",
+	"pallet-randomness-collective-flip/try-runtime",
+	"pallet-recovery/try-runtime",
+	"pallet-scheduler/try-runtime",
+	"pallet-session/try-runtime",
+	"pallet-staking/try-runtime",
+	"pallet-sudo/try-runtime",
+	"pallet-timestamp/try-runtime",
+	"pallet-tips/try-runtime",
+	"pallet-treasury/try-runtime",
+	"pallet-utility/try-runtime",
+
+	"orml-auction/try-runtime",
+	"orml-authority/try-runtime",
+	"orml-oracle/try-runtime",
+	"orml-tokens/try-runtime",
+	"orml-vesting/try-runtime",
+	"orml-rewards/try-runtime",
+	"orml-nft/try-runtime",
+	"orml-unknown-tokens/try-runtime",
+
+	"setheum-transaction-payment/try-runtime",
+	"setheum-airdrop/try-runtime",
+	"serp-auction/try-runtime",
+	"setheum-settmint-engine/try-runtime",
+	"serp-treasury/try-runtime",
+	"setheum-currencies/try-runtime",
+	"setheum-dex/try-runtime",
+	"setheum-settway/try-runtime",
+	"setheum-setters/try-runtime",
+	"setheum-nft/try-runtime",
+	"setheum-prices/try-runtime",
+	"setheum-incentives/try-runtime",
+]

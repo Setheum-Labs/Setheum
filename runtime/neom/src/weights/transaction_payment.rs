@@ -25,7 +25,7 @@ use frame_support::weights::{constants::RocksDbWeight as DbWeight, Weight};
 
 use sp_std::marker::PhantomData;
 
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> setheum_transaction_payment::WeightInfo for WeightInfo<T> {
 	fn on_finalize() -> Weight {
 		(39_708_000 as Weight)

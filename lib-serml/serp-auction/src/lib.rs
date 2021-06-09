@@ -31,7 +31,7 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use frame_support::{pallet_prelude::*, transactional};
+use frame_support::{log, pallet_prelude::*, transactional};
 use frame_system::{
 	offchain::{SendTransactionTypes, SubmitTransaction},
 	pallet_prelude::*,
@@ -52,7 +52,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedPointNumber, RandomNumberGenerator, RuntimeDebug,
 };
 use sp_std::prelude::*;
-use support::{SerpAuction, SerpTreasury, SerpTreasuryExtended, DEXManager, PriceProvider, Rate};
+use support::{SerpTreasury, DexManager, PriceProvider, Rate};
 
 mod mock;
 mod tests;
@@ -182,7 +182,6 @@ pub mod module {
 		/// Setter (SETT) currency Stablecoin currency id
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
-		#[pallet::constant]
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
@@ -193,20 +192,13 @@ pub mod module {
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
 
 		/// SERP Treasury to escrow assets related to auction
-		type SerpTreasury: SerpTreasuryExtended<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// DEX to get exchange info
-		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
+		type DEX: DexManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// The price source of currencies
 		type PriceSource: PriceProvider<CurrencyId>;
-
-		#[pallet::constant]
-		/// A configuration for base priority of unsigned transactions.
-		///
-		/// This is exposed so that it can be tuned for particular runtime, when
-		/// multiple modules send unsigned transactions.
-		type UnsignedPriority: Get<TransactionPriority>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -218,8 +210,6 @@ pub mod module {
 		AuctionNonExistent,
 		/// Currency Not Accepted
 		CurrencyNotAccepted,
-		/// The setter auction is in reverse stage now
-		InReverseStage,
 		/// Feed price is invalid
 		InvalidFeedPrice,
 		/// Bid price is invalid
@@ -287,7 +277,7 @@ pub mod module {
 	pub type TotalSerplusInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -305,11 +295,10 @@ impl<T: Config> Pallet<T> {
 	fn submit_cancel_auction_tx(auction_id: AuctionId) {
 		let call = Call::<T>::cancel(auction_id);
 		if let Err(err) = SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()) {
-			debug::info!(
-				target: "serp-auction offchain worker",
-				"submit unsigned auction cancel tx for \nAuctionId {:?} \nfailed: {:?}",
-				auction_id,
-				err,
+			log::info!(
+				target: "serp-auction",
+				"offchain worker: submit unsigned auction cancel tx for AuctionId {:?} failed: {:?}",
+				auction_id, err,
 			);
 		}
 	}
@@ -339,8 +328,11 @@ impl<T: Config> Pallet<T> {
 			.get::<u32>()
 			.unwrap_or(Some(DEFAULT_MAX_ITERATIONS));
 
-		debug::debug!(target: "serp-auction offchain worker", "max iterations is {:?}", max_iterations);
-
+		log::debug!(
+			target: "serp-auction",
+			"offchain worker: max iterations is {:?}",
+			max_iterations
+		);
 		// Randomly choose to start iterations to cancel reserve/serplus/standard
 		// auctions
 		match auction_type_num {
@@ -745,9 +737,11 @@ impl<T: Config> Pallet<T> {
 			// No providers for the locks. This is impossible under normal circumstances
 			// since the funds that are under the lock will themselves be stored in the
 			// account and therefore will need a reference.
-			frame_support::debug::warn!(
-				"Warning: Attempt to introduce lock consumer reference, yet no providers. \
-				This is unexpected but should be safe."
+			log::warn!(
+				target: "serp-auction",
+				"inc_consumers: failed for {:?}. \
+				This is impossible under normal circumstances.",
+				new_bidder.clone()
 			);
 		}
 

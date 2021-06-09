@@ -276,5 +276,54 @@ pub fn run() -> sc_cli::Result<()> {
 				Ok((cmd.run(client, backend), task_manager))
 			})
 		}
+
+		#[cfg(feature = "try-runtime")]
+		Some(Subcommand::TryRuntime(cmd)) => {
+			let runner = cli.create_runner(cmd)?;
+			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
+
+			if chain_spec.is_setheum() {
+				#[cfg(feature = "with-setheum-runtime")]
+				return runner.async_run(|config| {
+					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
+					let task_manager = sc_service::TaskManager::new(config.task_executor.clone(), registry)
+						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
+					Ok((
+						cmd.run::<service::setheum_runtime::Block, service::SetheumExecutor>(config),
+						task_manager,
+					))
+				});
+				#[cfg(not(feature = "with-setheum-runtime"))]
+				return Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into());
+			} else if chain_spec.is_neom() {
+				#[cfg(feature = "with-neom-runtime")]
+				return runner.async_run(|config| {
+					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
+					let task_manager = sc_service::TaskManager::new(config.task_executor.clone(), registry)
+						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
+					Ok((
+						cmd.run::<service::neom_runtime::Block, service::NeomExecutor>(config),
+						task_manager,
+					))
+				});
+				#[cfg(not(feature = "with-neom-runtime"))]
+				return Err("Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.".into());
+			} else {
+				#[cfg(feature = "with-newrome-runtime")]
+				return runner.async_run(|config| {
+					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
+					let task_manager = sc_service::TaskManager::new(config.task_executor.clone(), registry)
+						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
+					Ok((
+						cmd.run::<service::newrome_runtime::Block, service::NewromeExecutor>(config),
+						task_manager,
+					))
+				});
+				#[cfg(not(feature = "with-newrome-runtime"))]
+				return Err("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.".into());
+			}
+		}
 	}
 }

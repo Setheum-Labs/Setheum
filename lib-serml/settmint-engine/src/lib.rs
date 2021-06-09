@@ -51,18 +51,13 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DEXManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
-	StandardValidator,
+	DexManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
 };
 
-mod standard_exchange_rate_convertor;
 mod mock;
 mod tests;
-pub mod weights;
 
-pub use standard_exchange_rate_convertor::StandardExchangeRateConvertor;
 pub use module::*;
-pub use weights::WeightInfo;
 
 pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/settmint-engine/data/";
 pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/settmint-engine/lock/";
@@ -140,7 +135,7 @@ pub mod module {
 	#[pallet::getter(fn standard_exchange_rate)]
 	pub type StandardExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, ExchangeRate, OptionQuery>;
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}

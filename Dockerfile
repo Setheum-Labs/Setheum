@@ -18,8 +18,8 @@ RUN apt-get update && \
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
 	export PATH="$PATH:$HOME/.cargo/bin" && \
-	rustup default nightly-2021-03-04 && \
-	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-04 && \
+	rustup default nightly-2021-03-15 && \
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-15 && \
 	cargo build "--$PROFILE" --manifest-path node/setheum-dev/Cargo.toml
 
 # ===== SECOND STAGE ======
@@ -29,10 +29,12 @@ LABEL maintainer="jbashir52@gmail.com"
 LABEL description="This is the 2nd stage: a very small image where we copy the Setheum node binary."
 ARG PROFILE=release
 
-RUN mv /usr/share/ca* /tmp && \
-	rm -rf /usr/share/*  && \
-	mv /tmp/ca-certificates /usr/share/ && \
-	useradd -m -u 1000 -U -s /bin/sh -d /setheum setheum
+# RUN mv /usr/share/ca* /tmp && \
+# 	rm -rf /usr/share/*  && \
+# 	mv /tmp/ca-certificates /usr/share/ && \
+# 	useradd -m -u 1000 -U -s /bin/sh -d /setheum setheum
+
+RUN useradd -m -u 1000 -U -s /bin/sh -d /setheum setheum
 
 COPY --from=builder /setheum/target/$PROFILE/setheum-dev /usr/local/bin
 

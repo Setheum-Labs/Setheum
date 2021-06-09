@@ -48,7 +48,7 @@ use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{AccountIdConversion, Zero},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, DispatchResult, FixedPointNumber, ModuleId,
+	ApplyExtrinsicResult, DispatchResult, FixedPointNumber,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -74,11 +74,10 @@ pub use frame_support::{
 		Randomness, U128CurrencyToVote,
 	},
 	weights::{constants::RocksDbWeight, IdentityFee, Weight},
-	StorageValue,
+	StorageValue, PalletId,
 };
 
 pub use pallet_staking::StakerStatus;
-pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill, Perquintill};
@@ -90,8 +89,8 @@ pub use primitives::{
 	EraIndex, Hash, Moment, Nonce, Share, Signature, TokenSymbol, TradingPair,
 };
 pub use runtime_common::{
-	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, CurveFeeModel, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, SystemContractsFilter, TimeStampedPrice, NEOM, NSETT, JUSD,
+	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, ExchangeRate,
+	OffchainSolutionWeightLimit, Price, Rate, Ratio, TimeStampedPrice, NEOM, NSETT, JUSD,
 };
 
 mod authority;
@@ -102,7 +101,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("neom"),
 	impl_name: create_runtime_str!("neom"),
 	authoring_version: 1,
-	spec_version: 100,
+	spec_version: 1,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -127,26 +126,26 @@ impl_opaque_keys! {
 
 // Module accounts of runtime
 parameter_types! {
-	pub const SetheumTreasuryModuleId: ModuleId = ModuleId(*b"set/trsy");
-	pub const SettersModuleId: ModuleId = ModuleId(*b"set/setter");
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
-	pub const SettwayTreasuryModuleId: ModuleId = ModuleId(*b"set/hztr");
-	pub const IncentivesModuleId: ModuleId = ModuleId(*b"set/inct");
+	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
+	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/hztr");
+	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	// Decentralized Sovereign Wealth Fund
-	pub const SIFModuleId: ModuleId = ModuleId(*b"set/dsif");
-	pub const NftModuleId: ModuleId = ModuleId(*b"set/aNFT");
+	pub const SIFPalletId: PalletId = PalletId(*b"set/dsif");
+	pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
 }
 
 pub fn get_all_setheum_accounts() -> Vec<AccountId> {
 	vec![
-		SetheumTreasuryModuleId::get().into_account(),
-		SettersModuleId::get().into_account(),
-		DEXModuleId::get().into_account(),
-		SerpTreasuryModuleId::get().into_account(),
-		SettwayTreasuryModuleId::get().into_account(),
-		IncentivesModuleId::get().into_account(),
-		SIFModuleId::get().into_account(),
+		SetheumTreasuryPalletId::get().into_account(),
+		SettersPalletId::get().into_account(),
+		DEXPalletId::get().into_account(),
+		SerpTreasuryPalletId::get().into_account(),
+		SettwayTreasuryPalletId::get().into_account(),
+		IncentivesPalletId::get().into_account(),
+		SIFPalletId::get().into_account(),
 		ZeroAccountId::get(),
 	]
 }
@@ -500,7 +499,7 @@ parameter_types! {
 }
 
 impl pallet_treasury::Config for Runtime {
-	type ModuleId = SetheumTreasuryModuleId;
+	type PalletId = SetheumTreasuryPalletId;
 	type Currency = Balances;
 	type ApproveOrigin = EnsureRootOrHalfGeneralCouncil;
 	type RejectOrigin = EnsureRootOrHalfGeneralCouncil;
@@ -696,7 +695,7 @@ parameter_type_with_key! {
 }
 
 parameter_types! {
-	pub TreasuryModuleAccount: AccountId = SetheumTreasuryModuleId::get().into_account();
+	pub TreasuryModuleAccount: AccountId = SetheumTreasuryPalletId::get().into_account();
 }
 
 impl orml_tokens::Config for Runtime {
@@ -743,9 +742,9 @@ impl EnsureOrigin<Origin> for EnsureRootOrSetheumTreasury {
 
 	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
-			RawOrigin::Root => Ok(SetheumTreasuryModuleId::get().into_account()),
+			RawOrigin::Root => Ok(SetheumTreasuryPalletId::get().into_account()),
 			RawOrigin::Signed(caller) => {
-				if caller == SetheumTreasuryModuleId::get().into_account() {
+				if caller == SetheumTreasuryPalletId::get().into_account() {
 					Ok(caller)
 				} else {
 					Err(Origin::from(Some(caller)))
@@ -821,7 +820,7 @@ impl setheum_setters::Config for Runtime {
 	type Currency = Currencies;
 	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
-	type ModuleId = SettersModuleId;
+	type PalletId = SettersPalletId;
 	type OnUpdateSetter = setheum_incentives::OnUpdateSetter<Runtime>;
 }
 
@@ -925,8 +924,8 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = DEXModuleId;
-	type DEXIncentives = Incentives;
+	type PalletId = DEXPalletId;
+	type DexIncentives = Incentives;
 	type WeightInfo = weights::setheum_dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
 }
@@ -955,7 +954,7 @@ impl serp_treasury::Config for Runtime {
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = SerpTreasuryModuleId;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
 
@@ -1002,7 +1001,7 @@ impl setheum_incentives::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type DEX = Dex;
-	type ModuleId = IncentivesModuleId;
+	type PalletId = IncentivesPalletId;
 	type WeightInfo = weights::setheum_incentives::WeightInfo<Runtime>;
 }
 
@@ -1015,7 +1014,7 @@ impl setheum_nft::Config for Runtime {
 	type Event = Event;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
-	type ModuleId = NftModuleId;
+	type PalletId = NftPalletId;
 	type Currency = Currency<Runtime, GetNativeCurrencyId>;
 	type WeightInfo = weights::setheum_nft::WeightInfo<Runtime>;
 }
@@ -1051,6 +1050,10 @@ impl pallet_proxy::Config for Runtime {
 	type CallHasher = BlakeTwo256;
 	type AnnouncementDepositBase = AnnouncementDepositBase;
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
+}
+
+impl orml_unknown_tokens::Config for Runtime {
+	type Event = Event;
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -1115,6 +1118,7 @@ construct_runtime!(
 		Auction: orml_auction::{Module, Storage, Call, Event<T>},
 		Rewards: orml_rewards::{Module, Storage, Call},
 		OrmlNFT: orml_nft::{Module, Storage, Config<T>},
+		UnknownTokens: orml_unknown_tokens::{Module, Storage, Event},
 
 		// Setheum Core
 		Prices: setheum_prices::{Module, Storage, Call, Event<T>},
@@ -1168,7 +1172,7 @@ pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Call, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
 pub type Executive =
-	frame_executive::Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllModules>;
+	frame_executive::Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllModules, ()>;
 
 #[cfg(not(feature = "disable-runtime-api"))]
 impl_runtime_apis! {
@@ -1363,6 +1367,14 @@ impl_runtime_apis! {
 				DataProviderId::Band => BandOracle::get_all_values(),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_all_values()
 			}
+		}
+	}
+
+	#[cfg(feature = "try-runtime")]
+	impl frame_try_runtime::TryRuntime<Block> for Runtime {
+		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
+			let weight = Executive::try_runtime_upgrade()?;
+			Ok((weight, RuntimeBlockWeights::get().max_block))
 		}
 	}
 
