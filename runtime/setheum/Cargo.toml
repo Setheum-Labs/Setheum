@@ -9,9 +9,8 @@ build = "build.rs"
 # external dependencies
 smallvec = "1.4.0"
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
-serde = { version = "1.0.101", optional = true }
+serde = { version = "1.0.101", optional = true, features = ["derive"] }
 hex-literal = { version = "0.3.1" }
-
 # Substrate dependencies
 frame-benchmarking = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05', optional = true }
 frame-executive = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
