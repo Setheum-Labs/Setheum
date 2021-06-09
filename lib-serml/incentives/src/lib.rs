@@ -174,8 +174,6 @@ pub mod module {
 		NotEnough,
 		/// Invalid currency id
 		InvalidCurrencyId,
-		/// Invalid pool id
-		InvalidPoolId, // Remove this
 	}
 
 	#[pallet::event]
