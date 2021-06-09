@@ -220,8 +220,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 
 	fn get_setheum_usd_fixed_price() -> Option<Price>{
 		let currency_id = T::GetSettUSDCurrencyId::get();
-		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		Self::get_fiat_price(&currency_id);
+		Self::get_fiat_price(&currency_id)
 	}
 
 	/// get the fixed price of a specific settcurrency/stablecoin currency type
@@ -231,7 +230,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		Self::get_fiat_price(&currency_id, &fiat_id);
+		Self::get_fiat_price(&currency_id)
 	}
 
 	/// get the market price (not fixed price, for SERP-TES) of a
@@ -241,7 +240,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStableCurrencyType,
 		);
-		Self::get_price(currency_id);
+		Self::get_price(currency_id)
 	}
 
 	/// This is used to determin the price change and fluctuation between peg-price and
@@ -278,7 +277,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		Self::get_relative_price(&currency_id, &fiat_id);
+		Self::get_relative_price(&currency_id, &fiat_id)
 	}
 
 	/// aggregate the setter price.
@@ -339,7 +338,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 
 	/// Get the fixed price of Setter currency (SETT)
 	fn get_setter_fixed_price() -> Option<Price> {
-		Self::get_setter_basket_peg_price();
+		Self::get_setter_basket_peg_price()
 	}
 
 	/// get the exchange rate of specific currency to USD
