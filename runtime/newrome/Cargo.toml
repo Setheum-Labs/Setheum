@@ -20,6 +20,7 @@ frame-executive = { default-features = false, version = '3.0.0', git = 'https://
 frame-support = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 frame-system = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 frame-system-rpc-runtime-api = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+frame-try-runtime = { default-features = false, optional = true, version = '0.9.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 pallet-authorship = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 pallet-babe = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 pallet-balances = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
@@ -201,9 +202,7 @@ try-runtime = [
 	"frame-try-runtime",
 	"frame-executive/try-runtime",
 	"frame-support/try-runtime",
-	"frame-system-rpc-runtime-api/try-runtime",
 	"frame-system/try-runtime",
-	"frame-try-runtime/try-runtime",
 	"pallet-babe/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-bounties/try-runtime",
@@ -221,17 +220,15 @@ try-runtime = [
 	"pallet-sudo/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-tips/try-runtime",
-	"pallet-transaction-payment-rpc-runtime-api/try-runtime",
 	"pallet-treasury/try-runtime",
 	"pallet-utility/try-runtime",
 
 	"orml-auction/try-runtime",
 	"orml-authority/try-runtime",
-	"orml-oracle-rpc-runtime-api/try-runtime",
 	"orml-oracle/try-runtime",
 	"orml-tokens/try-runtime",
 	"orml-vesting/try-runtime",
-	"orml-rewards/stry-runtime",
+	"orml-rewards/try-runtime",
 	"orml-nft/try-runtime",
 	"orml-unknown-tokens/try-runtime",
 
@@ -247,7 +244,4 @@ try-runtime = [
 	"setheum-nft/try-runtime",
 	"setheum-prices/try-runtime",
 	"setheum-incentives/try-runtime",
-	"setheum-support/try-runtime",
-	"primitives/try-runtime",
-	"runtime-common/try-runtime",
 ]

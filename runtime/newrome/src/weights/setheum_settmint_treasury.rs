@@ -50,7 +50,7 @@ impl<T: frame_system::Config> serp_treasury::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
-	fn auction_standard() -> Weight {
+	fn auction_diamond() -> Weight {
 		(49_612_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))

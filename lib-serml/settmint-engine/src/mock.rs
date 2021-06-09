@@ -31,7 +31,6 @@ use sp_runtime::{
 	traits::IdentityLookup,
 };
 use sp_std::cell::RefCell;
-use support::SerpAuction;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -239,7 +238,7 @@ impl setheum_dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
-	type DEXIncentives = ();
+	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }

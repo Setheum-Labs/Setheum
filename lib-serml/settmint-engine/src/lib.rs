@@ -51,18 +51,13 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DEXManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
-	StandardValidator,
+	DexManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
 };
 
-mod standard_exchange_rate_convertor;
 mod mock;
 mod tests;
-pub mod weights;
 
-pub use standard_exchange_rate_convertor::StandardExchangeRateConvertor;
 pub use module::*;
-pub use weights::WeightInfo;
 
 pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/settmint-engine/data/";
 pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/settmint-engine/lock/";

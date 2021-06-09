@@ -48,49 +48,22 @@ fn total_reserve_works() {
 }
 
 #[test]
-fn on_system_standard_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
-		assert_ok!(SerpTreasuryModule::on_system_standard(1000));
-		assert_eq!(SerpTreasuryModule::standard_pool(), 1000);
-		assert_noop!(
-			SerpTreasuryModule::on_system_standard(Balance::max_value()),
-			Error::<Runtime>::StandardPoolOverflow,
-		);
-	});
-}
-
-#[test]
-fn on_system_serplus_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
-		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
-		assert_ok!(SerpTreasuryModule::on_system_serplus(1000));
-		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 1000);
-		assert_eq!(SerpTreasuryModule::serplus_pool(), 1000);
-	});
-}
-
-#[test]
 fn offset_serplus_and_standard_on_finalize_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
-		assert_ok!(SerpTreasuryModule::on_system_serplus(1000));
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 1000);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 1000);
 		SerpTreasuryModule::on_finalize(1);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 1000);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 1000);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
-		assert_ok!(SerpTreasuryModule::on_system_standard(300));
 		assert_eq!(SerpTreasuryModule::standard_pool(), 300);
 		SerpTreasuryModule::on_finalize(2);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 700);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 700);
 		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
-		assert_ok!(SerpTreasuryModule::on_system_standard(800));
 		assert_eq!(SerpTreasuryModule::standard_pool(), 800);
 		SerpTreasuryModule::on_finalize(3);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
@@ -211,29 +184,13 @@ fn get_standard_proportion_works() {
 #[test]
 fn auction_serplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(SerpTreasuryModule::auction_serplus(Origin::signed(5), 100), BadOrigin,);
+		assert_noop!(SerpTreasuryModule::auction_serplus(Origin::signed(5), 100, USDJ), BadOrigin,);
 		assert_noop!(
-			SerpTreasuryModule::auction_serplus(Origin::signed(1), 100),
+			SerpTreasuryModule::auction_serplus(Origin::signed(1), 100, USDJ),
 			Error::<Runtime>::SerplusPoolNotEnough,
 		);
-		assert_ok!(SerpTreasuryModule::on_system_serplus(100));
 		assert_eq!(TOTAL_serplus_auction.with(|v| *v.borrow_mut()), 0);
-		assert_ok!(SerpTreasuryModule::auction_serplus(Origin::signed(1), 100));
+		assert_ok!(SerpTreasuryModule::auction_serplus(Origin::signed(1), 100, USDJ));
 		assert_eq!(TOTAL_serplus_auction.with(|v| *v.borrow_mut()), 1);
-	});
-}
-
-#[test]
-fn auction_standard_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(SerpTreasuryModule::auction_standard(Origin::signed(5), 100, 200), BadOrigin,);
-		assert_noop!(
-			SerpTreasuryModule::auction_standard(Origin::signed(1), 100, 200),
-			Error::<Runtime>::StandardPoolNotEnough,
-		);
-		assert_ok!(SerpTreasuryModule::on_system_standard(100));
-		assert_eq!(TOTAL_DIAMOND_AUCTION.with(|v| *v.borrow_mut()), 0);
-		assert_ok!(SerpTreasuryModule::auction_standard(Origin::signed(1), 100, 200));
-		assert_eq!(TOTAL_DIAMOND_AUCTION.with(|v| *v.borrow_mut()), 1);
 	});
 }
