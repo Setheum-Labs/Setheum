@@ -8,5 +8,6 @@ if [ -z $CI ] ; then
    rustup update nightly
 fi
 
-rustup target add wasm32-unknown-unknown --toolchain nightly
-rustup default nightly
+rustup default nightly-2021-03-15
+
+rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-15
