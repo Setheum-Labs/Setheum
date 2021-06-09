@@ -36,9 +36,8 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber,
 };
-use support::{SerpAuction, SerpTreasury, DEXManager, Ratio};
+use support::{SerpTreasury, DexManager, Ratio};
 
-mod benchmarking;
 mod mock;
 mod tests;
 pub mod weights;
@@ -161,7 +160,7 @@ pub mod module {
 		type SerpAuctionHandler: SerpAuction<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
-		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
+		type DEX: DexManager<Self::AccountId, CurrencyId, Balance>;
 
 		#[pallet::constant]
 		/// The cap of lots when an auction is created
@@ -191,6 +190,9 @@ pub mod module {
 		CharityFundPoolOverflow,
 		/// SIF pool overflow
 		SIFPoolOverflow,
+		/// The Stablecoin Price is stable and indifferent from peg
+		/// therefore cannot serp
+		PriceIsStableCannotSerp
 	}
 
 	#[pallet::event]
@@ -205,8 +207,6 @@ pub mod module {
 		CurrencySerpedUp(Balance, CurrencyId),
 		/// Currency SerpDown has been triggered successfully.
 		CurrencySerpDownTriggered(Balance, CurrencyId),
-		/// The Stablecoin Price is stable and indifferent from peg
-		PriceIsStable(CurrencyId, Price),
 	}
 
 	/// The maximum amount of reserve amount for sale per setter auction
@@ -269,10 +269,10 @@ pub mod module {
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(T::WeightInfo::auction_serplus())]
 		#[transactional]
-		pub fn auction_serplus(origin: OriginFor<T>, amount: Balance) -> DispatchResultWithPostInfo {
+		pub fn auction_serplus(origin: OriginFor<T>, amount: Balance, currency_id: CurrencyId) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
-				Self::serplus_pool().saturating_sub(T::SerpAuctionHandler::get_total_serplus_in_auction()) >= amount,
+				Self::serplus_pool(&currency_id).saturating_sub(T::SerpAuctionHandler::get_total_serplus_in_auction()) >= amount,
 				Error::<T>::SerplusPoolNotEnough,
 			);
 			T::SerpAuctionHandler::new_serplus_auction(amount)?;
@@ -338,8 +338,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// get surplus amount of serp treasury
-	fn get_serplus_pool() -> Self::Balance {
-		Self::serplus_pool()
+	fn get_serplus_pool(currency_id: CurrencyId) -> Self::Balance {
+		Self::serplus_pool(currency_id)
 	}
 
 	/// get reserve asset amount of serp treasury
@@ -504,7 +504,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		/// ensure that the differed amount is not zero
 		ensure!(
 			!differed_amount.is_zero(),
-			Self::deposit_event(Event::PriceIsStable(price, currency_id));
+			Error::<T>::PriceIsStableCannotSerp,
 		);
 
 		/// if price difference is positive -> SerpUp, else if negative ->SerpDown.
