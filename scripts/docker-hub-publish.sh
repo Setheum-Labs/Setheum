@@ -1,4 +1,4 @@
-#!/usr/node/env bash
+#!/usr/bin/env bash
 
 VERSION=$1
 
