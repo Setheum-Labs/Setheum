@@ -36,7 +36,7 @@ use sp_std::{
 
 pub type BlockNumber = u32;
 pub type Price = FixedU128;
-pub type FiatCurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord;
+pub type FiatCurrencyId: CurrencyId;
 pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
@@ -204,24 +204,24 @@ pub trait SerpTreasury<AccountId> {
 	fn burn_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_propper(currency_id: Self::CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
+	fn issue_propper(currency_id: Self::CurrencyId, who: &AccountId, propper: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_propper(currency_id: Self::CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
+	fn burn_propper(currency_id: Self::CurrencyId, who: &AccountId, propper: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult;
+	fn issue_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult;
+	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
 	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
 	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
-	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult;
+	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
 	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
-	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult;
+	fn burn_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// deposit surplus(propperstable currency) to serp treasury by `from`
 	fn deposit_surplus(currency_id: Self::CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
@@ -230,14 +230,14 @@ pub trait SerpTreasury<AccountId> {
 	fn deposit_reserve(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// Burn Reserve asset (Setter (SETT))
-	fn burn_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult;
+	fn burn_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// Withdraw reserve asset (Setter (SETT)) of serp treasury to `who`
 	fn withdraw_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait PriceProvider<CurrencyId> {
-	fn get_fiat_price(fiat_id: FiatCurrencyId, currency_id: CurrencyId) -> Option<Price>;
+	fn get_fiat_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_setheum_usd_fixed_price() -> Option<Price>;
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_stablecoin_market_price(currency_id: CurrencyId) -> Option<Price>;
