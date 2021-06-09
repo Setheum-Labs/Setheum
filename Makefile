@@ -110,11 +110,9 @@ update-orml:
 	git add lib-orml
 
 .PHONY: update
-update: update-orml cargo-update check-all
+update: update-orml
 	cargo update
-	cargo update --manifest-path node/setheum-dev/Cargo.toml
-	cargo update --manifest-path node/setheum-dev/cli/Cargo.toml
-	cargo update --manifest-path node/setheum-dev/service/Cargo.toml
+	make check
 
 .PHONY: build-wasm-newrome
 build-wasm-newrome:
