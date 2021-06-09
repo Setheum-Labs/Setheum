@@ -226,7 +226,6 @@ try-runtime = [
 
 	"orml-auction/try-runtime",
 	"orml-authority/try-runtime",
-	"orml-oracle-rpc-runtime-api/try-runtime",
 	"orml-oracle/try-runtime",
 	"orml-tokens/try-runtime",
 	"orml-vesting/try-runtime",
