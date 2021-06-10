@@ -219,14 +219,14 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = DEXModule;
+	type Dex = DexModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 
 parameter_types! {
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT), TradingPair::new(USDJ, DOT)];
@@ -237,7 +237,7 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type PalletId = DexPalletId;
 	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
@@ -250,7 +250,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
 	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![USDJ];
@@ -266,8 +266,8 @@ impl Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type DEX = DEXModule;
+	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
+	type Dex = DexModule;
 	type UnsignedPriority = UnsignedPriority;
 	type WeightInfo = ();
 }
@@ -288,7 +288,7 @@ construct_runtime!(
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		SettersModule: setters::{Module, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		DEXModule: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
+		DexModule: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 

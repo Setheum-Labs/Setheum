@@ -29,7 +29,7 @@ use orml_benchmarking::runtime_benchmarks;
 use sp_std::prelude::*;
 
 const SEED: u32 = 0;
-const ROME_rUSD_LP: CurrencyId = CurrencyId::DEXShare(TokenSymbol::CHFJ, TokenSymbol::rUSD);
+const ROME_rUSD_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::rUSD);
 
 runtime_benchmarks! {
 	{ Runtime, setheum_incentives }
@@ -83,7 +83,7 @@ runtime_benchmarks! {
 			let currency_id = currency_ids[i as usize];
 			let lp_share_currency_id = match (currency_id, base_currency_id) {
 				(CurrencyId::Token(other_currency_symbol), CurrencyId::Token(base_currency_symbol)) => {
-					CurrencyId::DEXShare(other_currency_symbol, base_currency_symbol)
+					CurrencyId::DexShare(other_currency_symbol, base_currency_symbol)
 				}
 				_ => return Err("invalid currency id"),
 			};
@@ -102,7 +102,7 @@ runtime_benchmarks! {
 			let currency_id = currency_ids[i as usize];
 			let lp_share_currency_id = match (currency_id, base_currency_id) {
 				(CurrencyId::Token(other_currency_symbol), CurrencyId::Token(base_currency_symbol)) => {
-					CurrencyId::DEXShare(other_currency_symbol, base_currency_symbol)
+					CurrencyId::DexShare(other_currency_symbol, base_currency_symbol)
 				}
 				_ => return Err("invalid currency id"),
 			};

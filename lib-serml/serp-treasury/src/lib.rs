@@ -160,7 +160,7 @@ pub mod module {
 		type SerpAuctionHandler: SerpAuction<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
-		type DEX: DexManager<Self::AccountId, CurrencyId, Balance>;
+		type Dex: DexManager<Self::AccountId, CurrencyId, Balance>;
 
 		#[pallet::constant]
 		/// The cap of lots when an auction is created
@@ -602,13 +602,13 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, setter)
 	}
 
-	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the Dex token balance.
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::GetDexerCurrencyId::get(), who, dexer)?;
 		Ok(())
 	}
 
-	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the Dex token balance.
 	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::GetDexerCurrencyId::get(), who, dexer)
 	}

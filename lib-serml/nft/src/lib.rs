@@ -301,17 +301,6 @@ pub mod module {
 			<T as Config>::Currency::unreserve(&owner, data.deposit);
 			<T as Config>::Currency::transfer(&owner, &dest, data.deposit)?;
 
-			// transfer all free from origin to dest
-			orml_nft::Pallet::<T>::destroy_class(&who, class_id)?;
-
-			Self::deposit_event(Event::DestroyedClass(who, class_id, dest));
-			Ok(().into())
-		}
-	}
-}
-
-impl<T: Config> Pallet<T> {
-	/// Ensured atomic.
 	#[transactional]
 	fn do_transfer(from: &T::AccountId, to: &T::AccountId, token: (ClassIdOf<T>, TokenIdOf<T>)) -> DispatchResult {
 		let class_info = orml_nft::Pallet::<T>::classes(token.0).ok_or(Error::<T>::ClassIdNotFound)?;

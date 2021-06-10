@@ -173,7 +173,7 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = ();
+	type Dex = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();

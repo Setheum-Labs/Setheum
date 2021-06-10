@@ -141,7 +141,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const DEXPalletId: PalletId = PalletId(*b"dnr/sdex");
+	pub const DexPalletId: PalletId = PalletId(*b"dnr/sdex");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, DNAR), TradingPair::new(USDJ, DOT)];
@@ -160,7 +160,7 @@ impl setheum_dex::Config for Runtime {
 
 parameter_types! {
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![USDJ, DOT];
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::one();
 	pub const StableCurrencyId: CurrencyId = USDJ;
 	pub static TransactionByteFee: u128 = 1;
 }
@@ -175,8 +175,8 @@ impl Config for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = ();
-	type DEX = Dex;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type Dex = Dex;
+	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
 	type WeightInfo = ();
 }
 
@@ -212,7 +212,7 @@ construct_runtime!(
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Currencies: setheum_currencies::{Pallet, Call, Event<T>},
-		DEX = setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Dex = setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
