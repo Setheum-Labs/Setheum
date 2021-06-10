@@ -4907,23 +4907,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "parity-db"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "495197c078e54b8735181aa35c00a327f7f3a3cc00a1ee8c95926dd010f0ec6b"
-dependencies = [
- "blake2-rfc",
- "crc32fast",
- "fs2",
- "hex",
- "libc",
- "log",
- "memmap2",
- "parking_lot 0.11.1",
- "rand 0.8.3",
-]
-
-[[package]]
 name = "parity-multiaddr"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6190,7 +6173,6 @@ dependencies = [
  "kvdb-rocksdb",
  "linked-hash-map",
  "log",
- "parity-db",
  "parity-scale-codec",
  "parity-util-mem",
  "parking_lot 0.11.1",
