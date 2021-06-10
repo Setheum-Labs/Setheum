@@ -131,7 +131,7 @@ parameter_types! {
 	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
-	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/hztr");
+	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/stwy");
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	// Decentralized Sovereign Wealth Fund
 	pub const SIFPalletId: PalletId = PalletId(*b"set/dsif");
