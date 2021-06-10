@@ -21,8 +21,8 @@ pallet-transaction-payment = { default-features = false, version = '3.0.0', git 
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
 # orml dependencies
-orml-tokens = { path = "../../lib-orml/tokens", default-features = false }
-orml-traits = { path = "../../lib-orml/traits", default-features = false }
+orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
 
 # local dependencies
 setheum-currencies = { path = "../../lib-serml/currencies", default-features = false }

@@ -19,8 +19,8 @@ frame-system = { default-features = false, version = '3.0.0', git = 'https://git
 pallet-scheduler = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
 # orml dependencies
-orml-oracle = { path = "../../lib-orml/oracle", default-features = false }
-orml-traits = { path = "../../lib-orml/traits", default-features = false }
+orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
 
 # local dependencies
 setheum-support = { path = "../../lib-serml/support", default-features = false }
@@ -35,8 +35,8 @@ pallet-timestamp = "3.0.0"
 pallet-balances = "3.0.0"
 pallet-proxy = "3.0.0"
 pallet-utility = "3.0.0"
-orml-tokens = { path = "../../lib-orml/tokens" }
-orml-nft = { path = "../../lib-orml/nft" }
+orml-tokens = { path = "../../lib-openrml/tokens" }
+orml-nft = { path = "../../lib-openrml/nft" }
 setheum-currencies = { path = "../../lib-serml/currencies" }
 setheum-nft = { path = "../../lib-serml/nft" }
 setheum-dex = { path = "../../lib-serml/dex" }
