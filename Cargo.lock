@@ -3936,7 +3936,6 @@ dependencies = [
  "serde",
  "serp-auction",
  "serp-treasury",
- "setheum-airdrop",
  "setheum-currencies",
  "setheum-dex",
  "setheum-incentives",
