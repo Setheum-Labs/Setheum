@@ -146,7 +146,7 @@ parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT)];
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 }
 
 impl setheum_dex::Config for Runtime {
@@ -154,7 +154,7 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type PalletId = DexPalletId;
 	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
@@ -250,7 +250,7 @@ impl Config for Runtime {
 	type SIFSerpupRatio = SIFSerpupRatio;
 	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = DEXModule;
+	type Dex = DexModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -270,7 +270,7 @@ construct_runtime!(
 		Currencies: orml_currencies::{Module, Call, Event<T>},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		DEXModule: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
+		DexModule: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 

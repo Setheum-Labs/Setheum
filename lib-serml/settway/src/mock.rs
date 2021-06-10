@@ -212,7 +212,7 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = ();
+	type Dex = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -222,7 +222,7 @@ parameter_types! {
 	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
 }
 
@@ -235,8 +235,8 @@ impl settmint_engine::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type DEX = ();
+	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
+	type Dex = ();
 	type UnsignedPriority = UnsignedPriority;
 	type WeightInfo = ();
 }

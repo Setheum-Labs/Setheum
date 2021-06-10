@@ -219,11 +219,11 @@ pub trait SerpTreasury<AccountId> {
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
 	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
-	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the Dex token balance.
 	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
 	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
-	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the Dex token balance.
 	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
 	fn burn_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 

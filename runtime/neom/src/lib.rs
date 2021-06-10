@@ -128,7 +128,7 @@ impl_opaque_keys! {
 parameter_types! {
 	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/hztr");
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
@@ -141,7 +141,7 @@ pub fn get_all_setheum_accounts() -> Vec<AccountId> {
 	vec![
 		SetheumTreasuryPalletId::get().into_account(),
 		SettersPalletId::get().into_account(),
-		DEXPalletId::get().into_account(),
+		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
 		SettwayTreasuryPalletId::get().into_account(),
 		IncentivesPalletId::get().into_account(),
@@ -719,7 +719,7 @@ impl setheum_prices::Config for Runtime {
 	type SettUSDFixedPrice = SettUSDFixedPrice;
 	type GetStakingCurrencyId = GetStakingCurrencyId;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type DEX = Dex;
+	type Dex = Dex;
 	type Currency = Currencies;
 	type WeightInfo = weights::setheum_prices::WeightInfo<Runtime>;
 }
@@ -808,7 +808,7 @@ impl serp_auction::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SerpTreasury = SerpTreasury;
-	type DEX = Dex;
+	type Dex = Dex;
 	type PriceSource = Prices;
 	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
 	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
@@ -886,7 +886,7 @@ parameter_types! {
 	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![NSETT];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub MinimumStandardValue: Balance = dollar(JUSD);
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(5, 100);
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }
 
 impl setheum_settmint_engine::Config for Runtime {
@@ -898,8 +898,8 @@ impl setheum_settmint_engine::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasury;
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type DEX = Dex;
+	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
+	type Dex = Dex;
 	type UnsignedPriority = runtime_common::SettmintEngineUnsignedPriority;
 	type WeightInfo = weights::setheum_settmint_engine::WeightInfo<Runtime>;
 }
@@ -924,7 +924,7 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type PalletId = DexPalletId;
 	type DexIncentives = Incentives;
 	type WeightInfo = weights::setheum_dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
@@ -952,7 +952,7 @@ impl serp_treasury::Config for Runtime {
 	type SIFSerpupRatio = SIFSerpupRatio;
 	type SerpAuctionHandler = SerpAuction;
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
-	type DEX = Dex;
+	type Dex = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
@@ -973,8 +973,8 @@ impl setheum_transaction_payment::Config for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
-	type DEX = Dex;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type Dex = Dex;
+	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
 	type WeightInfo = weights::setheum_transaction_payment::WeightInfo<Runtime>;
 }
 
@@ -1000,7 +1000,7 @@ impl setheum_incentives::Config for Runtime {
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
-	type DEX = Dex;
+	type Dex = Dex;
 	type PalletId = IncentivesPalletId;
 	type WeightInfo = weights::setheum_incentives::WeightInfo<Runtime>;
 }
@@ -1123,7 +1123,7 @@ construct_runtime!(
 		// Setheum Core
 		Prices: setheum_prices::{Module, Storage, Call, Event<T>},
 
-		// DEX
+		// Dex
 		Dex: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
 
 		// Settway

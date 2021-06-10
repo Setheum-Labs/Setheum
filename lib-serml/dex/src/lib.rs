@@ -16,13 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # DEX Module
+//! # Dex Module
 //!
 //! ## Overview
 //!
 //! Built-in decentralized exchange modules in setheum network, the swap
 //! mechanism refers to the design of Uniswap V2. In addition to being used for
-//! trading, DEX also participates in transaction fee liquidation.
+//! trading, Dex also participates in transaction fee liquidation.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::too_many_arguments)]
@@ -105,14 +105,14 @@ pub mod module {
 		#[pallet::constant]
 		type TradingPathLimit: Get<u32>;
 
-		/// The DEX's module id, keep all assets in DEX.
+		/// The Dex's module id, keep all assets in Dex.
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
-		/// DEX incentives
+		/// Dex incentives
 		type DexIncentives: DexIncentives<Self::AccountId, CurrencyId, Balance>;
 
 		/// The origin which may list, enable or disable trading pairs.
@@ -285,7 +285,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Trading with DEX, swap with exact supply amount
+		/// Trading with Dex, swap with exact supply amount
 		///
 		/// - `path`: trading path.
 		/// - `supply_amount`: exact supply amount.
@@ -303,7 +303,7 @@ pub mod module {
 			Ok(().into())
 		}
 
-		/// Trading with DEX, swap with exact target amount
+		/// Trading with Dex, swap with exact target amount
 		///
 		/// - `path`: trading path.
 		/// - `target_amount`: exact target amount.

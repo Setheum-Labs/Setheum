@@ -123,8 +123,8 @@ pub mod module {
 		/// The origin which may lock and unlock prices feed to system.
 		type LockOrigin: EnsureOrigin<Self::Origin>;
 
-		/// DEX provide liquidity info.
-		type DEX = DexManager<Self::AccountId, CurrencyId, Balance>;
+		/// Dex provide liquidity info.
+		type Dex = DexManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// Currency provide the total insurance of LPToken.
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -344,10 +344,10 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if let CurrencyId::DEXShare(symbol_0, symbol_1) = currency_id {
+		let maybe_feed_price = if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = CurrencyId::Token(symbol_0);
 			let token_1 = CurrencyId::Token(symbol_1);
-			let (pool_0, _) = T::DEX::get_liquidity_pool(token_0, token_1);
+			let (pool_0, _) = T::Dex::get_liquidity_pool(token_0, token_1);
 			let total_shares = T::Currency::total_issuance(currency_id);
 
 			return {

@@ -458,7 +458,7 @@ fn setter_auction_end_handler_by_dex_which_target_not_zero() {
 			SerpAuctionModule::setter_auction_bid_handler(1, 0, (BOB, 20), None).is_ok(),
 			true
 		);
-		assert_ok!(DEXModule::add_liquidity(
+		assert_ok!(DexModule::add_liquidity(
 			Origin::signed(CAROL),
 			BTC,
 			USDJ,
@@ -466,7 +466,7 @@ fn setter_auction_end_handler_by_dex_which_target_not_zero() {
 			1000,
 			false
 		));
-		assert_eq!(DEXModule::get_swap_target_amount(&[BTC, USDJ], 100, None).unwrap(), 500);
+		assert_eq!(DexModule::get_swap_target_amount(&[BTC, USDJ], 100, None).unwrap(), 500);
 
 		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
 		assert_eq!(SerpAuctionModule::total_target_in_auction(), 200);
