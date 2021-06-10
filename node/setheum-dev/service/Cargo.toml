@@ -47,7 +47,7 @@ sp-blockchain = { version = "3.0.0", git = 'https://github.com/paritytech/substr
 sp-std = { version = "3.0.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
 # orml dependencies
-orml-oracle-rpc = { path = "../../../lib-orml/oracle/rpc" }
+orml-oracle-rpc = { path = "../../../lib-openrml/oracle/rpc" }
 
 # local dependencies
 setheum-nft = { path = "../../../lib-serml/nft" }

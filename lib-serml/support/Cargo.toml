@@ -16,7 +16,7 @@ sp-std = { default-features = false, version = '3.0.0', git = 'https://github.co
 sp-core = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
 # orml dependencies
-orml-traits = { path = "../../lib-orml/traits", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
 
 # local dependencies
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }

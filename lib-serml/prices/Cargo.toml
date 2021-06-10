@@ -16,7 +16,7 @@ frame-system = { default-features = false, version = '3.0.0', git = 'https://git
 sp-std = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
 # orml dependencies
-orml-traits = { package = "orml-traits", path = "../../lib-orml/traits", default-features = false }
+orml-traits = { package = "orml-traits", path = "../../lib-openrml/traits", default-features = false }
 
 # local dependencies
 support = { package = "setheum-support", path = "../support", default-features = false }
@@ -25,7 +25,7 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 [dev-dependencies]
 sp-core = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 sp-io = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-orml-tokens = { path = "../../lib-orml/tokens" }
+orml-tokens = { path = "../../lib-openrml/tokens" }
 
 [features]
 default = ["std"]

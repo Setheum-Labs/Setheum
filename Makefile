@@ -106,8 +106,8 @@ submodule:
 
 .PHONY: update-orml
 update-orml:
-	cd lib-orml && git checkout master && git pull
-	git add lib-orml
+	cd lib-openrml && git checkout master && git pull
+	git add lib-openrml
 
 .PHONY: update
 update: update-orml

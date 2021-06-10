@@ -17,8 +17,8 @@ sp-runtime = { default-features = false, version = '3.0.0', git = 'https://githu
 sp-std = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
 # orml dependencies
-orml-traits = { path = "../../lib-orml/traits", default-features = false }
-orml-utilities = { path = "../../lib-orml/utilities", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
+orml-utilities = { path = "../../lib-openrml/utilities", default-features = false }
 
 # local dependencies
 support = { package = "setheum-support", path = "../support", default-features = false }
@@ -27,10 +27,10 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 [dev-dependencies]
 sp-core = "3.0.0"
 pallet-balances = "3.0.0"
-orml-auction = { path = "../../lib-orml/auction" }
+orml-auction = { path = "../../lib-openrml/auction" }
 serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
 setheum-dex = { path = "../dex" }
-orml-tokens = { path = "../../lib-orml/tokens" }
+orml-tokens = { path = "../../lib-openrml/tokens" }
 
 [features]
 default = ["std"]
