@@ -1,8 +1,9 @@
 [package]
 name = "setheum-nft"
-version = "0.5.0"
+version = "0.7.0"
 authors = ["Setheum Labs"]
 edition = "2018"
+
 
 [dependencies]
 # external dependencies
