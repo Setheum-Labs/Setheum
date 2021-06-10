@@ -1,6 +1,6 @@
 [package]
 name = "serp-auction"
-version = "0.5.0"
+version = "0.7.0"
 authors = ["Setheum Labs"]
 edition = "2018"
 
