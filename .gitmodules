@@ -1,3 +1,0 @@
-[submodule "lib-orml"]
-	path = lib-orml
-	url = https://github.com/open-web3-stack/open-runtime-module-library.git
