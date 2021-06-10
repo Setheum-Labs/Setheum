@@ -4030,7 +4030,6 @@ dependencies = [
  "serde_json",
  "serp-auction",
  "serp-treasury",
- "setheum-airdrop",
  "setheum-currencies",
  "setheum-dex",
  "setheum-incentives",
@@ -7217,20 +7216,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-airdrop"
-version = "0.7.1"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
- "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
- "parity-scale-codec",
- "serde",
- "setheum-primitives",
- "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
- "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
-]
-
-[[package]]
 name = "setheum-cli"
 version = "0.7.1"
 dependencies = [
@@ -7546,7 +7531,6 @@ dependencies = [
  "serde",
  "serp-auction",
  "serp-treasury",
- "setheum-airdrop",
  "setheum-currencies",
  "setheum-dex",
  "setheum-incentives",
