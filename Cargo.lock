@@ -4284,6 +4284,7 @@ version = "0.4.1-dev"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "max-encoded-len",
  "parity-scale-codec",
  "serde",
  "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -4338,6 +4339,7 @@ version = "0.4.1-dev"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "max-encoded-len",
  "orml-traits",
  "parity-scale-codec",
  "serde",
@@ -4353,6 +4355,7 @@ version = "0.4.1-dev"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "max-encoded-len",
  "orml-traits",
  "pallet-elections-phragmen",
  "pallet-treasury",
@@ -4415,6 +4418,7 @@ version = "0.4.1-dev"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "max-encoded-len",
  "pallet-balances 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "parity-scale-codec",
  "serde",
@@ -10476,8 +10480,8 @@ dependencies = [
 
 [[package]]
 name = "xcm"
-version = "0.9.3"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.3#aa386760948574af4078c59decf558d16efe15e2"
+version = "0.9.4"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.4#2f28561a09aab0613b5f8a68fbabf723d5fc197e"
 dependencies = [
  "derivative",
  "impl-trait-for-tuples 0.2.1",
@@ -10486,8 +10490,8 @@ dependencies = [
 
 [[package]]
 name = "xcm-executor"
-version = "0.9.3"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.3#aa386760948574af4078c59decf558d16efe15e2"
+version = "0.9.4"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.4#2f28561a09aab0613b5f8a68fbabf723d5fc197e"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "impl-trait-for-tuples 0.2.1",
