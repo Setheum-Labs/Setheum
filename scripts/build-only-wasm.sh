@@ -11,6 +11,10 @@ if [ "$#" -lt 1 ]; then
   exit 1
 fi
 
-export WASM_TARGET_DIRECTORY=$(pwd)
+if [ -z "$2" ]; then
+  export WASM_TARGET_DIRECTORY=$(pwd)
+else
+  export WASM_TARGET_DIRECTORY=$2
+fi
 
 cargo build --manifest-path node/setheum-dev/Cargo.toml --release -p $1 --features with-$1
