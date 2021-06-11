@@ -71,7 +71,6 @@ orml-unknown-tokens = { path = "../../lib-openrml/unknown-tokens", default-featu
 
 # local dependencies
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
-setheum-airdrop = { path = "../../lib-serml/airdrop", default-features = false }
 serp-auction = { path = "../../lib-serml/serp-auction", default-features = false }
 setheum-settmint-engine = { path = "../../lib-serml/settmint-engine", default-features = false }
 serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = false }
@@ -149,7 +148,6 @@ std = [
 	"orml-unknown-tokens/std",
 
 	"setheum-transaction-payment/std",
-	"setheum-airdrop/std",
 	"serp-auction/std",
 	"setheum-settmint-engine/std",
 	"serp-treasury/std",
@@ -229,7 +227,6 @@ try-runtime = [
 	"orml-unknown-tokens/try-runtime",
 
 	"setheum-transaction-payment/try-runtime",
-	"setheum-airdrop/try-runtime",
 	"serp-auction/try-runtime",
 	"setheum-settmint-engine/try-runtime",
 	"serp-treasury/try-runtime",

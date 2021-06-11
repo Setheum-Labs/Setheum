@@ -86,7 +86,7 @@ pub use sp_runtime::{Perbill, Percent, Permill, Perquintill};
 pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
 pub use primitives::{
-	AccountId, AccountIndex, AirDropCurrencyId, Amount, AuctionId, AuthoritysOriginId, Balance, BlockNumber,
+	AccountId, AccountIndex, Amount, AuctionId, AuthoritysOriginId, Balance, BlockNumber,
 	CurrencyId, DataProviderId, EraIndex, Hash, Moment, Nonce, Share, Signature, TokenSymbol, TradingPair,
 };
 pub use runtime_common::{
@@ -1007,10 +1007,6 @@ impl setheum_incentives::Config for Runtime {
 	type WeightInfo = weights::setheum_incentives::WeightInfo<Runtime>;
 }
 
-impl setheum_airdrop::Config for Runtime {
-	type Event = Event;
-}
-
 parameter_types! {
 	pub CreateClassDeposit: Balance = 500 * millicent(ROME);
 	pub CreateTokenDeposit: Balance = 100 * millicent(ROME);
@@ -1141,7 +1137,6 @@ construct_runtime!(
 
 		// Setheum Other
 		Incentives: setheum_incentives::{Module, Storage, Call, Event<T>},
-		AirDrop: setheum_airdrop::{Module, Call, Storage, Event<T>, Config<T>},
 		NFT: setheum_nft::{Module, Call, Event<T>},
 
 		// Smart contracts

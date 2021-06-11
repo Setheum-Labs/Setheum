@@ -56,6 +56,10 @@ pub enum PoolId<AccountId> {
 	/// Rewards pool(SetterCurrencyId) (SETT) for market makers who provide Dex liquidity
 	/// for DexCurrency / Dexer (SDEX or HALAL) pools only.
 	DexBonus(CurrencyId),
+
+	/// Rewards pool(SettEURCurrencyId) (EURJ or JEUR) for market makers who provide Dex liquidity
+	/// for Certain Strategic Currencies LPs, e.g. DOT, XBTC et al.
+	DexExtra(CurrencyId),
 }
 
 #[frame_support::pallet]
