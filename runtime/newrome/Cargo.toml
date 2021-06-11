@@ -180,7 +180,6 @@ runtime-benchmarks = [
 	"orml-authority/runtime-benchmarks",
 
 	"serp-treasury/runtime-benchmarks",
-	"setheum-dex/runtime-benchmarks",
 ]
 # When enabled, the runtime api will not be build.
 #
