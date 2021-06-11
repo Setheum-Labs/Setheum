@@ -21,19 +21,23 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, parameter_types, PalletId};
+use frame_support::{parameter_types, PalletId};
 use orml_traits::parameter_type_with_key;
+use primitives::{CurrencyId, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, IdentityLookup},
-	AccountId32,
+	AccountId32, Perbill,
 };
 
-use crate as currencies;
+pub use crate as currencies;
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
+	pub const MaximumBlockWeight: u32 = 1024;
+	pub const MaximumBlockLength: u32 = 2 * 1024;
+	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
 
 pub type AccountId = AccountId32;
@@ -43,7 +47,7 @@ impl frame_system::Config for Runtime {
 	type Index = u64;
 	type BlockNumber = u64;
 	type Hash = H256;
-	type Hashing = ::sp_runtime::traits::BlakeTwo256;
+	type Hashing = sp_runtime::traits::BlakeTwo256;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
@@ -53,7 +57,7 @@ impl frame_system::Config for Runtime {
 	type BlockLength = ();
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u64>;
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type DbWeight = ();
@@ -63,8 +67,36 @@ impl frame_system::Config for Runtime {
 	type OnSetCode = ();
 }
 
-type CurrencyId = u32;
-type Balance = u64;
+type Balance = u128;
+
+parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+
+parameter_types! {
+	pub DustAccount: AccountId = PalletId(*b"orml/dst").into_account();
+	pub const MaxLocks: u32 = 100;
+}
+
+impl orml_tokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type Amount = i64;
+	type CurrencyId = CurrencyId;
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = orml_tokens::TransferDust<Runtime, DustAccount>;
+	type WeightInfo = ();
+	type MaxLocks = MaxLocks;
+}
+
+pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
+}
 
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
@@ -75,39 +107,12 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Runtime>;
+	type AccountStore = System;
+	type WeightInfo = ();
 	type MaxLocks = ();
-	type WeightInfo = ();
 }
 
-parameter_type_with_key! {
-	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
-		Default::default()
-	};
-}
-
-parameter_types! {
-	pub DustAccount: AccountId = PalletId(*b"orml/dst").into_account();
-	pub MaxLocks: u32 = 100_000;
-}
-
-impl orml_tokens::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type Amount = i64;
-	type CurrencyId = CurrencyId;
-	type WeightInfo = ();
-	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = orml_tokens::TransferDust<Runtime, DustAccount>;
-	type MaxLocks = MaxLocks;
-}
-
-pub const NATIVE_CURRENCY_ID: CurrencyId = 1;
-pub const X_TOKEN_ID: CurrencyId = 2;
-
-parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
-}
+pub type PalletBalances = pallet_balances::Pallet<Runtime>;
 
 impl Config for Runtime {
 	type Event = Event;
@@ -116,22 +121,23 @@ impl Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
 }
-pub type NativeCurrency = NativeCurrencyOf<Runtime>;
+
+pub type NativeCurrency = Currency<Runtime, GetNativeCurrencyId>;
 pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Runtime, PalletBalances, i64, u64>;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
-construct_runtime!(
+frame_support::construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		Currencies: currencies::{Pallet, Call, Event<T>},
+		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		PalletBalances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Currencies: currencies::{Pallet, Call, Event<T>},
 	}
 );
 
