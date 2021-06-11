@@ -132,7 +132,7 @@ fn new_serplus_auction_work() {
 		assert_ok!(SerpAuctionModule::new_serplus_auction(100));
 		System::assert_last_event(Event::serp_auction(crate::Event::NewSerplusAuction(0, 100)));
 
-		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 100);
+		assert_eq!(SerpAuctionModule::total_serpsetter_in_auction(), 100);
 		assert_eq!(AuctionModule::auctions_index(), 1);
 
 		assert_noop!(
@@ -553,14 +553,14 @@ fn serplus_auction_end_handler_without_bid() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpAuctionModule::new_serplus_auction(100));
-		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 100);
+		assert_eq!(SerpAuctionModule::total_serpsetter_in_auction(), 100);
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0).is_some(), true);
 		SerpAuctionModule::on_auction_ended(0, None);
 		System::assert_last_event(Event::serp_auction(crate::Event::CancelAuction(0)));
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0), None);
-		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 0);
+		assert_eq!(SerpAuctionModule::total_serpsetter_in_auction(), 0);
 	});
 }
 
@@ -574,7 +574,7 @@ fn serplus_auction_end_handler_with_bid() {
 			SerpAuctionModule::serplus_auction_bid_handler(1, 0, (BOB, 500), None).is_ok(),
 			true
 		);
-		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 100);
+		assert_eq!(SerpAuctionModule::total_serpsetter_in_auction(), 100);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(DNAR, &BOB), 500);
 		assert_eq!(Tokens::total_issuance(DNAR), 2500);
@@ -586,7 +586,7 @@ fn serplus_auction_end_handler_with_bid() {
 		System::assert_last_event(Event::serp_auction(crate::Event::SerplusAuctionDealt(0, 100, BOB, 500)));
 
 		assert_eq!(SerpAuctionModule::serplus_auctions(0), None);
-		assert_eq!(SerpAuctionModule::total_serplus_in_auction(), 0);
+		assert_eq!(SerpAuctionModule::total_serpsetter_in_auction(), 0);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1100);
 		assert_eq!(Tokens::total_issuance(DNAR), 2500);
 

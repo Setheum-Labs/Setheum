@@ -273,8 +273,8 @@ pub mod module {
 
 	/// Record of total serplus amount of all active serplus auctions
 	#[pallet::storage]
-	#[pallet::getter(fn total_serplus_in_auction)]
-	pub type TotalSerplusInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
+	#[pallet::getter(fn total_serpsetter_in_auction)]
+	pub type TotalSerpSetterInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -436,7 +436,7 @@ impl<T: Config> Pallet<T> {
 		}
 
 		// decrease total propper settcurrency serplus in auction
-		TotalSerplusInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(serplus_auction.amount));
+		TotalSerpSetterInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(serplus_auction.amount));
 
 		Ok(())
 	}
@@ -727,7 +727,7 @@ impl<T: Config> Pallet<T> {
 			Self::deposit_event(Event::CancelAuction(auction_id));
 		}
 
-		TotalSerplusInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(serplus_auction.amount));
+		TotalSerpSetterInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(serplus_auction.amount));
 	}
 
 	/// increment `new_bidder` reference and decrement `last_bidder`
@@ -879,7 +879,7 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 
 	fn new_serplus_auction(amount: Self::Balance) -> DispatchResult {
 		ensure!(!amount.is_zero(), Error::<T>::InvalidAmount,);
-		TotalSerplusInAuction::<T>::try_mutate(|total| -> DispatchResult {
+		TotalSerpSetterInAuction::<T>::try_mutate(|total| -> DispatchResult {
 			*total = total.checked_add(amount).ok_or(Error::<T>::InvalidAmount)?;
 			Ok(())
 		})?;
@@ -912,11 +912,12 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 	fn get_total_setter_in_auction() -> Self::Balance {
 		Self::total_setter_in_auction()
 	}
+
 	fn get_total_settcurrency_in_auction(id: Self::CurrencyId) -> Self::Balance {
 		Self::total_settcurrency_in_auction(id)
 	}
 
-	fn get_total_serplus_in_auction() -> Self::Balance {
-		Self::total_serplus_in_auction()
+	fn get_total_serpsetter_in_auction(id: Self::CurrencyId) -> Self::Balance {
+		Self::total_serpsetter_in_auction(id)
 	}
 }

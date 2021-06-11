@@ -198,7 +198,7 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut())
 	}
 
-	fn get_total_serplus_in_auction() -> Self::Balance {
+	fn get_total_serpsetter_in_auction() -> Self::Balance {
 		Default::default()
 	}
 

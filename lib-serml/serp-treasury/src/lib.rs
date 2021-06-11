@@ -272,7 +272,7 @@ pub mod module {
 		pub fn auction_serplus(origin: OriginFor<T>, amount: Balance, currency_id: CurrencyId) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
-				Self::serplus_pool(&currency_id).saturating_sub(T::SerpAuctionHandler::get_total_serplus_in_auction()) >= amount,
+				Self::serplus_pool(&currency_id).saturating_sub(T::SerpAuctionHandler::get_total_serpsetter_in_auction()) >= amount,
 				Error::<T>::SerplusPoolNotEnough,
 			);
 			T::SerpAuctionHandler::new_serplus_auction(amount)?;
