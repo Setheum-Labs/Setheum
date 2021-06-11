@@ -580,7 +580,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	
+
 	fn burn_standard(currency_id: CurrencyId, who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(currency_id, who, standard)
 	}
