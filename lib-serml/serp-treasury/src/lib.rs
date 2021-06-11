@@ -593,6 +593,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn burn_propper(currency_id: CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(currency_id, who, propper)
 	}
+	
 	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::GetSetterCurrencyId::get(), who, setter)?;
 		Ok(())
