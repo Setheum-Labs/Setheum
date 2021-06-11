@@ -574,13 +574,13 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 		Ok(())
 	}
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
+	
 	fn issue_standard(currency_id: CurrencyId, who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(currency_id, who, standard)?;
 		Ok(())
 	}
 
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
+	
 	fn burn_standard(currency_id: CurrencyId, who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(currency_id, who, standard)
 	}
@@ -593,7 +593,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn burn_propper(currency_id: CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(currency_id, who, propper)
 	}
-	
+
 	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::GetSetterCurrencyId::get(), who, setter)?;
 		Ok(())
