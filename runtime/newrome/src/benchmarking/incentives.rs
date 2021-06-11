@@ -61,7 +61,7 @@ runtime_benchmarks! {
 		});
 	}: _(RawOrigin::Signed(caller), pool_id)
 
-	update_setters_incentive_rewards {
+	update_reserves_incentive_rewards {
 		let c in 0 .. ReserveCurrencyIds::get().len().saturating_sub(1) as u32;
 		let currency_ids = ReserveCurrencyIds::get();
 		let mut values = vec![];
@@ -145,9 +145,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_update_setters_incentive_rewards() {
+	fn test_update_reserves_incentive_rewards() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_update_setters_incentive_rewards());
+			assert_ok!(test_benchmark_update_reserves_incentive_rewards());
 		});
 	}
 

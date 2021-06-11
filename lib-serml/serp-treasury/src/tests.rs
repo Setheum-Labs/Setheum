@@ -189,8 +189,8 @@ fn auction_serplus_works() {
 			SerpTreasuryModule::auction_serplus(Origin::signed(1), 100, USDJ),
 			Error::<Runtime>::SerplusPoolNotEnough,
 		);
-		assert_eq!(TOTAL_serplus_auction.with(|v| *v.borrow_mut()), 0);
+		assert_eq!(TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut()), 0);
 		assert_ok!(SerpTreasuryModule::auction_serplus(Origin::signed(1), 100, USDJ));
-		assert_eq!(TOTAL_serplus_auction.with(|v| *v.borrow_mut()), 1);
+		assert_eq!(TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut()), 1);
 	});
 }

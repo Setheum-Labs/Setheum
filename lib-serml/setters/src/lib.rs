@@ -146,7 +146,7 @@ impl<T: Config> Pallet<T> {
 		standard_adjustment: Amount,
 	) -> DispatchResult {
 		// mutate reserve and standard
-		Self::update_setter(who, currency_id, reserve_adjustment, standard_adjustment)?;
+		Self::update_reserve(who, currency_id, reserve_adjustment, standard_adjustment)?;
 
 		let reserve_balance_adjustment = Self::balance_try_from_amount_abs(reserve_adjustment)?;
 		let standard_balance_adjustment = Self::balance_try_from_amount_abs(standard_adjustment)?;
@@ -181,7 +181,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// transfer whole setter reserve of `from` to `to`
-	pub fn transfer_setter(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
+	pub fn transfer_reserve(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		// get `from` position data
 		let Position { reserve, standard } = Self::positions(currency_id, from);
 
@@ -203,20 +203,20 @@ impl<T: Config> Pallet<T> {
 		let reserve_adjustment = Self::amount_try_from_balance(reserve)?;
 		let standard_adjustment = Self::amount_try_from_balance(standard)?;
 
-		Self::update_setter(
+		Self::update_reserve(
 			from,
 			currency_id,
 			reserve_adjustment.saturating_neg(),
 			standard_adjustment.saturating_neg(),
 		)?;
-		Self::update_setter(to, currency_id, reserve_adjustment, standard_adjustment)?;
+		Self::update_reserve(to, currency_id, reserve_adjustment, standard_adjustment)?;
 
 		Self::deposit_event(Event::TransferSetter(from.clone(), to.clone(), currency_id));
 		Ok(())
 	}
 
 	/// mutate records of reserves and standards
-	fn update_setter(
+	fn update_reserve(
 		who: &T::AccountId,
 		currency_id: CurrencyId,
 		reserve_adjustment: Amount,
