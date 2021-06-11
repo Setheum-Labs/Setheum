@@ -181,7 +181,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// transfer whole setter reserve of `from` to `to`
-	pub fn transfer_setter(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
+	pub fn transfer_reserve(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		// get `from` position data
 		let Position { reserve, standard } = Self::positions(currency_id, from);
 
