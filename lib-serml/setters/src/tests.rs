@@ -36,17 +36,17 @@ fn standards_key() {
 }
 
 #[test]
-fn check_update_setter_overflow_work() {
+fn check_update_reserve_overflow_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		// reserve underflow
 		assert_noop!(
-			SettersModule::update_setter(&ALICE, BTC, -100, 0),
+			SettersModule::update_reserve(&ALICE, BTC, -100, 0),
 			Error::<Runtime>::ReserveTooLow,
 		);
 
 		// standard underflow
 		assert_noop!(
-			SettersModule::update_setter(&ALICE, BTC, 0, -100),
+			SettersModule::update_reserve(&ALICE, BTC, 0, -100),
 			Error::<Runtime>::StandardTooLow,
 		);
 	});
@@ -90,7 +90,7 @@ fn adjust_position_should_work() {
 }
 
 #[test]
-fn update_setter_should_work() {
+fn update_reserve_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(BTC, &SettersModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
@@ -102,7 +102,7 @@ fn update_setter_should_work() {
 
 		let alice_ref_count_0 = System::consumers(&ALICE);
 
-		assert_ok!(SettersModule::update_setter(&ALICE, BTC, 3000, 2000));
+		assert_ok!(SettersModule::update_reserve(&ALICE, BTC, 3000, 2000));
 
 		// just update records
 		assert_eq!(SettersModule::total_positions(BTC).standard, 2000);
@@ -120,7 +120,7 @@ fn update_setter_should_work() {
 
 		// should remove position storage if zero
 		assert_eq!(<Positions<Runtime>>::contains_key(BTC, &ALICE), true);
-		assert_ok!(SettersModule::update_setter(&ALICE, BTC, -3000, -2000));
+		assert_ok!(SettersModule::update_reserve(&ALICE, BTC, -3000, -2000));
 		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 0);
 		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 0);
 		assert_eq!(<Positions<Runtime>>::contains_key(BTC, &ALICE), false);
@@ -135,8 +135,8 @@ fn update_setter_should_work() {
 fn transfer_setter_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettersModule::update_setter(&ALICE, BTC, 400, 500));
-		assert_ok!(SettersModule::update_setter(&BOB, BTC, 100, 600));
+		assert_ok!(SettersModule::update_reserve(&ALICE, BTC, 400, 500));
+		assert_ok!(SettersModule::update_reserve(&BOB, BTC, 100, 600));
 		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 500);
 		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 400);
 		assert_eq!(SettersModule::positions(BTC, &BOB).standard, 600);
