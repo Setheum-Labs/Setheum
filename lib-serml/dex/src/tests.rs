@@ -24,7 +24,7 @@ use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{
 	Dex, Event, ExtBuilder, ListingOrigin, Origin, Runtime, System, Tokens, DNAR, ALICE, USDJ, USDJ_DNAR_PAIR,
-	USDJ_JCHF_PAIR, BOB, DNAR, JCHF,
+	USDJ_JCHF_PAIR, BOB, JCHF,
 };
 use orml_traits::MultiReservableCurrency;
 use sp_runtime::traits::BadOrigin;
