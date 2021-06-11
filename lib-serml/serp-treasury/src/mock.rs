@@ -161,10 +161,10 @@ impl setheum_dex::Config for Runtime {
 }
 
 thread_local! {
-	pub static TOTAL_SETTER_AUCTION: RefCell<u32> = RefCell::new(0);
+	pub static TOTAL_SETTER_IN_AUCTION: RefCell<u32> = RefCell::new(0);
 	pub static TOTAL_RESERVE_IN_AUCTION: RefCell<Balance> = RefCell::new(0);
-	pub static TOTAL_DIAMOND_AUCTION: RefCell<u32> = RefCell::new(0);
-	pub static TOTAL_serplus_auction: RefCell<u32> = RefCell::new(0);
+	pub static TOTAL_DIAMOND_IN_AUCTION: RefCell<u32> = RefCell::new(0);
+	pub static TOTAL_SERPLUS_IN_AUCTION: RefCell<u32> = RefCell::new(0);
 }
 
 pub struct MockSerpAuction;
@@ -173,40 +173,26 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 	type Balance = Balance;
 	type AuctionId = AuctionId;
 
-	fn new_setter_auction(
-		_refund_recipient: &AccountId,
-		_currency_id: Self::CurrencyId,
-		amount: Self::Balance,
-		_target: Self::Balance,
-	) -> DispatchResult {
-		TOTAL_SETTER_AUCTION.with(|v| *v.borrow_mut() += 1);
-		TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut() += amount);
+	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
+		TOTAL_SETTER_IN_AUCTION.with(|v| *v.borrow_mut() += 1);
 		Ok(())
 	}
 
-	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
-		TOTAL_DIAMOND_AUCTION.with(|v| *v.borrow_mut() += 1);
+	fn new_setter_auction(_amount: Self::Balance, _fix: Self::Balance, _currency: Self::CurrencyId) -> DispatchResult {
+		TOTAL_SETT_CURRENCY_IN_AUCTION.with(|v| *v.borrow_mut() += 1); // TotalSettCurrencyInAuction
 		Ok(())
 	}
 
 	fn new_serplus_auction(_amount: Self::Balance) -> DispatchResult {
-		TOTAL_serplus_auction.with(|v| *v.borrow_mut() += 1);
+		TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut() += 1);
 		Ok(())
 	}
 
 	fn get_total_setter_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		TOTAL_RESERVE_IN_AUCTION.with(|v| *v.borrow_mut())
-	}
-
-	fn get_total_serpsetter_in_auction() -> Self::Balance {
 		Default::default()
 	}
 
-	fn get_total_standard_in_auction() -> Self::Balance {
-		Default::default()
-	}
-
-	fn get_total_target_in_auction() -> Self::Balance {
+	fn get_total_diamond_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }

@@ -272,7 +272,7 @@ pub mod module {
 		pub fn auction_serplus(origin: OriginFor<T>, amount: Balance, currency_id: CurrencyId) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
-				Self::serplus_pool(&currency_id).saturating_sub(T::SerpAuctionHandler::get_total_serpsetter_in_auction()) >= amount,
+				Self::serplus_pool(&currency_id).saturating_sub(T::SerpAuctionHandler::get_total_diamond_in_auction()) >= amount,
 				Error::<T>::SerplusPoolNotEnough,
 			);
 			T::SerpAuctionHandler::new_serplus_auction(amount)?;
@@ -315,16 +315,17 @@ impl<T: Config> Pallet<T> {
 	pub fn adjustment_frequency() -> BlockNumber {
 		T::SerpTesSchedule::get()
 	}
-
+	// TODO:  Setup in SettMint to know total `standard_pool` and `reserve_pool`
 	/// Get current total serplus of specific currency type in the system.
-	pub fn serplus_pool(currency_id: CurrencyId) -> Balance {
-		T::Currency::free_balance(currency_id, &Self::account_id())
-	}
+	// pub fn serplus_pool(currency_id: CurrencyId) -> Balance {
+	// 	T::Currency::free_balance(currency_id, &Self::account_id())
+	// }
 
+	// TODO: Move the SettMint issueng like `issue_standard` to the SettMintEngine, and rename it `SettMintReserve`
 	/// Get total reserve amount of SERP Treasury module.
-	pub fn total_reserve() -> Balance {
-		T::Currency::free_balance(T::GetSetterCurrencyId, &Self::account_id())
-	}
+	// pub fn total_reserve() -> Balance {
+	// 	T::Currency::free_balance(T::GetSetterCurrencyId, &Self::account_id())
+	// }
 }
 
 impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
@@ -337,15 +338,15 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::adjustment_frequency()
 	}
 
-	/// get surplus amount of serp treasury
-	fn get_serplus_pool(currency_id: CurrencyId) -> Self::Balance {
-		Self::serplus_pool(currency_id)
-	}
+	// TODO:  get surplus amount of serp treasury
+	// fn get_serplus_pool(currency_id: CurrencyId) -> Self::Balance {
+	// 	Self::serplus_pool(currency_id)
+	// }
 
-	/// get reserve asset amount of serp treasury
-	fn get_total_setter() -> Self::Balance {
-		Self::total_reserve()
-	}
+	// TODO:  get reserve asset amount of serp treasury
+	// fn get_total_setter() -> Self::Balance {
+	// 	Self::total_reserve()
+	// }
 
 	/// calculate the proportion of specific standard amount for the whole system
 	fn get_standard_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio {

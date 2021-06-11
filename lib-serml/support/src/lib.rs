@@ -33,14 +33,13 @@ use sp_runtime::{
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
-	convert::TryInto,
 	fmt::Debug,
 	prelude::*,
 };
 
 pub type BlockNumber = u32;
-pub type Price = FixedU128;
 pub type FiatCurrencyId = CurrencyId;
+pub type Price = FixedU128;
 pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
@@ -63,6 +62,21 @@ impl<AccountId, CurrencyId, Balance: Default, Balance> StandardManager<AccountId
 	) -> DispatchResult {
 		Ok(())
 	}
+}
+
+pub trait SerpAuction<AccountId> {
+	type CurrencyId;
+	type Balance;
+	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
+
+	fn new_diamond_auction(initial_amount: Self::Balance, fix_setter: Self::Balance)) -> DispatchResult;
+	fn new_setter_auction(initial_amount: Self::Balance, fix_settcurrency: Self::Balance, settcurrency_id: Self::CurrencyId) -> DispatchResult;
+	fn new_serplus_auction(settcurrency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
+
+	fn get_total_setter_in_auction() -> Self::Balance;
+	fn get_total_settcurrency_in_auction(id: Self::CurrencyId) -> Self::Balance;
+	fn get_total_diamond_in_auction(id: Self::CurrencyId) -> Self::Balance ;
 }
 
 pub trait DexManager<AccountId, CurrencyId, Balance> {
@@ -151,14 +165,11 @@ pub trait SerpTreasury<AccountId> {
 
 	fn get_adjustment_frequency() -> Self::BlockNumber;
 
-	/// get surplus amount of serp treasury
-	fn get_surplus_pool() -> Self::Balance;
+	// TODO: get surplus amount of serp treasury
+	// fn get_serplus_pool() -> Self::Balance;
 
-	/// get serpup amount of serp treasury
-	fn get_surpup_pool() -> Self::Balance;
-
-	/// get reserve asset amount of serp treasury
-	fn get_total_setter() -> Self::Balance;
+	// TODO: get reserve asset amount of serp treasury
+	// fn get_total_setter() -> Self::Balance;
 
 	/// calculate the proportion of specific standard amount for the whole system
 	fn get_standard_proportion(amount: Self::Balance) -> Ratio;

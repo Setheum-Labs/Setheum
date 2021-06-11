@@ -202,7 +202,7 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		Default::default()
 	}
 
-	fn get_total_serpsetter_in_auction() -> Self::Balance {
+	fn get_total_diamond_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }
