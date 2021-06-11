@@ -18,18 +18,17 @@ frame-support = { default-features = false, git = "https://github.com/paritytech
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
 
 # orml dependencies
-orml-traits = { path = "../../lib-openrml/traits", default-features = false }
-orml-utilities = { path = "../../lib-openrml/utilities", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", version = "0.4.1-dev", default-features = false }
+orml-utilities = { path = "../../lib-openrml/utilities", version = "0.4.1-dev", default-features = false }
 
 # local dependencies
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-support = { package = "setheum-support", path = "../support", default-features = false }
 
 [dev-dependencies]
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
 pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
 pallet-timestamp = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-tokens = { package = "orml-tokens", path = "../../lib-openrml/tokens" }
+tokens = { package = "orml-tokens", path = "../../lib-openrml/tokens", version = "0.4.1-dev" }
 
 [features]
 default = ["std"]
