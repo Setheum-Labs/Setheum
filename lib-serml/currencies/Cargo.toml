@@ -10,25 +10,26 @@ serde = { version = "1.0.124", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 
 # Substrate dependencies
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 
 # orml dependencies
-orml-traits = { path = "../../lib-openrml/traits", version = "0.4.1-dev", default-features = false }
-orml-utilities = { path = "../../lib-openrml/utilities", version = "0.4.1-dev", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
+orml-utilities = { path = "../../lib-openrml/utilities", default-features = false }
 
 # local dependencies
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-pallet-timestamp = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
-tokens = { package = "orml-tokens", path = "../../lib-openrml/tokens", version = "0.4.1-dev" }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+tokens = { package = "orml-tokens", path = "../../lib-openrml/tokens" }
 
 [features]
 default = ["std"]
