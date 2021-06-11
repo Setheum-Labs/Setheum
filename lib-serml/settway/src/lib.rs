@@ -118,9 +118,9 @@ pub mod module {
 		///
 		/// - `currency_id`: reserve currency id.
 		/// - `from`: authorizer account
-		#[pallet::weight(<T as Config>::WeightInfo::transfer_setter_from())]
+		#[pallet::weight(<T as Config>::WeightInfo::transfer_reserve_from())]
 		#[transactional]
-		pub fn transfer_setter_from(
+		pub fn transfer_reserve_from(
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			from: <T::Lookup as StaticLookup>::Source,
@@ -128,7 +128,7 @@ pub mod module {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			Self::check_authorization(&from, &to, currency_id)?;
-			<setters::Module<T>>::transfer_setter(&from, &to, currency_id)?;
+			<setters::Module<T>>::transfer_reserve(&from, &to, currency_id)?;
 			Ok(().into())
 		}
 

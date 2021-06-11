@@ -132,7 +132,7 @@ fn update_reserve_should_work() {
 }
 
 #[test]
-fn transfer_setter_should_work() {
+fn transfer_reserve_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SettersModule::update_reserve(&ALICE, BTC, 400, 500));
@@ -142,7 +142,7 @@ fn transfer_setter_should_work() {
 		assert_eq!(SettersModule::positions(BTC, &BOB).standard, 600);
 		assert_eq!(SettersModule::positions(BTC, &BOB).reserve, 100);
 
-		assert_ok!(SettersModule::transfer_setter(&ALICE, &BOB, BTC));
+		assert_ok!(SettersModule::transfer_reserve(&ALICE, &BOB, BTC));
 		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 0);
 		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 0);
 		assert_eq!(SettersModule::positions(BTC, &BOB).standard, 1100);

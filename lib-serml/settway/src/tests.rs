@@ -78,11 +78,11 @@ fn unauthorize_all_should_work() {
 }
 
 #[test]
-fn transfer_setter_from_should_work() {
+fn transfer_reserve_from_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettwayModule::adjust_setter(Origin::signed(ALICE), SETT, 100, 50));
 		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
-		assert_ok!(SettwayModule::transfer_setter_from(Origin::signed(BOB), SETT, ALICE));
+		assert_ok!(SettwayModule::transfer_reserve_from(Origin::signed(BOB), SETT, ALICE));
 		assert_eq!(SettersModule::positions(SETT, BOB).reserve, 100);
 		assert_eq!(SettersModule::positions(SETT, BOB).standard, 50);
 	});
@@ -92,7 +92,7 @@ fn transfer_setter_from_should_work() {
 fn transfer_unauthorization_setters_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			SettwayModule::transfer_setter_from(Origin::signed(ALICE), SETT, BOB),
+			SettwayModule::transfer_reserve_from(Origin::signed(ALICE), SETT, BOB),
 			Error::<Runtime>::NoAuthorization,
 		);
 	});
