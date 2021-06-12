@@ -69,14 +69,14 @@ pub trait SerpAuction<AccountId> {
 	type Balance;
 	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
 
-	fn new_diamond_auction(initial_amount: Self::Balance, fix_setter: Self::Balance)) -> DispatchResult;
+	fn new_diamond_auction(initial_amount: Self::Balance, fix_setter: Self::Balance) -> DispatchResult;
 	fn new_setter_auction(initial_amount: Self::Balance, fix_settcurrency: Self::Balance, settcurrency_id: Self::CurrencyId) -> DispatchResult;
 	fn new_serplus_auction(settcurrency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
 
 	fn get_total_setter_in_auction() -> Self::Balance;
 	fn get_total_settcurrency_in_auction(id: Self::CurrencyId) -> Self::Balance;
-	fn get_total_diamond_in_auction(id: Self::CurrencyId) -> Self::Balance ;
+	fn get_total_diamond_in_auction(id: Self::CurrencyId) -> Self::Balance;
 }
 
 pub trait DexManager<AccountId, CurrencyId, Balance> {
