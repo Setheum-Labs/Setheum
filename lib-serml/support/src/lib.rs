@@ -23,13 +23,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode, FullCodec, HasCompact};
+use codec::FullCodec;
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
-use sp_core::H160;
+pub use primitives::{Balance, CurrencyId};
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
-	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
+	DispatchError, DispatchResult, FixedU128,
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
@@ -44,21 +43,21 @@ pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
-pub trait StandardManager<AccountId, CurrencyId, Balance, Balance> {
+pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
 		currency_id: CurrencyId,
 		reserve_balance: Balance,
-		standard_balance: Balance,
+		standard_balance: StandardBalance,
 	) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance: Default, Balance> StandardManager<AccountId, CurrencyId, Balance, Balance>
+impl<AccountId, CurrencyId, Balance, StandardBalance> StandardManager<AccountId, CurrencyId, Balance, StandardBalance>
 	for ()
 {
 	fn check_position_valid(
 		_currency_id: CurrencyId,
 		_reserve_balance: Balance,
-		_standard_balance: Balance,
+		_standard_balance: StandardBalance,
 	) -> DispatchResult {
 		Ok(())
 	}
@@ -69,14 +68,14 @@ pub trait SerpAuction<AccountId> {
 	type Balance;
 	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
 
-	fn new_diamond_auction(initial_amount: Self::Balance, fix_setter: Self::Balance)) -> DispatchResult;
+	fn new_diamond_auction(initial_amount: Self::Balance, fix_setter: Self::Balance) -> DispatchResult;
 	fn new_setter_auction(initial_amount: Self::Balance, fix_settcurrency: Self::Balance, settcurrency_id: Self::CurrencyId) -> DispatchResult;
 	fn new_serplus_auction(settcurrency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
 
 	fn get_total_setter_in_auction() -> Self::Balance;
 	fn get_total_settcurrency_in_auction(id: Self::CurrencyId) -> Self::Balance;
-	fn get_total_diamond_in_auction(id: Self::CurrencyId) -> Self::Balance ;
+	fn get_total_diamond_in_auction(id: Self::CurrencyId) -> Self::Balance;
 }
 
 pub trait DexManager<AccountId, CurrencyId, Balance> {

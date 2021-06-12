@@ -32,7 +32,7 @@
 use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
-use primitives::{currency::GetDecimals, Balance, CurrencyId};
+use primitives::{currency::Amount, Balance, CurrencyId, GetDecimals};
 use sp_runtime::{
 	traits::{CheckedDiv, CheckedMul},
 	FixedPointNumber,
@@ -209,7 +209,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStableCurrencyType,
 		);
-		let fiat_id = get_peg_currency_by_currency_id(&currency_id);
+		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
 			T::PegCurrencyIds::get(&currency_id) == &fiat_id,
 			Error::<T>::InvalidPegPair,
@@ -255,7 +255,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 
 		let fixed_convert_to_amount = Self::amount_try_from_price_abs(&fixed_price)?;
 		let market_convert_to_amount = Self::amount_try_from_price_abs(&market_price)?;
-		difference_amount = fixed_price.checked_div(&market_price);
+		difference_amount = fixed_price.checked_div(&market_price)
 		Ok(())
 	}
 
