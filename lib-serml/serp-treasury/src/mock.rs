@@ -36,9 +36,21 @@ pub type AuctionId = u32;
 
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
+
+// Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::XBTC);
+pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ); // Setheum EUR (Euro stablecoin)
+pub const KWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KWDJ); // Setheum KWD (Kuwaiti Dinar stablecoin)
+pub const JODJ: CurrencyId = CurrencyId::Token(TokenSymbol::JODJ); // Setheum JOD (Jordanian Dinar stablecoin)
+pub const BHDJ: CurrencyId = CurrencyId::Token(TokenSymbol::BHDJ); // Setheum BHD (Bahraini Dirham stablecoin)
+pub const KYDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KYDJ); // Setheum KYD (Cayman Islands Dollar stablecoin)
+pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OMR (Omani Riyal stablecoin)
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
+pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
 
 mod serp_treasury {
 	pub use super::super::*;
@@ -118,35 +130,10 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
-		USDJ, // Setheum USD (US Dollar stablecoin)
-		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
-		EURJ, // Setheum EUR (Euro stablecoin)
-		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
-		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
-		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
-		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
-		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
-		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
-		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
-	];
-	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter currency ticker is SETT
-	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
-	pub const GetSettGBPCurrencyId: CurrencyId = GBPJ; // SettGBP currency ticker is GBPJ
-	pub const GetSettEURCurrencyId: CurrencyId = EURJ; // SettEUR currency ticker is EURJ
-	pub const GetSettKWDCurrencyId: CurrencyId = KWDJ; // SettKWD currency ticker is KWDJ
-	pub const GetSettJODCurrencyId: CurrencyId = JODJ; // SettJOD currency ticker is JODJ
-	pub const GetSettBHDCurrencyId: CurrencyId = BHDJ; // SettBHD currency ticker is BHDJ
-	pub const GetSettKYDCurrencyId: CurrencyId = KYDJ; // SettKYD currency ticker is KYDJ
-	pub const GetSettOMRCurrencyId: CurrencyId = OMRJ; // SettOMR currency ticker is OMRJ
-	pub const GetSettCHFCurrencyId: CurrencyId = CHFJ; // SettCHF currency ticker is CHFJ
-	pub const GetSettGIPCurrencyId: CurrencyId = GIPJ; // SettGIP currency ticker is GIPJ
-	pub const GetDexerCurrencyId: CurrencyId = SDEX;
+	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT)];
-	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 }
 
 impl setheum_dex::Config for Runtime {
@@ -203,6 +190,32 @@ ord_parameter_types! {
 }
 
 parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
+		USDJ, // Setheum USD (US Dollar stablecoin)
+		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
+		EURJ, // Setheum EUR (Euro stablecoin)
+		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
+		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
+		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
+		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
+		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
+		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
+		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+	];
+	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
+	pub const GetSettGBPCurrencyId: CurrencyId = GBPJ; // SettGBP currency ticker is GBPJ
+	pub const GetSettEURCurrencyId: CurrencyId = EURJ; // SettEUR currency ticker is EURJ
+	pub const GetSettKWDCurrencyId: CurrencyId = KWDJ; // SettKWD currency ticker is KWDJ
+	pub const GetSettJODCurrencyId: CurrencyId = JODJ; // SettJOD currency ticker is JODJ
+	pub const GetSettBHDCurrencyId: CurrencyId = BHDJ; // SettBHD currency ticker is BHDJ
+	pub const GetSettKYDCurrencyId: CurrencyId = KYDJ; // SettKYD currency ticker is KYDJ
+	pub const GetSettOMRCurrencyId: CurrencyId = OMRJ; // SettOMR currency ticker is OMRJ
+	pub const GetSettCHFCurrencyId: CurrencyId = CHFJ; // SettCHF currency ticker is CHFJ
+	pub const GetSettGIPCurrencyId: CurrencyId = GIPJ; // SettGIP currency ticker is GIPJ
+	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
+
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
@@ -269,9 +282,9 @@ impl Default for ExtBuilder {
 		Self {
 			endowed_accounts: vec![
 				(ALICE, USDJ, 1000),
-				(ALICE, BTC, 1000),
+				(ALICE, CHFJ, 1000),
 				(BOB, USDJ, 1000),
-				(BOB, BTC, 1000),
+				(BOB, CHFJ, 1000),
 			],
 		}
 	}
