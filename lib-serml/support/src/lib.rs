@@ -25,6 +25,7 @@
 
 use codec::{Decode, Encode, FullCodec, HasCompact};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
+pub use primitives::{Balance, CurrencyId};
 use sp_core::H160;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
@@ -44,21 +45,21 @@ pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
-pub trait StandardManager<AccountId, CurrencyId, Balance, Balance> {
+pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
 		currency_id: CurrencyId,
 		reserve_balance: Balance,
-		standard_balance: Balance,
+		standard_balance: StandardBalance,
 	) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance: Default, Balance> StandardManager<AccountId, CurrencyId, Balance, Balance>
+impl<AccountId, CurrencyId, Balance, StandardBalance> StandardManager<AccountId, CurrencyId, Balance, StandardBalance>
 	for ()
 {
 	fn check_position_valid(
 		_currency_id: CurrencyId,
 		_reserve_balance: Balance,
-		_standard_balance: Balance,
+		_standard_balance: StandardBalance,
 	) -> DispatchResult {
 		Ok(())
 	}
