@@ -176,20 +176,6 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// The setter amount of SERP Treasury is not enough
-		SetterNotEnough,
-		/// The serplus pool of SERP Treasury is not enough
-		SerplusPoolNotEnough,
-		/// Serplus pool overflow
-		SerplusPoolOverflow,
-		/// SettPay pool overflow
-		SettPayTreasuryPoolOverflow,
-		/// SetheumTreasury pool overflow
-		SetheumTreasuryPoolOverflow,
-		/// CharityFund pool overflow
-		CharityFundPoolOverflow,
-		/// SIF pool overflow
-		SIFPoolOverflow,
 		/// The Stablecoin Price is stable and indifferent from peg
 		/// therefore cannot serp
 		PriceIsStableCannotSerp
@@ -270,12 +256,12 @@ pub mod module {
 		#[pallet::weight(T::WeightInfo::auction_serplus())]
 		#[transactional]
 		pub fn auction_serplus(origin: OriginFor<T>, amount: Balance, currency_id: CurrencyId) -> DispatchResultWithPostInfo {
-			T::UpdateOrigin::ensure_origin(origin)?;
+			T::UpdateOrigin::ensure_origin(origin)?;// ensure currency_id is accepted for serplus auction (Only SettCurrencies are accepted (SETT))
 			ensure!(
-				Self::serplus_pool(&currency_id).saturating_sub(T::SerpAuctionHandler::get_total_diamond_in_auction()) >= amount,
-				Error::<T>::SerplusPoolNotEnough,
+				T::StableCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidStableCurrencyType,
 			);
-			T::SerpAuctionHandler::new_serplus_auction(amount)?;
+			T::SerpAuctionHandler::new_serplus_auction(amount, &currency_id)?;
 			Ok(().into())
 		}
 
@@ -300,7 +286,7 @@ pub mod module {
 			initial_price: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			T::SerpAuctionHandler::new_setter_auction(accepted_currency, initial_price, currency_amount)?;
+			T::SerpAuctionHandler::new_setter_auction(initial_price, currency_amount, accepted_currency)?;
 			Ok(().into())
 		}
 	}
@@ -315,17 +301,6 @@ impl<T: Config> Pallet<T> {
 	pub fn adjustment_frequency() -> BlockNumber {
 		T::SerpTesSchedule::get()
 	}
-	// TODO:  Setup in SettMint to know total `standard_pool` and `reserve_pool`
-	/// Get current total serplus of specific currency type in the system.
-	// pub fn serplus_pool(currency_id: CurrencyId) -> Balance {
-	// 	T::Currency::free_balance(currency_id, &Self::account_id())
-	// }
-
-	// TODO: Move the SettMint issueng like `issue_standard` to the SettMintEngine, and rename it `SettMintReserve`
-	/// Get total reserve amount of SERP Treasury module.
-	// pub fn total_reserve() -> Balance {
-	// 	T::Currency::free_balance(T::GetSetterCurrencyId, &Self::account_id())
-	// }
 }
 
 impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
@@ -338,18 +313,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::adjustment_frequency()
 	}
 
-	// TODO:  get surplus amount of serp treasury
-	// fn get_serplus_pool(currency_id: CurrencyId) -> Self::Balance {
-	// 	Self::serplus_pool(currency_id)
-	// }
-
-	// TODO:  get reserve asset amount of serp treasury
-	// fn get_total_setter() -> Self::Balance {
-	// 	Self::total_reserve()
-	// }
-
-	/// calculate the proportion of specific standard amount for the whole system
-	fn get_standard_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio {
+	/// calculate the proportion of specific currency amount for the whole system
+	fn get_propper_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio {
 		ensure!(
 			T::StableCurrencyIds::get().contains(currency_id),
 			Error::<T>::InvalidSettCyrrencyType,
@@ -427,6 +392,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let serpup_balance = total_issuance.checked_mul(&serpup_ratio);
 		Self::on_serpup(currency_id, serpup_balance);
 	}
+
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
 		get_serplus_serpup(amount, currency_id);
@@ -448,6 +414,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let serpdown_balance = total_issuance.checked_mul(&serpdown_ratio);
 		Self::on_serpdown(currency_id, serpdown_balance);
 	}
+
 	/// buy back and burn surplus(stable currencies) with auction
 	/// Create the necessary serp down parameters and starts new auction.
 	fn on_serpdown(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
@@ -623,10 +590,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	fn burn_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
-		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), to, amount)
-	}
-
-	fn withdraw_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), to, amount)
 	}
 }
