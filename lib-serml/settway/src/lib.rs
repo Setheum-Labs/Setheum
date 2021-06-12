@@ -91,13 +91,13 @@ pub mod module {
 		/// Adjust the setters of `currency_id` by specific
 		/// `reserve_adjustment` and `standard_adjustment`
 		///
-		/// - `currency_id`: reserve currency id.
+		/// - `currency_id`: standard currency id.
 		/// - `reserve_adjustment`: signed amount, positive means to deposit
 		///   reserve currency into Settmint, negative means withdraw reserve
 		///   currency from Settmint.
 		/// - `standard_adjustment`: signed amount, positive means to issue some
-		///   amount of stablecoin to caller according to the standard adjustment,
-		///   negative means caller will payback some amount of stablecoin to
+		///   amount of `currency_id` to caller according to the standard adjustment,
+		///   negative means caller will payback some amount of `currency_id` (standard settcurrency) to
 		///   Settmint according to to the standard adjustment.
 		#[pallet::weight(<T as Config>::WeightInfo::adjust_setter())]
 		#[transactional]
@@ -108,6 +108,11 @@ pub mod module {
 			standard_adjustment: Amount,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
+			// ensure the currency is a settcurrency standard
+			ensure!(
+				T::StandardCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidStandardType,
+			);
 			<settmint_engine::Module<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
 			Ok(().into())
 		}
