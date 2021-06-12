@@ -75,7 +75,7 @@ fn adjust_position_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
 			SettmintEngineModule::adjust_position(&ALICE, DNAR, 100, 50),
-			Error::<Runtime>::InvalidReserveType,
+			Error::<Runtime>::InvalidStandardType,
 		);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 0);

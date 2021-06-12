@@ -173,7 +173,6 @@ runtime-benchmarks = [
 	"orml-authority/runtime-benchmarks",
 
 	"serp-treasury/runtime-benchmarks",
-	"setheum-dex/runtime-benchmarks",
 	"setheum-nft/runtime-benchmarks",
 
 	"sp-api/disable-logging",

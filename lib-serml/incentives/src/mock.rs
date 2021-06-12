@@ -123,15 +123,11 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn get_serplus_pool() -> Balance {
-		unimplemented!()
-	}
-
 	fn get_total_setter() -> Balance {
 		unimplemented!()
 	}
 
-	fn get_standard_proportion(_: Balance, _: CurrencyId) -> Ratio {
+	fn get_propper_proportion(_: Balance, _: CurrencyId) -> Ratio {
 		unimplemented!()
 	}
 
@@ -223,10 +219,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	fn burn_reserve(_: AccountId, _:Balance) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn withdraw_reserve(_: AccountId, _:Balance) -> DispatchResult {
 		unimplemented!()
 	}
 }
