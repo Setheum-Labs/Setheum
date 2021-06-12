@@ -11,10 +11,8 @@ serde = { version = "1.0.101", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 
 # Substrate dependencies
-sp-core = { version = "3.0.0", default-features = false }
 sp-runtime = { version = "3.0.0", default-features = false }
 sp-std = { version = "3.0.0", default-features = false }
-sp-io = { version = "3.0.0", default-features = false }
 
 [dev-dependencies]
 frame-support = { version = "3.0.0" }
@@ -26,7 +24,5 @@ std = [
 	"serde",
 	"codec/std",
 	"sp-runtime/std",
-	"sp-core/std",
 	"sp-std/std",
-	"sp-io/std",
 ]
