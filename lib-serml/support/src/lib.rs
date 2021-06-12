@@ -171,8 +171,8 @@ pub trait SerpTreasury<AccountId> {
 	// TODO: get reserve asset amount of serp treasury
 	// fn get_total_setter() -> Self::Balance;
 
-	/// calculate the proportion of specific standard amount for the whole system
-	fn get_standard_proportion(amount: Self::Balance) -> Ratio;
+	/// calculate the proportion of specific currency amount for the whole system
+	fn get_propper_proportion(amount: Self::Balance) -> Ratio;
 
 	/// SerpUp ratio for Serplus Auctions / Swaps
 	fn get_serplus_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
@@ -246,9 +246,6 @@ pub trait SerpTreasury<AccountId> {
 
 	/// Burn Reserve asset (Setter (SETT))
 	fn burn_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
-
-	/// Withdraw reserve asset (Setter (SETT)) of serp treasury to `who`
-	fn withdraw_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait PriceProvider<CurrencyId> {
