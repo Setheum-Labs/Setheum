@@ -34,7 +34,7 @@ use frame_support::{log, pallet_prelude::*, traits::MaxEncodedLen, transactional
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
-use sp_core::{H160, U256};
+use sp_core::U256;
 use sp_runtime::{
 	traits::{AccountIdConversion, UniqueSaturatedInto, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
@@ -266,6 +266,7 @@ pub mod module {
 									trading_pair.1,
 									*deposit_amount_0,
 									*deposit_amount_1,
+									Default::default(),
 									false,
 								),
 								_ => Err(Error::<T>::NotEnabledTradingPair.into()),

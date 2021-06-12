@@ -108,6 +108,26 @@ pub trait DexManager<AccountId, CurrencyId, Balance> {
 		max_supply_amount: Balance,
 		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError>;
+
+	fn add_liquidity(
+		who: &AccountId,
+		currency_id_a: CurrencyId,
+		currency_id_b: CurrencyId,
+		max_amount_a: Balance,
+		max_amount_b: Balance,
+		min_share_increment: Balance,
+		deposit_increment_share: bool,
+	) -> DispatchResult;
+
+	fn remove_liquidity(
+		who: &AccountId,
+		currency_id_a: CurrencyId,
+		currency_id_b: CurrencyId,
+		remove_share: Balance,
+		min_withdrawn_a: Balance,
+		min_withdrawn_b: Balance,
+		by_withdraw: bool,
+	) -> DispatchResult;
 }
 
 impl<AccountId, CurrencyId, Balance> DexManager<AccountId, CurrencyId, Balance> for ()
@@ -152,6 +172,30 @@ where
 		_price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Ok(Default::default())
+	}
+
+	fn add_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_max_amount_a: Balance,
+		_max_amount_b: Balance,
+		_min_share_increment: Balance,
+		_deposit_increment_share: bool,
+	) -> DispatchResult {
+		Ok(())
+	}
+
+	fn remove_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_remove_share: Balance,
+		_min_withdrawn_a: Balance,
+		_min_withdrawn_b: Balance,
+		_by_withdraw: bool,
+	) -> DispatchResult {
+		Ok(())
 	}
 }
 
