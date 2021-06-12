@@ -23,14 +23,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode, FullCodec, HasCompact};
+use codec::FullCodec;
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 pub use primitives::{Balance, CurrencyId};
-use sp_core::H160;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
-	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
+	DispatchError, DispatchResult, FixedU128,
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
