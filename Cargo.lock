@@ -7474,6 +7474,7 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "serde_json",
+ "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-runtime 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
