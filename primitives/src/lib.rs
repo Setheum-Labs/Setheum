@@ -88,6 +88,8 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// Block ID.
 pub type BlockId = generic::BlockId<Block>;
 
+pub type NFTBalance = u128;
+
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
@@ -96,7 +98,7 @@ pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 pub enum AuthoritysOriginId {
 	Root,
 	SetheumTreasury,
-	SettwayTreasury,
+	SerpTreasury,
 	SIF,
 }
 
