@@ -58,6 +58,43 @@ macro_rules! create_currency_id {
 			}
 		}
 
+		impl TokenInfo for CurrencyId {
+			fn currency_id(&self) -> Option<u8> {
+				match self {
+					$(CurrencyId::Token(TokenSymbol::$symbol) => Some($val),)*
+					_ => None,
+				}
+			}
+			fn name(&self) -> Option<&str> {
+				match self {
+					$(CurrencyId::Token(TokenSymbol::$symbol) => Some($name),)*
+					_ => None,
+				}
+			}
+			fn symbol(&self) -> Option<&str> {
+				match self {
+					$(CurrencyId::Token(TokenSymbol::$symbol) => Some(stringify!($symbol)),)*
+					_ => None,
+				}
+			}
+			fn decimals(&self) -> Option<u8> {
+				match self {
+					$(CurrencyId::Token(TokenSymbol::$symbol) => Some($deci),)*
+					_ => None,
+				}
+			}
+		}
+
+		$(pub const $symbol: CurrencyId = CurrencyId::Token(TokenSymbol::$symbol);)*
+
+		impl TokenSymbol {
+			pub fn get_info() -> Vec<(&'static str, u32)> {
+				vec![
+					$((stringify!($symbol), $deci),)*
+				]
+			}
+		}
+
 		impl GetDecimals for CurrencyId {
 			fn decimals(&self) -> u32 {
 				match self {
@@ -199,6 +236,19 @@ create_currency_id! {
 	}
 }
 
+pub trait TokenInfo {
+	fn currency_id(&self) -> Option<u8>;
+	fn name(&self) -> Option<&str>;
+	fn symbol(&self) -> Option<&str>;
+	fn decimals(&self) -> Option<u8>;
+}
+
+#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub enum DexShare {
+	Token(TokenSymbol),
+}
+
 pub trait GetDecimals {
 	fn decimals(&self) -> u32;
 }
@@ -207,7 +257,7 @@ pub trait GetDecimals {
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum CurrencyId {
 	Token(TokenSymbol),
-	DexShare(TokenSymbol, TokenSymbol),
+	DexShare(DexShare, DexShare),
 }
 
 impl CurrencyId {
