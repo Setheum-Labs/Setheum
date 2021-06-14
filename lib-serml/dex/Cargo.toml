@@ -26,7 +26,7 @@ support = { package = "setheum-support", path = "../support", default-features =
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
-orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }
+orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "master" }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
