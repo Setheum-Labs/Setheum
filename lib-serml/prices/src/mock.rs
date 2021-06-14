@@ -119,8 +119,8 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 	}
 }
 
-pub struct MockSetheumDex;
-impl DexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
+pub struct MockDex;
+impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USDJ, DNAR) => (10000, 200),
@@ -268,7 +268,7 @@ impl Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = MockSetheumDex;
+	type Dex = MockDex;
 	type Currency = Tokens;
 	type WeightInfo = ();
 }
