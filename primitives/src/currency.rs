@@ -115,12 +115,11 @@ create_currency_id! {
 	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		/// Setheum Network
-		/// Make it in alphabetical order.
+		/// Setheum Network >---------------------->>
 		DNAR("Setheum Dinar", 10) = 0,
 		SDEX("SettinDex", 10) = 1,
 		SETT("Setter", 12) = 2,
-
+		// SettCurrencies
 		USDJ("Setheum US Dollar", 12) = 3,
 		EURJ("Setheum Euro", 12) = 4,
 		JPYJ("Setheum Japanese Yen", 12) = 5,
@@ -169,11 +168,11 @@ create_currency_id! {
 		AZNJ("Setheum Azerbaijani Manat", 12) = 48,
 		PLNJ("Setheum Polish Zloty", 12) = 49,
 
-		/// Neom Network
+		/// Neom Network >---------------------->>
 		NEOM("Neom", 10) = 128,
 		HALAL("HalalSwap", 10) = 129,
 		NSETT("Neom Setter", 12) = 130,
-
+		// SettCurrencies
 		JUSD("Neom US Dollar", 12) = 131,
 		JEUR("Neom Euro", 12) = 132,
 		JJPY("Neom Japanese Yen", 12) = 133,
@@ -221,7 +220,6 @@ create_currency_id! {
 		JCFA("Neom CFA Franc", 12) = 175,
 		JAZN("Neom Azerbaijani Manat", 12) = 176,
 		JPLN("Neom Polish Zloty", 12) = 177,
-
 	}
 }
 
