@@ -367,6 +367,7 @@ fn newrome_genesis(
 		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
 		DNAR, sett, USDJ,
 	};
+	
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
 
