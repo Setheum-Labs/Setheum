@@ -152,7 +152,7 @@ impl setheum_dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = SetheumDexPalletId;
+	type PalletId = DexPalletId;
 	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = frame_system::EnsureSignedBy<Zero, AccountId>;

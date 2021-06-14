@@ -223,8 +223,8 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 }
 
-pub struct MockSetheumDex;
-impl DexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
+pub struct MockDex;
+impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(SETT, CHFJ) => (500, 100),
