@@ -919,14 +919,14 @@ parameter_types! {
 	];
 }
 
-impl setheum_dex::Config for Runtime {
+impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type DexIncentives = Incentives;
-	type WeightInfo = weights::setheum_dex::WeightInfo<Runtime>;
+	type WeightInfo = weights::dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
 }
 
@@ -1124,7 +1124,7 @@ construct_runtime!(
 		Prices: setheum_prices::{Module, Storage, Call, Event<T>},
 
 		// Dex
-		Dex: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
+		Dex: dex::{Module, Storage, Call, Event<T>, Config<T>},
 
 		// Settway
 		SerpAuction: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
