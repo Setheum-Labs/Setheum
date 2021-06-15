@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the setheum_dex module.
+//! Mocks for the dex module.
 
 #![cfg(test)]
 
@@ -134,7 +134,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		Dex: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Dex: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 	}
 );
@@ -217,7 +217,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		setheum_dex::GenesisConfig::<Runtime> {
+		dex::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: self.initial_listing_trading_pairs,
 			initial_enabled_trading_pairs: self.initial_enabled_trading_pairs,
 			initial_added_liquidity_pools: self.initial_added_liquidity_pools,

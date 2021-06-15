@@ -147,7 +147,7 @@ parameter_types! {
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, DNAR), TradingPair::new(USDJ, DOT)];
 }
 
-impl setheum_dex::Config for Runtime {
+impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
@@ -212,7 +212,7 @@ construct_runtime!(
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Currencies: setheum_currencies::{Pallet, Call, Event<T>},
-		Dex = setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Dex = dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -270,7 +270,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		setheum_dex::GenesisConfig::<Runtime> {
+		dex::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
