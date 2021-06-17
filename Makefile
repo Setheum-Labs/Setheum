@@ -32,6 +32,10 @@ check-tests: githooks
 .PHONY: check-all
 check-all: check-dev check-setheum
 
+.PHONY: check-runtimes
+check-runtimes:
+	SKIP_WASM_BUILD= cargo check --tests --all --features with-all-runtime
+
 .PHONY: check-dev
 check-dev:
 	SKIP_WASM_BUILD= cargo check --manifest-path node/setheum-dev/Cargo.toml --tests --all
@@ -43,6 +47,10 @@ check-setheum:
 .PHONY: check-debug
 check-debug:
 	RUSTFLAGS="-Z macro-backtrace" SKIP_WASM_BUILD= cargo +nightly check
+
+.PHONY: check-try-runtime
+check-try-runtime:
+	SKIP_WASM_BUILD= cargo check --features try-runtime --features with-all-runtime
 
 .PHONY: test
 test: githooks
@@ -98,15 +106,13 @@ submodule:
 
 .PHONY: update-orml
 update-orml:
-	cd lib-orml && git checkout master && git pull
-	git add lib-orml
+	cd lib-openrml && git checkout master && git pull
+	git add lib-openrml
 
 .PHONY: update
-update: update-orml cargo-update check-all
+update: update-orml
 	cargo update
-	cargo update --manifest-path node/setheum-dev/Cargo.toml
-	cargo update --manifest-path node/setheum-dev/cli/Cargo.toml
-	cargo update --manifest-path node/setheum-dev/service/Cargo.toml
+	make check
 
 .PHONY: build-wasm-newrome
 build-wasm-newrome:

@@ -43,7 +43,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions for orml_rewards.
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> orml_rewards::WeightInfo for WeightInfo<T> {
 	fn on_initialize(c: u32) -> Weight {
 		(14_327_000 as Weight)

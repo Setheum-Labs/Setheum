@@ -22,16 +22,16 @@
 
 use super::*;
 use crate as transaction_payment;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients, PalletId};
 use orml_traits::parameter_type_with_key;
 use primitives::{Amount, TokenSymbol, TradingPair};
 use smallvec::smallvec;
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
-	testing::Header, 
-	traits::{IdentityLookup, One}, 
-	DispatchError, DispatchResult, 
-	FixedPointNumber, ModuleId, 
+	testing::Header,
+	traits::{IdentityLookup, One},
+	DispatchError, DispatchResult,
+	FixedPointNumber,
 	Perbill,
 };
 use sp_std::cell::RefCell;
@@ -105,6 +105,7 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -140,18 +141,18 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const DEXModuleId: ModuleId = ModuleId(*b"dnr/sdex");
+	pub const DexPalletId: PalletId = PalletId(*b"dnr/sdex");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, DNAR), TradingPair::new(USDJ, DOT)];
 }
 
-impl setheum_dex::Config for Runtime {
+impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = SetheumDexModuleId;
+	type PalletId = DexPalletId;
 	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = frame_system::EnsureSignedBy<Zero, AccountId>;
@@ -159,7 +160,7 @@ impl setheum_dex::Config for Runtime {
 
 parameter_types! {
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![USDJ, DOT];
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::one();
 	pub const StableCurrencyId: CurrencyId = USDJ;
 	pub static TransactionByteFee: u128 = 1;
 }
@@ -174,8 +175,8 @@ impl Config for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = ();
-	type DEX = SetheumDex;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type Dex = Dex;
+	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
 	type WeightInfo = ();
 }
 
@@ -211,7 +212,7 @@ construct_runtime!(
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Currencies: setheum_currencies::{Pallet, Call, Event<T>},
-		DEX = setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Dex = dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -269,7 +270,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		setheum_dex::GenesisConfig::<Runtime> {
+		dex::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],

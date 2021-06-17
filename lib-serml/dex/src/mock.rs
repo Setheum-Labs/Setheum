@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the setheum_dex module.
+//! Mocks for the dex module.
 
 #![cfg(test)]
 
@@ -71,6 +71,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -87,6 +88,7 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
 }
 
 pub struct MockDexIncentives;
@@ -108,7 +110,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub const SetheumDexModuleId: ModuleId = ModuleId(*b"dnr/sdex");
+	pub const DexPalletId: PalletId = PalletId(*b"dnr/sdex");
 }
 
 impl Config for Runtime {
@@ -116,7 +118,7 @@ impl Config for Runtime {
 	type Currency = Tokens;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = SetheumDexModuleId;
+	type PalletId = DexPalletId;
 	type WeightInfo = ();
 	type DexIncentives = MockDexIncentives;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
@@ -132,7 +134,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		DEX = setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Dex: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 	}
 );
@@ -215,7 +217,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		setheum_dex::GenesisConfig::<Runtime> {
+		dex::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: self.initial_listing_trading_pairs,
 			initial_enabled_trading_pairs: self.initial_enabled_trading_pairs,
 			initial_added_liquidity_pools: self.initial_added_liquidity_pools,

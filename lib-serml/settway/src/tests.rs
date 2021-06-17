@@ -33,10 +33,7 @@ fn authorize_should_work() {
 		System::set_block_number(1);
 		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
 
-		let authorization_event = Event::settway(crate::Event::Authorization(ALICE, BOB, SETT));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == authorization_event));
+		System::assert_last_event(Event::settway(crate::Event::Authorization(ALICE, BOB, SETT)));
 
 		assert_ok!(SettwayModule::check_authorization(&ALICE, &BOB, SETT));
 	});
@@ -50,10 +47,7 @@ fn unauthorize_should_work() {
 		assert_ok!(SettwayModule::check_authorization(&ALICE, &BOB, SETT));
 		assert_ok!(SettwayModule::unauthorize(Origin::signed(ALICE), SETT, BOB));
 
-		let unauthorization_event = Event::settway(crate::Event::UnAuthorization(ALICE, BOB, SETT));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == unauthorization_event));
+		System::assert_last_event(Event::settway(crate::Event::UnAuthorization(ALICE, BOB, SETT)));
 
 		assert_noop!(
 			SettwayModule::check_authorization(&ALICE, &BOB, SETT),
@@ -70,10 +64,7 @@ fn unauthorize_all_should_work() {
 		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, CAROL));
 		assert_ok!(SettwayModule::unauthorize_all(Origin::signed(ALICE)));
 
-		let unauthorization_all_event = Event::settway(crate::Event::UnAuthorizationAll(ALICE));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == unauthorization_all_event));
+		System::assert_last_event(Event::settway(crate::Event::UnAuthorizationAll(ALICE)));
 
 		assert_noop!(
 			SettwayModule::check_authorization(&ALICE, &BOB, SETT),
@@ -87,11 +78,11 @@ fn unauthorize_all_should_work() {
 }
 
 #[test]
-fn transfer_setter_from_should_work() {
+fn transfer_reserve_from_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettwayModule::adjust_setter(Origin::signed(ALICE), SETT, 100, 50));
 		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
-		assert_ok!(SettwayModule::transfer_setter_from(Origin::signed(BOB), SETT, ALICE));
+		assert_ok!(SettwayModule::transfer_reserve_from(Origin::signed(BOB), SETT, ALICE));
 		assert_eq!(SettersModule::positions(SETT, BOB).reserve, 100);
 		assert_eq!(SettersModule::positions(SETT, BOB).standard, 50);
 	});
@@ -101,7 +92,7 @@ fn transfer_setter_from_should_work() {
 fn transfer_unauthorization_setters_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			SettwayModule::transfer_setter_from(Origin::signed(ALICE), SETT, BOB),
+			SettwayModule::transfer_reserve_from(Origin::signed(ALICE), SETT, BOB),
 			Error::<Runtime>::NoAuthorization,
 		);
 	});

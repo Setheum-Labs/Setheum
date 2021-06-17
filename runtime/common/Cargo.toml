@@ -1,6 +1,6 @@
 [package]
 name = "runtime-common"
-version = "0.5.0"
+version = "0.7.1"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -11,16 +11,16 @@ serde = { version = "1.0.101", optional = true, default-features = false }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 
 # Substrate dependencies
-sp-std = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-core = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-runtime = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-frame-support = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-frame-system = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-pallet-scheduler = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 
 # orml dependencies
-orml-oracle = { path = "../../lib-orml/oracle", default-features = false }
-orml-traits = { path = "../../lib-orml/traits", default-features = false }
+orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
 
 # local dependencies
 setheum-support = { path = "../../lib-serml/support", default-features = false }
@@ -35,8 +35,8 @@ pallet-timestamp = "3.0.0"
 pallet-balances = "3.0.0"
 pallet-proxy = "3.0.0"
 pallet-utility = "3.0.0"
-orml-tokens = { path = "../../lib-orml/tokens" }
-orml-nft = { path = "../../lib-orml/nft" }
+orml-tokens = { path = "../../lib-openrml/tokens" }
+orml-nft = { path = "../../lib-openrml/nft" }
 setheum-currencies = { path = "../../lib-serml/currencies" }
 setheum-nft = { path = "../../lib-serml/nft" }
 setheum-dex = { path = "../../lib-serml/dex" }

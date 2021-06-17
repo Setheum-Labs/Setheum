@@ -81,7 +81,7 @@ pub mod module {
 		StorageDoubleMap<_, Twox64Concat, T::AccountId, Blake2_128Concat, (CurrencyId, T::AccountId), bool, ValueQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -91,13 +91,13 @@ pub mod module {
 		/// Adjust the setters of `currency_id` by specific
 		/// `reserve_adjustment` and `standard_adjustment`
 		///
-		/// - `currency_id`: reserve currency id.
+		/// - `currency_id`: standard currency id.
 		/// - `reserve_adjustment`: signed amount, positive means to deposit
 		///   reserve currency into Settmint, negative means withdraw reserve
 		///   currency from Settmint.
 		/// - `standard_adjustment`: signed amount, positive means to issue some
-		///   amount of stablecoin to caller according to the standard adjustment,
-		///   negative means caller will payback some amount of stablecoin to
+		///   amount of `currency_id` to caller according to the standard adjustment,
+		///   negative means caller will payback some amount of `currency_id` (standard settcurrency) to
 		///   Settmint according to to the standard adjustment.
 		#[pallet::weight(<T as Config>::WeightInfo::adjust_setter())]
 		#[transactional]
@@ -108,6 +108,11 @@ pub mod module {
 			standard_adjustment: Amount,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
+			// ensure the currency is a settcurrency standard
+			ensure!(
+				T::StandardCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidStandardType,
+			);
 			<settmint_engine::Module<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
 			Ok(().into())
 		}
@@ -118,9 +123,9 @@ pub mod module {
 		///
 		/// - `currency_id`: reserve currency id.
 		/// - `from`: authorizer account
-		#[pallet::weight(<T as Config>::WeightInfo::transfer_setter_from())]
+		#[pallet::weight(<T as Config>::WeightInfo::transfer_reserve_from())]
 		#[transactional]
-		pub fn transfer_setter_from(
+		pub fn transfer_reserve_from(
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			from: <T::Lookup as StaticLookup>::Source,
@@ -128,7 +133,7 @@ pub mod module {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			Self::check_authorization(&from, &to, currency_id)?;
-			<setters::Module<T>>::transfer_setter(&from, &to, currency_id)?;
+			<setters::Module<T>>::transfer_reserve(&from, &to, currency_id)?;
 			Ok(().into())
 		}
 

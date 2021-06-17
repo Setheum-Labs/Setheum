@@ -52,13 +52,13 @@ pub trait WeightInfo {
 	fn deposit_dex_share() -> Weight;
 	fn withdraw_dex_share() -> Weight;
 	fn claim_rewards() -> Weight;
-	fn update_incentive_rewards(c: u32, ) -> Weight;
+	fn update_dex_incentive_rewards(c: u32, ) -> Weight;
 	fn update_dex_saving_rewards(c: u32, ) -> Weight;
 	fn add_allowance() -> Weight;
 }
 
 /// Weights for setheum_incentives using the Setheum node and recommended hardware.
-pub struct SetheumWeight<T>(PhantomData<T>);
+pub struct SetheumWeight<T>(_);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn on_initialize(c: u32) -> Weight {
 		(33_360_000 as Weight)
@@ -81,7 +81,7 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
-	fn update_incentive_rewards(c: u32, ) -> Weight {
+	fn update_dex_incentive_rewards(c: u32, ) -> Weight {
 		(479_000 as Weight)
 			// Standard Error: 29_000
 			.saturating_add((1_893_000 as Weight).saturating_mul(c as Weight))
@@ -122,7 +122,7 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
 	}
-	fn update_incentive_rewards(c: u32, ) -> Weight {
+	fn update_dex_incentive_rewards(c: u32, ) -> Weight {
 		(479_000 as Weight)
 			// Standard Error: 29_000
 			.saturating_add((1_893_000 as Weight).saturating_mul(c as Weight))

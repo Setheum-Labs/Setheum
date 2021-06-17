@@ -25,7 +25,7 @@ use enumflags2::BitFlags;
 use frame_support::{
 	pallet_prelude::*,
 	traits::{Currency, ExistenceRequirement::KeepAlive},
-	transactional,
+	transactional, PalletId,
 };
 use frame_system::pallet_prelude::*;
 use orml_traits::{BasicCurrency, BasicReservableCurrency, NFT};
@@ -34,7 +34,7 @@ use primitives::{Balance, NFTBalance};
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
 	traits::{AccountIdConversion, StaticLookup, Zero},
-	DispatchResult, ModuleId, RuntimeDebug,
+	DispatchResult, RuntimeDebug,
 };
 
 pub mod benchmarking;
@@ -114,7 +114,7 @@ pub mod module {
 
 		/// The NFT's module id
 		#[pallet::constant]
-		type ModuleId: Get<ModuleId>;
+		type PalletId: Get<PalletId>;
 
 		///  Currency type for reserve/unreserve balance to
 		/// create_class/mint/burn/destroy_class
@@ -159,7 +159,7 @@ pub mod module {
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -175,7 +175,7 @@ pub mod module {
 		pub fn create_class(origin: OriginFor<T>, metadata: CID, properties: Properties) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			let next_id = orml_nft::Pallet::<T>::next_class_id();
-			let owner: T::AccountId = T::ModuleId::get().into_sub_account(next_id);
+			let owner: T::AccountId = T::PalletId::get().into_sub_account(next_id);
 			let deposit = T::CreateClassDeposit::get();
 
 			// it depends https://github.com/paritytech/substrate/issues/7563
@@ -263,7 +263,7 @@ pub mod module {
 			ensure!(who == token_info.owner, Error::<T>::NoPermission);
 
 			orml_nft::Pallet::<T>::burn(&who, token)?;
-			let owner: T::AccountId = T::ModuleId::get().into_sub_account(token.0);
+			let owner: T::AccountId = T::PalletId::get().into_sub_account(token.0);
 			let data = token_info.data;
 			// `repatriate_reserved` will check `to` account exist and return `DeadAccount`.
 			// `transfer` not do this check.
@@ -294,24 +294,13 @@ pub mod module {
 				Error::<T>::CannotDestroyClass
 			);
 
-			let owner: T::AccountId = T::ModuleId::get().into_sub_account(class_id);
+			let owner: T::AccountId = T::PalletId::get().into_sub_account(class_id);
 			let data = class_info.data;
 			// `repatriate_reserved` will check `to` account exist and return `DeadAccount`.
 			// `transfer` not do this check.
 			<T as Config>::Currency::unreserve(&owner, data.deposit);
 			<T as Config>::Currency::transfer(&owner, &dest, data.deposit)?;
 
-			// transfer all free from origin to dest
-			orml_nft::Pallet::<T>::destroy_class(&who, class_id)?;
-
-			Self::deposit_event(Event::DestroyedClass(who, class_id, dest));
-			Ok(().into())
-		}
-	}
-}
-
-impl<T: Config> Pallet<T> {
-	/// Ensured atomic.
 	#[transactional]
 	fn do_transfer(from: &T::AccountId, to: &T::AccountId, token: (ClassIdOf<T>, TokenIdOf<T>)) -> DispatchResult {
 		let class_info = orml_nft::Pallet::<T>::classes(token.0).ok_or(Error::<T>::ClassIdNotFound)?;

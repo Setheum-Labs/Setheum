@@ -29,22 +29,18 @@ runtime_benchmarks! {
 
 	_ {}
 
-	auction_serplus {
-		SerpTreasury::on_system_serplus(100 * dollar(rUSD))?;
-	}: _(RawOrigin::Root, 100 * dollar(rUSD))
+	auction_serplus {// TODO: update
+		Currencies::deposit(rSETT, &SerpTreasury::account_id(), 10_000 * dollar(rSETT))?;
+	}: _(RawOrigin::Root, rSETT, 1_000 * dollar(rSETT), 1_000 * dollar(rUSD), true)
 
-	auction_standard {
+	auction_diamond { // TODO: update
 		let currency_id: CurrencyId = rUSD;
-		SerpTreasury::on_system_standard(100 * dollar(currency_id))?;
-	}: _(RawOrigin::Root, 100 * dollar(currency_id), 200 * dollar(ROME))
+		Currencies::deposit(rSETT, &SerpTreasury::account_id(), 10_000 * dollar(rSETT))?;
+	}: _(RawOrigin::Root, rSETT, 1_000 * dollar(rSETT), 1_000 * dollar(rUSD), true)
 
 	auction_setter {
 		Currencies::deposit(rSETT, &SerpTreasury::account_id(), 10_000 * dollar(rSETT))?;
 	}: _(RawOrigin::Root, rSETT, 1_000 * dollar(rSETT), 1_000 * dollar(rUSD), true)
-
-	set_expected_setter_auction_size {
-		let currency_id: CurrencyId = rSETT;
-	}: _(RawOrigin::Root, currency_id, 200 * dollar(currency_id))
 }
 
 #[cfg(test)]
@@ -67,9 +63,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_auction_standard() {
+	fn test_auction_diamond() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_auction_standard());
+			assert_ok!(test_benchmark_auction_diamond());
 		});
 	}
 
@@ -77,13 +73,6 @@ mod tests {
 	fn test_auction_setter() {
 		new_test_ext().execute_with(|| {
 			assert_ok!(test_benchmark_auction_setter());
-		});
-	}
-
-	#[test]
-	fn test_set_expected_setter_auction_size() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_set_expected_setter_auction_size());
 		});
 	}
 }

@@ -43,7 +43,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions for setheum_incentives.
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> setheum_incentives::WeightInfo for WeightInfo<T> {
 	fn deposit_dex_share() -> Weight {
 		(166_221_000 as Weight)
@@ -60,7 +60,7 @@ impl<T: frame_system::Config> setheum_incentives::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
-	fn update_setters_incentive_rewards(c: u32) -> Weight {
+	fn update_reserves_incentive_rewards(c: u32) -> Weight {
 		(1_871_000 as Weight)
 			// Standard Error: 14_000
 			.saturating_add((2_914_000 as Weight).saturating_mul(c as Weight))

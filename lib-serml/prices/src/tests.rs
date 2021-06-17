@@ -52,7 +52,7 @@ fn get_price_of_stable_currency_id() {
 #[test]
 fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(MockSetheumDex::get_liquidity_pool(USDJ, DNAR), (10000, 200));
+		assert_eq!(MockDex::get_liquidity_pool(USDJ, DNAR), (10000, 200));
 		assert_eq!(
 			PricesModule::get_price(LP_USDJ_DNAR),
 			None
@@ -65,7 +65,7 @@ fn get_price_of_lp_token_currency_id() {
 			Some(Price::saturating_from_rational(200000000u128, 1))	// 10000/100 * Price::saturating_from_rational(1000000u128, 1) * 2
 		);
 
-		assert_eq!(MockSetheumDex::get_liquidity_pool(JCHF, USDJ), (0, 0));
+		assert_eq!(MockDex::get_liquidity_pool(JCHF, USDJ), (0, 0));
 		assert_eq!(
 			PricesModule::get_price(LP_JCHF_USDJ),
 			None
@@ -120,8 +120,7 @@ fn lock_price_call_work() {
 		assert_noop!(PricesModule::lock_price(Origin::signed(5), JCHF), BadOrigin,);
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), JCHF));
 
-		let lock_price_event = Event::prices(crate::Event::LockPrice(JCHF, Price::saturating_from_integer(50000)));
-		assert!(System::events().iter().any(|record| record.event == lock_price_event));
+		System::assert_last_event(Event::prices(crate::Event::LockPrice(JCHF, Price::saturating_from_integer(50000))));
 		assert_eq!(
 			PricesModule::locked_price(JCHF),
 			Some(Price::saturating_from_integer(50000))
@@ -137,8 +136,7 @@ fn unlock_price_call_work() {
 		assert_noop!(PricesModule::unlock_price(Origin::signed(5), JCHF), BadOrigin,);
 		assert_ok!(PricesModule::unlock_price(Origin::signed(1), JCHF));
 
-		let unlock_price_event = Event::prices(crate::Event::UnlockPrice(JCHF));
-		assert!(System::events().iter().any(|record| record.event == unlock_price_event));
+		System::assert_last_event(Event::prices(crate::Event::UnlockPrice(JCHF)));
 
 		assert_eq!(PricesModule::locked_price(JCHF), None);
 	});

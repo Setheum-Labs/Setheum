@@ -110,7 +110,7 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 0);
 		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(USDJ, &BOB), 1000);
 
-		// add liquidity to DEX
+		// add liquidity to Dex
 		assert_ok!(Dex::add_liquidity(
 			Origin::signed(ALICE),
 			DNAR,
@@ -153,7 +153,7 @@ fn set_default_fee_token_work() {
 #[test]
 fn charge_fee_by_default_fee_token() {
 	ExtBuilder::default().build().execute_with(|| {
-		// add liquidity to DEX
+		// add liquidity to Dex
 		assert_ok!(Dex::add_liquidity(
 			Origin::signed(ALICE),
 			DNAR,

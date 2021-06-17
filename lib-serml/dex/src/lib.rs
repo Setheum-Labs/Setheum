@@ -16,13 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # SetheumDex Module
+//! # Dex Module
 //!
 //! ## Overview
 //!
 //! Built-in decentralized exchange modules in setheum network, the swap
 //! mechanism refers to the design of Uniswap V2. In addition to being used for
-//! trading, SetheumDex also participates in transaction fee liquidation.
+//! trading, Dex also participates in transaction fee liquidation.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::too_many_arguments)]
@@ -30,17 +30,17 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::collapsible_if)]
 
-use frame_support::{log, pallet_prelude::*, transactional};
+use frame_support::{log, pallet_prelude::*, traits::MaxEncodedLen, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
 use sp_core::U256;
 use sp_runtime::{
 	traits::{AccountIdConversion, UniqueSaturatedInto, Zero},
-	DispatchError, DispatchResult, FixedPointNumber, ModuleId, RuntimeDebug, SaturatedConversion,
+	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{DexIncentives, SetheumDexManager, Price, Ratio};
+use support::{DexIncentives, DexManager, Price, Ratio};
 
 mod mock;
 mod tests;
@@ -50,7 +50,7 @@ pub use module::*;
 pub use weights::WeightInfo;
 
 /// Parameters of TradingPair in Provisioning status
-#[derive(Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq)]
+#[derive(Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq, MaxEncodedLen)]
 pub struct TradingPairProvisionParameters<Balance, BlockNumber> {
 	/// limit contribution per time.
 	min_contribution: (Balance, Balance),
@@ -63,7 +63,7 @@ pub struct TradingPairProvisionParameters<Balance, BlockNumber> {
 }
 
 /// Status for TradingPair
-#[derive(Clone, Copy, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
+#[derive(Clone, Copy, Encode, Decode, RuntimeDebug, PartialEq, Eq, MaxEncodedLen)]
 pub enum TradingPairStatus<Balance, BlockNumber> {
 	/// Default status,
 	/// can withdraw liquidity, re-enable and list this trading pair.
@@ -105,14 +105,14 @@ pub mod module {
 		#[pallet::constant]
 		type TradingPathLimit: Get<u32>;
 
-		/// TheSetheumDex's module id, keep all assets in SetheumDex.
+		/// The Dex's module id, keep all assets in Dex.
 		#[pallet::constant]
-		type ModuleId: Get<ModuleId>;
+		type PalletId: Get<PalletId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
-		/// SetheumDex incentives
+		/// Dex incentives
 		type DexIncentives: DexIncentives<Self::AccountId, CurrencyId, Balance>;
 
 		/// The origin which may list, enable or disable trading pairs.
@@ -151,6 +151,10 @@ pub mod module {
 		ZeroSupplyAmount,
 		/// The target amount is zero
 		ZeroTargetAmount,
+		/// The share increment is unacceptable
+		UnacceptableShareIncrement,
+		/// The liquidity withdrawn is unacceptable
+		UnacceptableLiquidityWithdrawn,
 	}
 
 	#[pallet::event]
@@ -262,6 +266,7 @@ pub mod module {
 									trading_pair.1,
 									*deposit_amount_0,
 									*deposit_amount_1,
+									Default::default(),
 									false,
 								),
 								_ => Err(Error::<T>::NotEnabledTradingPair.into()),
@@ -274,14 +279,14 @@ pub mod module {
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Trading with SetheumDex, swap with exact supply amount
+		/// Trading with Dex, swap with exact supply amount
 		///
 		/// - `path`: trading path.
 		/// - `supply_amount`: exact supply amount.
@@ -299,11 +304,11 @@ pub mod module {
 			Ok(().into())
 		}
 
-		/// Trading with SetheumDex, swap with exact target amount
+		/// Trading with Dex, swap with exact target amount
 		///
 		/// - `path`: trading path.
 		/// - `target_amount`: exact target amount.
-		/// - `max_supply_amount`: acceptable maxmum supply amount.
+		/// - `max_supply_amount`: acceptable maximum supply amount.
 		#[pallet::weight(<T as Config>::WeightInfo::swap_with_exact_target(path.len().try_into().unwrap()))]
 		#[transactional]
 		pub fn swap_with_exact_target(
@@ -319,21 +324,19 @@ pub mod module {
 
 		/// Add liquidity to Enabled trading pair, or add provision to
 		/// Provisioning trading pair.
-		/// - Add liquidity success will issue shares in current price which
-		///   decided by the liquidity scale. Shares are temporarily not
+		/// - Add liquidity success will issue shares in current price which decided by the
+		///   liquidity scale. Shares are temporarily not
 		/// allowed to transfer and trade, it represents the proportion of
 		/// assets in liquidity pool.
-		/// - Add provision success will record the provision, issue shares to
-		///   caller in the initial price when trading pair convert to Enabled.
+		/// - Add provision success will record the provision, issue shares to caller in the initial
+		///   price when trading pair convert to Enabled.
 		///
 		/// - `currency_id_a`: currency id A.
 		/// - `currency_id_b`: currency id B.
-		/// - `max_amount_a`: maximum currency A amount allowed to inject to
-		///   liquidity pool.
-		/// - `max_amount_b`: maximum currency A amount allowed to inject to
-		///   liquidity pool.
-		/// - `deposit_increment_share`: this flag indicates whether to deposit
-		///   added lp shares to obtain incentives
+		/// - `max_amount_a`: maximum currency A amount allowed to inject to liquidity pool.
+		/// - `max_amount_b`: maximum currency A amount allowed to inject to liquidity pool.
+		/// - `deposit_increment_share`: this flag indicates whether to deposit added lp shares to
+		///   obtain incentives
 		#[pallet::weight(if *deposit_increment_share {
 			<T as Config>::WeightInfo::add_liquidity_and_deposit()
 		} else {
@@ -346,6 +349,7 @@ pub mod module {
 			currency_id_b: CurrencyId,
 			#[pallet::compact] max_amount_a: Balance,
 			#[pallet::compact] max_amount_b: Balance,
+			#[pallet::compact] min_share_increment: Balance,
 			deposit_increment_share: bool,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
@@ -359,6 +363,7 @@ pub mod module {
 					currency_id_b,
 					max_amount_a,
 					max_amount_b,
+					min_share_increment,
 					deposit_increment_share,
 				),
 				TradingPairStatus::<_, _>::Provisioning(_) => {
@@ -377,8 +382,7 @@ pub mod module {
 		/// - `currency_id_a`: currency id A.
 		/// - `currency_id_b`: currency id B.
 		/// - `remove_share`: liquidity amount to remove.
-		/// - `by_withdraw`: this flag indicates whether to withdraw share which
-		///   is on incentives.
+		/// - `by_withdraw`: this flag indicates whether to withdraw share which is on incentives.
 		#[pallet::weight(if *by_withdraw {
 			<T as Config>::WeightInfo::remove_liquidity_by_withdraw()
 		} else {
@@ -390,10 +394,20 @@ pub mod module {
 			currency_id_a: CurrencyId,
 			currency_id_b: CurrencyId,
 			#[pallet::compact] remove_share: Balance,
+			#[pallet::compact] min_withdrawn_a: Balance,
+			#[pallet::compact] min_withdrawn_b: Balance,
 			by_withdraw: bool,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			Self::do_remove_liquidity(&who, currency_id_a, currency_id_b, remove_share, by_withdraw)?;
+			Self::do_remove_liquidity(
+				&who,
+				currency_id_a,
+				currency_id_b,
+				remove_share,
+				min_withdrawn_a,
+				min_withdrawn_b,
+				by_withdraw,
+			)?;
 			Ok(().into())
 		}
 
@@ -412,6 +426,8 @@ pub mod module {
 			not_before: T::BlockNumber,
 		) -> DispatchResultWithPostInfo {
 			T::ListingOrigin::ensure_origin(origin)?;
+
+			ensure!(currency_id_a != currency_id_b, Error::<T>::NotAllowedList);
 
 			let trading_pair = TradingPair::from_token_currency_ids(currency_id_a, currency_id_b)
 				.ok_or(Error::<T>::InvalidCurrencyId)?;
@@ -500,12 +516,12 @@ pub mod module {
 				}
 				// will disable Provisioning trading_pair
 				TradingPairStatus::<_, _>::Provisioning(_) => {
-					let setheum_account_id = Self::account_id();
+					let module_account_id = Self::account_id();
 
 					// refund provision
 					for (who, contribution) in ProvisioningPool::<T>::drain_prefix(trading_pair) {
-						T::Currency::transfer(trading_pair.0, &setheum_account_id, &who, contribution.0)?;
-						T::Currency::transfer(trading_pair.1, &setheum_account_id, &who, contribution.1)?;
+						T::Currency::transfer(trading_pair.0, &module_account_id, &who, contribution.0)?;
+						T::Currency::transfer(trading_pair.1, &module_account_id, &who, contribution.1)?;
 
 						// decrease ref count
 						frame_system::Pallet::<T>::dec_consumers(&who);
@@ -525,7 +541,7 @@ pub mod module {
 
 impl<T: Config> Pallet<T> {
 	fn account_id() -> T::AccountId {
-		T::ModuleId::get().into_account()
+		T::PalletId::get().into_account()
 	}
 
 	/// Access status of specific trading_pair,
@@ -567,8 +583,19 @@ impl<T: Config> Pallet<T> {
 					};
 
 					// issue shares to contributor
-					if T::Currency::deposit(lp_share_currency_id, &who, share_amount).is_ok() {
-						total_shares_issued = total_shares_issued.saturating_add(share_amount);
+					let res = T::Currency::deposit(lp_share_currency_id, &who, share_amount);
+					match res {
+						Ok(_) => {
+							total_shares_issued = total_shares_issued.saturating_add(share_amount);
+						}
+						Err(e) => {
+							log::warn!(
+								target: "dex",
+								"deposit: failed to deposit {:?} {:?} to {:?}: {:?}. \
+								This is unexpected but should be safe",
+								share_amount, lp_share_currency_id, who.clone(), e
+							);
+						}
 					}
 
 					// decrease ref count
@@ -625,9 +652,9 @@ impl<T: Config> Pallet<T> {
 			pool.0 = pool.0.saturating_add(contribution_0);
 			pool.1 = pool.1.saturating_add(contribution_1);
 
-			let setheum_account_id = Self::account_id();
-			T::Currency::transfer(trading_pair.0, &who, &setheum_account_id, contribution_0)?;
-			T::Currency::transfer(trading_pair.1, &who, &setheum_account_id, contribution_1)?;
+			let module_account_id = Self::account_id();
+			T::Currency::transfer(trading_pair.0, &who, &module_account_id, contribution_0)?;
+			T::Currency::transfer(trading_pair.1, &who, &module_account_id, contribution_1)?;
 
 			*maybe_pool = Some(pool);
 
@@ -674,6 +701,7 @@ impl<T: Config> Pallet<T> {
 		currency_id_b: CurrencyId,
 		max_amount_a: Balance,
 		max_amount_b: Balance,
+		min_share_increment: Balance,
 		deposit_increment_share: bool,
 	) -> DispatchResult {
 		let trading_pair = TradingPair::new(currency_id_a, currency_id_b);
@@ -738,10 +766,14 @@ impl<T: Config> Pallet<T> {
 				!share_increment.is_zero() && !pool_0_increment.is_zero() && !pool_1_increment.is_zero(),
 				Error::<T>::InvalidLiquidityIncrement,
 			);
+			ensure!(
+				share_increment >= min_share_increment,
+				Error::<T>::UnacceptableShareIncrement
+			);
 
-			let setheum_account_id = Self::account_id();
-			T::Currency::transfer(trading_pair.0, who, &setheum_account_id, pool_0_increment)?;
-			T::Currency::transfer(trading_pair.1, who, &setheum_account_id, pool_1_increment)?;
+			let module_account_id = Self::account_id();
+			T::Currency::transfer(trading_pair.0, who, &module_account_id, pool_0_increment)?;
+			T::Currency::transfer(trading_pair.1, who, &module_account_id, pool_1_increment)?;
 			T::Currency::deposit(lp_share_currency_id, who, share_increment)?;
 
 			*pool_0 = pool_0.saturating_add(pool_0_increment);
@@ -763,11 +795,14 @@ impl<T: Config> Pallet<T> {
 		})
 	}
 
+	#[transactional]
 	fn do_remove_liquidity(
 		who: &T::AccountId,
 		currency_id_a: CurrencyId,
 		currency_id_b: CurrencyId,
 		remove_share: Balance,
+		min_withdrawn_a: Balance,
+		min_withdrawn_b: Balance,
 		by_withdraw: bool,
 	) -> DispatchResult {
 		if remove_share.is_zero() {
@@ -780,18 +815,28 @@ impl<T: Config> Pallet<T> {
 			.ok_or(Error::<T>::InvalidCurrencyId)?;
 
 		LiquidityPool::<T>::try_mutate(trading_pair, |(pool_0, pool_1)| -> DispatchResult {
+			let (min_withdrawn_0, min_withdrawn_1) = if currency_id_a == trading_pair.0 {
+				(min_withdrawn_a, min_withdrawn_b)
+			} else {
+				(min_withdrawn_b, min_withdrawn_a)
+			};
 			let total_shares = T::Currency::total_issuance(lp_share_currency_id);
 			let proportion = Ratio::checked_from_rational(remove_share, total_shares).unwrap_or_default();
 			let pool_0_decrement = proportion.saturating_mul_int(*pool_0);
 			let pool_1_decrement = proportion.saturating_mul_int(*pool_1);
-			let setheum_account_id = Self::account_id();
+			let module_account_id = Self::account_id();
+
+			ensure!(
+				pool_0_decrement >= min_withdrawn_0 && pool_1_decrement >= min_withdrawn_1,
+				Error::<T>::UnacceptableLiquidityWithdrawn,
+			);
 
 			if by_withdraw {
 				T::DexIncentives::do_withdraw_dex_share(who, lp_share_currency_id, remove_share)?;
 			}
 			T::Currency::withdraw(lp_share_currency_id, &who, remove_share)?;
-			T::Currency::transfer(trading_pair.0, &setheum_account_id, &who, pool_0_decrement)?;
-			T::Currency::transfer(trading_pair.1, &setheum_account_id, &who, pool_1_decrement)?;
+			T::Currency::transfer(trading_pair.0, &module_account_id, &who, pool_0_decrement)?;
+			T::Currency::transfer(trading_pair.1, &module_account_id, &who, pool_1_decrement)?;
 
 			*pool_0 = pool_0.saturating_sub(pool_0_decrement);
 			*pool_1 = pool_1.saturating_sub(pool_1_decrement);
@@ -995,12 +1040,12 @@ impl<T: Config> Pallet<T> {
 			amounts[amounts.len() - 1] >= min_target_amount,
 			Error::<T>::InsufficientTargetAmount
 		);
-		let setheum_account_id = Self::account_id();
+		let module_account_id = Self::account_id();
 		let actual_target_amount = amounts[amounts.len() - 1];
 
-		T::Currency::transfer(path[0], who, &setheum_account_id, supply_amount)?;
+		T::Currency::transfer(path[0], who, &module_account_id, supply_amount)?;
 		Self::_swap_by_path(&path, &amounts);
-		T::Currency::transfer(path[path.len() - 1], &setheum_account_id, who, actual_target_amount)?;
+		T::Currency::transfer(path[path.len() - 1], &module_account_id, who, actual_target_amount)?;
 
 		Self::deposit_event(Event::Swap(
 			who.clone(),
@@ -1022,12 +1067,12 @@ impl<T: Config> Pallet<T> {
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let amounts = Self::get_supply_amounts(&path, target_amount, price_impact_limit)?;
 		ensure!(amounts[0] <= max_supply_amount, Error::<T>::ExcessiveSupplyAmount);
-		let setheum_account_id = Self::account_id();
+		let module_account_id = Self::account_id();
 		let actual_supply_amount = amounts[0];
 
-		T::Currency::transfer(path[0], who, &setheum_account_id, actual_supply_amount)?;
+		T::Currency::transfer(path[0], who, &module_account_id, actual_supply_amount)?;
 		Self::_swap_by_path(&path, &amounts);
-		T::Currency::transfer(path[path.len() - 1], &setheum_account_id, who, target_amount)?;
+		T::Currency::transfer(path[path.len() - 1], &module_account_id, who, target_amount)?;
 
 		Self::deposit_event(Event::Swap(
 			who.clone(),
@@ -1039,7 +1084,7 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> SetheumDexManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
+impl<T: Config> DexManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		Self::get_liquidity(currency_id_a, currency_id_b)
 	}
@@ -1082,5 +1127,50 @@ impl<T: Config> SetheumDexManager<T::AccountId, CurrencyId, Balance> for Pallet<
 		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Self::do_swap_with_exact_target(who, path, target_amount, max_supply_amount, price_impact_limit)
+	}
+
+	// `do_add_liquidity` is used in genesis_build,
+	// but transactions are not supported by BasicExternalities,
+	// put `transactional` here
+	/// Ensured atomic.
+	#[transactional]
+	fn add_liquidity(
+		who: &T::AccountId,
+		currency_id_a: CurrencyId,
+		currency_id_b: CurrencyId,
+		max_amount_a: Balance,
+		max_amount_b: Balance,
+		min_share_increment: Balance,
+		deposit_increment_share: bool,
+	) -> DispatchResult {
+		Self::do_add_liquidity(
+			who,
+			currency_id_a,
+			currency_id_b,
+			max_amount_a,
+			max_amount_b,
+			min_share_increment,
+			deposit_increment_share,
+		)
+	}
+
+	fn remove_liquidity(
+		who: &T::AccountId,
+		currency_id_a: CurrencyId,
+		currency_id_b: CurrencyId,
+		remove_share: Balance,
+		min_withdrawn_a: Balance,
+		min_withdrawn_b: Balance,
+		by_withdraw: bool,
+	) -> DispatchResult {
+		Self::do_remove_liquidity(
+			who,
+			currency_id_a,
+			currency_id_b,
+			remove_share,
+			min_withdrawn_a,
+			min_withdrawn_b,
+			by_withdraw,
+		)
 	}
 }

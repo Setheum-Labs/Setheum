@@ -51,18 +51,13 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DEXManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
-	StandardValidator,
+	DexManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
 };
 
-mod standard_exchange_rate_convertor;
 mod mock;
 mod tests;
-pub mod weights;
 
-pub use standard_exchange_rate_convertor::StandardExchangeRateConvertor;
 pub use module::*;
-pub use weights::WeightInfo;
 
 pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/settmint-engine/data/";
 pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/settmint-engine/lock/";
@@ -86,11 +81,6 @@ pub mod module {
 	pub trait Config: frame_system::Config + setters::Config + SendTransactionTypes<Call<Self>> {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		#[pallet::constant]
-		/// The list of valid reserve currency types
-		type ReserveCurrencyIds: Get<Vec<CurrencyId>>;
-
-		#[pallet::constant]
 		/// The list of valid standard currency types
 		type StandardCurrencyIds: Get<Vec<CurrencyId>>;
 
@@ -103,8 +93,8 @@ pub mod module {
 		type MinimumStandardValue: Get<Balance>;
 
 		#[pallet::constant]
-		/// Stablecoin currency id
-		type GetStableCurrencyId: Get<CurrencyId>;
+		/// Setter (Valid Reserve) currency id
+		type GetReserveCurrencyId: Get<CurrencyId>;
 
 		/// The price source of all types of currencies related to Settmint
 		type PriceSource: PriceProvider<CurrencyId>;
@@ -123,7 +113,7 @@ pub mod module {
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Invalid reserve type.
-		InvalidReserveType,
+		InvalidStandardType,
 		/// Remaining standard value in Settmint below the dust amount
 		RemainStandardValueTooSmall,
 		/// Feed price is invalid
@@ -134,13 +124,14 @@ pub mod module {
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {}
 
-	/// Mapping from reserve type to its exchange rate of standard units and
-	/// standard value
+	/// Mapping from standard currency type to its exchange rate of standard units and
+	/// standard value (rate of reserve to standard) - the Setter reserve.
 	#[pallet::storage]
 	#[pallet::getter(fn standard_exchange_rate)]
 	pub type StandardExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, ExchangeRate, OptionQuery>;
+
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -151,10 +142,20 @@ pub mod module {
 
 impl<T: Config> Pallet<T> {
 	pub fn get_standard_exchange_rate(currency_id: CurrencyId) -> ExchangeRate {
+		// ensure the currency is a settcurrency standard
+		ensure!(
+			T::StandardCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStandardType,
+		);
 		Self::standard_exchange_rate(currency_id).unwrap_or_else(T::DefaultStandardExchangeRate::get)
 	}
 
 	pub fn get_standard_value(currency_id: CurrencyId, standard_balance: Balance) -> Balance {
+		// ensure the currency is a settcurrency standard
+		ensure!(
+			T::StandardCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStandardType,
+		);
 		crate::StandardExchangeRateConvertor::<T>::convert((currency_id, standard_balance))
 	}
 
@@ -164,10 +165,15 @@ impl<T: Config> Pallet<T> {
 		standard_balance: Balance,
 		price: Price,
 	) -> Ratio {
+		// ensure the currency is a settcurrency standard
+		ensure!(
+			T::StandardCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStandardType,
+		);
 		let locked_reserve_value = price.saturating_mul_int(reserve_balance);
 		let standard_value = Self::get_standard_value(currency_id, standard_balance);
 
-		Ratio::checked_from_rational(locked_reserve_value, standard_value).unwrap_or_else(Rate::max_value)
+		Ratio::checked_from_rational(locked_reserve_value, standard_value).unwrap_or_default()
 	}
 
 	pub fn adjust_position(
@@ -176,9 +182,10 @@ impl<T: Config> Pallet<T> {
 		reserve_adjustment: Amount,
 		standard_adjustment: Amount,
 	) -> DispatchResult {
+		// ensure the currency is a settcurrency standard
 		ensure!(
-			T::ReserveCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidReserveType,
+			T::StandardCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStandardType,
 		);
 		<SettersOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
 		Ok(())
@@ -194,19 +201,16 @@ impl<T: Config> StandardValidator<T::AccountId, CurrencyId, Balance, Balance> fo
 	) -> DispatchResult {
 		if !standard_balance.is_zero() {
 			let standard_value = Self::get_standard_value(currency_id, standard_balance);
-			let feed_price = <T as Config>::PriceSource::get_relative_price(currency_id, T::GetStableCurrencyId::get())
+			let feed_price = <T as Config>::PriceSource::get_relative_price(T::GetReserveCurrencyId::get(), currency_id)
 				.ok_or(Error::<T>::InvalidFeedPrice)?;
 			let reserve_ratio =
 				Self::calculate_reserve_ratio(currency_id, reserve_balance, standard_balance, feed_price);
 
-			// check the required reserve ratio
-			if let Some(required_reserve_ratio) = Self::required_reserve_ratio(currency_id) {
-				ensure!(
-					reserve_ratio >= required_reserve_ratio,
-					Error::<T>::BelowRequiredReserveRatio
-				);
-			}
-
+			// ensure the currency is a settcurrency standard
+			ensure!(
+				T::StandardCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidStandardType,
+			);
 			// check the minimum_standard_value
 			ensure!(
 				standard_value >= T::MinimumStandardValue::get(),

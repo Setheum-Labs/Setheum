@@ -20,21 +20,16 @@
 
 #![cfg(test)]
 
-use frame_support::{ord_parameter_types, parameter_types, traits::GenesisBuild};
+use super::*;
+use frame_support::{parameter_types, PalletId};
 use orml_traits::parameter_type_with_key;
 use primitives::{CurrencyId, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, IdentityLookup},
-	AccountId32, ModuleId, Perbill,
+	AccountId32, Perbill,
 };
-
-use super::*;
-use frame_system::EnsureSignedBy;
-use sp_core::{bytes::from_hex, H160};
-use sp_std::collections::btree_map::BTreeMap;
-use sp_std::str::FromStr;
 
 pub use crate as currencies;
 
@@ -69,6 +64,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 type Balance = u128;
@@ -80,17 +76,19 @@ parameter_type_with_key! {
 }
 
 parameter_types! {
-	pub DustAccount: AccountId = ModuleId(*b"orml/dst").into_account();
+	pub DustAccount: AccountId = PalletId(*b"orml/dst").into_account();
+	pub const MaxLocks: u32 = 100;
 }
 
-impl tokens::Config for Runtime {
+impl orml_tokens::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type Amount = i64;
 	type CurrencyId = CurrencyId;
 	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = tokens::TransferDust<Runtime, DustAccount>;
+	type OnDust = orml_tokens::TransferDust<Runtime, DustAccount>;
 	type WeightInfo = ();
+	type MaxLocks = MaxLocks;
 }
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -116,21 +114,6 @@ impl pallet_balances::Config for Runtime {
 
 pub type PalletBalances = pallet_balances::Pallet<Runtime>;
 
-parameter_types! {
-	pub const MinimumPeriod: u64 = 1000;
-}
-impl pallet_timestamp::Config for Runtime {
-	type Moment = u64;
-	type OnTimestampSet = ();
-	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = ();
-}
-
-parameter_types! {
-	pub const NewContractExtraBytes: u32 = 1;
-	pub NetworkContractSource: H160 = H160::default();
-}
-
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
@@ -142,42 +125,26 @@ impl Config for Runtime {
 pub type NativeCurrency = Currency<Runtime, GetNativeCurrencyId>;
 pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Runtime, PalletBalances, i64, u64>;
 
-pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
-pub type UncheckedExtrinsic = sp_runtime::generic::UncheckedExtrinsic<u32, Call, u32, SignedExtra>;
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
+type Block = frame_system::mocking::MockBlock<Runtime>;
 
 frame_support::construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
-	NodeBlock = Block,
-	UncheckedExtrinsic = UncheckedExtrinsic
+		NodeBlock = Block,
+		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currencies: setheum-currencies::{Pallet, Call, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		Currencies: currencies::{Pallet, Call, Event<T>},
 	}
 );
 
-pub fn alice() -> AccountId {
-	<Runtime as Config>::AddressMapping::get_account_id(
-		&H160::from_str("1000000000000000000000000000000000000001").unwrap(),
-	)
-}
-
-pub fn bob() -> AccountId {
-	<Runtime as Config>::AddressMapping::get_account_id(
-		&H160::from_str("1000000000000000000000000000000000000002").unwrap(),
-	)
-}
-
-pub const ALICE: AccountId = AccountId::new([1u8; 32]);
-pub const BOB: AccountId = AccountId::new([2u8; 32]);
-pub const EVA: AccountId = AccountId::new([5u8; 32]);
-
+pub const ALICE: AccountId = AccountId32::new([1u8; 32]);
+pub const BOB: AccountId = AccountId32::new([2u8; 32]);
+pub const EVA: AccountId = AccountId32::new([5u8; 32]);
 pub const ID_1: LockIdentifier = *b"1       ";
-
-pub const ERC20_ADDRESS: H160 = H160([32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
-pub const ERC20: CurrencyId = CurrencyId::ERC20(ERC20_ADDRESS);
 
 pub struct ExtBuilder {
 	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
@@ -223,7 +190,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		tokens::GenesisConfig::<Runtime> {
+		orml_tokens::GenesisConfig::<Runtime> {
 			endowed_accounts: self
 				.endowed_accounts
 				.into_iter()
@@ -233,21 +200,6 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		let mut accounts = BTreeMap::new();
-		let mut storage = BTreeMap::new();
-		storage.insert(
-			H256::from_str("0000000000000000000000000000000000000000000000000000000000000002").unwrap(),
-			H256::from_str("00000000000000000000000000000000ffffffffffffffffffffffffffffffff").unwrap(),
-		);
-		storage.insert(
-			H256::from_str("e6f18b3f6d2cdeb50fb82c61f7a7a249abf7b534575880ddcfde84bba07ce81d").unwrap(),
-			H256::from_str("00000000000000000000000000000000ffffffffffffffffffffffffffffffff").unwrap(),
-		);
-			.assimilate_storage(&mut t)
-			.unwrap();
-
-		let mut ext = sp_io::TestExternalities::new(t);
-		ext.execute_with(|| System::set_block_number(1));
-		ext
+		t.into()
 	}
 }

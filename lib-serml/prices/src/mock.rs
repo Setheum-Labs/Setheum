@@ -38,6 +38,7 @@ pub type BlockNumber = u64;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
 pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
@@ -50,9 +51,9 @@ pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OM
 pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
 pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
 
-// LP tokens constants - CurrencyId/TokenSymbol : DEX Shares
-pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DEXShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
-pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DEXShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
+// LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
+pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
+pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DexShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
 
 // Currencies constants - FiatCurrencyIds
 pub const USD: FiatCurrencyId = USD; // US Dollar 			  (Fiat - only for price feed)
@@ -118,8 +119,8 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 	}
 }
 
-pub struct MockSetheumDex;
-impl SetheumDexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
+pub struct MockDex;
+impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USDJ, DNAR) => (10000, 200),
@@ -162,6 +163,14 @@ impl SetheumDexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		unimplemented!()
 	}
+
+	fn add_liquidity(_: &AccountId, _: CurrencyId, _: CurrencyId, _: Balance, _: Balance, _: bool) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn remove_liquidity(_: &AccountId, _: CurrencyId, _: CurrencyId, _: Balance, _: bool) -> DispatchResult {
+		unimplemented!()
+	}
 }
 
 parameter_type_with_key! {
@@ -194,6 +203,7 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
 }
 
 ord_parameter_types! {
@@ -225,7 +235,7 @@ parameter_types! {
 		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
 		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
 		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
-		];
+	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
 		USD, // US Dollar 			  (Fiat - only for price feed)
 		GBP, // Pound Sterling 		  (Fiat - only for price feed)
@@ -258,7 +268,7 @@ impl Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = MockSetheumDex;
+	type Dex = MockDex;
 	type Currency = Tokens;
 	type WeightInfo = ();
 }

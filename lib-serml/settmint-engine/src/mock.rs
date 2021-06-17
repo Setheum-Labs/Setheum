@@ -21,7 +21,7 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
 use primitives::{TokenSymbol, TradingPair};
@@ -29,10 +29,8 @@ use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
 	traits::IdentityLookup,
-	ModuleId,
 };
 use sp_std::cell::RefCell;
-use support::SerpAuction;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -41,10 +39,21 @@ pub type AuctionId = u32;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
+
+// Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
-pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
+pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ); // Setheum EUR (Euro stablecoin)
+pub const KWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KWDJ); // Setheum KWD (Kuwaiti Dinar stablecoin)
+pub const JODJ: CurrencyId = CurrencyId::Token(TokenSymbol::JODJ); // Setheum JOD (Jordanian Dinar stablecoin)
+pub const BHDJ: CurrencyId = CurrencyId::Token(TokenSymbol::BHDJ); // Setheum BHD (Bahraini Dirham stablecoin)
+pub const KYDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KYDJ); // Setheum KYD (Cayman Islands Dollar stablecoin)
+pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OMR (Omani Riyal stablecoin)
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
+pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
 
 mod settmint_engine {
 	pub use super::super::*;
@@ -93,6 +102,7 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -123,7 +133,7 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const SettersModuleId: ModuleId = ModuleId(*b"set/setter");
+	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
 }
 
 impl setters::Config for Runtime {
@@ -132,7 +142,7 @@ impl setters::Config for Runtime {
 	type Currency = Currencies;
 	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
-	type ModuleId = SettersModuleId;
+	type PalletId = SettersPalletId;
 	type OnUpdateSetter = ();
 }
 
@@ -203,43 +213,91 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		Default::default()
 	}
 
-	fn get_total_serplus_in_auction() -> Self::Balance {
+	fn get_total_diamond_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = USDJ;
-	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/settmintt");
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
+		USDJ, // Setheum USD (US Dollar stablecoin)
+		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
+		EURJ, // Setheum EUR (Euro stablecoin)
+		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
+		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
+		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
+		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
+		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
+		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
+		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+	];
+	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
+	pub const GetSettGBPCurrencyId: CurrencyId = GBPJ; // SettGBP currency ticker is GBPJ
+	pub const GetSettEURCurrencyId: CurrencyId = EURJ; // SettEUR currency ticker is EURJ
+	pub const GetSettKWDCurrencyId: CurrencyId = KWDJ; // SettKWD currency ticker is KWDJ
+	pub const GetSettJODCurrencyId: CurrencyId = JODJ; // SettJOD currency ticker is JODJ
+	pub const GetSettBHDCurrencyId: CurrencyId = BHDJ; // SettBHD currency ticker is BHDJ
+	pub const GetSettKYDCurrencyId: CurrencyId = KYDJ; // SettKYD currency ticker is KYDJ
+	pub const GetSettOMRCurrencyId: CurrencyId = OMRJ; // SettOMR currency ticker is OMRJ
+	pub const GetSettCHFCurrencyId: CurrencyId = CHFJ; // SettCHF currency ticker is CHFJ
+	pub const GetSettGIPCurrencyId: CurrencyId = GIPJ; // SettGIP currency ticker is GIPJ
+	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
+	pub SIFSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
 }
 
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetSettGBPCurrencyId = GetSettGBPCurrencyId;
+	type GetSettEURCurrencyId = GetSettEURCurrencyId;
+	type GetSettKWDCurrencyId = GetSettKWDCurrencyId;
+	type GetSettJODCurrencyId = GetSettJODCurrencyId;
+	type GetSettBHDCurrencyId = GetSettBHDCurrencyId;
+	type GetSettKYDCurrencyId = GetSettKYDCurrencyId;
+	type GetSettOMRCurrencyId = GetSettOMRCurrencyId;
+	type GetSettCHFCurrencyId = GetSettCHFCurrencyId;
+	type GetSettGIPCurrencyId = GetSettGIPCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
+	type SerplusSerpupRatio = SerplusSerpupRatio;
+	type SettPaySerpupRatio = SettPaySerpupRatio;
+	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SIFSerpupRatio = SIFSerpupRatio;
 	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = DEXModule;
+	type Dex = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = SerpTreasuryModuleId;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 
 parameter_types! {
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
+	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT), TradingPair::new(USDJ, DOT)];
+	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT), TradingPair::new(USDJ, EURJ)];
 }
 
-impl setheum_dex::Config for Runtime {
+impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = DEXModuleId;
-	type DEXIncentives = ();
+	type PalletId = DexPalletId;
+	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
@@ -249,26 +307,37 @@ ord_parameter_types! {
 }
 
 parameter_types! {
+	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
+		USDJ, // Setheum USD (US Dollar stablecoin)
+		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
+		EURJ, // Setheum EUR (Euro stablecoin)
+		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
+		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
+		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
+		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
+		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
+		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
+		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+	];
+	pub const GetReserveCurrencyId: CurrencyId = SETT;
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
-	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![SETT];
-	pub StandardCurrencyIds: Vec<CurrencyId> = vec![USDJ];
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type PriceSource = MockPriceSource;
-	type ReserveCurrencyIds = ReserveCurrencyIds;
 	type StandardCurrencyIds = StandardCurrencyIds;
+	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type DEX = DEXModule;
+	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
+	type Dex = DexModule;
 	type UnsignedPriority = UnsignedPriority;
 	type WeightInfo = ();
 }
@@ -289,7 +358,7 @@ construct_runtime!(
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		SettersModule: setters::{Module, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		DEXModule: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
+		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -315,8 +384,8 @@ impl Default for ExtBuilder {
 				(ALICE, SETT, 1000),
 				(BOB, SETT, 1000),
 				(CAROL, SETT, 100),
-				(ALICE, DOT, 1000),
-				(BOB, DOT, 1000),
+				(ALICE, EURJ, 1000),
+				(BOB, EURJ, 1000),
 				(CAROL, USDJ, 1000),
 			],
 		}
@@ -335,7 +404,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		setheum_dex::GenesisConfig::<Runtime> {
+		dex::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],

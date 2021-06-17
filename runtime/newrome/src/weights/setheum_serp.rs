@@ -43,7 +43,7 @@ use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions for setheum_settway.
-pub struct WeightInfo<T>(PhantomData<T>);
+pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> setheum_settway::WeightInfo for WeightInfo<T> {
 	fn authorize() -> Weight {
 		(25_888_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
@@ -62,7 +62,7 @@ impl<T: frame_system::Config> setheum_settway::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(24 as Weight))
 			.saturating_add(T::DbWeight::get().writes(11 as Weight))
 	}
-	fn transfer_setter_from() -> Weight {
+	fn transfer_reserve_from() -> Weight {
 		(221_574_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(21 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))

@@ -29,7 +29,7 @@ use orml_benchmarking::runtime_benchmarks;
 use sp_std::prelude::*;
 
 const SEED: u32 = 0;
-const ROME_rUSD_LP: CurrencyId = CurrencyId::DEXShare(TokenSymbol::CHFJ, TokenSymbol::rUSD);
+const ROME_rUSD_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::rUSD);
 
 runtime_benchmarks! {
 	{ Runtime, setheum_incentives }
@@ -61,7 +61,7 @@ runtime_benchmarks! {
 		});
 	}: _(RawOrigin::Signed(caller), pool_id)
 
-	update_setters_incentive_rewards {
+	update_reserves_incentive_rewards {
 		let c in 0 .. ReserveCurrencyIds::get().len().saturating_sub(1) as u32;
 		let currency_ids = ReserveCurrencyIds::get();
 		let mut values = vec![];
@@ -83,7 +83,7 @@ runtime_benchmarks! {
 			let currency_id = currency_ids[i as usize];
 			let lp_share_currency_id = match (currency_id, base_currency_id) {
 				(CurrencyId::Token(other_currency_symbol), CurrencyId::Token(base_currency_symbol)) => {
-					CurrencyId::DEXShare(other_currency_symbol, base_currency_symbol)
+					CurrencyId::DexShare(other_currency_symbol, base_currency_symbol)
 				}
 				_ => return Err("invalid currency id"),
 			};
@@ -102,7 +102,7 @@ runtime_benchmarks! {
 			let currency_id = currency_ids[i as usize];
 			let lp_share_currency_id = match (currency_id, base_currency_id) {
 				(CurrencyId::Token(other_currency_symbol), CurrencyId::Token(base_currency_symbol)) => {
-					CurrencyId::DEXShare(other_currency_symbol, base_currency_symbol)
+					CurrencyId::DexShare(other_currency_symbol, base_currency_symbol)
 				}
 				_ => return Err("invalid currency id"),
 			};
@@ -145,9 +145,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_update_setters_incentive_rewards() {
+	fn test_update_reserves_incentive_rewards() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_update_setters_incentive_rewards());
+			assert_ok!(test_benchmark_update_reserves_incentive_rewards());
 		});
 	}
 

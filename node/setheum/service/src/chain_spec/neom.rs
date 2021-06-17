@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use setheum_primitives::AccountId;
+use setheum_primitives::{AccountId, TokenSymbol};
 use hex_literal::hex;
 use sc_chain_spec::ChainType;
 use sc_telemetry::TelemetryEndpoints;
@@ -40,8 +40,15 @@ pub fn neom_config() -> Result<ChainSpec, String> {
 
 pub fn latest_neom_config() -> Result<ChainSpec, String> {
 	let mut properties = Map::new();
-	properties.insert("tokenSymbol".into(), "NEOM".into());
-	properties.insert("tokenDecimals".into(), 12.into());
+
+	let mut token_symbol: Vec<String> = vec![];
+	let mut token_decimals: Vec<u32> = vec![];
+	TokenSymbol::get_info().iter().for_each(|(symbol_name, decimals)| {
+		token_symbol.push(symbol_name.to_string());
+		token_decimals.push(*decimals);
+	});
+	properties.insert("tokenSymbol".into(), token_symbol.into());
+	properties.insert("tokenDecimals".into(), token_decimals.into());
 
 	let wasm_binary = neom_runtime::WASM_BINARY.ok_or("Neom runtime wasm binary not available")?;
 
@@ -128,8 +135,6 @@ fn neom_genesis(
 	use sp_std::collections::btree_map::BTreeMap;
 
 	let existential_deposit = NativeTokenExistentialDeposit::get();
-	let airdrop_accounts_json = &include_bytes!("../../../../../resources/newrome-airdrop-NEOM.json")[..];
-	let airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(airdrop_accounts_json).unwrap();
 
 	let initial_balance: u128 = 1_000_000 * dollar(NEOM);
 	let initial_staking: u128 = 100_000 * dollar(NEOM);
@@ -151,7 +156,6 @@ fn neom_genesis(
 						.iter()
 						.map(|x| (x.clone(), existential_deposit)),
 				)
-				.chain(airdrop_accounts)
 				.fold(
 					BTreeMap::<AccountId, Balance>::new(),
 					|mut acc, (account_id, amount)| {
@@ -230,7 +234,7 @@ fn neom_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		}),
-		setheum_dex: Some(DexConfig {
+		dex: Some(DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],

@@ -18,7 +18,7 @@
 
 use super::utils::{lookup_of_account, set_dnar_balance};
 use crate::{
-	dollar, SetheumTreasuryModuleId, AccountId, AccountIdConversion, Balance, BlockNumber, Currencies, MinVestedTransfer,
+	dollar, SetheumTreasuryPalletId, AccountId, AccountIdConversion, Balance, BlockNumber, Currencies, MinVestedTransfer,
 	Runtime, System, Vesting, ROME,
 };
 
@@ -49,7 +49,7 @@ runtime_benchmarks! {
 		};
 
 		// extra 1 dollar to pay fees
-		let from: AccountId = SetheumTreasuryModuleId::get().into_account();
+		let from: AccountId = SetheumTreasuryPalletId::get().into_account();
 		set_dnar_balance(&from, schedule.total_amount().unwrap() + dollar(ROME));
 
 		let to: AccountId = account("to", 0, SEED);
@@ -72,7 +72,7 @@ runtime_benchmarks! {
 			per_period: MinVestedTransfer::get(),
 		};
 
-		let from: AccountId = SetheumTreasuryModuleId::get().into_account();
+		let from: AccountId = SetheumTreasuryPalletId::get().into_account();
 		// extra 1 dollar to pay fees
 		set_dnar_balance(&from, schedule.total_amount().unwrap() * i as u128 + dollar(ROME));
 

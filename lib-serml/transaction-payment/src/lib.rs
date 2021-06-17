@@ -48,7 +48,7 @@ use sp_runtime::{
 	FixedPointNumber, FixedPointOperand, FixedU128, Perquintill,
 };
 use sp_std::{prelude::*, vec};
-use support::{SetheumDexManager, Ratio, TransactionPayment};
+use support::{DexManager, Ratio, TransactionPayment};
 
 mod mock;
 mod tests;
@@ -251,12 +251,12 @@ pub mod module {
 		/// block's weight.
 		type FeeMultiplierUpdate: MultiplierUpdate;
 
-		/// DEX to exchange currencies.
-		type DEX = SetheumDexManager<Self::AccountId, CurrencyId, Balance>;
+		/// Dex to exchange currencies.
+		type Dex = DexManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// The max slippage allowed when swap fee with DEX
+		/// The max slippage allowed when swap fee with Dex
 		#[pallet::constant]
-		type MaxSlippageSwapWithDEX: Get<Ratio>;
+		type MaxSlippageSwapWithDex: Get<Ratio>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -276,7 +276,7 @@ pub mod module {
 	pub type DefaultFeeCurrencyId<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, CurrencyId, OptionQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
@@ -545,7 +545,7 @@ where
 			};
 		charge_fee_order.dedup();
 
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
+		let price_impact_limit = Some(T::MaxSlippageSwapWithDex::get());
 
 		// iterator charge fee order to get enough fee
 		for currency_id in charge_fee_order {
@@ -562,14 +562,14 @@ where
 					break;
 				}
 			} else {
-				// try to use non-native currency to swap native currency by exchange with DEX
+				// try to use non-native currency to swap native currency by exchange with Dex
 				let trading_path = if currency_id == stable_currency_id {
 					vec![stable_currency_id, native_currency_id]
 				} else {
 					vec![currency_id, stable_currency_id, native_currency_id]
 				};
 
-				if T::DEX::swap_with_exact_target(
+				if T::Dex::swap_with_exact_target(
 					who,
 					&trading_path,
 					fee.unique_saturated_into(),
@@ -637,6 +637,11 @@ where
 	) -> Result<(PalletBalanceOf<T>, Option<NegativeImbalanceOf<T>>), TransactionValidityError> {
 		let tip = self.0;
 		let fee = Pallet::<T>::compute_fee(len as u32, info, tip);
+
+		// Only mess with balances if fee is not zero.
+		if fee.is_zero() {
+			return Ok((fee, None));
+		}
 
 		let reason = if tip.is_zero() {
 			WithdrawReasons::TRANSACTION_PAYMENT
@@ -751,12 +756,11 @@ where
 				// is gone in that case.
 				Err(_) => payed,
 			};
-			let imbalances = actual_payment.split(tip);
+			let (tip, fee) = actual_payment.split(tip);
 
 			// distribute fee
-			<T as Config>::OnTransactionPayment::on_unbalanceds(
-				Some(imbalances.0).into_iter().chain(Some(imbalances.1)),
-			);
+
+			<T as Config>::OnTransactionPayment::on_unbalanceds(Some(fee).into_iter().chain(Some(tip)));
 		}
 		Ok(())
 	}

@@ -27,26 +27,26 @@ use mock::{Event, *};
 #[test]
 fn standards_key() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 0);
-		assert_ok!(SettersModule::adjust_position(&ALICE, BTC, 100, 100));
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 100);
-		assert_ok!(SettersModule::adjust_position(&ALICE, BTC, -100, -100));
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 0);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 0);
+		assert_ok!(SettersModule::adjust_position(&ALICE, EURJ, 100, 100));
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 100);
+		assert_ok!(SettersModule::adjust_position(&ALICE, EURJ, -100, -100));
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 0);
 	});
 }
 
 #[test]
-fn check_update_setter_overflow_work() {
+fn check_update_reserve_overflow_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		// reserve underflow
 		assert_noop!(
-			SettersModule::update_setter(&ALICE, BTC, -100, 0),
+			SettersModule::update_reserve(&ALICE, EURJ, -100, 0),
 			Error::<Runtime>::ReserveTooLow,
 		);
 
 		// standard underflow
 		assert_noop!(
-			SettersModule::update_setter(&ALICE, BTC, 0, -100),
+			SettersModule::update_reserve(&ALICE, EURJ, 0, -100),
 			Error::<Runtime>::StandardTooLow,
 		);
 	});
@@ -56,77 +56,92 @@ fn check_update_setter_overflow_work() {
 fn adjust_position_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 
 		// balance too low
-		assert_eq!(SettersModule::adjust_position(&ALICE, BTC, 2000, 0).is_ok(), false);
+		assert_eq!(SettersModule::adjust_position(&ALICE, EURJ, 2000, 0).is_ok(), false);
 
 		// mock can't pass position valid check
-		assert_eq!(SettersModule::adjust_position(&ALICE, DOT, 500, 0).is_ok(), false);
+		assert_eq!(SettersModule::adjust_position(&ALICE, USDJ, 500, 0).is_ok(), false);
 
-		// mock exceed standard value cap
-		assert_eq!(SettersModule::adjust_position(&ALICE, BTC, 1000, 1000).is_ok(), false);
-
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
-		assert_eq!(Currencies::free_balance(BTC, &SettersModule::account_id()), 0);
-		assert_eq!(SettersModule::total_positions(BTC).standard, 0);
-		assert_eq!(SettersModule::total_positions(BTC).reserve, 0);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 0);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 0);
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 0);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
+		assert_eq!(Currencies::free_balance(EURJ, &SettersModule::account_id()), 0);
+		assert_eq!(SettersModule::total_positions(EURJ).standard, 0);
+		assert_eq!(SettersModule::total_positions(EURJ).reserve, 0);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 0);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).reserve, 0);
+		assert_eq!(Currencies::free_balance(EURJ, &ALICE), 0);
 
 		// success
-		assert_ok!(SettersModule::adjust_position(&ALICE, BTC, 500, 300));
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 500);
-		assert_eq!(Currencies::free_balance(BTC, &SettersModule::account_id()), 500);
-		assert_eq!(SettersModule::total_positions(BTC).standard, 300);
-		assert_eq!(SettersModule::total_positions(BTC).reserve, 500);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 300);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 500);
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 150);
+		assert_ok!(SettersModule::adjust_position(&ALICE, EURJ, 500, 300));
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 500);
+		assert_eq!(Currencies::free_balance(SETT, &SettersModule::account_id()), 500);
+		assert_eq!(SettersModule::total_positions(EURJ).standard, 300);
+		assert_eq!(SettersModule::total_positions(EURJ).reserve, 500);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 300);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).reserve, 500);
+		assert_eq!(Currencies::free_balance(EURJ, &ALICE), 150);
 
-		let update_position_event = Event::setters(crate::Event::PositionUpdated(ALICE, BTC, 500, 300));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == update_position_event));
+		System::assert_last_event(Event::setters(crate::Event::PositionUpdated(ALICE, EURJ, 500, 300)));
 	});
 }
 
 #[test]
-fn update_setter_should_work() {
+fn transfer_reserve_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(BTC, &SettersModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
-		assert_eq!(SettersModule::total_positions(BTC).standard, 0);
-		assert_eq!(SettersModule::total_positions(BTC).reserve, 0);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 0);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 0);
-		assert_eq!(<Positions<Runtime>>::contains_key(BTC, &ALICE), false);
+		System::set_block_number(1);
+		assert_ok!(SettersModule::update_reserve(&ALICE, EURJ, 400, 500));
+		assert_ok!(SettersModule::update_reserve(&BOB, EURJ, 100, 600));
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 500);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).reserve, 400);
+		assert_eq!(SettersModule::positions(EURJ, &BOB).standard, 600);
+		assert_eq!(SettersModule::positions(EURJ, &BOB).reserve, 100);
+
+		assert_ok!(SettersModule::transfer_reserve(&ALICE, &BOB, EURJ));
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 0);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).reserve, 0);
+		assert_eq!(SettersModule::positions(EURJ, &BOB).standard, 1100);
+		assert_eq!(SettersModule::positions(EURJ, &BOB).reserve, 500);
+
+		System::assert_last_event(Event::setters(crate::Event::TransferReserve(ALICE, BOB, EURJ)));
+	});
+}
+
+#[test]
+fn update_reserve_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Currencies::free_balance(SETT, &SettersModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
+		assert_eq!(SettersModule::total_positions(EURJ).standard, 0);
+		assert_eq!(SettersModule::total_positions(EURJ).reserve, 0);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 0);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).reserve, 0);
+		assert_eq!(<Positions<Runtime>>::contains_key(EURJ, &ALICE), false);
 
 		let alice_ref_count_0 = System::consumers(&ALICE);
 
-		assert_ok!(SettersModule::update_setter(&ALICE, BTC, 3000, 2000));
+		assert_ok!(SettersModule::update_reserve(&ALICE, EURJ, 3000, 2000));
 
 		// just update records
-		assert_eq!(SettersModule::total_positions(BTC).standard, 2000);
-		assert_eq!(SettersModule::total_positions(BTC).reserve, 3000);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 2000);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 3000);
+		assert_eq!(SettersModule::total_positions(EURJ).standard, 2000);
+		assert_eq!(SettersModule::total_positions(EURJ).reserve, 3000);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 2000);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).reserve, 3000);
 
 		// increase ref count when open new position
 		let alice_ref_count_1 = System::consumers(&ALICE);
 		assert_eq!(alice_ref_count_1, alice_ref_count_0 + 1);
 
 		// dot not manipulate balance
-		assert_eq!(Currencies::free_balance(BTC, &SettersModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
+		assert_eq!(Currencies::free_balance(SETT, &SettersModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 
 		// should remove position storage if zero
-		assert_eq!(<Positions<Runtime>>::contains_key(BTC, &ALICE), true);
-		assert_ok!(SettersModule::update_setter(&ALICE, BTC, -3000, -2000));
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 0);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 0);
-		assert_eq!(<Positions<Runtime>>::contains_key(BTC, &ALICE), false);
+		assert_eq!(<Positions<Runtime>>::contains_key(EURJ, &ALICE), true);
+		assert_ok!(SettersModule::update_reserve(&ALICE, EURJ, -3000, -2000));
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).standard, 0);
+		assert_eq!(SettersModule::positions(EURJ, &ALICE).reserve, 0);
+		assert_eq!(<Positions<Runtime>>::contains_key(EURJ, &ALICE), false);
 
 		// decrease ref count after remove position
 		let alice_ref_count_2 = System::consumers(&ALICE);
@@ -135,25 +150,18 @@ fn update_setter_should_work() {
 }
 
 #[test]
-fn transfer_setter_should_work() {
+fn total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		System::set_block_number(1);
-		assert_ok!(SettersModule::update_setter(&ALICE, BTC, 400, 500));
-		assert_ok!(SettersModule::update_setter(&BOB, BTC, 100, 600));
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 500);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 400);
-		assert_eq!(SettersModule::positions(BTC, &BOB).standard, 600);
-		assert_eq!(SettersModule::positions(BTC, &BOB).reserve, 100);
+		assert_eq!(SettersModule::total_reserve(0);
+		assert_ok!(Currencies::deposit(SETT,&SettersModule::account_id()), 10));
+		assert_eq!(SettersModule::total_reserve(10);
+	});
+}
 
-		assert_ok!(SettersModule::transfer_setter(&ALICE, &BOB, BTC));
-		assert_eq!(SettersModule::positions(BTC, &ALICE).standard, 0);
-		assert_eq!(SettersModule::positions(BTC, &ALICE).reserve, 0);
-		assert_eq!(SettersModule::positions(BTC, &BOB).standard, 1100);
-		assert_eq!(SettersModule::positions(BTC, &BOB).reserve, 500);
-
-		let transfer_setter_event = Event::setters(crate::Event::TransferSetter(ALICE, BOB, BTC));
-		assert!(System::events()
-			.iter()
-			.any(|record| record.event == transfer_setter_event));
+#[test]
+fn get_total_reserve_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(SettersModule::deposit_reserve(&ALICE, 500));
+		assert_eq!(SettersModule::get_total_reserve(500);
 	});
 }
