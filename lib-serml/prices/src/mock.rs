@@ -51,9 +51,9 @@ pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OM
 pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
 pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
 
-// LP tokens constants - CurrencyId/TokenSymbol : DEX Shares
-pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DEXShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
-pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DEXShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
+// LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
+pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
+pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DexShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
 
 // Currencies constants - FiatCurrencyIds
 pub const USD: FiatCurrencyId = USD; // US Dollar 			  (Fiat - only for price feed)
@@ -119,8 +119,8 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 	}
 }
 
-pub struct MockSetheumDex;
-impl DexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
+pub struct MockDex;
+impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USDJ, DNAR) => (10000, 200),
@@ -268,7 +268,7 @@ impl Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = MockSetheumDex;
+	type Dex = MockDex;
 	type Currency = Tokens;
 	type WeightInfo = ();
 }

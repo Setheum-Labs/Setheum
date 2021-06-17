@@ -16,13 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # DEX Module
+//! # Dex Module
 //!
 //! ## Overview
 //!
 //! Built-in decentralized exchange modules in setheum network, the swap
 //! mechanism refers to the design of Uniswap V2. In addition to being used for
-//! trading, DEX also participates in transaction fee liquidation.
+//! trading, Dex also participates in transaction fee liquidation.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::too_many_arguments)]
@@ -34,7 +34,7 @@ use frame_support::{log, pallet_prelude::*, traits::MaxEncodedLen, transactional
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
-use sp_core::{H160, U256};
+use sp_core::U256;
 use sp_runtime::{
 	traits::{AccountIdConversion, UniqueSaturatedInto, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
@@ -105,14 +105,14 @@ pub mod module {
 		#[pallet::constant]
 		type TradingPathLimit: Get<u32>;
 
-		/// The DEX's module id, keep all assets in DEX.
+		/// The Dex's module id, keep all assets in Dex.
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
-		/// DEX incentives
+		/// Dex incentives
 		type DexIncentives: DexIncentives<Self::AccountId, CurrencyId, Balance>;
 
 		/// The origin which may list, enable or disable trading pairs.
@@ -266,6 +266,7 @@ pub mod module {
 									trading_pair.1,
 									*deposit_amount_0,
 									*deposit_amount_1,
+									Default::default(),
 									false,
 								),
 								_ => Err(Error::<T>::NotEnabledTradingPair.into()),
@@ -285,7 +286,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Trading with DEX, swap with exact supply amount
+		/// Trading with Dex, swap with exact supply amount
 		///
 		/// - `path`: trading path.
 		/// - `supply_amount`: exact supply amount.
@@ -303,7 +304,7 @@ pub mod module {
 			Ok(().into())
 		}
 
-		/// Trading with DEX, swap with exact target amount
+		/// Trading with Dex, swap with exact target amount
 		///
 		/// - `path`: trading path.
 		/// - `target_amount`: exact target amount.

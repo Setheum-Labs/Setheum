@@ -55,7 +55,7 @@ pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OM
 pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
 pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
 
-// LP tokens constants - CurrencyId/TokenSymbol : DEX Shares
+// LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
 pub const CHFJ_USDJ_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
 pub const CHFJ_SETT_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
 pub const DNAR_USDJ_LP: CurrencyId = CurrencyId::DexShare(TokenSymbol::DNAR, TokenSymbol::USDJ);
@@ -123,15 +123,11 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn get_serplus_pool() -> Balance {
-		unimplemented!()
-	}
-
 	fn get_total_setter() -> Balance {
 		unimplemented!()
 	}
 
-	fn get_standard_proportion(_: Balance, _: CurrencyId) -> Ratio {
+	fn get_propper_proportion(_: Balance, _: CurrencyId) -> Ratio {
 		unimplemented!()
 	}
 
@@ -225,14 +221,10 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	fn burn_reserve(_: AccountId, _:Balance) -> DispatchResult {
 		unimplemented!()
 	}
-
-	fn withdraw_reserve(_: AccountId, _:Balance) -> DispatchResult {
-		unimplemented!()
-	}
 }
 
-pub struct MockSetheumDex;
-impl DexManager<AccountId, CurrencyId, Balance> for MockSetheumDex {
+pub struct MockDex;
+impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(SETT, CHFJ) => (500, 100),
@@ -334,7 +326,7 @@ impl Config for Runtime {
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;
 	type SerpTreasury = MockSerpTreasury;
 	type Currency = TokensModule;
-	type DEX = MockDEX;
+	type Dex = MockDex;
 	type PalletId = IncentivesPalletId;
 	type WeightInfo = ();
 }

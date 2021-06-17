@@ -30,7 +30,7 @@ use sp_runtime::{
 };
 use sp_std::{convert::Into, prelude::*};
 
-pub use currency::{CurrencyId, TokenSymbol};
+pub use currency::{CurrencyId, DexShare, TokenSymbol};
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -88,22 +88,17 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// Block ID.
 pub type BlockId = generic::BlockId<Block>;
 
+pub type NFTBalance = u128;
+
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
-
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum AirDropCurrencyId {
-	NEOM = 0,
-	DNAR,
-}
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum AuthoritysOriginId {
 	Root,
 	SetheumTreasury,
-	SettwayTreasury,
+	SerpTreasury,
 	SIF,
 }
 

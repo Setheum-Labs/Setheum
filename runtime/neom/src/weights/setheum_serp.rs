@@ -62,7 +62,7 @@ impl<T: frame_system::Config> setheum_settway::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(24 as Weight))
 			.saturating_add(T::DbWeight::get().writes(11 as Weight))
 	}
-	fn transfer_setter_from() -> Weight {
+	fn transfer_reserve_from() -> Weight {
 		(220_884_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(21 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))

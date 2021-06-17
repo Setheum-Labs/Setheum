@@ -10,27 +10,27 @@ jsonrpc-core = "15.0.0"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 
 # Substrate dependencies
-sp-api = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-blockchain = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-block-builder = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-runtime = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-consensus = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-consensus-babe = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-transaction-pool = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sc-client-api = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sc-consensus-babe = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sc-consensus-babe-rpc = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sc-consensus-epochs = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sc-finality-grandpa = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sc-finality-grandpa-rpc = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sc-keystore = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sp-keystore = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-sc-rpc = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-substrate-frame-rpc-system = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
-pallet-transaction-payment-rpc = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-block-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-consensus = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sp-consensus-babe = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sc-client-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sc-consensus-babe = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sc-consensus-babe-rpc = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sc-consensus-epochs = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sc-finality-grandpa = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sc-finality-grandpa-rpc = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sc-keystore = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-keystore = { version = "0.9.0", git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sc-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 
 # orml dependencies
-orml-oracle-rpc = { path = "../lib-orml/oracle/rpc" }
+orml-oracle-rpc = { path = "../lib-openrml/oracle/rpc" }
 
 # local dependencies
 runtime-common = { path = "../runtime/common" }
