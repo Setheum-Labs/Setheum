@@ -1,7 +1,3 @@
-/*
- *   Copyright (c) 2021 
- *   All rights reserved.
- */
 // This file is part of Setheum.
 
 // Copyright (C) 2020-2021 Setheum Labs.
@@ -23,62 +19,49 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::FullCodec;
+use codec::{Decode, Encode, FullCodec, HasCompact};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
-pub use primitives::{Balance, CurrencyId};
+use sp_core::H160;
 use sp_runtime::{
+	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
-	DispatchError, DispatchResult, FixedU128,
+	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
+	convert::TryInto,
 	fmt::Debug,
 	prelude::*,
 };
 
 pub type BlockNumber = u32;
-pub type FiatCurrencyId = CurrencyId;
 pub type Price = FixedU128;
+pub type FiatCurrencyId = CurrencyId;
 pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
-pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
+pub trait StandardManager<AccountId, CurrencyId, Balance, Balance> {
 	fn check_position_valid(
 		currency_id: CurrencyId,
 		reserve_balance: Balance,
-		standard_balance: StandardBalance,
+		standard_balance: Balance,
 	) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance, StandardBalance> StandardManager<AccountId, CurrencyId, Balance, StandardBalance>
+impl<AccountId, CurrencyId, Balance: Default, Balance> StandardManager<AccountId, CurrencyId, Balance, Balance>
 	for ()
 {
 	fn check_position_valid(
 		_currency_id: CurrencyId,
 		_reserve_balance: Balance,
-		_standard_balance: StandardBalance,
+		_standard_balance: Balance,
 	) -> DispatchResult {
 		Ok(())
 	}
 }
 
-pub trait SerpAuction<AccountId> {
-	type CurrencyId;
-	type Balance;
-	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
-
-	fn new_diamond_auction(initial_amount: Self::Balance, fix_setter: Self::Balance) -> DispatchResult;
-	fn new_setter_auction(initial_amount: Self::Balance, fix_settcurrency: Self::Balance, settcurrency_id: Self::CurrencyId) -> DispatchResult;
-	fn new_serplus_auction(settcurrency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
-
-	fn get_total_setter_in_auction() -> Self::Balance;
-	fn get_total_settcurrency_in_auction(id: Self::CurrencyId) -> Self::Balance;
-	fn get_total_diamond_in_auction(id: Self::CurrencyId) -> Self::Balance;
-}
-
-pub trait DexManager<AccountId, CurrencyId, Balance> {
+pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_swap_target_amount(
@@ -108,29 +91,9 @@ pub trait DexManager<AccountId, CurrencyId, Balance> {
 		max_supply_amount: Balance,
 		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError>;
-
-	fn add_liquidity(
-		who: &AccountId,
-		currency_id_a: CurrencyId,
-		currency_id_b: CurrencyId,
-		max_amount_a: Balance,
-		max_amount_b: Balance,
-		min_share_increment: Balance,
-		deposit_increment_share: bool,
-	) -> DispatchResult;
-
-	fn remove_liquidity(
-		who: &AccountId,
-		currency_id_a: CurrencyId,
-		currency_id_b: CurrencyId,
-		remove_share: Balance,
-		min_withdrawn_a: Balance,
-		min_withdrawn_b: Balance,
-		by_withdraw: bool,
-	) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance> DexManager<AccountId, CurrencyId, Balance> for ()
+impl<AccountId, CurrencyId, Balance> SetheumDexManager<AccountId, CurrencyId, Balance> for ()
 where
 	Balance: Default,
 {
@@ -173,30 +136,6 @@ where
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Ok(Default::default())
 	}
-
-	fn add_liquidity(
-		_who: &AccountId,
-		_currency_id_a: CurrencyId,
-		_currency_id_b: CurrencyId,
-		_max_amount_a: Balance,
-		_max_amount_b: Balance,
-		_min_share_increment: Balance,
-		_deposit_increment_share: bool,
-	) -> DispatchResult {
-		Ok(())
-	}
-
-	fn remove_liquidity(
-		_who: &AccountId,
-		_currency_id_a: CurrencyId,
-		_currency_id_b: CurrencyId,
-		_remove_share: Balance,
-		_min_withdrawn_a: Balance,
-		_min_withdrawn_b: Balance,
-		_by_withdraw: bool,
-	) -> DispatchResult {
-		Ok(())
-	}
 }
 
 /// An abstraction of serp treasury for the SERP (Setheum Elastic Reserve Protocol).
@@ -208,14 +147,17 @@ pub trait SerpTreasury<AccountId> {
 
 	fn get_adjustment_frequency() -> Self::BlockNumber;
 
-	// TODO: get surplus amount of serp treasury
-	// fn get_serplus_pool() -> Self::Balance;
+	/// get surplus amount of serp treasury
+	fn get_surplus_pool() -> Self::Balance;
 
-	// TODO: get reserve asset amount of serp treasury
-	// fn get_total_setter() -> Self::Balance;
+	/// get serpup amount of serp treasury
+	fn get_surpup_pool() -> Self::Balance;
 
-	/// calculate the proportion of specific currency amount for the whole system
-	fn get_propper_proportion(amount: Self::Balance) -> Ratio;
+	/// get reserve asset amount of serp treasury
+	fn get_total_setter() -> Self::Balance;
+
+	/// calculate the proportion of specific standard amount for the whole system
+	fn get_standard_proportion(amount: Self::Balance) -> Ratio;
 
 	/// SerpUp ratio for Serplus Auctions / Swaps
 	fn get_serplus_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
@@ -262,24 +204,24 @@ pub trait SerpTreasury<AccountId> {
 	fn burn_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_propper(currency_id: Self::CurrencyId, who: &AccountId, propper: Self::Balance) -> DispatchResult;
+	fn issue_propper(currency_id: Self::CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_propper(currency_id: Self::CurrencyId, who: &AccountId, propper: Self::Balance) -> DispatchResult;
+	fn burn_propper(currency_id: Self::CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
+	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult;
 
 	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
+	fn burn_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult;
 
-	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the Dex token balance.
+	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
 	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
-	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
+	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult;
 
-	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the Dex token balance.
+	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
 	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
-	fn burn_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
+	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// deposit surplus(propperstable currency) to serp treasury by `from`
 	fn deposit_surplus(currency_id: Self::CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
@@ -288,18 +230,45 @@ pub trait SerpTreasury<AccountId> {
 	fn deposit_reserve(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// Burn Reserve asset (Setter (SETT))
-	fn burn_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
+	fn burn_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult;
+
+	/// Withdraw reserve asset (Setter (SETT)) of serp treasury to `who`
+	fn withdraw_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
+}
+
+pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
+	fn swap_exact_setter_in_auction_to_settcurrency(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+		min_target_amount: Self::Balance,
+		price_impact_limit: Option<Ratio>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	fn swap_setter_not_in_auction_with_exact_settcurrency(
+		currency_id: Self::CurrencyId,
+		target_amount: Self::Balance,
+		max_supply_amount: Self::Balance,
+		price_impact_limit: Option<Ratio>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	fn create_reserve_auctions(
+		currency_id: Self::CurrencyId,
+		amount: Self::Balance,
+		target: Self::Balance,
+		refund_receiver: AccountId,
+		splited: bool,
+	) -> DispatchResult;
 }
 
 pub trait PriceProvider<CurrencyId> {
-	fn get_fiat_price(currency_id: CurrencyId) -> Option<Price>;
+	fn get_fiat_price(fiat_id: FiatCurrencyId, currency_id: CurrencyId) -> Option<Price>;
 	fn get_setheum_usd_fixed_price() -> Option<Price>;
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_stablecoin_market_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_peg_price_difference(currency_id: CurrencyId) -> Result<Balance, DispatchError>;
+	fn get_peg_price_difference(currency_id: CurrencyId) -> sp_std::result::Result<Balance, DispatchError>;
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
-	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Option<Price>;
+	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>;
 	fn get_setter_basket_peg_price() -> Option<Price>;
 	fn get_setter_fixed_price() -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
