@@ -135,8 +135,6 @@ fn neom_genesis(
 	use sp_std::collections::btree_map::BTreeMap;
 
 	let existential_deposit = NativeTokenExistentialDeposit::get();
-	let airdrop_accounts_json = &include_bytes!("../../../../../resources/newrome-airdrop-NEOM.json")[..];
-	let airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(airdrop_accounts_json).unwrap();
 
 	let initial_balance: u128 = 1_000_000 * dollar(NEOM);
 	let initial_staking: u128 = 100_000 * dollar(NEOM);
@@ -158,7 +156,6 @@ fn neom_genesis(
 						.iter()
 						.map(|x| (x.clone(), existential_deposit)),
 				)
-				.chain(airdrop_accounts)
 				.fold(
 					BTreeMap::<AccountId, Balance>::new(),
 					|mut acc, (account_id, amount)| {
@@ -237,7 +234,7 @@ fn neom_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		}),
-		setheum_dex: Some(DexConfig {
+		dex: Some(DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],

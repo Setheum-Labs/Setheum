@@ -215,7 +215,7 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
-		dollar, get_all_setheum_accounts, SetheumOracleConfig, AirDropConfig, BabeConfig, Balance, BalancesConfig,
+		dollar, get_all_setheum_accounts, SetheumOracleConfig, BabeConfig, Balance, BalancesConfig,
 		BandOracleConfig, SettmintEngineConfig, SerpTreasuryConfig, DexConfig, EnabledTradingPairs,
 		GeneralCouncilMembershipConfig, GrandpaConfig, SettwayCouncilMembershipConfig,
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
@@ -328,9 +328,6 @@ fn testnet_genesis(
 				(GBPJ, dollar(GBPJ)),
 			],
 		}),
-		setheum_airdrop: Some(AirDropConfig {
-			airdrop_accounts: vec![],
-		}),
 		orml_oracle_Instance1: Some(SetheumOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
@@ -339,7 +336,7 @@ fn testnet_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		}),
-		setheum_dex: Some(DexConfig {
+		dex: Some(DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![(
@@ -362,7 +359,7 @@ fn newrome_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
-		cent, dollar, get_all_setheum_accounts, SetheumOracleConfig, AirDropConfig, AirDropCurrencyId, BabeConfig,
+		cent, dollar, get_all_setheum_accounts, SetheumOracleConfig, BabeConfig,
 		Balance, BalancesConfig, BandOracleConfig, SettmintEngineConfig, SerpTreasuryConfig, DexConfig,
 		EnabledTradingPairs, GeneralCouncilMembershipConfig, GrandpaConfig,
 		SettwayCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
@@ -370,6 +367,7 @@ fn newrome_genesis(
 		SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
 		DNAR, sett, USDJ,
 	};
+	
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
 
@@ -469,28 +467,6 @@ fn newrome_genesis(
 				(GBPJ, 5 * cent(GBPJ)),
 			],
 		}),
-		setheum_airdrop: Some(AirDropConfig {
-			airdrop_accounts: {
-				let dnar_airdrop_accounts_json =
-					&include_bytes!("../../../../../resources/newrome-airdrop-DNAR.json")[..];
-				let dnar_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(dnar_airdrop_accounts_json).unwrap();
-				let neom_airdrop_accounts_json =
-					&include_bytes!("../../../../../resources/newrome-airdrop-NEOM.json")[..];
-				let neom_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(neom_airdrop_accounts_json).unwrap();
-
-				dnar_airdrop_accounts
-					.iter()
-					.map(|(account_id, dnar_amount)| (account_id.clone(), AirDropCurrencyId::DNAR, *dnar_amount))
-					.chain(
-						neom_airdrop_accounts
-							.iter()
-							.map(|(account_id, neom_amount)| (account_id.clone(), AirDropCurrencyId::NEOM, *neom_amount)),
-					)
-					.collect::<Vec<_>>()
-			},
-		}),
 		orml_oracle_Instance1: Some(SetheumOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
@@ -499,40 +475,10 @@ fn newrome_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		}),
-		setheum_dex: Some(DexConfig {
+		dex: Some(DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
-		}),
-		orml_nft: Some(OrmlNFTConfig {
-			tokens: {
-				let nft_airdrop_json = &include_bytes!("../../../../../resources/newrome-airdrop-NFT.json")[..];
-				let nft_airdrop: Vec<(
-					AccountId,
-					Vec<u8>,
-					setheum_nft::ClassData,
-					Vec<(Vec<u8>, setheum_nft::TokenData, Vec<AccountId>)>,
-				)> = serde_json::from_slice(nft_airdrop_json).unwrap();
-
-				let mut tokens = vec![];
-				for (class_owner, class_meta, class_data, nfts) in nft_airdrop {
-					let mut tokens_of_class = vec![];
-					for (token_meta, token_data, token_owners) in nfts {
-						token_owners.iter().for_each(|account_id| {
-							tokens_of_class.push((account_id.clone(), token_meta.clone(), token_data.clone()));
-						});
-					}
-
-					tokens.push((
-						class_owner.clone(),
-						class_meta.clone(),
-						class_data.clone(),
-						tokens_of_class,
-					));
-				}
-
-				tokens
-			},
 		}),
 	}
 }

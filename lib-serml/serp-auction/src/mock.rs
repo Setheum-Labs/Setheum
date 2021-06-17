@@ -122,7 +122,7 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpAuctionHandler = SerpAuctionModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = DEXModule;
+	type Dex = DexModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -153,18 +153,18 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, BTC)];
 }
 
-impl setheum_dex::Config for Runtime {
+impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type PalletId = DexPalletId;
 	type DexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
@@ -193,7 +193,7 @@ impl Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
-	type DEX = DEXModule;
+	type Dex = DexModule;
 	type PriceSource = MockPriceSource;
 	type UnsignedPriority = UnsignedPriority;
 	type WeightInfo = ();
@@ -213,7 +213,7 @@ construct_runtime!(
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		AuctionModule: orml_auction::{Module, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Event<T>},
-		DEXModule: setheum_dex::{Module, Storage, Call, Event<T>, Config<T>},
+		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -261,7 +261,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		setheum_dex::GenesisConfig::<Runtime> {
+		dex::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],

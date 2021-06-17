@@ -35,10 +35,21 @@ pub type BlockNumber = u64;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
+
+// Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::XBTC);
+pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ); // Setheum EUR (Euro stablecoin)
+pub const KWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KWDJ); // Setheum KWD (Kuwaiti Dinar stablecoin)
+pub const JODJ: CurrencyId = CurrencyId::Token(TokenSymbol::JODJ); // Setheum JOD (Jordanian Dinar stablecoin)
+pub const BHDJ: CurrencyId = CurrencyId::Token(TokenSymbol::BHDJ); // Setheum BHD (Bahraini Dirham stablecoin)
+pub const KYDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KYDJ); // Setheum KYD (Cayman Islands Dollar stablecoin)
+pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OMR (Omani Riyal stablecoin)
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
+pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
 
 mod setters {
 	pub use super::super::*;
@@ -152,7 +163,7 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		Default::default()
 	}
 
-	fn get_total_serplus_in_auction() -> Self::Balance {
+	fn get_total_diamond_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }
@@ -162,18 +173,70 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = USDJ;
-	pub const MaxAuctionsCount: u32 = 10_000;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
+		USDJ, // Setheum USD (US Dollar stablecoin)
+		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
+		EURJ, // Setheum EUR (Euro stablecoin)
+		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
+		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
+		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
+		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
+		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
+		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
+		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+	];
+	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter currency ticker is SETT
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
+	pub const GetSettGBPCurrencyId: CurrencyId = GBPJ; // SettGBP currency ticker is GBPJ
+	pub const GetSettEURCurrencyId: CurrencyId = EURJ; // SettEUR currency ticker is EURJ
+	pub const GetSettKWDCurrencyId: CurrencyId = KWDJ; // SettKWD currency ticker is KWDJ
+	pub const GetSettJODCurrencyId: CurrencyId = JODJ; // SettJOD currency ticker is JODJ
+	pub const GetSettBHDCurrencyId: CurrencyId = BHDJ; // SettBHD currency ticker is BHDJ
+	pub const GetSettKYDCurrencyId: CurrencyId = KYDJ; // SettKYD currency ticker is KYDJ
+	pub const GetSettOMRCurrencyId: CurrencyId = OMRJ; // SettOMR currency ticker is OMRJ
+	pub const GetSettCHFCurrencyId: CurrencyId = CHFJ; // SettCHF currency ticker is CHFJ
+	pub const GetSettGIPCurrencyId: CurrencyId = GIPJ; // SettGIP currency ticker is GIPJ
+	pub const GetDexerCurrencyId: CurrencyId = SDEX;
+	pub const GetExchangeFee: (u32, u32) = (0, 100);
+	pub const TradingPathLimit: u32 = 3;
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT)];
+	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
+
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
+	pub SIFSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
 }
 
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetSettGBPCurrencyId = GetSettGBPCurrencyId;
+	type GetSettEURCurrencyId = GetSettEURCurrencyId;
+	type GetSettKWDCurrencyId = GetSettKWDCurrencyId;
+	type GetSettJODCurrencyId = GetSettJODCurrencyId;
+	type GetSettBHDCurrencyId = GetSettBHDCurrencyId;
+	type GetSettKYDCurrencyId = GetSettKYDCurrencyId;
+	type GetSettOMRCurrencyId = GetSettOMRCurrencyId;
+	type GetSettCHFCurrencyId = GetSettCHFCurrencyId;
+	type GetSettGIPCurrencyId = GetSettGIPCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
+	type SerplusSerpupRatio = SerplusSerpupRatio;
+	type SettPaySerpupRatio = SettPaySerpupRatio;
+	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SIFSerpupRatio = SIFSerpupRatio;
 	type SerpAuctionHandler = MockSerpAuction;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type DEX = ();
+	type Dex = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -204,13 +267,29 @@ impl StandardValidator<AccountId, CurrencyId, Balance, Balance> for MockStandard
 }
 
 parameter_types! {
+	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
+		USDJ, // Setheum USD (US Dollar stablecoin)
+		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
+		EURJ, // Setheum EUR (Euro stablecoin)
+		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
+		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
+		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
+		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
+		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
+		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
+		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+	];
+	pub const GetReserveCurrencyId: CurrencyId = SETT;
 	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
+
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Convert = MockConvert;
 	type Currency = Currencies;
+	type StandardCurrencyIds = StandardCurrencyIds;
+	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type StandardValidator = MockStandardValidator;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettersPalletId;

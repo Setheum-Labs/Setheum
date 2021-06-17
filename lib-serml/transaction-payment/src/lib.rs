@@ -251,12 +251,12 @@ pub mod module {
 		/// block's weight.
 		type FeeMultiplierUpdate: MultiplierUpdate;
 
-		/// DEX to exchange currencies.
-		type DEX = DexManager<Self::AccountId, CurrencyId, Balance>;
+		/// Dex to exchange currencies.
+		type Dex = DexManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// The max slippage allowed when swap fee with DEX
+		/// The max slippage allowed when swap fee with Dex
 		#[pallet::constant]
-		type MaxSlippageSwapWithDEX: Get<Ratio>;
+		type MaxSlippageSwapWithDex: Get<Ratio>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -545,7 +545,7 @@ where
 			};
 		charge_fee_order.dedup();
 
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
+		let price_impact_limit = Some(T::MaxSlippageSwapWithDex::get());
 
 		// iterator charge fee order to get enough fee
 		for currency_id in charge_fee_order {
@@ -562,14 +562,14 @@ where
 					break;
 				}
 			} else {
-				// try to use non-native currency to swap native currency by exchange with DEX
+				// try to use non-native currency to swap native currency by exchange with Dex
 				let trading_path = if currency_id == stable_currency_id {
 					vec![stable_currency_id, native_currency_id]
 				} else {
 					vec![currency_id, stable_currency_id, native_currency_id]
 				};
 
-				if T::DEX::swap_with_exact_target(
+				if T::Dex::swap_with_exact_target(
 					who,
 					&trading_path,
 					fee.unique_saturated_into(),

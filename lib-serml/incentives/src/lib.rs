@@ -56,6 +56,10 @@ pub enum PoolId<AccountId> {
 	/// Rewards pool(SetterCurrencyId) (SETT) for market makers who provide Dex liquidity
 	/// for DexCurrency / Dexer (SDEX or HALAL) pools only.
 	DexBonus(CurrencyId),
+
+	/// Rewards pool(SettEURCurrencyId) (EURJ or JEUR) for market makers who provide Dex liquidity
+	/// for Certain Strategic Currencies LPs, e.g. DOT, XBTC et al.
+	DexExtra(CurrencyId),
 }
 
 #[frame_support::pallet]
@@ -157,8 +161,8 @@ pub mod module {
 		/// Currency to transfer/issue assets
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		/// DEX to supply liquidity info
-		type DEX: DexManager<Self::AccountId, CurrencyId, Balance>;
+		/// Dex to supply liquidity info
+		type Dex: DexManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// The module id, keep DexShare LP.
 		#[pallet::constant]
@@ -179,9 +183,9 @@ pub mod module {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Deposit DEX share. \[who, dex_share_type, deposit_amount\]
+		/// Deposit Dex share. \[who, dex_share_type, deposit_amount\]
 		DepositDexShare(T::AccountId, CurrencyId, Balance),
-		/// Withdraw DEX share. \[who, dex_share_type, withdraw_amount\]
+		/// Withdraw Dex share. \[who, dex_share_type, withdraw_amount\]
 		WithdrawDexShare(T::AccountId, CurrencyId, Balance),
 		/// Claim rewards. \[who, pool_id\]
 		ClaimRewards(T::AccountId, T::PoolId),

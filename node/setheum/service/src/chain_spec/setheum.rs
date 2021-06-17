@@ -137,9 +137,6 @@ fn setheum_genesis(
 
 	let existential_deposit = NativeTokenExistentialDeposit::get();
 
-	let airdrop_accounts_json = &include_bytes!("../../../../../resources/newrome-airdrop-DNAR.json")[..];
-	let airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(airdrop_accounts_json).unwrap();
-
 	let initial_balance: u128 = 1_000_000 * dollar(DNAR);
 	let initial_staking: u128 = 100_000 * dollar(DNAR);
 
@@ -160,7 +157,6 @@ fn setheum_genesis(
 						.iter()
 						.map(|x| (x.clone(), existential_deposit)),
 				)
-				.chain(airdrop_accounts)
 				.fold(
 					BTreeMap::<AccountId, Balance>::new(),
 					|mut acc, (account_id, amount)| {
@@ -243,7 +239,7 @@ fn setheum_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		}),
-		setheum_dex: Some(DexConfig {
+		dex: Some(DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],

@@ -58,8 +58,8 @@ pub mod module {
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		/// Convert standard amount under specific reserve type to standard
-		/// value(stable currency)
+		/// Convert standard amount under specific standard type to standard
+		/// value(SettCurrency)
 		type Convert: Convert<(CurrencyId, Balance), Balance>;
 
 		/// Currency type for deposit/withdraw reserve assets to/from setters
@@ -70,6 +70,13 @@ pub mod module {
 			Balance = Balance,
 			Amount = Amount,
 		>;
+
+		/// The list of valid standard currency types
+		type StandardCurrencyIds: Get<Vec<CurrencyId>>;
+
+		#[pallet::constant]
+		/// Setter (Valid Reserve) currency id
+		type GetReserveCurrencyId: Get<CurrencyId>;
 
 		/// Standard manager is used to know the validity of Settmint standards.
 		type StandardValidator: StandardValidator<Self::AccountId, CurrencyId, Balance, Balance>;
@@ -93,6 +100,7 @@ pub mod module {
 		ReserveOverflow,
 		ReserveTooLow,
 		AmountConvertFailed,
+		InvalidStandardType,
 	}
 
 	#[pallet::event]
@@ -102,20 +110,19 @@ pub mod module {
 		/// standard_adjustment\]
 		PositionUpdated(T::AccountId, CurrencyId, Amount, Amount),
 		/// Transfer setter. \[from, to, currency_id\]
-		TransferSetter(T::AccountId, T::AccountId, CurrencyId),
+		TransferReserve(T::AccountId, T::AccountId, CurrencyId),
 	}
 
 	/// The reserved standard positions, map from
-	/// Owner -> ReserveType -> Position
+	/// Owner -> StandardType -> Position
 	#[pallet::storage]
 	#[pallet::getter(fn positions)]
 	pub type Positions<T: Config> =
 		StorageDoubleMap<_, Twox64Concat, CurrencyId, Twox64Concat, T::AccountId, Position, ValueQuery>;
 
 	/// The total reserved standard positions, map from
-	/// `ReserveType -> Position`
+	/// `StandardType -> Position`
 	///
-	/// TODO: Change to map from `ReserveType -> Position`
 	#[pallet::storage]
 	#[pallet::getter(fn total_positions)]
 	pub type TotalPositions<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Position, ValueQuery>;
@@ -146,25 +153,34 @@ impl<T: Config> Pallet<T> {
 		standard_adjustment: Amount,
 	) -> DispatchResult {
 		// mutate reserve and standard
-		Self::update_setter(who, currency_id, reserve_adjustment, standard_adjustment)?;
+		Self::update_reserve(who, currency_id, reserve_adjustment, standard_adjustment)?;
 
 		let reserve_balance_adjustment = Self::balance_try_from_amount_abs(reserve_adjustment)?;
 		let standard_balance_adjustment = Self::balance_try_from_amount_abs(standard_adjustment)?;
 		let setheum_account = Self::account_id();
+		let reserve_currency = T::GetReserveCurrencyId::get();
 
+		// ensure the currency is a settcurrency standard
+		ensure!(
+			T::StandardCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidStandardType,
+		);
+	
 		if reserve_adjustment.is_positive() {
-			T::Currency::transfer(currency_id, who, &setheum_account, reserve_balance_adjustment)?;
+			T::Currency::transfer(reserve_currency, who, &setheum_account, reserve_balance_adjustment)?;
 		} else if reserve_adjustment.is_negative() {
-			T::Currency::transfer(currency_id, &setheum_account, who, reserve_balance_adjustment)?;
+			T::Currency::transfer(reserve_currency, &setheum_account, who, reserve_balance_adjustment)?;
 		}
 
 		if standard_adjustment.is_positive() {
 			// issue standard with reserve backed by SERP Treasury
-			T::SerpTreasury::issue_standard(who, T::Convert::convert((currency_id, standard_balance_adjustment)), true)?;
+			// TODO: Change to SettMintTreasury trait in this pallet and rename the pallet to `settmint-treasury`.
+			T::SerpTreasury::issue_standard(currency_id, who, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		} else if standard_adjustment.is_negative() {
 			// repay standard
 			// burn standard by SERP Treasury
-			T::SerpTreasury::burn_standard(who, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
+			// TODO: Change to SettMintTreasury trait in this pallet and rename the pallet to `settmint-treasury`.
+			T::SerpTreasury::burn_standard(who, currency_id, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		}
 
 		// ensure it passes StandardValidator check
@@ -181,7 +197,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// transfer whole setter reserve of `from` to `to`
-	pub fn transfer_setter(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
+	pub fn transfer_reserve(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		// get `from` position data
 		let Position { reserve, standard } = Self::positions(currency_id, from);
 
@@ -203,20 +219,20 @@ impl<T: Config> Pallet<T> {
 		let reserve_adjustment = Self::amount_try_from_balance(reserve)?;
 		let standard_adjustment = Self::amount_try_from_balance(standard)?;
 
-		Self::update_setter(
+		Self::update_reserve(
 			from,
 			currency_id,
 			reserve_adjustment.saturating_neg(),
 			standard_adjustment.saturating_neg(),
 		)?;
-		Self::update_setter(to, currency_id, reserve_adjustment, standard_adjustment)?;
+		Self::update_reserve(to, currency_id, reserve_adjustment, standard_adjustment)?;
 
-		Self::deposit_event(Event::TransferSetter(from.clone(), to.clone(), currency_id));
+		Self::deposit_event(Event::TransferReserve(from.clone(), to.clone(), currency_id));
 		Ok(())
 	}
 
 	/// mutate records of reserves and standards
-	fn update_setter(
+	fn update_reserve(
 		who: &T::AccountId,
 		currency_id: CurrencyId,
 		reserve_adjustment: Amount,
@@ -312,5 +328,14 @@ impl<T: Config> Pallet<T> {
 	/// Convert the absolute value of `Amount` to `Balance`.
 	fn balance_try_from_amount_abs(a: Amount) -> result::Result<Balance, Error<T>> {
 		TryInto::<Balance>::try_into(a.saturating_abs()).map_err(|_| Error::<T>::AmountConvertFailed)
+	}
+
+	pub fn total_reserve() -> Balance {
+		let reserve_currency = T::GetReserveCurrencyId::get();
+		T::Currency::free_balance(&reserve_currency, &Self::account_id())
+	}
+	
+	fn get_total_reserve() -> Self::Balance {
+		Self::total_reserve()
 	}
 }

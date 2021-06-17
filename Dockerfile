@@ -1,33 +1,54 @@
-# Based from https://github.com/paritytech/substrate/blob/master/.maintain/Dockerfile
+FROM rust as planner
+WORKDIR app
+# We only pay the installation cost once,
+# it will be cached from the second build onwards
+RUN rustup default nightly-2021-03-15
+RUN cargo install cargo-chef
+COPY . .
+RUN cargo chef prepare  --recipe-path recipe.json
 
-FROM phusion/baseimage:bionic-1.0.0 as builder
-LABEL maintainer="jbashir52@gmail.com"
-LABEL description="This is the build stage for Setheum Node. Here we create the binary."
+# =============
 
-ENV DEBIAN_FRONTEND=noninteractive
+FROM rust as cacher
+WORKDIR app
+RUN rustup default nightly-2021-03-15 && \
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-15
+RUN cargo install cargo-chef
+RUN apt-get update && \
+	apt-get dist-upgrade -y -o Dpkg::Options::="--force-confold" && \
+	apt-get install -y cmake pkg-config libssl-dev git clang libclang-dev
 
-ARG PROFILE=release
-WORKDIR /setheum
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --recipe-path recipe.json --release
 
+# =============
 
-COPY . /setheum
+FROM rust as builder
+WORKDIR app
+
+COPY --from=cacher $CARGO_HOME $CARGO_HOME
+
+RUN rustup default nightly-2021-03-15 && \
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-15
 
 RUN apt-get update && \
 	apt-get dist-upgrade -y -o Dpkg::Options::="--force-confold" && \
-	apt-get install -y cmake cmake pkg-config libssl-dev git clang libclang-dev
+	apt-get install -y cmake pkg-config libssl-dev git clang libclang-dev
 
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
-	export PATH="$PATH:$HOME/.cargo/bin" && \
-	rustup default nightly-2021-03-15 && \
-	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-03-15 && \
-	cargo build "--$PROFILE" --manifest-path node/setheum-dev/Cargo.toml
+ARG GIT_COMMIT=
+ENV GIT_COMMIT=$GIT_COMMIT
+ARG BUILD_ARGS
 
-# ===== SECOND STAGE ======
+COPY . .
+
+COPY --from=cacher /app/target target
+
+RUN cargo build --release $BUILD_ARGS
+
+# ===========
 
 FROM phusion/baseimage:bionic-1.0.0
 LABEL maintainer="jbashir52@gmail.com"
-LABEL description="This is the 2nd stage: a very small image where we copy the Setheum node binary."
-ARG PROFILE=release
 
 # RUN mv /usr/share/ca* /tmp && \
 # 	rm -rf /usr/share/*  && \
