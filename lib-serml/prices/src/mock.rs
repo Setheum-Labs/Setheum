@@ -56,16 +56,16 @@ pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, Tok
 pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DexShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
 
 // Currencies constants - FiatCurrencyIds
-pub const USD: FiatCurrencyId = USD; // US Dollar 			  (Fiat - only for price feed)
-pub const GBP: FiatCurrencyId = GBP; // Pound Sterling 		  (Fiat - only for price feed)
-pub const EUR: FiatCurrencyId = EUR; // Euro 				  (Fiat - only for price feed)
-pub const KWD: FiatCurrencyId = KWD; // Kuwaiti Dinar 		  (Fiat - only for price feed)
-pub const JOD: FiatCurrencyId = JOD; // Jordanian Dinar 	  (Fiat - only for price feed)
-pub const BHD: FiatCurrencyId = BHD; // Bahraini Dirham 	  (Fiat - only for price feed)
-pub const KYD: FiatCurrencyId = KYD; // Cayman Islands Dollar (Fiat - only for price feed)
-pub const OMR: FiatCurrencyId = OMR; // Omani Riyal 		  (Fiat - only for price feed)
-pub const CHF: FiatCurrencyId = CHF; // Swiss Franc 		  (Fiat - only for price feed)
-pub const GIP: FiatCurrencyId = GIP; // Gibraltar Pound 	  (Fiat - only for price feed)
+pub const USD: FiatCurrencyId = USD; // 1.  US Dollar 			  (Fiat - only for price feed)
+pub const GBP: FiatCurrencyId = GBP; // 2.  Pound Sterling 		  (Fiat - only for price feed)
+pub const EUR: FiatCurrencyId = EUR; // 3.  Euro 				  (Fiat - only for price feed)
+pub const KWD: FiatCurrencyId = KWD; // 4.  Kuwaiti Dinar 		  (Fiat - only for price feed)
+pub const JOD: FiatCurrencyId = JOD; // 5.  Jordanian Dinar 	  (Fiat - only for price feed)
+pub const BHD: FiatCurrencyId = BHD; // 6.  Bahraini Dirham 	  (Fiat - only for price feed)
+pub const KYD: FiatCurrencyId = KYD; // 7.  Cayman Islands Dollar (Fiat - only for price feed)
+pub const OMR: FiatCurrencyId = OMR; // 8.  Omani Riyal 		  (Fiat - only for price feed)
+pub const CHF: FiatCurrencyId = CHF; // 9.  Swiss Franc 		  (Fiat - only for price feed)
+pub const GIP: FiatCurrencyId = GIP; // 10. Gibraltar Pound 	  (Fiat - only for price feed)
 
 mod setheum_prices {
 	pub use super::super::*;

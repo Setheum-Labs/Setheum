@@ -211,6 +211,10 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
+			T::FiatCurrencyIds::get().contains(&fiat_id),
+			Error::<T>::InvalidFiatCurrencyType,
+		);
+		ensure!(
 			T::PegCurrencyIds::get(&currency_id) == &fiat_id,
 			Error::<T>::InvalidPegPair,
 		);
@@ -230,6 +234,10 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
+		ensure!(
+			T::FiatCurrencyIds::get().contains(&fiat_id),
+			Error::<T>::InvalidFiatCurrencyType,
+		);
 		Self::get_fiat_price(&currency_id)
 	}
 
@@ -277,6 +285,10 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidStableCurrencyType,
 		);
 		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
+		ensure!(
+			T::FiatCurrencyIds::get().contains(&fiat_id),
+			Error::<T>::InvalidFiatCurrencyType,
+		);
 		Self::get_relative_price(&currency_id, &fiat_id)
 	}
 
