@@ -126,6 +126,7 @@ pub mod module {
 			dest: <T::Lookup as StaticLookup>::Source,
 			currency_id: CurrencyIdOf<T>,
 			#[pallet::compact] amount: BalanceOf<T>,
+			// TODO: Add `claim_cashdrop: bool`, and if yes then call clain_cashdrop(origin, currency_id, amount) to claim cashdrop.
 		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
