@@ -16,8 +16,8 @@ frame-system = { default-features = false, version = '3.0.0', git = 'https://git
 sp-std = { default-features = false, version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05' }
 
 # orml dependencies
-orml-traits = { path = "../../lib-orml/traits", default-features = false }
-orml-rewards = { path = "../../lib-orml/rewards", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
+orml-rewards = { path = "../../lib-openrml/rewards", default-features = false }
 
 # local dependencies
 support = { package = "setheum-support", path = "../support", default-features = false }
@@ -27,8 +27,8 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 sp-core = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
 sp-io = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
 pallet-balances = { version = '3.0.0', git = 'https://github.com/paritytech/substrate.git', tag = 'monthly-2021-05'}
-orml-tokens = { path = "../../lib-orml/tokens" }
-orml-rewards = { path = "../../lib-orml/rewards" }
+orml-tokens = { path = "../../lib-openrml/tokens" }
+orml-rewards = { path = "../../lib-openrml/rewards" }
 
 [features]
 default = ["std"]
