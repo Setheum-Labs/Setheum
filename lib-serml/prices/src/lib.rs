@@ -71,44 +71,44 @@ pub mod module {
 		type GetSettUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettGBP currency id, it should be GBPJ in Setheum.
+		/// The Setter Peg One currency id, it should be USDJ in Setheum.
+		GetSetterPegOneCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Setter Peg One currency id, it should be GBPJ in Setheum.
 		type GetSettGBPCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettEUR currency id, it should be EURJ in Setheum.
+		/// The Setter Peg One currency id, it should be EURJ in Setheum.
 		type GetSettEURCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettKWD currency id, it should be KWDJ in Setheum.
+		/// The Setter Peg One currency id, it should be KWDJ in Setheum.
 		type GetSettKWDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettJOD currency id, it should be JODJ in Setheum.
+		/// The Setter Peg One currency id, it should be JODJ in Setheum.
 		type GetSettJODCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettBHD currency id, it should be BHDJ in Setheum.
+		/// The Setter Peg One currency id, it should be BHDJ in Setheum.
 		type GetSettBHDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettKYD currency id, it should be KYDJ in Setheum.
+		/// The Setter Peg One currency id, it should be KYDJ in Setheum.
 		type GetSettKYDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettOMR currency id, it should be OMRJ in Setheum.
+		/// The Setter Peg One currency id, it should be OMRJ in Setheum.
 		type GetSettOMRCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettCHF currency id, it should be CHFJ in Setheum.
+		/// The Setter Peg One currency id, it should be CHFJ in Setheum.
 		type GetSettCHFCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettGIP currency id, it should be GIPJ in Setheum.
+		/// The Setter Peg One currency id, it should be GIPJ in Setheum.
 		type GetSettGIPCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The fixed price of SettUSD currency, it should be 1 USD in Setheum.
-		type SettUSDFixedPrice: Get<Price>;
 
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
@@ -116,7 +116,6 @@ pub mod module {
 		/// The peg currency of a stablecoin.
 		type PegCurrencyIds: GetByKey<Self::CurrencyId, Self::FiatCurrencyId>;
 
-		#[pallet::constant]
 		/// The list of valid Fiat currency types that define the stablecoin pegs
 		type FiatCurrencyIds: Get<Vec<CurrencyId>>;
 
@@ -311,7 +310,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// divided by the amount of currencies in the basket.
 	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Option<Price> {
 		let currency_convert = Self::price_try_from_balance(currencies_amount)?;
-		total_basket_worth.checked_div(&currency_convert);
+		total_basket_worth.checked_div(&currency_convert)
 	}
 
 	/// get the price of a Setter (SETT basket coin - basket of currencies)
