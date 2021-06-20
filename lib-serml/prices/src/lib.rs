@@ -72,43 +72,43 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The Setter Peg One currency id, it should be USDJ in Setheum.
-		GetSetterPegOneCurrencyId: Get<CurrencyId>;
+		type GetSetterPegOneCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be GBPJ in Setheum.
-		type GetSettGBPCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Two currency id, it should be GBPJ in Setheum.
+		type GetSetterPegTwoCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be EURJ in Setheum.
-		type GetSettEURCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Three currency id, it should be EURJ in Setheum.
+		type GetSetterPegThreeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be KWDJ in Setheum.
-		type GetSettKWDCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Four currency id, it should be KWDJ in Setheum.
+		type GetSetterPegFourCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be JODJ in Setheum.
-		type GetSettJODCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Five currency id, it should be JODJ in Setheum.
+		type GetSetterPegFiveCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be BHDJ in Setheum.
-		type GetSettBHDCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Six currency id, it should be BHDJ in Setheum.
+		type GetSetterPegSixCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be KYDJ in Setheum.
-		type GetSettKYDCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Seven currency id, it should be KYDJ in Setheum.
+		type GetSetterPegSevenCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be OMRJ in Setheum.
-		type GetSettOMRCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Eight currency id, it should be OMRJ in Setheum.
+		type GetSetterPegEightCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be CHFJ in Setheum.
-		type GetSettCHFCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Nine currency id, it should be CHFJ in Setheum.
+		type GetSetterPegNineCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be GIPJ in Setheum.
-		type GetSettGIPCurrencyId: Get<CurrencyId>;
+		/// The Setter Peg Ten currency id, it should be GIPJ in Setheum.
+		type GetSetterPegTenCurrencyId: Get<CurrencyId>;
 
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
