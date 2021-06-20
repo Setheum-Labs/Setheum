@@ -489,6 +489,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	/// TODO: Move `get_peg_price_difference` here and 
 	fn check_all_stablecoin_stability() -> DispatchResult {
 		/// pegged to US Dollar (USD)
 		let peg_one_currency_id: CurrencyId = T::GetSettUSDCurrencyId::get();

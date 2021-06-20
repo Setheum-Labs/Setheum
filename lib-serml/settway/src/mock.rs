@@ -265,16 +265,47 @@ impl serp_treasury::Config for Runtime {
 
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
-		USDJ, // Setheum USD (US Dollar stablecoin)
-		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
-		EURJ, // Setheum EUR (Euro stablecoin)
-		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
-		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
-		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
-		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
-		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
-		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
-		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+		AEDJ,
+		ARSJ,
+ 		AUDJ,
+		BRLJ,
+		CADJ,
+		CHFJ,
+		CLPJ,
+		CNYJ,
+		COPJ,
+		EURJ,
+		GBPJ,
+		HKDJ,
+		HUFJ,
+		IDRJ,
+		IRRJ,
+		JPYJ,
+ 		KESJ,
+ 		KRWJ,
+ 		KZTJ,
+		MXNJ,
+		MYRJ,
+ 		NGNJ,
+		NOKJ,
+		NZDJ,
+		PENJ,
+		PHPJ,
+ 		PKRJ,
+		PLNJ,
+		QARJ,
+		RONJ,
+		RUBJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		THBJ,
+		TRYJ,
+		TWDJ,
+		TZSJ,
+		UAHJ,
+		USDJ,
+		ZARJ,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
