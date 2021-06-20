@@ -38,34 +38,104 @@ pub type BlockNumber = u64;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
-pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
-pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ); // Setheum EUR (Euro stablecoin)
-pub const KWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KWDJ); // Setheum KWD (Kuwaiti Dinar stablecoin)
-pub const JODJ: CurrencyId = CurrencyId::Token(TokenSymbol::JODJ); // Setheum JOD (Jordanian Dinar stablecoin)
-pub const BHDJ: CurrencyId = CurrencyId::Token(TokenSymbol::BHDJ); // Setheum BHD (Bahraini Dirham stablecoin)
-pub const KYDJ: CurrencyId = CurrencyId::Token(TokenSymbol::KYDJ); // Setheum KYD (Cayman Islands Dollar stablecoin)
-pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OMR (Omani Riyal stablecoin)
-pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
-pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
+pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
+pub const ARSJ: CurrencyId = CurrencyId::Token(TokenSymbol::ARSJ);
+pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
+pub const BRLJ: CurrencyId = CurrencyId::Token(TokenSymbol::BRLJ);
+pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
+pub const CLPJ: CurrencyId = CurrencyId::Token(TokenSymbol::CLPJ);
+pub const CNYJ: CurrencyId = CurrencyId::Token(TokenSymbol::CNYJ);
+pub const COPJ: CurrencyId = CurrencyId::Token(TokenSymbol::COPJ);
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
+pub const HKDJ: CurrencyId = CurrencyId::Token(TokenSymbol::HKDJ);
+pub const HUFJ: CurrencyId = CurrencyId::Token(TokenSymbol::HUFJ);
+pub const IDRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IDRJ);
+pub const IRRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IRRJ);
+pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
+pub const KESJ: CurrencyId = CurrencyId::Token(TokenSymbol::KESJ);
+pub const KRWJ: CurrencyId = CurrencyId::Token(TokenSymbol::KRWJ);
+pub const KZTJ: CurrencyId = CurrencyId::Token(TokenSymbol::KZTJ);
+pub const MXNJ: CurrencyId = CurrencyId::Token(TokenSymbol::MXNJ);
+pub const MYRJ: CurrencyId = CurrencyId::Token(TokenSymbol::MYRJ);
+pub const NGNJ: CurrencyId = CurrencyId::Token(TokenSymbol::NGNJ);
+pub const NOKJ: CurrencyId = CurrencyId::Token(TokenSymbol::NOKJ);
+pub const NZDJ: CurrencyId = CurrencyId::Token(TokenSymbol::NZDJ);
+pub const PENJ: CurrencyId = CurrencyId::Token(TokenSymbol::PENJ);
+pub const PHPJ: CurrencyId = CurrencyId::Token(TokenSymbol::PHPJ);
+pub const PKRJ: CurrencyId = CurrencyId::Token(TokenSymbol::PKRJ);
+pub const PLNJ: CurrencyId = CurrencyId::Token(TokenSymbol::PLNJ);
+pub const QARJ: CurrencyId = CurrencyId::Token(TokenSymbol::QARJ);
+pub const RONJ: CurrencyId = CurrencyId::Token(TokenSymbol::RONJ);
+pub const RUBJ: CurrencyId = CurrencyId::Token(TokenSymbol::RUBJ);
+pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
+pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
+pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
+pub const THBJ: CurrencyId = CurrencyId::Token(TokenSymbol::THBJ);
+pub const TRYJ: CurrencyId = CurrencyId::Token(TokenSymbol::TRYJ);
+pub const TWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::TWDJ);
+pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
+pub const UAHJ: CurrencyId = CurrencyId::Token(TokenSymbol::UAHJ);
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
 // LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
 pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
 pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DexShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
 
-// Currencies constants - FiatCurrencyIds
-pub const USD: FiatCurrencyId = USD; // US Dollar 			  (Fiat - only for price feed)
-pub const GBP: FiatCurrencyId = GBP; // Pound Sterling 		  (Fiat - only for price feed)
-pub const EUR: FiatCurrencyId = EUR; // Euro 				  (Fiat - only for price feed)
-pub const KWD: FiatCurrencyId = KWD; // Kuwaiti Dinar 		  (Fiat - only for price feed)
-pub const JOD: FiatCurrencyId = JOD; // Jordanian Dinar 	  (Fiat - only for price feed)
-pub const BHD: FiatCurrencyId = BHD; // Bahraini Dirham 	  (Fiat - only for price feed)
-pub const KYD: FiatCurrencyId = KYD; // Cayman Islands Dollar (Fiat - only for price feed)
-pub const OMR: FiatCurrencyId = OMR; // Omani Riyal 		  (Fiat - only for price feed)
-pub const CHF: FiatCurrencyId = CHF; // Swiss Franc 		  (Fiat - only for price feed)
-pub const GIP: FiatCurrencyId = GIP; // Gibraltar Pound 	  (Fiat - only for price feed)
+// Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
+pub const AED: CurrencyId = CurrencyId::Token(TokenSymbol::AED);
+pub const ARS: CurrencyId = CurrencyId::Token(TokenSymbol::ARS);
+pub const AUD: CurrencyId = CurrencyId::Token(TokenSymbol::AUD);
+pub const BRL: CurrencyId = CurrencyId::Token(TokenSymbol::BRL);
+pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
+pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
+pub const CLP: CurrencyId = CurrencyId::Token(TokenSymbol::CLP);
+pub const CNY: CurrencyId = CurrencyId::Token(TokenSymbol::CNY);
+pub const COP: CurrencyId = CurrencyId::Token(TokenSymbol::COP);
+pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
+pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
+pub const HKD: CurrencyId = CurrencyId::Token(TokenSymbol::HKD);
+pub const HUF: CurrencyId = CurrencyId::Token(TokenSymbol::HUF);
+pub const IDR: CurrencyId = CurrencyId::Token(TokenSymbol::IDR);
+pub const IRR: CurrencyId = CurrencyId::Token(TokenSymbol::IRR);
+pub const JPY: CurrencyId = CurrencyId::Token(TokenSymbol::JPY);
+pub const KES: CurrencyId = CurrencyId::Token(TokenSymbol::KES);
+pub const KRW: CurrencyId = CurrencyId::Token(TokenSymbol::KRW);
+pub const KZT: CurrencyId = CurrencyId::Token(TokenSymbol::KZT);
+pub const MXN: CurrencyId = CurrencyId::Token(TokenSymbol::MXN);
+pub const MYR: CurrencyId = CurrencyId::Token(TokenSymbol::MYR);
+pub const NGN: CurrencyId = CurrencyId::Token(TokenSymbol::NGN);
+pub const NOK: CurrencyId = CurrencyId::Token(TokenSymbol::NOK);
+pub const NZD: CurrencyId = CurrencyId::Token(TokenSymbol::NZD);
+pub const PEN: CurrencyId = CurrencyId::Token(TokenSymbol::PEN);
+pub const PHP: CurrencyId = CurrencyId::Token(TokenSymbol::PHP);
+pub const PKR: CurrencyId = CurrencyId::Token(TokenSymbol::PKR);
+pub const PLN: CurrencyId = CurrencyId::Token(TokenSymbol::PLN);
+pub const QAR: CurrencyId = CurrencyId::Token(TokenSymbol::QAR);
+pub const RON: CurrencyId = CurrencyId::Token(TokenSymbol::RON);
+pub const RUB: CurrencyId = CurrencyId::Token(TokenSymbol::RUB);
+pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
+pub const SEK: CurrencyId = CurrencyId::Token(TokenSymbol::SEK);
+pub const SGD: CurrencyId = CurrencyId::Token(TokenSymbol::SGD);
+pub const THB: CurrencyId = CurrencyId::Token(TokenSymbol::THB);
+pub const TRY: CurrencyId = CurrencyId::Token(TokenSymbol::TRY);
+pub const TWD: CurrencyId = CurrencyId::Token(TokenSymbol::TWD);
+pub const TZS: CurrencyId = CurrencyId::Token(TokenSymbol::TZS);
+pub const UAH: CurrencyId = CurrencyId::Token(TokenSymbol::UAH);
+pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
+pub const ZAR: CurrencyId = CurrencyId::Token(TokenSymbol::ZAR);
+pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
+pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
+pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
+pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
+pub const BHD: CurrencyId = CurrencyId::Token(TokenSymbol::BHD);
+pub const KYD: CurrencyId = CurrencyId::Token(TokenSymbol::KYD);
+pub const OMR: CurrencyId = CurrencyId::Token(TokenSymbol::OMR);
+pub const GIP: CurrencyId = CurrencyId::Token(TokenSymbol::GIP);
 
 mod setheum_prices {
 	pub use super::super::*;
@@ -183,13 +253,7 @@ parameter_type_with_key! {
 			&USDJ => &USD,
 			&GBPJ => &GBP,
 			&EURJ => &EUR,
-			&KWDJ => &KWD,
-			&JODJ => &JOD,
-			&BHDJ => &BHD,
-			&KYDJ => &KYD,
-			&OMRJ => &OMR,
 			&CHFJ => &CHF,
-			&GIPJ => &GIP,
 			_ => 0,
 		}
 	};
@@ -213,40 +277,111 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetSetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
-	pub const GetSettGBPCurrencyId: CurrencyId = GBPJ; // SettGBP currency ticker is GBPJ
-	pub const GetSettEURCurrencyId: CurrencyId = EURJ; // SettEUR currency ticker is EURJ
-	pub const GetSettKWDCurrencyId: CurrencyId = KWDJ; // SettKWD currency ticker is KWDJ
-	pub const GetSettJODCurrencyId: CurrencyId = JODJ; // SettJOD currency ticker is JODJ
-	pub const GetSettBHDCurrencyId: CurrencyId = BHDJ; // SettBHD currency ticker is BHDJ
-	pub const GetSettKYDCurrencyId: CurrencyId = KYDJ; // SettKYD currency ticker is KYDJ
-	pub const GetSettOMRCurrencyId: CurrencyId = OMRJ; // SettOMR currency ticker is OMRJ
-	pub const GetSettCHFCurrencyId: CurrencyId = CHFJ; // SettCHF currency ticker is CHFJ
-	pub const GetSettGIPCurrencyId: CurrencyId = GIPJ; // SettGIP currency ticker is GIPJ
+	
+	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegFourCurrencyId: CurrencyId = JOD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegFiveCurrencyId: CurrencyId = BHD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegSixCurrencyId: CurrencyId = KYD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegSevenCurrencyId: CurrencyId = OMR; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegEightCurrencyId: CurrencyId = CHF; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETT).
+	
 	pub SettUSDFixedPrice: Price = Price::one(); // All prices are in USD. USDJ is pegged 1:1 to USD
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
-		USDJ, // Setheum USD (US Dollar stablecoin)
-		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
-		EURJ, // Setheum EUR (Euro stablecoin)
-		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
-		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
-		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
-		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
-		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
-		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
-		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+		SETT,
+		AEDJ,
+		ARSJ,
+ 		AUDJ,
+		BRLJ,
+		CADJ,
+		CHFJ,
+		CLPJ,
+		CNYJ,
+		COPJ,
+		EURJ,
+		GBPJ,
+		HKDJ,
+		HUFJ,
+		IDRJ,
+		IRRJ,
+		JPYJ,
+ 		KESJ,
+ 		KRWJ,
+ 		KZTJ,
+		MXNJ,
+		MYRJ,
+ 		NGNJ,
+		NOKJ,
+		NZDJ,
+		PENJ,
+		PHPJ,
+ 		PKRJ,
+		PLNJ,
+		QARJ,
+		RONJ,
+		RUBJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		THBJ,
+		TRYJ,
+		TWDJ,
+		TZSJ,
+		UAHJ,
+		USDJ,
+		ZARJ,
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
-		USD, // US Dollar 			  (Fiat - only for price feed)
-		GBP, // Pound Sterling 		  (Fiat - only for price feed)
-		EUR, // Euro 				  (Fiat - only for price feed)
-		KWD, // Kuwaiti Dinar 		  (Fiat - only for price feed)
-		JOD, // Jordanian Dinar 	  (Fiat - only for price feed)
-		BHD, // Bahraini Dirham 	  (Fiat - only for price feed)
-		KYD, // Cayman Islands Dollar (Fiat - only for price feed)
-		OMR, // Omani Riyal 		  (Fiat - only for price feed)
-		CHF, // Swiss Franc 		  (Fiat - only for price feed)
-		GIP, // Gibraltar Pound 	  (Fiat - only for price feed)
+		AED,
+		ARS,
+ 		AUD,
+		BRL,
+		CAD,
+		CHF,
+		CLP,
+		CNY,
+		COP,
+		EUR,
+		GBP,
+		HKD,
+		HUF,
+		IDR,
+		IRR,
+		JPY,
+ 		KES,
+ 		KRW,
+ 		KZT,
+		MXN,
+		MYR,
+ 		NGN,
+		NOK,
+		NZD,
+		PEN,
+		PHP,
+ 		PKR,
+		PLN,
+		QAR,
+		RON,
+		RUB,
+ 		SAR,
+ 		SEK,
+ 		SGD,
+		THB,
+		TRY,
+		TWD,
+		TZS,
+		UAH,
+		USD,
+		ZAR,
+		KWD,
+		JOD,
+		BHD,
+		KYD,
+		OMR,
+		GIP,
 		];
 }
 
@@ -255,15 +390,16 @@ impl Config for Runtime {
 	type Source = MockDataProvider;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
-	type GetSettGBPCurrencyId = GetSettGBPCurrencyId;
-	type GetSettEURCurrencyId = GetSettEURCurrencyId;
-	type GetSettKWDCurrencyId = GetSettKWDCurrencyId;
-	type GetSettJODCurrencyId = GetSettJODCurrencyId;
-	type GetSettBHDCurrencyId = GetSettBHDCurrencyId;
-	type GetSettKYDCurrencyId = GetSettKYDCurrencyId;
-	type GetSettOMRCurrencyId = GetSettOMRCurrencyId;
-	type GetSettCHFCurrencyId = GetSettCHFCurrencyId;
-	type GetSettGIPCurrencyId = GetSettGIPCurrencyId;
+	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
+	type GetSetterPegTwoCurrencyId = GetSetterPegTwoCurrencyId;
+	type GetSetterPegThreeCurrencyId = GetSetterPegThreeCurrencyId;
+	type GetSetterPegFourCurrencyId = GetSetterPegFourCurrencyId;
+	type GetSetterPegFiveCurrencyId = GetSetterPegFiveCurrencyId;
+	type GetSetterPegSixCurrencyId = GetSetterPegSixCurrencyId;
+	type GetSetterPegSevenCurrencyId = GetSetterPegSevenCurrencyId;
+	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
+	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
+	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
 	type SettUSDFixedPrice = SettUSDFixedPrice;
 	type StableCurrencyIds = StableCurrencyIds;
 	type FiatCurrencyIds = FiatCurrencyIds;

@@ -91,6 +91,8 @@ pub mod module {
 		AmountIntoBalanceFailed,
 		/// Balance is too low.
 		BalanceTooLow,
+		/// Invalid Currency Type.
+		InvalidCurrencyType,
 	}
 
 	#[pallet::event]
@@ -124,9 +126,14 @@ pub mod module {
 			dest: <T::Lookup as StaticLookup>::Source,
 			currency_id: CurrencyIdOf<T>,
 			#[pallet::compact] amount: BalanceOf<T>,
+			// TODO: Add `claim_cashdrop: bool`, and if yes then call clain_cashdrop(origin, currency_id, amount) to claim cashdrop.
 		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
 			Ok(().into())
 		}
@@ -161,6 +168,10 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 			let dest = T::Lookup::lookup(who)?;
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			<Self as MultiCurrencyExtended<T::AccountId>>::update_balance(currency_id, &dest, amount)?;
 			Ok(().into())
 		}
@@ -175,6 +186,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::minimum_balance()
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::minimum_balance(currency_id)
 		}
 	}
@@ -183,6 +198,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::total_issuance()
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::total_issuance(currency_id)
 		}
 	}
@@ -191,6 +210,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::total_balance(who)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::total_balance(currency_id, who)
 		}
 	}
@@ -199,6 +222,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::free_balance(who)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::free_balance(currency_id, who)
 		}
 	}
@@ -207,6 +234,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::ensure_can_withdraw(who, amount)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::ensure_can_withdraw(currency_id, who, amount)
 		}
 	}
@@ -223,6 +254,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::transfer(from, to, amount)?;
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::transfer(currency_id, from, to, amount)?;
 		}
 		Self::deposit_event(Event::Transferred(currency_id, from.clone(), to.clone(), amount));
@@ -236,6 +271,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::deposit(who, amount)?;
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::deposit(currency_id, who, amount)?;
 		}
 		Self::deposit_event(Event::Deposited(currency_id, who.clone(), amount));
@@ -249,6 +288,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::withdraw(who, amount)?;
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::withdraw(currency_id, who, amount)?;
 		}
 		Self::deposit_event(Event::Withdrawn(currency_id, who.clone(), amount));
@@ -259,6 +302,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::can_slash(who, amount)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::can_slash(currency_id, who, amount)
 		}
 	}
@@ -267,6 +314,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::slash(who, amount)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::slash(currency_id, who, amount)
 		}
 	}
@@ -279,6 +330,10 @@ impl<T: Config> MultiCurrencyExtended<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::update_balance(who, by_amount)?;
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::update_balance(currency_id, who, by_amount)?;
 		}
 		Self::deposit_event(Event::BalanceUpdated(currency_id, who.clone(), by_amount));
@@ -298,6 +353,10 @@ impl<T: Config> MultiLockableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::set_lock(lock_id, who, amount)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::set_lock(lock_id, currency_id, who, amount)
 		}
 	}
@@ -311,6 +370,10 @@ impl<T: Config> MultiLockableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::extend_lock(lock_id, who, amount)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::extend_lock(lock_id, currency_id, who, amount)
 		}
 	}
@@ -319,6 +382,10 @@ impl<T: Config> MultiLockableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::remove_lock(lock_id, who)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::remove_lock(lock_id, currency_id, who)
 		}
 	}
@@ -329,6 +396,10 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::can_reserve(who, value)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::can_reserve(currency_id, who, value)
 		}
 	}
@@ -337,6 +408,10 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::slash_reserved(who, value)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::slash_reserved(currency_id, who, value)
 		}
 	}
@@ -345,6 +420,10 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::reserved_balance(who)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::reserved_balance(currency_id, who)
 		}
 	}
@@ -353,6 +432,10 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::reserve(who, value)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::reserve(currency_id, who, value)
 		}
 	}
@@ -361,6 +444,10 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::unreserve(who, value)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::unreserve(currency_id, who, value)
 		}
 	}
@@ -375,6 +462,10 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 		if currency_id == T::GetNativeCurrencyId::get() {
 			T::NativeCurrency::repatriate_reserved(slashed, beneficiary, value, status)
 		} else {
+			ensure!(
+				!T::FiatCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			T::MultiCurrency::repatriate_reserved(currency_id, slashed, beneficiary, value, status)
 		}
 	}
