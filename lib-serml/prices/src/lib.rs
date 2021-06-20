@@ -204,27 +204,41 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 
 	/// get the price of a stablecoin's fiat peg
-	fn get_fiat_price(currency_id: CurrencyId) -> Option<Price>{
+	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>{
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStableCurrencyType,
 		);
-		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
+		let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
-			T::FiatCurrencyIds::get().contains(&fiat_id),
+			T::FiatCurrencyIds::get().contains(&fiat_currency_id),
 			Error::<T>::InvalidFiatCurrencyType,
 		);
 		ensure!(
-			T::PegCurrencyIds::get(&currency_id) == &fiat_id,
+			T::PegCurrencyIds::get(&currency_id) == &fiat_currency_id,
 			Error::<T>::InvalidPegPair,
 		);
 		// if locked price exists, return it, otherwise return latest price from oracle.
-		Self::locked_price(fiat_id).or_else(|| T::Source::get(&fiat_id));
+		Self::locked_price(fiat_currency_id).or_else(|| T::Source::get(&fiat_currency_id));
+	}
+
+	/// get the price of a fiat currency
+	fn get_fiat_price(fiat_currency_id: CurrencyId) -> Option<Price>{
+		ensure!(
+			!T::StableCurrencyIds::get().contains(&fiat_currency_id),
+			Error::<T>::InvalidFiatCurrencyType,
+		);
+		ensure!(
+			T::FiatCurrencyIds::get().contains(&fiat_currency_id),
+			Error::<T>::InvalidFiatCurrencyType,
+		);
+		// if locked price exists, return it, otherwise return latest price from oracle.
+		Self::locked_price(fiat_currency_id).or_else(|| T::Source::get(&fiat_currency_id));
 	}
 
 	fn get_setheum_usd_fixed_price() -> Option<Price>{
 		let currency_id = T::GetSettUSDCurrencyId::get();
-		Self::get_fiat_price(&currency_id)
+		Self::get_peg_price(&currency_id)
 	}
 
 	/// get the fixed price of a specific settcurrency/stablecoin currency type
@@ -233,12 +247,12 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStableCurrencyType,
 		);
-		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
+		let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
-			T::FiatCurrencyIds::get().contains(&fiat_id),
+			T::FiatCurrencyIds::get().contains(&fiat_currency_id),
 			Error::<T>::InvalidFiatCurrencyType,
 		);
-		Self::get_fiat_price(&currency_id)
+		Self::get_peg_price(&currency_id)
 	}
 
 	/// get the market price (not fixed price, for SERP-TES) of a
@@ -284,12 +298,12 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStableCurrencyType,
 		);
-		let fiat_id = Self::get_peg_currency_by_currency_id(&currency_id);
+		let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
-			T::FiatCurrencyIds::get().contains(&fiat_id),
+			T::FiatCurrencyIds::get().contains(&fiat_currency_id),
 			Error::<T>::InvalidFiatCurrencyType,
 		);
-		Self::get_relative_price(&currency_id, &fiat_id)
+		Self::get_relative_price(&currency_id, &fiat_currency_id)
 	}
 
 	/// aggregate the setter price.
@@ -302,37 +316,37 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 
 	/// get the price of a Setter (SETT basket coin - basket of currencies)
 	fn get_setter_basket_peg_price() -> Option<Price> {
-		/// pegged to US Dollar (USD)
-		let peg_one_currency_id: CurrencyId = T::GetSettUSDCurrencyId::get();
 		/// pegged to Pound Sterling (GBP)
-		let peg_two_currency_id: CurrencyId = T::GetSettGBPCurrencyId::get();
+		let peg_one_currency_id: CurrencyId = T::GetSetterPegOneCurrencyId::get();
 		/// pegged to Euro (EUR)
-		let peg_three_currency_id: CurrencyId = T::GetSettEURCurrencyId::get();
+		let peg_two_currency_id: CurrencyId = T::GetSetterPegTwoCurrencyId::get();
 		/// pegged to Kuwaiti Dinar (KWD)
-		let peg_four_currency_id: CurrencyId = T::GetSettKWDCurrencyId::get();
+		let peg_three_currency_id: CurrencyId = T::GetSetterPegThreeCurrencyId::get();
 		/// pegged to Jordanian Dinar (JOD)
-		let peg_five_currency_id: CurrencyId = T::GetSettJODCurrencyId::get();
+		let peg_four_currency_id: CurrencyId = T::GetSetterPegFourCurrencyId::get();
 		/// pegged to Bahraini Dirham (BHD)
-		let peg_six_currency_id: CurrencyId = T::GetSettBHDCurrencyId::get();
+		let peg_five_currency_id: CurrencyId = T::GetSetterPegFiveCurrencyId::get();
 		/// pegged to Cayman Islands Dollar (KYD)
-		let peg_seven_currency_id: CurrencyId = T::GetSettKYDCurrencyId::get();
+		let peg_six_currency_id: CurrencyId = T::GetSetterPegSixCurrencyId::get();
 		/// pegged to Omani Riyal (OMR)
-		let peg_eight_currency_id: CurrencyId = T::GetSettOMRCurrencyId::get();
+		let peg_seven_currency_id: CurrencyId = T::GetSetterPegSevenCurrencyId::get();
 		/// pegged to Swiss Franc (CHF)
-		let peg_nine_currency_id: CurrencyId = T::GetSettCHFCurrencyId::get();
+		let peg_eight_currency_id: CurrencyId = T::GetSetterPegEightCurrencyId::get();
 		/// pegged to Gibraltar Pound (GIP)
-		let peg_ten_currency_id: CurrencyId = T::GetSettGIPCurrencyId::get();
+		let peg_nine_currency_id: CurrencyId = T::GetSetterPegNineCurrencyId::get();
+		/// pegged to US Dollar (USD)
+		let peg_ten_currency_id: CurrencyId = T::GetSetterPegTenCurrencyId::get();
 
-		let peg_one_price = Self::get_stablecoin_fixed_price(&peg_one_currency_id);
-		let peg_two_price = Self::get_stablecoin_fixed_price(&peg_two_currency_id);
-		let peg_three_price = Self::get_stablecoin_fixed_price(&peg_three_currency_id);
-		let peg_four_price = Self::get_stablecoin_fixed_price(&peg_four_currency_id);
-		let peg_five_price = Self::get_stablecoin_fixed_price(&peg_five_currency_id);
-		let peg_six_price = Self::get_stablecoin_fixed_price(&peg_six_currency_id);
-		let peg_seven_price = Self::get_stablecoin_fixed_price(&peg_seven_currency_id);
-		let peg_eight_price = Self::get_stablecoin_fixed_price(&peg_eight_currency_id);
-		let peg_nine_price = Self::get_stablecoin_fixed_price(&peg_nine_currency_id);
-		let peg_ten_price = Self::get_stablecoin_fixed_price(&peg_ten_currency_id);
+		let peg_one_price = Self::get_fiat_price(&peg_one_currency_id);
+		let peg_two_price = Self::get_fiat_price(&peg_two_currency_id);
+		let peg_three_price = Self::get_fiat_price(&peg_three_currency_id);
+		let peg_four_price = Self::get_fiat_price(&peg_four_currency_id);
+		let peg_five_price = Self::get_fiat_price(&peg_five_currency_id);
+		let peg_six_price = Self::get_fiat_price(&peg_six_currency_id);
+		let peg_seven_price = Self::get_fiat_price(&peg_seven_currency_id);
+		let peg_eight_price = Self::get_fiat_price(&peg_eight_currency_id);
+		let peg_nine_price = Self::get_fiat_price(&peg_nine_currency_id);
+		let peg_ten_price = Self::get_fiat_price(&peg_ten_currency_id);
 
 		let total_basket_worth: Price = peg_one_price
 										+ peg_two_price
