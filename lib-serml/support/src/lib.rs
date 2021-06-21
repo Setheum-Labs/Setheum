@@ -36,7 +36,6 @@ use sp_std::{
 
 pub type BlockNumber = u32;
 pub type Price = FixedU128;
-pub type FiatCurrencyId = CurrencyId;
 pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
@@ -174,16 +173,8 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
-	/// issue surplus(stable currencies) for serp treasury
-	/// allocates the serp_up and calls serpup_now.
-	fn on_system_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
-	/// buy back and burn surplus(stable currencies) with auction
-	/// allocates the serp_down and calls on_serpdown.
-	fn on_system_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// buy back and burn surplus(stable currencies) with auction
 	/// Create the necessary serp down parameters and starts new auction.
@@ -203,25 +194,23 @@ pub trait SerpTreasury<AccountId> {
 	/// burn standard(stable currency) of `who`
 	fn burn_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
 
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_propper(currency_id: Self::CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
+	/// issue propper(stable currency) of amount propper to `who`
+	fn issue_propper(currency_id: Self::CurrencyId, who: &AccountId, propper: Self::Balance) -> DispatchResult;
 
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_propper(currency_id: Self::CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult;
+	/// burn propper(stable currency) of `who`
+	fn burn_propper(currency_id: Self::CurrencyId, who: &AccountId, propper: Self::Balance) -> DispatchResult;
 
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult;
+	/// issue setter of amount setter to `who`
+	fn issue_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
-	/// TODO: update to `currency_id` which is any `SettCurrency`.
-	fn burn_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult;
+	/// burn setter of `who`
+	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
 	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
-	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
-	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult;
+	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
-	/// TODO: update to `T::GetDexCurrencyId::get()` which is any `SettinDex` coin.
-	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult;
+	fn burn_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// deposit surplus(propperstable currency) to serp treasury by `from`
 	fn deposit_surplus(currency_id: Self::CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
@@ -230,7 +219,7 @@ pub trait SerpTreasury<AccountId> {
 	fn deposit_reserve(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// Burn Reserve asset (Setter (SETT))
-	fn burn_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult;
+	fn burn_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// Withdraw reserve asset (Setter (SETT)) of serp treasury to `who`
 	fn withdraw_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
@@ -266,10 +255,8 @@ pub trait PriceProvider<CurrencyId> {
 	fn get_setheum_usd_fixed_price() -> Option<Price>;
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_stablecoin_market_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_peg_price_difference(currency_id: CurrencyId) -> sp_std::result::Result<Balance, DispatchError>;
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
-	fn aggregate_setter_basket(total_basket_worth: Price, currencies_amount: Balance) -> Oprion<Price>;
 	fn get_setter_basket_peg_price() -> Option<Price>;
 	fn get_setter_fixed_price() -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
