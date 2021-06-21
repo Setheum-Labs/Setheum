@@ -45,7 +45,7 @@ Install Rust:
 curl https://sh.rustup.rs -sSf | sh
 ```
 
-Make sure you have `submodule.recurse` set to true to make life with submodule easier.
+Make sure you have `submodule.recurse` set to true to configure submodule.
 
 ```bash
 git config --global submodule.recurse true
