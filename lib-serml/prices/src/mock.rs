@@ -248,7 +248,7 @@ parameter_type_with_key! {
 		Default::default()
 	};
 
-	pub PegCurrencyIds: |_currency_id: CurrencyId| -> Balance {
+	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
 		match currency_id {
 			&USDJ => &USD,
 			&GBPJ => &GBP,
