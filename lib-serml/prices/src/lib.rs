@@ -114,7 +114,7 @@ pub mod module {
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The peg currency of a stablecoin.
-		type PegCurrencyIds: GetByKey<Self::CurrencyId, Self::FiatCurrencyId>;
+		type PegCurrencyIds: GetByKey<Self::CurrencyId, Self::CurrencyId>;
 
 		/// The list of valid Fiat currency types that define the stablecoin pegs
 		type FiatCurrencyIds: Get<Vec<CurrencyId>>;
@@ -200,7 +200,7 @@ pub mod module {
 
 impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get stablecoin's fiat peg currency type by id
-	fn get_peg_currency_by_currency_id(currency_id: Self::CurrencyId) -> Self::FiatCurrencyId {
+	fn get_peg_currency_by_currency_id(currency_id: Self::CurrencyId) -> Self::CurrencyId {
 		T::PegCurrencyIds::get(&currency_id)
 	}
 
