@@ -417,32 +417,33 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 }
 
 impl<T: Config> Pallet<T> {
-	/// Convert `Balance` to `Price`.
-	fn price_try_from_balance(b: Balance) -> result::Result<Price, Error<T>> {
-		TryInto::<Price>::try_into(b).map_err(|_| Error::<T>::PriceConvertFailed)
+	
+	/// Convert the absolute value of `Balance` to `Amount`.
+	fn amount_try_from_balance_abs(b: Balance) -> result::Result<Balance, Error<T>> {
+		TryInto::<Amount>::try_into(b.saturating_abs()).map_err(|_| Error::<T>::BalanceConvertFailed)
+	}
+
+	/// Convert the absolute value of `Price` to `Amount`.
+	fn amount_try_from_price_abs(p: Price) -> result::Result<Amount, Error<T>> {
+		TryInto::<Amount>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::AmountConvertFailed)
 	}
 
 	/// Convert the absolute value of `Price` to `Balance`.
 	fn balance_try_from_price_abs(p: Price) -> result::Result<Balance, Error<T>> {
 		TryInto::<Balance>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::PriceConvertFailed)
 	}
-	/// Convert `Balance` to `Amount`.
-	fn amount_try_from_balance(b: Balance) -> result::Result<Amount, Error<T>> {
-		TryInto::<Amount>::try_into(b).map_err(|_| Error::<T>::BalanceConvertFailed)
-	}
-
-	/// Convert the absolute value of `Amount` to `Balance`.
-	fn balance_try_from_amount_abs(p: Amount) -> result::Result<Balance, Error<T>> {
-		TryInto::<Balance>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::BalanceConvertFailed)
+	/// Convert `Amount` to `Balance`.
+	fn balance_try_from_amount(a: Amount) -> result::Result<Amount, Error<T>> {
+		TryInto::<Balance>::try_into(a).map_err(|_| Error::<T>::BalanceConvertFailed)
 	}
 
 	/// Convert `Amount` to `Price`.
-	fn price_try_from_amount(b: Amount) -> result::Result<Price, Error<T>> {
-		TryInto::<Price>::try_into(b).map_err(|_| Error::<T>::AmountConvertFailed)
+	fn price_try_from_amount(a: Amount) -> result::Result<Price, Error<T>> {
+		TryInto::<Price>::try_into(a).map_err(|_| Error::<T>::AmountConvertFailed)
 	}
 
-	/// Convert the absolute value of `Price` to `Amount`.
-	fn amount_try_from_price_abs(p: Price) -> result::Result<Amount, Error<T>> {
-		TryInto::<Amount>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::AmountConvertFailed)
+	/// Convert `Balance` to `Price`.
+	fn price_try_from_balance(b: Balance) -> result::Result<Price, Error<T>> {
+		TryInto::<Price>::try_into(b).map_err(|_| Error::<T>::PriceConvertFailed)
 	}
 }
