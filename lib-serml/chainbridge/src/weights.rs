@@ -33,7 +33,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./ecosystem-modules/chainsafe/src/weights.rs
+// --output=./lib-serml/bridges/chainbridge/src/weights.rs
 // --template=./templates/module-weight-template.hbs
 
 

@@ -5,18 +5,27 @@ authors = ["Setheum Labs"]
 edition = "2018"
 
 [dependencies]
+# external dependencies
 serde = { version = "1.0.124", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+
+# Substrate dependencies
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-support = { package = "setheum-support", path = "../../lib-serml/support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-chainbridge = { git = "https://github.com/Setheum-Labs/chainbridge-substrate", default-features = false }
+
+# orml dependencies
 orml-traits = { path = "../../lib-openrml/traits", default-features = false }
+
+# special dependencies
+chainbridge = { git = "https://github.com/Setheum-Labs/chainbridge-substrate", branch = "master", default-features = false }
+
+# local dependencies
+support = { package = "setheum-support", path = "../support", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
 orml-tokens = { path = "../../lib-openrml/tokens" }
