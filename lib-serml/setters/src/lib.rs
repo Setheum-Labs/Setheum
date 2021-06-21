@@ -174,12 +174,10 @@ impl<T: Config> Pallet<T> {
 
 		if standard_adjustment.is_positive() {
 			// issue standard with reserve backed by SERP Treasury
-			// TODO: Change to SettMintTreasury trait in this pallet and rename the pallet to `settmint-treasury`.
 			T::SerpTreasury::issue_standard(currency_id, who, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		} else if standard_adjustment.is_negative() {
 			// repay standard
 			// burn standard by SERP Treasury
-			// TODO: Change to SettMintTreasury trait in this pallet and rename the pallet to `settmint-treasury`.
 			T::SerpTreasury::burn_standard(who, currency_id, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		}
 
