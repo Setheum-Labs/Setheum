@@ -13,13 +13,13 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-support = { package = "module-support", path = "../../lib-serml/support", default-features = false }
+support = { package = "setheum-support", path = "../../lib-serml/support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 chainbridge = { git = "https://github.com/Setheum-Labs/chainbridge-substrate", default-features = false }
-orml-traits = { path = "../../orml/traits", default-features = false }
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
 
 [dev-dependencies]
-orml-tokens = { path = "../../orml/tokens" }
+orml-tokens = { path = "../../lib-openrml/tokens" }
 
 [features]
 default = ["std"]
