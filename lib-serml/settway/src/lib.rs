@@ -88,7 +88,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Adjust the setters of `currency_id` by specific
+		/// Adjust the standard of `currency_id` by specific
 		/// `reserve_adjustment` and `standard_adjustment`
 		///
 		/// - `currency_id`: standard currency id.
@@ -133,7 +133,7 @@ pub mod module {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			Self::check_authorization(&from, &to, currency_id)?;
-			<setters::Module<T>>::transfer_reserve(&from, &to, currency_id)?;
+			<setters_manager::Module<T>>::transfer_reserve(&from, &to, currency_id)?;
 			Ok(().into())
 		}
 

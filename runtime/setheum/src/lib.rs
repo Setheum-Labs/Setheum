@@ -128,7 +128,7 @@ impl_opaque_keys! {
 // Module accounts of runtime
 parameter_types! {
 	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
-	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
+	pub const SettersManagerPalletId: PalletId = PalletId(*b"set/setter");
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/stwy");
@@ -141,7 +141,7 @@ parameter_types! {
 pub fn get_all_setheum_accounts() -> Vec<AccountId> {
 	vec![
 		SetheumTreasuryPalletId::get().into_account(),
-		SettersPalletId::get().into_account(),
+		SettersManagerPalletId::get().into_account(),
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
 		SettwayTreasuryPalletId::get().into_account(),
@@ -816,13 +816,13 @@ impl serp_auction::Config for Runtime {
 	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
 }
 
-impl setheum_setters::Config for Runtime {
+impl setters_manager::Config for Runtime {
 	type Event = Event;
 	type Convert = setheum_settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
-	type PalletId = SettersPalletId;
+	type PalletId = SettersManagerPalletId;
 	type OnUpdateSetter = setheum_incentives::OnUpdateSetter<Runtime>;
 }
 
@@ -1130,7 +1130,7 @@ construct_runtime!(
 
 		// Settway
 		SerpAuction: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
-		Setters: setheum_setters::{Module, Storage, Call, Event<T>},
+		SettersManager: setters_manager::{Module, Storage, Call, Event<T>},
 		Settway: setheum_settway::{Module, Storage, Call, Event<T>},
 		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>},
 		SettmintEngine: setheum_settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},

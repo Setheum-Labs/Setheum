@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the setters module.
+//! Mocks for the setters-manager module.
 
 #![cfg(test)]
 
@@ -51,7 +51,7 @@ pub const OMRJ: CurrencyId = CurrencyId::Token(TokenSymbol::OMRJ); // Setheum OM
 pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ); // Setheum CHF (Swiss Franc stablecoin)
 pub const GIPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GIPJ); // Setheum GIP (Gibraltar Pound stablecoin)
 
-mod setters {
+mod setters_manager {
 	pub use super::super::*;
 }
 
@@ -311,7 +311,7 @@ parameter_types! {
 		ZARJ,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
-	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
+	pub const SettersManagerPalletId: PalletId = PalletId(*b"set/setter");
 
 }
 
@@ -323,7 +323,7 @@ impl Config for Runtime {
 	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type StandardValidator = MockStandardValidator;
 	type SerpTreasury = SerpTreasuryModule;
-	type PalletId = SettersPalletId;
+	type PalletId = SettersManagerPalletId;
 	type OnUpdateSetter = ();
 }
 
@@ -337,7 +337,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		SettersModule: setters::{Module, Storage, Call, Event<T>},
+		SettersManagerModule: setters_manager::{Module, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Module, Call, Event<T>},

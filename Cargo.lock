@@ -4101,11 +4101,11 @@ dependencies = [
  "setheum-nft",
  "setheum-prices",
  "setheum-primitives",
- "setheum-setters",
  "setheum-settmint-engine",
  "setheum-settway",
  "setheum-support",
  "setheum-transaction-payment",
+ "setters-manager",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -4194,11 +4194,11 @@ dependencies = [
  "setheum-nft",
  "setheum-prices",
  "setheum-primitives",
- "setheum-setters",
  "setheum-settmint-engine",
  "setheum-settway",
  "setheum-support",
  "setheum-transaction-payment",
+ "setters-manager",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -7825,11 +7825,11 @@ dependencies = [
  "setheum-nft",
  "setheum-prices",
  "setheum-primitives",
- "setheum-setters",
  "setheum-settmint-engine",
  "setheum-settway",
  "setheum-support",
  "setheum-transaction-payment",
+ "setters-manager",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -7899,27 +7899,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-setters"
-version = "0.7.1"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
- "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
- "orml-currencies",
- "orml-tokens 0.4.1-dev",
- "orml-traits 0.4.1-dev",
- "pallet-balances 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "parity-scale-codec",
- "serde",
- "serp-treasury",
- "setheum-primitives",
- "setheum-support",
- "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
- "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
-]
-
-[[package]]
 name = "setheum-settmint-engine"
 version = "0.7.1"
 dependencies = [
@@ -7935,8 +7914,8 @@ dependencies = [
  "serp-treasury",
  "setheum-dex",
  "setheum-primitives",
- "setheum-setters",
  "setheum-support",
+ "setters-manager",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -7958,9 +7937,9 @@ dependencies = [
  "serde",
  "serp-treasury",
  "setheum-primitives",
- "setheum-setters",
  "setheum-settmint-engine",
  "setheum-support",
+ "setters-manager",
  "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -8001,6 +7980,27 @@ dependencies = [
  "smallvec 1.6.1",
  "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+]
+
+[[package]]
+name = "setters-manager"
+version = "0.7.1"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "orml-currencies",
+ "orml-tokens 0.4.1-dev",
+ "orml-traits 0.4.1-dev",
+ "pallet-balances 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-scale-codec",
+ "serde",
+ "serp-treasury",
+ "setheum-primitives",
+ "setheum-support",
+ "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
 ]

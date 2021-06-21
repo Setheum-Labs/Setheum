@@ -53,7 +53,7 @@ runtime_benchmarks! {
 
 	claim_rewards {
 		let caller: AccountId = account("caller", 0, SEED);
-		let pool_id = PoolId::Setters(rSETT);
+		let pool_id = PoolId::SettersManager(rSETT);
 
 		Rewards::add_share(&caller, pool_id, 100);
 		orml_rewards::Pools::<Runtime>::mutate(pool_id, |pool_info| {

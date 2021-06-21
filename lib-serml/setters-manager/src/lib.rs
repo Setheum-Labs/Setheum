@@ -16,11 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # Setters Module
+//! # SettersManager Module
 //!
 //! ## Overview
 //!
-//! Setters module manages Settmint's reserve asset (Setter) and the standards backed by the asset (SettCurrencies).
+//! SettersManager module manages Settmint's reserve asset (Setter) 
+//! and the standards backed by the asset (SettCurrencies).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -62,8 +63,8 @@ pub mod module {
 		/// value(SettCurrency)
 		type Convert: Convert<(CurrencyId, Balance), Balance>;
 
-		/// Currency type for deposit/withdraw reserve assets to/from setters
-		/// module
+		/// Currency type for deposit/withdraw reserve assets 
+		/// to/from setters-manager module
 		type Currency: MultiCurrencyExtended<
 			Self::AccountId,
 			CurrencyId = CurrencyId,
@@ -78,7 +79,7 @@ pub mod module {
 		/// Setter (Valid Reserve) currency id
 		type GetReserveCurrencyId: Get<CurrencyId>;
 
-		/// Standard manager is used to know the validity of Settmint standards.
+		/// Standard validator is used to know the validity of Settmint standards.
 		type StandardValidator: StandardValidator<Self::AccountId, CurrencyId, Balance, Balance>;
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value

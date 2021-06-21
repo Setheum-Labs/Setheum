@@ -20,7 +20,7 @@ orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }
 
 # local dependencies
 settmint-engine = { package = "setheum-settmint-engine", path = "../settmint-engine", default-features = false }
-setters = { package = "setheum-setters", path = "../setters", default-features = false }
+setters-manager= { package = "setters-manager", path = "../setters-manager", default-features = false }
 support = { package = "setheum-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
@@ -42,7 +42,7 @@ std = [
 	"frame-system/std",
 	"sp-std/std",
 	"orml-tokens/std",
-	"setters/std",
+	"setters-manager/std",
 	"settmint-engine/std",
 	"support/std",
 	"primitives/std",
