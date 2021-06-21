@@ -248,12 +248,53 @@ parameter_type_with_key! {
 		Default::default()
 	};
 
-	pub PegCurrencyIds: |_currency_id: CurrencyId| -> Balance {
+	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
 		match currency_id {
 			&USDJ => &USD,
 			&GBPJ => &GBP,
 			&EURJ => &EUR,
 			&CHFJ => &CHF,
+			&AEDJ => &AED,
+			&ARSJ => &ARS,
+			&AUDJ => &AUD,
+			&BRLJ => &BRL,
+			&CADJ => &CAD,
+			&CHFJ => &CHF,
+			&CLPJ => &CLP,
+			&CNYJ => &CNY,
+			&COPJ => &COP,
+			&EURJ => &EUR,
+			&GBPJ => &GBP,
+			&HKDJ => &HKD,
+			&HUFJ => &HUF,
+			&IDRJ => &IDR,
+			&IRRJ => &IRR,
+			&JPYJ => &JPY,
+			&KESJ => &KES,
+			&KRWJ => &KRW,
+			&KZTJ => &KZT,
+			&MXNJ => &MXN,
+			&MYRJ => &MYR,
+			&NGNJ => &NGN,
+			&NOKJ => &NOK,
+			&NZDJ => &NZD,
+			&PENJ => &PEN,
+			&PHPJ => &PHP,
+			&PKRJ => &PKR,
+			&PLNJ => &PLN,
+			&QARJ => &QAR,
+			&RONJ => &RON,
+			&RUBJ => &RUB,
+			&SARJ => &SAR,
+			&SEKJ => &SEK,
+			&SGDJ => &SGD,
+			&THBJ => &THB,
+			&TRYJ => &TRY,
+			&TWDJ => &TWD,
+			&TZSJ => &TZS,
+			&UAHJ => &UAH,
+			&USDJ => &USD,
+			&ZARJ => &ZAR,
 			_ => 0,
 		}
 	};
@@ -289,7 +330,6 @@ parameter_types! {
 	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETT).
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETT).
 	
-	pub SettUSDFixedPrice: Price = Price::one(); // All prices are in USD. USDJ is pegged 1:1 to USD
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT,
 		AEDJ,
@@ -400,7 +440,6 @@ impl Config for Runtime {
 	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
 	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
 	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
-	type SettUSDFixedPrice = SettUSDFixedPrice;
 	type StableCurrencyIds = StableCurrencyIds;
 	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;

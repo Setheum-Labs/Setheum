@@ -151,15 +151,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn on_system_serpup(_: CurrencyId, _: Balance) -> DispatchResult {
-		unimplemented!()
-	}
-
 	fn on_serpup(_: CurrencyId, _: Amount) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn on_system_serpdown(_: CurrencyId, _: Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
@@ -172,10 +164,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	fn serp_tes(_: CurrencyId) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn check_all_stablecoin_stability() -> DispatchResult {
 		unimplemented!()
 	}
 

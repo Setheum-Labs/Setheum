@@ -220,7 +220,7 @@ pub mod module {
 		/// Invalid input amount
 		InvalidAmount,
 		/// Invalid stable currency type
-		InvalidStableCurrencyType
+		InvalidCurrencyType
 	}
 
 	#[pallet::event]
@@ -588,7 +588,7 @@ impl<T: Config> Pallet<T> {
 				);
 				ensure!(
 					T::StableCurrencyIds::get().contains(settcurrency_currency_id),
-					Error::<T>::InvalidSettCyrrencyType,
+					Error::<T>::InvalidCyrrencyType,
 				);
 
 				let last_bidder = last_bid.as_ref().map(|(who, _)| who);
@@ -859,7 +859,7 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		);
 		ensure!(
 			T::StableCurrencyIds::get().contains(settcurrency_id),
-			Error::<T>::InvalidSettCyrrencyType,
+			Error::<T>::InvalidCyrrencyType,
 		);
 		TotalSettCurrencyInAuction::<T>::try_mutate(|total| -> DispatchResult {
 			*total = total.checked_add(fix_settcurrency, settcurrency_id).ok_or(Error::<T>::InvalidAmount)?;
@@ -900,7 +900,7 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		// ensure currency_id is accepted for serplus auction (Only SettCurrencies are accepted (SETT))
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStableCurrencyType,
+			Error::<T>::InvalidCurrencyType,
 		);
 		TotalSerplusInAuction::<T>::try_mutate(|total| -> DispatchResult {
 			*total = total.checked_add(amount).ok_or(Error::<T>::InvalidAmount)?;

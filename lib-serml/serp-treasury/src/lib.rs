@@ -37,7 +37,6 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedPointNumber,
 };
 use support::{SerpTreasury, DexManager, Ratio};
-
 mod mock;
 mod tests;
 pub mod weights;
@@ -68,54 +67,8 @@ pub mod module {
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// SettUSD (USDJ) currency Stablecoin currency id
-		/// pegged to US Dollar (USD)
-		type GetSettUSDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettGBP (GBPJ) currency Stablecoin currency id
-		/// pegged to Pound Sterling (GBP)
-		type GetSettGBPCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettEUR (EURJ) currency Stablecoin currency id
-		/// pegged to Euro (EUR)
-		type GetSettEURCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettKWD (KWDJ) currency Stablecoin currency id
-		/// pegged to Kuwaiti Dinar (KWD)
-		type GetSettKWDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettJOD (JODJ) currency Stablecoin currency id
-		/// pegged to Jordanian Dinar (JOD)
-		type GetSettJODCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettBHD (BHDJ) currency Stablecoin currency id
-		/// pegged to Bahraini Dirham (BHD)
-		type GetSettBHDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettKYD (KYDJ) currency Stablecoin currency id
-		/// pegged to Cayman Islands Dollar (KYD)
-		type GetSettKYDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettOMR (OMRJ) currency Stablecoin currency id
-		/// pegged to Omani Riyal (OMR)
-		type GetSettOMRCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettCHF (CHFJ) currency Stablecoin currency id
-		/// pegged to Swiss Franc (CHF)
-		type GetSettCHFCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettGIP (GIPJ) currency Stablecoin currency id
-		/// pegged to Gibraltar Pound (GIP)
-		type GetSettGIPCurrencyId: Get<CurrencyId>;
+		/// SettinDes (SDEX) dexer currency id
+		type GetDexerCurrencyId: Get<CurrencyId>;
 
 		/// SERP-TES Adjustment Frequency.
 		/// Schedule for when to trigger SERP-TES
@@ -259,7 +212,7 @@ pub mod module {
 			T::UpdateOrigin::ensure_origin(origin)?;// ensure currency_id is accepted for serplus auction (Only SettCurrencies are accepted (SETT))
 			ensure!(
 				T::StableCurrencyIds::get().contains(&currency_id),
-				Error::<T>::InvalidStableCurrencyType,
+				Error::<T>::InvalidCurrencyType,
 			);
 			T::SerpAuctionHandler::new_serplus_auction(amount, &currency_id)?;
 			Ok(().into())
@@ -317,7 +270,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_propper_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio {
 		ensure!(
 			T::StableCurrencyIds::get().contains(currency_id),
-			Error::<T>::InvalidSettCyrrencyType,
+			Error::<T>::InvalidCyrrencyType,
 		);
 		let stable_total_supply = T::Currency::total_issuance(currency_id);
 		Ratio::checked_from_rational(amount, stable_total_supply).unwrap_or_default()
@@ -327,8 +280,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_serplus_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Serplus SerpUp Pool - 10%
 		let serplus_account = &Self::account_id();
-		let serplus_ratio = T::SerplusSerpupRatio::get();
-		let serplus_propper = amount.checked_mul(&serplus_ratio);
+		let serplus_propper = T::SerplusSerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, serplus_account, serplus_propper);
 
 		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
@@ -337,10 +289,9 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// SerpUp ratio for SettPay Cashdrops
 	fn get_settpay_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		// SettPay SerpUp Pool - 10%
+		// SettPay SerpUp Pool - 60%
 		let settpay_account = T::SettPayTreasuryAcc::get();
-		let settpay_ratio = T::SettPaySerpupRatio::get();
-		let settpay_propper = amount.checked_mul(&settpay_ratio);
+		let settpay_propper T::SettPaySerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, settpay_account, settpay_propper);
 
 		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
@@ -351,8 +302,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_treasury_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Setheum Treasury SerpUp Pool - 10%
 		let treasury_account = T::SetheumTreasuryAcc::get();
-		let treasury_ratio = T::SetheumTreasurySerpupRatio::get();
-		let treasury_propper = amount.checked_mul(&treasury_ratio);
+		let treasury_propper = T::SetheumTreasurySerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, treasury_account, treasury_propper);
 
 		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
@@ -363,8 +313,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_sif_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// SIF SerpUp Pool - 10%
 		let sif_account = T::SIFAcc::get();
-		let sif_ratio = T::SIFSerpupRatio::get();
-		let sif_propper = amount.checked_mul(&sif_ratio);
+		let sif_propper = T::SIFSerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, sif_account, sif_propper);
 
 		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
@@ -375,26 +324,25 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Charity Fund SerpUp Pool - 10%
 		let charity_fund_account = T::CharityFundAcc::get();
-		let charity_fund_ratio = T::CharityFundSerpupRatio::get();
-		let charity_fund_propper = amount.checked_mul(&charity_fund_ratio);
+		let charity_fund_propper = T::CharityFundSerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, charity_fund_account, charity_fund_propper);
 
 		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
 		Ok(())
 	}
 
-	/// issue surplus(stable currencies) for serp treasury
-	/// allocates the serp_up and calls on_serpup.
-	fn on_system_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
-
-		let serpup_ratio = Ratio::checked_from_rational(amount, 100); // in percentage (%)
-		let total_issuance = T::Currency::total_issuance(currency_id);
-		let serpup_balance = total_issuance.checked_mul(&serpup_ratio);
-		Self::on_serpup(currency_id, serpup_balance);
-	}
-
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
+		/// ensure that the currency is a SettCurrency
+		ensure!(
+			T::StableCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidCyrrencyType,
+		);
+		/// ensure that the amount is not zero
+		ensure!(
+			!amount.is_zero(),
+			Error::<T>::InvalidAmount,
+		);
 		get_serplus_serpup(amount, currency_id);
 		get_settpay_serpup(amount, currency_id);
 		get_treasury_serpup(amount, currency_id);
@@ -406,30 +354,22 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// buy back and burn surplus(stable currencies) with auction
-	/// allocates the serp_down and calls on_serpdown.
-	fn on_system_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
-
-		let serpdown_ratio = Ratio::checked_from_rational(amount, 100); // in percentage (%)
-		let total_issuance = T::Currency::total_issuance(currency_id);
-		let serpdown_balance = total_issuance.checked_mul(&serpdown_ratio);
-		Self::on_serpdown(currency_id, serpdown_balance);
-	}
-
-	/// buy back and burn surplus(stable currencies) with auction
 	/// Create the necessary serp down parameters and starts new auction.
 	fn on_serpdown(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
 		/// ensure that the currency is a SettCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidSettCyrrencyType,
+			Error::<T>::InvalidCyrrencyType,
 		);
 		let setter_fixed_price = T::Price::get_setter_fixed_price();
 
 		if currency_id == T::GetSetterCurrencyId::get() {
 			let dinar = T::GetNativeCurrencyId::get();
 			let dinar_price = T::Price::get_price(&dinar);
-			let relative_price = setter_fixed_price.checked_div(&dinar_price);
-			let initial_amount = relative_price.checked_mul(&amount);
+			let relative_price = dinar_price.checked_div(&setter_fixed_price);
+			/// the initial amount is the equivalent of the serpdown amount -
+			/// but in the (higher) fixed price not the (lower) market price
+			let initial_amount = amount.checked_div(&relative_price);
 			/// ensure that the amounts are not zero
 			ensure!(
 				!initial_amount.is_zero() && !amount.is_zero(),
@@ -440,107 +380,69 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 		} else {
 			let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id);
-			let relative_price = settcurrency_fixed_price.checked_div(&setter_fixed_price);
-			let initial_amount = relative_price.checked_mul(&amount);
+			let relative_price = setter_fixed_price.checked_div(&settcurrency_fixed_price);
+			/// the initial amount is the equivalent of the serpdown amount -
+			/// but in the (higher) fixed price not the (lower) market price
+			let initial_setter_amount = amount.checked_div(&relative_price);
 			/// ensure that the amounts are not zero
 			ensure!(
 				!initial_amount.is_zero() && !amount.is_zero(),
 				Error::<T>::InvalidAmount,
 			);
 			/// Setter Auction if it's not to serpdown Setter.
-			T::SerpAuctionHandler::new_setter_auction(&initial_amount, &amount, &currency_id)
+			T::SerpAuctionHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
 		}
 
 		Self::deposit_event(Event::CurrencySerpDownTriggered(amount, currency_id));
 		Ok(())
 	}
 
-	/// Trigger SERP-TES for all stablecoins
-	fn on_serp_tes() -> DispatchRsult {
-		/// Check all stablecoins stability and serp to stabilise the unstable one(s).
-		check_all_stablecoin_stability()
-	}
-
 	/// Determines whether to SerpUp or SerpDown based on price swing (+/-)).
 	/// positive means "Serp Up", negative means "Serp Down".
 	/// Then it calls the necessary option to serp the currency supply (up/down).
 	fn serp_tes(currency_id: CurrencyId) -> DispatchResult {
-
-		let differed_amount = T::Prices::get_peg_price_difference(&currency_id);
-		let price = T::Prices::get_stablecoin_market_price(&currency_id);
-
+		ensure!(
+			T::StableCurrencyIds::get().contains(&currency_id),
+			Error::<T>::InvalidCurrencyType,
+		);
+		let market_price = T::Prices::get_stablecoin_market_price(&currency_id);
+		let fixed_price = T::Prices::get_stablecoin_fixed_price(&currency_id);
+		let fixed_price_amount = T::Prices::amount_try_from_price_abs(&fixed_price)?;
+		let market_price_amount = T::Prices::amount_try_from_price_abs(&market_price)?;
+		let fixed_price_percent_amount = fixed_price_amount.checked_div(100);
+		let percentage = market_price_amount.checked_div(fixed_price_percent_amount);
+		let differed_amount = 100.checked_sub(&percentage);
+		let differed_amount_balance = T::Prices::balance_try_from_amount(&differed_amount)?;
+		let total_supply = T::Currency::total_issuance(currency_id);
+		let supply_ratio = total_supply.checked_div(100);
+		let serp_supply = supply_ratio.checked_mul(total_supply);
 		/// ensure that the differed amount is not zero
 		ensure!(
 			!differed_amount.is_zero(),
 			Error::<T>::PriceIsStableCannotSerp,
 		);
-
+		/// ensure that the differed amount is not zero
+		ensure!(
+			!differed_amount_balance.is_zero(),
+			Error::<T>::PriceIsStableCannotSerp,
+		);
 		/// if price difference is positive -> SerpUp, else if negative ->SerpDown.
 		if differed_amount.is_positive() {
-			T::SerpTreasury::on_system_serpup(
-				&currency_id, &differed_amount,
-				T::Convert::convert((&differed_amount)))?;
+			T::SerpTreasury::on_serpup(&currency_id, &serp_supply)?;
 		} else if differed_amount.is_negative() {
-			T::SerpTreasury::on_system_serpdown(
-				&currency_id, &differed_amount,
-				T::Convert::convert((&differed_amount)))?;
+			T::SerpTreasury::on_serpdown(&currency_id, &serp_supply)?;
 		}
-
 		Ok(())
 	}
 
-	/// TODO: Move `get_peg_price_difference` here and 
-	fn check_all_stablecoin_stability() -> DispatchResult {
-		/// pegged to US Dollar (USD)
-		let peg_one_currency_id: CurrencyId = T::GetSettUSDCurrencyId::get();
-		let peg_one_checked_price = Self::get_peg_price_difference(&peg_one_currency_id);
-		Self::serp_tes(peg_one_currency_id);
-
-		/// pegged to Pound Sterling (GBP)
-		let peg_two_currency_id: CurrencyId = T::GetSettGBPCurrencyId::get();
-		let peg_two_checked_price = Self::get_peg_price_difference(&peg_two_currency_id);
-		Self::serp_tes(peg_two_currency_id);
-
-		/// pegged to Euro (EUR)
-		let peg_three_currency_id: CurrencyId = T::GetSettEURCurrencyId::get();
-		let peg_three_checked_price = Self::get_peg_price_difference(&peg_three_currency_id);
-		Self::serp_tes(peg_three_currency_id);
-
-		/// pegged to Kuwaiti Dinar (KWD)
-		let peg_four_currency_id: CurrencyId = T::GetSettKWDCurrencyId::get();
-		let peg_four_checked_price = Self::get_peg_price_difference(&peg_four_currency_id);
-		Self::serp_tes(peg_four_currency_id);
-
-		/// pegged to Jordanian Dinar (JOD)
-		let peg_five_currency_id: CurrencyId = T::GetSettJODCurrencyId::get();
-		let peg_five_checked_price = Self::get_peg_price_difference(&peg_five_currency_id);
-		Self::serp_tes(peg_five_currency_id);
-
-		/// pegged to Bahraini Dirham (BHD)
-		let peg_six_currency_id: CurrencyId = T::GetSettBHDCurrencyId::get();
-		let peg_six_checked_price = Self::get_peg_price_difference(&peg_six_currency_id);
-		Self::serp_tes(peg_six_currency_id);
-
-		/// pegged to Cayman Islands Dollar (KYD)
-		let peg_seven_currency_id: CurrencyId = T::GetSettKYDCurrencyId::get();
-		let peg_seven_checked_price = Self::get_peg_price_difference(&peg_seven_currency_id);
-		Self::serp_tes(peg_seven_currency_id);
-
-		/// pegged to Omani Riyal (OMR)
-		let peg_eight_currency_id: CurrencyId = T::GetSettOMRCurrencyId::get();
-		let peg_eight_checked_price = Self::get_peg_price_difference(&peg_eight_currency_id);
-		Self::serp_tes(peg_eight_currency_id);
-
-		/// pegged to Swiss Franc (CHF)
-		let peg_nine_currency_id: CurrencyId = T::GetSettCHFCurrencyId::get();
-		let peg_nine_checked_price = Self::get_peg_price_difference(&peg_nine_currency_id);
-		Self::serp_tes(peg_nine_currency_id);
-
-		/// pegged to Gibraltar Pound (GIP)
-		let peg_ten_currency_id: CurrencyId = T::GetSettGIPCurrencyId::get();
-		let peg_ten_checked_price = Self::get_peg_price_difference(&peg_ten_currency_id);
-		Self::serp_tes(peg_ten_currency_id);
-
+	/// Trigger SERP-TES for all stablecoins
+	/// Check all stablecoins stability and elasticity
+	/// and calls the serp to stabilise the unstable one(s)
+	/// on SERP-TES.
+	fn on_serp_tes() -> DispatchResult {
+		for currency_id in T::StableCurrencyIds::get() {
+			Self::serp_tes(currency_id)
+		}
 		Ok(())
 	}
 	
