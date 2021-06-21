@@ -677,6 +677,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "631ae5198c9be5e753e5cc215e1bd73c2b466a3565173db433f52bb9d3e66dba"
 
 [[package]]
+name = "camino"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4648c6d00a709aa069a236adcaae4f605a6241c72bf5bee79331a4b625921a9"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "cargo-platform"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -691,6 +700,20 @@ version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7714a157da7991e23d90686b9524b9e12e0407a108647f52e9328f4b3d51ac7f"
 dependencies = [
+ "cargo-platform",
+ "semver 0.11.0",
+ "semver-parser 0.10.2",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "cargo_metadata"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "081e3f0755c1f380c2d010481b6fa2e02973586d5f2b24eebb7a2a1d98b143d8"
+dependencies = [
+ "camino",
  "cargo-platform",
  "semver 0.11.0",
  "semver-parser 0.10.2",
@@ -752,6 +775,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "chainbridge"
+version = "0.0.2"
+source = "git+https://github.com/Slixon-Technologies/chainbridge-substrate#c536e17c5d4c0f661059a5e13c1ae41d03b21f0d"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "pallet-balances 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "parity-scale-codec",
+ "serde",
+ "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -804,10 +843,42 @@ dependencies = [
  "ansi_term 0.11.0",
  "atty",
  "bitflags",
- "strsim",
- "textwrap",
+ "strsim 0.8.0",
+ "textwrap 0.11.0",
  "unicode-width",
  "vec_map",
+]
+
+[[package]]
+name = "clap"
+version = "3.0.0-beta.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4bd1061998a501ee7d4b6d449020df3266ca3124b941ec56cf2005c3779ca142"
+dependencies = [
+ "atty",
+ "bitflags",
+ "clap_derive",
+ "indexmap",
+ "lazy_static",
+ "os_str_bytes",
+ "strsim 0.10.0",
+ "termcolor",
+ "textwrap 0.12.1",
+ "unicode-width",
+ "vec_map",
+]
+
+[[package]]
+name = "clap_derive"
+version = "3.0.0-beta.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "370f715b81112975b1b69db93e0b56ea4cd4e5002ac43b2da8474106a54096a1"
+dependencies = [
+ "heck",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -1421,10 +1492,109 @@ dependencies = [
 ]
 
 [[package]]
+name = "ethbloom"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "779864b9c7f7ead1f092972c3257496c6a84b46dba2ce131dd8a282cb2cc5972"
+dependencies = [
+ "crunchy",
+ "fixed-hash",
+ "impl-codec",
+ "impl-rlp",
+ "impl-serde",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "ethereum"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567ce064a8232c16e2b2c2173a936b91fbe35c2f2c5278871f5a1a31688b42e9"
+dependencies = [
+ "ethereum-types",
+ "funty",
+ "hash-db",
+ "hash256-std-hasher",
+ "parity-scale-codec",
+ "rlp",
+ "rlp-derive",
+ "serde",
+ "sha3 0.9.1",
+ "triehash",
+]
+
+[[package]]
+name = "ethereum-types"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f64b5df66a228d85e4b17e5d6c6aa43b0310898ffe8a85988c4c032357aaabfd"
+dependencies = [
+ "ethbloom",
+ "fixed-hash",
+ "impl-codec",
+ "impl-rlp",
+ "impl-serde",
+ "primitive-types",
+ "uint",
+]
+
+[[package]]
 name = "event-listener"
 version = "2.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7531096570974c3a9dcf9e4b8e1cede1ec26cf5046219fb3b9d897503b9be59"
+
+[[package]]
+name = "evm"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1202e8dfa45bea73ee003c4be2f3549d60cb2e2ac5b0c1db563bd4653213efde"
+dependencies = [
+ "ethereum",
+ "evm-core",
+ "evm-gasometer",
+ "evm-runtime",
+ "log",
+ "parity-scale-codec",
+ "primitive-types",
+ "rlp",
+ "serde",
+ "sha3 0.8.2",
+]
+
+[[package]]
+name = "evm-core"
+version = "0.26.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f235e93b84fccc1ebdffad226dc56caf833de2fb2f3395f933d95fbf66b254e"
+dependencies = [
+ "funty",
+ "parity-scale-codec",
+ "primitive-types",
+ "serde",
+]
+
+[[package]]
+name = "evm-gasometer"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "463412356790c5e34e8a13cd23ba06284d9afa999e82e8c64497aed2ee625375"
+dependencies = [
+ "evm-core",
+ "evm-runtime",
+ "primitive-types",
+]
+
+[[package]]
+name = "evm-runtime"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c08f510e5535cee2352adb9b93ff24dc80f8ca1bad445a9aa1292ce144b45a1"
+dependencies = [
+ "evm-core",
+ "primitive-types",
+ "sha3 0.8.2",
+]
 
 [[package]]
 name = "exit-future"
@@ -2560,6 +2730,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "impl-rlp"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f28220f89297a075ddc7245cd538076ee98b01f2a9c23a53a4f1105d5a322808"
+dependencies = [
+ "rlp",
+]
+
+[[package]]
 name = "impl-serde"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3249,7 +3428,7 @@ dependencies = [
  "pin-project 1.0.7",
  "rand 0.7.3",
  "salsa20",
- "sha3",
+ "sha3 0.9.1",
 ]
 
 [[package]]
@@ -3775,7 +3954,7 @@ dependencies = [
  "generic-array 0.14.4",
  "multihash-derive",
  "sha2 0.9.5",
- "sha3",
+ "sha3 0.9.1",
  "unsigned-varint 0.5.1",
 ]
 
@@ -4230,6 +4409,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "orml-bencher"
+version = "0.4.1-dev"
+dependencies = [
+ "ansi_term 0.12.1",
+ "build-helper",
+ "cargo_metadata 0.13.1",
+ "frame-benchmarking 3.1.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "linregress",
+ "parity-scale-codec",
+ "paste",
+ "rand 0.8.4",
+ "sc-client-db",
+ "sc-executor",
+ "sc-executor-common",
+ "serde",
+ "serde_json",
+ "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-maybe-compressed-blob",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-state-machine 0.9.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "tempfile",
+ "toml",
+ "walkdir",
+ "wasm-gc-api",
+]
+
+[[package]]
 name = "orml-benchmarking"
 version = "0.4.1-dev"
 dependencies = [
@@ -4461,6 +4669,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "orml-weight-meter"
+version = "0.4.1-dev"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "orml-bencher",
+ "pallet-balances 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "parity-scale-codec",
+ "serde",
+ "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
+ "spin 0.7.1",
+ "weight-meter-procedural",
+]
+
+[[package]]
 name = "orml-xcm-support"
 version = "0.4.1-dev"
 dependencies = [
@@ -4472,6 +4697,12 @@ dependencies = [
  "xcm",
  "xcm-executor",
 ]
+
+[[package]]
+name = "os_str_bytes"
+version = "2.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "afb2e1c3ee07430c2cf76151675e583e0f19985fa6efae47d6848a3e2c824f85"
 
 [[package]]
 name = "owning_ref"
@@ -5404,6 +5635,7 @@ checksum = "2415937401cb030a2a0a4d922483f945fa068f52a7dbb22ce0fe5f2b6f6adace"
 dependencies = [
  "fixed-hash",
  "impl-codec",
+ "impl-rlp",
  "impl-serde",
  "uint",
 ]
@@ -5903,10 +6135,31 @@ dependencies = [
  "cc",
  "libc",
  "once_cell",
- "spin",
+ "spin 0.5.2",
  "untrusted",
  "web-sys",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "rlp"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e54369147e3e7796c9b885c7304db87ca3d09a0a98f72843d532868675bbfba8"
+dependencies = [
+ "bytes 1.0.1",
+ "rustc-hex",
+]
+
+[[package]]
+name = "rlp-derive"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e33d7b2abe0c340d8797fe2907d3f20d3b5ea5908683618bfe80df7f621f672a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -7476,7 +7729,9 @@ name = "setheum-primitives"
 version = "0.7.1"
 dependencies = [
  "bstringify",
- "frame-support 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "chainbridge",
+ "evm",
+ "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "parity-scale-codec",
  "serde",
  "serde_json",
@@ -7798,6 +8053,19 @@ dependencies = [
  "cpufeatures",
  "digest 0.9.0",
  "opaque-debug 0.3.0",
+]
+
+[[package]]
+name = "sha3"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd26bc0e7a2e3a7c959bc494caf58b72ee0c71d67704e9520f736ca7e4853ecf"
+dependencies = [
+ "block-buffer 0.7.3",
+ "byte-tools",
+ "digest 0.8.1",
+ "keccak",
+ "opaque-debug 0.2.3",
 ]
 
 [[package]]
@@ -8994,6 +9262,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
+name = "spin"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13287b4da9d1207a4f4929ac390916d64eacfe236a487e9a9f5b3be392be5162"
+
+[[package]]
 name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9044,12 +9318,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 
 [[package]]
+name = "strsim"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
+
+[[package]]
 name = "structopt"
 version = "0.3.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5277acd7ee46e63e5168a80734c9f6ee81b1367a7d8772a2d765df2a3705d28c"
 dependencies = [
- "clap",
+ "clap 2.33.3",
  "lazy_static",
  "structopt-derive",
 ]
@@ -9156,7 +9436,7 @@ dependencies = [
  "ansi_term 0.12.1",
  "atty",
  "build-helper",
- "cargo_metadata",
+ "cargo_metadata 0.12.3",
  "tempfile",
  "toml",
  "walkdir",
@@ -9244,6 +9524,15 @@ name = "textwrap"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
+dependencies = [
+ "unicode-width",
+]
+
+[[package]]
+name = "textwrap"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "203008d98caf094106cfaba70acfed15e18ed3ddb7d94e49baec153a2b462789"
 dependencies = [
  "unicode-width",
 ]
@@ -9723,6 +10012,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "652931506d2c1244d7217a70b99f56718a7b4161b37f04e7cd868072a99f68cd"
 dependencies = [
  "hash-db",
+]
+
+[[package]]
+name = "triehash"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1631b201eb031b563d2e85ca18ec8092508e262a3196ce9bd10a67ec87b9f5c"
+dependencies = [
+ "hash-db",
+ "rlp",
 ]
 
 [[package]]
@@ -10403,6 +10702,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aabe153544e473b775453675851ecc86863d2a81d786d741f6b76778f2a48940"
 dependencies = [
  "webpki",
+]
+
+[[package]]
+name = "weight-gen"
+version = "0.4.1-dev"
+dependencies = [
+ "clap 3.0.0-beta.2",
+ "handlebars",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "weight-meter-procedural"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
