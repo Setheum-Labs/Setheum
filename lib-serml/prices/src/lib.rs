@@ -136,10 +136,12 @@ pub mod module {
 	pub enum Error<T> {
 		/// Converting Amount has failed
 		AmountConvertFailed,
+		/// Converting Balance has failed
+		BalanceConvertFailed,
 		/// Invalid fiat currency id
 		InvalidFiatCurrencyType,
 		/// Invalid stable currency id
-		InvalidStableCurrencyType,
+		InvalidCurrencyType,
 		/// Invalid peg pair (peg-to-currency-by-key-pair)
 		InvalidPegPair,
 		/// Converting Price has failed
@@ -206,7 +208,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>{
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStableCurrencyType,
+			Error::<T>::InvalidCurrencyType,
 		);
 		let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
@@ -244,7 +246,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price> {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStableCurrencyType,
+			Error::<T>::InvalidCurrencyType,
 		);
 		let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
@@ -259,7 +261,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn get_stablecoin_market_price(currency_id: CurrencyId) -> Option<Price> {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStableCurrencyType,
+			Error::<T>::InvalidCurrencyType,
 		);
 		Self::get_price(currency_id)
 	}
@@ -269,7 +271,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn get_peg_price_difference(currency_id: CurrencyId) -> result::Result<Amount, Error<T>> {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStableCurrencyType,
+			Error::<T>::InvalidCurrencyType,
 		);
 		let fixed_price = Self::get_stablecoin_fixed_price(&currency_id);
 		let market_price = Self::get_stablecoin_market_price(&currency_id);
@@ -295,7 +297,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price> {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStableCurrencyType,
+			Error::<T>::InvalidCurrencyType,
 		);
 		let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
 		ensure!(
@@ -423,6 +425,15 @@ impl<T: Config> Pallet<T> {
 	/// Convert the absolute value of `Price` to `Balance`.
 	fn balance_try_from_price_abs(p: Price) -> result::Result<Balance, Error<T>> {
 		TryInto::<Balance>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::PriceConvertFailed)
+	}
+	/// Convert `Balance` to `Amount`.
+	fn amount_try_from_balance(b: Balance) -> result::Result<Amount, Error<T>> {
+		TryInto::<Amount>::try_into(b).map_err(|_| Error::<T>::BalanceConvertFailed)
+	}
+
+	/// Convert the absolute value of `Amount` to `Balance`.
+	fn balance_try_from_amount_abs(p: Amount) -> result::Result<Balance, Error<T>> {
+		TryInto::<Balance>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::BalanceConvertFailed)
 	}
 
 	/// Convert `Amount` to `Price`.
