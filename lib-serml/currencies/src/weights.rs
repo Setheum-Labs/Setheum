@@ -35,7 +35,7 @@
 // --heap-pages=4096
 // --output=./currencies/src/weights.rs
 // --template
-// ../templates/orml-weight-template.hbs
+// ../templates/lib-openrml-weight-template.hbs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
