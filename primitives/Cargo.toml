@@ -15,9 +15,13 @@ sp-core = { version = "3.0.0", default-features = false }
 sp-runtime = { version = "3.0.0", default-features = false }
 sp-std = { version = "3.0.0", default-features = false }
 
+# Special dependencies
+evm = { version = "0.26.0", default-features = false, features = ["with-codec"] }
+chainbridge = { git = "https://github.com/Slixon-Technologies/chainbridge-substrate", default-features = false }
+
 [dev-dependencies]
-frame-support = { version = "3.0.0" }
-serde_json = { version = "1.0.61" }
+serde_json = { version = "1.0.64" }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 
 [features]
 default = ["std"]
@@ -27,4 +31,10 @@ std = [
 	"sp-runtime/std",
 	"sp-core/std",
 	"sp-std/std",
+	"evm/std",
+	"evm/with-serde",
+	"chainbridge/std",
+]
+runtime-benchmarks = [
+	"chainbridge/runtime-benchmarks",
 ]

@@ -21,8 +21,10 @@
 #![allow(clippy::upper_case_acronyms)]
 
 pub mod currency;
+pub mod evm;
 
 use codec::{Decode, Encode};
+use core::ops::Range;
 use sp_runtime::{
 	generic,
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
@@ -34,6 +36,9 @@ pub use currency::{CurrencyId, DexShare, TokenSymbol};
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
+
+#[cfg(test)]
+mod tests;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -98,8 +103,6 @@ pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 pub enum AuthoritysOriginId {
 	Root,
 	SetheumTreasury,
-	SerpTreasury,
-	SIF,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
@@ -107,7 +110,6 @@ pub enum AuthoritysOriginId {
 pub enum DataProviderId {
 	Aggregated = 0,
 	Setheum = 1,
-	Band = 2,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
@@ -124,9 +126,10 @@ impl TradingPair {
 	}
 
 	pub fn from_token_currency_ids(currency_id_0: CurrencyId, currency_id_1: CurrencyId) -> Option<Self> {
-		match currency_id_0.is_token_currency_id() && currency_id_1.is_token_currency_id() {
-			true if currency_id_0 > currency_id_1 => Some(TradingPair(currency_id_1, currency_id_0)),
-			true if currency_id_0 < currency_id_1 => Some(TradingPair(currency_id_0, currency_id_1)),
+		match (currency_id_0.is_token_currency_id() || currency_id_0.is_erc20_currency_id())
+			&& (currency_id_1.is_token_currency_id() || currency_id_1.is_erc20_currency_id())
+		{
+			true => Some(TradingPair::new(currency_id_1, currency_id_0)),
 			_ => None,
 		}
 	}
@@ -135,3 +138,45 @@ impl TradingPair {
 		CurrencyId::join_dex_share_currency_id(self.0, self.1)
 	}
 }
+
+/// Ethereum precompiles
+/// 0 - 0x400
+/// Setheum precompiles
+/// 0x400 - 0x800
+pub const PRECOMPILE_ADDRESS_START: u64 = 0x400;
+/// Predeployed system contracts (except Mirrored ERC20)
+/// 0x800 - 0x1000
+pub const PREDEPLOY_ADDRESS_START: u64 = 0x800;
+/// Mirrored Tokens (ensure length <= 4 bytes, encode to u32 will take the first 4 non-zero bytes)
+/// 0x1000000
+pub const MIRRORED_TOKENS_ADDRESS_START: u64 = 0x1000000;
+/// Mirrored NFT (ensure length <= 4 bytes, encode to u32 will take the first 4 non-zero bytes)
+/// 0x2000000
+pub const MIRRORED_NFT_ADDRESS_START: u64 = 0x2000000;
+/// Mirrored LP Tokens
+/// 0x10000000000000000
+pub const MIRRORED_LP_TOKENS_ADDRESS_START: u128 = 0x10000000000000000;
+/// System contract address prefix
+pub const SYSTEM_CONTRACT_ADDRESS_PREFIX: [u8; 11] = [0u8; 11];
+
+/// CurrencyId to H160([u8; 20]) bit encoding rule.
+///
+/// Token
+/// v[16] = 1 // MIRRORED_TOKENS_ADDRESS_START
+/// - v[19] = token(1 byte)
+///
+/// DexShare
+/// v[11] = 1 // MIRRORED_LP_TOKENS_ADDRESS_START
+/// - v[12..16] = dex left(4 bytes)
+/// - v[16..20] = dex right(4 bytes)
+///
+/// Erc20
+/// - v[0..20] = evm address(20 bytes)
+pub const H160_TYPE_TOKEN: u8 = 1;
+pub const H160_TYPE_DEXSHARE: u8 = 1;
+pub const H160_POSITION_TOKEN: usize = 19;
+pub const H160_POSITION_DEXSHARE_LEFT: Range<usize> = 12..16;
+pub const H160_POSITION_DEXSHARE_RIGHT: Range<usize> = 16..20;
+pub const H160_POSITION_ERC20: Range<usize> = 0..20;
+pub const H160_PREFIX_TOKEN: [u8; 19] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
+pub const H160_PREFIX_DEXSHARE: [u8; 12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
