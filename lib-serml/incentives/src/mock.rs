@@ -304,7 +304,6 @@ ord_parameter_types! {
 
 impl Config for Runtime {
 	type Event = Event;
-	type SettersIncentivePool = SettersIncentivePool;
 	type RewardsVaultAccountId = RewardsVaultAccountId;
 	type DexIncentivePool = DexIncentivePool;
 	type AccumulatePeriod = AccumulatePeriod;

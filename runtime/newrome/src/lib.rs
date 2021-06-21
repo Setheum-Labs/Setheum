@@ -994,7 +994,6 @@ parameter_types! {
 
 impl setheum_incentives::Config for Runtime {
 	type Event = Event;
-	type SettersIncentivePool = ZeroAccountId;
 	type DexIncentivePool = ZeroAccountId;
 	type AccumulatePeriod = AccumulatePeriod;
 	type IncentiveCurrencyId = GetNativeCurrencyId;
