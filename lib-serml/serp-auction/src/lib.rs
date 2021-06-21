@@ -588,7 +588,7 @@ impl<T: Config> Pallet<T> {
 				);
 				ensure!(
 					T::StableCurrencyIds::get().contains(settcurrency_currency_id),
-					Error::<T>::InvalidSettCyrrencyType,
+					Error::<T>::InvalidCyrrencyType,
 				);
 
 				let last_bidder = last_bid.as_ref().map(|(who, _)| who);
@@ -859,7 +859,7 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		);
 		ensure!(
 			T::StableCurrencyIds::get().contains(settcurrency_id),
-			Error::<T>::InvalidSettCyrrencyType,
+			Error::<T>::InvalidCyrrencyType,
 		);
 		TotalSettCurrencyInAuction::<T>::try_mutate(|total| -> DispatchResult {
 			*total = total.checked_add(fix_settcurrency, settcurrency_id).ok_or(Error::<T>::InvalidAmount)?;
