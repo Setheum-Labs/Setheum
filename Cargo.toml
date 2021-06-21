@@ -19,15 +19,20 @@ members = [
 
 	"lib-openrml/auction",
 	"lib-openrml/authority",
+	"lib-openrml/bencher",
 	"lib-openrml/benchmarking",
 	"lib-openrml/currencies",
 	"lib-openrml/nft",
 	"lib-openrml/oracle",
+	"lib-openrml/oracle/rpc",
+ 	"lib-openrml/oracle/rpc/runtime-api",
 	"lib-openrml/rewards",
 	"lib-openrml/tokens",
 	"lib-openrml/traits",
 	"lib-openrml/utilities",
 	"lib-openrml/vesting",
+	"lib-openrml/weight-gen",
+	"lib-openrml/weight-meter",
 	"lib-openrml/unknown-tokens",
 
 ]
