@@ -220,7 +220,7 @@ pub mod module {
 		/// Invalid input amount
 		InvalidAmount,
 		/// Invalid stable currency type
-		InvalidStableCurrencyType
+		InvalidCurrencyType
 	}
 
 	#[pallet::event]
@@ -900,7 +900,7 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		// ensure currency_id is accepted for serplus auction (Only SettCurrencies are accepted (SETT))
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStableCurrencyType,
+			Error::<T>::InvalidCurrencyType,
 		);
 		TotalSerplusInAuction::<T>::try_mutate(|total| -> DispatchResult {
 			*total = total.checked_add(amount).ok_or(Error::<T>::InvalidAmount)?;
