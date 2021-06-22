@@ -722,21 +722,18 @@ impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 		let diamond = T::GetNativeCurrencyId::get();
 
 		// set setter currency_id accepted for diamond auction (Only Setter is accepted (SETT))
-		if setter_currency_id = T::GetSetterCurrencyId::get() {
-			<DiamondAuctions<T>>::insert(
-				auction_id,
-				DiamondAuctionItem {
-					initial_amount,
-					diamond: diamond,
-					amount: initial_amount,
-					fix: fix_setter,
-					setter: setter_currency_id,
-					start_time,
-				},
-			);
-		} else {
-			return Err(Error::<T>::CurrencyNotAccepted.into());
-		}
+		let setter_currency_id = T::GetSetterCurrencyId::get();
+		<DiamondAuctions<T>>::insert(
+			auction_id,
+			DiamondAuctionItem {
+				initial_amount,
+				diamond: diamond,
+				amount: initial_amount,
+				fix: fix_setter,
+				setter: setter_currency_id,
+				start_time,
+			},
+		);
 
 		Self::deposit_event(Event::NewDiamondAuction(auction_id, initial_amount, diamond, fix_setter, setter_currency_id));
 		Ok(())
@@ -820,18 +817,15 @@ impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	fn get_total_setter_in_auction() -> Self::Balance {
-		Self::total_setter_in_auction()
+	fn get_total_serplus_in_auction(id: Self::CurrencyId) -> Self::Balance {
+		Self::total_serplus_in_auction(id)
 	}
 
 	fn get_total_settcurrency_in_auction(id: Self::CurrencyId) -> Self::Balance {
 		Self::total_settcurrency_in_auction(id)
 	}
 
-	fn get_total_serplus_in_auction(id: Self::CurrencyId) -> Self::Balance {
-		Self::total_serplus_in_auction(id)
-	}
-	fn get_total_diamond_in_auction(id: Self::CurrencyId) -> Self::Balance {
-		Self::total_diamond_in_auction(id)
+	fn get_total_setter_in_auction() -> Self::Balance {
+		Self::total_setter_in_auction()
 	}
 }
