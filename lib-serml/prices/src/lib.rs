@@ -24,7 +24,8 @@
 //! do some process and feed prices for setheum, this includes constructing 
 //! the Setter (SETT) currency basket price. 
 //! Process include:
-//!   - specify a fixed price for stable currency
+//!   - specify a fixed price for stable currencies
+//!   - specify the Setter basket currency price
 //!   - feed price in USD or related price bewteen two currencies
 //!   - lock/unlock the price data get from oracle
 
