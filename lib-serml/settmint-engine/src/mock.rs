@@ -174,8 +174,8 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
-pub struct MockSerpAuction;
-impl SerpAuction<AccountId> for MockSerpAuction {
+pub struct MockSerpAuctionManager;
+impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 	type AuctionId = AuctionId;
@@ -276,7 +276,7 @@ impl serp_treasury::Config for Runtime {
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SIFSerpupRatio = SIFSerpupRatio;
-	type SerpAuctionHandler = MockSerpAuction;
+	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = ();
 	type MaxAuctionsCount = MaxAuctionsCount;

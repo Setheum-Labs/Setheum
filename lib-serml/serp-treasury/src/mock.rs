@@ -185,8 +185,8 @@ thread_local! {
 	pub static TOTAL_SERPLUS_IN_AUCTION: RefCell<u32> = RefCell::new(0);
 }
 
-pub struct MockSerpAuction;
-impl SerpAuction<AccountId> for MockSerpAuction {
+pub struct MockSerpAuctionManager;
+impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
 	type CurrencyId = CurrencyId;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
@@ -289,7 +289,7 @@ impl Config for Runtime {
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SIFSerpupRatio = SIFSerpupRatio;
-	type SerpAuctionHandler = MockSerpAuction;
+	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = DexModule;
 	type MaxAuctionsCount = MaxAuctionsCount;

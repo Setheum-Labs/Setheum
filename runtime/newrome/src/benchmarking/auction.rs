@@ -17,14 +17,14 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, Auction, AuctionId, SerpAuction, AuctionTimeToClose, SerpTreasury, Runtime, System, ROME, rUSD, rSETT,
+	dollar, Auction, AuctionId, SerpAuctionManager, AuctionTimeToClose, SerpTreasury, Runtime, System, ROME, rUSD, rSETT,
 };
 
 use super::utils::set_balance;
 use frame_benchmarking::account;
 use frame_support::traits::OnFinalize;
 use frame_system::RawOrigin;
-use setheum_support::{SerpAuction as SerpAuctionTrait, SerpTreasury};
+use setheum_support::{SerpAuctionManager as SerpAuctionManagerTrait, SerpTreasury};
 use orml_benchmarking::runtime_benchmarks;
 use sp_std::prelude::*;
 
@@ -55,7 +55,7 @@ runtime_benchmarks! {
 		set_balance(currency_id, &funder, reserve_amount);
 		set_balance(rUSD, &bidder, bid_price);
 		<SerpTreasury as SerpTreasury<_>>::deposit_reserve(&funder, currency_id, reserve_amount)?;
-		SerpAuction::new_setter_auction(&funder, currency_id, reserve_amount, target_amount)?;
+		SerpAuctionManager::new_setter_auction(&funder, currency_id, reserve_amount, target_amount)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
 	// `bid` a setter auction, worst cases:
@@ -75,7 +75,7 @@ runtime_benchmarks! {
 		set_balance(rUSD, &bidder, bid_price);
 		set_balance(rUSD, &previous_bidder, previous_bid_price);
 		<SerpTreasury as SerpTreasury<_>>::deposit_reserve(&funder, currency_id, reserve_amount)?;
-		SerpAuction::new_setter_auction(&funder, currency_id, reserve_amount, target_amount)?;
+		SerpAuctionManager::new_setter_auction(&funder, currency_id, reserve_amount, target_amount)?;
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
@@ -90,7 +90,7 @@ runtime_benchmarks! {
 		let auction_id: AuctionId = 0;
 
 		set_balance(ROME, &bidder, bid_price);
-		SerpAuction::new_serplus_auction(serplus_amount)?;
+		SerpAuctionManager::new_serplus_auction(serplus_amount)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
 	// `bid` a serplus auction, worst cases:
@@ -105,7 +105,7 @@ runtime_benchmarks! {
 
 		set_balance(ROME, &bidder, bid_price);
 		set_balance(ROME, &previous_bidder, previous_bid_price);
-		SerpAuction::new_serplus_auction(serplus_amount)?;
+		SerpAuctionManager::new_serplus_auction(serplus_amount)?;
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
@@ -120,7 +120,7 @@ runtime_benchmarks! {
 		let auction_id: AuctionId = 0;
 
 		set_balance(rUSD, &bidder, fix_standard_amount);
-		SerpAuction::new_diamond_auction(initial_amount ,fix_standard_amount)?;
+		SerpAuctionManager::new_diamond_auction(initial_amount ,fix_standard_amount)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, fix_standard_amount)
 
 	// `bid` a diamond auction, worst cases:
@@ -136,7 +136,7 @@ runtime_benchmarks! {
 
 		set_balance(rUSD, &bidder, bid_price);
 		set_balance(rUSD, &previous_bidder, previous_bid_price);
-		SerpAuction::new_diamond_auction(initial_amount ,fix_standard_amount)?;
+		SerpAuctionManager::new_diamond_auction(initial_amount ,fix_standard_amount)?;
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
@@ -151,7 +151,7 @@ runtime_benchmarks! {
 
 		System::set_block_number(1);
 		for auction_id in 0 .. c {
-			SerpAuction::new_diamond_auction(initial_amount ,fix_standard_amount)?;
+			SerpAuctionManager::new_diamond_auction(initial_amount ,fix_standard_amount)?;
 			Auction::bid(RawOrigin::Signed(bidder.clone()).into(), auction_id, fix_standard_amount)?;
 		}
 	}: {

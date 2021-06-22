@@ -110,7 +110,7 @@ pub mod module {
 		type CharityFundAcc: Get<AccountId>;
 
 		/// Auction manager creates different types of auction to handle system serplus and standard.
-		type SerpAuctionHandler: SerpAuction<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
+		type SerpAuctionManagerHandler: SerpAuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
 		type Dex: DexManager<Self::AccountId, CurrencyId, Balance>;
@@ -214,7 +214,7 @@ pub mod module {
 				T::StableCurrencyIds::get().contains(&currency_id),
 				Error::<T>::InvalidCurrencyType,
 			);
-			T::SerpAuctionHandler::new_serplus_auction(amount, &currency_id)?;
+			T::SerpAuctionManagerHandler::new_serplus_auction(amount, &currency_id)?;
 			Ok(().into())
 		}
 
@@ -226,7 +226,7 @@ pub mod module {
 			initial_price: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			T::SerpAuctionHandler::new_diamond_auction(initial_price, setter_amount)?;
+			T::SerpAuctionManagerHandler::new_diamond_auction(initial_price, setter_amount)?;
 			Ok(().into())
 		}
 
@@ -239,7 +239,7 @@ pub mod module {
 			initial_price: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			T::SerpAuctionHandler::new_setter_auction(initial_price, currency_amount, accepted_currency)?;
+			T::SerpAuctionManagerHandler::new_setter_auction(initial_price, currency_amount, accepted_currency)?;
 			Ok(().into())
 		}
 	}
@@ -376,7 +376,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				Error::<T>::InvalidAmount,
 			);
 			/// Diamond Auction if it's to serpdown Setter.
-			T::SerpAuctionHandler::new_diamond_auction(&initial_amount, &amount)
+			T::SerpAuctionManagerHandler::new_diamond_auction(&initial_amount, &amount)
 
 		} else {
 			let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id);
@@ -390,7 +390,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				Error::<T>::InvalidAmount,
 			);
 			/// Setter Auction if it's not to serpdown Setter.
-			T::SerpAuctionHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
+			T::SerpAuctionManagerHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
 		}
 
 		Self::deposit_event(Event::CurrencySerpDownTriggered(amount, currency_id));

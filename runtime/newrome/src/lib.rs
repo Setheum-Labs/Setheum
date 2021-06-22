@@ -631,7 +631,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = SerpAuction;
+	type Handler = SerpAuctionManager;
 	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
 }
 
@@ -812,7 +812,7 @@ impl serp_auction::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type Dex = Dex;
 	type PriceSource = Prices;
-	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
+	type UnsignedPriority = runtime_common::SerpAuctionManagerUnsignedPriority;
 	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
 }
 
@@ -952,7 +952,7 @@ impl serp_treasury::Config for Runtime {
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SIFSerpupRatio = SIFSerpupRatio;
-	type SerpAuctionHandler = SerpAuction;
+	type SerpAuctionManagerHandler = SerpAuctionManager;
 	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
 	type Dex = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -1128,7 +1128,7 @@ construct_runtime!(
 		Dex: dex::{Module, Storage, Call, Event<T>, Config<T>},
 
 		// Settway
-		SerpAuction: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SerpAuctionManager: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 		SettersManager: setters_manager::{Module, Storage, Call, Event<T>},
 		Settway: setheum_settway::{Module, Storage, Call, Event<T>},
 		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>},
