@@ -134,8 +134,6 @@ pub const TZS: CurrencyId = CurrencyId::Token(TokenSymbol::TZS);
 pub const UAH: CurrencyId = CurrencyId::Token(TokenSymbol::UAH);
 pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
 pub const ZAR: CurrencyId = CurrencyId::Token(TokenSymbol::ZAR);
-pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
-pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
 pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
 pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
 pub const BHD: CurrencyId = CurrencyId::Token(TokenSymbol::BHD);
@@ -266,7 +264,9 @@ parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
 	};
+}
 
+parameter_type_with_key! {
 	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
 		match currency_id {
 			&USDJ => &USD,
