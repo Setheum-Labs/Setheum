@@ -257,12 +257,11 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		ensure!(
-			T::FiatCurrencyIds::get().contains(&fiat_currency_id),
-			Error::<T>::InvalidFiatCurrencyType,
-		);
+		if currency_id == T::SetterCurrencyId::get() {
+			T::Prices::get_setter_fixed_price()
+		} else {
 		Self::get_peg_price(&currency_id)
+		}
 	}
 
 	/// get the market price (not fixed price, for SERP-TES) of a
