@@ -133,7 +133,7 @@ parameter_types! {
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/stwy");
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
-	pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
+	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 
 pub fn get_all_setheum_accounts() -> Vec<AccountId> {
