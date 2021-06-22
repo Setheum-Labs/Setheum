@@ -31,10 +31,14 @@ use sp_runtime::{
 	traits::{IdentityLookup, One as OneT, Zero},
 	DispatchError, FixedPointNumber,
 };
-use support::{ExchangeRate, Ratio};
+use support::{mocks::MockCurrencyIdMapping, ExchangeRate, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
+
+mod setheum_prices {
+	pub use super::super::*;
+}
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -83,8 +87,10 @@ pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
 // LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
-pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
-pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DexShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
+pub const LP_CHFJ_USDJ: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::CHFJ), DexShare::Token(TokenSymbol::USDJ));
+pub const LP_USDJ_DNAR: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DNAR));
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
 pub const AED: CurrencyId = CurrencyId::Token(TokenSymbol::AED);
@@ -137,10 +143,6 @@ pub const KYD: CurrencyId = CurrencyId::Token(TokenSymbol::KYD);
 pub const OMR: CurrencyId = CurrencyId::Token(TokenSymbol::OMR);
 pub const GIP: CurrencyId = CurrencyId::Token(TokenSymbol::GIP);
 
-mod setheum_prices {
-	pub use super::super::*;
-}
-
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 }
@@ -168,6 +170,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 pub struct MockDataProvider;
@@ -234,11 +237,27 @@ impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
 		unimplemented!()
 	}
 
-	fn add_liquidity(_: &AccountId, _: CurrencyId, _: CurrencyId, _: Balance, _: Balance, _: bool) -> DispatchResult {
+	fn add_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_max_amount_a: Balance,
+		_max_amount_b: Balance,
+		_min_share_increment: Balance,
+		_deposit_increment_share: bool,
+	) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn remove_liquidity(_: &AccountId, _: CurrencyId, _: CurrencyId, _: Balance, _: bool) -> DispatchResult {
+	fn remove_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_remove_share: Balance,
+		_min_withdrawn_a: Balance,
+		_min_withdrawn_b: Balance,
+		_by_withdraw: bool,
+	) -> DispatchResult {
 		unimplemented!()
 	}
 }
@@ -295,7 +314,7 @@ parameter_type_with_key! {
 			&UAHJ => &UAH,
 			&USDJ => &USD,
 			&ZARJ => &ZAR,
-			_ => 0,
+			_ => None,
 		}
 	};
 }
@@ -445,6 +464,7 @@ impl Config for Runtime {
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = MockDex;
 	type Currency = Tokens;
+	type CurrencyIdMapping = MockCurrencyIdMapping;
 	type WeightInfo = ();
 }
 
@@ -458,7 +478,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		PricesModule: setheum_prices::{Pallet, Storage, Call, Event<T>},
+		SetheumPrices: setheum_prices::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 	}
 );

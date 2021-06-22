@@ -22,20 +22,24 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Event, *};use sp_runtime::{traits::{BadOrigin, Zero}, FixedPointNumber};
+use mock::{Event, *};
+use sp_runtime::{
+	traits::{BadOrigin, Zero},
+	FixedPointNumber
+};
 
 #[test]
 fn get_price_from_oracle() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			PricesModule::get_price(JCHF),
+			SetheumPrices::get_price(JCHF),
 			Some(Price::saturating_from_integer(500000000000000u128))
 		); // 50000 USD, right shift the decimal point (18-10) places
 		assert_eq!(
-			PricesModule::get_price(DNAR),
+			SetheumPrices::get_price(DNAR),
 			Some(Price::saturating_from_integer(10000000000u128))
 		); // 100 USD, right shift the decimal point (18-12) places
-		assert_eq!(PricesModule::get_price(DNAR), Some(Price::zero()));
+		assert_eq!(SetheumPrices::get_price(DNAR), Some(Price::zero()));
 	});
 }
 
@@ -43,7 +47,7 @@ fn get_price_from_oracle() {
 fn get_price_of_stable_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			PricesModule::get_price(USDJ),
+			SetheumPrices::get_price(USDJ),
 			Some(Price::saturating_from_integer(1000000))
 		); // 1 USD, right shift the decimal point (18-12) places
 	});
@@ -54,20 +58,20 @@ fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(MockDex::get_liquidity_pool(USDJ, DNAR), (10000, 200));
 		assert_eq!(
-			PricesModule::get_price(LP_USDJ_DNAR),
+			SetheumPrices::get_price(LP_USDJ_DNAR),
 			None
 		);
 		assert_ok!(Tokens::deposit(LP_USDJ_DNAR, &1, 100));
 		assert_eq!(Tokens::total_issuance(LP_USDJ_DNAR), 100);
-		assert_eq!(PricesModule::get_price(USDJ), Some(Price::saturating_from_rational(1000000u128, 1)));
+		assert_eq!(SetheumPrices::get_price(USDJ), Some(Price::saturating_from_rational(1000000u128, 1)));
 		assert_eq!(
-			PricesModule::get_price(LP_USDJ_DNAR),
+			SetheumPrices::get_price(LP_USDJ_DNAR),
 			Some(Price::saturating_from_rational(200000000u128, 1))	// 10000/100 * Price::saturating_from_rational(1000000u128, 1) * 2
 		);
 
 		assert_eq!(MockDex::get_liquidity_pool(JCHF, USDJ), (0, 0));
 		assert_eq!(
-			PricesModule::get_price(LP_JCHF_USDJ),
+			SetheumPrices::get_price(LP_JCHF_USDJ),
 			None
 		);
 	});
@@ -77,24 +81,24 @@ fn get_price_of_lp_token_currency_id() {
 fn get_relative_price_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			PricesModule::get_relative_price(DNAR, USDJ),
+			SetheumPrices::get_relative_price(DNAR, USDJ),
 			Some(Price::saturating_from_rational(10000, 1)) /* 1DNAR = 100USDJ, right shift the decimal point (12-10)
 			                                                 * places */
 		);
 		assert_eq!(
-			PricesModule::get_relative_price(JCHF, USDJ),
+			SetheumPrices::get_relative_price(JCHF, USDJ),
 			Some(Price::saturating_from_rational(500000000, 1)) /* 1JCHF = 50000USDJ, right shift the decimal point
 			                                                     * (12-8) places */
 		);
 		assert_eq!(
-			PricesModule::get_relative_price(JUSD, DNAR),
+			SetheumPrices::get_relative_price(JUSD, DNAR),
 			Some(Price::saturating_from_rational(1, 2)) // 1JUSD = 1/2DNAR, right shift the decimal point (10-10) places
 		);
 		assert_eq!(
-			PricesModule::get_relative_price(JUSD, USDJ),
+			SetheumPrices::get_relative_price(JUSD, USDJ),
 			Some(Price::saturating_from_rational(1, 1)) // 1USDJ = 1USDJ, right shift the decimal point (10-10) places
 		);
-		assert_eq!(PricesModule::get_relative_price(USDJ, DNAR), None);
+		assert_eq!(SetheumPrices::get_relative_price(USDJ, DNAR), None);
 	});
 }
 
@@ -102,12 +106,12 @@ fn get_relative_price_work() {
 fn lock_price_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			PricesModule::get_price(JCHF),
+			SetheumPrices::get_price(JCHF),
 			Some(Price::saturating_from_integer(500000000000000u128))
 		);
 		LockedPrice::<Runtime>::insert(JCHF, Price::saturating_from_integer(80000));
 		assert_eq!(
-			PricesModule::get_price(JCHF),
+			SetheumPrices::get_price(JCHF),
 			Some(Price::saturating_from_integer(800000000000000u128))
 		);
 	});
@@ -117,12 +121,14 @@ fn lock_price_work() {
 fn lock_price_call_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_noop!(PricesModule::lock_price(Origin::signed(5), JCHF), BadOrigin,);
-		assert_ok!(PricesModule::lock_price(Origin::signed(1), JCHF));
-
-		System::assert_last_event(Event::prices(crate::Event::LockPrice(JCHF, Price::saturating_from_integer(50000))));
+		assert_noop!(SetheumPrices::lock_price(Origin::signed(5), JCHF), BadOrigin,);
+		assert_ok!(SetheumPrices::lock_price(Origin::signed(1), JCHF));
+		System::assert_last_event(Event::prices(crate::Event::LockPrice(
+			JCHF,
+			Price::saturating_from_integer(50000)
+		)));
 		assert_eq!(
-			PricesModule::locked_price(JCHF),
+			SetheumPrices::locked_price(JCHF),
 			Some(Price::saturating_from_integer(50000))
 		);
 	});
@@ -133,11 +139,9 @@ fn unlock_price_call_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		LockedPrice::<Runtime>::insert(JCHF, Price::saturating_from_integer(80000));
-		assert_noop!(PricesModule::unlock_price(Origin::signed(5), JCHF), BadOrigin,);
-		assert_ok!(PricesModule::unlock_price(Origin::signed(1), JCHF));
-
+		assert_noop!(SetheumPrices::unlock_price(Origin::signed(5), JCHF), BadOrigin,);
+		assert_ok!(SetheumPrices::unlock_price(Origin::signed(1), JCHF));
 		System::assert_last_event(Event::prices(crate::Event::UnlockPrice(JCHF)));
-
-		assert_eq!(PricesModule::locked_price(JCHF), None);
+		assert_eq!(SetheumPrices::locked_price(JCHF), None);
 	});
 }

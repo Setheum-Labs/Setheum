@@ -20,8 +20,10 @@
 //!
 //! ## Overview
 //!
-//! The data from Oracle cannot be used in business, prices module will do some
-//! process and feed prices for setheum. Process include:
+//! The data from Oracle cannot be used in production, prices module will 
+//! do some process and feed prices for setheum, this includes constructing 
+//! the Setter (SETT) currency basket price. 
+//! Process include:
 //!   - specify a fixed price for stable currency
 //!   - feed price in USD or related price bewteen two currencies
 //!   - lock/unlock the price data get from oracle
@@ -32,13 +34,16 @@
 use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
-use primitives::{currency::Amount, Balance, CurrencyId, GetDecimals};
+use primitives::{
+	currency::{Amount, DexShare},
+	Balance, CurrencyId, GetDecimals
+};
 use sp_runtime::{
 	traits::{CheckedDiv, CheckedMul},
 	FixedPointNumber,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{DexManager, ExchangeRateProvider, Price, PriceProvider};
+use support::{CurrencyIdMapping, DexManager, ExchangeRateProvider, Price, PriceProvider};
 
 mod mock;
 mod tests;
@@ -127,6 +132,9 @@ pub mod module {
 
 		/// Currency provide the total insurance of LPToken.
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
+
+		/// Mapping between CurrencyId and ERC20 address so user can use Erc20.
+		type CurrencyIdMapping: CurrencyIdMapping;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -355,9 +363,15 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			// if is Setter (SETT) basket currency, return fixed price
 			Some(Self::get_setter_fixed_price())
 		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
-			let token_0 = CurrencyId::Token(symbol_0);
-			let token_1 = CurrencyId::Token(symbol_1);
-			let (pool_0, _) = T::Dex::get_liquidity_pool(token_0, token_1);
+			let token_0 = match symbol_0 {
+				DexShare::Token(token) => CurrencyId::Token(token),
+				DexShare::Erc20(address) => CurrencyId::Erc20(address),
+			};
+			let token_1 = match symbol_1 {
+				DexShare::Token(token) => CurrencyId::Token(token),
+				DexShare::Erc20(address) => CurrencyId::Erc20(address),
+			};
+			let (pool_0, _) = T::DEX::get_liquidity_pool(token_0, token_1);
 			let total_shares = T::Currency::total_issuance(currency_id);
 
 			return {
@@ -376,7 +390,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(currency_id).or_else(|| T::Source::get(&currency_id))
 		};
-		let maybe_adjustment_multiplier = 10u128.checked_pow(currency_id.decimals());
+		let maybe_adjustment_multiplier = 10u128.checked_pow(T::CurrencyIdMapping::decimals(currency_id)?.into());
 
 		if let (Some(feed_price), Some(adjustment_multiplier)) = (maybe_feed_price, maybe_adjustment_multiplier) {
 			Price::checked_from_rational(feed_price.into_inner(), adjustment_multiplier)
