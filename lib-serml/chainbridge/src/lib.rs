@@ -103,10 +103,10 @@ pub mod module {
 			);
 
 			let check_match = if Self::is_origin_chain_resource(resource_id) {
-				!matches!(currency_id, CurrencyId::ChainSafe(_))
+				!matches!(currency_id, CurrencyId::ChainBridge(_))
 			} else {
 				match currency_id {
-					CurrencyId::ChainSafe(r_id) => r_id == resource_id,
+					CurrencyId::ChainBridge(r_id) => r_id == resource_id,
 					_ => false,
 				}
 			};

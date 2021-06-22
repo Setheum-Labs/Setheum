@@ -94,7 +94,7 @@ parameter_types! {
 	pub DNARResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"DNAR");
 	pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 	pub WETHResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(0, b"weth");
-	pub WETH: CurrencyId = CurrencyId::ChainSafe(WETHResourceId::get());
+	pub WETH: CurrencyId = CurrencyId::ChainBridge(WETHResourceId::get());
 }
 
 impl chainbridge::Config for Runtime {

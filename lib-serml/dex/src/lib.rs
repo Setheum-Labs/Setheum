@@ -905,6 +905,7 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
+	// TODO: Set Custom Governed FlexibleTradingFees for each path
 	fn get_target_amounts(
 		path: &[CurrencyId],
 		supply_amount: Balance,

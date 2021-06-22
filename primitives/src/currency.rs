@@ -349,7 +349,7 @@ pub enum CurrencyId {
 	Token(TokenSymbol),
 	DexShare(DexShare, DexShare),
 	Erc20(EvmAddress),
-	ChainSafe(chainbridge::ResourceId),
+	ChainBridge(chainbridge::ResourceId),
 }
 
 impl CurrencyId {
@@ -433,7 +433,7 @@ impl TryFrom<CurrencyId> for EvmAddress {
 				Ok(prefix | EvmAddress::from_low_u64_be(u64::from(symbol_0) << 32 | u64::from(symbol_1)))
 			}
 			CurrencyId::Erc20(address) => Ok(address),
-			CurrencyId::ChainSafe(_) => Err(()),
+			CurrencyId::ChainBridge(_) => Err(()),
 		}
 	}
 }
