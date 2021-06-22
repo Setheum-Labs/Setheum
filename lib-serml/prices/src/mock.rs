@@ -58,7 +58,6 @@ pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
 pub const HKDJ: CurrencyId = CurrencyId::Token(TokenSymbol::HKDJ);
 pub const HUFJ: CurrencyId = CurrencyId::Token(TokenSymbol::HUFJ);
 pub const IDRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IDRJ);
-pub const IRRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IRRJ);
 pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
 pub const KESJ: CurrencyId = CurrencyId::Token(TokenSymbol::KESJ);
 pub const KRWJ: CurrencyId = CurrencyId::Token(TokenSymbol::KRWJ);
@@ -107,7 +106,6 @@ pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
 pub const HKD: CurrencyId = CurrencyId::Token(TokenSymbol::HKD);
 pub const HUF: CurrencyId = CurrencyId::Token(TokenSymbol::HUF);
 pub const IDR: CurrencyId = CurrencyId::Token(TokenSymbol::IDR);
-pub const IRR: CurrencyId = CurrencyId::Token(TokenSymbol::IRR);
 pub const JPY: CurrencyId = CurrencyId::Token(TokenSymbol::JPY);
 pub const KES: CurrencyId = CurrencyId::Token(TokenSymbol::KES);
 pub const KRW: CurrencyId = CurrencyId::Token(TokenSymbol::KRW);
@@ -287,7 +285,6 @@ parameter_type_with_key! {
 			&HKDJ => &HKD,
 			&HUFJ => &HUF,
 			&IDRJ => &IDR,
-			&IRRJ => &IRR,
 			&JPYJ => &JPY,
 			&KESJ => &KES,
 			&KRWJ => &KRW,
@@ -365,7 +362,6 @@ parameter_types! {
 		HKDJ,
 		HUFJ,
 		IDRJ,
-		IRRJ,
 		JPYJ,
  		KESJ,
  		KRWJ,
@@ -408,7 +404,6 @@ parameter_types! {
 		HKD,
 		HUF,
 		IDR,
-		IRR,
 		JPY,
  		KES,
  		KRW,

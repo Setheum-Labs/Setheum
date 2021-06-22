@@ -58,7 +58,6 @@ pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
 pub const HKDJ: CurrencyId = CurrencyId::Token(TokenSymbol::HKDJ);
 pub const HUFJ: CurrencyId = CurrencyId::Token(TokenSymbol::HUFJ);
 pub const IDRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IDRJ);
-pub const IRRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IRRJ);
 pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
 pub const KESJ: CurrencyId = CurrencyId::Token(TokenSymbol::KESJ);
 pub const KRWJ: CurrencyId = CurrencyId::Token(TokenSymbol::KRWJ);
@@ -257,7 +256,6 @@ parameter_types! {
 		HKDJ,
 		HUFJ,
 		IDRJ,
-		IRRJ,
 		JPYJ,
  		KESJ,
  		KRWJ,
@@ -353,7 +351,6 @@ parameter_types! {
 		HKDJ,
 		HUFJ,
 		IDRJ,
-		IRRJ,
 		JPYJ,
  		KESJ,
  		KRWJ,
