@@ -66,7 +66,7 @@ impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardManager<A
 	}
 }
 
-pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
+pub trait SetheumDEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_swap_target_amount(
@@ -98,7 +98,7 @@ pub trait SetheumDexManager<AccountId, CurrencyId, Balance> {
 	) -> sp_std::result::Result<Balance, DispatchError>;
 }
 
-impl<AccountId, CurrencyId, Balance> SetheumDexManager<AccountId, CurrencyId, Balance> for ()
+impl<AccountId, CurrencyId, Balance> SetheumDEXManager<AccountId, CurrencyId, Balance> for ()
 where
 	Balance: Default,
 {
@@ -262,12 +262,12 @@ pub trait ExchangeRateProvider {
 	fn get_exchange_rate() -> ExchangeRate;
 }
 
-pub trait DexIncentives<AccountId, CurrencyId, Balance> {
+pub trait DEXIncentives<AccountId, CurrencyId, Balance> {
 	fn do_deposit_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 	fn do_withdraw_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance> DexIncentives<AccountId, CurrencyId, Balance> for () {
+impl<AccountId, CurrencyId, Balance> DEXIncentives<AccountId, CurrencyId, Balance> for () {
 	fn do_deposit_dex_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
 		Ok(())
 	}

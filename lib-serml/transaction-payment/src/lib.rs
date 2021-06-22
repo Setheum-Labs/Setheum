@@ -48,7 +48,7 @@ use sp_runtime::{
 	FixedPointNumber, FixedPointOperand, FixedU128, Perquintill,
 };
 use sp_std::{prelude::*, vec};
-use support::{DexManager, Ratio, TransactionPayment};
+use support::{DEXManager, Ratio, TransactionPayment};
 
 mod mock;
 mod tests;
@@ -252,7 +252,7 @@ pub mod module {
 		type FeeMultiplierUpdate: MultiplierUpdate;
 
 		/// Dex to exchange currencies.
-		type Dex = DexManager<Self::AccountId, CurrencyId, Balance>;
+		type Dex = DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// The max slippage allowed when swap fee with Dex
 		#[pallet::constant]

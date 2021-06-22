@@ -35,7 +35,7 @@ fn get_auction_time_to_close_work() {
 #[test]
 fn setter_auction_methods() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
+		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 10, 100));
 		let setter_auction_with_positive_target = SerpAuctionManagerModule::setter_auctions(0).unwrap();
 		assert_eq!(setter_auction_with_positive_target.always_forward(), false);
 		assert_eq!(setter_auction_with_positive_target.in_reverse_stage(99), false);
@@ -47,7 +47,7 @@ fn setter_auction_methods() {
 		assert_eq!(setter_auction_with_positive_target.reserve_amount(80, 100), 10);
 		assert_eq!(setter_auction_with_positive_target.reserve_amount(100, 200), 5);
 
-		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 0));
+		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 10, 0));
 		let setter_auction_with_zero_target = SerpAuctionManagerModule::setter_auctions(1).unwrap();
 		assert_eq!(setter_auction_with_zero_target.always_forward(), true);
 		assert_eq!(setter_auction_with_zero_target.in_reverse_stage(0), false);
@@ -75,20 +75,20 @@ fn new_setter_auction_work() {
 		System::set_block_number(1);
 		let ref_count_0 = System::consumers(&ALICE);
 		assert_noop!(
-			SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 0, 100),
+			SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 0, 100),
 			Error::<Runtime>::InvalidAmount,
 		);
 
-		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
-		System::assert_last_event(Event::serp_auction(crate::Event::NewSetterAuction(0, BTC, 10, 100)));
+		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 10, 100));
+		System::assert_last_event(Event::serp_auction(crate::Event::NewSetterAuction(0, CHFJ, 10, 100)));
 
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 10);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 10);
 		assert_eq!(SerpAuctionManagerModule::total_target_in_auction(), 100);
 		assert_eq!(AuctionModule::auctions_index(), 1);
 		assert_eq!(System::consumers(&ALICE), ref_count_0 + 1);
 
 		assert_noop!(
-			SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, Balance::max_value(), Balance::max_value()),
+			SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, Balance::max_value(), Balance::max_value()),
 			Error::<Runtime>::InvalidAmount,
 		);
 	});
@@ -280,7 +280,7 @@ fn serplus_auction_bid_handler_work() {
 #[test]
 fn bid_when_soft_cap_for_setter_auction_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 10, 100));
+		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 10, 100));
 		assert_eq!(
 			SerpAuctionManagerModule::on_new_bid(1, 0, (BOB, 100), None).auction_end_change,
 			Change::NewValue(Some(101))
@@ -338,21 +338,21 @@ fn bid_when_soft_cap_for_serplus_auction_work() {
 fn setter_auction_end_handler_without_bid() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
-		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 100, 200));
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
+		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, CHFJ, 100));
+		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 100, 200));
+		assert_eq!(SerpTreasuryModule::total_reserve(CHFJ), 100);
 		assert_eq!(SerpAuctionManagerModule::total_target_in_auction(), 200);
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 100);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 100);
 		let alice_ref_count_0 = System::consumers(&ALICE);
 
 		assert_eq!(SerpAuctionManagerModule::setter_auctions(0).is_some(), true);
 		SerpAuctionManagerModule::on_auction_ended(0, None);
 		System::assert_last_event(Event::serp_auction(crate::Event::CancelAuction(0)));
 
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(CHFJ), 100);
 		assert_eq!(SerpAuctionManagerModule::setter_auctions(0), None);
 		assert_eq!(SerpAuctionManagerModule::total_target_in_auction(), 0);
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 0);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 0);
 		let alice_ref_count_1 = System::consumers(&ALICE);
 		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
 	});
@@ -362,16 +362,16 @@ fn setter_auction_end_handler_without_bid() {
 fn setter_auction_end_handler_in_reverse_stage() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
-		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 100, 200));
+		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, CHFJ, 100));
+		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 100, 200));
 		assert_eq!(
 			SerpAuctionManagerModule::setter_auction_bid_handler(2, 0, (BOB, 400), None).is_ok(),
 			true
 		);
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 50);
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 50);
-		assert_eq!(Tokens::free_balance(BTC, &ALICE), 1050);
-		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
+		assert_eq!(SerpTreasuryModule::total_reserve(CHFJ), 50);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 50);
+		assert_eq!(Tokens::free_balance(CHFJ, &ALICE), 1050);
+		assert_eq!(Tokens::free_balance(CHFJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 800);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 200);
 
@@ -380,13 +380,13 @@ fn setter_auction_end_handler_in_reverse_stage() {
 
 		assert_eq!(SerpAuctionManagerModule::setter_auctions(0).is_some(), true);
 		SerpAuctionManagerModule::on_auction_ended(0, Some((BOB, 400)));
-		System::assert_last_event(Event::serp_auction(crate::Event::SetterAuctionDealt(0, BTC, 50, BOB, 200)));
+		System::assert_last_event(Event::serp_auction(crate::Event::SetterAuctionDealt(0, CHFJ, 50, BOB, 200)));
 
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(CHFJ), 0);
 		assert_eq!(SerpAuctionManagerModule::setter_auctions(0), None);
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 0);
-		assert_eq!(Tokens::free_balance(BTC, &ALICE), 1050);
-		assert_eq!(Tokens::free_balance(BTC, &BOB), 1050);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 0);
+		assert_eq!(Tokens::free_balance(CHFJ, &ALICE), 1050);
+		assert_eq!(Tokens::free_balance(CHFJ, &BOB), 1050);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 800);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 200);
 
@@ -401,16 +401,16 @@ fn setter_auction_end_handler_in_reverse_stage() {
 fn setter_auction_end_handler_by_dealing_which_target_not_zero() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
-		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 100, 200));
+		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, CHFJ, 100));
+		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 100, 200));
 		assert_eq!(
 			SerpAuctionManagerModule::setter_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),
 			true
 		);
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(CHFJ), 100);
 		assert_eq!(SerpAuctionManagerModule::total_target_in_auction(), 200);
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 100);
-		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 100);
+		assert_eq!(Tokens::free_balance(CHFJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 900);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 100);
 
@@ -419,14 +419,14 @@ fn setter_auction_end_handler_by_dealing_which_target_not_zero() {
 
 		assert_eq!(SerpAuctionManagerModule::setter_auctions(0).is_some(), true);
 		SerpAuctionManagerModule::on_auction_ended(0, Some((BOB, 100)));
-		System::assert_last_event(Event::serp_auction(crate::Event::SetterAuctionDealt(0, BTC, 100, BOB, 100)));
+		System::assert_last_event(Event::serp_auction(crate::Event::SetterAuctionDealt(0, CHFJ, 100, BOB, 100)));
 
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(CHFJ), 0);
 		assert_eq!(SerpAuctionManagerModule::setter_auctions(0), None);
 		assert_eq!(SerpAuctionManagerModule::total_target_in_auction(), 0);
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 0);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 0);
 		assert_eq!(SerpAuctionManagerModule::total_target_in_auction(), 0);
-		assert_eq!(Tokens::free_balance(BTC, &BOB), 1100);
+		assert_eq!(Tokens::free_balance(CHFJ, &BOB), 1100);
 
 		let alice_ref_count_1 = System::consumers(&ALICE);
 		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
@@ -439,26 +439,26 @@ fn setter_auction_end_handler_by_dealing_which_target_not_zero() {
 fn setter_auction_end_handler_by_dex_which_target_not_zero() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, BTC, 100));
-		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, BTC, 100, 200));
+		assert_ok!(SerpTreasuryModule::deposit_reserve(&CAROL, CHFJ, 100));
+		assert_ok!(SerpAuctionManagerModule::new_setter_auction(&ALICE, CHFJ, 100, 200));
 		assert_eq!(
 			SerpAuctionManagerModule::setter_auction_bid_handler(1, 0, (BOB, 20), None).is_ok(),
 			true
 		);
 		assert_ok!(DexModule::add_liquidity(
 			Origin::signed(CAROL),
-			BTC,
+			CHFJ,
 			USDJ,
 			100,
 			1000,
 			false
 		));
-		assert_eq!(DexModule::get_swap_target_amount(&[BTC, USDJ], 100, None).unwrap(), 500);
+		assert_eq!(DexModule::get_swap_target_amount(&[CHFJ, USDJ], 100, None).unwrap(), 500);
 
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 100);
+		assert_eq!(SerpTreasuryModule::total_reserve(CHFJ), 100);
 		assert_eq!(SerpAuctionManagerModule::total_target_in_auction(), 200);
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 100);
-		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 100);
+		assert_eq!(Tokens::free_balance(CHFJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 980);
 		assert_eq!(Tokens::free_balance(USDJ, &ALICE), 1000);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 20);
@@ -469,16 +469,16 @@ fn setter_auction_end_handler_by_dex_which_target_not_zero() {
 		assert_eq!(SerpAuctionManagerModule::setter_auctions(0).is_some(), true);
 		SerpAuctionManagerModule::on_auction_ended(0, Some((BOB, 20)));
 		let dex_take_setter_auction =
-			Event::serp_auction(crate::Event::DEXTakeSetterAuction(0, BTC, 100, 500));
+			Event::serp_auction(crate::Event::DEXTakeSetterAuction(0, CHFJ, 100, 500));
 		assert!(System::events()
 			.iter()
 			.any(|record| record.event == dex_take_setter_auction));
 
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
+		assert_eq!(SerpTreasuryModule::total_reserve(CHFJ), 0);
 		assert_eq!(SerpAuctionManagerModule::setter_auctions(0), None);
 		assert_eq!(SerpAuctionManagerModule::total_target_in_auction(), 0);
-		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(BTC), 0);
-		assert_eq!(Tokens::free_balance(BTC, &BOB), 1000);
+		assert_eq!(SerpAuctionManagerModule::total_reserve_in_auction(CHFJ), 0);
+		assert_eq!(Tokens::free_balance(CHFJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &BOB), 1000);
 		assert_eq!(Tokens::free_balance(USDJ, &ALICE), 1300);
 		assert_eq!(SerpTreasuryModule::serplus_pool(), 520);

@@ -36,7 +36,7 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber,
 };
-use support::{SerpTreasury, DexManager, Ratio};
+use support::{SerpTreasury, DEXManager, Ratio};
 mod mock;
 mod tests;
 pub mod weights;
@@ -105,7 +105,7 @@ pub mod module {
 		type SerpAuctionManagerHandler: SerpAuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
-		type Dex: DexManager<Self::AccountId, CurrencyId, Balance>;
+		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		#[pallet::constant]
 		/// The cap of lots when an auction is created

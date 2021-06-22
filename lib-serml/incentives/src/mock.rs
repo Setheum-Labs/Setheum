@@ -32,7 +32,7 @@ use primitives::TokenSymbol;
 use sp_core::{H160, H256};
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 use sp_std::cell::RefCell;
-pub use support::{SerpTreasury, DexManager, Price, Ratio};
+pub use support::{SerpTreasury, DEXManager, Price, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -212,7 +212,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 }
 
 pub struct MockDex;
-impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
+impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(SETT, CHFJ) => (500, 100),

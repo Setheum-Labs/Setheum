@@ -326,7 +326,7 @@ impl dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
-	type DexIncentives = ();
+	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }

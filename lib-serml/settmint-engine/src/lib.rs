@@ -51,7 +51,7 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DexManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
+	DEXManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
 };
 
 mod mock;

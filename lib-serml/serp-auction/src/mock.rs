@@ -45,7 +45,7 @@ pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::XBTC);
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
 
 mod serp_auction {
 	pub use super::super::*;
@@ -156,7 +156,7 @@ parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, BTC)];
+	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, CHFJ)];
 }
 
 impl dex::Config for Runtime {
@@ -165,7 +165,7 @@ impl dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
-	type DexIncentives = ();
+	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
@@ -238,9 +238,9 @@ impl Default for ExtBuilder {
 				(ALICE, USDJ, 1000),
 				(BOB, USDJ, 1000),
 				(CAROL, USDJ, 1000),
-				(ALICE, BTC, 1000),
-				(BOB, BTC, 1000),
-				(CAROL, BTC, 1000),
+				(ALICE, CHFJ, 1000),
+				(BOB, CHFJ, 1000),
+				(CAROL, CHFJ, 1000),
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
 				(CAROL, DNAR, 1000),

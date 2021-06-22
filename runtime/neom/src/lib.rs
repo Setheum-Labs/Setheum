@@ -923,7 +923,7 @@ impl dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
-	type DexIncentives = Incentives;
+	type DEXIncentives = Incentives;
 	type WeightInfo = weights::dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
 }

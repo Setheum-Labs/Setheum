@@ -52,7 +52,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedPointNumber, RandomNumberGenerator, RuntimeDebug,
 };
 use sp_std::prelude::*;
-use support::{SerpTreasury, DexManager, PriceProvider, Rate};
+use support::{SerpTreasury, DEXManager, PriceProvider, Rate};
 
 mod mock;
 mod tests;
@@ -192,7 +192,7 @@ pub mod module {
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// Dex to get exchange info
-		type Dex: DexManager<Self::AccountId, CurrencyId, Balance>;
+		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// The price source of currencies
 		type PriceSource: PriceProvider<CurrencyId>;

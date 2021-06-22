@@ -34,13 +34,13 @@ use frame_support::{log, pallet_prelude::*, traits::MaxEncodedLen, transactional
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
-use sp_core::U256;
+use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, UniqueSaturatedInto, Zero},
 	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{DexIncentives, DexManager, Price, Ratio};
+use support::{CurrencyIdMapping, DEXIncentives, DEXManager, Price, Ratio};
 
 mod mock;
 mod tests;
@@ -105,15 +105,19 @@ pub mod module {
 		#[pallet::constant]
 		type TradingPathLimit: Get<u32>;
 
-		/// The Dex's module id, keep all assets in Dex.
+		/// The DEX's module id, keep all assets in DEX.
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
+
+		/// Mapping between CurrencyId and ERC20 address so user can use Erc20
+		/// address as LP token.
+		type CurrencyIdMapping: CurrencyIdMapping;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
 		/// Dex incentives
-		type DexIncentives: DexIncentives<Self::AccountId, CurrencyId, Balance>;
+		type DEXIncentives: DEXIncentives<Self::AccountId, CurrencyId, Balance>;
 
 		/// The origin which may list, enable or disable trading pairs.
 		type ListingOrigin: EnsureOrigin<Self::Origin>;
@@ -185,17 +189,24 @@ pub mod module {
 	}
 
 	/// Liquidity pool for TradingPair.
+	///
+	/// LiquidityPool: map TradingPair => (Balance, Balance)
 	#[pallet::storage]
 	#[pallet::getter(fn liquidity_pool)]
 	pub type LiquidityPool<T: Config> = StorageMap<_, Twox64Concat, TradingPair, (Balance, Balance), ValueQuery>;
 
 	/// Status for TradingPair.
+	///
+	/// TradingPairStatuses: map TradingPair => TradingPairStatus
 	#[pallet::storage]
 	#[pallet::getter(fn trading_pair_statuses)]
 	pub type TradingPairStatuses<T: Config> =
 		StorageMap<_, Twox64Concat, TradingPair, TradingPairStatus<Balance, T::BlockNumber>, ValueQuery>;
 
 	/// Provision of TradingPair by AccountId.
+	///
+	/// ProvisioningPool: double_map TradingPair, AccountId => (Balance,
+	/// Balance)
 	#[pallet::storage]
 	#[pallet::getter(fn provisioning_pool)]
 	pub type ProvisioningPool<T: Config> =
@@ -286,7 +297,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Trading with Dex, swap with exact supply amount
+		/// Trading with DEX, swap with exact supply amount
 		///
 		/// - `path`: trading path.
 		/// - `supply_amount`: exact supply amount.
@@ -304,7 +315,7 @@ pub mod module {
 			Ok(().into())
 		}
 
-		/// Trading with Dex, swap with exact target amount
+		/// Trading with DEX, swap with exact target amount
 		///
 		/// - `path`: trading path.
 		/// - `target_amount`: exact target amount.
@@ -445,6 +456,13 @@ pub mod module {
 				T::Currency::total_issuance(dex_share_currency_id).is_zero(),
 				Error::<T>::NotAllowedList
 			);
+
+			if let CurrencyId::Erc20(address) = currency_id_a {
+				T::CurrencyIdMapping::set_erc20_mapping(address)?;
+			}
+			if let CurrencyId::Erc20(address) = currency_id_b {
+				T::CurrencyIdMapping::set_erc20_mapping(address)?;
+			}
 
 			let (min_contribution, target_provision) = if currency_id_a == trading_pair.0 {
 				(
@@ -780,7 +798,7 @@ impl<T: Config> Pallet<T> {
 			*pool_1 = pool_1.saturating_add(pool_1_increment);
 
 			if deposit_increment_share {
-				T::DexIncentives::do_deposit_dex_share(who, lp_share_currency_id, share_increment)?;
+				T::DEXIncentives::do_deposit_dex_share(who, lp_share_currency_id, share_increment)?;
 			}
 
 			Self::deposit_event(Event::AddLiquidity(
@@ -832,7 +850,7 @@ impl<T: Config> Pallet<T> {
 			);
 
 			if by_withdraw {
-				T::DexIncentives::do_withdraw_dex_share(who, lp_share_currency_id, remove_share)?;
+				T::DEXIncentives::do_withdraw_dex_share(who, lp_share_currency_id, remove_share)?;
 			}
 			T::Currency::withdraw(lp_share_currency_id, &who, remove_share)?;
 			T::Currency::transfer(trading_pair.0, &module_account_id, &who, pool_0_decrement)?;
@@ -1085,9 +1103,15 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> DexManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
+impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		Self::get_liquidity(currency_id_a, currency_id_b)
+	}
+
+	fn get_liquidity_token_address(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<H160> {
+		let trading_pair = TradingPair::from_token_currency_ids(currency_id_a, currency_id_b)?;
+		let dex_share_currency_id = trading_pair.get_dex_share_currency_id()?;
+		T::CurrencyIdMapping::encode_evm_address(dex_share_currency_id)
 	}
 
 	fn get_swap_target_amount(

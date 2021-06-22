@@ -44,7 +44,7 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for setheum-dex.
+/// Weight functions needed for setheum_dex.
 pub trait WeightInfo {
 	fn enable_trading_pair() -> Weight;
 	fn disable_trading_pair() -> Weight;
@@ -57,7 +57,7 @@ pub trait WeightInfo {
 	fn swap_with_exact_target(u: u32, ) -> Weight;
 }
 
-/// Weights for setheum-dex using the Setheum node and recommended hardware.
+/// Weights for setheum_dex using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn enable_trading_pair() -> Weight {
