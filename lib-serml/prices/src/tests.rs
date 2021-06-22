@@ -54,6 +54,16 @@ fn get_price_of_stable_currency_id() {
 }
 
 #[test]
+fn get_price_of_setter_basket_currency_id() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(
+			SetheumPrices::get_price(SETT),
+			Some(Price::saturating_from_integer(1606750))
+		); // 1.60675 USD, right shift the decimal point (18-12) places
+	});
+}
+
+#[test]
 fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(MockDex::get_liquidity_pool(USDJ, DNAR), (10000, 200));
@@ -78,7 +88,7 @@ fn get_price_of_lp_token_currency_id() {
 }
 
 #[test]
-fn get_relative_price_work() {
+fn get_relative_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			SetheumPrices::get_relative_price(DNAR, USDJ),
@@ -91,14 +101,46 @@ fn get_relative_price_work() {
 			                                                     * (12-8) places */
 		);
 		assert_eq!(
-			SetheumPrices::get_relative_price(JUSD, DNAR),
-			Some(Price::saturating_from_rational(1, 2)) // 1JUSD = 1/2DNAR, right shift the decimal point (10-10) places
-		);
-		assert_eq!(
-			SetheumPrices::get_relative_price(JUSD, USDJ),
+			SetheumPrices::get_relative_price(USDJ, USDJ),
 			Some(Price::saturating_from_rational(1, 1)) // 1USDJ = 1USDJ, right shift the decimal point (10-10) places
 		);
 		assert_eq!(SetheumPrices::get_relative_price(USDJ, DNAR), None);
+	});
+}
+
+#[test]
+fn get_coin_to_peg_relative_price_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(
+			PricesModule::get_coin_to_peg_relative_price(USDJ),
+			Some(Price::saturating_from_rational(1100000, 1))
+			// 1.1 USD, right shift the decimal point (18-12) places
+			// This means that the stablecoin's price is 10% above the peg,
+			// meaning demand is 10% higher than supply, thus needs 10% serping.
+		);
+		assert_eq!(
+			PricesModule::get_coin_to_peg_relative_price(EURJ),
+			Some(Price::saturating_from_rational(990000, 1))
+			// 0.99 EUR, right shift the decimal point (18-12) places
+			// This means that the stablecoin's price is 1% below the peg,
+			// meaning demand is 1% lower than supply, thus needs 1% serping.
+		);
+		assert_eq!(
+			PricesModule::get_coin_to_peg_relative_price(CHFJ),
+			Some(Price::saturating_from_rational(1000000, 1))
+			// 1 CHF, right shift the decimal point (18-12) places
+			// This means that the stablecoin's price is stable to the peg,
+			// meaning supply meets demand, thus doesn't need serping.
+		);
+		assert_eq!(
+			PricesModule::get_coin_to_peg_relative_price(SETT),
+			Some(Price::saturating_from_rational(1200000, 1))
+			// 1.2 SETT-Basket, right shift the decimal point (18-12) places
+			// This means that the stablecoin's price is 20% above the peg,
+			// meaning demand is 20% higher than supply, thus needs 20% serping.
+		);
+		assert_eq!(PricesModule::get_coin_to_peg_relative_price(DNAR), None);
+			// DNAR is not a stablecoin, so get_coin_to_peg_relative_price returns None
 	});
 }
 

@@ -128,8 +128,8 @@ pub mod module {
 		/// The origin which may lock and unlock prices feed to system.
 		type LockOrigin: EnsureOrigin<Self::Origin>;
 
-		/// Dex provide liquidity info.
-		type Dex = DEXManager<Self::AccountId, CurrencyId, Balance>;
+		/// DEX to provide liquidity info.
+		type DEX = DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// Currency provide the total insurance of LPToken.
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -257,8 +257,8 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		if currency_id == T::SetterCurrencyId::get() {
-			T::Prices::get_setter_fixed_price()
+		if currency_id == T::GetSetterCurrencyId::get() {
+			Self::get_setter_fixed_price()
 		} else {
 		Self::get_peg_price(&currency_id)
 		}
@@ -291,12 +291,20 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
-		ensure!(
-			T::FiatCurrencyIds::get().contains(&fiat_currency_id),
-			Error::<T>::InvalidFiatCurrencyType,
-		);
-		Self::get_relative_price(&currency_id, &fiat_currency_id)
+		if currency_id == T::GetSetterCurrencyId::get() {
+			let basket_price = Self::get_setter_fixed_price();
+			let coin_price = Self::get_price(currency_id);
+			coin_price.checked_div(&basket_price)
+		} else if !currency_id == T::GetSetterCurrencyId::get() {
+			let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
+			ensure!(
+				T::FiatCurrencyIds::get().contains(&fiat_currency_id),
+				Error::<T>::InvalidFiatCurrencyType,
+			);
+			Self::get_relative_price(&currency_id, &fiat_currency_id)
+		} else {
+			None
+		}
 	}
 
 	/// Get the price of a Setter (SETT basket coin - basket of currencies) -
