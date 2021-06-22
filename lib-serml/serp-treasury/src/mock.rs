@@ -201,16 +201,24 @@ impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
 		Ok(())
 	}
 
-	fn new_serplus_auction(_amount: Self::Balance) -> DispatchResult {
+	fn new_serplus_auction(_amount: Self::Balance, _currency: Self::CurrencyId) -> DispatchResult {
 		TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut() += 1);
 		Ok(())
 	}
 
-	fn get_total_setter_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
+		Ok(())
+	}
+
+	fn get_total_serplus_in_auction(_currency: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 
-	fn get_total_diamond_in_auction() -> Self::Balance {
+	fn get_total_settcurrency_in_auction(_currency: Self::CurrencyId) -> Self::Balance {
+		Default::default()
+	}
+
+	fn get_total_setter_in_auction(_currency: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 }
@@ -273,8 +281,7 @@ parameter_types! {
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
 	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
-	pub SIFSerpupRatio: Rate = Permill = Permill::from_percent(10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
+	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
 impl Config for Runtime {
@@ -288,7 +295,6 @@ impl Config for Runtime {
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
-	type SIFSerpupRatio = SIFSerpupRatio;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = DexModule;

@@ -133,8 +133,6 @@ parameter_types! {
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/stwy");
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
-	// Decentralized Sovereign Wealth Fund
-	pub const SIFPalletId: PalletId = PalletId(*b"set/dsif");
 	pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
 }
 
@@ -146,7 +144,6 @@ pub fn get_all_setheum_accounts() -> Vec<AccountId> {
 		SerpTreasuryPalletId::get().into_account(),
 		SettwayTreasuryPalletId::get().into_account(),
 		IncentivesPalletId::get().into_account(),
-		SIFPalletId::get().into_account(),
 		ZeroAccountId::get(),
 	]
 }
@@ -933,29 +930,28 @@ impl dex::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MaxAuctionsCount: u32 = 100;
+	pub const MaxAuctionsCount: u32 = 258;
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
-	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
-	pub SIFSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
-
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
-	type SIFSerpupRatio = SIFSerpupRatio;
-	type SerpAuctionManagerHandler = SerpAuctionManager;
-	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
-	type Dex = Dex;
+	type SerpAuctionManagerHandler = MockSerpAuctionManager;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type Dex = DexModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;

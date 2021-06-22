@@ -87,9 +87,6 @@ pub mod module {
 		/// SerpUp ratio for Setheum Foundation's Charity Fund
 		type CharityFundSerpupRatio: Get<Rate>;
 
-		/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-		type SIFSerpupRatio: Get<Rate>;
-
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds SettPay Cashdrops
 		/// SettPayTreasury account.
@@ -99,11 +96,6 @@ pub mod module {
 		/// SerpUp pool/account for receiving funds Setheum Treasury
 		/// SetheumTreasury account.
 		type SetheumTreasuryAcc: Get<PalletId>;
-
-		#[pallet::constant]
-		/// SerpUp pool/account for receiving funds Setheum Investment Fund (SIF) DAO
-		/// SIF account.
-		type SIFAcc: Get<PalletId>;
 
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
@@ -309,20 +301,10 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-	fn get_sif_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		// SIF SerpUp Pool - 10%
-		let sif_account = T::SIFAcc::get();
-		let sif_propper = T::SIFSerpupRatio::get() * amount;
-		Self::issue_propper(currency_id, sif_account, sif_propper);
-
-		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
-		Ok(())
-	}
-
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		// Charity Fund SerpUp Pool - 10%
+		// TODO: update to 20%
+		// Charity Fund SerpUp Pool - 20%
 		let charity_fund_account = T::CharityFundAcc::get();
 		let charity_fund_propper = T::CharityFundSerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, charity_fund_account, charity_fund_propper);
@@ -346,7 +328,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		get_serplus_serpup(amount, currency_id);
 		get_settpay_serpup(amount, currency_id);
 		get_treasury_serpup(amount, currency_id);
-		get_sif_serpup(amount, currency_id);
 		get_charity_fund_serpup(amount, currency_id);
 
 		Self::deposit_event(Event::CurrencySerpedUp(amount, currency_id));

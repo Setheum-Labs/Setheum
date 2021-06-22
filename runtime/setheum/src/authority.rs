@@ -19,7 +19,7 @@
 //! An orml_authority trait implementation.
 
 use crate::{
-	SetheumTreasuryPalletId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, SIFPalletId,
+	SetheumTreasuryPalletId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber,
 	DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, 
 	EnsureRootOrHalfSettwayCouncil, EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
 	EnsureRootOrTwoThirdsTechnicalCommittee, SettwayTreasuryPalletId, OneDay, Origin,
@@ -83,39 +83,32 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 			AuthoritysOriginId::SettwayTreasury => Origin::signed(SettwayTreasuryPalletId::get().into_account())
 				.caller()
 				.clone(),
-			AuthoritysOriginId::SIF => Origin::signed(SIFPalletId::get().into_account()).caller().clone(),
 		}
 	}
 
 	fn check_dispatch_from(&self, origin: Origin) -> DispatchResult {
 		ensure_root(origin.clone()).or_else(|_| {
 			match self {
-			AuthoritysOriginId::Root => <EnsureDelayed<
-				SevenDays,
-				EnsureRootOrThreeFourthsGeneralCouncil,
-				BlockNumber,
-				OriginCaller,
-			> as EnsureOrigin<Origin>>::ensure_origin(origin)
-			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(())),
-			AuthoritysOriginId::SetheumTreasury => {
-				<EnsureDelayed<OneDay, EnsureRootOrHalfGeneralCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
-					Origin,
-				>>::ensure_origin(origin)
-				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
-			}
-			AuthoritysOriginId::SettwayTreasury => {
-				<EnsureDelayed<OneDay, EnsureRootOrHalfSettwayCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
-					Origin,
-				>>::ensure_origin(origin)
-				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
-			}
-			AuthoritysOriginId::SIF => {
-				<EnsureDelayed<ZeroDay, EnsureRoot<AccountId>, BlockNumber, OriginCaller> as EnsureOrigin<
+				AuthoritysOriginId::Root => <EnsureDelayed<
+					SevenDays,
+					EnsureRootOrThreeFourthsGeneralCouncil,
+					BlockNumber,
+					OriginCaller,
+				> as EnsureOrigin<Origin>>::ensure_origin(origin)
+				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(())),
+				AuthoritysOriginId::SetheumTreasury => {
+					<EnsureDelayed<OneDay, EnsureRootOrHalfGeneralCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
 						Origin,
 					>>::ensure_origin(origin)
 					.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
+				}
+				AuthoritysOriginId::SettwayTreasury => {
+					<EnsureDelayed<OneDay, EnsureRootOrHalfSettwayCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
+						Origin,
+					>>::ensure_origin(origin)
+					.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
+				}
 			}
-		}
 		})
 	}
 }

@@ -199,38 +199,58 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
-		USDJ, // Setheum USD (US Dollar stablecoin)
-		GBPJ, // Setheum GBP (Pound Sterling stablecoin)
-		EURJ, // Setheum EUR (Euro stablecoin)
-		KWDJ, // Setheum KWD (Kuwaiti Dinar stablecoin)
-		JODJ, // Setheum JOD (Jordanian Dinar stablecoin)
-		BHDJ, // Setheum BHD (Bahraini Dirham stablecoin)
-		KYDJ, // Setheum KYD (Cayman Islands Dollar stablecoin)
-		OMRJ, // Setheum OMR (Omani Riyal stablecoin)
-		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
-		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
+		SETT,
+		AEDJ,
+		ARSJ,
+ 		AUDJ,
+		BRLJ,
+		CADJ,
+		CHFJ,
+		CLPJ,
+		CNYJ,
+		COPJ,
+		EURJ,
+		GBPJ,
+		HKDJ,
+		HUFJ,
+		IDRJ,
+		IRRJ,
+		JPYJ,
+ 		KESJ,
+ 		KRWJ,
+ 		KZTJ,
+		MXNJ,
+		MYRJ,
+ 		NGNJ,
+		NOKJ,
+		NZDJ,
+		PENJ,
+		PHPJ,
+ 		PKRJ,
+		PLNJ,
+		QARJ,
+		RONJ,
+		RUBJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		THBJ,
+		TRYJ,
+		TWDJ,
+		TZSJ,
+		UAHJ,
+		USDJ,
+		ZARJ,
 	];
 	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
-	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
-	pub const GetSettGBPCurrencyId: CurrencyId = GBPJ; // SettGBP currency ticker is GBPJ
-	pub const GetSettEURCurrencyId: CurrencyId = EURJ; // SettEUR currency ticker is EURJ
-	pub const GetSettKWDCurrencyId: CurrencyId = KWDJ; // SettKWD currency ticker is KWDJ
-	pub const GetSettJODCurrencyId: CurrencyId = JODJ; // SettJOD currency ticker is JODJ
-	pub const GetSettBHDCurrencyId: CurrencyId = BHDJ; // SettBHD currency ticker is BHDJ
-	pub const GetSettKYDCurrencyId: CurrencyId = KYDJ; // SettKYD currency ticker is KYDJ
-	pub const GetSettOMRCurrencyId: CurrencyId = OMRJ; // SettOMR currency ticker is OMRJ
-	pub const GetSettCHFCurrencyId: CurrencyId = CHFJ; // SettCHF currency ticker is CHFJ
-	pub const GetSettGIPCurrencyId: CurrencyId = GIPJ; // SettGIP currency ticker is GIPJ
 	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
-	pub SIFSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
+	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
 impl serp_treasury::Config for Runtime {
@@ -238,26 +258,15 @@ impl serp_treasury::Config for Runtime {
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
-	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
-	type GetSettGBPCurrencyId = GetSettGBPCurrencyId;
-	type GetSettEURCurrencyId = GetSettEURCurrencyId;
-	type GetSettKWDCurrencyId = GetSettKWDCurrencyId;
-	type GetSettJODCurrencyId = GetSettJODCurrencyId;
-	type GetSettBHDCurrencyId = GetSettBHDCurrencyId;
-	type GetSettKYDCurrencyId = GetSettKYDCurrencyId;
-	type GetSettOMRCurrencyId = GetSettOMRCurrencyId;
-	type GetSettCHFCurrencyId = GetSettCHFCurrencyId;
-	type GetSettGIPCurrencyId = GetSettGIPCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
-	type SIFSerpupRatio = SIFSerpupRatio;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = ();
+	type Dex = DexModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();

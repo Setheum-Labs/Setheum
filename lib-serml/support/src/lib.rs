@@ -21,6 +21,10 @@
 
 use codec::{Decode, Encode, FullCodec, HasCompact};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
+use primitives::{
+	evm::{CallInfo, EvmAddress},
+	CurrencyId,
+};
 use sp_core::H160;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
@@ -34,27 +38,29 @@ use sp_std::{
 	prelude::*,
 };
 
+pub mod mocks;
+
 pub type BlockNumber = u32;
 pub type Price = FixedU128;
 pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
-pub trait StandardManager<AccountId, CurrencyId, Balance, Balance> {
+pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
 		currency_id: CurrencyId,
 		reserve_balance: Balance,
-		standard_balance: Balance,
+		standard_balance: StandardBalance,
 	) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance: Default, Balance> StandardManager<AccountId, CurrencyId, Balance, Balance>
+impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardManager<AccountId, CurrencyId, Balance, Balance>
 	for ()
 {
 	fn check_position_valid(
 		_currency_id: CurrencyId,
 		_reserve_balance: Balance,
-		_standard_balance: Balance,
+		_standard_balance: StandardBalance,
 	) -> DispatchResult {
 		Ok(())
 	}
@@ -146,12 +152,6 @@ pub trait SerpTreasury<AccountId> {
 
 	fn get_adjustment_frequency() -> Self::BlockNumber;
 
-	/// get surplus amount of serp treasury
-	fn get_surplus_pool() -> Self::Balance;
-
-	/// get serpup amount of serp treasury
-	fn get_surpup_pool() -> Self::Balance;
-
 	/// get reserve asset amount of serp treasury
 	fn get_total_setter() -> Self::Balance;
 
@@ -166,9 +166,6 @@ pub trait SerpTreasury<AccountId> {
 
 	/// SerpUp ratio for Setheum Treasury
 	fn get_treasury_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
-	/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-	fn get_sif_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
@@ -220,9 +217,6 @@ pub trait SerpTreasury<AccountId> {
 
 	/// Burn Reserve asset (Setter (SETT))
 	fn burn_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
-
-	/// Withdraw reserve asset (Setter (SETT)) of serp treasury to `who`
-	fn withdraw_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
