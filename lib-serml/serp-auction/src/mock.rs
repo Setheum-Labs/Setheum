@@ -101,7 +101,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = SerpAuctionModule;
+	type Handler = SerpAuctionManagerModule;
 	type WeightInfo = ();
 }
 
@@ -120,7 +120,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
 	type GetStableCurrencyId = GetStableCurrencyId;
-	type SerpAuctionHandler = SerpAuctionModule;
+	type SerpAuctionManagerHandler = SerpAuctionManagerModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = DexModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -209,7 +209,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		SerpAuctionModule: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SerpAuctionManagerModule: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		AuctionModule: orml_auction::{Module, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Event<T>},

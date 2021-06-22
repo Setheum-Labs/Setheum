@@ -61,12 +61,6 @@ pub mod weights;
 pub use module::*;
 pub use weights::WeightInfo;
 
-pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/serp-auction/data/";
-pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/serp-auction/lock/";
-pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/serp-auction/max-iterations/";
-pub const LOCK_DURATION: u64 = 100;
-pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
-
 /// Information of a diamond auction
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
@@ -288,115 +282,11 @@ pub mod module {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
-
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {}
-
 }
 
 impl<T: Config> Pallet<T> {
 	fn get_last_bid(auction_id: AuctionId) -> Option<(T::AccountId, Balance)> {
 		T::Auction::auction_info(auction_id).and_then(|auction_info| auction_info.bid)
-	}
-
-	fn submit_cancel_auction_tx(auction_id: AuctionId) {
-		let call = Call::<T>::cancel(auction_id);
-		if let Err(err) = SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()) {
-			log::info!(
-				target: "serp-auction",
-				"offchain worker: submit unsigned auction cancel tx for AuctionId {:?} failed: {:?}",
-				auction_id, err,
-			);
-		}
-	}
-
-	fn _offchain_worker() -> Result<(), OffchainErr> {
-		// acquire offchain worker lock.
-		let lock_expiration = Duration::from_millis(LOCK_DURATION);
-		let mut lock = StorageLock::<'_, Time>::with_deadline(&OFFCHAIN_WORKER_LOCK, lock_expiration);
-		let mut guard = lock.try_lock().map_err(|_| OffchainErr::OffchainLock)?;
-
-		let mut to_be_continue = StorageValueRef::persistent(&OFFCHAIN_WORKER_DATA);
-
-		// get to_be_continue record,
-		// if it exsits, iterator map storage start with previous key
-		let (auction_type_num, start_key) = if let Some(Some((auction_type_num, last_iterator_previous_key))) =
-			to_be_continue.get::<(u32, Vec<u8>)>()
-		{
-			(auction_type_num, Some(last_iterator_previous_key))
-		} else {
-			let random_seed = sp_io::offchain::random_seed();
-			let mut rng = RandomNumberGenerator::<BlakeTwo256>::new(BlakeTwo256::hash(&random_seed[..]));
-			(rng.pick_u32(2), None)
-		};
-
-		// get the max iterationns config
-		let max_iterations = StorageValueRef::persistent(&OFFCHAIN_WORKER_MAX_ITERATIONS)
-			.get::<u32>()
-			.unwrap_or(Some(DEFAULT_MAX_ITERATIONS));
-
-		log::debug!(
-			target: "serp-auction",
-			"offchain worker: max iterations is {:?}",
-			max_iterations
-		);
-		// Randomly choose to start iterations to cancel reserve/serplus/standard
-		// auctions
-		match auction_type_num {
-			0 => {
-				let mut iterator =
-					<DiamondAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((diamond_auction_id, _)) = iterator.next() {
-					Self::submit_cancel_auction_tx(diamond_auction_id);
-					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
-				}
-
-				// if iteration for map storage finished, clear to be continue record
-				// otherwise, update to be continue record
-				if iterator.finished {
-					to_be_continue.clear();
-				} else {
-					to_be_continue.set(&(auction_type_num, iterator.storage_map_iterator.previous_key));
-				}
-			}
-			1 => {
-				let mut iterator =
-					<SetterAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((setter_auction_id, _)) = iterator.next() {
-					Self::submit_cancel_auction_tx(setter_auction_id);
-					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
-				}
-
-				// if iteration for map storage finished, clear to be continue record
-				// otherwise, update to be continue record
-				if iterator.finished {
-					to_be_continue.clear();
-				} else {
-					to_be_continue.set(&(auction_type_num, iterator.storage_map_iterator.previous_key));
-				}
-			}
-			_ => {
-				let mut iterator =
-					<SerplusAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((serplus_auction_id, _)) = iterator.next() {
-					Self::submit_cancel_auction_tx(serplus_auction_id);
-					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
-				}
-
-				// if iteration for map storage finished, clear to be continue record
-				// otherwise, update to be continue record
-				if iterator.finished {
-					to_be_continue.clear();
-				} else {
-					to_be_continue.set(&(auction_type_num, iterator.storage_map_iterator.previous_key));
-				}
-			}
-		}
-
-		// Consume the guard but **do not** unlock the underlying lock.
-		guard.forget();
-
-		Ok(())
 	}
 
 	fn cancel_diamond_auction(id: AuctionId, diamond_auction: DiamondAuctionItem<T::BlockNumber>) -> DispatchResult {
@@ -808,7 +698,7 @@ impl<T: Config> AuctionHandler<T::AccountId, Balance, T::BlockNumber, AuctionId>
 	}
 }
 
-impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
+impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 	type CurrencyId = CurrencyId;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
