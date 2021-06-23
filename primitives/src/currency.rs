@@ -184,7 +184,6 @@ create_currency_id! {
 		SETT("Setter", 12) = 2,
 		// SettCurrencies (Alphabetical Order)
 		AEDJ("Setheum UAE Emirati Dirham", 12) = 3,
-		ARSJ("Setheum Argentine Peso", 12) = 4,
  		AUDJ("Setheum Australian Dollar", 12) = 5,
 		BRLJ("Setheum Brazilian Real", 12) = 6,
 		CADJ("Setheum Canadian Dollar", 12) = 7,
@@ -218,11 +217,14 @@ create_currency_id! {
  		SGDJ("Setheum Singapore Dollar", 12) = 36,
 		THBJ("Setheum Thai Baht", 12) = 37,
 		TRYJ("Setheum Turkish Lira", 12) = 38,
-		TWDJ("Setheum Taiwan Dollar", 12) = 39,
+		TWDJ("Setheum New Taiwan Dollar", 12) = 39,
 		TZSJ("Setheum Tanzanian Shilling", 12) = 40,
 		UAHJ("Setheum Ukranian Hryvnia", 12) = 41,
 		USDJ("Setheum US Dollar", 12) = 42,
+		JVND("Setheum Vietnamese Dong") = 43,
 		ZARJ("Setheum South African Rand", 12) = 43,
+		// Foreign System Currencies (Alphabetical Order)
+		RENBTC("renBTC", 8) = 4,
 		/// Ends at 85 (42 places left yet reserved)
 
 		/// Neom Network >---------------------->>
@@ -232,7 +234,6 @@ create_currency_id! {
 		NSETT("Neom Setter", 12) = 88,
 		// SettCurrencies (Alphabetical Order)
 		JAED("Neom UAE Emirati Dirham", 12) = 3,
-		JARS("Neom Argentine Peso", 12) = 4,
  		JAUD("Neom Australian Dollar", 12) = 5,
 		JBRL("Neom Brazilian Real", 12) = 6,
 		JCAD("Neom Canadian Dollar", 12) = 7,
@@ -266,18 +267,20 @@ create_currency_id! {
  		JSGD("Neom Singapore Dollar", 12) = 36,
 		JTHB("Neom Thai Baht", 12) = 37,
 		JTRY("Neom Turkish Lira", 12) = 38,
-		JTWD("Neom Taiwan Dollar", 12) = 39,
+		JTWD("Neom New Taiwan Dollar", 12) = 39,
 		JTZS("Neom Tanzanian Shilling", 12) = 40,
 		JUAH("Neom Ukranian Hryvnia", 12) = 41,
 		JUSD("Neom US Dollar", 12) = 42,
-		JZAR("Neom South African Rand", 12) = 43,
+		JVND("Neom Vietnamese Dong") = 43,
+		JZAR("Neom South African Rand", 12) = 44,
+		// Foreign System Currencies (Alphabetical Order)
+		RENBTC("Ren Protocol BTC", 8) = 4,
 		/// Ends at 170 (42 places left yet reserved)
 
 		/// Fiat Currencies as Pegs
 		/// Fiat Currencies - only for price feed (Alphabetical Order)
 		/// Starts from 171 (85 places available)
 		AED("Fiat UAE Emirati Dirham", 12) = 171,
-		ARS("Fiat Argentine Peso", 12) = 172,
  		AUD("Fiat Australian Dollar", 12) = 173,
 		BRL("Fiat Brazilian Real", 12) = 174,
 		CAD("Fiat Canadian Dollar", 12) = 175,
@@ -311,17 +314,18 @@ create_currency_id! {
  		SGD("Fiat Singapore Dollar", 12) = 204,
 		THB("Fiat Thai Baht", 12) = 205,
 		TRY("Fiat Turkish Lira", 12) = 206,
-		TWD("Fiat Taiwan Dollar", 12) = 207,
+		TWD("Fiat New Taiwan Dollar", 12) = 207,
 		TZS("Fiat Tanzanian Shilling", 12) = 208,
 		UAH("Fiat Ukranian Hryvnia", 12) = 209,
 		USD("Fiat US Dollar", 12) = 210,
-		ZAR("Fiat South African Rand", 12) = 211,
-		KWD("Fiat Kuwaiti Dinar", 12) = 212,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		JOD("Fiat Jordanian Dinar", 12) = 213,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		BHD("Fiat Bahraini Dirham", 12) = 214,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		KYD("Fiat Cayman Islands Dollar", 12) = 215,	// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		OMR("Fiat Omani Riyal", 12) = 216,				// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		GIP("Fiat Gibraltar Pound", 12) = 217,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		VND("Fiat Vietnamese Dong") = 211,
+		ZAR("Fiat South African Rand", 12) = 212,
+		KWD("Fiat Kuwaiti Dinar", 12) = 213,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		JOD("Fiat Jordanian Dinar", 12) = 214,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		BHD("Fiat Bahraini Dirham", 12) = 215,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		KYD("Fiat Cayman Islands Dollar", 12) = 216,	// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		OMR("Fiat Omani Riyal", 12) = 217,				// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		GIP("Fiat Gibraltar Pound", 12) = 218,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
 		/// Ends at 255 (38 places left yet reserved).
 	}
 }
