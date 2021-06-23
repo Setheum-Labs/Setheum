@@ -416,13 +416,26 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	// TODO: Update for every currency to have it's own governed custom adjustment-frequency, and call serp_tes at every block.
+	// TODO: - we can say that
+	// TODO: -  ```
+	// TODO: - if now % adjustment_frequency.currency_id == Zero::zero() {
+	// TODO: - 		Self::serp_tes(currency_id)
+	// TODO: - } // in the for loop. And then change `on_finalize` to call at every block.
 	/// Trigger SERP-TES for all stablecoins
 	/// Check all stablecoins stability and elasticity
 	/// and calls the serp to stabilise the unstable one(s)
 	/// on SERP-TES.
 	fn on_serp_tes() -> DispatchResult {
-		// iterator to SERP-TES every system stablecurrency
+		// iterator to SERP-TES every system stablecurrency based on it's custom adjustment frequency
 		for currency_id in T::StableCurrencyIds::get() {
+			// if now % T::SerpTesSchedule::get(currency_id) == Zero::zero() {
+			/// SERP TES (Token Elasticity of Supply).
+			/// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
+			// 	Self::on_serp_tes();
+			// } else {
+
+			// }
 			Self::serp_tes(currency_id)
 		}
 		Ok(())
