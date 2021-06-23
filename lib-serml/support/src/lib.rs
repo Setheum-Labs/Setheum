@@ -213,10 +213,10 @@ pub trait SerpTreasury<AccountId> {
 	fn deposit_surplus(currency_id: Self::CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
 
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
-	fn deposit_reserve(from: &AccountId, amount: Self::Balance) -> DispatchResult;
+	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// Burn Reserve asset (Setter (SETT))
-	fn burn_reserve(to: &AccountId, amount: Self::Balance) -> DispatchResult;
+	fn burn_setter(who, amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {

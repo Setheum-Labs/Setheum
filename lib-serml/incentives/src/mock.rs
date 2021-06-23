@@ -202,11 +202,11 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn deposit_reserve(_: AccountId, _:Balance) -> DispatchResult {
+	fn deposit_setter(_: AccountId, _:Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn burn_reserve(_: AccountId, _:Balance) -> DispatchResult {
+	fn burn_setter(_: AccountId, _:Balance) -> DispatchResult {
 		unimplemented!()
 	}
 }

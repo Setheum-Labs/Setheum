@@ -59,9 +59,6 @@ pub struct DiamondAuctionItem<BlockNumber> {
 	/// Current amount of native currency for sale to buy back Setter stablecoin.
 	#[codec(compact)]
 	amount: Balance,
-	/// Currency type accepted for the diamond auction. // Always just and only Setter (SETT).
-	#[codec(compact)]
-	setter: CurrencyId,
 	/// Fix amount of Setter stablecoin value needed to be got back by this auction.
 	#[codec(compact)]
 	fix: Balance,
@@ -416,16 +413,16 @@ impl<T: Config> Pallet<T> {
 				let last_bidder = last_bid.as_ref().map(|(who, _)| who);
 
 				if let Some(last_bidder) = last_bidder {
-					// there's bid before, transfer the diamonds (native currency) from new bidder to last bidder
+					// there's bid before, transfer the setter from new bidder to last bidder
 					T::Currency::transfer(
-						T::GetNativeCurrencyId::get(),
+						T::GetSetterCurrencyId::get(),
 						&new_bidder,
 						last_bidder,
 						diamond_auction.fix,
 					)?;
 				} else {
-					// there's no bid before, transfer diamonds (native currency) to SERP Treasury
-					T::SerpTreasury::deposit_serplus(&new_bidder, diamond_auction.fix)?;
+					// there's no bid before, transfer setter to SERP Treasury
+					T::SerpTreasury::deposit_setter(&new_bidder, diamond_auction.fix)?;
 				}
 
 				Self::swap_bidders(&new_bidder, last_bidder);
@@ -454,7 +451,7 @@ impl<T: Config> Pallet<T> {
 				let mut setter_auction = setter_auction.as_mut().ok_or(Error::<T>::AuctionNonExistent)?;
 				let (new_bidder, new_bid_price) = new_bid;
 				let last_bid_price = last_bid.clone().map_or(Zero::zero(), |(_, price)| price); // get last bid price
-				let settcurrency_currency_id: CurrencyId;
+				let currency_id = setter_auction.currency;
 				ensure!(
 					Self::check_minimum_increment(
 						new_bid_price,
@@ -465,7 +462,7 @@ impl<T: Config> Pallet<T> {
 					Error::<T>::InvalidBidPrice,
 				);
 				ensure!(
-					T::StableCurrencyIds::get().contains(settcurrency_currency_id),
+					T::StableCurrencyIds::get().contains(currency_id),
 					Error::<T>::InvalidCyrrencyType,
 				);
 
@@ -474,15 +471,14 @@ impl<T: Config> Pallet<T> {
 				if let Some(last_bidder) = last_bidder {
 					// there's bid before, transfer the stablecoin from new bidder to last bidder
 					T::Currency::transfer(
-						/// change to `T::StableCurrencyIds::get()`
-						settcurrency_currency_id,
+						&currency_id,
 						&new_bidder,
 						last_bidder,
 						setter_auction.fix,
 					)?;
 				} else {
 					// there's no bid before, transfer stablecoin to SERP Treasury
-					T::SerpTreasury::deposit_serplus(&new_bidder, setter_auction.fix)?;
+					T::SerpTreasury::deposit_serplus(&currency_id, &new_bidder, setter_auction.fix)?;
 				}
 
 				Self::swap_bidders(&new_bidder, last_bidder);
@@ -526,7 +522,12 @@ impl<T: Config> Pallet<T> {
 
 		let burn_amount = if let Some(last_bidder) = last_bidder {
 			// refund last bidder
-			T::Currency::transfer(native_currency_id, &new_bidder, last_bidder, last_bid_price)?;
+			T::Currency::transfer(
+				native_currency_id, 
+				&new_bidder, 
+				last_bidder, 
+				last_bid_price
+			)?;
 			new_bid_price.saturating_sub(last_bid_price)
 		} else {
 			new_bid_price
@@ -555,10 +556,8 @@ impl<T: Config> Pallet<T> {
 			Self::deposit_event(Event::DiamondAuctionDealt(
 				auction_id,
 				diamond_auction.amount,
-				currency_id,
 				bidder,
 				diamond_auction.fix,
-				diamond_auction.setter,
 			));
 		} else {
 			Self::deposit_event(Event::CancelAuction(auction_id));
@@ -578,12 +577,9 @@ impl<T: Config> Pallet<T> {
 			// by treasury council. TODO: transfer from RESERVED TREASURY instead of issuing
 			let _ = T::SerpTreasury::issue_setter(&bidder, setter_auction.amount);
 			
-			let currency_id = T::GetSetterCurrencyId::get()
-
 			Self::deposit_event(Event::SetterAuctionDealt(
 				auction_id,
 				setter_auction.amount,
-				currency_id,
 				bidder,
 				setter_auction.fix,
 				setter_auction.currency,
@@ -645,6 +641,7 @@ impl<T: Config> AuctionHandler<T::AccountId, Balance, T::BlockNumber, AuctionId>
 	fn on_new_bid(
 		now: T::BlockNumber,
 		id: AuctionId,
+		currency_id: CurrencyId,
 		new_bid: (T::AccountId, Balance),
 		last_bid: Option<(T::AccountId, Balance)>,
 	) -> OnNewBidResult<T::BlockNumber> {
@@ -709,8 +706,6 @@ impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 
 		let diamond = T::GetNativeCurrencyId::get();
 
-		// set setter currency_id accepted for diamond auction (Only Setter is accepted (SETT))
-		let setter_currency_id = T::GetSetterCurrencyId::get();
 		<DiamondAuctions<T>>::insert(
 			auction_id,
 			DiamondAuctionItem {
@@ -718,12 +713,11 @@ impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 				diamond: diamond,
 				amount: initial_amount,
 				fix: fix_setter,
-				setter: setter_currency_id,
 				start_time,
 			},
 		);
 
-		Self::deposit_event(Event::NewDiamondAuction(auction_id, initial_amount, diamond, fix_setter, setter_currency_id));
+		Self::deposit_event(Event::NewDiamondAuction(auction_id, initial_amount, diamond, fix_setter));
 		Ok(())
 	}
 

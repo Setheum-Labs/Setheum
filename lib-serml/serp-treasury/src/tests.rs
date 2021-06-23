@@ -88,13 +88,13 @@ fn deposit_serplus_works() {
 }
 
 #[test]
-fn deposit_reserve_works() {
+fn deposit_setter_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
 		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
-		assert_eq!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 10000).is_ok(), false);
-		assert_ok!(SerpTreasuryModule::deposit_reserve(&ALICE, BTC, 500));
+		assert_eq!(SerpTreasuryModule::deposit_setter(&ALICE, BTC, 10000).is_ok(), false);
+		assert_ok!(SerpTreasuryModule::deposit_setter(&ALICE, BTC, 500));
 		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 500);
 		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 500);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 500);

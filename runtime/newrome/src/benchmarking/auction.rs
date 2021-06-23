@@ -54,7 +54,7 @@ runtime_benchmarks! {
 
 		set_balance(currency_id, &funder, reserve_amount);
 		set_balance(rUSD, &bidder, bid_price);
-		<SerpTreasury as SerpTreasury<_>>::deposit_reserve(&funder, currency_id, reserve_amount)?;
+		<SerpTreasury as SerpTreasury<_>>::deposit_setter(&funder, currency_id, reserve_amount)?;
 		SerpAuctionManager::new_setter_auction(&funder, currency_id, reserve_amount, target_amount)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
@@ -74,7 +74,7 @@ runtime_benchmarks! {
 		set_balance(currency_id, &funder, reserve_amount);
 		set_balance(rUSD, &bidder, bid_price);
 		set_balance(rUSD, &previous_bidder, previous_bid_price);
-		<SerpTreasury as SerpTreasury<_>>::deposit_reserve(&funder, currency_id, reserve_amount)?;
+		<SerpTreasury as SerpTreasury<_>>::deposit_setter(&funder, currency_id, reserve_amount)?;
 		SerpAuctionManager::new_setter_auction(&funder, currency_id, reserve_amount, target_amount)?;
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)

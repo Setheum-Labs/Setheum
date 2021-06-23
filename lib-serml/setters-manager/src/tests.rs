@@ -161,7 +161,7 @@ fn total_reserve_works() {
 #[test]
 fn get_total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettersManagerModule::deposit_reserve(&ALICE, 500));
+		assert_ok!(SettersManagerModule::deposit_setter(&ALICE, 500));
 		assert_eq!(SettersManagerModule::get_total_reserve(500);
 	});
 }

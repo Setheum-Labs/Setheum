@@ -465,16 +465,19 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::GetDexerCurrencyId::get(), who, dexer)
 	}
 
+	/// deposit surplus(propperstable currency) to serp treasury by `from`
 	fn deposit_serplus(currency_id: CurrencyId, from: &T::AccountId, serplus: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(currency_id, from, &Self::account_id(), serplus)
 	}
 
-	fn deposit_reserve(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
+	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
+	fn deposit_setter(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetSetterCurrencyId::get(), from, &Self::account_id(), amount)
 	}
 
-	fn burn_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
-		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), to, amount)
+	/// Burn Reserve asset (Setter (SETT))
+	fn burn_setter(who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
+		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, amount)
 	}
 }
 
