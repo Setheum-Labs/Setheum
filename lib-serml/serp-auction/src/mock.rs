@@ -41,6 +41,7 @@ pub type Amount = i64;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
+
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
