@@ -117,12 +117,12 @@ impl<BlockNumber> SetterAuctionItem<BlockNumber> {
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
 pub struct SerplusAuctionItem<BlockNumber> {
-	/// Currency type auctioned in the serplus auction.
-	/// Always just and only SettCurrencies/stablecoins.
-	currency: CurrencyId,
 	/// Fixed amount of serplus [serplus](stable currency) for sale to get back native currency.
 	#[codec(compact)]
 	amount: Balance,
+	/// Currency type auctioned in the serplus auction.
+	/// Always just and only SettCurrencies/stablecoins.
+	currency: CurrencyId,
 	/// Auction start time
 	start_time: BlockNumber,
 }
@@ -641,7 +641,6 @@ impl<T: Config> AuctionHandler<T::AccountId, Balance, T::BlockNumber, AuctionId>
 	fn on_new_bid(
 		now: T::BlockNumber,
 		id: AuctionId,
-		currency_id: CurrencyId,
 		new_bid: (T::AccountId, Balance),
 		last_bid: Option<(T::AccountId, Balance)>,
 	) -> OnNewBidResult<T::BlockNumber> {
@@ -760,13 +759,13 @@ impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 			return Err(Error::<T>::CurrencyNotAccepted.into());
 		}
 
-		Self::deposit_event(Event::NewSetterAuction(auction_id, initial_amount, setter, fix_settcurrency, settcurrency_id));
+		Self::deposit_event(Event::NewSetterAuction(auction_id, initial_amount, fix_settcurrency, settcurrency_id));
 		Ok(())
 	}
 
 	fn new_serplus_auction(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		ensure!(!amount.is_zero(), Error::<T>::InvalidAmount,);
-		// ensure currency_id is accepted for serplus auction (Only SettCurrencies are accepted (SETT))
+		// ensure currency_id can be auctioned for serplus auction (Only SettCurrencies (stablecoins))
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
@@ -779,8 +778,14 @@ impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 		let start_time = <frame_system::Module<T>>::block_number();
 		// do not set end time for serplus auction
 		let auction_id = T::Auction::new_auction(start_time, None)?;
-		<SerplusAuctions<T>>::insert(auction_id, SerplusAuctionItem {amount, currency_id, start_time});
-
+		<SerplusAuctions<T>>::insert(
+			auction_id, 
+			SerplusAuctionItem {
+				amount,
+				currency_id,
+				start_time
+			}
+		);
 		Self::deposit_event(Event::NewSerplusAuction(auction_id, amount, currency_id));
 		Ok(())
 	}
