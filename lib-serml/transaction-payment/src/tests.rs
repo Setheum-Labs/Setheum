@@ -26,17 +26,17 @@ use frame_support::{
 	weights::{DispatchClass, DispatchInfo, Pays},
 };
 use mock::{
-	AccountId, BlockWeights, Call, Currencies, Dex, ExtBuilder, Origin, Runtime, TransactionPayment, DNAR, ALICE,
+	AccountId, BlockWeights, Call, Currencies, SetheumDEX, ExtBuilder, Origin, Runtime, TransactionPayment, DNAR, ALICE,
 	USDJ, BOB, DOT,
 };
 use orml_traits::MultiCurrency;
 use sp_runtime::{testing::TestXt, traits::One};
 
 const CALL: &<Runtime as frame_system::Config>::Call =
-	&Call::Currencies(setheum_currencies::Call::transfer(BOB, USDJ, 12));
+	&Call::Currencies(module_currencies::Call::transfer(BOB, USDJ, 12));
 
 const CALL2: &<Runtime as frame_system::Config>::Call =
-	&Call::Currencies(setheum_currencies::Call::transfer_native_currency(BOB, 12));
+	&Call::Currencies(module_currencies::Call::transfer_native_currency(BOB, 12));
 
 const INFO: DispatchInfo = DispatchInfo {
 	weight: 1000,
@@ -110,16 +110,17 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 0);
 		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(USDJ, &BOB), 1000);
 
-		// add liquidity to Dex
-		assert_ok!(Dex::add_liquidity(
+		// add liquidity to DEX
+		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(ALICE),
 			DNAR,
 			USDJ,
 			10000,
 			1000,
+			0,
 			false
 		));
-		assert_eq!(Dex::get_liquidity_pool(DNAR, USDJ), (10000, 1000));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, USDJ), (10000, 1000));
 
 		let fee = 500 * 2 + 1000; // len * byte + weight
 		assert_eq!(
@@ -132,7 +133,7 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 
 		assert_eq!(Currencies::free_balance(DNAR, &BOB), 0);
 		assert_eq!(Currencies::free_balance(USDJ, &BOB), 749);
-		assert_eq!(Dex::get_liquidity_pool(DNAR, USDJ), (10000 - 2000, 1251));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, USDJ), (10000 - 2000, 1251));
 	});
 }
 
@@ -153,25 +154,27 @@ fn set_default_fee_token_work() {
 #[test]
 fn charge_fee_by_default_fee_token() {
 	ExtBuilder::default().build().execute_with(|| {
-		// add liquidity to Dex
-		assert_ok!(Dex::add_liquidity(
+		// add liquidity to DEX
+		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(ALICE),
 			DNAR,
 			USDJ,
 			10000,
 			1000,
+			0,
 			false
 		));
-		assert_ok!(Dex::add_liquidity(
+		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(ALICE),
 			DOT,
 			USDJ,
 			100,
 			1000,
+			0,
 			false
 		));
-		assert_eq!(Dex::get_liquidity_pool(DNAR, USDJ), (10000, 1000));
-		assert_eq!(Dex::get_liquidity_pool(DOT, USDJ), (100, 1000));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, USDJ), (10000, 1000));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DOT, USDJ), (100, 1000));
 		assert_ok!(TransactionPayment::set_default_fee_token(
 			Origin::signed(BOB),
 			Some(DOT)
@@ -194,8 +197,8 @@ fn charge_fee_by_default_fee_token() {
 		assert_eq!(Currencies::free_balance(DNAR, &BOB), 0);
 		assert_eq!(Currencies::free_balance(USDJ, &BOB), 0);
 		assert_eq!(Currencies::free_balance(DOT, &BOB), 100 - 34);
-		assert_eq!(Dex::get_liquidity_pool(DNAR, USDJ), (10000 - 2000, 1251));
-		assert_eq!(Dex::get_liquidity_pool(DOT, USDJ), (100 + 34, 1000 - 251));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, USDJ), (10000 - 2000, 1251));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DOT, USDJ), (100 + 34, 1000 - 251));
 	});
 }
 
