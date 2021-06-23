@@ -29,7 +29,9 @@
 use frame_support::{
 	dispatch::{DispatchResult, Dispatchable},
 	pallet_prelude::*,
-	traits::{Currency, ExistenceRequirement, Imbalance, OnUnbalanced, ReservableCurrency, WithdrawReasons},
+	traits::{
+		Currency, ExistenceRequirement, Imbalance, OnUnbalanced, ReservableCurrency, SameOrOther, WithdrawReasons,
+	},
 	weights::{DispatchInfo, GetDispatchInfo, Pays, PostDispatchInfo, WeightToFeePolynomial},
 };
 use frame_system::pallet_prelude::*;
@@ -215,7 +217,7 @@ pub mod module {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		/// All non-native currency ids in setheum.
+		/// All non-native currency ids in Setheum.
 		#[pallet::constant]
 		type AllNonNativeCurrencyIds: Get<Vec<CurrencyId>>;
 
@@ -224,9 +226,9 @@ pub mod module {
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 
-		/// Stable currency id, should be USDJ
+		/// Setter currency id, should be SETT
 		#[pallet::constant]
-		type StableCurrencyId: Get<CurrencyId>;
+		type GetSetterCurrencyId: Get<CurrencyId>;
 
 		/// The currency type in which fees will be paid.
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId> + Send + Sync;
@@ -251,12 +253,12 @@ pub mod module {
 		/// block's weight.
 		type FeeMultiplierUpdate: MultiplierUpdate;
 
-		/// Dex to exchange currencies.
-		type Dex = DEXManager<Self::AccountId, CurrencyId, Balance>;
+		/// DEX to exchange currencies.
+		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// The max slippage allowed when swap fee with Dex
+		/// The max slippage allowed when swap fee with DEX
 		#[pallet::constant]
-		type MaxSlippageSwapWithDex: Get<Ratio>;
+		type MaxSlippageSwapWithDEX: Get<Ratio>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -267,10 +269,16 @@ pub mod module {
 		Multiplier::saturating_from_integer(1)
 	}
 
+	/// The next fee multiplier.
+	///
+	/// NextFeeMultiplier: Multiplier
 	#[pallet::storage]
 	#[pallet::getter(fn next_fee_multiplier)]
 	pub type NextFeeMultiplier<T: Config> = StorageValue<_, Multiplier, ValueQuery, DefaultFeeMultiplier>;
 
+	/// The default fee currency for accounts.
+	///
+	/// DefaultFeeCurrencyId: AccountId => Option<CurrencyId>
 	#[pallet::storage]
 	#[pallet::getter(fn default_fee_currency_id)]
 	pub type DefaultFeeCurrencyId<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, CurrencyId, OptionQuery>;
@@ -421,18 +429,16 @@ where
 	/// Compute the final fee value for a particular transaction.
 	///
 	/// The final fee is composed of:
-	///   - `base_fee`: This is the minimum amount a user pays for a
-	///     transaction. It is declared as a base _weight_ in the runtime and
-	///     converted to a fee using `WeightToFee`.
-	///   - `len_fee`: The length fee, the amount paid for the encoded length
-	///     (in bytes) of the transaction.
-	///   - `weight_fee`: This amount is computed based on the weight of the
-	///     transaction. Weight accounts for the execution time of a
+	///   - `base_fee`: This is the minimum amount a user pays for a transaction. It is declared as
+	///     a base _weight_ in the runtime and converted to a fee using `WeightToFee`.
+	///   - `len_fee`: The length fee, the amount paid for the encoded length (in bytes) of the
 	///     transaction.
-	///   - `targeted_fee_adjustment`: This is a multiplier that can tune the
-	///     final fee based on the congestion of the network.
-	///   - (Optional) `tip`: If included in the transaction, the tip will be
-	///     added on top. Only signed transactions can have a tip.
+	///   - `weight_fee`: This amount is computed based on the weight of the transaction. Weight
+	///     accounts for the execution time of a transaction.
+	///   - `targeted_fee_adjustment`: This is a multiplier that can tune the final fee based on the
+	///     congestion of the network.
+	///   - (Optional) `tip`: If included in the transaction, the tip will be added on top. Only
+	///     signed transactions can have a tip.
 	///
 	/// The base fee and adjusted weight and length fees constitute the
 	/// _inclusion fee,_ which is the minimum fee for a transaction to be
@@ -533,9 +539,9 @@ where
 		T::WeightToFee::calc(&capped_weight)
 	}
 
-	fn ensure_can_charge_fee(who: &T::AccountId, fee: PalletBalanceOf<T>, reason: WithdrawReasons) {
+	pub fn ensure_can_charge_fee(who: &T::AccountId, fee: PalletBalanceOf<T>, reason: WithdrawReasons) {
 		let native_currency_id = T::NativeCurrencyId::get();
-		let stable_currency_id = T::StableCurrencyId::get();
+		let setter_currency_id = T::GetSetterCurrencyId::get();
 		let other_currency_ids = T::AllNonNativeCurrencyIds::get();
 		let mut charge_fee_order: Vec<CurrencyId> =
 			if let Some(default_fee_currency_id) = DefaultFeeCurrencyId::<T>::get(who) {
@@ -545,7 +551,7 @@ where
 			};
 		charge_fee_order.dedup();
 
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDex::get());
+		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 
 		// iterator charge fee order to get enough fee
 		for currency_id in charge_fee_order {
@@ -562,14 +568,14 @@ where
 					break;
 				}
 			} else {
-				// try to use non-native currency to swap native currency by exchange with Dex
-				let trading_path = if currency_id == stable_currency_id {
-					vec![stable_currency_id, native_currency_id]
+				// try to use non-native currency to swap native currency by exchange with DEX
+				let trading_path = if currency_id == setter_currency_id {
+					vec![setter_currency_id, native_currency_id]
 				} else {
-					vec![currency_id, stable_currency_id, native_currency_id]
+					vec![currency_id, setter_currency_id, native_currency_id]
 				};
 
-				if T::Dex::swap_with_exact_target(
+				if T::DEX::swap_with_exact_target(
 					who,
 					&trading_path,
 					fee.unique_saturated_into(),
@@ -748,8 +754,9 @@ where
 					// The refund cannot be larger than the up front payed max weight.
 					// `PostDispatchInfo::calc_unspent` guards against such a case.
 					match payed.offset(refund_imbalance) {
-						Ok(actual_payment) => actual_payment,
-						Err(_) => return Err(InvalidTransaction::Payment.into()),
+						SameOrOther::Same(actual_payment) => actual_payment,
+						SameOrOther::None => Default::default(),
+						_ => return Err(InvalidTransaction::Payment.into()),
 					}
 				}
 				// We do not recreate the account using the refund. The up front payment
@@ -759,7 +766,6 @@ where
 			let (tip, fee) = actual_payment.split(tip);
 
 			// distribute fee
-
 			<T as Config>::OnTransactionPayment::on_unbalanceds(Some(fee).into_iter().chain(Some(tip)));
 		}
 		Ok(())
@@ -810,8 +816,9 @@ where
 			Ok(refund_imbalance) => {
 				// The refund cannot be larger than the up front payed max weight.
 				match payed.offset(refund_imbalance) {
-					Ok(actual_payment) => actual_payment,
-					Err(_) => return Err(InvalidTransaction::Payment.into()),
+					SameOrOther::Same(actual_payment) => actual_payment,
+					SameOrOther::None => Default::default(),
+					_ => return Err(InvalidTransaction::Payment.into()),
 				}
 			}
 			// We do not recreate the account using the refund. The up front payment

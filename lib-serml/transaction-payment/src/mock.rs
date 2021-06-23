@@ -22,7 +22,9 @@
 
 use super::*;
 use crate as transaction_payment;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients, PalletId};
+use frame_support::{
+	construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients, PalletId,
+};
 use orml_traits::parameter_type_with_key;
 use primitives::{Amount, TokenSymbol, TradingPair};
 use smallvec::smallvec;
@@ -30,12 +32,10 @@ use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{IdentityLookup, One},
-	DispatchError, DispatchResult,
-	FixedPointNumber,
 	Perbill,
 };
 use sp_std::cell::RefCell;
-use support::Ratio;
+use support::{mocks::MockAddressMapping, Ratio};
 
 pub type AccountId = AccountId32;
 pub type BlockNumber = u64;
@@ -43,7 +43,7 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
 
 parameter_types! {
@@ -89,6 +89,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -134,6 +135,8 @@ impl setheum_currencies::Config for Runtime {
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
+	type AddressMapping = MockAddressMapping;
+	type EVMBridge = ();
 }
 
 ord_parameter_types! {
@@ -144,7 +147,7 @@ parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"dnr/sdex");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, DNAR), TradingPair::new(USDJ, DOT)];
+	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(SETT, DNAR), TradingPair::new(SETT, DOT)];
 }
 
 impl dex::Config for Runtime {
@@ -152,31 +155,32 @@ impl dex::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DexPalletId;
+	type PalletId = DEXPalletId;
+	type CurrencyIdMapping = ();
 	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = frame_system::EnsureSignedBy<Zero, AccountId>;
 }
 
 parameter_types! {
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![USDJ, DOT];
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![SETT, DOT];
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::one();
-	pub const StableCurrencyId: CurrencyId = USDJ;
+	pub const GetSetterCurrencyId: CurrencyId = SETT;
 	pub static TransactionByteFee: u128 = 1;
 }
 
 impl Config for Runtime {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyId = StableCurrencyId;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type Currency = PalletBalances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = ();
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = ();
-	type Dex = Dex;
-	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
+	type DEX = SetheumDEX;
+	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type WeightInfo = ();
 }
 
@@ -212,7 +216,7 @@ construct_runtime!(
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Currencies: setheum_currencies::{Pallet, Call, Event<T>},
-		Dex = dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -226,7 +230,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![(ALICE, USDJ, 10000), (ALICE, DOT, 1000)],
+			endowed_accounts: vec![(ALICE, SETT, 10000), (ALICE, DOT, 1000)],
 			base_weight: 0,
 			byte_fee: 2,
 			weight_to_fee: 1,
@@ -270,7 +274,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		dex::GenesisConfig::<Runtime> {
+		setheum_dex::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],

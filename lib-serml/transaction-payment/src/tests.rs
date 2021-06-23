@@ -27,13 +27,13 @@ use frame_support::{
 };
 use mock::{
 	AccountId, BlockWeights, Call, Currencies, SetheumDEX, ExtBuilder, Origin, Runtime, TransactionPayment, DNAR, ALICE,
-	USDJ, BOB, DOT,
+	SETT, BOB, DOT,
 };
 use orml_traits::MultiCurrency;
 use sp_runtime::{testing::TestXt, traits::One};
 
 const CALL: &<Runtime as frame_system::Config>::Call =
-	&Call::Currencies(module_currencies::Call::transfer(BOB, USDJ, 12));
+	&Call::Currencies(module_currencies::Call::transfer(BOB, SETT, 12));
 
 const CALL2: &<Runtime as frame_system::Config>::Call =
 	&Call::Currencies(module_currencies::Call::transfer_native_currency(BOB, 12));
@@ -106,21 +106,21 @@ fn refund_fee_according_to_actual_when_post_dispatch_and_native_currency_is_enou
 #[test]
 fn charges_fee_when_validate_and_native_is_not_enough() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(<Currencies as MultiCurrency<_>>::transfer(USDJ, &ALICE, &BOB, 1000));
+		assert_ok!(<Currencies as MultiCurrency<_>>::transfer(SETT, &ALICE, &BOB, 1000));
 		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 0);
-		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(USDJ, &BOB), 1000);
+		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETT, &BOB), 1000);
 
 		// add liquidity to DEX
 		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(ALICE),
 			DNAR,
-			USDJ,
+			SETT,
 			10000,
 			1000,
 			0,
 			false
 		));
-		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, USDJ), (10000, 1000));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETT), (10000, 1000));
 
 		let fee = 500 * 2 + 1000; // len * byte + weight
 		assert_eq!(
@@ -132,8 +132,8 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 		);
 
 		assert_eq!(Currencies::free_balance(DNAR, &BOB), 0);
-		assert_eq!(Currencies::free_balance(USDJ, &BOB), 749);
-		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, USDJ), (10000 - 2000, 1251));
+		assert_eq!(Currencies::free_balance(SETT, &BOB), 749);
+		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETT), (10000 - 2000, 1251));
 	});
 }
 
@@ -143,9 +143,9 @@ fn set_default_fee_token_work() {
 		assert_eq!(TransactionPayment::default_fee_currency_id(&ALICE), None);
 		assert_ok!(TransactionPayment::set_default_fee_token(
 			Origin::signed(ALICE),
-			Some(USDJ)
+			Some(SETT)
 		));
-		assert_eq!(TransactionPayment::default_fee_currency_id(&ALICE), Some(USDJ));
+		assert_eq!(TransactionPayment::default_fee_currency_id(&ALICE), Some(SETT));
 		assert_ok!(TransactionPayment::set_default_fee_token(Origin::signed(ALICE), None));
 		assert_eq!(TransactionPayment::default_fee_currency_id(&ALICE), None);
 	});
@@ -158,7 +158,7 @@ fn charge_fee_by_default_fee_token() {
 		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(ALICE),
 			DNAR,
-			USDJ,
+			SETT,
 			10000,
 			1000,
 			0,
@@ -167,14 +167,14 @@ fn charge_fee_by_default_fee_token() {
 		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(ALICE),
 			DOT,
-			USDJ,
+			SETT,
 			100,
 			1000,
 			0,
 			false
 		));
-		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, USDJ), (10000, 1000));
-		assert_eq!(SetheumDEX::get_liquidity_pool(DOT, USDJ), (100, 1000));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETT), (10000, 1000));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DOT, SETT), (100, 1000));
 		assert_ok!(TransactionPayment::set_default_fee_token(
 			Origin::signed(BOB),
 			Some(DOT)
@@ -182,7 +182,7 @@ fn charge_fee_by_default_fee_token() {
 		assert_eq!(TransactionPayment::default_fee_currency_id(&BOB), Some(DOT));
 		assert_ok!(<Currencies as MultiCurrency<_>>::transfer(DOT, &ALICE, &BOB, 100));
 		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 0);
-		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(USDJ, &BOB), 0);
+		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETT, &BOB), 0);
 		assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DOT, &BOB), 100);
 
 		let fee = 500 * 2 + 1000; // len * byte + weight
@@ -195,10 +195,10 @@ fn charge_fee_by_default_fee_token() {
 		);
 
 		assert_eq!(Currencies::free_balance(DNAR, &BOB), 0);
-		assert_eq!(Currencies::free_balance(USDJ, &BOB), 0);
+		assert_eq!(Currencies::free_balance(SETT, &BOB), 0);
 		assert_eq!(Currencies::free_balance(DOT, &BOB), 100 - 34);
-		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, USDJ), (10000 - 2000, 1251));
-		assert_eq!(SetheumDEX::get_liquidity_pool(DOT, USDJ), (100 + 34, 1000 - 251));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETT), (10000 - 2000, 1251));
+		assert_eq!(SetheumDEX::get_liquidity_pool(DOT, SETT), (100 + 34, 1000 - 251));
 	});
 }
 
