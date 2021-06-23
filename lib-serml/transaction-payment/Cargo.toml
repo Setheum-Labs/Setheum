@@ -28,7 +28,7 @@ support = { package = "setheum-support", path = "../support", default-features =
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }setheum-currencies = { path = "../../lib-serml/currencies", default-features = false }
+orml-tokens = { path = "../../lib-openrml/tokens", default-features = false 
 setheum-currencies = { path = "../../lib-serml/currencies", default-features = false }
 setheum-dex = { path = "../dex", default-features = false }
 smallvec = "1.4.1"
