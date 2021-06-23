@@ -421,6 +421,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// and calls the serp to stabilise the unstable one(s)
 	/// on SERP-TES.
 	fn on_serp_tes() -> DispatchResult {
+		// iterator to SERP-TES every system stablecurrency
 		for currency_id in T::StableCurrencyIds::get() {
 			Self::serp_tes(currency_id)
 		}
