@@ -181,8 +181,12 @@ pub mod module {
 		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
 		/// Handle excessive surplus or debits of system when block end
 		///
+		// TODO: Migrate `BlockNumber` to `Timestamp`
 		/// Triggers Serping for all system stablecoins at every block.
 		fn on_initialize(now: T::BlockNumber) {
+			// TODO: Update for a global-adjustment-frequency to have it's own governed custom adjustment-frequency, 
+			// TODO: - and call serp_tes at a timestamp e.g. every 10 minutes
+			///
 			/// SERP-TES Adjustment Frequency.
 			/// Schedule for when to trigger SERP-TES
 			/// (Blocktime/BlockNumber - every blabla block)
@@ -416,12 +420,9 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	// TODO: Update for every currency to have it's own governed custom adjustment-frequency, and call serp_tes at every block.
-	// TODO: - we can say that
-	// TODO: -  ```
-	// TODO: - if now % adjustment_frequency.currency_id == Zero::zero() {
-	// TODO: - 		Self::serp_tes(currency_id)
-	// TODO: - } // in the for loop. And then change `on_finalize` to call at every block.
+	// TODO: Update for a global-adjustment-frequency to have it's own governed custom adjustment-frequency, 
+	// TODO: - and call serp_tes at a timestamp e.g. every 10 minutes
+	///
 	/// Trigger SERP-TES for all stablecoins
 	/// Check all stablecoins stability and elasticity
 	/// and calls the serp to stabilise the unstable one(s)
@@ -429,13 +430,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn on_serp_tes() -> DispatchResult {
 		// iterator to SERP-TES every system stablecurrency based on it's custom adjustment frequency
 		for currency_id in T::StableCurrencyIds::get() {
-			// if now % T::SerpTesSchedule::get(currency_id) == Zero::zero() {
-			/// SERP TES (Token Elasticity of Supply).
-			/// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
-			// 	Self::on_serp_tes();
-			// } else {
-
-			// }
 			Self::serp_tes(currency_id)
 		}
 		Ok(())
