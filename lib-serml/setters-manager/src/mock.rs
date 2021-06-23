@@ -270,7 +270,7 @@ impl serp_treasury::Config for Runtime {
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();

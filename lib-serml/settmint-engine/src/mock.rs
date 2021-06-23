@@ -307,7 +307,7 @@ impl serp_treasury::Config for Runtime {
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -396,7 +396,7 @@ impl Config for Runtime {
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type UnsignedPriority = UnsignedPriority;
 	type WeightInfo = ();
 }
@@ -417,7 +417,7 @@ construct_runtime!(
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		SettersManagerModule: setters_manager::{Module, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
+		SetheumDEX: dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 

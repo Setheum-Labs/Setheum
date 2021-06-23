@@ -36,6 +36,7 @@ pub type AuctionId = u32;
 
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
+pub const CHARITY_FUND: AccountId = 2;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -275,6 +276,9 @@ parameter_types! {
 	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/treasury");
+	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/settpay");
+	
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
@@ -293,9 +297,12 @@ impl Config for Runtime {
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
+	type SetheumTreasuryAcc = SetheumTreasuryPalletId;
+	type CharityFundAcc = CHARITY_FUND;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -315,7 +322,7 @@ construct_runtime!(
 		Currencies: orml_currencies::{Module, Call, Event<T>},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
+		SetheumDEX: dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -331,6 +338,8 @@ impl Default for ExtBuilder {
 				(ALICE, CHFJ, 1000),
 				(BOB, USDJ, 1000),
 				(BOB, CHFJ, 1000),
+				(CHARITY_FUND, USDJ, 1000),
+				(CHARITY_FUND, CHFJ, 1000),
 			],
 		}
 	}

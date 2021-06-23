@@ -217,7 +217,7 @@ impl serp_treasury::Config for Runtime {
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -290,7 +290,7 @@ impl Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type PriceSource = MockPriceSource;
 	type UnsignedPriority = UnsignedPriority;
 	type WeightInfo = ();
@@ -310,7 +310,7 @@ construct_runtime!(
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		AuctionModule: orml_auction::{Module, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Event<T>},
-		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
+		SetheumDEX: dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
