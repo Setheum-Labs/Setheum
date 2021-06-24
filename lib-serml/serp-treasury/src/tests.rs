@@ -29,15 +29,12 @@ use sp_runtime::traits::BadOrigin;
 fn issue_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 
 		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 2000);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 
 		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 3000);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 1000);
 	});
 }
 
@@ -45,10 +42,8 @@ fn issue_standard_works() {
 fn burn_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 		assert_ok!(SerpTreasuryModule::burn_standard(&ALICE, 300));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 700);
-		assert_eq!(SerpTreasuryModule::standard_pool(), 0);
 	});
 }
 
@@ -79,25 +74,23 @@ fn deposit_serplus_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
-		assert_eq!(SerpTreasuryModule::serplus_pool(), 0);
-		assert_ok!(SerpTreasuryModule::deposit_serplus(&ALICE, 300));
+		assert_ok!(SerpTreasuryModule::deposit_serplus(USDJ, &ALICE, 300));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 700);
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 300);
-		assert_eq!(SerpTreasuryModule::serplus_pool(), 300);
 	});
 }
 
 #[test]
 fn deposit_setter_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 0);
-		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
-		assert_eq!(SerpTreasuryModule::deposit_setter(&ALICE, BTC, 10000).is_ok(), false);
-		assert_ok!(SerpTreasuryModule::deposit_setter(&ALICE, BTC, 500));
-		assert_eq!(SerpTreasuryModule::total_reserve(BTC), 500);
-		assert_eq!(Currencies::free_balance(BTC, &SerpTreasuryModule::account_id()), 500);
-		assert_eq!(Currencies::free_balance(BTC, &ALICE), 500);
+		assert_eq!(SerpTreasuryModule::total_reserve(SETT), 0);
+		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
+		assert_eq!(SerpTreasuryModule::deposit_setter(&ALICE, SETT, 10000).is_ok(), false);
+		assert_ok!(SerpTreasuryModule::deposit_setter(&ALICE, SETT, 500));
+		assert_eq!(SerpTreasuryModule::total_reserve(SETT), 500);
+		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 500);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 500);
 	});
 }
 

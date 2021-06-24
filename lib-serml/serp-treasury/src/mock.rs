@@ -335,11 +335,11 @@ impl Default for ExtBuilder {
 		Self {
 			endowed_accounts: vec![
 				(ALICE, USDJ, 1000),
-				(ALICE, CHFJ, 1000),
+				(ALICE, SETT, 1000),
 				(BOB, USDJ, 1000),
-				(BOB, CHFJ, 1000),
+				(BOB, SETT, 1000),
 				(CHARITY_FUND, USDJ, 1000),
-				(CHARITY_FUND, CHFJ, 1000),
+				(CHARITY_FUND, SETT, 1000),
 			],
 		}
 	}

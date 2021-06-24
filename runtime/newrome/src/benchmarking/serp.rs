@@ -94,7 +94,7 @@ runtime_benchmarks! {
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, reserve_price)])?;
 	}: _(RawOrigin::Signed(caller), currency_id, reserve_amount.try_into().unwrap(), standard_amount)
 
-	transfer_reserve_from {
+	transfer_settmint_from {
 		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
 		let sender: AccountId = account("sender", 0, SEED);
 		let sender_lookup = Indices::unlookup(sender.clone());

@@ -51,7 +51,7 @@ pub trait WeightInfo {
 	fn unauthorize() -> Weight;
 	fn unauthorize_all(c: u32, ) -> Weight;
 	fn adjust_setter() -> Weight;
-	fn transfer_reserve_from() -> Weight;
+	fn transfer_settmint_from() -> Weight;
 }
 
 /// Weights for setheum_settway using the Setheum node and recommended hardware.
@@ -76,7 +76,7 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(24 as Weight))
 			.saturating_add(T::DbWeight::get().writes(11 as Weight))
 	}
-	fn transfer_reserve_from() -> Weight {
+	fn transfer_settmint_from() -> Weight {
 		(114_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(21 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))
@@ -104,7 +104,7 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(24 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(11 as Weight))
 	}
-	fn transfer_reserve_from() -> Weight {
+	fn transfer_settmint_from() -> Weight {
 		(114_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(21 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(7 as Weight))

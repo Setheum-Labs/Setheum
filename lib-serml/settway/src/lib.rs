@@ -27,13 +27,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional};
+use frame_support::{pallet_prelude::*, traits::ReservableCurrency, transactional};
 use frame_system::pallet_prelude::*;
-use primitives::{Amount, CurrencyId};
+use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{StaticLookup, Zero},
 	DispatchResult,
 };
+use sp_std::vec::Vec;
 
 mod mock;
 mod tests;
@@ -49,6 +50,12 @@ pub mod module {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + settmint_engine::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+		/// Currency for authorization reserved.
+		type Currency: ReservableCurrency<Self::AccountId, Balance = Balance>;
+
+		/// Reserved amount per authorization.
+		type DepositPerAuthorization: Get<Balance>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -74,11 +81,20 @@ pub mod module {
 	}
 
 	/// The authorization relationship map from
-	/// Authorizer -> (ReserveType, Authorizee) -> Authorized
+	/// Authorizer -> (CollateralType, Authorizee) -> Authorized
+	///
+	/// Authorization: double_map AccountId, (CurrencyId, T::AccountId) => Option<Balance>
 	#[pallet::storage]
 	#[pallet::getter(fn authorization)]
-	pub type Authorization<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, T::AccountId, Blake2_128Concat, (CurrencyId, T::AccountId), bool, ValueQuery>;
+	pub type Authorization<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		T::AccountId,
+		Blake2_128Concat,
+		(CurrencyId, T::AccountId),
+		Balance,
+		OptionQuery,
+	>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -123,9 +139,9 @@ pub mod module {
 		///
 		/// - `currency_id`: reserve currency id.
 		/// - `from`: authorizer account
-		#[pallet::weight(<T as Config>::WeightInfo::transfer_reserve_from())]
+		#[pallet::weight(<T as Config>::WeightInfo::transfer_settmint_from())]
 		#[transactional]
-		pub fn transfer_reserve_from(
+		pub fn transfer_settmint_from(
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			from: <T::Lookup as StaticLookup>::Source,
