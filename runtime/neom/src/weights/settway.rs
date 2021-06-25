@@ -56,12 +56,12 @@ impl<T: frame_system::Config> setheum_settway::WeightInfo for WeightInfo<T> {
 			.saturating_add((1_680_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add(T::DbWeight::get().writes((1 as Weight).saturating_mul(c as Weight)))
 	}
-	fn adjust_setter() -> Weight {
+	fn adjust_position() -> Weight {
 		(307_959_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(24 as Weight))
 			.saturating_add(T::DbWeight::get().writes(11 as Weight))
 	}
-	fn transfer_settmint_from() -> Weight {
+	fn transfer_position_from() -> Weight {
 		(220_884_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(21 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))

@@ -115,9 +115,9 @@ pub mod module {
 		///   amount of `currency_id` to caller according to the standard adjustment,
 		///   negative means caller will payback some amount of `currency_id` (standard settcurrency) to
 		///   Settmint according to to the standard adjustment.
-		#[pallet::weight(<T as Config>::WeightInfo::adjust_setter())]
+		#[pallet::weight(<T as Config>::WeightInfo::adjust_position())]
 		#[transactional]
-		pub fn adjust_setter(
+		pub fn adjust_position(
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			reserve_adjustment: Amount,
@@ -139,9 +139,9 @@ pub mod module {
 		///
 		/// - `currency_id`: reserve currency id.
 		/// - `from`: authorizer account
-		#[pallet::weight(<T as Config>::WeightInfo::transfer_settmint_from())]
+		#[pallet::weight(<T as Config>::WeightInfo::transfer_position_from())]
 		#[transactional]
-		pub fn transfer_settmint_from(
+		pub fn transfer_position_from(
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			from: <T::Lookup as StaticLookup>::Source,

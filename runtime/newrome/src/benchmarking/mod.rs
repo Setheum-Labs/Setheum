@@ -18,9 +18,8 @@
 
 #![cfg(feature = "runtime-benchmarks")]
 
-// module benchmarking
+// module benchmarking (SERML)
 pub mod serp_auction;
-pub mod settmint_engine;
 pub mod serp_treasury;
 pub mod dex;
 pub mod settway;

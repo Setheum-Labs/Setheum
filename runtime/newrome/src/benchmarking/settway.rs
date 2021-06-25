@@ -74,9 +74,9 @@ runtime_benchmarks! {
 		}
 	}: _(RawOrigin::Signed(caller))
 
-	// `adjust_setter`, best case:
+	// `adjust_position`, best case:
 	// adjust both reserve and standard
-	adjust_setter {
+	adjust_position {
 		let caller: AccountId = account("caller", 0, SEED);
 		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
 		let reserve_price = Price::one();		// 1 USD
@@ -94,7 +94,7 @@ runtime_benchmarks! {
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, reserve_price)])?;
 	}: _(RawOrigin::Signed(caller), currency_id, reserve_amount.try_into().unwrap(), standard_amount)
 
-	transfer_settmint_from {
+	transfer_position_from {
 		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
 		let sender: AccountId = account("sender", 0, SEED);
 		let sender_lookup = Indices::unlookup(sender.clone());
@@ -116,7 +116,7 @@ runtime_benchmarks! {
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
 
 		// initialize sender's setter
-		Settway::adjust_setter(
+		Settway::adjust_position(
 			RawOrigin::Signed(sender.clone()).into(),
 			currency_id,
 			reserve_amount.try_into().unwrap(),
@@ -166,9 +166,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_adjust_setter() {
+	fn test_adjust_position() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_adjust_setter());
+			assert_ok!(test_benchmark_adjust_position());
 		});
 	}
 }
