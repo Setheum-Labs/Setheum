@@ -1,5 +1,5 @@
 [package]
-name = "evm-rpc"
+name = "setheum-evm-rpc"
 version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
