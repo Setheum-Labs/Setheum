@@ -45,7 +45,6 @@ pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
-pub const ARSJ: CurrencyId = CurrencyId::Token(TokenSymbol::ARSJ);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
 pub const BRLJ: CurrencyId = CurrencyId::Token(TokenSymbol::BRLJ);
 pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
@@ -81,7 +80,6 @@ pub const THBJ: CurrencyId = CurrencyId::Token(TokenSymbol::THBJ);
 pub const TRYJ: CurrencyId = CurrencyId::Token(TokenSymbol::TRYJ);
 pub const TWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::TWDJ);
 pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
-pub const UAHJ: CurrencyId = CurrencyId::Token(TokenSymbol::UAHJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
@@ -93,7 +91,6 @@ CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSy
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
 pub const AED: CurrencyId = CurrencyId::Token(TokenSymbol::AED);
-pub const ARS: CurrencyId = CurrencyId::Token(TokenSymbol::ARS);
 pub const AUD: CurrencyId = CurrencyId::Token(TokenSymbol::AUD);
 pub const BRL: CurrencyId = CurrencyId::Token(TokenSymbol::BRL);
 pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
@@ -129,7 +126,6 @@ pub const THB: CurrencyId = CurrencyId::Token(TokenSymbol::THB);
 pub const TRY: CurrencyId = CurrencyId::Token(TokenSymbol::TRY);
 pub const TWD: CurrencyId = CurrencyId::Token(TokenSymbol::TWD);
 pub const TZS: CurrencyId = CurrencyId::Token(TokenSymbol::TZS);
-pub const UAH: CurrencyId = CurrencyId::Token(TokenSymbol::UAH);
 pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
 pub const ZAR: CurrencyId = CurrencyId::Token(TokenSymbol::ZAR);
 pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
@@ -271,12 +267,7 @@ parameter_type_with_key! {
 parameter_type_with_key! {
 	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
 		match currency_id {
-			&USDJ => &USD,
-			&GBPJ => &GBP,
-			&EURJ => &EUR,
-			&CHFJ => &CHF,
 			&AEDJ => &AED,
-			&ARSJ => &ARS,
 			&AUDJ => &AUD,
 			&BRLJ => &BRL,
 			&CADJ => &CAD,
@@ -312,7 +303,6 @@ parameter_type_with_key! {
 			&TRYJ => &TRY,
 			&TWDJ => &TWD,
 			&TZSJ => &TZS,
-			&UAHJ => &UAH,
 			&USDJ => &USD,
 			&ZARJ => &ZAR,
 			_ => None,
@@ -353,7 +343,6 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT,
 		AEDJ,
-		ARSJ,
  		AUDJ,
 		BRLJ,
 		CADJ,
@@ -389,13 +378,11 @@ parameter_types! {
 		TRYJ,
 		TWDJ,
 		TZSJ,
-		UAHJ,
 		USDJ,
 		ZARJ,
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
 		AED,
-		ARS,
  		AUD,
 		BRL,
 		CAD,
@@ -431,7 +418,6 @@ parameter_types! {
 		TRY,
 		TWD,
 		TZS,
-		UAH,
 		USD,
 		ZAR,
 		KWD,

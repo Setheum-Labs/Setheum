@@ -44,7 +44,6 @@ pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
-pub const ARSJ: CurrencyId = CurrencyId::Token(TokenSymbol::ARSJ);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
 pub const BRLJ: CurrencyId = CurrencyId::Token(TokenSymbol::BRLJ);
 pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
@@ -80,7 +79,6 @@ pub const THBJ: CurrencyId = CurrencyId::Token(TokenSymbol::THBJ);
 pub const TRYJ: CurrencyId = CurrencyId::Token(TokenSymbol::TRYJ);
 pub const TWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::TWDJ);
 pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
-pub const UAHJ: CurrencyId = CurrencyId::Token(TokenSymbol::UAHJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
@@ -205,7 +203,6 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT,
 		AEDJ,
-		ARSJ,
  		AUDJ,
 		BRLJ,
 		CADJ,
@@ -241,7 +238,6 @@ parameter_types! {
 		TRYJ,
 		TWDJ,
 		TZSJ,
-		UAHJ,
 		USDJ,
 		ZARJ,
 	];
@@ -307,7 +303,6 @@ impl StandardValidator<AccountId, CurrencyId, Balance, Balance> for MockStandard
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
 		AEDJ,
-		ARSJ,
  		AUDJ,
 		BRLJ,
 		CADJ,
@@ -343,7 +338,6 @@ parameter_types! {
 		TRYJ,
 		TWDJ,
 		TZSJ,
-		UAHJ,
 		USDJ,
 		ZARJ,
 	];

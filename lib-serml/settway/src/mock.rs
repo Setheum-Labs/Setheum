@@ -192,7 +192,6 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT,
 		AEDJ,
-		ARSJ,
  		AUDJ,
 		BRLJ,
 		CADJ,
@@ -228,7 +227,6 @@ parameter_types! {
 		TRYJ,
 		TWDJ,
 		TZSJ,
-		UAHJ,
 		USDJ,
 		ZARJ,
 	];
@@ -265,7 +263,6 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
 		AEDJ,
-		ARSJ,
  		AUDJ,
 		BRLJ,
 		CADJ,
@@ -301,7 +298,6 @@ parameter_types! {
 		TRYJ,
 		TWDJ,
 		TZSJ,
-		UAHJ,
 		USDJ,
 		ZARJ,
 	];
