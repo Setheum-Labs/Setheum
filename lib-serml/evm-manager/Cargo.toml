@@ -1,5 +1,5 @@
 [package]
-name = "module-evm-manager"
+name = "setheum-evm-manager"
 version = "1.0.0"
 authors = ["Setheum-Labs"]
 edition = "2018"
@@ -25,8 +25,8 @@ orml-currencies = { path = "../../orml/currencies" }
 orml-tokens = { path = "../../orml/tokens" }
 orml-traits = { path = "../../orml/traits" }
 orml-utilities = { path = "../../orml/utilities" }
-module-evm = { path = "../evm" }
-module-evm-bridge = { path = "../evm-bridge" }
+setheum-evm = { path = "../evm" }
+setheum-evm-bridge = { path = "../evm-bridge" }
 
 [features]
 default = ["std"]

@@ -23,7 +23,7 @@
 use super::*;
 use frame_support::{assert_ok, construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
-use module_support::{mocks::MockAddressMapping, AddressMapping};
+use setheum_support::{mocks::MockAddressMapping, AddressMapping};
 use orml_traits::parameter_type_with_key;
 use primitives::{Amount, Balance, CurrencyId, TokenSymbol};
 use sp_core::{bytes::from_hex, crypto::AccountId32, H256};
@@ -135,7 +135,7 @@ ord_parameter_types! {
 	pub const DeploymentFee: u64 = 200;
 }
 
-impl module_evm::Config for Runtime {
+impl setheum_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
 	type TransferAll = ();
@@ -159,7 +159,7 @@ impl module_evm::Config for Runtime {
 	type WeightInfo = ();
 }
 
-impl module_evm_bridge::Config for Runtime {
+impl setheum_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
@@ -180,7 +180,7 @@ pub fn erc20_address_not_exists() -> EvmAddress {
 }
 
 pub fn alice() -> AccountId {
-	<Runtime as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr())
+	<Runtime as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr())
 }
 
 pub fn alice_evm_addr() -> EvmAddress {
@@ -199,8 +199,8 @@ construct_runtime!(
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: module_evm_bridge::{Pallet},
+		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
+		EVMBridge: setheum_evm_bridge::{Pallet},
 	}
 );
 
@@ -214,7 +214,7 @@ pub fn deploy_contracts() {
 		10000
 	));
 
-	let event = Event::module_evm(module_evm::Event::Created(erc20_address()));
+	let event = Event::setheum_evm(setheum_evm::Event::Created(erc20_address()));
 	assert_eq!(System::events().iter().last().unwrap().event, event);
 
 	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
@@ -249,7 +249,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		module_evm::GenesisConfig::<Runtime>::default()
+		setheum_evm::GenesisConfig::<Runtime>::default()
 			.assimilate_storage(&mut t)
 			.unwrap();
 
