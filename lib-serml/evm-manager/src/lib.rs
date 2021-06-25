@@ -27,7 +27,7 @@
 #![allow(clippy::unused_unit)]
 
 use frame_support::{ensure, pallet_prelude::*, require_transactional, traits::Currency};
-use module_support::{CurrencyIdMapping, EVMBridge, InvokeContext};
+use setheum_support::{CurrencyIdMapping, EVMBridge, InvokeContext};
 use primitives::{
 	currency::TokenInfo,
 	evm::{Erc20Info, EvmAddress},
