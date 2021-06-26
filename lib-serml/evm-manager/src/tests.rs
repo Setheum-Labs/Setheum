@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum-Labs.
+// Copyright (C) 2019-2021 Setheum-Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify

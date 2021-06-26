@@ -245,7 +245,7 @@ pub fn deploy_contracts() {
 		10000
 	));
 
-	let event = Event::module_evm(module_evm::Event::Created(erc20_address()));
+	let event = Event::setheum_evm(setheum_evm::Event::Created(erc20_address()));
 	assert_eq!(System::events().iter().last().unwrap().event, event);
 
 	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
@@ -305,7 +305,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		module_evm::GenesisConfig::<Runtime>::default()
+		setheum_evm::GenesisConfig::<Runtime>::default()
 			.assimilate_storage(&mut t)
 			.unwrap();
 

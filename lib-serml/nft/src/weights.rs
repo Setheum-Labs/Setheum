@@ -44,7 +44,7 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for module_nft.
+/// Weight functions needed for setheum_nft.
 pub trait WeightInfo {
 	fn create_class() -> Weight;
 	fn mint(i: u32, ) -> Weight;
@@ -54,7 +54,7 @@ pub trait WeightInfo {
 	fn destroy_class() -> Weight;
 }
 
-/// Weights for module_nft using the Setheum node and recommended hardware.
+/// Weights for setheum_nft using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn create_class() -> Weight {

@@ -28,7 +28,7 @@ use frame_support::{
 	},
 };
 use frame_system::limits;
-pub use module_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
+pub use setheum_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{
 	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };

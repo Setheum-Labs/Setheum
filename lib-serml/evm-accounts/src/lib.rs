@@ -34,7 +34,7 @@ use frame_support::{
 	transactional,
 };
 use frame_system::{ensure_signed, pallet_prelude::*};
-use module_support::AddressMapping;
+use setheum_support::AddressMapping;
 use orml_traits::{currency::TransferAll, Handler};
 use primitives::{evm::EvmAddress, AccountIndex};
 use sp_core::{crypto::AccountId32, ecdsa};

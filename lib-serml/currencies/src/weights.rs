@@ -51,7 +51,7 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for module_currencies.
+/// Weight functions needed for setheum_currencies.
 pub trait WeightInfo {
 	fn transfer_non_native_currency() -> Weight;
 	fn transfer_native_currency() -> Weight;
@@ -60,7 +60,7 @@ pub trait WeightInfo {
 	fn update_balance_native_currency_killing() -> Weight;
 }
 
-/// Weights for module_currencies using the Setheum node and recommended hardware.
+/// Weights for setheum_currencies using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn transfer_non_native_currency() -> Weight {

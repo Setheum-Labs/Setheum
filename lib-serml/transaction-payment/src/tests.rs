@@ -33,10 +33,10 @@ use orml_traits::MultiCurrency;
 use sp_runtime::{testing::TestXt, traits::One};
 
 const CALL: &<Runtime as frame_system::Config>::Call =
-	&Call::Currencies(module_currencies::Call::transfer(BOB, SETT, 12));
+	&Call::Currencies(setheum_currencies::Call::transfer(BOB, SETT, 12));
 
 const CALL2: &<Runtime as frame_system::Config>::Call =
-	&Call::Currencies(module_currencies::Call::transfer_native_currency(BOB, 12));
+	&Call::Currencies(setheum_currencies::Call::transfer_native_currency(BOB, 12));
 
 const INFO: DispatchInfo = DispatchInfo {
 	weight: 1000,
