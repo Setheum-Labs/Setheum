@@ -168,9 +168,11 @@ impl<T: Config> Pallet<T> {
 		);
 	
 		if reserve_adjustment.is_positive() {
-			T::Currency::transfer(reserve_currency, who, &setheum_account, reserve_balance_adjustment)?;
+			T::Currency::transfer(reserve_currency, who, &setheum_account,
+				T::Convert::convert((reserve_currency, reserve_balance_adjustment)))?;
 		} else if reserve_adjustment.is_negative() {
-			T::Currency::transfer(reserve_currency, &setheum_account, who, reserve_balance_adjustment)?;
+			T::Currency::transfer(reserve_currency, &setheum_account, who,
+				T::Convert::convert((reserve_currency, reserve_balance_adjustment)))?;
 		}
 
 		if standard_adjustment.is_positive() {
