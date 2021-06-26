@@ -269,8 +269,6 @@ create_currency_id! {
 		JTZS("Neom Tanzanian Shilling", 12) = 124,
 		JUSD("Neom US Dollar", 12) = 125,
 		JZAR("Neom South African Rand", 12) = 126,
-		// Foreign System Currencies (Alphabetical Order)
-		RENBTC("renBTC", 8) = 127,
 		/// Ends at 170 (41 places left yet reserved for Neom Network)
 
 		/// Fiat Currencies as Pegs
