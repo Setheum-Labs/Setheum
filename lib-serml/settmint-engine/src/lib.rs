@@ -182,11 +182,6 @@ impl<T: Config> Pallet<T> {
 		reserve_adjustment: Amount,
 		standard_adjustment: Amount,
 	) -> DispatchResult {
-		// ensure the currency is a settcurrency standard
-		ensure!(
-			T::StandardCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStandardType,
-		);
 		<SettmintManagerOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
 		Ok(())
 	}
