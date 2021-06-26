@@ -125,6 +125,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		// TODO: Update to add "claim_cashdrop" using `claim: bool`
 		/// Transfer some balance to another account under `currency_id`.
 		///
 		/// The dispatch origin for this call must be `Signed` by the
@@ -143,6 +144,7 @@ pub mod module {
 		}
 
 		/// Transfer some native currency to another account.
+		// TODO: Update to add "claim_cashdrop" using `claim: bool`
 		///
 		/// The dispatch origin for this call must be `Signed` by the
 		/// transactor.
@@ -260,6 +262,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		}
 	}
 
+	// TODO: Update to add "claim_cashdrop" using `claim: bool`
 	fn transfer(
 		currency_id: Self::CurrencyId,
 		from: &T::AccountId,
@@ -276,6 +279,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 				let origin = T::EVMBridge::get_origin().unwrap_or_default();
 				let origin_address = T::AddressMapping::get_or_create_evm_address(&origin);
 				let address = T::AddressMapping::get_or_create_evm_address(&to);
+				// TODO: Update to add "claim_cashdrop" using `claim: bool`
 				T::EVMBridge::transfer(
 					InvokeContext {
 						contract,
@@ -427,6 +431,10 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 		}
 	}
 
+	// TODO: Update to add "claim_cashdrop" using `claim: bool` -
+	// TODO:  - Maybe add Claim cashdrop to reserve too, since it -
+	// TODO:  - transfers, to "claim_cashdrop" or make it false `claimed: bool = false`.
+	// TODO: - BUT I LEAN TOWARDS THE LATTER.
 	fn reserve(currency_id: Self::CurrencyId, who: &T::AccountId, value: Self::Balance) -> DispatchResult {
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
@@ -584,6 +592,7 @@ where
 		<Pallet<T>>::ensure_can_withdraw(GetCurrencyId::get(), who, amount)
 	}
 
+	// TODO: Update to add "claim_cashdrop" using `claim: bool` -
 	fn transfer(from: &T::AccountId, to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		<Pallet<T> as MultiCurrency<T::AccountId>>::transfer(GetCurrencyId::get(), from, to, amount)
 	}
@@ -716,6 +725,7 @@ where
 		Currency::ensure_can_withdraw(who, amount, WithdrawReasons::all(), new_balance)
 	}
 
+	// TODO: Update to add "claim_cashdrop" using `claim: bool` -
 	fn transfer(from: &AccountId, to: &AccountId, amount: Self::Balance) -> DispatchResult {
 		Currency::transfer(from, to, amount, ExistenceRequirement::AllowDeath)
 	}
@@ -833,6 +843,7 @@ where
 	}
 }
 
+	// TODO: Update to add "claim_cashdrop" using `claim: bool` -
 impl<T: Config> TransferAll<T::AccountId> for Pallet<T> {
 	#[transactional]
 	fn transfer_all(source: &T::AccountId, dest: &T::AccountId) -> DispatchResult {

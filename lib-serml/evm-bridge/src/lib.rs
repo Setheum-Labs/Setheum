@@ -152,6 +152,7 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 			.saturated_into::<BalanceOf<T>>())
 	}
 
+	// TODO: Update to add "claim_cashdrop" using `claim: bool`
 	// Calls the transfer method on an ERC20 contract using the given context.
 	fn transfer(context: InvokeContext, to: H160, value: BalanceOf<T>) -> DispatchResult {
 		// ERC20.transfer method hash
