@@ -7,8 +7,10 @@ edition = "2018"
 [dependencies]
 # external dependencies
 static_assertions = "1.1.0"
+num_enum = { version = "0.5.1", default-features = false }
 serde = { version = "1.0.101", optional = true, default-features = false }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+max-encoded-len = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 
 # Substrate dependencies
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
@@ -23,23 +25,28 @@ orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
 orml-traits = { path = "../../lib-openrml/traits", default-features = false }
 
 # local dependencies
+setheum-evm = { path = "../../lib-serml/evm", default-features = false }
 setheum-support = { path = "../../lib-serml/support", default-features = false }
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
 serde_json = "1.0.41"
+sha3 = { version = "0.9.1" }
 hex-literal = "0.3.1"
-sp-io = "3.0.0"
-pallet-timestamp = "3.0.0"
-pallet-balances = "3.0.0"
-pallet-proxy = "3.0.0"
-pallet-utility = "3.0.0"
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+setheum-service = {  path = "../../node/setheum/service" }
 orml-tokens = { path = "../../lib-openrml/tokens" }
 orml-nft = { path = "../../lib-openrml/nft" }
 setheum-currencies = { path = "../../lib-serml/currencies" }
 setheum-nft = { path = "../../lib-serml/nft" }
 setheum-dex = { path = "../../lib-serml/dex" }
+setheum-prices = { path = "../../lib-serml/prices" }
+setheum-transaction-payment = { path = "../../lib-serml/transaction-payment" }
 
 [features]
 default = ["std"]
@@ -58,3 +65,4 @@ std = [
 	"primitives/std",
 	"setheum-transaction-payment/std",
 ]
+with-ethereum-compatibility = []

@@ -23,19 +23,17 @@
 use frame_support::{
 	parameter_types,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS},
 		DispatchClass, Weight,
 	},
 };
 use frame_system::limits;
-pub use setheum_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
-use primitives::{Balance, CurrencyId};
-use sp_core::H160;
-use sp_runtime::{
-	traits::{Convert, Saturating},
-	transaction_validity::TransactionPriority,
-	FixedPointNumber, FixedPointOperand, Perbill,
+pub use module_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
+use primitives::{
+	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
+use sp_core::H160;
+use sp_runtime::{traits::Convert, transaction_validity::TransactionPriority, Perbill};
 use static_assertions::const_assert;
 
 pub mod precompile;
@@ -44,7 +42,49 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::currency::{
-	GetDecimals, DNAR, SETT, USDJ, NEOM, NSETT, JUSD, ROME, rSETT, rUSD,
+	TokenInfo, 
+	DNAR, NEOM,
+	SDEX, HALAL,
+	SETT, NSETT,
+	AEDJ, JAED,
+	AUDJ, JAUD,
+	BRLJ, JBRL,
+	CADJ, JCAD,
+	CHFJ, JCHF,
+	CLPJ, JCLP,
+	CNYJ, JCNY,
+	COPJ, JCOP,
+	EURJ, JEUR,
+	GBPJ, JGBP,
+	HKDJ, JHKD,
+	HUFJ, JHUF,
+	IDRJ, JIDR,
+	JPYJ, JJPY,
+	KESJ, JKES,
+	KRWJ, JKRW,
+	KZTJ, JKZT,
+	MXNJ, JMXN,
+	MYRJ, JMYR,
+	NGNJ, JNGN,
+	NOKJ, JNOK,
+	NZDJ, JNZD,
+	PENJ, JPEN,
+	PHPJ, JPHP,
+	PKRJ, JPKR,
+	PLNJ, JPLN,
+	QARJ, JQAR,
+	RONJ, JRON,
+	RUBJ, JRUB,
+	SARJ, JSAR,
+	SEKJ, JSEK,
+	SGDJ, JSGD,
+	THBJ, JTHB,
+	TRYJ, JTRY,
+	TWDJ, JTWD,
+	TZSJ, JTZS,
+	USDJ, JUSD,
+	ZARJ, JZAR,
+	RENBTC,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
@@ -216,12 +256,42 @@ parameter_types! {
 	];
 }
 
+/// Check if the given `address` is a system contract.
+///
+/// It's system contract if the address starts with SYSTEM_CONTRACT_ADDRESS_PREFIX.
+pub fn is_system_contract(address: H160) -> bool {
+	address.as_bytes().starts_with(&SYSTEM_CONTRACT_ADDRESS_PREFIX)
+}
+
+pub fn is_setheum_precompile(address: H160) -> bool {
+	address >= H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)
+		&& address < H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)
+}
+
+/// The call is allowed only if caller is a system contract.
+pub struct SystemContractsFilter;
+impl PrecompileCallerFilter for SystemContractsFilter {
+	fn is_allowed(caller: H160) -> bool {
+		is_system_contract(caller)
+	}
+}
+
+/// Convert gas to weight
+pub struct GasToWeight;
+impl Convert<u64, Weight> for GasToWeight {
+	fn convert(a: u64) -> u64 {
+		// TODO: estimate this
+		a as Weight
+	}
+}
+
+// TODO: somehow estimate this value. Start from a conservative value.
 pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
 /// used by  Operational  extrinsics.
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-/// We allow for 2 seconds of compute with a 6 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
+/// We allow for 1 second of compute with a 3 second average block time.
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 1 * WEIGHT_PER_SECOND;
 
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
 
@@ -262,8 +332,9 @@ parameter_types! {
 		.saturating_sub(BlockExecutionWeight::get());
 }
 
+// TODO: make those const fn
 pub fn dollar(currency_id: CurrencyId) -> Balance {
-	10u128.saturating_pow(currency_id.decimals())
+	10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
 }
 
 pub fn cent(currency_id: CurrencyId) -> Balance {
