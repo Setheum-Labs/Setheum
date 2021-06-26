@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the setters-manager module.
+//! Mocks for the settmint-manager module.
 
 #![cfg(test)]
 
@@ -82,7 +82,7 @@ pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
-mod setters_manager {
+mod settmint_manager {
 	pub use super::super::*;
 }
 
@@ -342,7 +342,7 @@ parameter_types! {
 		ZARJ,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
-	pub const SettersManagerPalletId: PalletId = PalletId(*b"set/setter");
+	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/setter");
 
 }
 
@@ -354,7 +354,7 @@ impl Config for Runtime {
 	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type StandardValidator = MockStandardValidator;
 	type SerpTreasury = SerpTreasuryModule;
-	type PalletId = SettersManagerPalletId;
+	type PalletId = SettmintManagerPalletId;
 	type OnUpdateSetter = ();
 }
 
@@ -368,7 +368,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		SettersManagerModule: setters_manager::{Module, Storage, Call, Event<T>},
+		SettmintManagerModule: settmint_manager::{Module, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Module, Call, Event<T>},

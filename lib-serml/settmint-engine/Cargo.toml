@@ -24,7 +24,7 @@ orml-utilities = { path = "../../lib-openrml/utilities", default-features = fals
 
 # local dependencies
 support = { package = "setheum-support", path = "../support", default-features = false }
-setters-manager = { package = "setters-manager", path = "../setters-manager", default-features = false }
+settmint-manager = { package = "settmint-manager", path = "../settmint-manager", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
@@ -48,7 +48,7 @@ std = [
 	"sp-runtime/std",
 	"sp-std/std",
 	"support/std",
-	"setters-manager/std",
+	"settmint-manager/std",
 	"primitives/std",
 	"orml-utilities/std",
 ]

@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # SettersManager Module
+//! # SettmintManager Module
 //!
 //! ## Overview
 //!
-//! SettersManager module manages Settmint's reserve asset (Setter) 
+//! SettmintManager module manages Settmint's reserve asset (Setter) 
 //! and the standards backed by the asset (SettCurrencies).
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -64,7 +64,7 @@ pub mod module {
 		type Convert: Convert<(CurrencyId, Balance), Balance>;
 
 		/// Currency type for deposit/withdraw reserve assets 
-		/// to/from setters-manager module
+		/// to/from settmint-manager module
 		type Currency: MultiCurrencyExtended<
 			Self::AccountId,
 			CurrencyId = CurrencyId,

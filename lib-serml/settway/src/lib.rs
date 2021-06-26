@@ -149,7 +149,7 @@ pub mod module {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			Self::check_authorization(&from, &to, currency_id)?;
-			<setters_manager::Module<T>>::transfer_reserve(&from, &to, currency_id)?;
+			<settmint_manager::Module<T>>::transfer_reserve(&from, &to, currency_id)?;
 			Ok(().into())
 		}
 

@@ -4105,7 +4105,7 @@ dependencies = [
  "setheum-settway",
  "setheum-support",
  "setheum-transaction-payment",
- "setters-manager",
+ "settmint-manager",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -4198,7 +4198,7 @@ dependencies = [
  "setheum-settway",
  "setheum-support",
  "setheum-transaction-payment",
- "setters-manager",
+ "settmint-manager",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -7829,7 +7829,7 @@ dependencies = [
  "setheum-settway",
  "setheum-support",
  "setheum-transaction-payment",
- "setters-manager",
+ "settmint-manager",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -7915,7 +7915,7 @@ dependencies = [
  "setheum-dex",
  "setheum-primitives",
  "setheum-support",
- "setters-manager",
+ "settmint-manager",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
  "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -7939,7 +7939,7 @@ dependencies = [
  "setheum-primitives",
  "setheum-settmint-engine",
  "setheum-support",
- "setters-manager",
+ "settmint-manager",
  "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",
@@ -7985,7 +7985,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setters-manager"
+name = "settmint-manager"
 version = "0.7.1"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",

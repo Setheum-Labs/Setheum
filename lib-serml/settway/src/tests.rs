@@ -83,8 +83,8 @@ fn transfer_position_from_should_work() {
 		assert_ok!(SettwayModule::adjust_position(Origin::signed(ALICE), SETT, 100, 50));
 		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
 		assert_ok!(SettwayModule::transfer_position_from(Origin::signed(BOB), SETT, ALICE));
-		assert_eq!(SettersManagerModule::positions(SETT, BOB).reserve, 100);
-		assert_eq!(SettersManagerModule::positions(SETT, BOB).standard, 50);
+		assert_eq!(SettmintManagerModule::positions(SETT, BOB).reserve, 100);
+		assert_eq!(SettmintManagerModule::positions(SETT, BOB).standard, 50);
 	});
 }
 
@@ -102,7 +102,7 @@ fn transfer_unauthorization_setters_should_not_work() {
 fn adjust_position_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettwayModule::adjust_position(Origin::signed(ALICE), SETT, 100, 50));
-		assert_eq!(SettersManagerModule::positions(SETT, ALICE).reserve, 100);
-		assert_eq!(SettersManagerModule::positions(SETT, ALICE).standard, 50);
+		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).reserve, 100);
+		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).standard, 50);
 	});
 }

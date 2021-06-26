@@ -161,16 +161,16 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const SettersManagerPalletId: PalletId = PalletId(*b"set/setter");
+	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/setter");
 }
 
-impl setters_manager::Config for Runtime {
+impl settmint_manager::Config for Runtime {
 	type Event = Event;
 	type Convert = StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
-	type PalletId = SettersManagerPalletId;
+	type PalletId = SettmintManagerPalletId;
 	type OnUpdateSetter = ();
 }
 
@@ -409,7 +409,7 @@ construct_runtime!(
 		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Config, Event<T>},
 		Currencies: orml_currencies::{Module, Call, Event<T>},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		SettersManagerModule: setters_manager::{Module, Storage, Call, Event<T>},
+		SettmintManagerModule: settmint_manager::{Module, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
 		SetheumDEX: dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
