@@ -129,7 +129,7 @@ parameter_types! {
 	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub const SettersManagerPalletId: PalletId = PalletId(*b"set/setter");
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/stwy");
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");

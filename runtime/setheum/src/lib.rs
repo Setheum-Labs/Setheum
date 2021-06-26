@@ -130,7 +130,7 @@ parameter_types! {
 	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub const SettersManagerPalletId: PalletId = PalletId(*b"set/setter");
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/stwy");
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
@@ -931,7 +931,7 @@ impl dex::Config for Runtime {
 
 parameter_types! {
 	pub const MaxAuctionsCount: u32 = 258;
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.

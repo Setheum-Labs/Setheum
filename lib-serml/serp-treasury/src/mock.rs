@@ -271,7 +271,7 @@ parameter_types! {
 	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
 	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
 
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/treasury");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/settpay");
 	
