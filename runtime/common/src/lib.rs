@@ -193,3 +193,49 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 pub fn deposit(items: u32, bytes: u32, currency_id: CurrencyId) -> Balance {
 	items as Balance * 15 * cent(currency_id) + (bytes as Balance) * 6 * cent(currency_id)
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn system_contracts_filter_works() {
+		assert!(SystemContractsFilter::is_allowed(H160::from_low_u64_be(1)));
+
+		let mut max_allowed_addr = [0u8; 20];
+		max_allowed_addr[SYSTEM_CONTRACT_ADDRESS_PREFIX.len()] = 127u8;
+		assert!(SystemContractsFilter::is_allowed(max_allowed_addr.into()));
+
+		let mut min_blocked_addr = [0u8; 20];
+		min_blocked_addr[SYSTEM_CONTRACT_ADDRESS_PREFIX.len() - 1] = 1u8;
+		assert!(!SystemContractsFilter::is_allowed(min_blocked_addr.into()));
+	}
+
+	#[test]
+	fn is_system_contract_works() {
+		assert!(is_system_contract(H160::from_low_u64_be(0)));
+		assert!(is_system_contract(H160::from_low_u64_be(u64::max_value())));
+
+		let mut bytes = [0u8; 20];
+		bytes[SYSTEM_CONTRACT_ADDRESS_PREFIX.len() - 1] = 1u8;
+
+		assert!(!is_system_contract(bytes.into()));
+
+		bytes = [0u8; 20];
+		bytes[0] = 1u8;
+
+		assert!(!is_system_contract(bytes.into()));
+	}
+
+	#[test]
+	fn is_setheum_precompile_works() {
+		assert!(!is_setheum_precompile(H160::from_low_u64_be(0)));
+		assert!(!is_setheum_precompile(H160::from_low_u64_be(
+			PRECOMPILE_ADDRESS_START - 1
+		)));
+		assert!(is_setheum_precompile(H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)));
+		assert!(is_setheum_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START - 1)));
+		assert!(!is_setheum_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)));
+		assert!(!is_setheum_precompile([1u8; 20].into()));
+	}
+}
