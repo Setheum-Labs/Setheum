@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Unit tests for the settway module.
+//! Unit tests for the settmint_gateway module.
 
 #![cfg(test)]
 
@@ -31,11 +31,11 @@ use support::{Rate, Ratio};
 fn authorize_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
+		assert_ok!(SettmintGatewayModule::authorize(Origin::signed(ALICE), SETT, BOB));
 
-		System::assert_last_event(Event::settway(crate::Event::Authorization(ALICE, BOB, SETT)));
+		System::assert_last_event(Event::settmint_gateway(crate::Event::Authorization(ALICE, BOB, SETT)));
 
-		assert_ok!(SettwayModule::check_authorization(&ALICE, &BOB, SETT));
+		assert_ok!(SettmintGatewayModule::check_authorization(&ALICE, &BOB, SETT));
 	});
 }
 
@@ -43,14 +43,14 @@ fn authorize_should_work() {
 fn unauthorize_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
-		assert_ok!(SettwayModule::check_authorization(&ALICE, &BOB, SETT));
-		assert_ok!(SettwayModule::unauthorize(Origin::signed(ALICE), SETT, BOB));
+		assert_ok!(SettmintGatewayModule::authorize(Origin::signed(ALICE), SETT, BOB));
+		assert_ok!(SettmintGatewayModule::check_authorization(&ALICE, &BOB, SETT));
+		assert_ok!(SettmintGatewayModule::unauthorize(Origin::signed(ALICE), SETT, BOB));
 
-		System::assert_last_event(Event::settway(crate::Event::UnAuthorization(ALICE, BOB, SETT)));
+		System::assert_last_event(Event::settmint_gateway(crate::Event::UnAuthorization(ALICE, BOB, SETT)));
 
 		assert_noop!(
-			SettwayModule::check_authorization(&ALICE, &BOB, SETT),
+			SettmintGatewayModule::check_authorization(&ALICE, &BOB, SETT),
 			Error::<Runtime>::NoAuthorization
 		);
 	});
@@ -60,18 +60,18 @@ fn unauthorize_should_work() {
 fn unauthorize_all_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, CAROL));
-		assert_ok!(SettwayModule::unauthorize_all(Origin::signed(ALICE)));
+		assert_ok!(SettmintGatewayModule::authorize(Origin::signed(ALICE), SETT, BOB));
+		assert_ok!(SettmintGatewayModule::authorize(Origin::signed(ALICE), SETT, CAROL));
+		assert_ok!(SettmintGatewayModule::unauthorize_all(Origin::signed(ALICE)));
 
-		System::assert_last_event(Event::settway(crate::Event::UnAuthorizationAll(ALICE)));
+		System::assert_last_event(Event::settmint_gateway(crate::Event::UnAuthorizationAll(ALICE)));
 
 		assert_noop!(
-			SettwayModule::check_authorization(&ALICE, &BOB, SETT),
+			SettmintGatewayModule::check_authorization(&ALICE, &BOB, SETT),
 			Error::<Runtime>::NoAuthorization
 		);
 		assert_noop!(
-			SettwayModule::check_authorization(&ALICE, &BOB, SETT),
+			SettmintGatewayModule::check_authorization(&ALICE, &BOB, SETT),
 			Error::<Runtime>::NoAuthorization
 		);
 	});
@@ -80,9 +80,9 @@ fn unauthorize_all_should_work() {
 #[test]
 fn transfer_position_from_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettwayModule::adjust_position(Origin::signed(ALICE), SETT, 100, 50));
-		assert_ok!(SettwayModule::authorize(Origin::signed(ALICE), SETT, BOB));
-		assert_ok!(SettwayModule::transfer_position_from(Origin::signed(BOB), SETT, ALICE));
+		assert_ok!(SettmintGatewayModule::adjust_position(Origin::signed(ALICE), SETT, 100, 50));
+		assert_ok!(SettmintGatewayModule::authorize(Origin::signed(ALICE), SETT, BOB));
+		assert_ok!(SettmintGatewayModule::transfer_position_from(Origin::signed(BOB), SETT, ALICE));
 		assert_eq!(SettmintManagerModule::positions(SETT, BOB).reserve, 100);
 		assert_eq!(SettmintManagerModule::positions(SETT, BOB).standard, 50);
 	});
@@ -92,7 +92,7 @@ fn transfer_position_from_should_work() {
 fn transfer_unauthorization_setters_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			SettwayModule::transfer_position_from(Origin::signed(ALICE), SETT, BOB),
+			SettmintGatewayModule::transfer_position_from(Origin::signed(ALICE), SETT, BOB),
 			Error::<Runtime>::NoAuthorization,
 		);
 	});
@@ -101,7 +101,7 @@ fn transfer_unauthorization_setters_should_not_work() {
 #[test]
 fn adjust_position_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettwayModule::adjust_position(Origin::signed(ALICE), SETT, 100, 50));
+		assert_ok!(SettmintGatewayModule::adjust_position(Origin::signed(ALICE), SETT, 100, 50));
 		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).reserve, 100);
 		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).standard, 50);
 	});

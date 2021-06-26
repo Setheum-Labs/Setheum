@@ -4102,7 +4102,7 @@ dependencies = [
  "setheum-prices",
  "setheum-primitives",
  "setheum-settmint-engine",
- "setheum-settway",
+ "settmint-gateway",
  "setheum-support",
  "setheum-transaction-payment",
  "settmint-manager",
@@ -4195,7 +4195,7 @@ dependencies = [
  "setheum-prices",
  "setheum-primitives",
  "setheum-settmint-engine",
- "setheum-settway",
+ "settmint-gateway",
  "setheum-support",
  "setheum-transaction-payment",
  "settmint-manager",
@@ -7826,7 +7826,7 @@ dependencies = [
  "setheum-prices",
  "setheum-primitives",
  "setheum-settmint-engine",
- "setheum-settway",
+ "settmint-gateway",
  "setheum-support",
  "setheum-transaction-payment",
  "settmint-manager",
@@ -7924,7 +7924,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-settway"
+name = "settmint-gateway"
 version = "0.7.1"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?rev=1d04678e20555e623c974ee1127bc8a45abcf3d6)",

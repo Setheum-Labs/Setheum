@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the settway module.
+//! Mocks for the settmint_gateway module.
 
 #![cfg(test)]
 
@@ -34,7 +34,7 @@ use sp_runtime::{
 use sp_std::cell::RefCell;
 use support::{SerpAuctionManager, ExchangeRate, Price, PriceProvider, Rate, Ratio};
 
-mod settway {
+mod settmint_gateway {
 	pub use super::super::*;
 }
 
@@ -350,7 +350,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		Settway: settway::{Module, Storage, Call, Event<T>},
+		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Module, Call, Event<T>},
@@ -375,7 +375,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type WeightInfo = ();
 }
-pub type SettwayModule = Module<Runtime>;
+pub type SettmintGatewayModule = Module<Runtime>;
 
 pub struct ExtBuilder {
 	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,

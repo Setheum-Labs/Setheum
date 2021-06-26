@@ -22,7 +22,7 @@
 pub mod serp_auction;
 pub mod serp_treasury;
 pub mod dex;
-pub mod settway;
+pub mod settmint_gateway;
 pub mod incentives;
 pub mod prices;
 pub mod transaction_payment;

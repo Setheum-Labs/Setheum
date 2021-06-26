@@ -126,7 +126,7 @@ fn setheum_genesis(
 	use setheum_runtime::{
 		cent, dollar, get_all_setheum_accounts, SetheumOracleConfig, BabeConfig, Balance, BalancesConfig,
 		BandOracleConfig, SettmintEngineConfig, SerpTreasuryConfig, DexConfig, EnabledTradingPairs,
-		GeneralCouncilMembershipConfig, GrandpaConfig,SettwayCouncilMembershipConfig,
+		GeneralCouncilMembershipConfig, GrandpaConfig,MonetaryCouncilMembershipConfig,
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
 		OrmlNFTConfig, RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, DNAR, SETT, USDJ,
@@ -199,7 +199,7 @@ fn setheum_genesis(
 			phantom: Default::default(),
 		}),
 		pallet_collective_Instance2: Some(Default::default()),
-		pallet_membership_Instance2: Some(SettwayCouncilMembershipConfig {
+		pallet_membership_Instance2: Some(MonetaryCouncilMembershipConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		}),

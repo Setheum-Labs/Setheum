@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, SetheumOracle, AccountId, Amount, SettmintEngine, ReserveCurrencyIds, CurrencyId, Settway, Indices, Price, Rate,
+	dollar, SetheumOracle, AccountId, Amount, SettmintEngine, ReserveCurrencyIds, CurrencyId, SettmintGateway, Indices, Price, Rate,
 	Ratio, Runtime, rUSD, rSETT,
 };
 
@@ -36,7 +36,7 @@ use sp_std::prelude::*;
 const SEED: u32 = 0;
 
 runtime_benchmarks! {
-	{ Runtime, setheum_settway }
+	{ Runtime, settmint_gateway }
 
 	_ {}
 
@@ -50,7 +50,7 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = Indices::unlookup(to);
-		Settway::authorize(
+		SettmintGateway::authorize(
 			RawOrigin::Signed(caller.clone()).into(),
 			rSETT,
 			to_lookup.clone()
@@ -66,7 +66,7 @@ runtime_benchmarks! {
 		let to_lookup = Indices::unlookup(to);
 
 		for i in 0 .. c {
-			Settway::authorize(
+			SettmintGateway::authorize(
 				RawOrigin::Signed(caller.clone()).into(),
 				currency_ids[i as usize],
 				to_lookup.clone(),
@@ -116,7 +116,7 @@ runtime_benchmarks! {
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
 
 		// initialize sender's setter
-		Settway::adjust_position(
+		SettmintGateway::adjust_position(
 			RawOrigin::Signed(sender.clone()).into(),
 			currency_id,
 			reserve_amount.try_into().unwrap(),
@@ -124,7 +124,7 @@ runtime_benchmarks! {
 		)?;
 
 		// authorize receiver
-		Settway::authorize(
+		SettmintGateway::authorize(
 			RawOrigin::Signed(sender.clone()).into(),
 			currency_id,
 			receiver_lookup,
