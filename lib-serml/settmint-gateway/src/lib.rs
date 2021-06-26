@@ -124,20 +124,15 @@ pub mod module {
 			standard_adjustment: Amount,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			// ensure the currency is a settcurrency standard
-			ensure!(
-				T::StandardCurrencyIds::get().contains(&currency_id),
-				Error::<T>::InvalidStandardType,
-			);
 			<settmint_engine::Module<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
 			Ok(().into())
 		}
 
 		/// Transfer the whole Settmint of `from` under `currency_id` to caller's Settmint
 		/// under the same `currency_id`, caller must have the authorization of
-		/// `from` for the specific reserve type
+		/// `from` for the specific STANDARD type
 		///
-		/// - `currency_id`: reserve currency id.
+		/// - `currency_id`: STANDARD currency id.
 		/// - `from`: authorizer account
 		#[pallet::weight(<T as Config>::WeightInfo::transfer_position_from())]
 		#[transactional]
@@ -155,7 +150,7 @@ pub mod module {
 
 		/// Authorize `to` to manipulate the setter under `currency_id`
 		///
-		/// - `currency_id`: reserve currency id.
+		/// - `currency_id`: STANDARD currency id.
 		/// - `to`: authorizee account
 		#[pallet::weight(<T as Config>::WeightInfo::authorize())]
 		#[transactional]
@@ -173,7 +168,7 @@ pub mod module {
 
 		/// Cancel the authorization for `to` under `currency_id`
 		///
-		/// - `currency_id`: reserve currency id.
+		/// - `currency_id`: STANDARD currency id.
 		/// - `to`: authorizee account
 		#[pallet::weight(<T as Config>::WeightInfo::unauthorize())]
 		#[transactional]
@@ -202,7 +197,7 @@ pub mod module {
 }
 
 impl<T: Config> Pallet<T> {
-	/// Check if `from` has the authorization of `to` under `currency_id`
+	/// Check if `from` has the authorization of `to` under STANDARD `currency_id`
 	fn check_authorization(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		ensure!(
 			from == to || Self::authorization(from, (currency_id, to)),

@@ -385,8 +385,14 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			endowed_accounts: vec![
+				(ALICE, DNAR, 1000),
+				(BOB, DNAR, 1000),
+				(ALICE, SDEX, 1000),
+				(BOB, SDEX, 1000),
 				(ALICE, SETT, 1000),
 				(BOB, SETT, 1000),
+				(ALICE, USDJ, 1000),
+				(BOB, USDJ, 1000),
 			],
 		}
 	}
