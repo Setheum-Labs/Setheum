@@ -295,7 +295,7 @@ parameter_types! {
 		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
 		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
 	];
-	pub const IncentivesPalletId: PalletId = PalletId(*b"dnr/inct");
+	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 }
 
 ord_parameter_types! {

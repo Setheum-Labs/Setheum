@@ -111,7 +111,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub const DexPalletId: PalletId = PalletId(*b"dnr/sdex");
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 }
 
 impl Config for Runtime {

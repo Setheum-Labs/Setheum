@@ -144,7 +144,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const DexPalletId: PalletId = PalletId(*b"dnr/sdex");
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(SETT, DNAR), TradingPair::new(SETT, DOT)];
