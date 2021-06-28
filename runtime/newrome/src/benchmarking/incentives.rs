@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -53,7 +53,7 @@ runtime_benchmarks! {
 
 	claim_rewards {
 		let caller: AccountId = account("caller", 0, SEED);
-		let pool_id = PoolId::Setters(rSETT);
+		let pool_id = PoolId::SettmintManager(rSETT);
 
 		Rewards::add_share(&caller, pool_id, 100);
 		orml_rewards::Pools::<Runtime>::mutate(pool_id, |pool_info| {
@@ -61,17 +61,7 @@ runtime_benchmarks! {
 		});
 	}: _(RawOrigin::Signed(caller), pool_id)
 
-	update_reserves_incentive_rewards {
-		let c in 0 .. ReserveCurrencyIds::get().len().saturating_sub(1) as u32;
-		let currency_ids = ReserveCurrencyIds::get();
-		let mut values = vec![];
-
-		for i in 0 .. c {
-			let currency_id = currency_ids[i as usize];
-			values.push((currency_id, 100 * dollar(ROME)));
-		}
-	}: _(RawOrigin::Root, values)
-
+	// TODO: Update - add all other dex rewards ...
 	update_dex_incentive_rewards {
 		let c in 0 .. ReserveCurrencyIds::get().len().saturating_sub(1) as u32;
 		let currency_ids = ReserveCurrencyIds::get();
@@ -91,24 +81,6 @@ runtime_benchmarks! {
 		}
 	}: _(RawOrigin::Root, values)
 
-	update_dex_saving_rates {
-		let c in 0 .. ReserveCurrencyIds::get().len().saturating_sub(1) as u32;
-		let currency_ids = ReserveCurrencyIds::get();
-		let caller: AccountId = account("caller", 0, SEED);
-		let mut values = vec![];
-		let base_currency_id = GetStableCurrencyId::get();
-
-		for i in 0 .. c {
-			let currency_id = currency_ids[i as usize];
-			let lp_share_currency_id = match (currency_id, base_currency_id) {
-				(CurrencyId::Token(other_currency_symbol), CurrencyId::Token(base_currency_symbol)) => {
-					CurrencyId::DexShare(other_currency_symbol, base_currency_symbol)
-				}
-				_ => return Err("invalid currency id"),
-			};
-			values.push((lp_share_currency_id, Rate::default()));
-		}
-	}: _(RawOrigin::Root, values)
 }
 
 #[cfg(test)]

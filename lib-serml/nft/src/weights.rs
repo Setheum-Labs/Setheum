@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("dev"), DB CACHE: 128
 
 // Executed Command:
-// target/release/setheum
 // benchmark
 // --chain=dev
 // --steps=50
@@ -51,11 +50,12 @@ pub trait WeightInfo {
 	fn mint(i: u32, ) -> Weight;
 	fn transfer() -> Weight;
 	fn burn() -> Weight;
+	fn burn_with_remark(b: u32, ) -> Weight;
 	fn destroy_class() -> Weight;
 }
 
 /// Weights for setheum_nft using the Setheum node and recommended hardware.
-pub struct SetheumWeight<T>(_);
+pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn create_class() -> Weight {
 		(200_357_000 as Weight)
@@ -79,6 +79,12 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 		(154_177_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
+	}
+	fn burn_with_remark(b: u32, ) -> Weight {
+		(154_177_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(4 as Weight))
+			.saturating_add(T::DbWeight::get().writes(5 as Weight))
+			.saturating_add((1_000 as Weight).saturating_mul(b as Weight))
 	}
 	fn destroy_class() -> Weight {
 		(137_255_000 as Weight)
@@ -111,6 +117,12 @@ impl WeightInfo for () {
 		(154_177_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
+	}
+	fn burn_with_remark(b: u32, ) -> Weight {
+		(154_177_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
+			.saturating_add((1_000 as Weight).saturating_mul(b as Weight))
 	}
 	fn destroy_class() -> Weight {
 		(137_255_000 as Weight)

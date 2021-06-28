@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("dev"), DB CACHE: 128
 
 // Executed Command:
-// target/release/setheum
 // benchmark
 // --chain=dev
 // --steps=50
@@ -45,7 +44,7 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for setheum-dex.
+/// Weight functions needed for setheum_dex.
 pub trait WeightInfo {
 	fn enable_trading_pair() -> Weight;
 	fn disable_trading_pair() -> Weight;
@@ -58,7 +57,7 @@ pub trait WeightInfo {
 	fn swap_with_exact_target(u: u32, ) -> Weight;
 }
 
-/// Weights for setheum-dex using the Setheum node and recommended hardware.
+/// Weights for setheum_dex using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn enable_trading_pair() -> Weight {

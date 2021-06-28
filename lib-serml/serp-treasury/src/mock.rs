@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{TokenSymbol, TradingPair};
+use primitives::{Amount, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{Permill, testing::Header, traits::IdentityLookup};
 use sp_std::cell::RefCell;
@@ -36,13 +36,13 @@ pub type AuctionId = u32;
 
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
+pub const CHARITY_FUND: AccountId = 2;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
-pub const ARSJ: CurrencyId = CurrencyId::Token(TokenSymbol::ARSJ);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
 pub const BRLJ: CurrencyId = CurrencyId::Token(TokenSymbol::BRLJ);
 pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
@@ -55,7 +55,6 @@ pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
 pub const HKDJ: CurrencyId = CurrencyId::Token(TokenSymbol::HKDJ);
 pub const HUFJ: CurrencyId = CurrencyId::Token(TokenSymbol::HUFJ);
 pub const IDRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IDRJ);
-pub const IRRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IRRJ);
 pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
 pub const KESJ: CurrencyId = CurrencyId::Token(TokenSymbol::KESJ);
 pub const KRWJ: CurrencyId = CurrencyId::Token(TokenSymbol::KRWJ);
@@ -79,7 +78,6 @@ pub const THBJ: CurrencyId = CurrencyId::Token(TokenSymbol::THBJ);
 pub const TRYJ: CurrencyId = CurrencyId::Token(TokenSymbol::TRYJ);
 pub const TWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::TWDJ);
 pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
-pub const UAHJ: CurrencyId = CurrencyId::Token(TokenSymbol::UAHJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
@@ -173,7 +171,7 @@ impl dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
-	type DexIncentives = ();
+	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
@@ -185,8 +183,8 @@ thread_local! {
 	pub static TOTAL_SERPLUS_IN_AUCTION: RefCell<u32> = RefCell::new(0);
 }
 
-pub struct MockSerpAuction;
-impl SerpAuction<AccountId> for MockSerpAuction {
+pub struct MockSerpAuctionManager;
+impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
 	type CurrencyId = CurrencyId;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
@@ -201,16 +199,24 @@ impl SerpAuction<AccountId> for MockSerpAuction {
 		Ok(())
 	}
 
-	fn new_serplus_auction(_amount: Self::Balance) -> DispatchResult {
+	fn new_serplus_auction(_amount: Self::Balance, _currency: Self::CurrencyId) -> DispatchResult {
 		TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut() += 1);
 		Ok(())
 	}
 
-	fn get_total_setter_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
+		Ok(())
+	}
+
+	fn get_total_serplus_in_auction(_currency: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 
-	fn get_total_diamond_in_auction() -> Self::Balance {
+	fn get_total_settcurrency_in_auction(_currency: Self::CurrencyId) -> Self::Balance {
+		Default::default()
+	}
+
+	fn get_total_setter_in_auction(_currency: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 }
@@ -224,7 +230,6 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT,
 		AEDJ,
-		ARSJ,
  		AUDJ,
 		BRLJ,
 		CADJ,
@@ -237,7 +242,6 @@ parameter_types! {
 		HKDJ,
 		HUFJ,
 		IDRJ,
-		IRRJ,
 		JPYJ,
  		KESJ,
  		KRWJ,
@@ -261,20 +265,21 @@ parameter_types! {
 		TRYJ,
 		TWDJ,
 		TZSJ,
-		UAHJ,
 		USDJ,
 		ZARJ,
 	];
 	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
 	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
 
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/treasury");
+	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/settpay");
+	
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
 	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
-	pub SIFSerpupRatio: Rate = Permill = Permill::from_percent(10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
+	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
 impl Config for Runtime {
@@ -288,10 +293,12 @@ impl Config for Runtime {
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
-	type SIFSerpupRatio = SIFSerpupRatio;
-	type SerpAuctionHandler = MockSerpAuction;
+	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
+	type SetheumTreasuryAcc = SetheumTreasuryPalletId;
+	type CharityFundAcc = CHARITY_FUND;
+	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -311,7 +318,7 @@ construct_runtime!(
 		Currencies: orml_currencies::{Module, Call, Event<T>},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
+		SetheumDEX: dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -324,9 +331,11 @@ impl Default for ExtBuilder {
 		Self {
 			endowed_accounts: vec![
 				(ALICE, USDJ, 1000),
-				(ALICE, CHFJ, 1000),
+				(ALICE, SETT, 1000),
 				(BOB, USDJ, 1000),
-				(BOB, CHFJ, 1000),
+				(BOB, SETT, 1000),
+				(CHARITY_FUND, USDJ, 1000),
+				(CHARITY_FUND, SETT, 1000),
 			],
 		}
 	}

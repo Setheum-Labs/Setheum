@@ -1,0 +1,47 @@
+[package]
+name = "settmint-manager"
+version = "0.7.1"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[dependencies]
+# external dependencies
+serde = { version = "1.0.101", optional = true }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+
+# Substrate dependencies
+frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+
+# orml dependencies
+orml-traits = { path = "../../lib-openrml/traits", default-features = false }
+orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }
+
+# local dependencies
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+support = { package = "setheum-support", path = "../support", default-features = false }
+
+[dev-dependencies]
+sp-core = "3.0.0"
+sp-io = "3.0.0"
+pallet-balances = "3.0.0"
+orml-currencies = { path = "../../lib-openrml/currencies" }
+serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"frame-system/std",
+	"frame-support/std",
+	"sp-std/std",
+	"sp-runtime/std",
+	"orml-traits/std",
+	"primitives/std",
+	"support/std",
+	"orml-tokens/std",
+]
+try-runtime = ["frame-support/try-runtime"]

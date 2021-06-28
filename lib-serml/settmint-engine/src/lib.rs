@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ use frame_system::{
 	offchain::{SendTransactionTypes, SubmitTransaction},
 	pallet_prelude::*,
 };
-use setters::Position;
+use settmint_manager::Position;
 use orml_traits::Change;
 use orml_utilities::{IterableStorageDoubleMapExtended, OffchainErr};
 use primitives::{Amount, Balance, CurrencyId};
@@ -51,7 +51,7 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DexManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
+	DEXManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
 };
 
 mod mock;
@@ -65,7 +65,7 @@ pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/settmint-engine/max-
 pub const LOCK_DURATION: u64 = 100;
 pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 
-pub type SettersOf<T> = setters::Module<T>;
+pub type SettmintManagerOf<T> = settmint_manager::Module<T>;
 
 // typedef to help polkadot.js disambiguate Change with different generic
 // parameters
@@ -78,7 +78,7 @@ pub mod module {
 	use super::*;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + setters::Config + SendTransactionTypes<Call<Self>> {
+	pub trait Config: frame_system::Config + settmint_manager::Config + SendTransactionTypes<Call<Self>> {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// The list of valid standard currency types
@@ -182,12 +182,7 @@ impl<T: Config> Pallet<T> {
 		reserve_adjustment: Amount,
 		standard_adjustment: Amount,
 	) -> DispatchResult {
-		// ensure the currency is a settcurrency standard
-		ensure!(
-			T::StandardCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidStandardType,
-		);
-		<SettersOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
+		<SettmintManagerOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
 		Ok(())
 	}
 }

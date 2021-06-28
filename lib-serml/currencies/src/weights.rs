@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -24,19 +24,23 @@
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("dev"), DB CACHE: 128
 
 // Executed Command:
-// /Users/xiliangchen/projects/acala/target/release/acala
 // benchmark
 // --chain=dev
 // --steps=50
 // --repeat=20
-// --pallet=module_currencies
+// --pallet=setheum_currencies
 // --extrinsic=*
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --output=./currencies/src/weights.rs
-// --template
-// ../templates/orml-weight-template.hbs
+// --template=./templates/module-weight-template.hbs
+
+
+#![cfg_attr(rustfmt, rustfmt_skip)]
+#![allow(unused_parens)]
+#![allow(unused_imports)]
+#![allow(clippy::unnecessary_cast)]
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
@@ -47,7 +51,7 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for module_currencies.
+/// Weight functions needed for setheum_currencies.
 pub trait WeightInfo {
 	fn transfer_non_native_currency() -> Weight;
 	fn transfer_native_currency() -> Weight;
@@ -56,31 +60,49 @@ pub trait WeightInfo {
 	fn update_balance_native_currency_killing() -> Weight;
 }
 
-/// Default weights.
-impl WeightInfo for () {
+/// Weights for setheum_currencies using the Setheum node and recommended hardware.
+pub struct SetheumWeight<T>(PhantomData<T>);
+impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn transfer_non_native_currency() -> Weight {
-		(60_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(5 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
+		(65_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(6 as Weight))
+			.saturating_add(T::DbWeight::get().writes(6 as Weight))
 	}
 	fn transfer_native_currency() -> Weight {
-		(60_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+		(11_000_000 as Weight)
 	}
 	fn update_balance_non_native_currency() -> Weight {
-		(29_000_000 as Weight)
+		(31_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(3 as Weight))
+			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+	}
+	fn update_balance_native_currency_creating() -> Weight {
+		(14_000_000 as Weight)
+	}
+	fn update_balance_native_currency_killing() -> Weight {
+		(13_000_000 as Weight)
+	}
+}
+
+// For backwards compatibility and tests
+impl WeightInfo for () {
+	fn transfer_non_native_currency() -> Weight {
+		(65_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(6 as Weight))
+	}
+	fn transfer_native_currency() -> Weight {
+		(11_000_000 as Weight)
+	}
+	fn update_balance_non_native_currency() -> Weight {
+		(31_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
 	}
 	fn update_balance_native_currency_creating() -> Weight {
-		(31_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+		(14_000_000 as Weight)
 	}
 	fn update_balance_native_currency_killing() -> Weight {
-		(37_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+		(13_000_000 as Weight)
 	}
 }

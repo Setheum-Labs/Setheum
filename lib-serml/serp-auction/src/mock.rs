@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -41,11 +41,49 @@ pub type Amount = i64;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
+
+// Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
+pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
+pub const BRLJ: CurrencyId = CurrencyId::Token(TokenSymbol::BRLJ);
+pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
+pub const CLPJ: CurrencyId = CurrencyId::Token(TokenSymbol::CLPJ);
+pub const CNYJ: CurrencyId = CurrencyId::Token(TokenSymbol::CNYJ);
+pub const COPJ: CurrencyId = CurrencyId::Token(TokenSymbol::COPJ);
 pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
+pub const HKDJ: CurrencyId = CurrencyId::Token(TokenSymbol::HKDJ);
+pub const HUFJ: CurrencyId = CurrencyId::Token(TokenSymbol::HUFJ);
+pub const IDRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IDRJ);
+pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
+pub const KESJ: CurrencyId = CurrencyId::Token(TokenSymbol::KESJ);
+pub const KRWJ: CurrencyId = CurrencyId::Token(TokenSymbol::KRWJ);
+pub const KZTJ: CurrencyId = CurrencyId::Token(TokenSymbol::KZTJ);
+pub const MXNJ: CurrencyId = CurrencyId::Token(TokenSymbol::MXNJ);
+pub const MYRJ: CurrencyId = CurrencyId::Token(TokenSymbol::MYRJ);
+pub const NGNJ: CurrencyId = CurrencyId::Token(TokenSymbol::NGNJ);
+pub const NOKJ: CurrencyId = CurrencyId::Token(TokenSymbol::NOKJ);
+pub const NZDJ: CurrencyId = CurrencyId::Token(TokenSymbol::NZDJ);
+pub const PENJ: CurrencyId = CurrencyId::Token(TokenSymbol::PENJ);
+pub const PHPJ: CurrencyId = CurrencyId::Token(TokenSymbol::PHPJ);
+pub const PKRJ: CurrencyId = CurrencyId::Token(TokenSymbol::PKRJ);
+pub const PLNJ: CurrencyId = CurrencyId::Token(TokenSymbol::PLNJ);
+pub const QARJ: CurrencyId = CurrencyId::Token(TokenSymbol::QARJ);
+pub const RONJ: CurrencyId = CurrencyId::Token(TokenSymbol::RONJ);
+pub const RUBJ: CurrencyId = CurrencyId::Token(TokenSymbol::RUBJ);
+pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
+pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
+pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
+pub const THBJ: CurrencyId = CurrencyId::Token(TokenSymbol::THBJ);
+pub const TRYJ: CurrencyId = CurrencyId::Token(TokenSymbol::TRYJ);
+pub const TWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::TWDJ);
+pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::XBTC);
+pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
 mod serp_auction {
 	pub use super::super::*;
@@ -101,7 +139,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = SerpAuctionModule;
+	type Handler = SerpAuctionManagerModule;
 	type WeightInfo = ();
 }
 
@@ -110,19 +148,72 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![USDJ, EURJ];
-	pub const GetStableCurrencyId: CurrencyId = USDJ;
-	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT,
+		AEDJ,
+ 		AUDJ,
+		BRLJ,
+		CADJ,
+		CHFJ,
+		CLPJ,
+		CNYJ,
+		COPJ,
+		EURJ,
+		GBPJ,
+		HKDJ,
+		HUFJ,
+		IDRJ,
+		JPYJ,
+ 		KESJ,
+ 		KRWJ,
+ 		KZTJ,
+		MXNJ,
+		MYRJ,
+ 		NGNJ,
+		NOKJ,
+		NZDJ,
+		PENJ,
+		PHPJ,
+ 		PKRJ,
+		PLNJ,
+		QARJ,
+		RONJ,
+		RUBJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		THBJ,
+		TRYJ,
+		TWDJ,
+		TZSJ,
+		USDJ,
+		ZARJ,
+	];
+	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
+	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
-	type Currency = Tokens;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type SerpAuctionHandler = SerpAuctionModule;
+	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
+	type SerplusSerpupRatio = SerplusSerpupRatio;
+	type SettPaySerpupRatio = SettPaySerpupRatio;
+	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -156,7 +247,7 @@ parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, BTC)];
+	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, CHFJ)];
 }
 
 impl dex::Config for Runtime {
@@ -165,7 +256,7 @@ impl dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
-	type DexIncentives = ();
+	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
@@ -176,6 +267,8 @@ parameter_types! {
 	pub SerplusAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1% increment
 	pub const AuctionTimeToClose: u64 = 100;
 	pub const AuctionDurationSoftCap: u64 = 2000;
+	pub const MaxAuctionsCount: u32 = 10_000;
+
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 	pub const GetSetterCurrencyId: CurrencyId = SETT;
 }
@@ -193,7 +286,7 @@ impl Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
-	type Dex = DexModule;
+	type Dex = SetheumDEX;
 	type PriceSource = MockPriceSource;
 	type UnsignedPriority = UnsignedPriority;
 	type WeightInfo = ();
@@ -209,11 +302,11 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		SerpAuctionModule: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SerpAuctionManagerModule: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 		AuctionModule: orml_auction::{Module, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Event<T>},
-		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
+		SetheumDEX: dex::{Module, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -238,9 +331,9 @@ impl Default for ExtBuilder {
 				(ALICE, USDJ, 1000),
 				(BOB, USDJ, 1000),
 				(CAROL, USDJ, 1000),
-				(ALICE, BTC, 1000),
-				(BOB, BTC, 1000),
-				(CAROL, BTC, 1000),
+				(ALICE, CHFJ, 1000),
+				(BOB, CHFJ, 1000),
+				(CAROL, CHFJ, 1000),
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
 				(CAROL, DNAR, 1000),

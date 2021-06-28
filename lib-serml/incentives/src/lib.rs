@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ use sp_runtime::{
 	DispatchResult, FixedPointNumber, RuntimeDebug,
 };
 use sp_std::{fmt::Debug, vec::Vec};
-use support::{SerpTreasury, DexIncentives, DexManager, Rate};
+use support::{SerpTreasury, DEXIncentives, DEXManager, Rate};
 
 mod mock;
 mod tests;
@@ -41,6 +41,7 @@ pub use weights::WeightInfo;
 /// PoolId for various rewards pools
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
 pub enum PoolId<AccountId> {
+	// TODO: Update new swapped changes
 	/// Rewards pool(DexCurrencyId) (SDEX or HALAL) for market makers who provide Dex liquidity
 	/// for all pools.
 	DexIncentive(CurrencyId),
@@ -58,7 +59,7 @@ pub enum PoolId<AccountId> {
 	DexBonus(CurrencyId),
 
 	/// Rewards pool(SettEURCurrencyId) (EURJ or JEUR) for market makers who provide Dex liquidity
-	/// for Certain Strategic Currencies LPs, e.g. DOT, XBTC et al.
+	/// for Certain Strategic Currencies LPs.
 	DexExtra(CurrencyId),
 }
 
@@ -138,7 +139,7 @@ pub mod module {
 
 		/// The Extra reward type (EURJ/JEUR/rEUR)
 		/// EURJ in Setheum, JEUR in Neom, rEUR in NewRome testnet
-		/// For Certain Strategic Currencies LPs, e.g. DOT, XBTC et al.
+		/// For Certain Strategic Currencies LPs.
 		#[pallet::constant]
 		type ExtraCurrencyId: Get<CurrencyId>;
 
@@ -162,7 +163,7 @@ pub mod module {
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Dex to supply liquidity info
-		type Dex: DexManager<Self::AccountId, CurrencyId, Balance>;
+		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// The module id, keep DexShare LP.
 		#[pallet::constant]
@@ -363,7 +364,7 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> DexIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
+impl<T: Config> DEXIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	fn do_deposit_dex_share(who: &T::AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		ensure!(lp_currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 

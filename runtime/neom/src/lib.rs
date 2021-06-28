@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -127,25 +127,21 @@ impl_opaque_keys! {
 // Module accounts of runtime
 parameter_types! {
 	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
-	pub const SettersPalletId: PalletId = PalletId(*b"set/setter");
+	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/setter");
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/settmintt");
-	pub const SettwayTreasuryPalletId: PalletId = PalletId(*b"set/stwy");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
-	// Decentralized Sovereign Wealth Fund
-	pub const SIFPalletId: PalletId = PalletId(*b"set/dsif");
-	pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
+	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 
+// TODO: Update
 pub fn get_all_setheum_accounts() -> Vec<AccountId> {
 	vec![
 		SetheumTreasuryPalletId::get().into_account(),
-		SettersPalletId::get().into_account(),
+		SettmintManagerPalletId::get().into_account(),
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
-		SettwayTreasuryPalletId::get().into_account(),
 		IncentivesPalletId::get().into_account(),
-		SIFPalletId::get().into_account(),
 		ZeroAccountId::get(),
 	]
 }
@@ -287,10 +283,10 @@ type EnsureRootOrHalfGeneralCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, GeneralCouncilInstance>,
 >;
 
-type EnsureRootOrHalfSettwayCouncil = EnsureOneOf<
+type EnsureRootOrHalfMonetaryCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SettwayCouncilInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, MonetaryCouncilInstance>,
 >;
 
 type EnsureRootOrTwoThirdsGeneralCouncil = EnsureOneOf<
@@ -348,33 +344,33 @@ impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
 }
 
 parameter_types! {
-	pub const SettwayCouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const SettwayCouncilMaxProposals: u32 = 100;
-	pub const SettwayCouncilMaxMembers: u32 = 100;
+	pub const MonetaryCouncilMotionDuration: BlockNumber = 7 * DAYS;
+	pub const MonetaryCouncilMaxProposals: u32 = 100;
+	pub const MonetaryCouncilMaxMembers: u32 = 100;
 }
 
-type SettwayCouncilInstance = pallet_collective::Instance2;
-impl pallet_collective::Config<SettwayCouncilInstance> for Runtime {
+type MonetaryCouncilInstance = pallet_collective::Instance2;
+impl pallet_collective::Config<MonetaryCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
-	type MotionDuration = SettwayCouncilMotionDuration;
-	type MaxProposals = SettwayCouncilMaxProposals;
-	type MaxMembers = SettwayCouncilMaxMembers;
+	type MotionDuration = MonetaryCouncilMotionDuration;
+	type MaxProposals = MonetaryCouncilMaxProposals;
+	type MaxMembers = MonetaryCouncilMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = ();
 }
 
-type SettwayCouncilMembershipInstance = pallet_membership::Instance2;
-impl pallet_membership::Config<SettwayCouncilMembershipInstance> for Runtime {
+type MonetaryCouncilMembershipInstance = pallet_membership::Instance2;
+impl pallet_membership::Config<MonetaryCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type MembershipInitialized = SettwayCouncil;
-	type MembershipChanged = SettwayCouncil;
+	type MembershipInitialized = MonetaryCouncil;
+	type MembershipChanged = MonetaryCouncil;
 }
 
 parameter_types! {
@@ -629,7 +625,7 @@ impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
-	type Handler = SerpAuction;
+	type Handler = SerpAuctionManager;
 	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
 }
 
@@ -810,17 +806,17 @@ impl serp_auction::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type Dex = Dex;
 	type PriceSource = Prices;
-	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
+	type UnsignedPriority = runtime_common::SerpAuctionManagerUnsignedPriority;
 	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
 }
 
-impl setheum_setters::Config for Runtime {
+impl settmint_manager::Config for Runtime {
 	type Event = Event;
 	type Convert = setheum_settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
-	type PalletId = SettersPalletId;
+	type PalletId = SettmintManagerPalletId;
 	type OnUpdateSetter = setheum_incentives::OnUpdateSetter<Runtime>;
 }
 
@@ -897,16 +893,16 @@ impl setheum_settmint_engine::Config for Runtime {
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasury;
-	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
+	type UpdateOrigin = EnsureRootOrHalfMonetaryCouncil;
 	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
 	type Dex = Dex;
 	type UnsignedPriority = runtime_common::SettmintEngineUnsignedPriority;
 	type WeightInfo = weights::setheum_settmint_engine::WeightInfo<Runtime>;
 }
 
-impl setheum_settway::Config for Runtime {
+impl settmint_gateway::Config for Runtime {
 	type Event = Event;
-	type WeightInfo = weights::setheum_settway::WeightInfo<Runtime>;
+	type WeightInfo = weights::settmint_gateway::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -925,18 +921,18 @@ impl dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
-	type DexIncentives = Incentives;
+	type DEXIncentives = Incentives;
 	type WeightInfo = weights::dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
 }
 
 parameter_types! {
-	pub const MaxAuctionsCount: u32 = 100;
-	pub SerplusSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Rate = Rate::saturating_from_rational(6 : 10); // 60% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Foundation's Charity Fund.
-	pub SIFSerpupRatio: Rate = Rate::saturating_from_rational(1 : 10); // 10% of SerpUp to Setheum Investment Fund (SIF) (NIF in Neom).
+	pub const MaxAuctionsCount: u32 = 258;
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
 impl serp_treasury::Config for Runtime {
@@ -945,14 +941,14 @@ impl serp_treasury::Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
-	type SIFSerpupRatio = SIFSerpupRatio;
-	type SerpAuctionHandler = SerpAuction;
-	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
-	type Dex = Dex;
+	type SerpAuctionManagerHandler = MockSerpAuctionManager;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type Dex = SetheumDEX;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
@@ -992,12 +988,11 @@ parameter_types! {
 
 impl setheum_incentives::Config for Runtime {
 	type Event = Event;
-	type SettersIncentivePool = ZeroAccountId;
 	type DexIncentivePool = ZeroAccountId;
 	type AccumulatePeriod = AccumulatePeriod;
 	type IncentiveCurrencyId = GetNativeCurrencyId;
 	type SavingCurrencyId = GetStableCurrencyId;
-	type UpdateOrigin = EnsureRootOrHalfSettwayCouncil;
+	type UpdateOrigin = EnsureRootOrHalfMonetaryCouncil;
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type Dex = Dex;
@@ -1100,8 +1095,8 @@ construct_runtime!(
 		// Governance
 		GeneralCouncil: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		GeneralCouncilMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
-		SettwayCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		SettwayCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>},
+		MonetaryCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		MonetaryCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>},
 		TechnicalCommittee: pallet_collective::<Instance4>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>},
 
@@ -1126,10 +1121,10 @@ construct_runtime!(
 		// Dex
 		Dex: dex::{Module, Storage, Call, Event<T>, Config<T>},
 
-		// Settway
-		SerpAuction: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
-		Setters: setheum_setters::{Module, Storage, Call, Event<T>},
-		Settway: setheum_settway::{Module, Storage, Call, Event<T>},
+		// SettmintGateway
+		SerpAuctionManager: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
+		SettmintManager: settmint_manager::{Module, Storage, Call, Event<T>},
+		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>},
 		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>},
 		SettmintEngine: setheum_settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},
 
@@ -1414,7 +1409,7 @@ impl_runtime_apis! {
 			// orml_add_benchmark!(params, batches, dex, benchmarking::dex);
 			// orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
 			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
-			// orml_add_benchmark!(params, batches, settway, benchmarking::settway);
+			// orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
 			// orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			// orml_add_benchmark!(params, batches, accounts, benchmarking::accounts);
 			// orml_add_benchmark!(params, batches, incentives, benchmarking::incentives);

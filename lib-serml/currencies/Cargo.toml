@@ -24,12 +24,15 @@ orml-utilities = { path = "../../lib-openrml/utilities", default-features = fals
 
 # local dependencies
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+support = { path = "../support", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 tokens = { package = "orml-tokens", path = "../../lib-openrml/tokens" }
+setheum-evm = { path = "../evm" }
+setheum-evm-bridge = { path = "../evm-bridge" }
 
 [features]
 default = ["std"]
@@ -45,5 +48,6 @@ std = [
 	"orml-traits/std",
 	"orml-utilities/std",
 	"primitives/std",
+	"support/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ use primitives::TokenSymbol;
 use sp_core::{H160, H256};
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 use sp_std::cell::RefCell;
-pub use support::{SerpTreasury, DexManager, Price, Ratio};
+pub use support::{SerpTreasury, DEXManager, Price, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -202,17 +202,17 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn deposit_reserve(_: AccountId, _:Balance) -> DispatchResult {
+	fn deposit_setter(_: AccountId, _:Balance) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn burn_reserve(_: AccountId, _:Balance) -> DispatchResult {
+	fn burn_setter(_: AccountId, _:Balance) -> DispatchResult {
 		unimplemented!()
 	}
 }
 
 pub struct MockDex;
-impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
+impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(SETT, CHFJ) => (500, 100),
@@ -295,7 +295,7 @@ parameter_types! {
 		CHFJ, // Setheum CHF (Swiss Franc stablecoin)
 		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
 	];
-	pub const IncentivesPalletId: PalletId = PalletId(*b"dnr/inct");
+	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 }
 
 ord_parameter_types! {
@@ -304,7 +304,6 @@ ord_parameter_types! {
 
 impl Config for Runtime {
 	type Event = Event;
-	type SettersIncentivePool = SettersIncentivePool;
 	type RewardsVaultAccountId = RewardsVaultAccountId;
 	type DexIncentivePool = DexIncentivePool;
 	type AccumulatePeriod = AccumulatePeriod;

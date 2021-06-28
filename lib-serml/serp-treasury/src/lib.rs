@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber,
 };
-use support::{SerpTreasury, DexManager, Ratio};
+use support::{SerpTreasury, DEXManager, Ratio};
 mod mock;
 mod tests;
 pub mod weights;
@@ -87,9 +87,6 @@ pub mod module {
 		/// SerpUp ratio for Setheum Foundation's Charity Fund
 		type CharityFundSerpupRatio: Get<Rate>;
 
-		/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-		type SIFSerpupRatio: Get<Rate>;
-
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds SettPay Cashdrops
 		/// SettPayTreasury account.
@@ -100,20 +97,15 @@ pub mod module {
 		/// SetheumTreasury account.
 		type SetheumTreasuryAcc: Get<PalletId>;
 
-		#[pallet::constant]
-		/// SerpUp pool/account for receiving funds Setheum Investment Fund (SIF) DAO
-		/// SIF account.
-		type SIFAcc: Get<PalletId>;
-
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
 		type CharityFundAcc: Get<AccountId>;
 
 		/// Auction manager creates different types of auction to handle system serplus and standard.
-		type SerpAuctionHandler: SerpAuction<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
+		type SerpAuctionManagerHandler: SerpAuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
-		type Dex: DexManager<Self::AccountId, CurrencyId, Balance>;
+		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		#[pallet::constant]
 		/// The cap of lots when an auction is created
@@ -189,8 +181,12 @@ pub mod module {
 		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
 		/// Handle excessive surplus or debits of system when block end
 		///
+		// TODO: Migrate `BlockNumber` to `Timestamp`
 		/// Triggers Serping for all system stablecoins at every block.
 		fn on_initialize(now: T::BlockNumber) {
+			// TODO: Update for a global-adjustment-frequency to have it's own governed custom adjustment-frequency, 
+			// TODO: - and call serp_tes at a timestamp e.g. every 10 minutes
+			///
 			/// SERP-TES Adjustment Frequency.
 			/// Schedule for when to trigger SERP-TES
 			/// (Blocktime/BlockNumber - every blabla block)
@@ -214,7 +210,7 @@ pub mod module {
 				T::StableCurrencyIds::get().contains(&currency_id),
 				Error::<T>::InvalidCurrencyType,
 			);
-			T::SerpAuctionHandler::new_serplus_auction(amount, &currency_id)?;
+			T::SerpAuctionManagerHandler::new_serplus_auction(amount, &currency_id)?;
 			Ok(().into())
 		}
 
@@ -226,7 +222,7 @@ pub mod module {
 			initial_price: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			T::SerpAuctionHandler::new_diamond_auction(initial_price, setter_amount)?;
+			T::SerpAuctionManagerHandler::new_diamond_auction(initial_price, setter_amount)?;
 			Ok(().into())
 		}
 
@@ -239,7 +235,7 @@ pub mod module {
 			initial_price: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			T::SerpAuctionHandler::new_setter_auction(initial_price, currency_amount, accepted_currency)?;
+			T::SerpAuctionManagerHandler::new_setter_auction(initial_price, currency_amount, accepted_currency)?;
 			Ok(().into())
 		}
 	}
@@ -309,20 +305,10 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// SerpUp ratio for Setheum Investment Fund (SIF) DAO
-	fn get_sif_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		// SIF SerpUp Pool - 10%
-		let sif_account = T::SIFAcc::get();
-		let sif_propper = T::SIFSerpupRatio::get() * amount;
-		Self::issue_propper(currency_id, sif_account, sif_propper);
-
-		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
-		Ok(())
-	}
-
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		// Charity Fund SerpUp Pool - 10%
+		// TODO: update to 20%
+		// Charity Fund SerpUp Pool - 20%
 		let charity_fund_account = T::CharityFundAcc::get();
 		let charity_fund_propper = T::CharityFundSerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, charity_fund_account, charity_fund_propper);
@@ -346,7 +332,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		get_serplus_serpup(amount, currency_id);
 		get_settpay_serpup(amount, currency_id);
 		get_treasury_serpup(amount, currency_id);
-		get_sif_serpup(amount, currency_id);
 		get_charity_fund_serpup(amount, currency_id);
 
 		Self::deposit_event(Event::CurrencySerpedUp(amount, currency_id));
@@ -376,10 +361,10 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				Error::<T>::InvalidAmount,
 			);
 			/// Diamond Auction if it's to serpdown Setter.
-			T::SerpAuctionHandler::new_diamond_auction(&initial_amount, &amount)
+			T::SerpAuctionManagerHandler::new_diamond_auction(&initial_amount, &amount)
 
 		} else {
-			let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id);
+			let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id)?;
 			let relative_price = setter_fixed_price.checked_div(&settcurrency_fixed_price);
 			/// the initial amount is the equivalent of the serpdown amount -
 			/// but in the (higher) fixed price not the (lower) market price
@@ -390,7 +375,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				Error::<T>::InvalidAmount,
 			);
 			/// Setter Auction if it's not to serpdown Setter.
-			T::SerpAuctionHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
+			T::SerpAuctionManagerHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
 		}
 
 		Self::deposit_event(Event::CurrencySerpDownTriggered(amount, currency_id));
@@ -405,8 +390,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		let market_price = T::Prices::get_stablecoin_market_price(&currency_id);
-		let fixed_price = T::Prices::get_stablecoin_fixed_price(&currency_id);
+		let market_price = T::Prices::get_stablecoin_market_price(&currency_id)?;
+		let fixed_price = T::Prices::get_stablecoin_fixed_price(&currency_id)?;
 		let fixed_price_amount = T::Prices::amount_try_from_price_abs(&fixed_price)?;
 		let market_price_amount = T::Prices::amount_try_from_price_abs(&market_price)?;
 		let fixed_price_percent_amount = fixed_price_amount.checked_div(100);
@@ -435,11 +420,15 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	// TODO: Update for a global-adjustment-frequency to have it's own governed custom adjustment-frequency, 
+	// TODO: - and call serp_tes at a timestamp e.g. every 10 minutes
+	///
 	/// Trigger SERP-TES for all stablecoins
 	/// Check all stablecoins stability and elasticity
 	/// and calls the serp to stabilise the unstable one(s)
 	/// on SERP-TES.
 	fn on_serp_tes() -> DispatchResult {
+		// iterator to SERP-TES every system stablecurrency based on it's custom adjustment frequency
 		for currency_id in T::StableCurrencyIds::get() {
 			Self::serp_tes(currency_id)
 		}
@@ -484,16 +473,19 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::GetDexerCurrencyId::get(), who, dexer)
 	}
 
+	/// deposit surplus(propperstable currency) to serp treasury by `from`
 	fn deposit_serplus(currency_id: CurrencyId, from: &T::AccountId, serplus: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(currency_id, from, &Self::account_id(), serplus)
 	}
 
-	fn deposit_reserve(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
+	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
+	fn deposit_setter(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::GetSetterCurrencyId::get(), from, &Self::account_id(), amount)
 	}
 
-	fn burn_reserve(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
-		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), to, amount)
+	/// Burn Reserve asset (Setter (SETT))
+	fn burn_setter(who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
+		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, amount)
 	}
 }
 

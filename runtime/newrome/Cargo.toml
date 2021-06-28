@@ -79,8 +79,8 @@ setheum-settmint-engine = { path = "../../lib-serml/settmint-engine", default-fe
 serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = false }
 setheum-dex = { path = "../../lib-serml/dex", default-features = false }
 setheum-currencies = { path = "../../lib-serml/currencies", default-features = false }
-setheum-settway = { path = "../../lib-serml/settway", default-features = false }
-setheum-setters = { path = "../../lib-serml/setters", default-features = false }
+settmint-gateway = { path = "../../lib-serml/settmint-gateway", default-features = false }
+settmint-manager = { path = "../../lib-serml/settmint-manager", default-features = false }
 setheum-nft = { path = "../../lib-serml/nft", default-features = false }
 setheum-prices = { path = "../../lib-serml/prices", default-features = false }
 setheum-incentives = { path = "../../lib-serml/incentives", default-features = false }
@@ -158,8 +158,8 @@ std = [
 	"serp-treasury/std",
 	"setheum-dex/std",
 	"setheum-currencies/std",
-	"setheum-settway/std",
-	"setheum-setters/std",
+	"settmint-gateway/std",
+	"settmint-manager/std",
 	"setheum-nft/std",
 	"setheum-prices/std",
 	"setheum-incentives/std",
@@ -235,8 +235,8 @@ try-runtime = [
 	"serp-treasury/try-runtime",
 	"setheum-currencies/try-runtime",
 	"setheum-dex/try-runtime",
-	"setheum-settway/try-runtime",
-	"setheum-setters/try-runtime",
+	"settmint-gateway/try-runtime",
+	"settmint-manager/try-runtime",
 	"setheum-nft/try-runtime",
 	"setheum-prices/try-runtime",
 	"setheum-incentives/try-runtime",

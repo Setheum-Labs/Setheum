@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -32,27 +32,15 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use frame_support::{log, pallet_prelude::*, transactional};
-use frame_system::{
-	offchain::{SendTransactionTypes, SubmitTransaction},
-	pallet_prelude::*,
-};
+use frame_system::pallet_prelude::*,
 use orml_traits::{Auction, AuctionHandler, Change, MultiCurrency, OnNewBidResult};
-use orml_utilities::{IterableStorageMapExtended, OffchainErr};
 use primitives::{AuctionId, Balance, CurrencyId};
 use sp_runtime::{
-	offchain::{
-		storage::StorageValueRef,
-		storage_lock::{StorageLock, Time},
-		Duration,
-	},
 	traits::{BlakeTwo256, CheckedDiv, Hash, Saturating, Zero},
-	transaction_validity::{
-		InvalidTransaction, TransactionPriority, TransactionSource, TransactionValidity, ValidTransaction,
-	},
-	DispatchError, DispatchResult, FixedPointNumber, RandomNumberGenerator, RuntimeDebug,
+	DispatchError, DispatchResult, RuntimeDebug,
 };
 use sp_std::prelude::*;
-use support::{SerpTreasury, DexManager, PriceProvider, Rate};
+use support::{SerpTreasury, DEXManager, PriceProvider, Rate};
 
 mod mock;
 mod tests;
@@ -60,12 +48,6 @@ pub mod weights;
 
 pub use module::*;
 pub use weights::WeightInfo;
-
-pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/serp-auction/data/";
-pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/serp-auction/lock/";
-pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/serp-auction/max-iterations/";
-pub const LOCK_DURATION: u64 = 100;
-pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 
 /// Information of a diamond auction
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
@@ -77,9 +59,6 @@ pub struct DiamondAuctionItem<BlockNumber> {
 	/// Current amount of native currency for sale to buy back Setter stablecoin.
 	#[codec(compact)]
 	amount: Balance,
-	/// Currency type accepted for the diamond auction. // Always just and only Setter (SETT).
-	#[codec(compact)]
-	setter: CurrencyId,
 	/// Fix amount of Setter stablecoin value needed to be got back by this auction.
 	#[codec(compact)]
 	fix: Balance,
@@ -138,12 +117,12 @@ impl<BlockNumber> SetterAuctionItem<BlockNumber> {
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, Clone, RuntimeDebug)]
 pub struct SerplusAuctionItem<BlockNumber> {
-	/// Currency type auctioned in the serplus auction.
-	/// Always just and only SettCurrencies/stablecoins.
-	currency: CurrencyId,
 	/// Fixed amount of serplus [serplus](stable currency) for sale to get back native currency.
 	#[codec(compact)]
 	amount: Balance,
+	/// Currency type auctioned in the serplus auction.
+	/// Always just and only SettCurrencies/stablecoins.
+	currency: CurrencyId,
 	/// Auction start time
 	start_time: BlockNumber,
 }
@@ -153,7 +132,7 @@ pub mod module {
 	use super::*;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + SendTransactionTypes<Call<Self>> {
+	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		#[pallet::constant]
@@ -198,7 +177,7 @@ pub mod module {
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// Dex to get exchange info
-		type Dex: DexManager<Self::AccountId, CurrencyId, Balance>;
+		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// The price source of currencies
 		type PriceSource: PriceProvider<CurrencyId>;
@@ -288,115 +267,11 @@ pub mod module {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
-
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {}
-
 }
 
 impl<T: Config> Pallet<T> {
 	fn get_last_bid(auction_id: AuctionId) -> Option<(T::AccountId, Balance)> {
 		T::Auction::auction_info(auction_id).and_then(|auction_info| auction_info.bid)
-	}
-
-	fn submit_cancel_auction_tx(auction_id: AuctionId) {
-		let call = Call::<T>::cancel(auction_id);
-		if let Err(err) = SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()) {
-			log::info!(
-				target: "serp-auction",
-				"offchain worker: submit unsigned auction cancel tx for AuctionId {:?} failed: {:?}",
-				auction_id, err,
-			);
-		}
-	}
-
-	fn _offchain_worker() -> Result<(), OffchainErr> {
-		// acquire offchain worker lock.
-		let lock_expiration = Duration::from_millis(LOCK_DURATION);
-		let mut lock = StorageLock::<'_, Time>::with_deadline(&OFFCHAIN_WORKER_LOCK, lock_expiration);
-		let mut guard = lock.try_lock().map_err(|_| OffchainErr::OffchainLock)?;
-
-		let mut to_be_continue = StorageValueRef::persistent(&OFFCHAIN_WORKER_DATA);
-
-		// get to_be_continue record,
-		// if it exsits, iterator map storage start with previous key
-		let (auction_type_num, start_key) = if let Some(Some((auction_type_num, last_iterator_previous_key))) =
-			to_be_continue.get::<(u32, Vec<u8>)>()
-		{
-			(auction_type_num, Some(last_iterator_previous_key))
-		} else {
-			let random_seed = sp_io::offchain::random_seed();
-			let mut rng = RandomNumberGenerator::<BlakeTwo256>::new(BlakeTwo256::hash(&random_seed[..]));
-			(rng.pick_u32(2), None)
-		};
-
-		// get the max iterationns config
-		let max_iterations = StorageValueRef::persistent(&OFFCHAIN_WORKER_MAX_ITERATIONS)
-			.get::<u32>()
-			.unwrap_or(Some(DEFAULT_MAX_ITERATIONS));
-
-		log::debug!(
-			target: "serp-auction",
-			"offchain worker: max iterations is {:?}",
-			max_iterations
-		);
-		// Randomly choose to start iterations to cancel reserve/serplus/standard
-		// auctions
-		match auction_type_num {
-			0 => {
-				let mut iterator =
-					<DiamondAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((diamond_auction_id, _)) = iterator.next() {
-					Self::submit_cancel_auction_tx(diamond_auction_id);
-					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
-				}
-
-				// if iteration for map storage finished, clear to be continue record
-				// otherwise, update to be continue record
-				if iterator.finished {
-					to_be_continue.clear();
-				} else {
-					to_be_continue.set(&(auction_type_num, iterator.storage_map_iterator.previous_key));
-				}
-			}
-			1 => {
-				let mut iterator =
-					<SetterAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((setter_auction_id, _)) = iterator.next() {
-					Self::submit_cancel_auction_tx(setter_auction_id);
-					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
-				}
-
-				// if iteration for map storage finished, clear to be continue record
-				// otherwise, update to be continue record
-				if iterator.finished {
-					to_be_continue.clear();
-				} else {
-					to_be_continue.set(&(auction_type_num, iterator.storage_map_iterator.previous_key));
-				}
-			}
-			_ => {
-				let mut iterator =
-					<SerplusAuctions<T> as IterableStorageMapExtended<_, _>>::iter(max_iterations, start_key);
-				while let Some((serplus_auction_id, _)) = iterator.next() {
-					Self::submit_cancel_auction_tx(serplus_auction_id);
-					guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
-				}
-
-				// if iteration for map storage finished, clear to be continue record
-				// otherwise, update to be continue record
-				if iterator.finished {
-					to_be_continue.clear();
-				} else {
-					to_be_continue.set(&(auction_type_num, iterator.storage_map_iterator.previous_key));
-				}
-			}
-		}
-
-		// Consume the guard but **do not** unlock the underlying lock.
-		guard.forget();
-
-		Ok(())
 	}
 
 	fn cancel_diamond_auction(id: AuctionId, diamond_auction: DiamondAuctionItem<T::BlockNumber>) -> DispatchResult {
@@ -538,16 +413,16 @@ impl<T: Config> Pallet<T> {
 				let last_bidder = last_bid.as_ref().map(|(who, _)| who);
 
 				if let Some(last_bidder) = last_bidder {
-					// there's bid before, transfer the diamonds (native currency) from new bidder to last bidder
+					// there's bid before, transfer the setter from new bidder to last bidder
 					T::Currency::transfer(
-						T::GetNativeCurrencyId::get(),
+						T::GetSetterCurrencyId::get(),
 						&new_bidder,
 						last_bidder,
 						diamond_auction.fix,
 					)?;
 				} else {
-					// there's no bid before, transfer diamonds (native currency) to SERP Treasury
-					T::SerpTreasury::deposit_serplus(&new_bidder, diamond_auction.fix)?;
+					// there's no bid before, transfer setter to SERP Treasury
+					T::SerpTreasury::deposit_setter(&new_bidder, diamond_auction.fix)?;
 				}
 
 				Self::swap_bidders(&new_bidder, last_bidder);
@@ -576,7 +451,7 @@ impl<T: Config> Pallet<T> {
 				let mut setter_auction = setter_auction.as_mut().ok_or(Error::<T>::AuctionNonExistent)?;
 				let (new_bidder, new_bid_price) = new_bid;
 				let last_bid_price = last_bid.clone().map_or(Zero::zero(), |(_, price)| price); // get last bid price
-				let settcurrency_currency_id: CurrencyId;
+				let currency_id = setter_auction.currency;
 				ensure!(
 					Self::check_minimum_increment(
 						new_bid_price,
@@ -587,7 +462,7 @@ impl<T: Config> Pallet<T> {
 					Error::<T>::InvalidBidPrice,
 				);
 				ensure!(
-					T::StableCurrencyIds::get().contains(settcurrency_currency_id),
+					T::StableCurrencyIds::get().contains(currency_id),
 					Error::<T>::InvalidCyrrencyType,
 				);
 
@@ -596,15 +471,14 @@ impl<T: Config> Pallet<T> {
 				if let Some(last_bidder) = last_bidder {
 					// there's bid before, transfer the stablecoin from new bidder to last bidder
 					T::Currency::transfer(
-						/// change to `T::StableCurrencyIds::get()`
-						settcurrency_currency_id,
+						&currency_id,
 						&new_bidder,
 						last_bidder,
 						setter_auction.fix,
 					)?;
 				} else {
 					// there's no bid before, transfer stablecoin to SERP Treasury
-					T::SerpTreasury::deposit_serplus(&new_bidder, setter_auction.fix)?;
+					T::SerpTreasury::deposit_serplus(&currency_id, &new_bidder, setter_auction.fix)?;
 				}
 
 				Self::swap_bidders(&new_bidder, last_bidder);
@@ -648,7 +522,12 @@ impl<T: Config> Pallet<T> {
 
 		let burn_amount = if let Some(last_bidder) = last_bidder {
 			// refund last bidder
-			T::Currency::transfer(native_currency_id, &new_bidder, last_bidder, last_bid_price)?;
+			T::Currency::transfer(
+				native_currency_id, 
+				&new_bidder, 
+				last_bidder, 
+				last_bid_price
+			)?;
 			new_bid_price.saturating_sub(last_bid_price)
 		} else {
 			new_bid_price
@@ -677,10 +556,8 @@ impl<T: Config> Pallet<T> {
 			Self::deposit_event(Event::DiamondAuctionDealt(
 				auction_id,
 				diamond_auction.amount,
-				currency_id,
 				bidder,
 				diamond_auction.fix,
-				diamond_auction.setter,
 			));
 		} else {
 			Self::deposit_event(Event::CancelAuction(auction_id));
@@ -700,12 +577,9 @@ impl<T: Config> Pallet<T> {
 			// by treasury council. TODO: transfer from RESERVED TREASURY instead of issuing
 			let _ = T::SerpTreasury::issue_setter(&bidder, setter_auction.amount);
 			
-			let currency_id = T::GetSetterCurrencyId::get()
-
 			Self::deposit_event(Event::SetterAuctionDealt(
 				auction_id,
 				setter_auction.amount,
-				currency_id,
 				bidder,
 				setter_auction.fix,
 				setter_auction.currency,
@@ -808,7 +682,7 @@ impl<T: Config> AuctionHandler<T::AccountId, Balance, T::BlockNumber, AuctionId>
 	}
 }
 
-impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
+impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 	type CurrencyId = CurrencyId;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
@@ -831,24 +705,18 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 
 		let diamond = T::GetNativeCurrencyId::get();
 
-		// set setter currency_id accepted for diamond auction (Only Setter is accepted (SETT))
-		if setter_currency_id = T::GetSetterCurrencyId::get() {
-			<DiamondAuctions<T>>::insert(
-				auction_id,
-				DiamondAuctionItem {
-					initial_amount,
-					diamond: diamond,
-					amount: initial_amount,
-					fix: fix_setter,
-					setter: setter_currency_id,
-					start_time,
-				},
-			);
-		} else {
-			return Err(Error::<T>::CurrencyNotAccepted.into());
-		}
+		<DiamondAuctions<T>>::insert(
+			auction_id,
+			DiamondAuctionItem {
+				initial_amount,
+				diamond: diamond,
+				amount: initial_amount,
+				fix: fix_setter,
+				start_time,
+			},
+		);
 
-		Self::deposit_event(Event::NewDiamondAuction(auction_id, initial_amount, diamond, fix_setter, setter_currency_id));
+		Self::deposit_event(Event::NewDiamondAuction(auction_id, initial_amount, diamond, fix_setter));
 		Ok(())
 	}
 
@@ -891,13 +759,13 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 			return Err(Error::<T>::CurrencyNotAccepted.into());
 		}
 
-		Self::deposit_event(Event::NewSetterAuction(auction_id, initial_amount, setter, fix_settcurrency, settcurrency_id));
+		Self::deposit_event(Event::NewSetterAuction(auction_id, initial_amount, fix_settcurrency, settcurrency_id));
 		Ok(())
 	}
 
 	fn new_serplus_auction(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		ensure!(!amount.is_zero(), Error::<T>::InvalidAmount,);
-		// ensure currency_id is accepted for serplus auction (Only SettCurrencies are accepted (SETT))
+		// ensure currency_id can be auctioned for serplus auction (Only SettCurrencies (stablecoins))
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
@@ -910,8 +778,14 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		let start_time = <frame_system::Module<T>>::block_number();
 		// do not set end time for serplus auction
 		let auction_id = T::Auction::new_auction(start_time, None)?;
-		<SerplusAuctions<T>>::insert(auction_id, SerplusAuctionItem {amount, currency_id, start_time});
-
+		<SerplusAuctions<T>>::insert(
+			auction_id, 
+			SerplusAuctionItem {
+				amount,
+				currency_id,
+				start_time
+			}
+		);
 		Self::deposit_event(Event::NewSerplusAuction(auction_id, amount, currency_id));
 		Ok(())
 	}
@@ -930,18 +804,15 @@ impl<T: Config> SerpAuction<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	fn get_total_setter_in_auction() -> Self::Balance {
-		Self::total_setter_in_auction()
+	fn get_total_serplus_in_auction(id: Self::CurrencyId) -> Self::Balance {
+		Self::total_serplus_in_auction(id)
 	}
 
 	fn get_total_settcurrency_in_auction(id: Self::CurrencyId) -> Self::Balance {
 		Self::total_settcurrency_in_auction(id)
 	}
 
-	fn get_total_serplus_in_auction(id: Self::CurrencyId) -> Self::Balance {
-		Self::total_serplus_in_auction(id)
-	}
-	fn get_total_diamond_in_auction(id: Self::CurrencyId) -> Self::Balance {
-		Self::total_diamond_in_auction(id)
+	fn get_total_setter_in_auction() -> Self::Balance {
+		Self::total_setter_in_auction()
 	}
 }

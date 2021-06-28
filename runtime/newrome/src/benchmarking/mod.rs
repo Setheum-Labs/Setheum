@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -18,12 +18,11 @@
 
 #![cfg(feature = "runtime-benchmarks")]
 
-// module benchmarking
+// module benchmarking (SERML)
 pub mod serp_auction;
-pub mod settmint_engine;
 pub mod serp_treasury;
 pub mod dex;
-pub mod settway;
+pub mod settmint_gateway;
 pub mod incentives;
 pub mod prices;
 pub mod transaction_payment;
@@ -33,7 +32,6 @@ pub mod auction;
 pub mod authority;
 pub mod currencies;
 pub mod oracle;
-pub mod rewards;
 pub mod tokens;
 pub mod utils;
 pub mod vesting;

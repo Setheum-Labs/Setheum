@@ -2,6 +2,10 @@
 run: githooks
 	cargo run --manifest-path node/setheum-dev/Cargo.toml -- --dev -lruntime=debug --instant-sealing
 
+.PHONY: run-sevm
+run: githooks
+	cargo run --manifest-path node/setheum-dev/Cargo.toml --features with-sevm -- --dev -lruntime=debug -levm=debug --instant-sealing
+
 .PHONY: toolchain
 toolchain:
 	./scripts/init.sh
@@ -56,8 +60,15 @@ check-try-runtime:
 test: githooks
 	SKIP_WASM_BUILD= cargo test --all
 
+.PHONY: test-sevm
+test: githooks
+	SKIP_WASM_BUILD= cargo test --all --features with-sevm test_setheum_evm
+	SKIP_WASM_BUILD= cargo test --all --features with-sevm should_not_kill_contract_on_transfer_all
+	SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_work
+	SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_handle_invalid_input
+
 .PHONY: test-all
-test-all: test-dev test-setheum
+test-all: test-dev test-sevm test-setheum test-benchmarking
 
 .PHONY: test-dev
 test-dev:
@@ -67,9 +78,15 @@ test-dev:
 test-setheum:
 	SKIP_WASM_BUILD= cargo test --manifest-path node/setheum/Cargo.toml --all --features with-all-runtime
 
+.PHONY: check-benchmarking
+test-benchmarking:
+	SKIP_WASM_BUILD= cargo check --manifest-path node/setheum-dev/Cargo.toml --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p newrome-runtime
+
 .PHONY: test-benchmarking
 test-benchmarking:
-	SKIP_WASM_BUILD= cargo test --manifest-path node/setheum-dev/Cargo.toml --features runtime-benchmarks -p newrome-runtime benchmarking
+	SKIP_WASM_BUILD= cargo test --manifest-path node/setheum-dev/Cargo.toml --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p newrome-runtime
+	SKIP_WASM_BUILD= cargo test --manifest-path node/setheum/Cargo.toml --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p neom-runtime
+
 
 .PHONY: build
 build: githooks
@@ -110,10 +127,24 @@ update-orml:
 	git add lib-openrml
 
 .PHONY: update
-update: update-orml
+update: update-orml cargo-update check-all
+
+.PHONY: cargo-update
+cargo-update:
 	cargo update
-	make check
 
 .PHONY: build-wasm-newrome
 build-wasm-newrome:
-	./scripts/build-only-wasm.sh newrome-runtime
+	./scripts/build-only-wasm.sh -p newrome-runtime --features=with-sevm
+
+.PHONY: build-wasm-neom
+build-wasm-newrome:
+	./scripts/build-only-wasm.sh -p neom-runtime --features=on-chain-release-build
+
+.PHONY: srtool-build-wasm-neom
+srtool-build-wasm-neom:
+	PACKAGE=neom-runtime BUILD_OPTS="--features on-chain-release-build" ./scripts/srtool-build.sh
+
+.PHONY: generate-tokens
+generate-tokens:
+	./scripts/generate-tokens-and-predeploy-contracts.sh

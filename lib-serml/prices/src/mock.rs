@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -25,23 +25,26 @@ use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
 use orml_traits::{parameter_type_with_key, DataFeeder};
 use primitives::{Amount, TokenSymbol};
-use sp_core::H256;
+use sp_core::{H160, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{IdentityLookup, One as OneT, Zero},
 	DispatchError, FixedPointNumber,
 };
-use support::{ExchangeRate, Ratio};
+use support::{mocks::MockCurrencyIdMapping, ExchangeRate, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
+
+mod setheum_prices {
+	pub use super::super::*;
+}
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
-pub const ARSJ: CurrencyId = CurrencyId::Token(TokenSymbol::ARSJ);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
 pub const BRLJ: CurrencyId = CurrencyId::Token(TokenSymbol::BRLJ);
 pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
@@ -54,7 +57,6 @@ pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
 pub const HKDJ: CurrencyId = CurrencyId::Token(TokenSymbol::HKDJ);
 pub const HUFJ: CurrencyId = CurrencyId::Token(TokenSymbol::HUFJ);
 pub const IDRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IDRJ);
-pub const IRRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IRRJ);
 pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
 pub const KESJ: CurrencyId = CurrencyId::Token(TokenSymbol::KESJ);
 pub const KRWJ: CurrencyId = CurrencyId::Token(TokenSymbol::KRWJ);
@@ -78,17 +80,17 @@ pub const THBJ: CurrencyId = CurrencyId::Token(TokenSymbol::THBJ);
 pub const TRYJ: CurrencyId = CurrencyId::Token(TokenSymbol::TRYJ);
 pub const TWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::TWDJ);
 pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
-pub const UAHJ: CurrencyId = CurrencyId::Token(TokenSymbol::UAHJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
 // LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
-pub const LP_CHFJ_USDJ: CurrencyId = CurrencyId::DexShare(TokenSymbol::CHFJ, TokenSymbol::USDJ);
-pub const LP_USDJ_DNAR: CurrencyId = CurrencyId::DexShare(TokenSymbol::USDJ, TokenSymbol::DNAR);
+pub const LP_CHFJ_USDJ: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::CHFJ), DexShare::Token(TokenSymbol::USDJ));
+pub const LP_USDJ_DNAR: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DNAR));
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
 pub const AED: CurrencyId = CurrencyId::Token(TokenSymbol::AED);
-pub const ARS: CurrencyId = CurrencyId::Token(TokenSymbol::ARS);
 pub const AUD: CurrencyId = CurrencyId::Token(TokenSymbol::AUD);
 pub const BRL: CurrencyId = CurrencyId::Token(TokenSymbol::BRL);
 pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
@@ -101,7 +103,6 @@ pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
 pub const HKD: CurrencyId = CurrencyId::Token(TokenSymbol::HKD);
 pub const HUF: CurrencyId = CurrencyId::Token(TokenSymbol::HUF);
 pub const IDR: CurrencyId = CurrencyId::Token(TokenSymbol::IDR);
-pub const IRR: CurrencyId = CurrencyId::Token(TokenSymbol::IRR);
 pub const JPY: CurrencyId = CurrencyId::Token(TokenSymbol::JPY);
 pub const KES: CurrencyId = CurrencyId::Token(TokenSymbol::KES);
 pub const KRW: CurrencyId = CurrencyId::Token(TokenSymbol::KRW);
@@ -125,21 +126,14 @@ pub const THB: CurrencyId = CurrencyId::Token(TokenSymbol::THB);
 pub const TRY: CurrencyId = CurrencyId::Token(TokenSymbol::TRY);
 pub const TWD: CurrencyId = CurrencyId::Token(TokenSymbol::TWD);
 pub const TZS: CurrencyId = CurrencyId::Token(TokenSymbol::TZS);
-pub const UAH: CurrencyId = CurrencyId::Token(TokenSymbol::UAH);
 pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
 pub const ZAR: CurrencyId = CurrencyId::Token(TokenSymbol::ZAR);
-pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
-pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
 pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
 pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
 pub const BHD: CurrencyId = CurrencyId::Token(TokenSymbol::BHD);
 pub const KYD: CurrencyId = CurrencyId::Token(TokenSymbol::KYD);
 pub const OMR: CurrencyId = CurrencyId::Token(TokenSymbol::OMR);
 pub const GIP: CurrencyId = CurrencyId::Token(TokenSymbol::GIP);
-
-mod setheum_prices {
-	pub use super::super::*;
-}
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -168,6 +162,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 pub struct MockDataProvider;
@@ -190,12 +185,16 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 }
 
 pub struct MockDex;
-impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
+impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USDJ, DNAR) => (10000, 200),
 			_ => (0, 0),
 		}
+	}
+
+	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
+		unimplemented!()
 	}
 
 	fn get_swap_target_amount(
@@ -234,11 +233,27 @@ impl DexManager<AccountId, CurrencyId, Balance> for MockDex {
 		unimplemented!()
 	}
 
-	fn add_liquidity(_: &AccountId, _: CurrencyId, _: CurrencyId, _: Balance, _: Balance, _: bool) -> DispatchResult {
+	fn add_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_max_amount_a: Balance,
+		_max_amount_b: Balance,
+		_min_share_increment: Balance,
+		_deposit_increment_share: bool,
+	) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn remove_liquidity(_: &AccountId, _: CurrencyId, _: CurrencyId, _: Balance, _: bool) -> DispatchResult {
+	fn remove_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_remove_share: Balance,
+		_min_withdrawn_a: Balance,
+		_min_withdrawn_b: Balance,
+		_by_withdraw: bool,
+	) -> DispatchResult {
 		unimplemented!()
 	}
 }
@@ -247,15 +262,12 @@ parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
 	};
+}
 
+parameter_type_with_key! {
 	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
 		match currency_id {
-			&USDJ => &USD,
-			&GBPJ => &GBP,
-			&EURJ => &EUR,
-			&CHFJ => &CHF,
 			&AEDJ => &AED,
-			&ARSJ => &ARS,
 			&AUDJ => &AUD,
 			&BRLJ => &BRL,
 			&CADJ => &CAD,
@@ -268,7 +280,6 @@ parameter_type_with_key! {
 			&HKDJ => &HKD,
 			&HUFJ => &HUF,
 			&IDRJ => &IDR,
-			&IRRJ => &IRR,
 			&JPYJ => &JPY,
 			&KESJ => &KES,
 			&KRWJ => &KRW,
@@ -292,10 +303,9 @@ parameter_type_with_key! {
 			&TRYJ => &TRY,
 			&TWDJ => &TWD,
 			&TZSJ => &TZS,
-			&UAHJ => &UAH,
 			&USDJ => &USD,
 			&ZARJ => &ZAR,
-			_ => 0,
+			_ => None,
 		}
 	};
 }
@@ -316,9 +326,11 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT
-	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ
-	
+	pub const GetSetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
+	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
+	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
+
 	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETT).
 	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETT).
 	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETT).
@@ -333,7 +345,6 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT,
 		AEDJ,
-		ARSJ,
  		AUDJ,
 		BRLJ,
 		CADJ,
@@ -346,7 +357,6 @@ parameter_types! {
 		HKDJ,
 		HUFJ,
 		IDRJ,
-		IRRJ,
 		JPYJ,
  		KESJ,
  		KRWJ,
@@ -370,13 +380,11 @@ parameter_types! {
 		TRYJ,
 		TWDJ,
 		TZSJ,
-		UAHJ,
 		USDJ,
 		ZARJ,
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
 		AED,
-		ARS,
  		AUD,
 		BRL,
 		CAD,
@@ -389,7 +397,6 @@ parameter_types! {
 		HKD,
 		HUF,
 		IDR,
-		IRR,
 		JPY,
  		KES,
  		KRW,
@@ -413,7 +420,6 @@ parameter_types! {
 		TRY,
 		TWD,
 		TZS,
-		UAH,
 		USD,
 		ZAR,
 		KWD,
@@ -430,6 +436,8 @@ impl Config for Runtime {
 	type Source = MockDataProvider;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
+	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
 	type GetSetterPegTwoCurrencyId = GetSetterPegTwoCurrencyId;
 	type GetSetterPegThreeCurrencyId = GetSetterPegThreeCurrencyId;
@@ -443,8 +451,9 @@ impl Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = MockDex;
+	type DEX = MockDEX;
 	type Currency = Tokens;
+	type CurrencyIdMapping = MockCurrencyIdMapping;
 	type WeightInfo = ();
 }
 
@@ -458,7 +467,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		PricesModule: setheum_prices::{Pallet, Storage, Call, Event<T>},
+		SetheumPrices: prices::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 	}
 );

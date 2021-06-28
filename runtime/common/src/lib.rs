@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -23,19 +23,17 @@
 use frame_support::{
 	parameter_types,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS},
 		DispatchClass, Weight,
 	},
 };
 use frame_system::limits;
 pub use setheum_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
-use primitives::{Balance, CurrencyId};
-use sp_core::H160;
-use sp_runtime::{
-	traits::{Convert, Saturating},
-	transaction_validity::TransactionPriority,
-	FixedPointNumber, FixedPointOperand, Perbill,
+use primitives::{
+	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
+use sp_core::H160;
+use sp_runtime::{traits::Convert, transaction_validity::TransactionPriority, Perbill};
 use static_assertions::const_assert;
 
 pub mod precompile;
@@ -44,7 +42,49 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::currency::{
-	GetDecimals, DNAR, SETT, USDJ, NEOM, NSETT, JUSD, ROME, rSETT, rUSD,
+	TokenInfo, 
+	DNAR, NEOM,
+	SDEX, HALAL,
+	SETT, NSETT,
+	AEDJ, JAED,
+	AUDJ, JAUD,
+	BRLJ, JBRL,
+	CADJ, JCAD,
+	CHFJ, JCHF,
+	CLPJ, JCLP,
+	CNYJ, JCNY,
+	COPJ, JCOP,
+	EURJ, JEUR,
+	GBPJ, JGBP,
+	HKDJ, JHKD,
+	HUFJ, JHUF,
+	IDRJ, JIDR,
+	JPYJ, JJPY,
+	KESJ, JKES,
+	KRWJ, JKRW,
+	KZTJ, JKZT,
+	MXNJ, JMXN,
+	MYRJ, JMYR,
+	NGNJ, JNGN,
+	NOKJ, JNOK,
+	NZDJ, JNZD,
+	PENJ, JPEN,
+	PHPJ, JPHP,
+	PKRJ, JPKR,
+	PLNJ, JPLN,
+	QARJ, JQAR,
+	RONJ, JRON,
+	RUBJ, JRUB,
+	SARJ, JSAR,
+	SEKJ, JSEK,
+	SGDJ, JSGD,
+	THBJ, JTHB,
+	TRYJ, JTRY,
+	TWDJ, JTWD,
+	TZSJ, JTZS,
+	USDJ, JUSD,
+	ZARJ, JZAR,
+	RENBTC,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
@@ -54,174 +94,45 @@ parameter_types! {
 	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const SettmintEngineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-	pub const SerpAuctionUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
+	pub const SerpAuctionManagerUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
 }
 
-parameter_types! {
-	pub FeeRateMatrix: [[Rate; 11]; 11] = [
-		// when used_buffer_percent is 0%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(231487, 100000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(526013, 100000000), // 20%
-			Rate::saturating_from_rational(106148, 10000000),  // 30%
-			Rate::saturating_from_rational(243221, 10000000),  // 40%
-			Rate::saturating_from_rational(597041, 10000000),  // 50%
-			Rate::saturating_from_rational(126422, 1000000),   // 60%
-			Rate::saturating_from_rational(214815, 1000000),   // 70%
-			Rate::saturating_from_rational(311560, 1000000),   // 80%
-			Rate::saturating_from_rational(410715, 1000000),   // 90%
-			Rate::saturating_from_rational(510500, 1000000),   // 100%
-		],
-		// when used_buffer_percent is 10%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(260999, 100000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(584962, 100000000), // 20%
-			Rate::saturating_from_rational(114942, 10000000),  // 30%
-			Rate::saturating_from_rational(254703, 10000000),  // 40%
-			Rate::saturating_from_rational(610531, 10000000),  // 50%
-			Rate::saturating_from_rational(127866, 1000000),   // 60%
-			Rate::saturating_from_rational(216285, 1000000),   // 70%
-			Rate::saturating_from_rational(313035, 1000000),   // 80%
-			Rate::saturating_from_rational(412191, 1000000),   // 90%
-			Rate::saturating_from_rational(511976, 1000000),   // 100%
-		],
-		// when used_buffer_percent is 20%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(376267, 100000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(815202, 100000000), // 20%
-			Rate::saturating_from_rational(149288, 10000000),  // 30%
-			Rate::saturating_from_rational(299546, 10000000),  // 40%
-			Rate::saturating_from_rational(663214, 10000000),  // 50%
-			Rate::saturating_from_rational(133503, 1000000),   // 60%
-			Rate::saturating_from_rational(222025, 1000000),   // 70%
-			Rate::saturating_from_rational(318797, 1000000),   // 80%
-			Rate::saturating_from_rational(417955, 1000000),   // 90%
-			Rate::saturating_from_rational(517741, 1000000),   // 100%
-		],
-		// when used_buffer_percent is 30%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(807626, 100000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(167679, 10000000),  // 20%
-			Rate::saturating_from_rational(277809, 10000000),  // 30%
-			Rate::saturating_from_rational(467319, 10000000),  // 40%
-			Rate::saturating_from_rational(860304, 10000000),  // 50%
-			Rate::saturating_from_rational(154595, 1000000),   // 60%
-			Rate::saturating_from_rational(243507, 1000000),   // 70%
-			Rate::saturating_from_rational(340357, 1000000),   // 80%
-			Rate::saturating_from_rational(439528, 1000000),   // 90%
-			Rate::saturating_from_rational(539315, 1000000),   // 100%
-		],
-		// when used_buffer_percent is 40%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(219503, 10000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(444770, 10000000), // 20%
-			Rate::saturating_from_rational(691029, 10000000), // 30%
-			Rate::saturating_from_rational(100646, 1000000),  // 40%
-			Rate::saturating_from_rational(149348, 1000000),  // 50%
-			Rate::saturating_from_rational(222388, 1000000),  // 60%
-			Rate::saturating_from_rational(312586, 1000000),  // 70%
-			Rate::saturating_from_rational(409701, 1000000),  // 80%
-			Rate::saturating_from_rational(508916, 1000000),  // 90%
-			Rate::saturating_from_rational(608707, 1000000),  // 100%
-		],
-		// when used_buffer_percent is 50%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(511974, 10000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(102871, 1000000),  // 20%
-			Rate::saturating_from_rational(156110, 1000000),  // 30%
-			Rate::saturating_from_rational(213989, 1000000),  // 40%
-			Rate::saturating_from_rational(282343, 1000000),  // 50%
-			Rate::saturating_from_rational(364989, 1000000),  // 60%
-			Rate::saturating_from_rational(458110, 1000000),  // 70%
-			Rate::saturating_from_rational(555871, 1000000),  // 80%
-			Rate::saturating_from_rational(655197, 1000000),  // 90%
-			Rate::saturating_from_rational(755000, 1000000),  // 100%
-		],
-		// when used_buffer_percent is 60%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(804354, 10000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(161193, 1000000),  // 20%
-			Rate::saturating_from_rational(242816, 1000000),  // 30%
-			Rate::saturating_from_rational(326520, 1000000),  // 40%
-			Rate::saturating_from_rational(414156, 1000000),  // 50%
-			Rate::saturating_from_rational(506779, 1000000),  // 60%
-			Rate::saturating_from_rational(603334, 1000000),  // 70%
-			Rate::saturating_from_rational(701969, 1000000),  // 80%
-			Rate::saturating_from_rational(801470, 1000000),  // 90%
-			Rate::saturating_from_rational(901293, 1000000),  // 100%
-		],
-		// when used_buffer_percent is 70%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(942895, 10000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(188758, 1000000),  // 20%
-			Rate::saturating_from_rational(283590, 1000000),  // 30%
-			Rate::saturating_from_rational(379083, 1000000),  // 40%
-			Rate::saturating_from_rational(475573, 1000000),  // 50%
-			Rate::saturating_from_rational(573220, 1000000),  // 60%
-			Rate::saturating_from_rational(671864, 1000000),  // 70%
-			Rate::saturating_from_rational(771169, 1000000),  // 80%
-			Rate::saturating_from_rational(870838, 1000000),  // 90%
-			Rate::saturating_from_rational(970685, 1000000),  // 100%
-		],
-		// when used_buffer_percent is 80%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(985811, 10000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(197241, 1000000),  // 20%
-			Rate::saturating_from_rational(296017, 1000000),  // 30%
-			Rate::saturating_from_rational(394949, 1000000),  // 40%
-			Rate::saturating_from_rational(494073, 1000000),  // 50%
-			Rate::saturating_from_rational(593401, 1000000),  // 60%
-			Rate::saturating_from_rational(692920, 1000000),  // 70%
-			Rate::saturating_from_rational(792596, 1000000),  // 80%
-			Rate::saturating_from_rational(892388, 1000000),  // 90%
-			Rate::saturating_from_rational(992259, 1000000),  // 100%
-		],
-		// when used_buffer_percent is 90%
-		[
-			Rate::zero(),
-			Rate::saturating_from_rational(997132, 10000000), // when demand_in_available_percent is 10%
-			Rate::saturating_from_rational(199444, 1000000),  // 20%
-			Rate::saturating_from_rational(299194, 1000000),  // 30%
-			Rate::saturating_from_rational(398965, 1000000),  // 40%
-			Rate::saturating_from_rational(498757, 1000000),  // 50%
-			Rate::saturating_from_rational(598570, 1000000),  // 60%
-			Rate::saturating_from_rational(698404, 1000000),  // 70%
-			Rate::saturating_from_rational(798259, 1000000),  // 80%
-			Rate::saturating_from_rational(898132, 1000000),  // 90%
-			Rate::saturating_from_rational(998024, 1000000),  // 100%
-		],
-		// when used_buffer_percent is 100%
-		[
-			Rate::zero(),
-			Rate::one(), // when demand_in_available_percent is 10%
-			Rate::one(),  // 20%
-			Rate::one(),  // 30%
-			Rate::one(),  // 40%
-			Rate::one(),  // 50%
-			Rate::one(),  // 60%
-			Rate::one(),  // 70%
-			Rate::one(),  // 80%
-			Rate::one(),  // 90%
-			Rate::one(),  // 100%
-		],
-	];
+/// Check if the given `address` is a system contract.
+///
+/// It's system contract if the address starts with SYSTEM_CONTRACT_ADDRESS_PREFIX.
+pub fn is_system_contract(address: H160) -> bool {
+	address.as_bytes().starts_with(&SYSTEM_CONTRACT_ADDRESS_PREFIX)
 }
 
+pub fn is_setheum_precompile(address: H160) -> bool {
+	address >= H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)
+		&& address < H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)
+}
+
+/// The call is allowed only if caller is a system contract.
+pub struct SystemContractsFilter;
+impl PrecompileCallerFilter for SystemContractsFilter {
+	fn is_allowed(caller: H160) -> bool {
+		is_system_contract(caller)
+	}
+}
+
+/// Convert gas to weight
+pub struct GasToWeight;
+impl Convert<u64, Weight> for GasToWeight {
+	fn convert(a: u64) -> u64 {
+		// TODO: estimate this
+		a as Weight
+	}
+}
+
+// TODO: somehow estimate this value. Start from a conservative value.
 pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
 /// used by  Operational  extrinsics.
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-/// We allow for 2 seconds of compute with a 6 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
+/// We allow for 1 second of compute with a 3 second average block time.
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 1 * WEIGHT_PER_SECOND;
 
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
 
@@ -262,8 +173,9 @@ parameter_types! {
 		.saturating_sub(BlockExecutionWeight::get());
 }
 
+// TODO: make those const fn
 pub fn dollar(currency_id: CurrencyId) -> Balance {
-	10u128.saturating_pow(currency_id.decimals())
+	10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
 }
 
 pub fn cent(currency_id: CurrencyId) -> Balance {
@@ -280,4 +192,50 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 
 pub fn deposit(items: u32, bytes: u32, currency_id: CurrencyId) -> Balance {
 	items as Balance * 15 * cent(currency_id) + (bytes as Balance) * 6 * cent(currency_id)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn system_contracts_filter_works() {
+		assert!(SystemContractsFilter::is_allowed(H160::from_low_u64_be(1)));
+
+		let mut max_allowed_addr = [0u8; 20];
+		max_allowed_addr[SYSTEM_CONTRACT_ADDRESS_PREFIX.len()] = 127u8;
+		assert!(SystemContractsFilter::is_allowed(max_allowed_addr.into()));
+
+		let mut min_blocked_addr = [0u8; 20];
+		min_blocked_addr[SYSTEM_CONTRACT_ADDRESS_PREFIX.len() - 1] = 1u8;
+		assert!(!SystemContractsFilter::is_allowed(min_blocked_addr.into()));
+	}
+
+	#[test]
+	fn is_system_contract_works() {
+		assert!(is_system_contract(H160::from_low_u64_be(0)));
+		assert!(is_system_contract(H160::from_low_u64_be(u64::max_value())));
+
+		let mut bytes = [0u8; 20];
+		bytes[SYSTEM_CONTRACT_ADDRESS_PREFIX.len() - 1] = 1u8;
+
+		assert!(!is_system_contract(bytes.into()));
+
+		bytes = [0u8; 20];
+		bytes[0] = 1u8;
+
+		assert!(!is_system_contract(bytes.into()));
+	}
+
+	#[test]
+	fn is_setheum_precompile_works() {
+		assert!(!is_setheum_precompile(H160::from_low_u64_be(0)));
+		assert!(!is_setheum_precompile(H160::from_low_u64_be(
+			PRECOMPILE_ADDRESS_START - 1
+		)));
+		assert!(is_setheum_precompile(H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)));
+		assert!(is_setheum_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START - 1)));
+		assert!(!is_setheum_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)));
+		assert!(!is_setheum_precompile([1u8; 20].into()));
+	}
 }

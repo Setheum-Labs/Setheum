@@ -1,0 +1,33 @@
+[package]
+name = "setheum-evm-rpc"
+version = "1.0.0"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[dependencies]
+jsonrpc-core = "15.0.0"
+jsonrpc-derive = "15.0.0"
+ethereum-types = "0.11.0"
+rustc-hex = "2.1.0"
+serde = { version = "1.0.124", features = ["derive"] }
+
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sc-rpc-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-storage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+
+setheum-evm-rpc-runtime-api = { path = "runtime_api" }
+setheum-evm = { path = ".." }
+
+[dev-dependencies]
+serde_json = "1.0.64"
+
+[features]
+default = [ "rpc_binary_search_estimate" ]
+rpc_binary_search_estimate = []

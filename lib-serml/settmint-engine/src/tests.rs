@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -79,19 +79,19 @@ fn adjust_position_work() {
 		);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 0);
-		assert_eq!(SettersModule::positions(SETT, ALICE).standard, 0);
-		assert_eq!(SettersModule::positions(SETT, ALICE).reserve, 0);
+		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).standard, 0);
+		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).reserve, 0);
 		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 100, 50));
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 50);
-		assert_eq!(SettersModule::positions(SETT, ALICE).standard, 50);
-		assert_eq!(SettersModule::positions(SETT, ALICE).reserve, 100);
+		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).standard, 50);
+		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).reserve, 100);
 		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, 20).is_ok(), false);
 		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, -20));
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 30);
-		assert_eq!(SettersModule::positions(SETT, ALICE).standard, 30);
-		assert_eq!(SettersModule::positions(SETT, ALICE).reserve, 100);
+		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).standard, 30);
+		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).reserve, 100);
 	});
 }
 

@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -20,21 +20,21 @@
 
 use super::*;
 
-use crate as setrheum_nft;
+use crate as nft;
 use codec::{Decode, Encode};
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{Filter, InstanceFilter},
-	RuntimeDebug, PalletId
+	RuntimeDebug,
 };
 use orml_traits::parameter_type_with_key;
-use primitives::{mocks::MockAddressMapping, Amount, BlockNumber, CurrencyId, TokenSymbol};
+use primitives::{Amount, Balance, BlockNumber, CurrencyId, TokenSymbol};
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
-	DispatchError, DispatchResult,
 };
+use support::mocks::MockAddressMapping;
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -65,6 +65,7 @@ impl frame_system::Config for Runtime {
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
@@ -91,7 +92,7 @@ parameter_types! {
 	pub const AnnouncementDepositBase: u64 = 1;
 	pub const AnnouncementDepositFactor: u64 = 1;
 }
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen)]
 pub enum ProxyType {
 	Any,
 	JustTransfer,
@@ -171,32 +172,33 @@ impl setheum_currencies::Config for Runtime {
 	type NativeCurrency = NativeCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
+	type AddressMapping = MockAddressMapping;
+	type EVMBridge = ();
 }
 
 parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
-	pub const NftPalletId: PalletId = PalletId(*b"dnr/sNFT");
+	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 impl Config for Runtime {
 	type Event = Event;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
 	type PalletId = NftPalletId;
-	type Currency = NativeCurrency;
 	type WeightInfo = ();
 }
 
-	parameter_types! {
-		pub const MaxClassMetadata: u32 = 1024;
-		pub const MaxTokenMetadata: u32 = 1024;
-	}
+parameter_types! {
+	pub const MaxClassMetadata: u32 = 1024;
+	pub const MaxTokenMetadata: u32 = 1024;
+}
 
 impl orml_nft::Config for Runtime {
 	type ClassId = u32;
 	type TokenId = u64;
-	type ClassData = ClassData;
-	type TokenData = TokenData;
+	type ClassData = ClassData<Balance>;
+	type TokenData = TokenData<Balance>;
 	type MaxClassMetadata = MaxClassMetadata;
 	type MaxTokenMetadata = MaxTokenMetadata;
 }
@@ -213,7 +215,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		SetheumNFT: setheum_nft::{Pallet, Call, Event<T>},
+		SetheumNFT: nft::{Pallet, Call, Event<T>},
 		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
@@ -253,11 +255,4 @@ impl ExtBuilder {
 		ext.execute_with(|| System::set_block_number(1));
 		ext
 	}
-}
-
-pub fn last_event() -> Event {
-	frame_system::Pallet::<Runtime>::events()
-		.pop()
-		.expect("Event expected")
-		.event
 }
