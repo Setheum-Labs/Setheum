@@ -76,6 +76,25 @@ pub mod module {
 		/// The SettUSD currency id, it should be USDJ in Setheum.
 		type GetSettUSDCurrencyId: Get<CurrencyId>;
 
+		/// The stable currency ids
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
+
+		/// The peg currency of a stablecoin.
+		type PegCurrencyIds: GetByKey<Self::CurrencyId, Self::CurrencyId>;
+
+		/// The list of valid Fiat currency types that define the stablecoin pegs
+		type FiatCurrencyIds: Get<Vec<CurrencyId>>;
+
+		#[pallet::constant]
+		/// The FiatUSD currency id, it should be USD.
+		type GetFiatUSDCurrencyId: Get<CurrencyId>;
+
+		/// The fixed price of SettUsd, it should be 1 USD in Setheum.
+		/// This represents the value of the US dollar which is used -
+		/// for price feed provided in USD by the oracles in Setheum.
+		#[pallet::constant]
+		type FiatUsdFixedPrice: Get<Price>;
+
 		#[pallet::constant]
 		/// The Setter Peg One currency id, it should be USDJ in Setheum.
 		type GetSetterPegOneCurrencyId: Get<CurrencyId>;
@@ -115,15 +134,6 @@ pub mod module {
 		#[pallet::constant]
 		/// The Setter Peg Ten currency id, it should be GIPJ in Setheum.
 		type GetSetterPegTenCurrencyId: Get<CurrencyId>;
-
-		/// The stable currency ids
-		type StableCurrencyIds: Get<Vec<CurrencyId>>;
-
-		/// The peg currency of a stablecoin.
-		type PegCurrencyIds: GetByKey<Self::CurrencyId, Self::CurrencyId>;
-
-		/// The list of valid Fiat currency types that define the stablecoin pegs
-		type FiatCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The origin which may lock and unlock prices feed to system.
 		type LockOrigin: EnsureOrigin<Self::Origin>;
@@ -228,8 +238,14 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::PegCurrencyIds::get(&currency_id) == &fiat_currency_id,
 			Error::<T>::InvalidPegPair,
 		);
-		// if locked price exists, return it, otherwise return latest price from oracle.
-		Self::locked_price(fiat_currency_id).or_else(|| T::Source::get(&fiat_currency_id));
+		if currency_id == T::GetSetterCurrencyId::get() {
+			Self::get_setter_fixed_price()
+		} else if { currency_id == T::GetSettUSDCurrencyId::get() {
+			Self::get_settusd_fixed_price()
+		} else {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(fiat_currency_id).or_else(|| T::Source::get(&fiat_currency_id));
+		}
 	}
 
 	/// get the price of a fiat currency
@@ -242,13 +258,18 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::FiatCurrencyIds::get().contains(&fiat_currency_id),
 			Error::<T>::InvalidFiatCurrencyType,
 		);
+		if { fiat_currency_id == T::GetFiatUSDCurrencyId::get() {
+			Self::get_fiat_usd_fixed_price()
+		}
 		// if locked price exists, return it, otherwise return latest price from oracle.
 		Self::locked_price(fiat_currency_id).or_else(|| T::Source::get(&fiat_currency_id));
 	}
 
+	fn get_fiat_usd_fixed_price() -> Option<Price>{
+		Some(T::FiatUsdFixedPrice::get())
+	}
 	fn get_settusd_fixed_price() -> Option<Price>{
-		let currency_id = T::GetSettUSDCurrencyId::get();
-		Self::get_peg_price(&currency_id)
+		Self::get_fiat_usd_fixed_price()
 	}
 
 	/// get the fixed price of a specific settcurrency/stablecoin currency type
@@ -257,9 +278,6 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		if currency_id == T::GetSetterCurrencyId::get() {
-			Self::get_setter_fixed_price()
-		} else {
 		Self::get_peg_price(&currency_id)
 		}
 	}
@@ -271,7 +289,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		Self::get_price(currency_id)
+		Self::get_market_price(currency_id)
 	}
 
 	/// get exchange rate between two currency types
@@ -286,6 +304,18 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		}
 	}
 
+	/// get exchange rate between two currency types
+	/// Note: this returns the price for 1 basic unit
+	fn get_market_relative_price(base_currency_id: CurrencyId, quote_currency_id: CurrencyId) -> Option<Price> {
+		if let (Some(base_price), Some(quote_price)) =
+			(Self::get_market_price(base_currency_id), Self::get_market_price(quote_currency_id))
+		{
+			base_price.checked_div(&quote_price)
+		} else {
+			None
+		}
+	}
+
 	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price> {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -293,7 +323,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		);
 		if currency_id == T::GetSetterCurrencyId::get() {
 			let basket_price = Self::get_setter_fixed_price();
-			let coin_price = Self::get_price(currency_id);
+			let coin_price = Self::get_market_price(currency_id);
 			coin_price.checked_div(&basket_price)
 		} else if !currency_id == T::GetSetterCurrencyId::get() {
 			let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
@@ -301,7 +331,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 				T::FiatCurrencyIds::get().contains(&fiat_currency_id),
 				Error::<T>::InvalidFiatCurrencyType,
 			);
-			Self::get_relative_price(&currency_id, &fiat_currency_id)
+			Self::get_market_relative_price(&currency_id, &fiat_currency_id)
 		} else {
 			None
 		}
@@ -364,12 +394,61 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		Self::get_setter_basket_peg_price()
 	}
 
+	/// get the exchange rate of a specific SettCurrency to USD
+	/// Note: this returns the price for 1 basic unit
+	/// For the SERP TO USE WHEN STABILISING SettCurrency prices.
+	fn get_market_price(currency_id: CurrencyId) -> Option<Price>{
+		let maybe_feed_price = if T::FiatCurrencyIds::get().contains(&currency_id) {
+			// if it is a FiatCurrency, return fiat price
+			let fiat_currency_id = &currency_id;
+			Self::get_fiat_price(&fiat_currency_id))
+		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
+			let token_0 = match symbol_0 {
+				DexShare::Token(token) => CurrencyId::Token(token),
+				DexShare::Erc20(address) => CurrencyId::Erc20(address),
+			};
+			let token_1 = match symbol_1 {
+				DexShare::Token(token) => CurrencyId::Token(token),
+				DexShare::Erc20(address) => CurrencyId::Erc20(address),
+			};
+			let (pool_0, _) = T::DEX::get_liquidity_pool(token_0, token_1);
+			let total_shares = T::Currency::total_issuance(currency_id);
+
+			return {
+				if let (Some(ratio), Some(price_0)) = (
+					Price::checked_from_rational(pool_0, total_shares),
+					Self::get_price(token_0),
+				) {
+					ratio
+						.checked_mul(&price_0)
+						.and_then(|n| n.checked_mul(&Price::saturating_from_integer(2)))
+				} else {
+					None
+				}
+			};
+		} else {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(currency_id).or_else(|| T::Source::get(&currency_id))
+		};
+		let maybe_adjustment_multiplier = 10u128.checked_pow(T::CurrencyIdMapping::decimals(currency_id)?.into());
+
+		if let (Some(feed_price), Some(adjustment_multiplier)) = (maybe_feed_price, maybe_adjustment_multiplier) {
+			Price::checked_from_rational(feed_price.into_inner(), adjustment_multiplier)
+		} else {
+			None
+		}
+	}
+
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if currency_id == T::GetSetterCurrencyId::get() {
-			// if is Setter (SETT) basket currency, return fixed price
-			Some(Self::get_setter_fixed_price())
+		let maybe_feed_price = if T::FiatCurrencyIds::get().contains(&currency_id) {
+			// if it is a FiatCurrency, return fiat price
+			let fiat_currency_id = &currency_id;
+			Self::get_fiat_price(&fiat_currency_id))
+		} else if T::StableCurrencyIds::get().contains(&currency_id) {
+			// if it is a SettCurrency, return fixed price
+			Some(Self::get_stablecoin_fixed_price(&currency_id))
 		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = match symbol_0 {
 				DexShare::Token(token) => CurrencyId::Token(token),

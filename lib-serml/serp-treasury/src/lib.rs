@@ -364,7 +364,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			T::SerpAuctionManagerHandler::new_diamond_auction(&initial_amount, &amount)
 
 		} else {
-			let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id);
+			let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id)?;
 			let relative_price = setter_fixed_price.checked_div(&settcurrency_fixed_price);
 			/// the initial amount is the equivalent of the serpdown amount -
 			/// but in the (higher) fixed price not the (lower) market price
@@ -390,8 +390,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		let market_price = T::Prices::get_stablecoin_market_price(&currency_id);
-		let fixed_price = T::Prices::get_stablecoin_fixed_price(&currency_id);
+		let market_price = T::Prices::get_stablecoin_market_price(&currency_id)?;
+		let fixed_price = T::Prices::get_stablecoin_fixed_price(&currency_id)?;
 		let fixed_price_amount = T::Prices::amount_try_from_price_abs(&fixed_price)?;
 		let market_price_amount = T::Prices::amount_try_from_price_abs(&market_price)?;
 		let fixed_price_percent_amount = fixed_price_amount.checked_div(100);
