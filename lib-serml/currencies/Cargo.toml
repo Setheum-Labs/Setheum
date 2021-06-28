@@ -24,7 +24,7 @@ orml-utilities = { path = "../../lib-openrml/utilities", default-features = fals
 
 # local dependencies
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-support = { path = "../support", default-features = false }
+support = { package = "setheum-support", path = "../support", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
