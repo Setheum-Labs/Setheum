@@ -17,20 +17,20 @@ frame-system = { default-features = false, git = "https://github.com/paritytech/
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 
 # orml dependencies
-orml-traits = { path = "../../lib-openrml/traits", default-features = false }
-orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }
+orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
+orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
 
 # local dependencies
-support = { package = "setheum-support", path = "../support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+support = { package = "setheum-support", path = "../../support", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
 sp-core = "3.0.0"
 sp-io = "3.0.0"
 pallet-balances = "3.0.0"
-orml-currencies = { path = "../../lib-openrml/currencies", default-features = false }
-orml-auction = { path = "../../lib-openrml/auction", default-features = false }
-setheum-dex = { path = "../dex" }
+orml-currencies = { path = "../../../lib-openrml/currencies", default-features = false }
+orml-auction = { path = "../../../lib-openrml/auction", default-features = false }
+setheum-dex = { path = "../../dex" }
 
 [features]
 default = ["std"]

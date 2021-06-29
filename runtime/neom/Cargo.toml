@@ -72,16 +72,16 @@ orml-unknown-tokens = { path = "../../lib-openrml/unknown-tokens", default-featu
 
 # local dependencies
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
-serp-auction = { path = "../../lib-serml/serp-auction", default-features = false }
-setheum-settmint-engine = { path = "../../lib-serml/settmint-engine", default-features = false }
-serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = false }
-setheum-dex = { path = "../../lib-serml/dex", default-features = false }
-setheum-currencies = { path = "../../lib-serml/currencies", default-features = false }
-settmint-gateway = { path = "../../lib-serml/settmint-gateway", default-features = false }
-settmint-manager = { path = "../../lib-serml/settmint-manager", default-features = false }
-setheum-nft = { path = "../../lib-serml/nft", default-features = false }
+serp-auction = { path = "../../lib-serml/serp/serp-auction", default-features = false }
+setheum-settmint-engine = { path = "../../lib-serml/settmint/settmint-engine", default-features = false }
+serp-treasury = { path = "../../lib-serml/serp/serp-treasury", default-features = false }
+setheum-dex = { path = "../../lib-serml/dex/dex", default-features = false }
+setheum-currencies = { path = "../../lib-serml/tokens/currencies", default-features = false }
+settmint-gateway = { path = "../../lib-serml/settmint/settmint-gateway", default-features = false }
+settmint-manager = { path = "../../lib-serml/settmint/settmint-manager", default-features = false }
+setheum-nft = { path = "../../lib-serml/tokens/nft", default-features = false }
 setheum-prices = { path = "../../lib-serml/prices", default-features = false }
-setheum-incentives = { path = "../../lib-serml/incentives", default-features = false }
+setheum-incentives = { path = "../../lib-serml/dex/incentives", default-features = false }
 setheum-support = { path = "../../lib-serml/support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 runtime-common = { path = "../common", default-features = false }

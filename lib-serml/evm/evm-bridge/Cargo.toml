@@ -20,8 +20,8 @@ primitive-types = { version = "0.9.0", default-features = false, features = ["rl
 impl-trait-for-tuples = "0.2.1"
 ethereum-types = { version = "0.11.0", default-features = false }
 
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-support = { package = "setheum-support", path = "../support", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
+support = { package = "setheum-support", path = "../../support", default-features = false }
 setheum-evm = { path = "../evm", default-features = false }
 
 [dev-dependencies]

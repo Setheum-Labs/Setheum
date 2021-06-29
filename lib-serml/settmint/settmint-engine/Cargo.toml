@@ -1,5 +1,5 @@
 [package]
-name = "serp-auction"
+name = "setheum-settmint-engine"
 version = "0.7.1"
 authors = ["Setheum Labs"]
 edition = "2018"
@@ -7,30 +7,32 @@ edition = "2018"
 [dependencies]
 # external dependencies
 serde = { version = "1.0.101", optional = true }
-codec = { default-features = false, package = "parity-scale-codec", version = "2.0.0" }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 
 # Substrate dependencies
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 
 # orml dependencies
-orml-traits = { path = "../../lib-openrml/traits", default-features = false }
-orml-utilities = { path = "../../lib-openrml/utilities", default-features = false }
+orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
+orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
+orml-utilities = { path = "../../../lib-openrml/utilities", default-features = false }
 
 # local dependencies
-support = { package = "setheum-support", path = "../support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+support = { package = "setheum-support", path = "../../support", default-features = false }
+settmint-manager = { package = "settmint-manager", path = "../settmint-manager", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
 sp-core = "3.0.0"
 pallet-balances = "3.0.0"
-orml-auction = { path = "../../lib-openrml/auction" }
-serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
-setheum-dex = { path = "../dex" }
-orml-tokens = { path = "../../lib-openrml/tokens" }
+orml-currencies = { path = "../../../lib-openrml/currencies" }
+setheum-dex = { path = "../../dex" }
+serp-treasury = { package = "serp-treasury", path = "../../serp-treasury" }
 
 [features]
 default = ["std"]
@@ -39,12 +41,15 @@ std = [
 	"codec/std",
 	"frame-support/std",
 	"frame-system/std",
+	"orml-tokens/std",
 	"orml-traits/std",
-	"orml-utilities/std",
+	"sp-application-crypto/std",
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	"support/std",
+	"settmint-manager/std",
 	"primitives/std",
+	"orml-utilities/std",
 ]
 try-runtime = ["frame-support/try-runtime"]
