@@ -14,6 +14,20 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 	
 </div>
 
+# Core Modules & Libraries
+## [SERML](./lib-serml) (Setheum Runtime Module Library)
+1. [Setheum Bridges](./lib-serml/bridges) - Network Cross-Chain Interoperability Bridge modules.. 
+2. [Setheum DEX](./lib-serml/dex) - Network Built-In Decentralised Exchange..
+3. [Setheum EVM](./lib-serml/evm) - Setheum EVM (Ethereum Virtual Machine), network evm compatibility and bridging modules..
+4. [Setheum Prices](./lib-serml/prices) - Network Prices feed from the System Oracles..
+5. [SERP](./lib-serml/serp) - Setheum Elastic Reserve Protocol modules for Setheum Assets & SettCurrencies..
+6. [SettMint](./lib-serml/settmint) - Setter Backed Stablecoin Minting Reserve Protocol..
+7. [Setheum Support](./lib-serml/support) - Network Modules Trait Support module..
+8. [Setheum Tokens](./lib-serml/tokens) - Network Supported Currency Standards modules, currencies and NFTS..
+9. [Transaction Payment](./lib-serml/transaction-payment) - Transaction Payment Module, pay fees in any token/currency..
+10. [Setheum Primitives](./lib-serml/primitives) - Setheum Primitives, currencies, and many other network primitives..
+11. [ORML](./lib-orml) - Open Runtime Module Library
+
 # Getting Started 
 
 This project contains some configuration files to help get started :hammer_and_wrench:
