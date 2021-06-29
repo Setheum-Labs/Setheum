@@ -28,7 +28,7 @@ sp-core = "3.0.0"
 sp-io = "3.0.0"
 pallet-balances = "3.0.0"
 orml-currencies = { path = "../../../lib-openrml/currencies" }
-serp-treasury = { package = "serp-treasury", path = "../../serp-treasury" }
+serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
 
 [features]
 default = ["std"]

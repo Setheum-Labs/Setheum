@@ -31,8 +31,8 @@ primitives = { package = "setheum-primitives", path = "../../../primitives", def
 sp-core = "3.0.0"
 pallet-balances = "3.0.0"
 orml-currencies = { path = "../../../lib-openrml/currencies" }
-setheum-dex = { path = "../../dex" }
-serp-treasury = { package = "serp-treasury", path = "../../serp-treasury" }
+setheum-dex = { path = "../../dex/dex" }
+serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
 
 [features]
 default = ["std"]

@@ -30,7 +30,7 @@ sp-io = "3.0.0"
 pallet-balances = "3.0.0"
 orml-currencies = { path = "../../../lib-openrml/currencies", default-features = false }
 orml-auction = { path = "../../../lib-openrml/auction", default-features = false }
-setheum-dex = { path = "../../dex" }
+setheum-dex = { path = "../..//dex/dex" }
 
 [features]
 default = ["std"]

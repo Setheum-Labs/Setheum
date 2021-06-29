@@ -22,8 +22,8 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "master", default-features = false }
 
 # local dependencies
-support = { package = "setheum-support", path = "../support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+support = { package = "setheum-support", path = "../../support", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
 orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "master" }

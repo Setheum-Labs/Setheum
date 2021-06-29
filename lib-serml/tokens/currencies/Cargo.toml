@@ -31,8 +31,8 @@ sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 tokens = { package = "orml-tokens", path = "../../../lib-openrml/tokens" }
-setheum-evm = { path = "../../evm" }
-setheum-evm-bridge = { path = "../../evm-bridge" }
+setheum-evm = { path = "../../evm/evm" }
+setheum-evm-bridge = { path = "../../evm/evm-bridge" }
 
 [features]
 default = ["std"]

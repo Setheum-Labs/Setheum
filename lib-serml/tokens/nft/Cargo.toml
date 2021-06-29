@@ -26,7 +26,7 @@ orml-nft = { path = "../../../lib-openrml/nft", default-features = false }
 
 # local dependencies
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
-setheum-currencies = { path = "../../currencies", default-features = false }
+setheum-currencies = { path = "../../tokens/currencies", default-features = false }
 
 [dev-dependencies]
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }

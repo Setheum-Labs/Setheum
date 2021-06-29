@@ -29,7 +29,7 @@ sp-core = "3.0.0"
 pallet-balances = "3.0.0"
 orml-auction = { path = "../../../lib-openrml/auction" }
 serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
-setheum-dex = { path = "../dex" }
+setheum-dex = { path = "../../dex/dex" }
 orml-tokens = { path = "../../../lib-openrml/tokens" }
 
 [features]
