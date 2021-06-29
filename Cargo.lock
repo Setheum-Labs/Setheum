@@ -777,22 +777,6 @@ dependencies = [
 [[package]]
 name = "chainbridge"
 version = "0.0.2"
-source = "git+https://github.com/Setheum-Labs/chainbridge-substrate?branch=master#c536e17c5d4c0f661059a5e13c1ae41d03b21f0d"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "pallet-balances 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "parity-scale-codec",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
-]
-
-[[package]]
-name = "chainbridge"
-version = "0.0.2"
 source = "git+https://github.com/Slixon-Technologies/chainbridge-substrate#c536e17c5d4c0f661059a5e13c1ae41d03b21f0d"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
@@ -7508,25 +7492,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-chainbridge"
-version = "1.0.0"
-dependencies = [
- "chainbridge 0.0.2 (git+https://github.com/Setheum-Labs/chainbridge-substrate?branch=master)",
- "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "orml-tokens 0.4.1-dev",
- "orml-traits 0.4.1-dev",
- "parity-scale-codec",
- "serde",
- "setheum-primitives",
- "setheum-support",
- "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
-]
-
-[[package]]
 name = "setheum-cli"
 version = "0.7.1"
 dependencies = [
@@ -7691,27 +7656,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-evm-accounts"
-version = "1.0.0"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "libsecp256k1",
- "orml-currencies",
- "orml-tokens 0.4.1-dev",
- "orml-traits 0.4.1-dev",
- "pallet-balances 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "parity-scale-codec",
- "serde",
- "setheum-primitives",
- "setheum-support",
- "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
-]
-
-[[package]]
 name = "setheum-evm-bridge"
 version = "1.0.0"
 dependencies = [
@@ -7732,43 +7676,6 @@ dependencies = [
  "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
  "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
-]
-
-[[package]]
-name = "setheum-evm-manager"
-version = "1.0.0"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "orml-currencies",
- "orml-tokens 0.4.1-dev",
- "orml-traits 0.4.1-dev",
- "orml-utilities 0.4.1-dev",
- "pallet-balances 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "pallet-timestamp",
- "parity-scale-codec",
- "serde",
- "setheum-evm",
- "setheum-evm-bridge",
- "setheum-primitives",
- "setheum-support",
- "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
-]
-
-[[package]]
-name = "setheum-example"
-version = "0.7.1"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "parity-scale-codec",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
 ]
 
 [[package]]
@@ -7856,7 +7763,7 @@ name = "setheum-primitives"
 version = "0.7.1"
 dependencies = [
  "bstringify",
- "chainbridge 0.0.2 (git+https://github.com/Slixon-Technologies/chainbridge-substrate)",
+ "chainbridge",
  "evm",
  "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
  "parity-scale-codec",
@@ -7865,27 +7772,6 @@ dependencies = [
  "sp-core 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-runtime 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "setheum-renvm-bridge"
-version = "1.0.0"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "frame-system 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "hex-literal 0.3.1",
- "orml-currencies",
- "orml-tokens 0.4.1-dev",
- "orml-traits 0.4.1-dev",
- "pallet-balances 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "parity-scale-codec",
- "serde",
- "setheum-primitives",
- "setheum-support",
- "sp-core 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-io 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
 ]
 
 [[package]]

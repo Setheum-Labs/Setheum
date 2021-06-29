@@ -18,21 +18,21 @@ sp-runtime = { default-features = false, git = "https://github.com/paritytech/su
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 
 # orml dependencies
-orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }
-orml-traits = { path = "../../lib-openrml/traits", default-features = false }
-orml-utilities = { path = "../../lib-openrml/utilities", default-features = false }
+orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
+orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
+orml-utilities = { path = "../../../lib-openrml/utilities", default-features = false }
 
 # local dependencies
-support = { package = "setheum-support", path = "../support", default-features = false }
+support = { package = "setheum-support", path = "../../support", default-features = false }
 settmint-manager = { package = "settmint-manager", path = "../settmint-manager", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
 sp-core = "3.0.0"
 pallet-balances = "3.0.0"
-orml-currencies = { path = "../../lib-openrml/currencies" }
-setheum-dex = { path = "../dex" }
-serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
+orml-currencies = { path = "../../../lib-openrml/currencies" }
+setheum-dex = { path = "../../dex/dex" }
+serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
 
 [features]
 default = ["std"]
