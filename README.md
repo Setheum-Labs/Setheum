@@ -75,20 +75,6 @@ This project contains some configuration files to help get started :hammer_and_w
 Follow the [Rust setup instructions](./doc/rust-setup.md) before using the included Makefile to
 build the Setheum node.
 
-### Makefile
-
-This project uses a [Makefile](Makefile) to document helpful commands and make it easier to execute
-them. Get started by running these [`make`](https://www.gnu.org/software/make/manual/make.html)
-targets:
-
-1. `make init` - Run the [init script](scripts/init.sh) to configure the Rust toolchain for
-   [WebAssembly compilation](https://substrate.dev/docs/en/knowledgebase/getting-started/#webassembly-compilation).
-1. `make run` - Build and launch this project in development mode.
-
-The init script and Makefile both specify the version of the
-[Rust nightly compiler](https://substrate.dev/docs/en/knowledgebase/getting-started/#rust-nightly-toolchain)
-that this project depends on.
-
 ## Build
 
 Install Rust:
