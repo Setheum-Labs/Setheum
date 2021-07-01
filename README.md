@@ -55,6 +55,17 @@ The SEVM lets developers onboard, deploy or migrate their Ethereum Solidity Smar
 The SetheumEVM has a beautiful library of developer tools that let developers deploy, manageand interact with their smart contracts and upgradable smart contracts on the S-EVM with popular and well documented tools like Truffle, MetaMask, et al.
 The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, to let users access the Setheumand the EVM both with a single wallet without having to use two separate wallets for compatibility.
 
+For all the SERML (Setheum Runtime Module Library) modules like the;
+[bridges](./lib-serml/bridges), 
+[dex](./lib-serml/dex), 
+[prices](./lib-serml/prices), 
+[support](./lib-serml/support), 
+[tokens](./lib-serml/tokens), 
+[NFTs](./lib-serml/nft), 
+[transaction-payment](./lib-serml/transaction-payment) 
+et al.
+Check the [lib-serml](./lib-serml)
+
 # Getting Started 
 
 This project contains some configuration files to help get started :hammer_and_wrench:
