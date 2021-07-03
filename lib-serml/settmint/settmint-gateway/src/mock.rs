@@ -350,7 +350,7 @@ impl settmint_manager::Config for Runtime {
 	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSetter = ();
+	type OnUpdateSettMint = ();
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
