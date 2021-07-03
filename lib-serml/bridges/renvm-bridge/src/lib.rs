@@ -288,9 +288,9 @@ impl<T: Config> Pallet<T> {
 			n_hash,
 			&ren_btc_identifier,
 		));
-		let recoverd =
+		let recovered =
 			secp256k1_ecdsa_recover(&sig, &signed_message_hash).map_err(|_| Error::<T>::InvalidMintSignature)?;
-		let addr = &keccak_256(&recoverd)[12..];
+		let addr = &keccak_256(&recovered)[12..];
 
 		let pubkey = RenVmPublicKey::<T>::get().ok_or(Error::<T>::InvalidRenVmPublicKey)?;
 		ensure!(addr == pubkey, Error::<T>::InvalidMintSignature);
@@ -309,9 +309,9 @@ impl<T: Config> Pallet<T> {
 	// Verify that the signature has been signed by RenVM.
 	fn verify_rotate_key_signature(new_key: &PublicKey, sig: &[u8; 65]) -> DispatchResult {
 		let signed_message_hash = keccak_256(&Self::signable_rotate_key_message(new_key));
-		let recoverd =
+		let recovered =
 			secp256k1_ecdsa_recover(&sig, &signed_message_hash).map_err(|_| Error::<T>::InvalidMintSignature)?;
-		let addr = &keccak_256(&recoverd)[12..];
+		let addr = &keccak_256(&recovered)[12..];
 
 		let pubkey = RenVmPublicKey::<T>::get().ok_or(Error::<T>::InvalidRenVmPublicKey)?;
 		ensure!(addr == pubkey, Error::<T>::InvalidMintSignature);
