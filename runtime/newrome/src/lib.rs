@@ -128,17 +128,17 @@ impl_opaque_keys! {
 
 // Module accounts of runtime
 parameter_types! {
-	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/setter");
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
+	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 
-pub fn get_all_setheum_accounts() -> Vec<AccountId> {
+pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
-		SetheumTreasuryPalletId::get().into_account(),
+		TreasuryPalletId::get().into_account(),
 		SettmintManagerPalletId::get().into_account(),
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
@@ -284,10 +284,10 @@ type EnsureRootOrHalfGeneralCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, GeneralCouncilInstance>,
 >;
 
-type EnsureRootOrHalfMonetaryCouncil = EnsureOneOf<
+type EnsureRootOrHalfFinancialCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, MonetaryCouncilInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, FinancialCouncilInstance>,
 >;
 
 type EnsureRootOrTwoThirdsGeneralCouncil = EnsureOneOf<
@@ -345,33 +345,33 @@ impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
 }
 
 parameter_types! {
-	pub const MonetaryCouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const MonetaryCouncilMaxProposals: u32 = 100;
-	pub const MonetaryCouncilMaxMembers: u32 = 100;
+	pub const FinancialCouncilMotionDuration: BlockNumber = 7 * DAYS;
+	pub const FinancialCouncilMaxProposals: u32 = 100;
+	pub const FinancialCouncilMaxMembers: u32 = 100;
 }
 
-type MonetaryCouncilInstance = pallet_collective::Instance2;
-impl pallet_collective::Config<MonetaryCouncilInstance> for Runtime {
+type FinancialCouncilInstance = pallet_collective::Instance2;
+impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
-	type MotionDuration = MonetaryCouncilMotionDuration;
-	type MaxProposals = MonetaryCouncilMaxProposals;
-	type MaxMembers = MonetaryCouncilMaxMembers;
+	type MotionDuration = FinancialCouncilMotionDuration;
+	type MaxProposals = FinancialCouncilMaxProposals;
+	type MaxMembers = FinancialCouncilMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = ();
 }
 
-type MonetaryCouncilMembershipInstance = pallet_membership::Instance2;
-impl pallet_membership::Config<MonetaryCouncilMembershipInstance> for Runtime {
+type FinancialCouncilMembershipInstance = pallet_membership::Instance2;
+impl pallet_membership::Config<FinancialCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type MembershipInitialized = MonetaryCouncil;
-	type MembershipChanged = MonetaryCouncil;
+	type MembershipInitialized = FinancialCouncil;
+	type MembershipChanged = FinancialCouncil;
 }
 
 parameter_types! {
@@ -414,18 +414,6 @@ impl pallet_membership::Config<OperatorMembershipInstanceSetheum> for Runtime {
 	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type MembershipInitialized = SetheumOracle;
 	type MembershipChanged = SetheumOracle;
-}
-
-type OperatorMembershipInstanceBand = pallet_membership::Instance6;
-impl pallet_membership::Config<OperatorMembershipInstanceBand> for Runtime {
-	type Event = Event;
-	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type MembershipInitialized = BandOracle;
-	type MembershipChanged = BandOracle;
 }
 
 impl pallet_utility::Config for Runtime {
@@ -496,7 +484,7 @@ parameter_types! {
 }
 
 impl pallet_treasury::Config for Runtime {
-	type PalletId = SetheumTreasuryPalletId;
+	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
 	type ApproveOrigin = EnsureRootOrHalfGeneralCouncil;
 	type RejectOrigin = EnsureRootOrHalfGeneralCouncil;
@@ -659,24 +647,12 @@ impl orml_oracle::Config<SetheumDataProvider> for Runtime {
 	type WeightInfo = weights::orml_oracle::WeightInfo<Runtime>;
 }
 
-type BandDataProvider = orml_oracle::Instance2;
-impl orml_oracle::Config<BandDataProvider> for Runtime {
-	type Event = Event;
-	type OnNewData = ();
-	type CombineData = orml_oracle::DefaultCombineData<Runtime, MinimumCount, ExpiresIn, BandDataProvider>;
-	type Time = Timestamp;
-	type OracleKey = CurrencyId;
-	type OracleValue = Price;
-	type RootOperatorAccountId = ZeroAccountId;
-	type WeightInfo = weights::orml_oracle::WeightInfo<Runtime>;
-}
-
 create_median_value_data_provider!(
 	AggregatedDataProvider,
 	CurrencyId,
 	Price,
 	TimeStampedPrice,
-	[SetheumOracle, BandOracle]
+	[SetheumOracle]
 );
 // Aggregated data provider cannot feed.
 impl DataFeeder<CurrencyId, Price, AccountId> for AggregatedDataProvider {
@@ -692,7 +668,7 @@ parameter_type_with_key! {
 }
 
 parameter_types! {
-	pub TreasuryModuleAccount: AccountId = SetheumTreasuryPalletId::get().into_account();
+	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
 }
 
 impl orml_tokens::Config for Runtime {
@@ -702,7 +678,7 @@ impl orml_tokens::Config for Runtime {
 	type CurrencyId = CurrencyId;
 	type WeightInfo = weights::orml_tokens::WeightInfo<Runtime>;
 	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = orml_tokens::TransferDust<Runtime, TreasuryModuleAccount>;
+	type OnDust = orml_tokens::TransferDust<Runtime, TreasuryAccount>;
 }
 
 parameter_types! {
@@ -733,15 +709,15 @@ impl setheum_currencies::Config for Runtime {
 	type WeightInfo = weights::setheum_currencies::WeightInfo<Runtime>;
 }
 
-pub struct EnsureRootOrSetheumTreasury;
-impl EnsureOrigin<Origin> for EnsureRootOrSetheumTreasury {
+pub struct EnsureRootOrTreasury;
+impl EnsureOrigin<Origin> for EnsureRootOrTreasury {
 	type Success = AccountId;
 
 	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
-			RawOrigin::Root => Ok(SetheumTreasuryPalletId::get().into_account()),
+			RawOrigin::Root => Ok(TreasuryPalletId::get().into_account()),
 			RawOrigin::Signed(caller) => {
-				if caller == SetheumTreasuryPalletId::get().into_account() {
+				if caller == TreasuryPalletId::get().into_account() {
 					Ok(caller)
 				} else {
 					Err(Origin::from(Some(caller)))
@@ -765,7 +741,7 @@ impl orml_vesting::Config for Runtime {
 	type Event = Event;
 	type Currency = pallet_balances::Module<Runtime>;
 	type MinVestedTransfer = MinVestedTransfer;
-	type VestedTransferOrigin = EnsureRootOrSetheumTreasury;
+	type VestedTransferOrigin = EnsureRootOrTreasury;
 	type WeightInfo = weights::orml_vesting::WeightInfo<Runtime>;
 }
 
@@ -807,18 +783,18 @@ impl serp_auction::Config for Runtime {
 	type SerpTreasury = SerpTreasury;
 	type Dex = Dex;
 	type PriceSource = Prices;
-	type UnsignedPriority = runtime_common::SerpAuctionManagerUnsignedPriority;
+	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
 	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
 }
 
 impl settmint_manager::Config for Runtime {
 	type Event = Event;
-	type Convert = setheum_settmint_engine::StandardExchangeRateConvertor<Runtime>;
+	type Convert = settmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSetter = setheum_incentives::OnUpdateSetter<Runtime>;
+	type OnUpdateSettMint = setheum_incentives::OnUpdateSettMint<Runtime>;
 }
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
@@ -883,10 +859,9 @@ parameter_types! {
 	pub ReserveCurrencyIds: Vec<CurrencyId> = vec![rSETT];
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub MinimumStandardValue: Balance = dollar(rUSD);
-	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }
 
-impl setheum_settmint_engine::Config for Runtime {
+impl settmint_engine::Config for Runtime {
 	type Event = Event;
 	type PriceSource = Prices;
 	type ReserveCurrencyIds = ReserveCurrencyIds;
@@ -894,11 +869,10 @@ impl setheum_settmint_engine::Config for Runtime {
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasury;
-	type UpdateOrigin = EnsureRootOrHalfMonetaryCouncil;
-	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
+	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type Dex = Dex;
 	type UnsignedPriority = runtime_common::SettmintEngineUnsignedPriority;
-	type WeightInfo = weights::setheum_settmint_engine::WeightInfo<Runtime>;
+	type WeightInfo = weights::settmint_engine::WeightInfo<Runtime>;
 }
 
 impl settmint_gateway::Config for Runtime {
@@ -958,6 +932,7 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order. aT THE MOMENT IT'S just rUSD
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![rUSD];
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }
 
 impl setheum_transaction_payment::Config for Runtime {
@@ -993,7 +968,7 @@ impl setheum_incentives::Config for Runtime {
 	type AccumulatePeriod = AccumulatePeriod;
 	type IncentiveCurrencyId = GetNativeCurrencyId;
 	type SavingCurrencyId = GetStableCurrencyId;
-	type UpdateOrigin = EnsureRootOrHalfMonetaryCouncil;
+	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type Dex = Dex;
@@ -1048,10 +1023,6 @@ impl pallet_proxy::Config for Runtime {
 	type AnnouncementDepositFactor = AnnouncementDepositFactor;
 }
 
-impl orml_unknown_tokens::Config for Runtime {
-	type Event = Event;
-}
-
 #[allow(clippy::large_enum_variant)]
 construct_runtime!(
 	pub enum Runtime where
@@ -1096,8 +1067,8 @@ construct_runtime!(
 		// Governance
 		GeneralCouncil: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		GeneralCouncilMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>},
-		MonetaryCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		MonetaryCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>},
+		FinancialCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		FinancialCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>},
 		TechnicalCommittee: pallet_collective::<Instance4>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>},
 
@@ -1105,16 +1076,13 @@ construct_runtime!(
 
 		// Oracle
 		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>},
-		BandOracle: orml_oracle::<Instance2>::{Module, Storage, Call, Config<T>, Event<T>},
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
 		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>},
-		OperatorMembershipBand: pallet_membership::<Instance6>::{Module, Call, Storage, Event<T>, Config<T>},
 
 		// ORML Core
 		Auction: orml_auction::{Module, Storage, Call, Event<T>},
 		Rewards: orml_rewards::{Module, Storage, Call},
 		OrmlNFT: orml_nft::{Module, Storage, Config<T>},
-		UnknownTokens: orml_unknown_tokens::{Module, Storage, Event},
 
 		// Setheum Core
 		Prices: setheum_prices::{Module, Storage, Call, Event<T>},
@@ -1127,7 +1095,7 @@ construct_runtime!(
 		SettmintManager: settmint_manager::{Module, Storage, Call, Event<T>},
 		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>},
 		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>},
-		SettmintEngine: setheum_settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},
+		SettmintEngine: settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},
 
 		// Setheum Other
 		Incentives: setheum_incentives::{Module, Storage, Call, Event<T>},
@@ -1353,7 +1321,6 @@ impl_runtime_apis! {
 		fn get_value(provider_id: DataProviderId ,key: CurrencyId) -> Option<TimeStampedPrice> {
 			match provider_id {
 				DataProviderId::Setheum => SetheumOracle::get_no_op(&key),
-				DataProviderId::Band => BandOracle::get_no_op(&key),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_no_op(&key)
 			}
 		}
@@ -1361,7 +1328,6 @@ impl_runtime_apis! {
 		fn get_all_values(provider_id: DataProviderId) -> Vec<(CurrencyId, Option<TimeStampedPrice>)> {
 			match provider_id {
 				DataProviderId::Setheum => SetheumOracle::get_all_values(),
-				DataProviderId::Band => BandOracle::get_all_values(),
 				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_all_values()
 			}
 		}
@@ -1387,6 +1353,7 @@ impl_runtime_apis! {
 			use setheum_nft_benchmarking::Module as NftBench;
 			impl setheum_nft_benchmarking::Config for Runtime {}
 
+			// TODO: Update whitelisted accounts
 			let whitelist: Vec<TrackedStorageKey> = vec![
 				// Block Number
 				// frame_system::Number::<Runtime>::hashed_key().to_vec(),
@@ -1410,7 +1377,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, setheum_nft, NftBench::<Runtime>);
 			orml_add_benchmark!(params, batches, dex, benchmarking::dex);
 			orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
-			orml_add_benchmark!(params, batches, setheum_settmint_engine, benchmarking::settmint_engine);
+			orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
 			orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
 			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			orml_add_benchmark!(params, batches, setheum_transaction_payment, benchmarking::transaction_payment);
