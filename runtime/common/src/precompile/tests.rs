@@ -60,7 +60,7 @@ pub type WithSystemContractFilter = AllPrecompiles<
 >;
 
 #[test]
-fn precompile_filter_works_on_Setheum_precompiles() {
+fn precompile_filter_works_on_setheum_precompiles() {
 	let precompile = H160::from_low_u64_be(PRECOMPILE_ADDRESS_START);
 
 	let mut non_system = [0u8; 20];
