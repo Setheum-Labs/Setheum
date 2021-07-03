@@ -27,9 +27,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, traits::ReservableCurrency, transactional};
+use frame_support::{pallet_prelude::*, traits::NamedReservableCurrency, transactional};
 use frame_system::pallet_prelude::*;
-use primitives::{Amount, Balance, CurrencyId};
+use primitives::{Amount, Balance, CurrencyId, ReserveIdentifier};
 use sp_runtime::{
 	traits::{StaticLookup, Zero},
 	DispatchResult,
@@ -47,12 +47,18 @@ pub use weights::WeightInfo;
 pub mod module {
 	use super::*;
 
+	pub const RESERVE_ID: ReserveIdentifier = ReserveIdentifier::SettMint;
+
 	#[pallet::config]
 	pub trait Config: frame_system::Config + settmint_engine::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// Currency for authorization reserved.
-		type Currency: ReservableCurrency<Self::AccountId, Balance = Balance>;
+		type Currency: NamedReservableCurrency<
+			Self::AccountId,
+			Balance = Balance,
+			ReserveIdentifier = ReserveIdentifier,
+		>;
 
 		/// Reserved amount per authorization.
 		type DepositPerAuthorization: Get<Balance>;

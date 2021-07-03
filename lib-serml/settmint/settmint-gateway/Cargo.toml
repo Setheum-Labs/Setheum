@@ -19,7 +19,7 @@ sp-std = { default-features = false, git = "https://github.com/paritytech/substr
 orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
 
 # local dependencies
-settmint-engine = { package = "setheum-settmint-engine", path = "../settmint-engine", default-features = false }
+settmint-engine = { package = "settmint-engine", path = "../settmint-engine", default-features = false }
 settmint-manager= { package = "settmint-manager", path = "../settmint-manager", default-features = false }
 support = { package = "setheum-support", path = "../../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
