@@ -1,5 +1,5 @@
 [package]
-name = "setheum-settmint-engine"
+name = "settmint-engine"
 version = "0.7.1"
 authors = ["Setheum Labs"]
 edition = "2018"
