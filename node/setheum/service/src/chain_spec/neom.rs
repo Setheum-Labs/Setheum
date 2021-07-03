@@ -124,10 +124,10 @@ fn neom_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> neom_runtime::GenesisConfig {
 	use neom_runtime::{
-		cent, dollar, get_all_setheum_accounts, SetheumOracleConfig, BabeConfig, Balance, BalancesConfig,
-		BandOracleConfig, SettmintEngineConfig, SerpTreasuryConfig, DexConfig, EnabledTradingPairs,
-		GeneralCouncilMembershipConfig, GrandpaConfig, MonetaryCouncilMembershipConfig,
-		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
+		cent, dollar, get_all_module_accounts, SetheumOracleConfig, BabeConfig, Balance, BalancesConfig,
+		SettmintEngineConfig, SerpTreasuryConfig, DexConfig, EnabledTradingPairs,
+		GeneralCouncilMembershipConfig, GrandpaConfig, FinancialCouncilMembershipConfig,
+		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
 		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig,
 		TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, NEOM, NSETT, JUSD,
 	};
@@ -152,7 +152,7 @@ fn neom_genesis(
 				.map(|x| (x.0.clone(), initial_staking + dollar(NEOM))) // bit more for fee
 				.chain(endowed_accounts.iter().cloned().map(|k| (k, initial_balance)))
 				.chain(
-					get_all_setheum_accounts()
+					get_all_module_accounts()
 						.iter()
 						.map(|x| (x.clone(), existential_deposit)),
 				)
@@ -198,7 +198,7 @@ fn neom_genesis(
 			phantom: Default::default(),
 		}),
 		pallet_collective_Instance2: Some(Default::default()),
-		pallet_membership_Instance2: Some(MonetaryCouncilMembershipConfig {
+		pallet_membership_Instance2: Some(FinancialCouncilMembershipConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		}),
@@ -208,10 +208,6 @@ fn neom_genesis(
 			phantom: Default::default(),
 		}),
 		pallet_membership_Instance5: Some(OperatorMembershipSetheumConfig {
-			members: endowed_accounts.clone(),
-			phantom: Default::default(),
-		}),
-		pallet_membership_Instance6: Some(OperatorMembershipBandConfig {
 			members: endowed_accounts.clone(),
 			phantom: Default::default(),
 		}),
@@ -227,10 +223,6 @@ fn neom_genesis(
 			],
 		}),
 		orml_oracle_Instance1: Some(SetheumOracleConfig {
-			members: Default::default(), // initialized by OperatorMembership
-			phantom: Default::default(),
-		}),
-		orml_oracle_Instance2: Some(BandOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		}),

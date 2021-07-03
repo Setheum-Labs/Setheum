@@ -218,10 +218,10 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
-		dollar, get_all_setheum_accounts, SetheumOracleConfig, BabeConfig, Balance, BalancesConfig,
-		BandOracleConfig, SettmintEngineConfig, SerpTreasuryConfig, DexConfig, EnabledTradingPairs,
-		GeneralCouncilMembershipConfig, GrandpaConfig, MonetaryCouncilMembershipConfig,
-		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
+		dollar, get_all_module_accounts, SetheumOracleConfig, BabeConfig, Balance, BalancesConfig,
+		SettmintEngineConfig, SerpTreasuryConfig, DexConfig, EnabledTradingPairs,
+		GeneralCouncilMembershipConfig, GrandpaConfig, FinancialCouncilMembershipConfig,
+		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
 		OrmlNFTConfig, RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig, DNAR, SETT, USDJ,
 	};
@@ -238,7 +238,7 @@ fn testnet_genesis(
 		.map(|x| (x.0.clone(), initial_staking + dollar(DNAR))) // bit more for fee
 		.chain(endowed_accounts.iter().cloned().map(|k| (k, initial_balance)))
 		.chain(
-			get_all_setheum_accounts()
+			get_all_module_accounts()
 				.iter()
 				.map(|x| (x.clone(), existential_deposit)),
 		)
@@ -292,7 +292,7 @@ fn testnet_genesis(
 			phantom: Default::default(),
 		}),
 		pallet_collective_Instance2: Some(Default::default()),
-		pallet_membership_Instance2: Some(MonetaryCouncilMembershipConfig {
+		pallet_membership_Instance2: Some(FinancialCouncilMembershipConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		}),
@@ -303,10 +303,6 @@ fn testnet_genesis(
 		}),
 		pallet_membership_Instance5: Some(OperatorMembershipSetheumConfig {
 			members: vec![root_key.clone()],
-			phantom: Default::default(),
-		}),
-		pallet_membership_Instance6: Some(OperatorMembershipBandConfig {
-			members: vec![root_key],
 			phantom: Default::default(),
 		}),
 		pallet_treasury: Some(Default::default()),
@@ -328,10 +324,6 @@ fn testnet_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		}),
-		orml_oracle_Instance2: Some(BandOracleConfig {
-			members: Default::default(), // initialized by OperatorMembership
-			phantom: Default::default(),
-		}),
 		dex: Some(DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
@@ -348,11 +340,12 @@ fn newrome_genesis(
 	endowed_accounts: Vec<AccountId>,
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
-		cent, dollar, get_all_setheum_accounts, SetheumOracleConfig,
-		BabeConfig, Balance, BalancesConfig, BandOracleConfig, SettmintEngineConfig, SerpTreasuryConfig,
-		DexConfig, EnabledTradingPairs, GeneralCouncilMembershipConfig, GrandpaConfig, MonetaryCouncilMembershipConfig,
-		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OperatorMembershipBandConfig,
-		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig,
+		cent, dollar, get_all_module_accounts, SetheumOracleConfig,
+		BabeConfig, Balance, BalancesConfig, SettmintEngineConfig, SerpTreasuryConfig,
+		DexConfig, EnabledTradingPairs, GeneralCouncilMembershipConfig, GrandpaConfig,
+		FinancialCouncilMembershipConfig, IndicesConfig, NativeTokenExistentialDeposit,
+		OperatorMembershipSetheumConfig, OrmlNFTConfig, SessionConfig, StakerStatus,
+		StakingConfig, SudoConfig, SystemConfig, TechnicalCommitteeMembershipConfig,
 		TokensConfig, VestingConfig, DNAR, SETT, USDJ,
 	};
 	#[cfg(feature = "std")]
@@ -368,7 +361,7 @@ fn newrome_genesis(
 		.map(|x| (x.0.clone(), initial_staking + dollar(DNAR))) // bit more for fee
 		.chain(endowed_accounts.iter().cloned().map(|k| (k, initial_balance)))
 		.chain(
-			get_all_setheum_accounts()
+			get_all_module_accounts()
 				.iter()
 				.map(|x| (x.clone(), existential_deposit)),
 		)
@@ -422,7 +415,7 @@ fn newrome_genesis(
 			phantom: Default::default(),
 		}),
 		pallet_collective_Instance2: Some(Default::default()),
-		pallet_membership_Instance2: Some(MonetaryCouncilMembershipConfig {
+		pallet_membership_Instance2: Some(FinancialCouncilMembershipConfig {
 			members: vec![root_key.clone()],
 			phantom: Default::default(),
 		}),
@@ -433,10 +426,6 @@ fn newrome_genesis(
 		}),
 		pallet_membership_Instance5: Some(OperatorMembershipSetheumConfig {
 			members: endowed_accounts.clone(),
-			phantom: Default::default(),
-		}),
-		pallet_membership_Instance6: Some(OperatorMembershipBandConfig {
-			members: endowed_accounts,
 			phantom: Default::default(),
 		}),
 		pallet_treasury: Some(Default::default()),
@@ -455,10 +444,6 @@ fn newrome_genesis(
 			],
 		}),
 		orml_oracle_Instance1: Some(SetheumOracleConfig {
-			members: Default::default(), // initialized by OperatorMembership
-			phantom: Default::default(),
-		}),
-		orml_oracle_Instance2: Some(BandOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		}),
