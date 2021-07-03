@@ -45,7 +45,6 @@ members = [
 	"lib-openrml/vesting",
 	"lib-openrml/weight-gen",
 	"lib-openrml/weight-meter",
-	"lib-openrml/unknown-tokens",
 ]
 
 resolver = "2"

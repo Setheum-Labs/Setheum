@@ -272,8 +272,8 @@ parameter_types! {
 	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/treasury");
-	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/settpay");
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
+	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
 	
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
@@ -294,7 +294,7 @@ impl Config for Runtime {
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type SetheumTreasuryAcc = SetheumTreasuryPalletId;
+	type SetheumTreasuryAcc = TreasuryPalletId;
 	type CharityFundAcc = CHARITY_FUND;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;

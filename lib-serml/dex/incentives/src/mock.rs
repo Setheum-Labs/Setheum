@@ -268,7 +268,15 @@ impl orml_rewards::Config for Runtime {
 	type WeightInfo = ();
 }
 
+// TODO: Remove Other incentives except for DexIncentive 
+// TODO - and update DexPremium to the new Incentive model
+// TODO - based on trading volume, this new method will be 
+// TODO - implemented from `setheum_dex` module.
 parameter_types! {
+	// TODO: Remove Other incentives except for DexIncentive 
+	// TODO - and update DexPremium to the new Incentive model
+	// TODO - based on trading volume, this new method will be 
+	// TODO - implemented from `setheum_dex` module.
 	pub const DexIncentivePool: AccountId = 10;
 	pub const DexPremiumPool: AccountId = 11;
 	pub const DexPlusPool: AccountId = 12;
@@ -304,10 +312,18 @@ ord_parameter_types! {
 
 impl Config for Runtime {
 	type Event = Event;
-	type RewardsVaultAccountId = RewardsVaultAccountId;
 	type DexIncentivePool = DexIncentivePool;
+	type DexPremiumPool = DexPremiumPool;
+	type DexPlusPool = DexPlusPool;
+	type DexBonusPool = DexBonusPool;
+	type DexExtraPool = DexExtraPool;
 	type AccumulatePeriod = AccumulatePeriod;
+	type IncentiveCurrencyId = IncentiveCurrencyId;
+	type PremiumCurrencyId = PremiumCurrencyId;
+	type PlusCurrencyId = PlusCurrencyId;
+	type BonusCurrencyId = BonusCurrencyId
 	type DexCurrencyId = DexCurrencyId;
+	type ExtraCurrencyId = ExtraCurrencyId
 	type NativeCurrencyId = NativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;

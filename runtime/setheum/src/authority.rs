@@ -19,9 +19,9 @@
 //! An orml_authority trait implementation.
 
 use crate::{
-	SetheumTreasuryPalletId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber,
+	TreasuryPalletId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber,
 	DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, 
-	EnsureRootOrHalfMonetaryCouncil, EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
+	EnsureRootOrHalfFinancialCouncil, EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
 	EnsureRootOrTwoThirdsTechnicalCommittee, OneDay, Origin,
 	OriginCaller, SevenDays, ZeroDay, HOURS,
 };
@@ -34,7 +34,7 @@ impl orml_authority::AuthorityConfig<Origin, OriginCaller, BlockNumber> for Auth
 	fn check_schedule_dispatch(origin: Origin, _priority: Priority) -> DispatchResult {
 		EnsureRoot::<AccountId>::try_origin(origin)
 			.or_else(|o| EnsureRootOrHalfGeneralCouncil::try_origin(o).map(|_| ()))
-			.or_else(|o| EnsureRootOrHalfMonetaryCouncil::try_origin(o).map(|_| ()))
+			.or_else(|o| EnsureRootOrHalfFinancialCouncil::try_origin(o).map(|_| ()))
 			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 	}
 
@@ -77,7 +77,7 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 	fn into_origin(self) -> OriginCaller {
 		match self {
 			AuthoritysOriginId::Root => Origin::root().caller().clone(),
-			AuthoritysOriginId::SetheumTreasury => Origin::signed(SetheumTreasuryPalletId::get().into_account())
+			AuthoritysOriginId::SetheumTreasury => Origin::signed(TreasuryPalletId::get().into_account())
 				.caller()
 				.clone(),
 		}

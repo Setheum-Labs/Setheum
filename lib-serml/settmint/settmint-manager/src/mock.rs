@@ -342,7 +342,7 @@ parameter_types! {
 		ZARJ,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/setter");
+	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 
 }
 
@@ -355,7 +355,7 @@ impl Config for Runtime {
 	type StandardValidator = MockStandardValidator;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSetter = ();
+	type OnUpdateSettMint = ();
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;

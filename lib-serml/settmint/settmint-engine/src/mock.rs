@@ -161,7 +161,7 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/setter");
+	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 }
 
 impl settmint_manager::Config for Runtime {
@@ -171,7 +171,7 @@ impl settmint_manager::Config for Runtime {
 	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSetter = ();
+	type OnUpdateSettMint = ();
 }
 
 thread_local! {
@@ -239,45 +239,10 @@ impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT,
-		AEDJ,
- 		AUDJ,
-		BRLJ,
-		CADJ,
-		CHFJ,
-		CLPJ,
-		CNYJ,
-		COPJ,
-		EURJ,
-		GBPJ,
-		HKDJ,
-		HUFJ,
-		IDRJ,
-		JPYJ,
- 		KESJ,
- 		KRWJ,
- 		KZTJ,
-		MXNJ,
-		MYRJ,
- 		NGNJ,
-		NOKJ,
-		NZDJ,
-		PENJ,
-		PHPJ,
- 		PKRJ,
-		PLNJ,
-		QARJ,
-		RONJ,
-		RUBJ,
- 		SARJ,
- 		SEKJ,
- 		SGDJ,
-		THBJ,
-		TRYJ,
-		TWDJ,
-		TZSJ,
-		USDJ,
-		ZARJ,
+		SETT, AEDJ, AUDJ, BRLJ, CADJ, CHFJ, CLPJ, CNYJ, COPJ, EURJ,
+		GBPJ, HKDJ, HUFJ, IDRJ, JPYJ, KESJ, KRWJ, KZTJ, MXNJ, MYRJ,
+		NGNJ, NOKJ, NZDJ, PENJ, PHPJ, PKRJ, PLNJ, QARJ, RONJ, RUBJ,
+		SARJ, SEKJ, SGDJ, THBJ, TRYJ, TWDJ, TZSJ, USDJ, ZARJ,
 	];
 	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
 	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
@@ -333,63 +298,27 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
-		AEDJ,
- 		AUDJ,
-		BRLJ,
-		CADJ,
-		CHFJ,
-		CLPJ,
-		CNYJ,
-		COPJ,
-		EURJ,
-		GBPJ,
-		HKDJ,
-		HUFJ,
-		IDRJ,
-		JPYJ,
- 		KESJ,
- 		KRWJ,
- 		KZTJ,
-		MXNJ,
-		MYRJ,
- 		NGNJ,
-		NOKJ,
-		NZDJ,
-		PENJ,
-		PHPJ,
- 		PKRJ,
-		PLNJ,
-		QARJ,
-		RONJ,
-		RUBJ,
- 		SARJ,
- 		SEKJ,
- 		SGDJ,
-		THBJ,
-		TRYJ,
-		TWDJ,
-		TZSJ,
-		USDJ,
-		ZARJ,
+		AEDJ, AUDJ, BRLJ, CADJ, CHFJ, CLPJ, CNYJ, COPJ, EURJ, GBPJ,
+		HKDJ, HUFJ, IDRJ, JPYJ, KESJ, KRWJ, KZTJ, MXNJ, MYRJ, NGNJ,
+		NOKJ, NZDJ, PENJ, PHPJ, PKRJ, PLNJ, QARJ, RONJ, RUBJ, SARJ, 
+		SEKJ, SGDJ, THBJ, TRYJ, TWDJ, TZSJ, USDJ, ZARJ,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
-	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type PriceSource = MockPriceSource;
-	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
+	type StandardCurrencyIds = StandardCurrencyIds;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
 	type Dex = SetheumDEX;
 	type UnsignedPriority = UnsignedPriority;
 	type WeightInfo = ();

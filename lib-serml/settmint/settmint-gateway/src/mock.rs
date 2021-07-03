@@ -24,11 +24,11 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::{offchain::SendTransactionTypes, EnsureSignedBy};
 use orml_traits::parameter_type_with_key;
-use primitives::{Balance, TokenSymbol};
+use primitives::{Balance, Moment, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
-	traits::IdentityLookup,
+	traits::{AccountIdConversion, IdentityLookup, One as OneT},
 	FixedPointNumber,
 };
 use sp_std::cell::RefCell;
@@ -100,6 +100,7 @@ impl orml_tokens::Config for Runtime {
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1;
+	pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -107,8 +108,10 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Module<Runtime>;
+	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
@@ -233,6 +236,7 @@ parameter_types! {
 	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
 	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
 
+	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
@@ -257,6 +261,16 @@ impl serp_treasury::Config for Runtime {
 	type Dex = SetheumDEX;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const MinimumPeriod: Moment = 1000;
+}
+impl pallet_timestamp::Config for Runtime {
+	type Moment = Moment;
+	type OnTimestampSet = ();
+	type MinimumPeriod = MinimumPeriod;
 	type WeightInfo = ();
 }
 
@@ -304,7 +318,6 @@ parameter_types! {
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
-	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
 }
 
@@ -318,14 +331,14 @@ impl settmint_engine::Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
 	type Dex = ();
 	type UnsignedPriority = UnsignedPriority;
+	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
 
 parameter_types! {
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/setter");
+	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 }
 
 impl settmint_manager::Config for Runtime {
@@ -337,11 +350,22 @@ impl settmint_manager::Config for Runtime {
 	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSetter = ();
+	type OnUpdateSettMint = ();
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 type Block = frame_system::mocking::MockBlock<Runtime>;
+
+parameter_types! {
+	pub const DepositPerAuthorization: Balance = 100;
+}
+
+impl Config for Runtime {
+	type Event = Event;
+	type Currency = PalletBalances;
+	type DepositPerAuthorization = DepositPerAuthorization;
+	type WeightInfo = ();
+}
 
 construct_runtime!(
 	pub enum Runtime where
@@ -378,7 +402,8 @@ impl Config for Runtime {
 pub type SettmintGatewayModule = Module<Runtime>;
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	endowed_native: Vec<(AccountId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
@@ -404,8 +429,14 @@ impl ExtBuilder {
 			.build_storage::<Runtime>()
 			.unwrap();
 
+		pallet_balances::GenesisConfig::<Runtime> {
+			balances: self.endowed_native,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
 		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

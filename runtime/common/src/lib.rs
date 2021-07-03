@@ -43,48 +43,12 @@ pub use precompile::{
 };
 pub use primitives::currency::{
 	TokenInfo, 
-	DNAR, NEOM,
-	SDEX, HALAL,
-	SETT, NSETT,
-	AEDJ, JAED,
-	AUDJ, JAUD,
-	BRLJ, JBRL,
-	CADJ, JCAD,
-	CHFJ, JCHF,
-	CLPJ, JCLP,
-	CNYJ, JCNY,
-	COPJ, JCOP,
-	EURJ, JEUR,
-	GBPJ, JGBP,
-	HKDJ, JHKD,
-	HUFJ, JHUF,
-	IDRJ, JIDR,
-	JPYJ, JJPY,
-	KESJ, JKES,
-	KRWJ, JKRW,
-	KZTJ, JKZT,
-	MXNJ, JMXN,
-	MYRJ, JMYR,
-	NGNJ, JNGN,
-	NOKJ, JNOK,
-	NZDJ, JNZD,
-	PENJ, JPEN,
-	PHPJ, JPHP,
-	PKRJ, JPKR,
-	PLNJ, JPLN,
-	QARJ, JQAR,
-	RONJ, JRON,
-	RUBJ, JRUB,
-	SARJ, JSAR,
-	SEKJ, JSEK,
-	SGDJ, JSGD,
-	THBJ, JTHB,
-	TRYJ, JTRY,
-	TWDJ, JTWD,
-	TZSJ, JTZS,
-	USDJ, JUSD,
-	ZARJ, JZAR,
-	RENBTC,
+	DNAR, SDEX, SETT, AEDJ, AUDJ, BRLJ, CADJ, CHFJ, CLPJ, CNYJ, COPJ, EURJ, GBPJ, HKDJ, HUFJ, IDRJ, JPYJ, KESJ, KRWJ, KZTJ, MXNJ,
+	MYRJ, NGNJ, NOKJ, NZDJ, PENJ, PHPJ, PKRJ, PLNJ, QARJ, RONJ, RUBJ, SARJ, SEKJ, SGDJ, THBJ, TRYJ, TWDJ, TZSJ, USDJ, ZARJ,
+	NEOM, HALAL, NSETT, JAED, JAUD, JBRL, JCAD, JCHF, JCLP, JCNY, JCOP, JEUR, JGBP, JHKD, JHUF, JIDR, JJPY, JKES, JKRW, JKZT, JMXN,
+	JMYR, JNGN, JNOK, JNZD, JPEN, JPHP, JPKR, JPLN, JQAR, JRON, JRUB, JSAR, JSEK, JSGD, JTHB, JTRY, JTWD, JTZS, JUSD, JZAR, RENBTC,
+	AED, AUD, BRL, CAD, CHF, CLP, CNY, COP, EUR, GBP, HKD, HUF, IDR, JPY, KES, KRW, KZT, MXN, MYR, NGN, NOK, NZD,
+	PEN, PHP, PKR, PLN, QAR, RON, RUB, SAR, SEK, SGD, THB, TRY, TWD, TZS, USD, ZAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
@@ -94,7 +58,7 @@ parameter_types! {
 	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const SettmintEngineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-	pub const SerpAuctionManagerUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
+	pub const SerpAuctionUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
 }
 
 /// Check if the given `address` is a system contract.

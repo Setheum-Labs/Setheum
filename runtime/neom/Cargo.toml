@@ -11,7 +11,7 @@ smallvec = "1.4.0"
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
 hex-literal = { version = "0.3.1" }
-
+libsecp256k1 = { version = "0.3.4", default-features = false, optional = true }
 # Substrate dependencies
 frame-benchmarking = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", optional = true }
 frame-executive = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
@@ -68,28 +68,46 @@ orml-traits = { path = "../../lib-openrml/traits", default-features = false }
 orml-vesting = { path = "../../lib-openrml/vesting", default-features = false }
 orml-rewards = { path = "../../lib-openrml/rewards", default-features = false }
 orml-nft= { path = "../../lib-openrml/nft", default-features = false }
-orml-unknown-tokens = { path = "../../lib-openrml/unknown-tokens", default-features = false }
 
 # local dependencies
-setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
-serp-auction = { path = "../../lib-serml/serp/serp-auction", default-features = false }
-setheum-settmint-engine = { path = "../../lib-serml/settmint/settmint-engine", default-features = false }
-serp-treasury = { path = "../../lib-serml/serp/serp-treasury", default-features = false }
+# - bridges
+setheum-chainbridge = { path = "../../lib-serml/bridges/chainbridge", default-features = false }
+setheum-renvm-bridge = { path = "../../lib-serml/bridges/renvm-bridge", default-features = false }
+# - dex
 setheum-dex = { path = "../../lib-serml/dex/dex", default-features = false }
-setheum-currencies = { path = "../../lib-serml/tokens/currencies", default-features = false }
+setheum-incentives = { path = "../../lib-serml/dex/incentives", default-features = false }
+# - evm
+setheum-evm = { path = "../../lib-serml/evm/evm", default-features = false }
+setheum-evm-accounts = { path = "../../lib-serml/evm/evm-accounts", default-features = false }
+setheum-evm-bridge = { path = "../../lib-serml/evm/evm-bridge", default-features = false }
+setheum-evm-manager = { path = "../../lib-serml/evm/evm-manager", default-features = false }
+setheum-evm-rpc-runtime-api = { path = "../../lib-serml/evm/evm/rpc/runtime_api",  default-features = false }
+# - prices
+setheum-prices = { path = "../../lib-serml/prices", default-features = false }
+# - serp
+serp-auction = { path = "../../lib-serml/serp/serp-auction", default-features = false }
+serp-treasury = { path = "../../lib-serml/serp/serp-treasury", default-features = false }
+# - settmint
+settmint-engine = { path = "../../lib-serml/settmint/settmint-engine", default-features = false }
 settmint-gateway = { path = "../../lib-serml/settmint/settmint-gateway", default-features = false }
 settmint-manager = { path = "../../lib-serml/settmint/settmint-manager", default-features = false }
-setheum-nft = { path = "../../lib-serml/tokens/nft", default-features = false }
-setheum-prices = { path = "../../lib-serml/prices", default-features = false }
-setheum-incentives = { path = "../../lib-serml/dex/incentives", default-features = false }
+# - support
 setheum-support = { path = "../../lib-serml/support", default-features = false }
+# - tokens
+setheum-currencies = { path = "../../lib-serml/tokens/currencies", default-features = false }
+setheum-nft = { path = "../../lib-serml/tokens/nft", default-features = false }
+# - transaction-payment
+setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
+# - primitives
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+# - runtime
 runtime-common = { path = "../common", default-features = false }
 
 [build-dependencies]
-substrate-wasm-builder = "4.0.0"
+substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.7" }
 
 [dev-dependencies]
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.7" }
 
 [features]
 default = ["std"]
@@ -146,34 +164,45 @@ std = [
 	"orml-vesting/std",
 	"orml-rewards/std",
 	"orml-nft/std",
-	"orml-unknown-tokens/std",
 
-	"setheum-transaction-payment/std",
-	"serp-auction/std",
-	"setheum-settmint-engine/std",
-	"serp-treasury/std",
+	"setheum-renvm-bridge/std
 	"setheum-dex/std",
-	"setheum-currencies/std",
+	"setheum-incentives/std",
+	"setheum-evm/std",
+	"setheum-evm-accounts/std",
+	"setheum-evm-bridge/std",
+	"setheum-evm-manager/std",
+	"setheum-prices/std",
+	"serp-auction/std",
+	"serp-treasury/std",
+	"settmint-engine/std",
 	"settmint-gateway/std",
 	"settmint-manager/std",
-	"setheum-nft/std",
-	"setheum-prices/std",
-	"setheum-incentives/std",
 	"setheum-support/std",
+	"setheum-currencies/std",
+	"setheum-nft/std",
+	"setheum-transaction-payment/std",
 	"primitives/std",
 	"runtime-common/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",
 	"orml-benchmarking",
+	"libsecp256k1/hmac",
 
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"orml-authority/runtime-benchmarks",
+	"orml-vesting/runtime-benchmarks",
+	"orml-tokens/runtime-benchmarks",
+	"pallet-timestamp/runtime-benchmarks",
 
-	"serp-treasury/runtime-benchmarks",
+	"setheum-chainbridge/runtime-benchmarks",
+	"setheum-nft/runtime-benchmarks",
+
+	"sp-api/disable-logging",
 ]
 # When enabled, the runtime api will not be build.
 #
@@ -221,17 +250,21 @@ try-runtime = [
 	"orml-vesting/try-runtime",
 	"orml-rewards/try-runtime",
 	"orml-nft/try-runtime",
-	"orml-unknown-tokens/try-runtime",
 
-	"setheum-transaction-payment/try-runtime",
-	"serp-auction/try-runtime",
-	"setheum-settmint-engine/try-runtime",
-	"serp-treasury/try-runtime",
-	"setheum-currencies/try-runtime",
+	"setheum-renvm-bridge/try-runtime",
 	"setheum-dex/try-runtime",
+	"setheum-incentives/try-runtime",
+	"setheum-evm/try-runtime",
+	"setheum-evm-accounts/try-runtime",
+	"setheum-evm-bridge/try-runtime",
+	"setheum-evm-manager/try-runtime",
+	"setheum-prices/try-runtime",
+	"serp-auction/try-runtime",
+	"serp-treasury/try-runtime",
+	"settmint-engine/try-runtime",
 	"settmint-gateway/try-runtime",
 	"settmint-manager/try-runtime",
+	"setheum-currencies/try-runtime",
 	"setheum-nft/try-runtime",
-	"setheum-prices/try-runtime",
-	"setheum-incentives/try-runtime",
+	"setheum-transaction-payment/try-runtime",
 ]

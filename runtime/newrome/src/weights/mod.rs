@@ -20,7 +20,7 @@
 #![allow(clippy::unnecessary_cast)]
 
 pub mod serp_auction;
-pub mod setheum_settmint_engine;
+pub mod settmint_engine;
 pub mod serp_treasury;
 pub mod setheum_currencies;
 pub mod dex;
