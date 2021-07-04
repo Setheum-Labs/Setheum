@@ -96,10 +96,8 @@ pub use primitives::{
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, ExchangeRate, GasToWeight,
 	OffchainSolutionWeightLimit, Price, Rate, Ratio, TimeStampedPrice, 
-	DNAR, SDEX, SETT, AEDJ, AUDJ, BRLJ, CADJ, CHFJ, CLPJ, CNYJ, COPJ, EURJ, GBPJ, HKDJ, HUFJ, IDRJ, JPYJ, KESJ, KRWJ, KZTJ, MXNJ,
-	MYRJ, NGNJ, NOKJ, NZDJ, PENJ, PHPJ, PKRJ, PLNJ, QARJ, RONJ, RUBJ, SARJ, SEKJ, SGDJ, THBJ, TRYJ, TWDJ, TZSJ, USDJ, ZARJ, RENBTC,
-	AED, AUD, BRL, CAD, CHF, CLP, CNY, COP, EUR, GBP, HKD, HUF, IDR, JPY, KES, KRW, KZT, MXN, MYR, NGN, NOK, NZD,
-	PEN, PHP, PKR, PLN, QAR, RON, RUB, SAR, SEK, SGD, THB, TRY, TWD, TZS, USD, ZAR, KWD, JOD, BHD, KYD, OMR, GIP
+	DNAR, SDEX, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ, RENBTC,
+	USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
 mod constants;
@@ -764,44 +762,16 @@ parameter_type_with_key! {
 				TokenSymbol::DNAR => Balance::max_value(), // unsupported
 				TokenSymbol::SDEX => Balance::max_value(*currency_id), // unsupported
 				TokenSymbol::SETT => cent(*currency_id),
-				TokenSymbol::AEDJ => cent(*currency_id),
+				TokenSymbol::USDJ => cent(*currency_id),
+				TokenSymbol::EURJ => cent(*currency_id),
+				TokenSymbol::JPYJ => cent(*currency_id),
+				TokenSymbol::GBPJ => cent(*currency_id),
 				TokenSymbol::AUDJ => cent(*currency_id),
-				TokenSymbol::BRLJ => cent(*currency_id),
 				TokenSymbol::CADJ => cent(*currency_id),
 				TokenSymbol::CHFJ => cent(*currency_id),
-				TokenSymbol::CLPJ => cent(*currency_id),
-				TokenSymbol::CNYJ => cent(*currency_id),
-				TokenSymbol::COPJ => cent(*currency_id),
-				TokenSymbol::EURJ => cent(*currency_id),
-				TokenSymbol::GBPJ => cent(*currency_id),
-				TokenSymbol::HKDJ => cent(*currency_id),
-				TokenSymbol::HUFJ => cent(*currency_id),
-				TokenSymbol::IDRJ => cent(*currency_id),
-				TokenSymbol::JPYJ => cent(*currency_id),
-				TokenSymbol::KESJ => cent(*currency_id),
-				TokenSymbol::KRWJ => cent(*currency_id),
-				TokenSymbol::KZTJ => cent(*currency_id),
-				TokenSymbol::MXNJ => cent(*currency_id),
-				TokenSymbol::MYRJ => cent(*currency_id),
-				TokenSymbol::NGNJ => cent(*currency_id),
-				TokenSymbol::NOKJ => cent(*currency_id),
-				TokenSymbol::NZDJ => cent(*currency_id),
-				TokenSymbol::PENJ => cent(*currency_id),
-				TokenSymbol::PHPJ => cent(*currency_id),
-				TokenSymbol::PKRJ => cent(*currency_id),
-				TokenSymbol::PLNJ => cent(*currency_id),
-				TokenSymbol::QARJ => cent(*currency_id),
-				TokenSymbol::RONJ => cent(*currency_id),
-				TokenSymbol::RUBJ => cent(*currency_id),
-				TokenSymbol::SARJ => cent(*currency_id),
-				TokenSymbol::SEKJ => cent(*currency_id),
 				TokenSymbol::SGDJ => cent(*currency_id),
-				TokenSymbol::THBJ => cent(*currency_id),
-				TokenSymbol::TRYJ => cent(*currency_id),
-				TokenSymbol::TWDJ => cent(*currency_id),
-				TokenSymbol::TZSJ => cent(*currency_id),
-				TokenSymbol::USDJ => cent(*currency_id),
-				TokenSymbol::ZARJ => cent(*currency_id),
+				TokenSymbol::BRLJ => cent(*currency_id),
+				TokenSymbol::SARJ => cent(*currency_id)
 			},
 			CurrencyId::DexShare(_, _) => {
 				let dec = <EvmCurrencyIdMapping<Runtime> as CurrencyIdMapping>::decimals(*currency_id);
@@ -836,44 +806,16 @@ impl orml_tokens::Config for Runtime {
 parameter_types! {
 	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
 		match currency_id {
-			&AEDJ => &AED,
+			&USDJ => &USD,
+			&EURJ => &EUR,
+			&JPYJ => &JPY,
+			&GBPJ => &GBP,
 			&AUDJ => &AUD,
-			&BRLJ => &BRL,
 			&CADJ => &CAD,
 			&CHFJ => &CHF,
-			&CLPJ => &CLP,
-			&CNYJ => &CNY,
-			&COPJ => &COP,
-			&EURJ => &EUR,
-			&GBPJ => &GBP,
-			&HKDJ => &HKD,
-			&HUFJ => &HUF,
-			&IDRJ => &IDR,
-			&JPYJ => &JPY,
-			&KESJ => &KES,
-			&KRWJ => &KRW,
-			&KZTJ => &KZT,
-			&MXNJ => &MXN,
-			&MYRJ => &MYR,
-			&NGNJ => &NGN,
-			&NOKJ => &NOK,
-			&NZDJ => &NZD,
-			&PENJ => &PEN,
-			&PHPJ => &PHP,
-			&PKRJ => &PKR,
-			&PLNJ => &PLN,
-			&QARJ => &QAR,
-			&RONJ => &RON,
-			&RUBJ => &RUB,
-			&SARJ => &SAR,
-			&SEKJ => &SEK,
 			&SGDJ => &SGD,
-			&THBJ => &THB,
-			&TRYJ => &TRY,
-			&TWDJ => &TWD,
-			&TZSJ => &TZS,
-			&USDJ => &USD,
-			&ZARJ => &ZAR,
+			&BRLJ => &BRL,
+			&SARJ => &SAR,
 			_ => None,
 		}
 	};
@@ -892,17 +834,10 @@ parameter_types! {
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETT).
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, AEDJ, AUDJ, BRLJ, CADJ, CHFJ, CLPJ, CNYJ, COPJ, EURJ,
-		GBPJ, HKDJ, HUFJ, IDRJ, JPYJ, KESJ, KRWJ, KZTJ, MXNJ, MYRJ,
-		NGNJ, NOKJ, NZDJ, PENJ, PHPJ, PKRJ, PLNJ, QARJ, RONJ, RUBJ,
-		SARJ, SEKJ, SGDJ, THBJ, TRYJ, TWDJ, TZSJ, USDJ, ZARJ,
+		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
-		AED, AUD, BRL, CAD, CHF, CLP, CNY, COP, EUR, GBP,
-		HKD, HUF, IDR, JPY, KES, KRW, KZT, MXN, MYR, NGN,
-		NOK, NZD, PEN, PHP, PKR, PLN, QAR, RON, RUB, SAR,
-		SEK, SGD, THB, TRY, TWD, TZS, USD, ZAR, KWD, JOD,
-		BHD, KYD, OMR, GIP
+		USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 	];
 }
 
@@ -1045,10 +980,7 @@ impl serp_auction::Config for Runtime {
 
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
-		AEDJ, AUDJ, BRLJ, CADJ, CHFJ, CLPJ, CNYJ, COPJ, EURJ, GBPJ,
-		HKDJ, HUFJ, IDRJ, JPYJ, KESJ, KRWJ, KZTJ, MXNJ, MYRJ, NGNJ,
-		NOKJ, NZDJ, PENJ, PHPJ, PKRJ, PLNJ, QARJ, RONJ, RUBJ, SARJ, 
-		SEKJ, SGDJ, THBJ, TRYJ, TWDJ, TZSJ, USDJ, ZARJ,
+		USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
 }
@@ -1162,44 +1094,16 @@ parameter_types! {
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(SETT, DNAR),
 		TradingPair::new(SETT, SDEX),
-		TradingPair::new(SETT, AEDJ),
+		TradingPair::new(SETT, USDJ),
+		TradingPair::new(SETT, EURJ),
+		TradingPair::new(SETT, JPYJ),
+		TradingPair::new(SETT, GBPJ),
 		TradingPair::new(SETT, AUDJ),
-		TradingPair::new(SETT, BRLJ),
 		TradingPair::new(SETT, CADJ),
 		TradingPair::new(SETT, CHFJ),
-		TradingPair::new(SETT, CLPJ),
-		TradingPair::new(SETT, CNYJ),
-		TradingPair::new(SETT, COPJ),
-		TradingPair::new(SETT, EURJ),
-		TradingPair::new(SETT, GBPJ),
-		TradingPair::new(SETT, HKDJ),
-		TradingPair::new(SETT, HUFJ),
-		TradingPair::new(SETT, IDRJ),
-		TradingPair::new(SETT, JPYJ),
-		TradingPair::new(SETT, KESJ),
-		TradingPair::new(SETT, KRWJ),
-		TradingPair::new(SETT, KZTJ),
-		TradingPair::new(SETT, MXNJ),
-		TradingPair::new(SETT, MYRJ),
-		TradingPair::new(SETT, NGNJ),
-		TradingPair::new(SETT, NOKJ),
-		TradingPair::new(SETT, NZDJ),
-		TradingPair::new(SETT, PENJ),
-		TradingPair::new(SETT, PHPJ),
-		TradingPair::new(SETT, PKRJ),
-		TradingPair::new(SETT, PLNJ),
-		TradingPair::new(SETT, QARJ),
-		TradingPair::new(SETT, RONJ),
-		TradingPair::new(SETT, RUBJ),
-		TradingPair::new(SETT, SARJ),
-		TradingPair::new(SETT, SEKJ),
 		TradingPair::new(SETT, SGDJ),
-		TradingPair::new(SETT, THBJ),
-		TradingPair::new(SETT, TRYJ),
-		TradingPair::new(SETT, TWDJ),
-		TradingPair::new(SETT, TZSJ),
-		TradingPair::new(SETT, USDJ),
-		TradingPair::new(SETT, ZARJ),
+		TradingPair::new(SETT, BRLJ),
+		TradingPair::new(SETT, SARJ),
 		TradingPair::new(SETT, RENBTC),
 	];
 }
@@ -1254,11 +1158,7 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
-		SDEX, SETT, AEDJ, AUDJ, BRLJ, CADJ, CHFJ, CLPJ, CNYJ, COPJ,
-		EURJ, GBPJ, HKDJ, HUFJ, IDRJ, JPYJ, KESJ, KRWJ, KZTJ, MXNJ,
-		MYRJ, NGNJ, NOKJ, NZDJ, PENJ, PHPJ, PKRJ, PLNJ, QARJ, RONJ,
-		RUBJ, SARJ, SEKJ, SGDJ, THBJ, TRYJ, TWDJ, TZSJ, USDJ, ZARJ,
-		RENBTC
+		SDEX, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ, RENBTC
 	];
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }
