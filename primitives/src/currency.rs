@@ -138,16 +138,24 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SDEX), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_AEDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(AEDJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_USDJ_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(USDJ), DexShare::Token(SETT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_EURJ_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(EURJ), DexShare::Token(SETT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_JPYJ_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JPYJ), DexShare::Token(SETT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_GBPJ_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(GBPJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_AUDJ_SETT".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(AUDJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_BRLJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(BRLJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_CADJ_SETT".to_string(),
@@ -158,142 +166,21 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(CHFJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_CLPJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(CLPJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_SGDJ_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SGDJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_CNYJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(CNYJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_COPJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(COPJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_EURJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(EURJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_GBPJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(GBPJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_HKDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HKDJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_HUFJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HUFJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_IDRJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(IDRJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JPYJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JPYJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_KESJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(KESJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_KRWJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(KRWJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_KZTJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(KZTJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_MXNJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(MXNJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_MYRJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(MYRJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_NGNJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(NGNJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_NOKJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(NOKJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_NZDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(NZDJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_PENJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(PENJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_PHPJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(PHPJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_PKRJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(PKRJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_PLNJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(PLNJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_QARJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(QARJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_RONJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RONJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_RUBJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RUBJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_BRLJ_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(BRLJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_SARJ_SETT".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SARJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SEKJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SEKJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SGDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SGDJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_THBJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(THBJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_TRYJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(TRYJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_TWDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(TWDJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_TZSJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(TZSJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_USDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(USDJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_ZARJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(ZARJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
 					symbol: "LP_RENBTC_SETT".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETT))).unwrap(),
 				},
-
 				// Neom Network LPs
 				Token {
 					symbol: "LP_NEOM_NSETT".to_string(),
@@ -304,16 +191,24 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HALAL), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_JAED_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JAED), DexShare::Token(NSETT))).unwrap(),
+					symbol: "LP_JUSD_NSETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JUSD), DexShare::Token(NSETT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_JEUR_NSETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JEUR), DexShare::Token(NSETT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_JJPY_NSETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JJPY), DexShare::Token(NSETT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_JGBP_NSETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JGBP), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_JAUD_NSETT".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JAUD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JBRL_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JBRL), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_JCAD_NSETT".to_string(),
@@ -324,136 +219,16 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JCHF), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_JCLP_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JCLP), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JCNY_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JCNY), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JCOP_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JCOP), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JEUR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JEUR), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JGBP_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JGBP), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JHKD_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JHKD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JHUF_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JHUF), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JIDR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JIDR), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JJPY_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JJPY), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JKES_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JKES), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JKRW_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JKRW), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JKZT_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JKZT), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JMXN_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JMXN), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JMYR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JMYR), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JNGN_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JNGN), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JNOK_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JNOK), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JNZD_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JNZD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JPEN_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JPEN), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JPHP_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JPHP), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JPKR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JPKR), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JPLN_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JPLN), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JQAR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JQAR), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JRON_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JRON), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JRUB_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JRUB), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JSAR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSAR), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JSEK_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSEK), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
 					symbol: "LP_JSGD_NSETT".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSGD), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_JTHB_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JTHB), DexShare::Token(NSETT))).unwrap(),
+					symbol: "LP_JBRL_NSETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JBRL), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_JTRY_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JTRY), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JTWD_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JTWD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JTZS_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JTZS), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JUSD_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JUSD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JZAR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JZAR), DexShare::Token(NSETT))).unwrap(),
+					symbol: "LP_JSAR_NSETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSAR), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_RENBTC_NSETT".to_string(),
@@ -483,14 +258,14 @@ create_currency_id! {
 		// SettCurrencies
 		USDJ("Setheum US Dollar", 12) = 3,
 		EURJ("Setheum Euro", 12) = 4,
-		GBPJ("Setheum Pound Sterling", 12) = 5,
-		JPYJ("Setheum Japanese Yen", 12) = 6,
-		CADJ("Setheum Canadian Dollar", 12) = 7,
- 		AUDJ("Setheum Australian Dollar", 12) = 8,
-		BRLJ("Setheum Brazilian Real", 12) = 9,
-		CHFJ("Setheum Swiss Franc", 12) = 10,
- 		SARJ("Setheum Saudi Riyal", 12) = 11,
- 		SGDJ("Setheum Singapore Dollar", 12) = 12,
+		JPYJ("Setheum Japanese Yen", 12) = 5,
+		GBPJ("Setheum Pound Sterling", 12) = 6,
+ 		AUDJ("Setheum Australian Dollar", 12) = 7,
+		CADJ("Setheum Canadian Dollar", 12) = 8,
+		CHFJ("Setheum Swiss Franc", 12) = 9,
+ 		SGDJ("Setheum Singapore Dollar", 12) = 10,
+		BRLJ("Setheum Brazilian Real", 12) = 11,
+ 		SARJ("Setheum Saudi Riyal", 12) = 12,
 		/// Neom Network >---------------------->>
 		NEOM("Neom", 10) = 128,
 		HALAL("HalalSwap", 10) = 129,
@@ -498,33 +273,33 @@ create_currency_id! {
 		// SettCurrencies
 		JUSD("Neom US Dollar", 12) = 131,
 		JEUR("Neom Euro", 12) = 132,
-		JGBP("Neom Pound Sterling", 12) = 133,
-		JJPY("Neom Japanese Yen", 12) = 134,
-		JCAD("Neom Canadian Dollar", 12) = 135,
- 		JAUD("Neom Australian Dollar", 12) = 136,
-		JBRL("Neom Brazilian Real", 12) = 137,
-		JCHF("Neom Swiss Franc", 12) = 138,
- 		JSAR("Neom Saudi Riyal", 12) = 139,
- 		JSGD("Neom Singapore Dollar", 12) = 140,
+		JJPY("Neom Japanese Yen", 12) = 133,
+		JGBP("Neom Pound Sterling", 12) = 134,
+ 		JAUD("Neom Australian Dollar", 12) = 135,
+		JCAD("Neom Canadian Dollar", 12) = 136,
+		JCHF("Neom Swiss Franc", 12) = 137,
+ 		JSGD("Neom Singapore Dollar", 12) = 138,
+		JBRL("Neom Brazilian Real", 12) = 139,
+ 		JSAR("Neom Saudi Riyal", 12) = 140,
 		// Foreign System Currencies
 		RENBTC("Ren Bitcoin", 8) = 141,
 		/// Fiat Currencies as Pegs - only for price feed
- 		AUD("Fiat Australian Dollar", 12) = 172,
-		BRL("Fiat Brazilian Real", 12) = 173,
-		CAD("Fiat Canadian Dollar", 12) = 174,
-		CHF("Fiat Swiss Franc", 12) = 175,
-		EUR("Fiat Euro", 12) =176,
-		GBP("Fiat Pound Sterling", 12) = 177,
-		JPY("Fiat Japanese Yen", 12) = 178,
- 		SAR("Fiat Saudi Riyal", 12) = 179,
- 		SGD("Fiat Singapore Dollar", 12) = 180,
 		USD("Fiat US Dollar", 12) = 181,
-		KWD("Fiat Kuwaiti Dinar", 12) = 182,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		JOD("Fiat Jordanian Dinar", 12) = 183,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		BHD("Fiat Bahraini Dirham", 12) = 184,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		KYD("Fiat Cayman Islands Dollar", 12) = 185,	// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		OMR("Fiat Omani Riyal", 12) = 186,				// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		GIP("Fiat Gibraltar Pound", 12) = 187,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		EUR("Fiat Euro", 12) =182,
+		JPY("Fiat Japanese Yen", 12) = 183,
+		GBP("Fiat Pound Sterling", 12) = 184,
+ 		AUD("Fiat Australian Dollar", 12) = 185,
+		CAD("Fiat Canadian Dollar", 12) = 186,
+		CHF("Fiat Swiss Franc", 12) = 187,
+ 		SGD("Fiat Singapore Dollar", 12) = 188,
+		BRL("Fiat Brazilian Real", 12) = 189,
+ 		SAR("Fiat Saudi Riyal", 12) = 190,
+		KWD("Fiat Kuwaiti Dinar", 12) = 191,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		JOD("Fiat Jordanian Dinar", 12) = 192,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		BHD("Fiat Bahraini Dirham", 12) = 193,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		KYD("Fiat Cayman Islands Dollar", 12) = 194,	// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		OMR("Fiat Omani Riyal", 12) = 195,				// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
+		GIP("Fiat Gibraltar Pound", 12) = 196,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
 		/// Ends at 255
 	}
 }
