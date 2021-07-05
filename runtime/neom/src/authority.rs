@@ -19,15 +19,21 @@
 //! An orml_authority trait implementation.
 
 use crate::{
-	TreasuryPalletId, AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber,
-	DispatchResult, EnsureRoot, EnsureRootOrHalfGeneralCouncil, EnsureRootOrHalfFinancialCouncil,
+	AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, DispatchResult, EnsureRoot,
+	EnsureRootOrHalfFinancialCouncil, EnsureRootOrHalfGeneralCouncil, 
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
-	EnsureRootOrTwoThirdsTechnicalCommittee, OneDay, Origin,
-	OriginCaller, SevenDays, ZeroDay, HOURS,
+	EnsureRootOrTwoThirdsTechnicalCommittee, Origin, OriginCaller,
+	TreasuryPalletId, TreasuryReservePalletId, DAYS, HOURS,
 };
+use frame_support::parameter_types;
 pub use frame_support::traits::{schedule::Priority, EnsureOrigin, OriginTrait};
 use frame_system::ensure_root;
 use orml_authority::EnsureDelayed;
+
+parameter_types! {
+	pub const SevenDays: BlockNumber = 7 * DAYS;
+	pub const OneDay: BlockNumber = DAYS;
+}
 
 pub struct AuthorityConfigImpl;
 impl orml_authority::AuthorityConfig<Origin, OriginCaller, BlockNumber> for AuthorityConfigImpl {
@@ -80,6 +86,7 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 			AuthoritysOriginId::SetheumTreasury => Origin::signed(TreasuryPalletId::get().into_account())
 				.caller()
 				.clone(),
+		}
 	}
 
 	fn check_dispatch_from(&self, origin: Origin) -> DispatchResult {
