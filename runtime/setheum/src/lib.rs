@@ -1486,7 +1486,7 @@ impl setheum_renvm_bridge::Config for Runtime {
 
 parameter_types! {
 	// TODO: update
-	pub const ChainId: u64 = 258;
+	pub const ChainId: u64 = 259;
 	pub const NewContractExtraBytes: u32 = 10_000;
 	pub StorageDepositPerByte: Balance = deposit(0, 1);
 	// https://eips.ethereum.org/EIPS/eip-170
