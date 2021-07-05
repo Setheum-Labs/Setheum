@@ -1,4 +1,5 @@
 // This file is part of Setheum.
+
 // Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
@@ -15,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! A set of constant values used in dev runtime.
+//! A set of constant values used in neom runtime.
 
 /// Time and blocks.
 pub mod time {
@@ -49,7 +50,7 @@ pub mod fee {
 		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	};
 	use primitives::Balance;
-	use runtime_common::{cent, NEOM};
+	use runtime_common::{cent, DNAR};
 	use smallvec::smallvec;
 	use sp_runtime::Perbill;
 
@@ -74,13 +75,13 @@ pub mod fee {
 		fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
 			// in Setheum, extrinsic base weight (smallest non-zero weight) is mapped to 1/10
 			// CENT:
-			let p = cent(NEOM) / 10; // 1_000_000_000;
+			let p = cent(DNAR) / 10; // 10_000_000_000
 			let q = Balance::from(ExtrinsicBaseWeight::get()); // 125_000_000
 			smallvec![WeightToFeeCoefficient {
 				degree: 1,
 				negative: false,
 				coeff_frac: Perbill::from_rational_approximation(p % q, q), // zero
-				coeff_integer: p / q,                                       // 8
+				coeff_integer: p / q,                                       // 80
 			}]
 		}
 	}
