@@ -82,6 +82,7 @@ pub use frame_support::{
 };
 
 pub use pallet_staking::StakerStatus;
+pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill, Perquintill};
@@ -1094,6 +1095,7 @@ parameter_types! {
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(SETT, DNAR),
 		TradingPair::new(SETT, SDEX),
+
 		TradingPair::new(SETT, USDJ),
 		TradingPair::new(SETT, EURJ),
 		TradingPair::new(SETT, JPYJ),
@@ -1104,6 +1106,7 @@ parameter_types! {
 		TradingPair::new(SETT, SGDJ),
 		TradingPair::new(SETT, BRLJ),
 		TradingPair::new(SETT, SARJ),
+		
 		TradingPair::new(SETT, RENBTC),
 	];
 }
