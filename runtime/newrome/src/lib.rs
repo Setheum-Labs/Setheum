@@ -1393,13 +1393,13 @@ parameter_types! {
 impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
 	type DEXIncentives = Incentives;
 	type WeightInfo = weights::dex::WeightInfo<Runtime>;
-	type ListingOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
+	type UpdateOrigin = EnsureRootOrHalfExchangeCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfExchangeCouncil`.
+	type ListingOrigin = EnsureRootOrHalfExchangeCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfExchangeCouncil`.
 }
 
 parameter_types! {
