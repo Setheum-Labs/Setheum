@@ -123,6 +123,7 @@ impl Config for Runtime {
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type DEXIncentives = MockDEXIncentives;
+	type UpdateOrigin = EnsureSignedBy<UpdateOrigin, AccountId>;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 

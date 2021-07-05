@@ -93,14 +93,6 @@ pub mod module {
 		/// Currency for transfer currencies
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		/// Trading fee rate
-		/// The first item of the tuple is the numerator of the fee rate, second
-		/// item is the denominator, fee_rate = numerator / denominator,
-		/// use (u32, u32) over `Rate` type to minimize internal division
-		/// operation.
-		#[pallet::constant]
-		type GetExchangeFee: Get<(u32, u32)>;
-
 		/// The limit for length of trading path
 		#[pallet::constant]
 		type TradingPathLimit: Get<u32>;
@@ -118,6 +110,9 @@ pub mod module {
 
 		/// Dex incentives
 		type DEXIncentives: DEXIncentives<Self::AccountId, CurrencyId, Balance>;
+
+		/// The origin which may update exchange fees.
+		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		/// The origin which may list, enable or disable trading pairs.
 		type ListingOrigin: EnsureOrigin<Self::Origin>;
@@ -211,6 +206,15 @@ pub mod module {
 	#[pallet::getter(fn provisioning_pool)]
 	pub type ProvisioningPool<T: Config> =
 		StorageDoubleMap<_, Twox64Concat, TradingPair, Twox64Concat, T::AccountId, (Balance, Balance), ValueQuery>;
+
+	/// Mapping to Trading fee rate.
+	/// The first item of the tuple is the numerator of the fee rate, second
+	/// item is the denominator, fee_rate = numerator / denominator,
+	/// use (u32, u32) over `Rate` type to minimize internal division
+	/// operation.
+	#[pallet::storage]
+	#[pallet::getter(fn get_exchange_fee)]
+	pub type GetExchangeFee<T: Config> = StorageMap<_, Twox64Concat, u32, u32, ValueQuery>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
@@ -554,6 +558,20 @@ pub mod module {
 			};
 			Ok(().into())
 		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::update_exchange_fee(numerator.len() as u32, denominator.len() as u32))]
+		#[transactional]
+		pub fn update_exchange_fee(
+			origin: OriginFor<T>,
+			numerator: u32,
+			denominator: u32,
+		) -> DispatchResultWithPostInfo {
+			T::UpdateOrigin::ensure_origin(origin)?;
+			for (numerator) in numerator && denominator in (denominator) {
+				GetExchangeFee::<T>::insert(numerator, denominator);
+			}
+			Ok(().into())
+		}
 	}
 }
 
@@ -887,7 +905,7 @@ impl<T: Config> Pallet<T> {
 		if supply_amount.is_zero() || supply_pool.is_zero() || target_pool.is_zero() {
 			Zero::zero()
 		} else {
-			let (fee_numerator, fee_denominator) = T::GetExchangeFee::get();
+			let (fee_numerator, fee_denominator) = Self::get_exchange_fee();
 			let supply_amount_with_fee =
 				supply_amount.saturating_mul(fee_denominator.saturating_sub(fee_numerator).unique_saturated_into());
 			let numerator: U256 = U256::from(supply_amount_with_fee).saturating_mul(U256::from(target_pool));
@@ -907,7 +925,7 @@ impl<T: Config> Pallet<T> {
 		if target_amount.is_zero() || supply_pool.is_zero() || target_pool.is_zero() {
 			Zero::zero()
 		} else {
-			let (fee_numerator, fee_denominator) = T::GetExchangeFee::get();
+			let (fee_numerator, fee_denominator) = Self::get_exchange_fee();
 			let numerator: U256 = U256::from(supply_pool)
 				.saturating_mul(U256::from(target_amount))
 				.saturating_mul(U256::from(fee_denominator));
@@ -923,7 +941,7 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
-	// TODO: Set Custom Governed FlexibleTradingFees for each path
+	// TODO: Set General Governed FlexibleTradingFee that is updatable
 	fn get_target_amounts(
 		path: &[CurrencyId],
 		supply_amount: Balance,
