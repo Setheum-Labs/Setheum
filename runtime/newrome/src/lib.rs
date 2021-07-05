@@ -664,8 +664,8 @@ parameter_types! {
 	pub const TipFindersFee: Percent = Percent::from_percent(10);
 	pub TipReportDepositBase: Balance = deposit(1, 0);
 	pub BountyDepositBase: Balance = deposit(1, 0);
-	pub const BountyDepositPayoutDelay: BlockNumber = 3 * DAYS;
-	pub const BountyUpdatePeriod: BlockNumber = 30 * DAYS;
+	pub const BountyDepositPayoutDelay: BlockNumber = DAYS;
+	pub const BountyUpdatePeriod: BlockNumber = 7 * DAYS;
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
 	pub BountyValueMinimum: Balance = 5 * dollar(DNAR);
 	pub DataDepositPerByte: Balance = deposit(0, 1);
@@ -1252,7 +1252,7 @@ impl settmint_gateway::Config for Runtime {
 parameter_types! {
 	// TODO: Update `GetExchangeFee` to get from storage map and let-vvv
 	// TODO: --- ^^^ - the Exchange Council update it through GOVERNANCE
-	pub const GetExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
+	pub const GetExchangeFee: (u32, u32) = (1, 10000);	// 0.01%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(SETT, DNAR),
@@ -1486,16 +1486,29 @@ impl setheum_renvm_bridge::Config for Runtime {
 
 parameter_types! {
 	// TODO: update
-	pub const ChainId: u64 = 258;
-	pub const NewContractExtraBytes: u32 = 10_000;
-	pub StorageDepositPerByte: Balance = deposit(0, 1);
-	// https://eips.ethereum.org/EIPS/eip-170
-	pub const MaxCodeSize: u32 = 0x6000;
+	pub const ChainId: u64 = 852;
 	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
-	pub DeveloperDeposit: Balance = 100 * dollar(DNAR);
-	pub DeploymentFee: Balance = 10000 * dollar(DNAR);
 }
 
+#[cfg(feature = "with-sevm")]
+parameter_types! {
+	pub const NativeTokenExistentialDeposit: Balance = 1;
+	pub const NewContractExtraBytes: u32 = 0;
+	pub const StorageDepositPerByte: Balance = 0;
+	pub const MaxCodeSize: u32 = 0x6000;
+	pub const DeveloperDeposit: Balance = 0;
+	pub const DeploymentFee: Balance = 0;
+}
+
+#[cfg(not(feature = "with-sevm"))]
+parameter_types! {
+	pub NativeTokenExistentialDeposit: Balance = microcent(DNAR);
+	pub const NewContractExtraBytes: u32 = 10_000;
+	pub StorageDepositPerByte: Balance = microcent(DNAR);
+	pub const MaxCodeSize: u32 = 60 * 1024;
+	pub DeveloperDeposit: Balance = dollar(DNAR);
+	pub DeploymentFee: Balance = dollar(DNAR);
+}
 pub type MultiCurrencyPrecompile = runtime_common::MultiCurrencyPrecompile<
 	AccountId,
 	EvmAddressMapping<Runtime>,
@@ -1524,6 +1537,9 @@ pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
 pub type DexPrecompile =
 	runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, Dex>;
 
+	#[cfg(feature = "with-ethereum-compatibility")]
+static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
+
 impl setheum_evm::Config for Runtime {
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type Currency = Balances;
@@ -1551,11 +1567,68 @@ impl setheum_evm::Config for Runtime {
 	type TreasuryAccount = TreasuryAccount;
 	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
 	type WeightInfo = weights::setheum_evm::WeightInfo<Runtime>;
+
+	#[cfg(feature = "with-sevm")]
+	fn config() -> &'static evm::Config {
+		&ISTANBUL_CONFIG
+	}
 }
 
 impl setheum_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
+
+parameter_types! {
+	pub const LocalChainId: chainbridge::ChainId = 2;
+	pub const ProposalLifetime: BlockNumber = 15 * MINUTES;
+}
+
+impl chainbridge::Config for Runtime {
+	type Event = Event;
+	type AdminOrigin = EnsureRoot<AccountId>;
+	type Proposal = Call;
+	type ChainId = LocalChainId;
+	type ProposalLifetime = ProposalLifetime;
+}
+
+impl setheum_chainbridge::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type NativeCurrencyId = GetNativeCurrencyId;
+	type RegistorOrigin = EnsureRootOrHalfGeneralCouncil;
+	type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
+	type WeightInfo = weights::setheum_chainbridge::WeightInfo<Runtime>;
+}
+
+/// The address format for describing accounts.
+pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
+/// Block header type as expected by this runtime.
+pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+/// Block type as expected by this runtime.
+pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+/// A Block signed with a Justification
+pub type SignedBlock = generic::SignedBlock<Block>;
+/// BlockId type as expected by this runtime.
+pub type BlockId = generic::BlockId<Block>;
+/// The SignedExtension to the basic transaction logic.
+pub type SignedExtra = (
+	frame_system::CheckSpecVersion<Runtime>,
+	frame_system::CheckTxVersion<Runtime>,
+	frame_system::CheckGenesis<Runtime>,
+	frame_system::CheckEra<Runtime>,
+	frame_system::CheckNonce<Runtime>,
+	frame_system::CheckWeight<Runtime>,
+	setheum_transaction_payment::ChargeTransactionPayment<Runtime>,
+);
+/// Unchecked extrinsic type as expected by this runtime.
+pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+/// The payload being signed in transactions.
+pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
+/// Extrinsic type that has already been checked.
+pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Call, SignedExtra>;
+/// Executive: handles dispatch to the various modules.
+pub type Executive =
+	frame_executive::Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllModules, ()>;
 
 #[allow(clippy::large_enum_variant)]
 construct_runtime!(
@@ -1642,40 +1715,15 @@ construct_runtime!(
 		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 47,
 		EvmManager: setheum_evm_manager::{Pallet, Storage} = 48,
 
+		// Ecosystem modules
+		RenVmBridge: setheum_renvm_bridge::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned} = 49,
+		ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 50,
+		SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>} = 51,
+
 		// Dev
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>} = 255,
 	}
 );
-
-/// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
-/// Block header type as expected by this runtime.
-pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
-/// Block type as expected by this runtime.
-pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-/// A Block signed with a Justification
-pub type SignedBlock = generic::SignedBlock<Block>;
-/// BlockId type as expected by this runtime.
-pub type BlockId = generic::BlockId<Block>;
-/// The SignedExtension to the basic transaction logic.
-pub type SignedExtra = (
-	frame_system::CheckSpecVersion<Runtime>,
-	frame_system::CheckTxVersion<Runtime>,
-	frame_system::CheckGenesis<Runtime>,
-	frame_system::CheckEra<Runtime>,
-	frame_system::CheckNonce<Runtime>,
-	frame_system::CheckWeight<Runtime>,
-	setheum_transaction_payment::ChargeTransactionPayment<Runtime>,
-);
-/// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
-/// The payload being signed in transactions.
-pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
-/// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Call, SignedExtra>;
-/// Executive: handles dispatch to the various modules.
-pub type Executive =
-	frame_executive::Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllModules, ()>;
 
 #[cfg(not(feature = "disable-runtime-api"))]
 impl_runtime_apis! {
@@ -2021,6 +2069,8 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
 
+			orml_add_benchmark!(params, batches, setheum_chainbridge, benchmarking::setheum_chainbridge);
+
 			if batches.is_empty() { return Err("Benchmark not found for this module.".into()) }
 			Ok(batches)
 		}
@@ -2054,4 +2104,10 @@ mod tests {
 		);
 	}
 
+}
+
+#[test]
+fn transfer() {
+	let t = Call::System(frame_system::Call::remark(vec![1, 2, 3])).encode();
+	println!("t: {:?}", t);
 }
