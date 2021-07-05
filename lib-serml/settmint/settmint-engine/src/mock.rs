@@ -275,8 +275,7 @@ impl serp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT), TradingPair::new(USDJ, EURJ)];
 }
@@ -284,11 +283,11 @@ parameter_types! {
 impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type DEXIncentives = ();
 	type WeightInfo = ();
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
 

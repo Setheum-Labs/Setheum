@@ -106,10 +106,10 @@ impl DEXIncentives<AccountId, CurrencyId, Balance> for MockDEXIncentives {
 
 ord_parameter_types! {
 	pub const ListingOrigin: AccountId = 3;
+	pub const UpdateOrigin: AccountId = 3;
 }
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 }
@@ -117,7 +117,6 @@ parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();

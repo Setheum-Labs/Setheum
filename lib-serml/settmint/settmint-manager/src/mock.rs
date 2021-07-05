@@ -244,10 +244,9 @@ parameter_types! {
 	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
 	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
 
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT)];
-	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
