@@ -281,8 +281,10 @@ create_currency_id! {
  		JSGD("Neom Singapore Dollar", 12) = 138,
 		JBRL("Neom Brazilian Real", 12) = 139,
  		JSAR("Neom Saudi Riyal", 12) = 140,
+		 
 		// Foreign System Currencies
 		RENBTC("Ren Bitcoin", 8) = 141,
+
 		/// Fiat Currencies as Pegs - only for price feed
 		USD("Fiat US Dollar", 12) = 181,
 		EUR("Fiat Euro", 12) =182,
