@@ -87,18 +87,21 @@ pub mod module {
 		#[pallet::constant]
 		type PremiumCurrencyId: Get<CurrencyId>;
 
-		/// The Native Currency type (DNAR/NEOM/ROME)
-		/// DNAR in Setheum, NEOM in Neom, ROME in NewRome testnet
+		/// The Native Currency type (DNAR/NEOM)
+		/// DNAR in Setheum, NEOM in Neom
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 
-		/// The Dex governance currency type (SDEX/HALAL/rDEX)
-		/// SDEX in Setheum, HALAL in Neom, rDEX in NewRome testnet
+		/// The Dex governance currency type (SDEX/HALAL)
+		/// SDEX in Setheum, HALAL in Neom
 		#[pallet::constant]
 		type DexCurrencyId: Get<CurrencyId>;
 
-		/// The origin which may update incentive related params
+		/// The origin which may update incentives related params
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
+
+		/// The origin which may update incentives Accumulate Period.
+		type AccumulatePeriodUpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		/// SERP treasury to issue rewards in stablecoin (Setter (SETT)).
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
@@ -241,7 +244,7 @@ pub mod module {
 			origin: OriginFor<T>,
 			updates: BlockNumber,
 		) -> DispatchResultWithPostInfo {
-			T::UpdateOrigin::ensure_origin(origin)?;
+			T::AccumulatePeriodUpdateOrigin::ensure_origin(origin)?;
 			for (blocknumber) in updates {
 				AccumulatePeriod::<T>::insert(blocknumber);
 			}

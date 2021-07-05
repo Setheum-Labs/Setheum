@@ -312,6 +312,7 @@ impl Config for Runtime {
 	type NativeCurrencyId = NativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;
+	type AccumulatePeriodUpdateOrigin = EnsureSignedBy<Four, AccountId>;
 	type SerpTreasury = MockSerpTreasury;
 	type Currency = TokensModule;
 	type Dex = MockDex;
