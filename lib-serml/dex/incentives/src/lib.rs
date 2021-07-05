@@ -242,7 +242,7 @@ pub mod module {
 		#[transactional]
 		pub fn update_accumulate_period(
 			origin: OriginFor<T>,
-			updates: BlockNumber,
+			blocknumber: BlockNumber,
 		) -> DispatchResultWithPostInfo {
 			T::AccumulatePeriodUpdateOrigin::ensure_origin(origin)?;
 			for (blocknumber) in updates {
