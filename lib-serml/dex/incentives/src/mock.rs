@@ -279,16 +279,9 @@ parameter_types! {
 	// TODO - implemented from `setheum_dex` module.
 	pub const DexIncentivePool: AccountId = 10;
 	pub const DexPremiumPool: AccountId = 11;
-	pub const DexPlusPool: AccountId = 12;
-	pub const DexBonusPool: AccountId = 13;
-	pub const DexExtraPool: AccountId = 14;
 	pub const AccumulatePeriod: BlockNumber = 20; /// 20 every blocks
 	pub const IncentiveCurrencyId: CurrencyId = SDEX;
 	pub const PremiumCurrencyId: CurrencyId = SETT;
-	pub const PlusCurrencyId: CurrencyId = SETT;
-	pub const BonusCurrencyId: CurrencyId = USDJ;
-	pub const ExtraCurrencyId: CurrencyId = EURJ;
-	pub const DexCurrencyId: CurrencyId = SDEX;
 	pub const NativeCurrencyId: CurrencyId = DNAR;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
@@ -314,15 +307,9 @@ impl Config for Runtime {
 	type Event = Event;
 	type DexIncentivePool = DexIncentivePool;
 	type DexPremiumPool = DexPremiumPool;
-	type DexPlusPool = DexPlusPool;
-	type DexBonusPool = DexBonusPool;
-	type DexExtraPool = DexExtraPool;
 	type AccumulatePeriod = AccumulatePeriod;
 	type IncentiveCurrencyId = IncentiveCurrencyId;
 	type PremiumCurrencyId = PremiumCurrencyId;
-	type PlusCurrencyId = PlusCurrencyId;
-	type BonusCurrencyId = BonusCurrencyId
-	type DexCurrencyId = DexCurrencyId;
 	type ExtraCurrencyId = ExtraCurrencyId
 	type NativeCurrencyId = NativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;

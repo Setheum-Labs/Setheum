@@ -54,47 +54,11 @@ fn deposit_dex_share_works() {
 			}
 		);
 		assert_eq!(
-			RewardsModule::pools(PoolId::DexPlus(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 0,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexBonus(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 0,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexExtra(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 0,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
 			RewardsModule::share_and_withdrawn_reward(PoolId::DexIncentive(CHFJ_SETT_LP), ALICE),
 			(0, 0)
 		);
 		assert_eq!(
 			RewardsModule::share_and_withdrawn_reward(PoolId::DexPremium(CHFJ_SETT_LP), ALICE),
-			(0, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexPlus(CHFJ_SETT_LP), ALICE),
-			(0, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexBonus(CHFJ_SETT_LP), ALICE),
-			(0, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexExtra(CHFJ_SETT_LP), ALICE),
 			(0, 0)
 		);
 
@@ -126,48 +90,13 @@ fn deposit_dex_share_works() {
 				total_withdrawn_rewards: 0
 			}
 		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexPlus(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 10000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexBonus(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 10000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexExtra(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 10000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
+
 		assert_eq!(
 			RewardsModule::share_and_withdrawn_reward(PoolId::DexIncentive(CHFJ_SETT_LP), ALICE),
 			(10000, 0)
 		);
 		assert_eq!(
 			RewardsModule::share_and_withdrawn_reward(PoolId::DexPremium(CHFJ_SETT_LP), ALICE),
-			(10000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexPlus(CHFJ_SETT_LP), ALICE),
-			(10000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexBonus(CHFJ_SETT_LP), ALICE),
-			(10000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexExtra(CHFJ_SETT_LP), ALICE),
 			(10000, 0)
 		);
 	});
@@ -210,48 +139,13 @@ fn withdraw_dex_share_works() {
 				total_withdrawn_rewards: 0
 			}
 		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexPlus(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 10000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexBonus(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 10000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexExtra(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 10000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
+
 		assert_eq!(
 			RewardsModule::share_and_withdrawn_reward(PoolId::DexIncentive(CHFJ_SETT_LP), ALICE),
 			(10000, 0)
 		);
 		assert_eq!(
 			RewardsModule::share_and_withdrawn_reward(PoolId::DexPremium(CHFJ_SETT_LP), ALICE),
-			(10000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexPlus(CHFJ_SETT_LP), ALICE),
-			(10000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexBonus(CHFJ_SETT_LP), ALICE),
-			(10000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexExtra(CHFJ_SETT_LP), ALICE),
 			(10000, 0)
 		);
 
@@ -283,48 +177,13 @@ fn withdraw_dex_share_works() {
 				total_withdrawn_rewards: 0
 			}
 		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexPlus(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 2000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexBonus(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 2000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
-		assert_eq!(
-			RewardsModule::pools(PoolId::DexExtra(CHFJ_SETT_LP)),
-			PoolInfo {
-				total_shares: 2000,
-				total_rewards: 0,
-				total_withdrawn_rewards: 0
-			}
-		);
+
 		assert_eq!(
 			RewardsModule::share_and_withdrawn_reward(PoolId::DexIncentive(CHFJ_SETT_LP), ALICE),
 			(2000, 0)
 		);
 		assert_eq!(
 			RewardsModule::share_and_withdrawn_reward(PoolId::DexPremium(CHFJ_SETT_LP), ALICE),
-			(2000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexPlus(CHFJ_SETT_LP), ALICE),
-			(2000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexBonus(CHFJ_SETT_LP), ALICE),
-			(2000, 0)
-		);
-		assert_eq!(
-			RewardsModule::share_and_withdrawn_reward(PoolId::DexExtra(CHFJ_SETT_LP), ALICE),
 			(2000, 0)
 		);
 	});
@@ -364,9 +223,6 @@ fn pay_out_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(TokensModule::deposit(SDEX, &DexIncentivePool::get(), 10000));
 		assert_ok!(TokensModule::deposit(SETT, &DexPremiumPool::get(), 10000));
-		assert_ok!(TokensModule::deposit(SETT, &DexPlusPool::get(), 10000));
-		assert_ok!(TokensModule::deposit(USDJ, &DexBonusPool::get(), 10000));
-		assert_ok!(TokensModule::deposit(EURJ, &DexExtraPool::get(), 10000));
 
 		assert_eq!(TokensModule::free_balance(SDEX, &DexIncentivePool::get()), 10000);
 		assert_eq!(TokensModule::free_balance(SDEX, &ALICE), 0);
@@ -379,24 +235,6 @@ fn pay_out_works() {
 		IncentivesModule::payout(&ALICE, PoolId::DexPremium(DNAR), 1000);
 		assert_eq!(TokensModule::free_balance(SETT, &DexPremiumPool::get()), 9000);
 		assert_eq!(TokensModule::free_balance(SETT, &ALICE), 1000);
-
-		assert_eq!(TokensModule::free_balance(SETT, &DexPlusPool::get()), 10000);
-		assert_eq!(TokensModule::free_balance(SETT, &ALICE), 0);
-		IncentivesModule::payout(&ALICE, PoolId::DexPlus(DNAR), 1000);
-		assert_eq!(TokensModule::free_balance(SETT, &DexPlusPool::get()), 9000);
-		assert_eq!(TokensModule::free_balance(SETT, &ALICE), 1000);
-
-		assert_eq!(TokensModule::free_balance(USDJ, &DexBonusPool::get()), 10000);
-		assert_eq!(TokensModule::free_balance(USDJ, &ALICE), 0);
-		IncentivesModule::payout(&ALICE, PoolId::DexBonus(DNAR), 1000);
-		assert_eq!(TokensModule::free_balance(USDJ, &DexBonusPool::get()), 9000);
-		assert_eq!(TokensModule::free_balance(USDJ, &ALICE), 1000);
-
-		assert_eq!(TokensModule::free_balance(EURJ, &DexExtraPool::get()), 10000);
-		assert_eq!(TokensModule::free_balance(EURJ, &ALICE), 0);
-		IncentivesModule::payout(&ALICE, PoolId::DexExtra(DNAR), 1000);
-		assert_eq!(TokensModule::free_balance(EURJ, &DexExtraPool::get()), 9000);
-		assert_eq!(TokensModule::free_balance(EURJ, &ALICE), 1000);
 	});
 }
 
@@ -411,39 +249,21 @@ fn accumulate_reward_works() {
 			Origin::signed(4),
 			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
 		));
-		assert_ok!(IncentivesModule::update_dex_plus_rewards(
-			Origin::signed(4),
-			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
-		));
-		assert_ok!(IncentivesModule::update_dex_bonus_rewards(
-			Origin::signed(4),
-			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
-		));
-		assert_ok!(IncentivesModule::update_dex_extra_rewards(
-			Origin::signed(4),
-			vec![(DNAR_USDJ_LP, 100), (DOT_USDJ_LP, 200),],
-		));
 
 		assert_eq!(IncentivesModule::accumulate_reward(10, |_, _| {}), vec![]);
 
 		RewardsModule::add_share(&ALICE, PoolId::DexIncentive(DNAR_USDJ_LP), 1);
 		RewardsModule::add_share(&ALICE, PoolId::DexPremium(DNAR_USDJ_LP), 1);
-		RewardsModule::add_share(&ALICE, PoolId::DexPlus(DNAR_USDJ_LP), 1);
-		RewardsModule::add_share(&ALICE, PoolId::DexBonus(DNAR_USDJ_LP), 1);
-		RewardsModule::add_share(&ALICE, PoolId::DexExtra(DNAR_USDJ_LP), 1);
 		assert_eq!(
 			IncentivesModule::accumulate_reward(40, |_, _| {}),
-			vec![(SDEX, 3100), (SETT, 3100), (SETT, 3100), (USDJ, 5), (EURJ, 5)]
+			vec![(SDEX, 3100), (SETT, 3100)]
 		);
 
 		RewardsModule::add_share(&ALICE, PoolId::DexIncentive(DNAR_USDJ_LP), 1);
 		RewardsModule::add_share(&ALICE, PoolId::DexPremium(DNAR_USDJ_LP), 1);
-		RewardsModule::add_share(&ALICE, PoolId::DexPlus(DNAR_USDJ_LP), 1);
-		RewardsModule::add_share(&ALICE, PoolId::DexBonus(DNAR_USDJ_LP), 1);
-		RewardsModule::add_share(&ALICE, PoolId::DexExtra(DNAR_USDJ_LP), 1);
 		assert_eq!(
 			IncentivesModule::accumulate_reward(40, |_, _| {}),
-			vec![(SDEX, 3300), (SETT, 3300), (SETT, 3300), (USDJ, 9), (EURJ, 9)]
+			vec![(SDEX, 3300), (SETT, 3300)]
 		);
 
 		assert_eq!(IncentivesModule::accumulate_reward(59, |_, _| {}), vec![]);
