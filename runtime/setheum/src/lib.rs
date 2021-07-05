@@ -461,6 +461,12 @@ type EnsureRootOrTwoThirdsExchangeCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, ExchangeCouncilInstance>,
 >;
 
+type EnsureHalfFinancialCouncilOrTwoThirdsExchangeCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, FinancialCouncilInstance>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, ExchangeCouncilInstance>,
+>;
+
 type EnsureHalfSetheumJuryOrTwoThirdsExchangeCouncil = EnsureOneOf<
 	AccountId,
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
@@ -1515,7 +1521,7 @@ impl setheum_incentives::Config for Runtime {
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type AccumulatePeriodUpdateOrigin = EnsureRootOrTwoThirdsExchangeCouncil; //TODO: When Sudo is removed, change to `EnsureHalfSetheumJuryOrTwoThirdsExchangeCouncil`.
+	type AccumulatePeriodUpdateOrigin = EnsureRootOrTwoThirdsExchangeCouncil; //TODO: When Sudo is removed, change to `EnsureHalfFinancialCouncilOrTwoThirdsExchangeCouncil`.
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type Dex = Dex;
