@@ -83,6 +83,7 @@ pub use frame_support::{
 };
 
 pub use pallet_staking::StakerStatus;
+pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill, Perquintill};
@@ -97,10 +98,8 @@ pub use primitives::{
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, ExchangeRate, GasToWeight,
 	OffchainSolutionWeightLimit, Price, Rate, Ratio, TimeStampedPrice, 
-	NEOM, HALAL, NSETT, JAED, JAUD, JBRL, JCAD, JCHF, JCLP, JCNY, JCOP, JEUR, JGBP, JHKD, JHUF, JIDR, JJPY, JKES, JKRW, JKZT, JMXN,
-	JMYR, JNGN, JNOK, JNZD, JPEN, JPHP, JPKR, JPLN, JQAR, JRON, JRUB, JSAR, JSEK, JSGD, JTHB, JTRY, JTWD, JTZS, JUSD, JZAR, RENBTC,
-	AED, AUD, BRL, CAD, CHF, CLP, CNY, COP, EUR, GBP, HKD, HUF, IDR, JPY, KES, KRW, KZT, MXN, MYR, NGN, NOK, NZD,
-	PEN, PHP, PKR, PLN, QAR, RON, RUB, SAR, SEK, SGD, THB, TRY, TWD, TZS, USD, ZAR, KWD, JOD, BHD, KYD, OMR, GIP
+	NEOM, HALAL, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR RENBTC,
+	USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
 mod benchmarking;
