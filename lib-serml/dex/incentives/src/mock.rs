@@ -279,7 +279,6 @@ parameter_types! {
 	// TODO - implemented from `setheum_dex` module.
 	pub const DexIncentivePool: AccountId = 10;
 	pub const DexPremiumPool: AccountId = 11;
-	pub const AccumulatePeriod: BlockNumber = 20; /// 20 every blocks
 	pub const IncentiveCurrencyId: CurrencyId = SDEX;
 	pub const PremiumCurrencyId: CurrencyId = SETT;
 	pub const NativeCurrencyId: CurrencyId = DNAR;
@@ -307,7 +306,6 @@ impl Config for Runtime {
 	type Event = Event;
 	type DexIncentivePool = DexIncentivePool;
 	type DexPremiumPool = DexPremiumPool;
-	type AccumulatePeriod = AccumulatePeriod;
 	type IncentiveCurrencyId = IncentiveCurrencyId;
 	type PremiumCurrencyId = PremiumCurrencyId;
 	type ExtraCurrencyId = ExtraCurrencyId

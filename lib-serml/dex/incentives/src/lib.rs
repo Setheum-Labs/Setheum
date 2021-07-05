@@ -73,10 +73,6 @@ pub mod module {
 		#[pallet::constant]
 		type DexPremiumPool: Get<Self::AccountId>;
 
-		/// The period to accumulate rewards
-		#[pallet::constant]
-		type AccumulatePeriod: Get<Self::BlockNumber>;
-
 		/// The stable currency ids (SettCurrencies)
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
@@ -152,6 +148,13 @@ pub mod module {
 	#[pallet::storage]
 	#[pallet::getter(fn dex_premium_rewards)]
 	pub type DexPremiumRewards<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
+
+	/// Mapping to AccumulatePeriod for reward accumulation
+	/// in blocknumber to accumulate rewards periodically.
+	/// The period to accumulate rewards.
+	#[pallet::storage]
+	#[pallet::getter(fn accumulate_period)]
+	pub type AccumulatePeriod<T: Config> = StorageMap<_, Twox64Concat, BlockNumber, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -231,6 +234,19 @@ pub mod module {
 			}
 			Ok(().into())
 		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::update_accumulate_period(updates.len() as u32))]
+		#[transactional]
+		pub fn update_accumulate_period(
+			origin: OriginFor<T>,
+			updates: BlockNumber,
+		) -> DispatchResultWithPostInfo {
+			T::UpdateOrigin::ensure_origin(origin)?;
+			for (blocknumber) in updates {
+				AccumulatePeriod::<T>::insert(blocknumber);
+			}
+			Ok(().into())
+		}
 	}
 }
 
@@ -296,7 +312,8 @@ impl<T: Config> RewardHandler<T::AccountId> for Pallet<T> {
 		let mut accumulated_rewards: Vec<(CurrencyId, Balance)> = vec![];
 
 		// accumulate reward periodically
-		if now % T::AccumulatePeriod::get() == Zero::zero() {
+		let accumulation_period = Self::accumulate_period();
+		if now % accumulation_period == Zero::zero() {
 			let mut accumulated_incentive: Balance = Zero::zero();
 			let mut accumulated_premium: Balance = Zero::zero();
 			let incentive_currency_id = T::IncentiveCurrencyId::get();

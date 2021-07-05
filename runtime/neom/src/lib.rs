@@ -1360,14 +1360,6 @@ impl orml_rewards::Config for Runtime {
 // TODO - and update ExchangeFeeWaiver (DexFeeWaiverIncentive) to the new Incentive model
 // TODO - based on trading volume, this new method will be 
 // TODO - implemented from `setheum_dex` module.
-parameter_types! {
-	// TODO: Remove Other incentives except for DexIncentive 
-	// TODO - and update ExchangeFeeWaiver (DexFeeWaiverIncentive) to the new Incentive model
-	// TODO - based on trading volume, this new method will be 
-	// TODO - implemented from `setheum_dex` module.
-	pub const AccumulatePeriod: BlockNumber = MINUTES;
-}
-
 impl setheum_incentives::Config for Runtime {
 	type Event = Event;
 	type DexIncentivePool = ZeroAccountId;
@@ -1375,7 +1367,6 @@ impl setheum_incentives::Config for Runtime {
 	type DexPlusPool = ZeroAccountId;
 	type DexBonusPool = ZeroAccountId;
 	type DexExtraPool = ZeroAccountId;
-	type AccumulatePeriod = AccumulatePeriod;
 	type IncentiveCurrencyId = GetIncentiveCurrencyId;
 	type PremiumCurrencyId = GetPremiumCurrencyId;
 	type PlusCurrencyId = GetPlusCurrencyId;
