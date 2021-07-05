@@ -179,6 +179,7 @@ impl Filter<Call> for BaseCallFilter {
 			Call::Authority(_) | Call::GeneralCouncil(_) | Call::GeneralCouncilMembership(_) |
 			Call::SetheumJury(_) | Call::SetheumJuryMembership(_) |
 			Call::FinancialCouncil(_) | Call::FinancialCouncilMembership(_) |
+			Call::ExchangeCouncil(_) | Call::ExchangeCouncilMembership(_) |
 			Call::TechnicalCommittee(_) | Call::TechnicalCommitteeMembership(_) |
 			// Oracle
 			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_)
@@ -397,6 +398,90 @@ type EnsureHalfSetheumJuryOrHalfFinancialCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, FinancialCouncilInstance>,
 >;
 
+type EnsureRootOrTwoThirdsFinancialCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, FinancialCouncilInstance>,
+>;
+
+type EnsureHalfSetheumJuryOrTwoThirdsFinancialCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, FinancialCouncilInstance>,
+>;
+
+type EnsureRootOrAllFinancialCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, FinancialCouncilInstance>,
+>;
+
+type EnsureHalfSetheumJuryOrAllFinancialCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, FinancialCouncilInstance>,
+>;
+
+type EnsureTwoThirdsSetheumJuryOrAllFinancialCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, FinancialCouncilInstance>,
+>;
+
+type EnsureAllSetheumJuryOrAllFinancialCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, FinancialCouncilInstance>,
+>;
+
+type EnsureRootOrHalfExchangeCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, ExchangeCouncilInstance>,
+>;
+
+type EnsureHalfSetheumJuryOrHalfExchangeCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, ExchangeCouncilInstance>,
+>;
+
+type EnsureRootOrTwoThirdsExchangeCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, ExchangeCouncilInstance>,
+>;
+
+type EnsureHalfSetheumJuryOrTwoThirdsExchangeCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, ExchangeCouncilInstance>,
+>;
+
+type EnsureRootOrAllExchangeCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, ExchangeCouncilInstance>,
+>;
+
+type EnsureHalfSetheumJuryOrAllExchangeCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, ExchangeCouncilInstance>,
+>;
+
+type EnsureTwoThirdsSetheumJuryOrAllExchangeCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, ExchangeCouncilInstance>,
+>;
+
+type EnsureAllSetheumJuryOrAllExchangeCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, ExchangeCouncilInstance>,
+>;
+
 type EnsureRootOrTwoThirdsGeneralCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
@@ -544,6 +629,38 @@ impl pallet_membership::Config<FinancialCouncilMembershipInstance> for Runtime {
 	type MembershipInitialized = FinancialCouncil;
 	type MembershipChanged = FinancialCouncil;
 	type MaxMembers = FinancialCouncilMaxMembers;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const ExchangeCouncilMotionDuration: BlockNumber = 3 * DAYS;
+	pub const ExchangeCouncilMaxProposals: u32 = 50;
+	pub const ExchangeCouncilMaxMembers: u32 = 50;
+}
+
+type ExchangeCouncilInstance = pallet_collective::Instance2;
+impl pallet_collective::Config<ExchangeCouncilInstance> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = ExchangeCouncilMotionDuration;
+	type MaxProposals = ExchangeCouncilMaxProposals;
+	type MaxMembers = ExchangeCouncilMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = ();
+}
+
+type ExchangeCouncilMembershipInstance = pallet_membership::Instance2;
+impl pallet_membership::Config<ExchangeCouncilMembershipInstance> for Runtime {
+	type Event = Event;
+	type AddOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
+	type RemoveOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
+	type SwapOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
+	type ResetOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
+	type PrimeOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
+	type MembershipInitialized = ExchangeCouncil;
+	type MembershipChanged = ExchangeCouncil;
+	type MaxMembers = ExchangeCouncilMaxMembers;
 	type WeightInfo = ();
 }
 
@@ -820,7 +937,7 @@ impl pallet_democracy::Config for Runtime {
 	type ExternalMajorityOrigin = EnsureRootOrHalfGeneralCouncil;
 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
 	/// (NTB) vote.
-	type ExternalDefaultOrigin = EnsureRootOrAllGeneralCouncilOrAllSetheumJury;
+	type ExternalDefaultOrigin = EnsureRootOrAllGeneralCouncil;
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
 	type FastTrackOrigin = EnsureRootOrTwoThirdsTechnicalCommittee;
@@ -835,7 +952,7 @@ impl pallet_democracy::Config for Runtime {
 	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrAllTechnicalCommittee`.
 	// Any single technical committee member may veto a coming council proposal, however they can
 	// only do it once and it lasts only for the cooloff period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, SetheumJuryInstance> | EnsureMember<AccountId, TechnicalCommitteeInstance>;
+	type VetoOrigin = pallet_collective::EnsureMember<AccountId, SetheumJuryInstance> || EnsureMember<AccountId, TechnicalCommitteeInstance>;
 	type CooloffPeriod = CooloffPeriod;
 	type PreimageByteDeposit = PreimageByteDeposit;
 	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, GeneralCouncilInstance>;
@@ -1376,6 +1493,7 @@ impl setheum_incentives::Config for Runtime {
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+	type AccumulatePeriodUpdateOrigin = EnsureRootOrTwoThirdsExchangeCouncil; //TODO: When Sudo is removed, change to `EnsureHalfSetheumJuryOrTwoThirdsExchangeCouncil`.
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type Dex = Dex;
@@ -1573,40 +1691,42 @@ construct_runtime!(
 		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>} = 29,
 		SetheumJury: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
 		SetheumJuryMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>} = 31,
-		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>} = 32,
+		ExchangeCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
+		ExchangeCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 33,
+		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>} = 34,
 		
 		// Oracle
 		//
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>} = 33,
+		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>} = 35,
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 34,
+		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 36,
 
 		// ORML Core
-		Auction: orml_auction::{Module, Storage, Call, Event<T>} = 35,
-		Rewards: orml_rewards::{Module, Storage, Call} = 36,
-		OrmlNFT: orml_nft::{Module, Storage, Config<T>} = 37,
+		Auction: orml_auction::{Module, Storage, Call, Event<T>} = 37,
+		Rewards: orml_rewards::{Module, Storage, Call} = 38,
+		OrmlNFT: orml_nft::{Module, Storage, Config<T>} = 39,
 
 		// Setheum Core
-		Prices: setheum_prices::{Module, Storage, Call, Event<T>} = 38,
-		SerpAuctionManager: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned} 39,
-		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>} = 40,
+		Prices: setheum_prices::{Module, Storage, Call, Event<T>} = 40,
+		SerpAuctionManager: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned} 41,
+		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>} = 42,
 
 		// Dex
-		Dex: dex::{Module, Storage, Call, Event<T>, Config<T>} = 41,
-		Incentives: setheum_incentives::{Module, Storage, Call, Event<T>} = 42,
+		Dex: dex::{Module, Storage, Call, Event<T>, Config<T>} = 43,
+		Incentives: setheum_incentives::{Module, Storage, Call, Event<T>} = 44,
 
 		// Settmint
-		SettmintEngine: settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned} = 41,
-		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>} = 43,
-		SettmintManager: settmint_manager::{Module, Storage, Call, Event<T>} = 44,
+		SettmintEngine: settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned} = 45,
+		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>} = 46,
+		SettmintManager: settmint_manager::{Module, Storage, Call, Event<T>} = 47,
 
 		// Smart contracts
 		// Setheum EVM (SEVM)
-		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 45,
-		EVMBridge: setheum_evm_bridge::{Pallet} = 46,
-		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 47,
-		EvmManager: setheum_evm_manager::{Pallet, Storage} = 48,
+		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 48,
+		EVMBridge: setheum_evm_bridge::{Pallet} = 49,
+		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 50,
+		EvmManager: setheum_evm_manager::{Pallet, Storage} = 51,
 
 		// Dev
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>} = 255,
