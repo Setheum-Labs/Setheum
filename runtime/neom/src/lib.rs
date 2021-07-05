@@ -137,7 +137,7 @@ impl_opaque_keys! {
 parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
-	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
 	pub const WellfareTreasuryPalletId: PalletId = PalletId(*b"set/welf");
@@ -1358,9 +1358,6 @@ impl settmint_gateway::Config for Runtime {
 }
 
 parameter_types! {
-	// TODO: Update `GetExchangeFee` to get from storage map and let-vvv
-	// TODO: --- ^^^ - the Exchange Council update it through GOVERNANCE
-	pub const GetExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(NSETT, NEOM),
@@ -1384,13 +1381,13 @@ parameter_types! {
 impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
 	type DEXIncentives = Incentives;
 	type WeightInfo = weights::dex::WeightInfo<Runtime>;
-	type ListingOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
+	type UpdateOrigin = EnsureRootOrHalfExchangeCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfExchangeCouncil`.
+	type ListingOrigin = EnsureRootOrHalfExchangeCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfExchangeCouncil`.
 }
 
 parameter_types! {
