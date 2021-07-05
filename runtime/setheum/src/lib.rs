@@ -33,6 +33,24 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::Encode;
+pub use frame_support::{
+	construct_runtime, debug, parameter_types,
+	traits::{
+		Contains, ContainsLengthBound, EnsureOrigin, Filter, Get, IsType, KeyOwnerProofSystem, LockIdentifier,
+		Randomness, SortedMembers, U128CurrencyToVote, WithdrawReasons,
+	},
+	weights::{
+		constants::{
+			BlockExecutionWeight,
+			ExtrinsicBaseWeight,
+			RocksDbWeight,
+			WEIGHT_PER_SECOND
+		},
+		IdentityFee, Weight
+	},
+	PalletId, StorageValue,
+};
+
 use hex_literal::hex;
 use sp_api::impl_runtime_apis;
 use sp_core::{
@@ -41,13 +59,13 @@ use sp_core::{
 	OpaqueMetadata, H160,
 };
 use sp_runtime::traits::{
-	BadOrigin, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup,
+	BadOrigin, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup, Zero,
 };
 use sp_runtime::{
 	create_runtime_str,
 	curve::PiecewiseLinear,
 	generic, impl_opaque_keys,
-	traits::{AccountIdConversion, Zero},
+	traits::{AccountIdConversion, Zero, Convert, Identity},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, DispatchResult, FixedPointNumber,
 };
@@ -61,6 +79,7 @@ use setheum_currencies::{BasicCurrencyAdapter, Currency};
 use setheum_evm::{CallInfo, CreateInfo};
 use setheum_evm_accounts::EvmAddressMapping;
 use setheum_evm_manager::EvmCurrencyIdMapping;
+use setheum_support::CurrencyIdMapping;
 use setheum_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use orml_tokens::CurrencyAdapter;
 use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
@@ -70,16 +89,6 @@ use pallet_session::historical as pallet_session_historical;
 
 /// Weights for pallets used in the runtime.
 mod weights;
-
-pub use frame_support::{
-	construct_runtime, debug, parameter_types,
-	traits::{
-		Contains, ContainsLengthBound, EnsureOrigin, Filter, Get, IsType, KeyOwnerProofSystem, LockIdentifier,
-		Randomness, U128CurrencyToVote,
-	},
-	weights::{constants::RocksDbWeight, IdentityFee, Weight},
-	StorageValue, PalletId,
-};
 
 pub use pallet_staking::StakerStatus;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -95,20 +104,22 @@ pub use primitives::{
 	EraIndex, Hash, Moment, Nonce, Share, Signature, TokenSymbol, TradingPair,
 };
 pub use runtime_common::{
-	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, ExchangeRate, GasToWeight,
-	OffchainSolutionWeightLimit, Price, Rate, Ratio, TimeStampedPrice, 
-	DNAR, SDEX, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ, RENBTC,
+	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights,
+	ExchangeRate, GasToWeight, OffchainSolutionWeightLimit, Price, Rate, Ratio,
+	RuntimeBlockLength, RuntimeBlockWeights,SystemContractsFilter, TimeStampedPrice, 
+	DNAR, SDEX, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ RENBTC,
 	USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
+mod benchmarking;
 mod constants;
 
 /// This runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("setheum"),
-	impl_name: create_runtime_str!("setheum"),
+	spec_name: create_runtime_str!("newrome"),
+	impl_name: create_runtime_str!("newrome"),
 	authoring_version: 1,
-	spec_version: 100,
+	spec_version: 1000,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -138,7 +149,7 @@ parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	// TODO: Add WellfareTreasury PalletId ^^V^V^V^V^^^^^^>>>>>>>>>>>>>>>>>>>
+	pub const WellfareTreasuryPalletId: PalletId = PalletId(*b"set/welf");
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
@@ -149,15 +160,39 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		SettmintManagerPalletId::get().into_account(),
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
+		SettPayTreasuryPalletId::get().into_account(),
+		WellfareTreasuryPalletId::get().into_account(),
 		IncentivesPalletId::get().into_account(),
 		ZeroAccountId::get(),
 	]
 }
 
 parameter_types! {
-	pub const BlockHashCount: BlockNumber = 900; // mortal tx can be valid up to 1 hour after signing
+	pub const BlockHashCount: BlockNumber = 1200; // mortal tx can be valid up to 4 hour after signing
 	pub const Version: RuntimeVersion = VERSION;
-	pub const SS58Prefix: u8 = 10; // Ss58AddressFormat::SetheumAccount
+	pub const SS58Prefix: u16 = 258; // Ss58AddressFormat::SetheumAccount
+}
+
+pub struct BaseCallFilter;
+impl Filter<Call> for BaseCallFilter {
+	fn filter(call: &Call) -> bool {
+		matches!(
+			call,
+			// Core
+			Call::System(_) | Call::Timestamp(_) |
+			// Utility
+			Call::Scheduler(_) | Call::Utility(_) | Call::Multisig(_) |
+			// Sudo
+			Call::Sudo(_) |
+			// PoA
+			Call::Authority(_) | Call::GeneralCouncil(_) | Call::GeneralCouncilMembership(_) |
+			Call::SetheumJury(_) | Call::SetheumJuryMembership(_) |
+			Call::FinancialCouncil(_) | Call::FinancialCouncilMembership(_) |
+			Call::TechnicalCommittee(_) | Call::TechnicalCommitteeMembership(_) |
+			// Oracle
+			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_)
+		)
+	}
 }
 
 impl frame_system::Config for Runtime {
@@ -281,9 +316,16 @@ impl pallet_balances::Config for Runtime {
 }
 
 parameter_types! {
-	pub TransactionByteFee: Balance = 10 * millicent(DNAR);
+	pub TransactionByteFee: Balance = millicent(DNAR);
+	/// The portion of the `NORMAL_DISPATCH_RATIO` that we adjust the fees with. Blocks filled less
+	/// than this will decrease the weight and more will increase.
 	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
-	pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(1, 100_000);
+	/// The adjustment variable of the runtime. Higher values will cause `TargetBlockFullness` to
+	/// change the fees more rapidly.
+	pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(3, 100_000);
+	/// Minimum amount of the multiplier. This value cannot be too low. A test case should ensure
+	/// that combined with `AdjustmentVariable`, we can recover from the minimum.
+	/// See `multiplier_can_grow_from_zero`.
 	pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
 }
 
@@ -298,6 +340,54 @@ type EnsureRootOrAllGeneralCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, GeneralCouncilInstance>,
 >;
 
+type EnsureRootOrAllSetheumJury = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, SetheumJuryInstance>,
+>;
+
+type EnsureAllSetheumJuryOrAllGeneralCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, GeneralCouncilInstance>,
+>;
+
+type EnsureRootOrOneThirdSetheumJury = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_1, _3, AccountId, SetheumJuryInstance>,
+>;
+
+type EnsureRootOrTwoThirdsSetheumJury = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, SetheumJuryInstance>,
+>;
+
+type EnsureRootOrHalfSetheumJury = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
+>;
+
+type EnsureQuarterSetheumJuryOrHalfGeneralCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _4, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, GeneralCouncilInstance>,
+>;
+
+type EnsureOneThirdSetheumJuryOrHalfGeneralCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _3, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, GeneralCouncilInstance>,
+>;
+
+type EnsureHalfSetheumJuryOrHalfGeneralCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, GeneralCouncilInstance>,
+>;
+
 type EnsureRootOrHalfGeneralCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
@@ -310,9 +400,21 @@ type EnsureRootOrHalfFinancialCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, FinancialCouncilInstance>,
 >;
 
+type EnsureHalfSetheumJuryOrHalfFinancialCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, FinancialCouncilInstance>,
+>;
+
 type EnsureRootOrTwoThirdsGeneralCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, GeneralCouncilInstance>,
+>;
+
+type EnsureTwoThirdsSetheumJuryOrTwoThirdsGeneralCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, SetheumJuryInstance>,
 	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, GeneralCouncilInstance>,
 >;
 
@@ -322,22 +424,46 @@ type EnsureRootOrThreeFourthsGeneralCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, GeneralCouncilInstance>,
 >;
 
+type EnsureRootOrThreeFourthsSetheumJury = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, SetheumJuryInstance>,
+>;
+
+type EnsureThreeFourthsSetheumJuryOrThreeFourthsGeneralCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_3, _4, AccountId, GeneralCouncilInstance>,
+>;
+
 type EnsureRootOrOneThirdsTechnicalCommittee = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionMoreThan<_1, _3, AccountId, TechnicalCommitteeInstance>,
 >;
 
-type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
+type EnsureOneThirdsSetheumJuryOrOneThirdsTechnicalCommittee = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_1, _3, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_1, _3, AccountId, TechnicalCommitteeInstance>,
+>;
+
+type EnsureTwoThirdsSetheumJuryOrTwoThirdsTechnicalCommittee = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, TechnicalCommitteeInstance>,
 >;
 
+type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, TechnicalCommitteeInstance>,
+>;
+
 parameter_types! {
-	pub const GeneralCouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const GeneralCouncilMaxProposals: u32 = 258;
-	pub const GeneralCouncilMaxMembers: u32 = 258;
+	pub const GeneralCouncilMotionDuration: BlockNumber = 3 * DAYS;
+	pub const GeneralCouncilMaxProposals: u32 = 50;
+	pub const GeneralCouncilMaxMembers: u32 = 50;
 }
 
 type GeneralCouncilInstance = pallet_collective::Instance1;
@@ -365,11 +491,43 @@ impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
 	type MaxMembers = GeneralCouncilMaxMembers;
 	type WeightInfo = ();
 }
-// TODO: Add the Jury
+
 parameter_types! {
-	pub const FinancialCouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const FinancialCouncilMaxProposals: u32 = 258;
-	pub const FinancialCouncilMaxMembers: u32 = 258;
+	pub const SetheumJuryMotionDuration: BlockNumber = 3 * DAYS;
+	pub const SetheumJuryMaxProposals: u32 = 50;
+	pub const SetheumJuryMaxMembers: u32 = 50;
+}
+
+type SetheumJuryInstance = pallet_collective::Instance1;
+impl pallet_collective::Config<SetheumJuryInstance> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = SetheumJuryMotionDuration;
+	type MaxProposals = SetheumJuryMaxProposals;
+	type MaxMembers = SetheumJuryMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = ();
+}
+
+type SetheumJuryMembershipInstance = pallet_membership::Instance1;
+impl pallet_membership::Config<SetheumJuryMembershipInstance> for Runtime {
+	type Event = Event;
+	type AddOrigin = EnsureRootOrThreeFourthsSetheumJury;
+	type RemoveOrigin = EnsureRootOrThreeFourthsSetheumJury;
+	type SwapOrigin = EnsureRootOrThreeFourthsSetheumJury;
+	type ResetOrigin = EnsureRootOrThreeFourthsSetheumJury;
+	type PrimeOrigin = EnsureRootOrThreeFourthsSetheumJury;
+	type MembershipInitialized = SetheumJury;
+	type MembershipChanged = SetheumJury;
+	type MaxMembers = SetheumJuryMaxMembers;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const FinancialCouncilMotionDuration: BlockNumber = 3 * DAYS;
+	pub const FinancialCouncilMaxProposals: u32 = 50;
+	pub const FinancialCouncilMaxMembers: u32 = 50;
 }
 
 type FinancialCouncilInstance = pallet_collective::Instance2;
@@ -399,9 +557,9 @@ impl pallet_membership::Config<FinancialCouncilMembershipInstance> for Runtime {
 }
 
 parameter_types! {
-	pub const TechnicalCommitteeMotionDuration: BlockNumber = 7 * DAYS;
-	pub const TechnicalCommitteeMaxProposals: u32 = 258;
-	pub const TechnicalCouncilMaxMembers: u32 = 258;
+	pub const TechnicalCommitteeMotionDuration: BlockNumber = 3 * DAYS;
+	pub const TechnicalCommitteeMaxProposals: u32 = 50;
+	pub const TechnicalCouncilMaxMembers: u32 = 50;
 }
 
 type TechnicalCommitteeInstance = pallet_collective::Instance4;
@@ -417,6 +575,7 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 }
 
 type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
+
 impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
@@ -431,7 +590,7 @@ impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime
 }
 
 parameter_types! {
-	pub const OracleMaxMembers: u32 = 258;
+	pub const OracleMaxMembers: u32 = 50;
 }
 
 type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
@@ -455,9 +614,9 @@ impl pallet_utility::Config for Runtime {
 }
 
 parameter_types! {
-	pub MultisigDepositBase: Balance = 500 * millicent(DNAR);
-	pub MultisigDepositFactor: Balance = 100 * millicent(DNAR);
-	pub const MaxSignatories: u16 = 258;
+	pub MultisigDepositBase: Balance = deposit(1, 88);
+	pub MultisigDepositFactor: Balance = deposit(0, 32);
+	pub const MaxSignatories: u16 = 100;
 }
 
 impl pallet_multisig::Config for Runtime {
@@ -497,30 +656,28 @@ impl ContainsLengthBound for GeneralCouncilProvider {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub ProposalBondMinimum: Balance = dollar(DNAR);
-	pub const SpendPeriod: BlockNumber = DAYS;
+	pub ProposalBondMinimum: Balance = 2 * dollar(DNAR);
+	pub const SpendPeriod: BlockNumber = 7 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(0);
+
 	pub const TipCountdown: BlockNumber = DAYS;
 	pub const TipFindersFee: Percent = Percent::from_percent(10);
-	pub TipReportDepositBase: Balance = dollar(DNAR);
-	pub const SevenDays: BlockNumber = 7 * DAYS;
-	pub const ZeroDay: BlockNumber = 0;
-	pub const OneDay: BlockNumber = DAYS;
-	pub BountyDepositBase: Balance = dollar(DNAR);
-	pub const BountyDepositPayoutDelay: BlockNumber = DAYS;
-	pub const BountyUpdatePeriod: BlockNumber = 14 * DAYS;
+	pub TipReportDepositBase: Balance = deposit(1, 0);
+	pub BountyDepositBase: Balance = deposit(1, 0);
+	pub const BountyDepositPayoutDelay: BlockNumber = 3 * DAYS;
+	pub const BountyUpdatePeriod: BlockNumber = 30 * DAYS;
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
 	pub BountyValueMinimum: Balance = 5 * dollar(DNAR);
-	pub DataDepositPerByte: Balance = cent(DNAR);
+	pub DataDepositPerByte: Balance = deposit(0, 1);
 	pub const MaximumReasonLength: u32 = 16384;
-	pub const MaxApprovals: u32 = 258;
+	pub const MaxApprovals: u32 = 100;
 }
 
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
 	type ApproveOrigin = EnsureRootOrHalfGeneralCouncil;
-	type RejectOrigin = EnsureRootOrHalfGeneralCouncil;
+	type RejectOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
 	type Event = Event;
 	type OnSlash = ();
 	type ProposalBond = ProposalBond;
@@ -606,9 +763,9 @@ impl pallet_staking::Config for Runtime {
 	type Currency = Balances;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = U128CurrencyToVote;
-	type RewardRemainder = SetheumTreasury;
+	type RewardRemainder = Treasury;
 	type Event = Event;
-	type Slash = SetheumTreasury; // send the slashed funds to the pallet treasury.
+	type Slash = Treasury; // send the slashed funds to the pallet treasury.
 	type Reward = (); // rewards are minted from the void
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
@@ -645,7 +802,6 @@ impl pallet_recovery::Config for Runtime {
 	type RecoveryDeposit = RecoveryDeposit;
 }
 
-// TODO: Update to add the Jury
 parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 28 * DAYS;
 	pub const VotingPeriod: BlockNumber = 28 * DAYS;
@@ -659,7 +815,6 @@ parameter_types! {
 	pub const MaxProposals: u32 = 100;
 }
 
-// TODO: Update to add the Jury
 impl pallet_democracy::Config for Runtime {
 	type Proposal = Call;
 	type Event = Event;
@@ -674,7 +829,7 @@ impl pallet_democracy::Config for Runtime {
 	type ExternalMajorityOrigin = EnsureRootOrHalfGeneralCouncil;
 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
 	/// (NTB) vote.
-	type ExternalDefaultOrigin = EnsureRootOrAllGeneralCouncil;
+	type ExternalDefaultOrigin = EnsureRootOrAllGeneralCouncilOrAllSetheumJury;
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
 	type FastTrackOrigin = EnsureRootOrTwoThirdsTechnicalCommittee;
@@ -682,14 +837,14 @@ impl pallet_democracy::Config for Runtime {
 	type InstantAllowed = InstantAllowed;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-	type CancellationOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type BlacklistOrigin = EnsureRoot<AccountId>;
+	type CancellationOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrTwoThirdsGeneralCouncil`.
+	type BlacklistOrigin = EnsureRootOrHalfSetheumJury;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
-	// Root must agree.
-	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee;
+	// Root must agree or half of SetheumJury must agree.
+	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrAllTechnicalCommittee`.
 	// Any single technical committee member may veto a coming council proposal, however they can
 	// only do it once and it lasts only for the cooloff period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCommitteeInstance>;
+	type VetoOrigin = pallet_collective::EnsureMember<AccountId, SetheumJuryInstance> | EnsureMember<AccountId, TechnicalCommitteeInstance>;
 	type CooloffPeriod = CooloffPeriod;
 	type PreimageByteDeposit = PreimageByteDeposit;
 	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, GeneralCouncilInstance>;
@@ -723,9 +878,8 @@ impl orml_authority::Config for Runtime {
 
 parameter_types! {
 	pub const MinimumCount: u32 = 1;
-	pub const ExpiresIn: Moment = 1000 * 60 * 60; // 60 mins
+	pub const ExpiresIn: Moment = 1000 * 60 * 60 * 2; // 2 hours
 	pub ZeroAccountId: AccountId = AccountId::from([0u8; 32]);
-	pub const MaxHasDispatchedSize: u32 = 40;
 }
 
 type SetheumDataProvider = orml_oracle::Instance1;
@@ -738,7 +892,6 @@ impl orml_oracle::Config<SetheumDataProvider> for Runtime {
 	type OracleValue = Price;
 	type RootOperatorAccountId = ZeroAccountId;
 	type Members = OperatorMembershipSetheum;
-	type MaxHasDispatchedSize = MaxHasDispatchedSize;
 	type WeightInfo = weights::orml_oracle::WeightInfo<Runtime>;
 }
 
@@ -762,6 +915,7 @@ parameter_type_with_key! {
 			CurrencyId::Token(symbol) => match symbol {
 				TokenSymbol::DNAR => Balance::max_value(), // unsupported
 				TokenSymbol::SDEX => Balance::max_value(*currency_id), // unsupported
+				
 				TokenSymbol::SETT => cent(*currency_id),
 				TokenSymbol::USDJ => cent(*currency_id),
 				TokenSymbol::EURJ => cent(*currency_id),
@@ -773,6 +927,8 @@ parameter_type_with_key! {
 				TokenSymbol::SGDJ => cent(*currency_id),
 				TokenSymbol::BRLJ => cent(*currency_id),
 				TokenSymbol::SARJ => cent(*currency_id)
+
+				TokenSymbol::RENBTC |
 			},
 			CurrencyId::DexShare(_, _) => {
 				let dec = <EvmCurrencyIdMapping<Runtime> as CurrencyIdMapping>::decimals(*currency_id);
@@ -896,15 +1052,22 @@ impl setheum_currencies::Config for Runtime {
 	type EVMBridge = EVMBridge;
 }
 
-pub struct EnsureRootOrTreasury;
-impl EnsureOrigin<Origin> for EnsureRootOrTreasury {
+parameter_types! {
+	pub SetheumFoundationAccounts: Vec<AccountId> = vec![
+		// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
+		hex_literal::hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into(),	// "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
+		// TODO: Add second foundation account `hex_literal::hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into(),	// "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"`
+	];
+}
+
+pub struct EnsureSetheumFoundation;
+impl EnsureOrigin<Origin> for EnsureSetheumFoundation {
 	type Success = AccountId;
 
 	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
-			RawOrigin::Root => Ok(TreasuryPalletId::get().into_account()),
 			RawOrigin::Signed(caller) => {
-				if caller == TreasuryPalletId::get().into_account() {
+				if SetheumFoundationAccounts::get().contains(&caller) {
 					Ok(caller)
 				} else {
 					Err(Origin::from(Some(caller)))
@@ -929,16 +1092,15 @@ impl orml_vesting::Config for Runtime {
 	type Event = Event;
 	type Currency = pallet_balances::Pallet<Runtime>;
 	type MinVestedTransfer = MinVestedTransfer;
-	type VestedTransferOrigin = EnsureRootOrTreasury;
+	type VestedTransferOrigin = EnsureSetheumFoundation;
 	type WeightInfo = weights::orml_vesting::WeightInfo<Runtime>;
 	type MaxVestingSchedules = MaxVestingSchedules;
 	type BlockNumberProvider = RelaychainBlockNumberProvider<Runtime>;
 }
 
 parameter_types! {
-	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) *
-		BlockWeights::get().max_block;
-	pub const MaxScheduledPerBlock: u32 = 50;
+	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * BlockWeights::get().max_block;
+	pub const MaxScheduledPerBlock: u32 = 30;
 }
 
 impl pallet_scheduler::Config for Runtime {
@@ -1077,7 +1239,7 @@ impl settmint_engine::Config for Runtime {
 }
 
 parameter_types! {
-	pub DepositPerAuthorization: Balance = dollar(DNAR);
+	pub DepositPerAuthorization: Balance = deposit(1, 64);
 }
 
 impl settmint_gateway::Config for Runtime {
@@ -1120,19 +1282,20 @@ impl dex::Config for Runtime {
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
 	type DEXIncentives = Incentives;
 	type WeightInfo = weights::dex::WeightInfo<Runtime>;
-	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
+	type ListingOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
 }
 
 parameter_types! {
-	pub const MaxAuctionsCount: u32 = 129;
+	pub const MaxAuctionsCount: u32 = 100;
 	// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
 	pub const CharityFundAccount: AccountId = hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into();
 
 	pub SettPayTreasuryAccount: AccountId = SettPayTreasuryPalletId::get().into_account()
-	pub SerpTesSchedule: BlockNumber = 25 * MINUTES; // Triggers SERP-TES for serping Every 25 minutes.
+	// TODO: Update SerpTesSchedule to an updatable param in the storage map, under financial council
+	pub SerpTesSchedule: BlockNumber = 12 * MINUTES; // Triggers SERP-TES for serping Every 12 minutes.
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
+	pub TreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
 	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
@@ -1145,10 +1308,10 @@ impl serp_treasury::Config for Runtime {
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;
-	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type TreasurySerpupRatio = TreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SettPayTreasuryAcc = SettPayTreasuryAccount;
-	type SetheumTreasuryAcc = TreasuryAccount;
+	type TreasuryAcc = TreasuryAccount;
 	type CharityFundAcc = CharityFundAccount;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
@@ -1172,7 +1335,7 @@ impl setheum_transaction_payment::Config for Runtime {
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type Currency = Balances;
 	type MultiCurrency = Currencies;
-	type OnTransactionPayment = SetheumTreasury;
+	type OnTransactionPayment = Treasury;
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
@@ -1181,12 +1344,28 @@ impl setheum_transaction_payment::Config for Runtime {
 	type WeightInfo = weights::setheum_transaction_payment::WeightInfo<Runtime>;
 }
 
+pub struct EvmAccountsOnClaimHandler;
+impl Handler<AccountId> for EvmAccountsOnClaimHandler {
+	fn handle(who: &AccountId) -> DispatchResult {
+		if System::providers(who) == 0 {
+			// no provider. i.e. no native tokens
+			// ensure there are some native tokens, which will add provider
+			TransactionPayment::ensure_can_charge_fee(
+				who,
+				NativeTokenExistentialDeposit::get(),
+				WithdrawReasons::TRANSACTION_PAYMENT,
+			);
+		}
+		Ok(())
+	}
+}
+
 impl setheum_evm_accounts::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type TransferAll = Currencies;
-	type OnClaim = (); // TODO: update implementation to something similar to NewRome
+	type OnClaim = EvmAccountsOnClaimHandler;
 	type WeightInfo = weights::setheum_evm_accounts::WeightInfo<Runtime>;
 }
 
@@ -1203,12 +1382,12 @@ impl orml_rewards::Config for Runtime {
 }
 
 // TODO: Remove Other incentives except for DexIncentive 
-// TODO - and update DexWaiver (DexFeeWaiverIncentive) to the new Incentive model
+// TODO - and update ExchangeFeeWaiver (DexFeeWaiverIncentive) to the new Incentive model
 // TODO - based on trading volume, this new method will be 
 // TODO - implemented from `setheum_dex` module.
 parameter_types! {
 	// TODO: Remove Other incentives except for DexIncentive 
-	// TODO - and update DexWaiver (DexFeeWaiverIncentive) to the new Incentive model
+	// TODO - and update ExchangeFeeWaiver (DexFeeWaiverIncentive) to the new Incentive model
 	// TODO - based on trading volume, this new method will be 
 	// TODO - implemented from `setheum_dex` module.
 	pub const AccumulatePeriod: BlockNumber = MINUTES;
@@ -1225,9 +1404,9 @@ impl setheum_incentives::Config for Runtime {
 	type IncentiveCurrencyId = GetIncentiveCurrencyId;
 	type PremiumCurrencyId = GetPremiumCurrencyId;
 	type PlusCurrencyId = GetPlusCurrencyId;
-	type BonusCurrencyId = GetBonusCurrencyId;
+	type BonusCurrencyId = GetBonusCurrencyId
 	type DexCurrencyId = GetDexCurrencyId;
-	type ExtraCurrencyId = GetExtraCurrencyId;
+	type ExtraCurrencyId = GetExtraCurrencyId
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
@@ -1239,8 +1418,8 @@ impl setheum_incentives::Config for Runtime {
 }
 
 parameter_types! {
-	pub CreateClassDeposit: Balance = 500 * millicent(DNAR);
-	pub CreateTokenDeposit: Balance = 100 * millicent(DNAR);
+	pub CreateClassDeposit: Balance = 20 * millicent(DNAR);
+	pub CreateTokenDeposit: Balance = 2 * millicent(DNAR);
 }
 
 impl setheum_nft::Config for Runtime {
@@ -1248,7 +1427,6 @@ impl setheum_nft::Config for Runtime {
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
 	type PalletId = NftPalletId;
-	type Currency = Currency<Runtime, GetNativeCurrencyId>;
 	type WeightInfo = weights::setheum_nft::WeightInfo<Runtime>;
 }
 
@@ -1310,11 +1488,12 @@ parameter_types! {
 	// TODO: update
 	pub const ChainId: u64 = 258;
 	pub const NewContractExtraBytes: u32 = 10_000;
-	pub StorageDepositPerByte: Balance = microcent(DNAR);
-	pub const MaxCodeSize: u32 = 60 * 1024;
+	pub StorageDepositPerByte: Balance = deposit(0, 1);
+	// https://eips.ethereum.org/EIPS/eip-170
+	pub const MaxCodeSize: u32 = 0x6000;
 	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
-	pub DeveloperDeposit: Balance = dollar(DNAR);
-	pub DeploymentFee: Balance = dollar(DNAR);
+	pub DeveloperDeposit: Balance = 100 * dollar(DNAR);
+	pub DeploymentFee: Balance = 10000 * dollar(DNAR);
 }
 
 pub type MultiCurrencyPrecompile = runtime_common::MultiCurrencyPrecompile<
@@ -1370,7 +1549,7 @@ impl setheum_evm::Config for Runtime {
 	type DeveloperDeposit = DeveloperDeposit;
 	type DeploymentFee = DeploymentFee;
 	type TreasuryAccount = TreasuryAccount;
-	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil;
+	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
 	type WeightInfo = weights::setheum_evm::WeightInfo<Runtime>;
 }
 
@@ -1400,7 +1579,7 @@ construct_runtime!(
 		TransactionPayment: setheum_transaction_payment::{Module, Call, Storage} = 9,
 
 		// Treasury
-		SetheumTreasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>} = 10,
+		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>} = 10,
 		Bounties: pallet_bounties::{Module, Call, Storage, Event<T>} = 11,
 		Tips: pallet_tips::{Module, Call, Storage, Event<T>} = 12,
 
@@ -1426,40 +1605,42 @@ construct_runtime!(
 		FinancialCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 27,
 		TechnicalCommittee: pallet_collective::<Instance4>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
 		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>} = 29,
-		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>} = 30,
-
+		SetheumJury: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
+		SetheumJuryMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>} = 31,
+		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>} = 32,
+		
 		// Oracle
 		//
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>} = 31,
+		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>} = 33,
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 32,
+		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 34,
 
 		// ORML Core
-		Auction: orml_auction::{Module, Storage, Call, Event<T>} = 33,
-		Rewards: orml_rewards::{Module, Storage, Call} = 34,
-		OrmlNFT: orml_nft::{Module, Storage, Config<T>} = 35,
+		Auction: orml_auction::{Module, Storage, Call, Event<T>} = 35,
+		Rewards: orml_rewards::{Module, Storage, Call} = 36,
+		OrmlNFT: orml_nft::{Module, Storage, Config<T>} = 37,
 
 		// Setheum Core
-		Prices: setheum_prices::{Module, Storage, Call, Event<T>} = 36,
-		SerpAuctionManager: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned} 37,
-		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>} = 38,
+		Prices: setheum_prices::{Module, Storage, Call, Event<T>} = 38,
+		SerpAuctionManager: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned} 39,
+		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>} = 40,
 
 		// Dex
-		Dex: dex::{Module, Storage, Call, Event<T>, Config<T>} = 39,
-		Incentives: setheum_incentives::{Module, Storage, Call, Event<T>} = 40,
+		Dex: dex::{Module, Storage, Call, Event<T>, Config<T>} = 41,
+		Incentives: setheum_incentives::{Module, Storage, Call, Event<T>} = 42,
 
 		// Settmint
 		SettmintEngine: settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned} = 41,
-		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>} = 42,
-		SettmintManager: settmint_manager::{Module, Storage, Call, Event<T>} = 43,
+		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>} = 43,
+		SettmintManager: settmint_manager::{Module, Storage, Call, Event<T>} = 44,
 
 		// Smart contracts
 		// Setheum EVM (SEVM)
-		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 44,
-		EVMBridge: setheum_evm_bridge::{Pallet} = 45,
-		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 46,
-		EvmManager: setheum_evm_manager::{Pallet, Storage} = 47,
+		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 45,
+		EVMBridge: setheum_evm_bridge::{Pallet} = 46,
+		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 47,
+		EvmManager: setheum_evm_manager::{Pallet, Storage} = 48,
 
 		// Dev
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>} = 255,
@@ -1819,24 +2000,26 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 
-			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
-			// orml_add_benchmark!(params, batches, dex, benchmarking::dex);
-			// orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
+			// TODO: Update!
+			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
+			orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
+			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
+			orml_add_benchmark!(params, batches, orml_currencies, benchmarking::currencies);
+			orml_add_benchmark!(params, batches, dex, benchmarking::dex);
+			orml_add_benchmark!(params, batches, setheum_evm_accounts, benchmarking::evm_accounts);
+			orml_add_benchmark!(params, batches, setheum_evm, benchmarking::evm);
+			orml_add_benchmark!(params, batches, orml_rewards, benchmarking::rewards);
+			orml_add_benchmark!(params, batches, incentives, benchmarking::incentives);
+			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
+			orml_add_benchmark!(params, batches, prices, benchmarking::prices);
+			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
-			// orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
-			// orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
-			// orml_add_benchmark!(params, batches, transaction_payment, benchmarking::transaction_payment);
-			// orml_add_benchmark!(params, batches, incentives, benchmarking::incentives);
-			// orml_add_benchmark!(params, batches, prices, benchmarking::prices);
+			orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
+			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
+			orml_add_benchmark!(params, batches, transaction_payment, benchmarking::transaction_payment);
+			orml_add_benchmark!(params, batches, orml_vesting, benchmarking::vesting);
 
-			// orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
-			// orml_add_benchmark!(params, batches, orml_vesting, benchmarking::vesting);
-			// orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
-			// orml_add_benchmark!(params, batches, orml_currencies, benchmarking::currencies);
-
-			// orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
-			// orml_add_benchmark!(params, batches, orml_rewards, benchmarking::rewards);
-			// orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
+			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
 
 			if batches.is_empty() { return Err("Benchmark not found for this module.".into()) }
 			Ok(batches)
@@ -1870,4 +2053,5 @@ mod tests {
 				>= NativeTokenExistentialDeposit::get()
 		);
 	}
+
 }
