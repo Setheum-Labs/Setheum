@@ -362,6 +362,12 @@ type EnsureRootOrHalfSetheumJury = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, SetheumJuryInstance>,
 >;
 
+type EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, SetheumJuryInstance>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, GeneralCouncilInstance>,
+>;
+
 type EnsureQuarterSetheumJuryOrHalfGeneralCouncil = EnsureOneOf<
 	AccountId,
 	pallet_collective::EnsureProportionMoreThan<_1, _4, AccountId, SetheumJuryInstance>,
@@ -630,14 +636,14 @@ impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type FinancialCouncilMembershipInstance = pallet_membership::Instance2;
+type FinancialCouncilMembershipInstance = pallet_membership::Instance3;
 impl pallet_membership::Config<FinancialCouncilMembershipInstance> for Runtime {
 	type Event = Event;
-	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
+	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
 	type MembershipInitialized = FinancialCouncil;
 	type MembershipChanged = FinancialCouncil;
 	type MaxMembers = FinancialCouncilMaxMembers;
@@ -698,11 +704,11 @@ type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
 
 impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime {
 	type Event = Event;
-	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
+	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
 	type MembershipInitialized = TechnicalCommittee;
 	type MembershipChanged = TechnicalCommittee;
 	type MaxMembers = TechnicalCouncilMaxMembers;
@@ -713,14 +719,14 @@ parameter_types! {
 	pub const OracleMaxMembers: u32 = 50;
 }
 
-type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
+type OperatorMembershipInstanceSetheum = pallet_membership::Instance6;
 impl pallet_membership::Config<OperatorMembershipInstanceSetheum> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type RemoveOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type SwapOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
+	type ResetOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
+	type PrimeOrigin = EnsureRootOrTwoThirdsGeneralCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsJuryOrTwoThirdsGeneralCouncil`.
 	type MembershipInitialized = ();
 	type MembershipChanged = SetheumOracle;
 	type MaxMembers = OracleMaxMembers;
