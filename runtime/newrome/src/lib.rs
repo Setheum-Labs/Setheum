@@ -443,6 +443,12 @@ type EnsureAllSetheumJuryOrAllFinancialCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionMoreThan<_1, _1, AccountId, FinancialCouncilInstance>,
 >;
 
+type EnsureTwoThirdsFinancialCouncilOrTwoThirdsExchangeCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, FinancialCouncilInstance>,
+	pallet_collective::EnsureProportionMoreThan<_2, _3, AccountId, ExchangeCouncilInstance>,
+>;
+
 type EnsureRootOrHalfExchangeCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
@@ -672,7 +678,7 @@ impl pallet_membership::Config<ExchangeCouncilMembershipInstance> for Runtime {
 	type RemoveOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
 	type SwapOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
 	type ResetOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
-	type PrimeOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
+	type PrimeOrigin = EnsureRootOrTwoThirdsExchangeCouncil; // TODO: When root is removed, change to `EnsureTwoThirdsFinancialCouncilOrTwoThirdsExchangeCouncil`.
 	type MembershipInitialized = ExchangeCouncil;
 	type MembershipChanged = ExchangeCouncil;
 	type MaxMembers = ExchangeCouncilMaxMembers;
