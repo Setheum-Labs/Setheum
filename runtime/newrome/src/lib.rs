@@ -589,7 +589,7 @@ parameter_types! {
 	pub const SetheumJuryMaxMembers: u32 = 50;
 }
 
-type SetheumJuryInstance = pallet_collective::Instance1;
+type SetheumJuryInstance = pallet_collective::Instance2;
 impl pallet_collective::Config<SetheumJuryInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -601,7 +601,7 @@ impl pallet_collective::Config<SetheumJuryInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type SetheumJuryMembershipInstance = pallet_membership::Instance1;
+type SetheumJuryMembershipInstance = pallet_membership::Instance2;
 impl pallet_membership::Config<SetheumJuryMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrThreeFourthsSetheumJury;
@@ -621,7 +621,7 @@ parameter_types! {
 	pub const FinancialCouncilMaxMembers: u32 = 50;
 }
 
-type FinancialCouncilInstance = pallet_collective::Instance2;
+type FinancialCouncilInstance = pallet_collective::Instance3;
 impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -633,7 +633,7 @@ impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type FinancialCouncilMembershipInstance = pallet_membership::Instance2;
+type FinancialCouncilMembershipInstance = pallet_membership::Instance3;
 impl pallet_membership::Config<FinancialCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
@@ -653,7 +653,7 @@ parameter_types! {
 	pub const ExchangeCouncilMaxMembers: u32 = 50;
 }
 
-type ExchangeCouncilInstance = pallet_collective::Instance2;
+type ExchangeCouncilInstance = pallet_collective::Instance4;
 impl pallet_collective::Config<ExchangeCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -665,7 +665,7 @@ impl pallet_collective::Config<ExchangeCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type ExchangeCouncilMembershipInstance = pallet_membership::Instance2;
+type ExchangeCouncilMembershipInstance = pallet_membership::Instance4;
 impl pallet_membership::Config<ExchangeCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
@@ -685,7 +685,7 @@ parameter_types! {
 	pub const TechnicalCouncilMaxMembers: u32 = 50;
 }
 
-type TechnicalCommitteeInstance = pallet_collective::Instance4;
+type TechnicalCommitteeInstance = pallet_collective::Instance5;
 impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -697,7 +697,7 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
+type TechnicalCommitteeMembershipInstance = pallet_membership::Instance5;
 
 impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime {
 	type Event = Event;
@@ -716,7 +716,7 @@ parameter_types! {
 	pub const OracleMaxMembers: u32 = 50;
 }
 
-type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
+type OperatorMembershipInstanceSetheum = pallet_membership::Instance6;
 impl pallet_membership::Config<OperatorMembershipInstanceSetheum> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
@@ -1786,14 +1786,14 @@ construct_runtime!(
 		// Governance
 		GeneralCouncil: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 24,
 		GeneralCouncilMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>} = 25,
-		FinancialCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 26,
-		FinancialCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 27,
-		TechnicalCommittee: pallet_collective::<Instance4>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
-		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>} = 29,
-		SetheumJury: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
-		SetheumJuryMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>} = 31,
-		ExchangeCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
-		ExchangeCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 33,
+		SetheumJury: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
+		SetheumJuryMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 31,
+		FinancialCouncil: pallet_collective::<Instance3>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 26,
+		FinancialCouncilMembership: pallet_membership::<Instance3>::{Module, Call, Storage, Event<T>, Config<T>} = 27,
+		ExchangeCouncil: pallet_collective::<Instance4>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
+		ExchangeCouncilMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>} = 33,
+		TechnicalCommittee: pallet_collective::<Instance5>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
+		TechnicalCommitteeMembership: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 29,
 		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>} = 34,
 		
 		// Oracle
@@ -1801,7 +1801,7 @@ construct_runtime!(
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
 		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>} = 35,
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 36,
+		OperatorMembershipSetheum: pallet_membership::<Instance6>::{Module, Call, Storage, Event<T>, Config<T>} = 36,
 
 		// ORML Core
 		Auction: orml_auction::{Module, Storage, Call, Event<T>} = 37,
