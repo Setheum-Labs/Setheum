@@ -1,23 +1,24 @@
-// This file is part of Substrate.
+// This file is part of Setheum.
 
-// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
-// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2019-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// 	http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 //! The crate's tests.
 
-use crate as pallet_democracy;
+use crate as setheum_democracy;
 use super::*;
 use codec::Encode;
 use frame_support::{
@@ -25,13 +26,15 @@ use frame_support::{
 	traits::{SortedMembers, OnInitialize, Filter, GenesisBuild},
 	weights::Weight,
 };
+use frame_system::{EnsureSignedBy, EnsureRoot};
+use orml_traits::{parameter_type_with_key, MultiReservableCurrency, MultiLockableCurrency};
+use primitives::{Amount, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup, BadOrigin},
 	testing::Header, Perbill,
 };
 use pallet_balances::{BalanceLock, Error as BalancesError};
-use frame_system::{EnsureSignedBy, EnsureRoot};
 
 mod cancellation;
 mod delegation;
@@ -49,6 +52,9 @@ const NAY: Vote = Vote { aye: false, conviction: Conviction::None };
 const BIG_AYE: Vote = Vote { aye: true, conviction: Conviction::Locked1x };
 const BIG_NAY: Vote = Vote { aye: false, conviction: Conviction::Locked1x };
 
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+
 const MAX_PROPOSALS: u32 = 100;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -62,8 +68,9 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Config, Event<T>},
-		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Democracy: setheum_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
@@ -133,6 +140,21 @@ impl pallet_balances::Config for Test {
 	type AccountStore = System;
 	type WeightInfo = ();
 }
+parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+impl orml_tokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = ();
+	type MaxLocks = ();
+}
 parameter_types! {
 	pub const LaunchPeriod: u64 = 2;
 	pub const VotingPeriod: u64 = 2;
@@ -197,7 +219,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<Test>{
 		balances: vec![(1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (6, 60)],
 	}.assimilate_storage(&mut t).unwrap();
-	pallet_democracy::GenesisConfig::<Test>::default().assimilate_storage(&mut t).unwrap();
+	setheum_democracy::GenesisConfig::<Test>::default().assimilate_storage(&mut t).unwrap();
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| System::set_block_number(1));
 	ext
