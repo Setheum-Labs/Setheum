@@ -42,7 +42,7 @@ pub const BOB: AccountId = 2;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM); //  Setheum Dirham
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
 pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
@@ -279,7 +279,7 @@ parameter_types! {
 	// TODO - implemented from `setheum_dex` module.
 	pub const DexIncentivePool: AccountId = 10;
 	pub const DexPremiumPool: AccountId = 11;
-	pub const IncentiveCurrencyId: CurrencyId = SDEX;
+	pub const IncentiveCurrencyId: CurrencyId = DRAM;
 	pub const PremiumCurrencyId: CurrencyId = SETT;
 	pub const NativeCurrencyId: CurrencyId = DNAR;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![

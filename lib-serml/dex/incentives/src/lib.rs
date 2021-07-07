@@ -42,7 +42,7 @@ pub use weights::WeightInfo;
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
 pub enum PoolId<AccountId> {
 	// TODO: Update new swapped changes
-	/// Rewards pool(DexCurrencyId) (SDEX or HALAL) for market makers who provide Dex liquidity
+	/// Rewards pool(DexCurrencyId) (DRAM or MENA) for market makers who provide Dex liquidity
 	/// for all pools.
 	DexIncentive(CurrencyId),
 
@@ -63,7 +63,7 @@ pub mod module {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// The vault account to keep rewards for type DexIncentive PoolId
-		/// Receives SettinDex - SDEX/HALAL
+		/// Receives Setheum Dirham - DRAM/MENA
 		#[pallet::constant]
 		type DexIncentivePool: Get<Self::AccountId>;
 
@@ -76,8 +76,8 @@ pub mod module {
 		/// The stable currency ids (SettCurrencies)
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
-		/// The Incentive reward type (SDEX/HALAL)
-		/// SDEX in Setheum, HALAL in Neom
+		/// The Incentive reward type (DRAM/MENA)
+		/// DRAM in Setheum, MENA in Neom
 		#[pallet::constant]
 		type IncentiveCurrencyId: Get<CurrencyId>;
 
@@ -92,8 +92,8 @@ pub mod module {
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 
-		/// The Dex governance currency type (SDEX/HALAL)
-		/// SDEX in Setheum, HALAL in Neom
+		/// The Dex governance currency type (DRAM/MENA)
+		/// DRAM in Setheum, MENA in Neom
 		#[pallet::constant]
 		type DexCurrencyId: Get<CurrencyId>;
 

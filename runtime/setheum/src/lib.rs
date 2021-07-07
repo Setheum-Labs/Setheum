@@ -107,7 +107,7 @@ pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights,
 	ExchangeRate, GasToWeight, OffchainSolutionWeightLimit, Price, Rate, Ratio,
 	RuntimeBlockLength, RuntimeBlockWeights,SystemContractsFilter, TimeStampedPrice, 
-	DNAR, SDEX, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ RENBTC,
+	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ RENBTC,
 	USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
@@ -1049,7 +1049,7 @@ parameter_type_with_key! {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
 				TokenSymbol::DNAR => Balance::max_value(), // unsupported
-				TokenSymbol::SDEX => Balance::max_value(*currency_id), // unsupported
+				TokenSymbol::DRAM => Balance::max_value(*currency_id), // unsupported
 				
 				TokenSymbol::SETT => cent(*currency_id),
 				TokenSymbol::USDJ => cent(*currency_id),
@@ -1166,15 +1166,15 @@ impl setheum_prices::Config for Runtime {
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 	pub const GetSetterCurrencyId: CurrencyId = SETT;
-	pub const GetDexerCurrencyId: CurrencyId = SDEX;
+	pub const GetDexerCurrencyId: CurrencyId = DRAM;
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
-	pub const GetIncentiveCurrencyId: CurrencyId = SDEX;
+	pub const GetIncentiveCurrencyId: CurrencyId = DRAM;
 	pub const GetPremiumCurrencyId: CurrencyId = SETT; // TODO: Update
 	pub const GetPlusCurrencyId: CurrencyId = SETT; // TODO: Update and remove
 	pub const GetBonusCurrencyId: CurrencyId = USDJ; // TODO: Update and remove
 	pub const GetExtraCurrencyId: CurrencyId = EURJ; // TODO: Update and remove
-	pub const GetDexCurrencyId: CurrencyId = SDEX; // TODO: Update and remove
+	pub const GetDexCurrencyId: CurrencyId = DRAM; // TODO: Update and remove
 }
 
 impl setheum_currencies::Config for Runtime {
@@ -1388,7 +1388,7 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(SETT, DNAR),
-		TradingPair::new(SETT, SDEX),
+		TradingPair::new(SETT, DRAM),
 
 		TradingPair::new(SETT, USDJ),
 		TradingPair::new(SETT, EURJ),
@@ -1456,7 +1456,7 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
-		SDEX, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ, RENBTC
+		DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ, RENBTC
 	];
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }

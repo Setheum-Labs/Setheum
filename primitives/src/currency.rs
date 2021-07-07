@@ -134,8 +134,8 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SDEX_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SDEX), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_DRAM_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DRAM), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_USDJ_SETT".to_string(),
@@ -187,8 +187,8 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(NEOM), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_HALAL_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HALAL), DexShare::Token(NSETT))).unwrap(),
+					symbol: "LP_MENA_NSETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(MENA), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_JUSD_NSETT".to_string(),
@@ -253,7 +253,7 @@ create_currency_id! {
 	pub enum TokenSymbol {
 		/// Setheum Network
 		DNAR("Setheum Dinar", 10) = 0, // could consider having 12 decimals too.
-		SDEX("SettinDex", 10) = 1, // could consider having 12 decimals too.
+		DRAM("Setheum Dirham", 10) = 1, // could consider having 12 decimals too.
 		SETT("Setter", 12) = 2,
 		// SettCurrencies
 		USDJ("Setheum US Dollar", 12) = 3,
@@ -267,8 +267,8 @@ create_currency_id! {
 		BRLJ("Setheum Brazilian Real", 12) = 11,
  		SARJ("Setheum Saudi Riyal", 12) = 12,
 		/// Neom Network >---------------------->>
-		NEOM("Neom", 10) = 128,
-		HALAL("HalalSwap", 10) = 129,
+		NEOM("Neom", 10) = 128, // could consider having 12 decimals too.
+		MENA("Mena", 10) = 129, // could consider having 12 decimals too.
 		NSETT("Neom Setter", 12) = 130,
 		// SettCurrencies
 		JUSD("Neom US Dollar", 12) = 131,

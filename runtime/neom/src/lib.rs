@@ -98,7 +98,7 @@ pub use primitives::{
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, ExchangeRate, GasToWeight,
 	OffchainSolutionWeightLimit, Price, Rate, Ratio, TimeStampedPrice, 
-	NEOM, HALAL, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR RENBTC,
+	NEOM, MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR RENBTC,
 	USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
@@ -1040,7 +1040,7 @@ parameter_type_with_key! {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
 				TokenSymbol::NEOM => Balance::max_value(), // unsupported
-				TokenSymbol::HALAL => Balance::max_value(*currency_id), // unsupported
+				TokenSymbol::MENA => Balance::max_value(*currency_id), // unsupported
 				
 				TokenSymbol::NSETT => cent(*currency_id),
 				TokenSymbol::JUSD => cent(*currency_id),
@@ -1157,15 +1157,15 @@ impl setheum_prices::Config for Runtime {
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NEOM;
 	pub const GetSetterCurrencyId: CurrencyId = NSETT;
-	pub const GetDexerCurrencyId: CurrencyId = HALAL;
+	pub const GetDexerCurrencyId: CurrencyId = MENA;
 	pub const GetSettUSDCurrencyId: CurrencyId = JUSD;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
-	pub const GetIncentiveCurrencyId: CurrencyId = HALAL;
+	pub const GetIncentiveCurrencyId: CurrencyId = MENA;
 	pub const GetPremiumCurrencyId: CurrencyId = NSETT; // TODO: Update
 	pub const GetPlusCurrencyId: CurrencyId = NSETT; // TODO: Update and remove
 	pub const GetBonusCurrencyId: CurrencyId = JUSD; // TODO: Update and remove
 	pub const GetExtraCurrencyId: CurrencyId = JEUR; // TODO: Update and remove
-	pub const GetDexCurrencyId: CurrencyId = HALAL; // TODO: Update and remove
+	pub const GetDexCurrencyId: CurrencyId = MENA; // TODO: Update and remove
 }
 
 impl setheum_currencies::Config for Runtime {
@@ -1379,7 +1379,7 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(NSETT, NEOM),
-		TradingPair::new(NSETT, HALAL),
+		TradingPair::new(NSETT, MENA),
 
 		TradingPair::new(SETT, JUSD),
 		TradingPair::new(SETT, JEUR),
@@ -1447,7 +1447,7 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
-		HALAL, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR, RENBTC
+		MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR, RENBTC
 	];
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }

@@ -221,14 +221,14 @@ fn update_dex_incentive_rewards_works() {
 #[test]
 fn pay_out_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(TokensModule::deposit(SDEX, &DexIncentivePool::get(), 10000));
+		assert_ok!(TokensModule::deposit(DRAM, &DexIncentivePool::get(), 10000));
 		assert_ok!(TokensModule::deposit(SETT, &DexPremiumPool::get(), 10000));
 
-		assert_eq!(TokensModule::free_balance(SDEX, &DexIncentivePool::get()), 10000);
-		assert_eq!(TokensModule::free_balance(SDEX, &ALICE), 0);
+		assert_eq!(TokensModule::free_balance(DRAM, &DexIncentivePool::get()), 10000);
+		assert_eq!(TokensModule::free_balance(DRAM, &ALICE), 0);
 		IncentivesModule::payout(&ALICE, PoolId::DexIncentive(DNAR), 1000);
-		assert_eq!(TokensModule::free_balance(SDEX, &DexIncentivePool::get()), 9000);
-		assert_eq!(TokensModule::free_balance(SDEX, &ALICE), 1000);
+		assert_eq!(TokensModule::free_balance(DRAM, &DexIncentivePool::get()), 9000);
+		assert_eq!(TokensModule::free_balance(DRAM, &ALICE), 1000);
 
 		assert_eq!(TokensModule::free_balance(SETT, &DexPremiumPool::get()), 10000);
 		assert_eq!(TokensModule::free_balance(SETT, &ALICE), 0);
@@ -256,14 +256,14 @@ fn accumulate_reward_works() {
 		RewardsModule::add_share(&ALICE, PoolId::DexPremium(DNAR_USDJ_LP), 1);
 		assert_eq!(
 			IncentivesModule::accumulate_reward(40, |_, _| {}),
-			vec![(SDEX, 3100), (SETT, 3100)]
+			vec![(DRAM, 3100), (SETT, 3100)]
 		);
 
 		RewardsModule::add_share(&ALICE, PoolId::DexIncentive(DNAR_USDJ_LP), 1);
 		RewardsModule::add_share(&ALICE, PoolId::DexPremium(DNAR_USDJ_LP), 1);
 		assert_eq!(
 			IncentivesModule::accumulate_reward(40, |_, _| {}),
-			vec![(SDEX, 3300), (SETT, 3300)]
+			vec![(DRAM, 3300), (SETT, 3300)]
 		);
 
 		assert_eq!(IncentivesModule::accumulate_reward(59, |_, _| {}), vec![]);

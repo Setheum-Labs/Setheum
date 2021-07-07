@@ -42,7 +42,7 @@ mod setheum_prices {
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);

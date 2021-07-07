@@ -203,10 +203,10 @@ pub trait SerpTreasury<AccountId> {
 	/// burn setter of `who`
 	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
-	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// Issue Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the DEX token balance.
 	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
-	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the DEX token balance.
+	/// Burn Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the DEX token balance.
 	fn burn_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// deposit surplus(propperstable currency) to serp treasury by `from`

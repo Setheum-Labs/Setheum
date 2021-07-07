@@ -50,22 +50,22 @@ fn burn_standard_works() {
 #[test]
 fn issue_dexer_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 1000);
+		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 1000);
 
 		assert_ok!(SerpTreasuryModule::issue_dexer(&ALICE, 1000));
-		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 2000);
+		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 2000);
 
 		assert_ok!(SerpTreasuryModule::issue_dexer(&ALICE, 1000));
-		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 3000);
+		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 3000);
 	});
 }
 
 #[test]
 fn burn_dexer_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 1000);
+		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 1000);
 		assert_ok!(SerpTreasuryModule::burn_dexer(&ALICE, 300));
-		assert_eq!(Currencies::free_balance(SDEX, &ALICE), 700);
+		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 700);
 	});
 }
 

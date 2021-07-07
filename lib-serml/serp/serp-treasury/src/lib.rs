@@ -67,7 +67,7 @@ pub mod module {
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// SettinDes (SDEX) dexer currency id
+		/// SettinDes (DRAM) dexer currency id
 		type GetDexerCurrencyId: Get<CurrencyId>;
 
 		/// SERP-TES Adjustment Frequency.
@@ -462,13 +462,13 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, setter)
 	}
 
-	/// Issue Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the Dex token balance.
+	/// Issue Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the Dex token balance.
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::GetDexerCurrencyId::get(), who, dexer)?;
 		Ok(())
 	}
 
-	/// Burn Dexer (`SDEX` in Setheum or `HALAL` in Neom). `dexer` here just referring to the Dex token balance.
+	/// Burn Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the Dex token balance.
 	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::GetDexerCurrencyId::get(), who, dexer)
 	}
