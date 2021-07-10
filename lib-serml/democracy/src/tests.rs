@@ -159,13 +159,22 @@ parameter_types! {
 	pub const LaunchPeriod: u64 = 2;
 	pub const VotingPeriod: u64 = 2;
 	pub const FastTrackVotingPeriod: u64 = 2;
-	pub const MinimumDeposit: u64 = 1;
 	pub const EnactmentPeriod: u64 = 2;
 	pub const CooloffPeriod: u64 = 2;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = MAX_PROPOSALS;
 	pub static PreimageByteDeposit: u64 = 0;
 	pub static InstantAllowed: bool = false;
+	pub GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
+}
+parameter_type_with_key! {
+	pub MinimumDeposits: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&DNAR => 1,
+			&DRAM => 4,
+			_ => 0,
+		}
+	};
 }
 ord_parameter_types! {
 	pub const One: u64 = 1;
@@ -187,12 +196,13 @@ impl SortedMembers<u64> for OneToFive {
 impl Config for Test {
 	type Proposal = Call;
 	type Event = Event;
-	type Currency = pallet_balances::Pallet<Self>;
+	type Currency = Tokens;
 	type EnactmentPeriod = EnactmentPeriod;
 	type LaunchPeriod = LaunchPeriod;
 	type VotingPeriod = VotingPeriod;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
-	type MinimumDeposit = MinimumDeposit;
+	type GovernanceCurrencyIds = GovernanceCurrencyIds;
+	type MinimumDeposits = MinimumDeposits;
 	type ExternalOrigin = EnsureSignedBy<Two, u64>;
 	type ExternalMajorityOrigin = EnsureSignedBy<Three, u64>;
 	type ExternalDefaultOrigin = EnsureSignedBy<One, u64>;
