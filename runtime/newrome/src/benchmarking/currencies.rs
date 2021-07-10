@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::utils::{lookup_of_account, set_balance};
-use crate::{dollar, AccountId, Amount, Balance, Currencies, NativeTokenExistentialDeposit, Runtime, ROME, rSETT};
+use crate::{dollar, AccountId, Amount, Balance, Currencies, NativeTokenExistentialDeposit, Runtime, DNAR, SETT};
 
 use sp_std::prelude::*;
 
@@ -37,7 +37,7 @@ runtime_benchmarks! {
 
 	// `transfer` non-native currency
 	transfer_non_native_currency {
-		let currency_id = rSETT;
+		let currency_id = SETT;
 		let amount: Balance = 1_000 * dollar(currency_id);
 		let from = account("from", 0, SEED);
 		set_balance(currency_id, &from, amount);
@@ -54,7 +54,7 @@ runtime_benchmarks! {
 	transfer_native_currency_worst_case {
 		let existential_deposit = NativeTokenExistentialDeposit::get();
 		let amount: Balance = existential_deposit.saturating_mul(1000);
-		let native_currency_id = ROME;
+		let native_currency_id = DNAR;
 		let from = account("from", 0, SEED);
 		set_balance(native_currency_id, &from, amount);
 
@@ -71,7 +71,7 @@ runtime_benchmarks! {
 	transfer_native_currency {
 		let existential_deposit = NativeTokenExistentialDeposit::get();
 		let amount: Balance = existential_deposit.saturating_mul(1000);
-		let native_currency_id = ROME;
+		let native_currency_id = DNAR;
 		let from = account("from", 0, SEED);
 		set_balance(native_currency_id, &from, amount);
 
@@ -84,7 +84,7 @@ runtime_benchmarks! {
 
 	// `update_balance` for non-native currency
 	update_balance_non_native_currency {
-		let currency_id = rSETT;
+		let currency_id = SETT;
 		let balance: Balance = 2 * dollar(currency_id);
 		let amount: Amount = balance.unique_saturated_into();
 		let who: AccountId = account("who", 0, SEED);
@@ -100,7 +100,7 @@ runtime_benchmarks! {
 		let existential_deposit = NativeTokenExistentialDeposit::get();
 		let balance: Balance = existential_deposit.saturating_mul(1000);
 		let amount: Amount = balance.unique_saturated_into();
-		let native_currency_id = ROME;
+		let native_currency_id = DNAR;
 		let who: AccountId = account("who", 0, SEED);
 		let who_lookup = lookup_of_account(who.clone());
 	}: update_balance(RawOrigin::Root, who_lookup, native_currency_id, amount)
@@ -114,7 +114,7 @@ runtime_benchmarks! {
 		let existential_deposit = NativeTokenExistentialDeposit::get();
 		let balance: Balance = existential_deposit.saturating_mul(1000);
 		let amount: Amount = balance.unique_saturated_into();
-		let native_currency_id = ROME;
+		let native_currency_id = DNAR;
 		let who: AccountId = account("who", 0, SEED);
 		let who_lookup = lookup_of_account(who.clone());
 		set_balance(native_currency_id, &who, balance);

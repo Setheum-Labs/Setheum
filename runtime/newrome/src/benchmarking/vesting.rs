@@ -19,7 +19,7 @@
 use super::utils::{lookup_of_account, set_dnar_balance};
 use crate::{
 	dollar, TreasuryPalletId, AccountId, AccountIdConversion, Balance, BlockNumber, Currencies, MinVestedTransfer,
-	Runtime, System, Vesting, ROME,
+	Runtime, System, Vesting, DNAR,
 };
 
 use sp_std::prelude::*;
@@ -50,14 +50,14 @@ runtime_benchmarks! {
 
 		// extra 1 dollar to pay fees
 		let from: AccountId = TreasuryPalletId::get().into_account();
-		set_dnar_balance(&from, schedule.total_amount().unwrap() + dollar(ROME));
+		set_dnar_balance(&from, schedule.total_amount().unwrap() + dollar(DNAR));
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to.clone());
 	}: _(RawOrigin::Signed(from), to_lookup, schedule.clone())
 	verify {
 		assert_eq!(
-			<Currencies as MultiCurrency<_>>::total_balance(ROME, &to),
+			<Currencies as MultiCurrency<_>>::total_balance(DNAR, &to),
 			schedule.total_amount().unwrap()
 		);
 	}
@@ -74,7 +74,7 @@ runtime_benchmarks! {
 
 		let from: AccountId = TreasuryPalletId::get().into_account();
 		// extra 1 dollar to pay fees
-		set_dnar_balance(&from, schedule.total_amount().unwrap() * i as u128 + dollar(ROME));
+		set_dnar_balance(&from, schedule.total_amount().unwrap() * i as u128 + dollar(DNAR));
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to.clone());
@@ -87,7 +87,7 @@ runtime_benchmarks! {
 	}: _(RawOrigin::Signed(to.clone()))
 	verify {
 		assert_eq!(
-			<Currencies as MultiCurrency<_>>::free_balance(ROME, &to),
+			<Currencies as MultiCurrency<_>>::free_balance(DNAR, &to),
 			schedule.total_amount().unwrap() * i as u128,
 		);
 	}
@@ -114,7 +114,7 @@ runtime_benchmarks! {
 	}: _(RawOrigin::Root, to_lookup, schedules)
 	verify {
 		assert_eq!(
-			<Currencies as MultiCurrency<_>>::free_balance(ROME, &to),
+			<Currencies as MultiCurrency<_>>::free_balance(DNAR, &to),
 			schedule.total_amount().unwrap() * i as u128
 		);
 	}

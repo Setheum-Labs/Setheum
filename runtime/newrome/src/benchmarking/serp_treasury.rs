@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, SerpTreasury, Currencies, CurrencyId, Runtime, ROME, rUSD, rSETT};
+use crate::{dollar, SerpTreasury, Currencies, CurrencyId, Runtime, DNAR, USDJ, SETT};
 
 use frame_system::RawOrigin;
 use setheum_support::SerpTreasury;
@@ -30,17 +30,17 @@ runtime_benchmarks! {
 	_ {}
 
 	auction_serplus {// TODO: update
-		Currencies::deposit(rSETT, &SerpTreasury::account_id(), 10_000 * dollar(rSETT))?;
-	}: _(RawOrigin::Root, rSETT, 1_000 * dollar(rSETT), 1_000 * dollar(rUSD), true)
+		Currencies::deposit(SETT, &SerpTreasury::account_id(), 10_000 * dollar(SETT))?;
+	}: _(RawOrigin::Root, SETT, 1_000 * dollar(SETT), 1_000 * dollar(USDJ), true)
 
 	auction_diamond { // TODO: update
-		let currency_id: CurrencyId = rUSD;
-		Currencies::deposit(rSETT, &SerpTreasury::account_id(), 10_000 * dollar(rSETT))?;
-	}: _(RawOrigin::Root, rSETT, 1_000 * dollar(rSETT), 1_000 * dollar(rUSD), true)
+		let currency_id: CurrencyId = USDJ;
+		Currencies::deposit(SETT, &SerpTreasury::account_id(), 10_000 * dollar(SETT))?;
+	}: _(RawOrigin::Root, SETT, 1_000 * dollar(SETT), 1_000 * dollar(USDJ), true)
 
 	auction_setter {
-		Currencies::deposit(rSETT, &SerpTreasury::account_id(), 10_000 * dollar(rSETT))?;
-	}: _(RawOrigin::Root, rSETT, 1_000 * dollar(rSETT), 1_000 * dollar(rUSD), true)
+		Currencies::deposit(SETT, &SerpTreasury::account_id(), 10_000 * dollar(SETT))?;
+	}: _(RawOrigin::Root, SETT, 1_000 * dollar(SETT), 1_000 * dollar(USDJ), true)
 }
 
 #[cfg(test)]
