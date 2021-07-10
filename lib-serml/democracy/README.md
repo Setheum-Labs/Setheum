@@ -5,7 +5,7 @@
 In Setheum Democracy, it is a multi-currency democracy where a participant can
 lock not just one type of currency but a multiple. 
 This provides multiple governance tokens not just one.
-In Setheum, it is two (DNAR and DRAM in SetheumNetwork / NEOM and MENA in NeomNetwork).
+Supports MultiCurrency Governance Model. In Setheum, it is two (DNAR and DRAM in SetheumNetwork / NEOM and MENA in NeomNetwork).
 
 The Democracy pallet handles the administration of general stakeholder voting. It is based on the [FRAME Democracy Pallet](https://github.com/paritytech/substrate/frame/democracy).
 
