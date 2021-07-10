@@ -21,14 +21,14 @@
 use super::*;
 
 #[test]
-fn backing_for_should_work() {
+fn backing_for_proposal_should_work() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(propose_set_balance_and_note(1, 2, 2));
 		assert_ok!(propose_set_balance_and_note(1, 4, 4));
 		assert_ok!(propose_set_balance_and_note(1, 3, 3));
-		assert_eq!(Democracy::backing_for(0), Some(2));
-		assert_eq!(Democracy::backing_for(1), Some(4));
-		assert_eq!(Democracy::backing_for(2), Some(3));
+		assert_eq!(Democracy::backing_for(0), Some(DNAR, 2));
+		assert_eq!(Democracy::backing_for(1), Some(DNAR, 4));
+		assert_eq!(Democracy::backing_for(2), Some(DNAR, 3));
 	});
 }
 
@@ -40,9 +40,9 @@ fn deposit_for_proposals_should_be_taken() {
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
-		assert_eq!(Balances::free_balance(1), 5);
-		assert_eq!(Balances::free_balance(2), 15);
-		assert_eq!(Balances::free_balance(5), 35);
+		assert_eq!(Tokens::free_balance(DNAR, 1), 5);
+		assert_eq!(Tokens::free_balance(DNAR, 2), 15);
+		assert_eq!(Tokens::free_balance(DNAR, 5), 35);
 	});
 }
 
@@ -55,9 +55,9 @@ fn deposit_for_proposals_should_be_returned() {
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
 		fast_forward_to(3);
-		assert_eq!(Balances::free_balance(1), 10);
-		assert_eq!(Balances::free_balance(2), 20);
-		assert_eq!(Balances::free_balance(5), 50);
+		assert_eq!(Tokens::free_balance(DNAR, 1), 10);
+		assert_eq!(Tokens::free_balance(DNAR, 2), 20);
+		assert_eq!(Tokens::free_balance(DNAR, 5), 50);
 	});
 }
 
@@ -106,7 +106,7 @@ fn cancel_proposal_should_work() {
 		assert_noop!(Democracy::cancel_proposal(Origin::signed(1), 0), BadOrigin);
 		assert_ok!(Democracy::cancel_proposal(Origin::root(), 0));
 		assert_eq!(Democracy::backing_for(0), None);
-		assert_eq!(Democracy::backing_for(1), Some(4));
+		assert_eq!(Democracy::backing_for(1), Some(DNAR, 4));
 	});
 }
 
@@ -123,7 +123,7 @@ fn blacklisting_should_work() {
 		assert_ok!(Democracy::blacklist(Origin::root(), hash, None));
 
 		assert_eq!(Democracy::backing_for(0), None);
-		assert_eq!(Democracy::backing_for(1), Some(4));
+		assert_eq!(Democracy::backing_for(1), Some(DNAR, 4));
 
 		assert_noop!(propose_set_balance_and_note(1, 2, 2), Error::<Test>::ProposalBlacklisted);
 
