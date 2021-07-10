@@ -204,7 +204,7 @@ impl pallet_timestamp::Config for Test {
 	type MinimumPeriod = MinimumPeriod;
 	type WeightInfo = ();
 }
-pallet_staking_reward_curve::build! {
+setheum_staking_reward_curve::build! {
 	const I_NPOS: PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,
 		max_inflation: 0_100_000,

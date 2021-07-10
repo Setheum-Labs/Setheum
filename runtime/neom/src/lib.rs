@@ -82,7 +82,7 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 
-pub use pallet_staking::StakerStatus;
+pub use setheum_staking::StakerStatus;
 pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -847,7 +847,7 @@ parameter_types! {
 impl pallet_session::Config for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = pallet_staking::StashOf<Self>;
+	type ValidatorIdOf = setheum_staking::StashOf<Self>;
 	type ShouldEndSession = Babe;
 	type NextSessionRotation = Babe;
 	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
@@ -858,11 +858,11 @@ impl pallet_session::Config for Runtime {
 }
 
 impl pallet_session::historical::Config for Runtime {
-	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
-	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
+	type FullIdentification = setheum_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = setheum_staking::ExposureOf<Runtime>;
 }
 
-pallet_staking_reward_curve::build! {
+setheum_staking_reward_curve::build! {
 	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,
 		max_inflation: 0_100_000,
@@ -875,8 +875,8 @@ pallet_staking_reward_curve::build! {
 
 parameter_types! {
 	pub const SessionsPerEra: sp_staking::SessionIndex = 3; // 3 hours
-	pub const BondingDuration: pallet_staking::EraIndex = 0; // No bonding duration. can actively immediate bond/unbond anytime
-	pub const SlashDeferDuration: pallet_staking::EraIndex = 2; // 6 hours
+	pub const BondingDuration: setheum_staking::EraIndex = 0; // No bonding duration. can actively immediate bond/unbond anytime
+	pub const SlashDeferDuration: setheum_staking::EraIndex = 2; // 6 hours
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
@@ -885,7 +885,7 @@ parameter_types! {
 	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
 }
 
-impl pallet_staking::Config for Runtime {
+impl setheum_staking::Config for Runtime {
 	type Currency = Balances;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = U128CurrencyToVote;
@@ -1700,7 +1700,7 @@ construct_runtime!(
 		Authorship: pallet_authorship::{Module, Call, Storage, Inherent} = 18,
 		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned} = 19,
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event, ValidateUnsigned} = 20,
-		Staking: pallet_staking::{Module, Call, Config<T>, Storage, Event<T>} = 21,
+		Staking: setheum_staking::{Module, Call, Config<T>, Storage, Event<T>} = 21,
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>} = 22,
 		Historical: pallet_session_historical::{Module} = 23,
 

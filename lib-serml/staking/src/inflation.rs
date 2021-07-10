@@ -51,7 +51,7 @@ pub fn compute_total_payout<N>(
 mod test {
 	use sp_runtime::curve::PiecewiseLinear;
 
-	pallet_staking_reward_curve::build! {
+	setheum_staking_reward_curve::build! {
 		const I_NPOS: PiecewiseLinear<'static> = curve!(
 			min_inflation: 0_025_000,
 			max_inflation: 0_100_000,
