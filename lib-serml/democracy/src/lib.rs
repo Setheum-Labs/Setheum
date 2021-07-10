@@ -48,17 +48,23 @@ use orml_traits::{
 	BalanceStatus, GetByKey, LockIdentifier, MultiCurrency, MultiLockableCurrency,
 	MultiReservableCurrency, OnDust,
 };
+use pallet_democracy::{
+	vote_threshold::{Approved, VoteThreshold},
+	vote::{Vote, AccountVote, Voting},
+	conviction::Conviction,
+	types::{ReferendumInfo, ReferendumStatus, Tally, UnvoteScope, Delegations}
+}
 
-mod vote_threshold;
-mod vote;
-mod conviction;
-mod types;
+// mod vote_threshold;
+// mod vote;
+// mod conviction;
+// mod types;
 pub mod weights;
 pub use weights::WeightInfo;
-pub use vote_threshold::{Approved, VoteThreshold};
-pub use vote::{Vote, AccountVote, Voting};
-pub use conviction::Conviction;
-pub use types::{ReferendumInfo, ReferendumStatus, Tally, UnvoteScope, Delegations};
+// pub use vote_threshold::{Approved, VoteThreshold};
+// pub use vote::{Vote, AccountVote, Voting};
+// pub use conviction::Conviction;
+// pub use types::{ReferendumInfo, ReferendumStatus, Tally, UnvoteScope, Delegations};
 pub use pallet::*;
 
 #[cfg(test)]
