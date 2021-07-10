@@ -159,22 +159,17 @@ parameter_types! {
 	pub const LaunchPeriod: u64 = 2;
 	pub const VotingPeriod: u64 = 2;
 	pub const FastTrackVotingPeriod: u64 = 2;
+	pub const MinimumDeposit: u64 = 1; // Calculated in Setter (SETT) value.
+	pub GoldenMinimumDepositMultiple: u32 = 1; // 1x of the `MinimumDeposit` is minimum deposit for DNAR (1).
+	pub SetterMinimumDepositMultiple: u32 = 2; // 2x of the `MinimumDeposit` is minimum deposit for SETT (2).
+	pub SilverMinimumDepositMultiple: u32 = 3; // 3x of the `MinimumDeposit` is minimum deposit for DRAM (3).
 	pub const EnactmentPeriod: u64 = 2;
 	pub const CooloffPeriod: u64 = 2;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = MAX_PROPOSALS;
 	pub static PreimageByteDeposit: u64 = 0;
 	pub static InstantAllowed: bool = false;
-	pub GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-}
-parameter_type_with_key! {
-	pub MinimumDeposits: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&DNAR => 1,
-			&DRAM => 4,
-			_ => 0,
-		}
-	};
+	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETT, DRAM];
 }
 ord_parameter_types! {
 	pub const One: u64 = 1;
@@ -196,13 +191,17 @@ impl SortedMembers<u64> for OneToFive {
 impl Config for Test {
 	type Proposal = Call;
 	type Event = Event;
-	type Currency = Tokens;
+	type Currency = pallet_balances::Pallet<Self>;
+	type MultiCurrency = Tokens;
 	type EnactmentPeriod = EnactmentPeriod;
 	type LaunchPeriod = LaunchPeriod;
 	type VotingPeriod = VotingPeriod;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
+	type MinimumDeposit = MinimumDeposit;
+	type GoldenMinimumDepositMultiple = GoldenMinimumDepositMultiple;
+	type SetterMinimumDepositMultiple = SetterMinimumDepositMultiple;
+	type SilverMinimumDepositMultiple = SilverMinimumDepositMultiple;
 	type GovernanceCurrencyIds = GovernanceCurrencyIds;
-	type MinimumDeposits = MinimumDeposits;
 	type ExternalOrigin = EnsureSignedBy<Two, u64>;
 	type ExternalMajorityOrigin = EnsureSignedBy<Three, u64>;
 	type ExternalDefaultOrigin = EnsureSignedBy<One, u64>;
