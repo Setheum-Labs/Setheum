@@ -618,7 +618,7 @@ pub mod pallet {
 
 			T::MultiCurrency::reserve(currency_id, &who, value)?;
 			PublicPropCount::<T>::put(index + 1);
-			<DepositOf<T>>::insert(index, (&[&who][..], value));
+			<DepositOf<T>>::insert(index, (&[&who][..], currency_id, value));
 
 			<PublicProps<T>>::append((index, proposal_hash, who));
 
@@ -644,19 +644,18 @@ pub mod pallet {
 			#[pallet::compact] seconds_upper_bound: u32,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-
+			ensure!(
+				T::GovernanceCurrencyIds::get().contains(&currency_id),
+				Error::<T>::InvalidCurrencyType,
+			);
 			let seconds = Self::len_of_deposit_of(proposal)
 				.ok_or_else(|| Error::<T>::ProposalMissing)?;
 			ensure!(seconds <= seconds_upper_bound, Error::<T>::WrongUpperBound);
 			let mut deposit = Self::deposit_of(proposal)
 				.ok_or(Error::<T>::ProposalMissing)?;
-				ensure!(
-					T::GovernanceCurrencyIds::get().contains(&currency_id),
-					Error::<T>::InvalidCurrencyType,
-				);
 			T::MultiCurrency::reserve(&currency_id, &who, deposit.1)?;
 			deposit.0.push(who);
-			<DepositOf<T>>::insert(proposal, deposit);
+			<DepositOf<T>>::insert(proposal, currency_id, deposit);
 			Ok(())
 		}
 
