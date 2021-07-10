@@ -92,7 +92,7 @@ fn single_proposal_should_work() {
 		// referendum passes and wait another two blocks for enactment.
 		fast_forward_to(6);
 
-		assert_eq!(Balances::free_balance(42), 2);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 2);
 	});
 }
 
@@ -118,7 +118,7 @@ fn controversial_voting_should_work() {
 		next_block();
 		next_block();
 
-		assert_eq!(Balances::free_balance(42), 2);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 2);
 	});
 }
 
@@ -139,15 +139,15 @@ fn controversial_low_turnout_voting_should_work() {
 		next_block();
 		next_block();
 
-		assert_eq!(Balances::free_balance(42), 0);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 0);
 	});
 }
 
 #[test]
 fn passing_low_turnout_voting_should_work() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Balances::free_balance(42), 0);
-		assert_eq!(Balances::total_issuance(), 210);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 0);
+		assert_eq!(Tokens::total_issuance(DNAR), 210);
 
 		let r = Democracy::inject_referendum(
 			2,
@@ -162,6 +162,6 @@ fn passing_low_turnout_voting_should_work() {
 
 		next_block();
 		next_block();
-		assert_eq!(Balances::free_balance(42), 2);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 2);
 	});
 }
