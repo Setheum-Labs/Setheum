@@ -44,7 +44,7 @@ pub const CAROL: AccountId = 3;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
@@ -190,7 +190,7 @@ parameter_types! {
 		ZARJ,
 	];
 	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
-	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
+	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
@@ -244,8 +244,7 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	pub const DexPalletId: PalletId = PalletId(*b"set/dexm");
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, CHFJ)];
 }
@@ -253,11 +252,11 @@ parameter_types! {
 impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type DEXIncentives = ();
 	type WeightInfo = ();
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
 

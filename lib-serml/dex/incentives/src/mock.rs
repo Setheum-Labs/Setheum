@@ -42,7 +42,7 @@ pub const BOB: AccountId = 2;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM); //  Setheum Dirham
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
 pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ); // Setheum GBP (Pound Sterling stablecoin)
@@ -279,16 +279,8 @@ parameter_types! {
 	// TODO - implemented from `setheum_dex` module.
 	pub const DexIncentivePool: AccountId = 10;
 	pub const DexPremiumPool: AccountId = 11;
-	pub const DexPlusPool: AccountId = 12;
-	pub const DexBonusPool: AccountId = 13;
-	pub const DexExtraPool: AccountId = 14;
-	pub const AccumulatePeriod: BlockNumber = 20; /// 20 every blocks
-	pub const IncentiveCurrencyId: CurrencyId = SDEX;
+	pub const IncentiveCurrencyId: CurrencyId = DRAM;
 	pub const PremiumCurrencyId: CurrencyId = SETT;
-	pub const PlusCurrencyId: CurrencyId = SETT;
-	pub const BonusCurrencyId: CurrencyId = USDJ;
-	pub const ExtraCurrencyId: CurrencyId = EURJ;
-	pub const DexCurrencyId: CurrencyId = SDEX;
 	pub const NativeCurrencyId: CurrencyId = DNAR;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
@@ -314,19 +306,13 @@ impl Config for Runtime {
 	type Event = Event;
 	type DexIncentivePool = DexIncentivePool;
 	type DexPremiumPool = DexPremiumPool;
-	type DexPlusPool = DexPlusPool;
-	type DexBonusPool = DexBonusPool;
-	type DexExtraPool = DexExtraPool;
-	type AccumulatePeriod = AccumulatePeriod;
 	type IncentiveCurrencyId = IncentiveCurrencyId;
 	type PremiumCurrencyId = PremiumCurrencyId;
-	type PlusCurrencyId = PlusCurrencyId;
-	type BonusCurrencyId = BonusCurrencyId
-	type DexCurrencyId = DexCurrencyId;
 	type ExtraCurrencyId = ExtraCurrencyId
 	type NativeCurrencyId = NativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;
+	type AccumulatePeriodUpdateOrigin = EnsureSignedBy<Four, AccountId>;
 	type SerpTreasury = MockSerpTreasury;
 	type Currency = TokensModule;
 	type Dex = MockDex;

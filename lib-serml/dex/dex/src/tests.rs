@@ -23,7 +23,7 @@
 use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{
-	SetheumDEX, Event, ExtBuilder, ListingOrigin, Origin, Runtime, System, Tokens, 
+	SetheumDEX, Event, ExtBuilder, ListingOrigin, UpdateOrigin Origin, Runtime, System, Tokens, 
 	ALICE, BOB, DNAR, USDJ, EURJ, CHFJ, USDJ_DNAR_PAIR, USDJ_CHFJ_PAIR,
 };
 use orml_traits::MultiReservableCurrency;

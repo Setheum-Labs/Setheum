@@ -34,7 +34,7 @@
 
 use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
-use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
+use orml_traits::{DataFeeder, DataProvider, GetByKey, MultiCurrency};
 use primitives::{
 	currency::{Amount, DexShare},
 	Balance, CurrencyId, GetDecimals

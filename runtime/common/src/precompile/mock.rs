@@ -311,10 +311,10 @@ impl DEXIncentives<AccountId, CurrencyId, Balance> for MockDEXIncentives {
 
 ord_parameter_types! {
 	pub const ListingOrigin: AccountId = ALICE;
+	pub const UpdateOrigin: AccountId = ALICE;
 }
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
@@ -322,12 +322,12 @@ parameter_types! {
 impl setheum_dex::Config for Test {
 	type Event = Event;
 	type Currency = Tokens;
-	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
 	type WeightInfo = ();
 	type DEXIncentives = MockDEXIncentives;
+	type UpdateOriginOrigin = EnsureSignedBy<UpdateOriginOrigin, AccountId>;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 

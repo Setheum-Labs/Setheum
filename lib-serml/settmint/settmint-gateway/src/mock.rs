@@ -48,7 +48,7 @@ pub const CAROL: AccountId = 3;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SDEX: CurrencyId = CurrencyId::Token(TokenSymbol::SDEX); //  SettinDex
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM); //  Setheum Dirham
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
 
@@ -234,7 +234,7 @@ parameter_types! {
 		ZARJ,
 	];
 	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
-	pub const GetDexerCurrencyId: CurrencyId = SDEX; // SettinDEX currency ticker is SDEX
+	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM
 
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
@@ -412,8 +412,8 @@ impl Default for ExtBuilder {
 			endowed_accounts: vec![
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
-				(ALICE, SDEX, 1000),
-				(BOB, SDEX, 1000),
+				(ALICE, DRAM, 1000),
+				(BOB, DRAM, 1000),
 				(ALICE, SETT, 1000),
 				(BOB, SETT, 1000),
 				(ALICE, USDJ, 1000),
