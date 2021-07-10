@@ -941,34 +941,42 @@ parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 28 * DAYS;
 	pub const VotingPeriod: BlockNumber = 28 * DAYS;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
-	pub MinimumDeposit: Balance = 100 * dollar(DNAR);
+	pub MinimumDeposit: Balance = 100 * dollar();
+	pub GoldenMinimumDepositMultiple: u32 = 1; // 1x of the `MinimumDeposit` is minimum deposit for DNAR (1).
+	pub SetterMinimumDepositMultiple: u32 = 2; // 2x of the `MinimumDeposit` is minimum deposit for SETT (2).
+	pub SilverMinimumDepositMultiple: u32 = 3; // 3x of the `MinimumDeposit` is minimum deposit for DRAM (3).
 	pub const EnactmentPeriod: BlockNumber = 28 * DAYS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	pub PreimageByteDeposit: Balance = cent(DNAR);
-	pub const InstantAllowed: bool = true;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
+	pub PreimageByteDeposit: Balance = cent(DNAR);
+	pub const InstantAllowed: bool = true;
+	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETT, DRAM];
 }
 
-impl pallet_democracy::Config for Runtime {
+impl setheum_democracy::Config for Runtime {
 	type Proposal = Call;
 	type Event = Event;
 	type Currency = Balances;
+	type MultiCurrency = Tokens;
 	type EnactmentPeriod = EnactmentPeriod;
 	type LaunchPeriod = LaunchPeriod;
 	type VotingPeriod = VotingPeriod;
 	type MinimumDeposit = MinimumDeposit;
+	type GoldenMinimumDepositMultiple = GoldenMinimumDepositMultiple;
+	type SetterMinimumDepositMultiple = SetterMinimumDepositMultiple;
+	type SilverMinimumDepositMultiple = SilverMinimumDepositMultiple;
 	/// A straight majority of the council can decide what their next motion is.
-	type ExternalOrigin = EnsureRootOrHalfGeneralCouncil;
+	type ExternalOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
 	/// A majority can have the next scheduled referendum be a straight majority-carries vote.
-	type ExternalMajorityOrigin = EnsureRootOrHalfGeneralCouncil;
+	type ExternalMajorityOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
 	/// (NTB) vote.
-	type ExternalDefaultOrigin = EnsureRootOrAllGeneralCouncil;
+	type ExternalDefaultOrigin = EnsureRootOrAllGeneralCouncil; // TODO: When root is removed, change to `EnsureAllSetheumJuryOrAllGeneralCouncil`.
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = EnsureRootOrTwoThirdsTechnicalCommittee;
-	type InstantOrigin = EnsureRootOrAllTechnicalCommittee;
+	type FastTrackOrigin = EnsureRootOrTwoThirdsTechnicalCommittee; // TODO: When root is removed, change to `EnsureTwoThirdsSetheumJuryOrTwoThirdsTechnicalCommittee`.
+	type InstantOrigin = EnsureRootOrAllTechnicalCommittee; // TODO: When root is removed, change to `EnsureAllSetheumJuryOrAllTechnicalCommittee`.
 	type InstantAllowed = InstantAllowed;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
@@ -976,7 +984,7 @@ impl pallet_democracy::Config for Runtime {
 	type BlacklistOrigin = EnsureRootOrHalfSetheumJury;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree or half of SetheumJury must agree.
-	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrAllTechnicalCommittee`.
+	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee; // TODO: When root is removed, change to `EnsureAllSetheumJuryOrAllTechnicalCommittee`.
 	// Any single technical committee member may veto a coming council proposal, however they can
 	// only do it once and it lasts only for the cooloff period.
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, SetheumJuryInstance> || EnsureMember<AccountId, TechnicalCommitteeInstance>;
@@ -987,8 +995,7 @@ impl pallet_democracy::Config for Runtime {
 	type Scheduler = Scheduler;
 	type PalletsOrigin = OriginCaller;
 	type MaxVotes = MaxVotes;
-	// TODO: might need to custom-weigh for Setheum
-	type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = setheum_democracy::weights::SubstrateWeight<Runtime>;
 	type MaxProposals = MaxProposals;
 }
 

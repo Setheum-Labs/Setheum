@@ -33,7 +33,7 @@ fn simple_passing_should_work() {
 		assert_eq!(tally(r), Tally { ayes: 1, nays: 0, turnout: 10 });
 		next_block();
 		next_block();
-		assert_eq!(Balances::free_balance(42), 2);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 2);
 	});
 }
 
@@ -52,7 +52,7 @@ fn simple_failing_should_work() {
 		next_block();
 		next_block();
 
-		assert_eq!(Balances::free_balance(42), 0);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 0);
 	});
 }
 
@@ -76,13 +76,13 @@ fn ooo_inject_referendums_should_work() {
 		assert_eq!(tally(r2), Tally { ayes: 1, nays: 0, turnout: 10 });
 
 		next_block();
-		assert_eq!(Balances::free_balance(42), 2);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 2);
 
 		assert_ok!(Democracy::vote(Origin::signed(1), r1, aye(1)));
 		assert_eq!(tally(r1), Tally { ayes: 1, nays: 0, turnout: 10 });
 
 		next_block();
-		assert_eq!(Balances::free_balance(42), 3);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 3);
 	});
 }
 
@@ -105,9 +105,9 @@ fn delayed_enactment_should_work() {
 		assert_eq!(tally(r), Tally { ayes: 21, nays: 0, turnout: 210 });
 
 		next_block();
-		assert_eq!(Balances::free_balance(42), 0);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 0);
 
 		next_block();
-		assert_eq!(Balances::free_balance(42), 2);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 2);
 	});
 }
