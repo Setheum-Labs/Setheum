@@ -34,7 +34,7 @@ fn missing_preimage_should_fail() {
 		next_block();
 		next_block();
 
-		assert_eq!(Balances::free_balance(42), 0);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 0);
 	});
 }
 
@@ -58,14 +58,14 @@ fn preimage_deposit_should_be_required_and_returned() {
 		);
 		assert_ok!(Democracy::vote(Origin::signed(1), r, aye(1)));
 
-		assert_eq!(Balances::reserved_balance(6), 12);
+		assert_eq!(Tokens::reserved_balance(DNAR, 6), 12);
 
 		next_block();
 		next_block();
 
-		assert_eq!(Balances::reserved_balance(6), 0);
-		assert_eq!(Balances::free_balance(6), 60);
-		assert_eq!(Balances::free_balance(42), 2);
+		assert_eq!(Tokens::reserved_balance(DNAR, 6), 0);
+		assert_eq!(Tokens::free_balance(DNAR, 6), 60);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 2);
 	});
 }
 
@@ -78,7 +78,7 @@ fn preimage_deposit_should_be_reapable_earlier_by_owner() {
 			else { Democracy::note_preimage(Origin::signed(6), set_balance_proposal(2)) }
 		);
 
-		assert_eq!(Balances::reserved_balance(6), 12);
+		assert_eq!(Tokens::reserved_balance(DNAR, 6), 12);
 
 		next_block();
 		assert_noop!(
@@ -88,8 +88,8 @@ fn preimage_deposit_should_be_reapable_earlier_by_owner() {
 		next_block();
 		assert_ok!(Democracy::reap_preimage(Origin::signed(6), set_balance_proposal_hash(2), u32::MAX));
 
-		assert_eq!(Balances::free_balance(6), 60);
-		assert_eq!(Balances::reserved_balance(6), 0);
+		assert_eq!(Tokens::free_balance(DNAR, 6), 60);
+		assert_eq!(Tokens::reserved_balance(DNAR, 6), 0);
 	});
 }
 
@@ -106,7 +106,7 @@ fn preimage_deposit_should_be_reapable() {
 			if operational { Democracy::note_preimage_operational(Origin::signed(6), set_balance_proposal(2)) }
 			else { Democracy::note_preimage(Origin::signed(6), set_balance_proposal(2)) }
 		);
-		assert_eq!(Balances::reserved_balance(6), 12);
+		assert_eq!(Tokens::reserved_balance(DNAR, 6), 12);
 
 		next_block();
 		next_block();
@@ -118,9 +118,9 @@ fn preimage_deposit_should_be_reapable() {
 
 		next_block();
 		assert_ok!(Democracy::reap_preimage(Origin::signed(5), set_balance_proposal_hash(2), u32::MAX));
-		assert_eq!(Balances::reserved_balance(6), 0);
-		assert_eq!(Balances::free_balance(6), 48);
-		assert_eq!(Balances::free_balance(5), 62);
+		assert_eq!(Tokens::reserved_balance(DNAR, 6), 0);
+		assert_eq!(Tokens::free_balance(DNAR, 6), 48);
+		assert_eq!(Tokens::free_balance(DNAR, 5), 62);
 	});
 }
 
@@ -150,7 +150,7 @@ fn noting_imminent_preimage_for_free_should_work() {
 
 		next_block();
 
-		assert_eq!(Balances::free_balance(42), 2);
+		assert_eq!(Tokens::free_balance(DNAR, 42), 2);
 	});
 }
 
