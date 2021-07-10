@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! The for various partial storage decoders
+//! The tests for various partial storage decoders
 
 use super::*;
 use frame_support::storage::{migration, unhashed};
