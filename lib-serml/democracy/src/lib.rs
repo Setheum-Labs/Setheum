@@ -40,6 +40,7 @@ use codec::{Encode, Decode, Input};
 use frame_support::{
 	ensure, weights::Weight,
 	traits::{
+		Currency, ReservableCurrency, LockableCurrency, WithdrawReasons,
 		Get, OnUnbalanced, schedule::{Named as ScheduleNamed, DispatchTime},
 	},
 };
@@ -55,16 +56,8 @@ use pallet_democracy::{
 	types::{ReferendumInfo, ReferendumStatus, Tally, UnvoteScope, Delegations}
 }
 
-// mod vote_threshold;
-// mod vote;
-// mod conviction;
-// mod types;
 pub mod weights;
 pub use weights::WeightInfo;
-// pub use vote_threshold::{Approved, VoteThreshold};
-// pub use vote::{Vote, AccountVote, Voting};
-// pub use conviction::Conviction;
-// pub use types::{ReferendumInfo, ReferendumStatus, Tally, UnvoteScope, Delegations};
 pub use pallet::*;
 
 #[cfg(test)]
@@ -86,6 +79,8 @@ pub type PropIndex = u32;
 /// A referendum index.
 pub type ReferendumIndex = u32;
 
+type TheBalanceOf<T> = <
+<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 type BalanceOf<T> = 
 	<<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
 type CurrencyIdOf<T> =
@@ -146,6 +141,10 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// Currency type for this pallet.
+		type Currency: ReservableCurrency<Self::AccountId>
+			+ LockableCurrency<Self::AccountId, Moment=Self::BlockNumber>;
+
+		/// MultiCurrency type for this pallet.
 		type MultiCurrency: MultiLockableCurrency<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiReservableCurrency<Self::AccountId, CurrencyId = CurrencyId>;
 
@@ -167,14 +166,51 @@ pub mod pallet {
 
 		/// The Governance Currency IDs.
 		///
-		/// It is DNAR and DRAM in Setheum Network / NEOM and MENA in Neom Network.
+		/// There are 3 (three). 
+		/// It is DNAR, DRAM and SETT in Setheum Network, NEOM, MENA and NSETT in Neom Network.
 		type GovernanceCurrencyIds: Get<Vec<CurrencyIdOf<Self>>>;
-				
+		
+		/// The Native Currency ID.
+		///
+		/// It is DNAR in Setheum Network, NEOM in Neom Network.
+		type NativeCurrencyId: Get<CurrencyIdOf<Self>>
+
+		/// The Dex Currency ID.
+		///
+		/// It is DRAM in Setheum Network, MENA in Neom Network.
+		type DexCurrencyId: Get<CurrencyIdOf<Self>>
+
+		/// The  Currency ID.
+		///
+		/// It is SETT in Setheum Network, NSETT in Neom Network.
+		type SetterCurrencyId: Get<CurrencyIdOf<Self>>
+
 		/// The minimum amount to be used as a deposit for a public referendum proposal.
 		///
-		/// It is got by key, each Governance Currency ID has it's own minimum deposit.
+		/// It is calculated in Setter (SETT) value.
 		#[pallet::constant]
-		type MinimumDeposits: GetByKey<CurrencyIdOf<Self>, BalanceOf<Self>>;
+		type MinimumDeposit: Get<BalanceOf<Self>>;
+
+		/// The minimum amount of DNAR to be used as a deposit for a public referendum proposal.
+		///
+		/// It is calculated in multiples of the `MinimumDeposit` amount.
+		/// 1x of the `MinimumDeposit` is minimum deposit for DNAR (1).
+		#[pallet::constant]
+		type GoldenMinimumDepositMultiple: Get<BalanceOf<Self>>;
+
+		/// The minimum amount of SETT to be used as a deposit for a public referendum proposal.
+		///
+		/// It is calculated in multiples of the `MinimumDeposit` amount.
+		/// 2x of the `MinimumDeposit` is minimum deposit for SETT (2).
+		#[pallet::constant]
+		type SetterMinimumDepositMultiple: Get<BalanceOf<Self>>;
+
+		/// The minimum amount of DRAM to be used as a deposit for a public referendum proposal.
+		///
+		/// It is calculated in multiples of the `MinimumDeposit` amount.
+		/// 3x of the `MinimumDeposit` is minimum deposit for DRAM (3).
+		#[pallet::constant]
+		type SilverMinimumDepositMultiple: Get<BalanceOf<Self>>;
 
 		/// Origin from which the next tabled referendum may be forced. This is a normal
 		/// "super-majority-required" referendum.
@@ -321,7 +357,7 @@ pub mod pallet {
 	#[pallet::storage]
 	pub type VotingOf<T: Config> = StorageMap<
 		_, Twox64Concat, T::AccountId,
-		Voting<BalanceOf<T>, T::AccountId, T::BlockNumber>,
+		Voting<TheBalanceOf<T>, T::AccountId, T::BlockNumber>,
 		ValueQuery,
 	>;
 
@@ -530,7 +566,7 @@ pub mod pallet {
 		/// have funds to cover the deposit.
 		///
 		/// - `proposal_hash`: The hash of the proposal preimage.
-		/// - `value`: The amount of deposit (must be at least `MinimumDeposits` of key `currency_id`).
+		/// - `value`: The amount of deposit (must be at least `MinimumDeposit` of key `currency_id`).
 		/// - `curency_id`: The currency of deposit (must be in `GovernanceCurrencyIds`).
 		///
 		/// Emits `Proposed`.
@@ -548,7 +584,25 @@ pub mod pallet {
 					T::GovernanceCurrencyIds::get().contains(&currency_id),
 					Error::<T>::InvalidCurrencyType,
 			);
-			ensure!(value >= T::MinimumDeposits::get(&currency_id), Error::<T>::ValueLow);
+			let setter_price = T::Price::get_setter_fixed_price();
+			let minimum_deposit = T::MinimumDeposit::get();
+
+			if currency_id == T::NativeCurrencyId::get() {
+				let golden_price = T::Price::get_price(&currency_id);
+				let relative_price = golden_price.checked_div(&setter_price);
+				let golden_relative_base = &minimum_deposit * &relative_price;
+				let golden_minimum_deposit = &golden_relative_base * T::GoldenMinimumDepositMultiple::get();
+				ensure!(value >= &golden_minimum_deposit, Error::<T>::ValueLow);
+			} else if currency_id == T::SetterCurrencyId::get() {
+				let minimum_setter_deposit = &minimum_deposit * T::SetterMinimumDepositMultiple::get();
+				ensure!(value >= &minimum_setter_deposit, Error::<T>::ValueLow);
+			} else if currency_id == T::DexCurrencyId::get() {
+				let silver_price = T::Price::get_price(&currency_id);
+				let relative_price = silver_price.checked_div(&setter_price);
+				let silver_relative_base = &minimum_deposit * &relative_price;
+				let silver_minimum_deposit = &silver_relative_base * T::SilverMinimumDepositMultiple::get();
+				ensure!(value >= &silver_minimum_deposit, Error::<T>::ValueLow);
+			} 
 
 			let index = Self::public_prop_count();
 			let real_prop_count = PublicProps::<T>::decode_len().unwrap_or(0) as u32;
@@ -1029,13 +1083,9 @@ pub mod pallet {
 			T::WeightInfo::unlock_set(T::MaxVotes::get())
 				.max(T::WeightInfo::unlock_remove(T::MaxVotes::get()))
 		)]
-		pub fn unlock(origin: OriginFor<T>, target: T::AccountId, currency_id: CurrencyIdOf<T>) -> DispatchResult {
+		pub fn unlock(origin: OriginFor<T>, target: T::AccountId) -> DispatchResult {
 			ensure_signed(origin)?;
-			ensure!(
-					T::GovernanceCurrencyIds::get().contains(&currency_id),
-					Error::<T>::InvalidCurrencyType,
-			);
-			Self::update_lock(&target, &currency_id);
+			Self::update_lock(&target);
 			Ok(())
 		}
 
@@ -1267,13 +1317,9 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Actually enact a vote, if legit.
-	fn try_vote(who: &T::AccountId, ref_index: ReferendumIndex, currency_id: CurrencyIdOf<T>, vote: AccountVote<BalanceOf<T>>) -> DispatchResult {
+	fn try_vote(who: &T::AccountId, ref_index: ReferendumIndex, vote: AccountVote<BalanceOf<T>>) -> DispatchResult {
 		let mut status = Self::referendum_status(ref_index)?;
-		ensure!(
-				T::GovernanceCurrencyIds::get().contains(&currency_id),
-				Error::<T>::InvalidCurrencyType,
-		);
-		ensure!(vote.balance() <= T::MultiCurrency::free_balance(&currency_id, who), Error::<T>::InsufficientFunds);
+		ensure!(vote.balance() <= T::Currency::free_balance(who), Error::<T>::InsufficientFunds);
 		VotingOf::<T>::try_mutate(who, |voting| -> DispatchResult {
 			if let Voting::Direct { ref mut votes, delegations, .. } = voting {
 				match votes.binary_search_by_key(&ref_index, |i| i.0) {
@@ -1302,11 +1348,11 @@ impl<T: Config> Pallet<T> {
 		})?;
 		// Extend the lock to `balance` (rather than setting it) since we don't know what other
 		// votes are in place.
-		T::MultiCurrency::extend_lock(
+		T::Currency::extend_lock(
 			DEMOCRACY_ID,
-			&currency_id,
 			who,
 			vote.balance(),
+			WithdrawReasons::TRANSFER
 		);
 		ReferendumInfoOf::<T>::insert(ref_index, ReferendumInfo::Ongoing(status));
 		Ok(())
@@ -1406,15 +1452,10 @@ impl<T: Config> Pallet<T> {
 		who: T::AccountId,
 		target: T::AccountId,
 		conviction: Conviction,
-		currency_id: CurrencyIdOf<T>,
 		balance: BalanceOf<T>,
 	) -> Result<u32, DispatchError> {
 		ensure!(who != target, Error::<T>::Nonsense);
-		ensure!(
-				T::GovernanceCurrencyIds::get().contains(&currency_id),
-				Error::<T>::InvalidCurrencyType,
-		);
-		ensure!(balance <= T::MultiCurrency::free_balance(&currency_id, &who), Error::<T>::InsufficientFunds);
+		ensure!(balance <= T::Currency::free_balance(&who), Error::<T>::InsufficientFunds);
 		let votes = VotingOf::<T>::try_mutate(&who, |voting| -> Result<u32, DispatchError> {
 			let mut old = Voting::Delegating {
 				balance,
@@ -1439,9 +1480,8 @@ impl<T: Config> Pallet<T> {
 			let votes = Self::increase_upstream_delegation(&target, conviction.votes(balance));
 			// Extend the lock to `balance` (rather than setting it) since we don't know what other
 			// votes are in place.
-			T::MultiCurrency::extend_lock(
+			T::Currency::extend_lock(
 				DEMOCRACY_ID,
-				&currency_id
 				&who,
 				balance
 			);
@@ -1486,19 +1526,15 @@ impl<T: Config> Pallet<T> {
 
 	/// Rejig the lock on an account. It will never get more stringent (since that would indicate
 	/// a security hole) but may be reduced from what they are currently.
-	fn update_lock(who: &T::AccountId, currency_id: &CurrencyIdOf<T>) {
+	fn update_lock(who: &T::AccountId) {
 		let lock_needed = VotingOf::<T>::mutate(who, |voting| {
 			voting.rejig(frame_system::Pallet::<T>::block_number());
 			voting.locked_balance()
 		});
-		ensure!(
-				T::GovernanceCurrencyIds::get().contains(&currency_id),
-				Error::<T>::InvalidCurrencyType,
-		);
 		if lock_needed.is_zero() {
-			T::MultiCurrency::remove_lock(DEMOCRACY_ID, currency_id, who);
+			T::Currency::remove_lock(DEMOCRACY_ID, who);
 		} else {
-			T::MultiCurrency::set_lock(DEMOCRACY_ID, currency_id, who, lock_needed);
+			T::Currency::set_lock(DEMOCRACY_ID, who, lock_needed, WithdrawReasons::TRANSFER);
 		}
 	}
 
