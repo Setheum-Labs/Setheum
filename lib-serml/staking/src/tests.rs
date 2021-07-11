@@ -1,6 +1,6 @@
-// This file is part of Substrate.
+// This file is part of Setheum.
 
-// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2017-2021 Setheum Labs.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
