@@ -1,6 +1,6 @@
-// This file is part of Substrate.
+// This file is part of Setheum.
 
-// Copyright (C) 2018-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2018-2021 Setheum Labs.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -217,6 +217,12 @@ setheum_staking_reward_curve::build! {
 parameter_types! {
 	pub const BondingDuration: EraIndex = 3;
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &I_NPOS;
+	/// The number of eras between each halvening,
+	/// 4,032 eras (2 years, each era is 4 hours) halving interval.
+	pub const HalvingInterval: u64 = 4032;
+	/// The per-era issuance before any halvenings. 
+	/// Decimal places should be accounted for here.
+	pub const InitialIssuance: u64 = 14400;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 }
 
@@ -246,6 +252,7 @@ impl onchain::Config for Test {
 impl Config for Test {
 	const MAX_NOMINATIONS: u32 = 16;
 	type Currency = Balances;
+	type MultiCurrency = Tokens;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
 	type RewardRemainder = RewardRemainderMock;
@@ -258,6 +265,8 @@ impl Config for Test {
 	type BondingDuration = BondingDuration;
 	type SessionInterface = Self;
 	type EraPayout = ConvertCurve<RewardCurve>;
+	type HalvingInterval = HalvingInterval;
+	type InitialIssuance = InitialIssuance;
 	type NextNewSession = Session;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type ElectionProvider = onchain::OnChainSequentialPhragmen<Self>;
