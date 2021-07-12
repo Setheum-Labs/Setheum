@@ -11,36 +11,48 @@ targets = ["x86_64-unknown-linux-gnu"]
 static_assertions = "1.1.0"
 serde = { version = "1.0.101", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
-sp-std = { version = "3.0.0", default-features = false, path = "../../primitives/std" }
-sp-io ={ version = "3.0.0", default-features = false, path = "../../primitives/io" }
-sp-runtime = { version = "3.0.0", default-features = false, path = "../../primitives/runtime" }
-sp-staking = { version = "3.0.0", default-features = false, path = "../../primitives/staking" }
-frame-support = { version = "3.0.0", default-features = false, path = "../support" }
-frame-system = { version = "3.0.0", default-features = false, path = "../system" }
-pallet-session = { version = "3.0.0", default-features = false, features = ["historical"], path = "../session" }
-pallet-authorship = { version = "3.0.0", default-features = false, path = "../authorship" }
-sp-application-crypto = { version = "3.0.0", default-features = false, path = "../../primitives/application-crypto" }
-frame-election-provider-support = { version = "3.0.0", default-features = false, path = "../election-provider-support" }
+
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-io ={ default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
+sp-staking = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
+frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
+pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
+pallet-authorship = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
+sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
+frame-election-provider-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4"}
 log = { version = "0.4.14", default-features = false }
 paste = "1.0"
 
+# orml dependencies
+orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
+orml-utilities = { path = "../../../lib-openrml/utilities", default-features = false }
+orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
+
+# local dependencies
+primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
+support = { package = "setheum-support", path = "../../support", default-features = false }
+
 # Optional imports for benchmarking
-frame-benchmarking = { version = "3.1.0", default-features = false, path = "../benchmarking", optional = true }
+frame-benchmarking = { version = "3.1.0", default-features = falsegit = "https://github.com/paritytech/substrate", optional = true }
 rand_chacha = { version = "0.2", default-features = false, optional = true }
 
 [dev-dependencies]
-sp-storage = { version = "3.0.0", path = "../../primitives/storage" }
-sp-tracing = { version = "3.0.0", path = "../../primitives/tracing" }
-sp-core = { version = "3.0.0", path = "../../primitives/core" }
-pallet-balances = { version = "3.0.0", path = "../balances" }
-pallet-timestamp = { version = "3.0.0", path = "../timestamp" }
-setheum-staking-reward-curve = { version = "3.0.0",  path = "../staking/reward-curve" }
-substrate-test-utils = { version = "3.0.0", path = "../../test-utils" }
-frame-benchmarking = { version = "3.1.0", path = "../benchmarking" }
-frame-election-provider-support = { version = "3.0.0", features = ["runtime-benchmarks"], path = "../election-provider-support" }
+sp-storage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-tracing = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+setheum-staking-reward-curve = { path = "../reward-curve" }
+substrate-test-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+frame-benchmarking = { version = "3.1.0", git = "https://github.com/paritytech/substrate" }
+frame-election-provider-support = { features = ["runtime-benchmarks"], git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 rand_chacha = { version = "0.2" }
 parking_lot = "0.11.1"
 hex = "0.4"
+orml-currencies = { path = "../../../lib-openrml/currencies" }
+serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
 
 [features]
 default = ["std"]
@@ -58,6 +70,11 @@ std = [
 	"sp-application-crypto/std",
 	"log/std",
 	"frame-election-provider-support/std",
+	"orml-traits/std",
+	"orml-utilities/std",
+	"primitives/std",
+	"support/std",
+	"orml-tokens/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",
