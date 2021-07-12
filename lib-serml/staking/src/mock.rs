@@ -322,15 +322,13 @@ impl Config for Test {
 	type Reward = ();
 	type HalvingInterval = HalvingInterval;
 	type InitialIssuance = InitialIssuance;
+	type SerpTreasury = SerpTreasury;
 	type SessionsPerEra = SessionsPerEra;
 	type SlashDeferDuration = SlashDeferDuration;
 	type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
 	type BondingDuration = BondingDuration;
 	type SessionInterface = Self;
 	type EraPayout = ConvertCurve<RewardCurve>;
-	type HalvingInterval = HalvingInterval;
-	type InitialIssuance = InitialIssuance;
-	type SerpTreasury = SerpTreasury;
 	type NextNewSession = Session;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type ElectionProvider = onchain::OnChainSequentialPhragmen<Self>;
