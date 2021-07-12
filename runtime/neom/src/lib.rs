@@ -878,6 +878,12 @@ parameter_types! {
 	pub const BondingDuration: setheum_staking::EraIndex = 0; // No bonding duration. can actively immediate bond/unbond anytime
 	pub const SlashDeferDuration: setheum_staking::EraIndex = 2; // 6 hours
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
+	/// The number of eras between each halvening,
+	/// 4,032 eras (2 years, each era is 4 hours) halving interval.
+	pub const HalvingInterval: u64 = 4032;
+	/// The per-era issuance before any halvenings. 
+	/// Decimal places should be accounted for here.
+	pub const InitialIssuance: u64 = 144000;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
 	pub const MaxIterations: u32 = 5;
@@ -893,6 +899,9 @@ impl setheum_staking::Config for Runtime {
 	type Event = Event;
 	type Slash = Treasury; // send the slashed funds to the pallet treasury.
 	type Reward = (); // rewards are minted from the void
+	type HalvingInterval = HalvingInterval; // halving interval for native currency rewards.
+	type InitialIssuance = InitialIssuance; // initial issuance for native currency rewards.
+	type SerpTreasury = SerpTreasury;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	type SlashDeferDuration = SlashDeferDuration;
