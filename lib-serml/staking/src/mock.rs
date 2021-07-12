@@ -98,6 +98,9 @@ frame_support::construct_runtime!(
 		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>},
 		Staking: staking::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
 	}
@@ -152,6 +155,32 @@ impl frame_system::Config for Test {
 	type SS58Prefix = ();
 	type OnSetCode = ();
 }
+parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+impl orml_tokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = ();
+	type MaxLocks = ();
+}
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+}
+impl orml_currencies::Config for Runtime {
+	type Event = Event;
+	type MultiCurrency = Tokens;
+	type NativeCurrency = AdaptedBasicCurrency;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type WeightInfo = ();
+}
+pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 impl pallet_balances::Config for Test {
 	type MaxLocks = MaxLocks;
 	type MaxReserves = ();
@@ -161,6 +190,39 @@ impl pallet_balances::Config for Test {
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
+	type WeightInfo = ();
+}
+parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ
+	];
+	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
+	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
+}
+
+impl serp_treasury::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
+	type SerplusSerpupRatio = SerplusSerpupRatio;
+	type SettPaySerpupRatio = SettPaySerpupRatio;
+	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SerpAuctionManagerHandler = MockSerpAuctionManager;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type Dex = SetheumDEX;
+	type MaxAuctionsCount = MaxAuctionsCount;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 parameter_types! {
@@ -252,7 +314,6 @@ impl onchain::Config for Test {
 impl Config for Test {
 	const MAX_NOMINATIONS: u32 = 16;
 	type Currency = Balances;
-	type MultiCurrency = Tokens;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
 	type RewardRemainder = RewardRemainderMock;
@@ -269,6 +330,7 @@ impl Config for Test {
 	type EraPayout = ConvertCurve<RewardCurve>;
 	type HalvingInterval = HalvingInterval;
 	type InitialIssuance = InitialIssuance;
+	type SerpTreasury = SerpTreasury;
 	type NextNewSession = Session;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type ElectionProvider = onchain::OnChainSequentialPhragmen<Self>;
@@ -305,6 +367,60 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
+			endowed_accounts: vec![
+				/// native endowments.
+				//
+				(1, DNAR, 10 * native_balance_factor),
+				(2, DNAR, 20 * native_balance_factor),
+				(3, DNAR, 300 * native_balance_factor),
+				(4, DNAR, 400 * native_balance_factor),
+				(10, DNAR, native_balance_factor),
+				(11, DNAR, native_balance_factor * 1000),
+				(20, DNAR, native_balance_factor),
+				(21, DNAR, native_balance_factor * 2000),
+				(30, DNAR, native_balance_factor),
+				(31, DNAR, native_balance_factor * 2000),
+				(40, DNAR, native_balance_factor),
+				(41, DNAR, native_balance_factor * 2000),
+				(50, DNAR, native_balance_factor),
+				(51, DNAR, native_balance_factor * 2000),
+				(60, DNAR, native_balance_factor),
+				(61, DNAR, native_balance_factor * 2000),
+				(70, DNAR, native_balance_factor),
+				(71, DNAR, native_balance_factor * 2000),
+				(80, DNAR, native_balance_factor),
+				(81, DNAR, native_balance_factor * 2000),
+				(100, DNAR, 2000 * native_balance_factor),
+				(101, DNAR, 2000 * native_balance_factor),
+				// This allows us to have a total_payout different from 0.
+				(999, DNAR, 1_000_000_000_000),
+				/// setter endowments.
+				//
+				(1, SETT, 10 * setter_balance_factor),
+				(2, SETT, 20 * setter_balance_factor),
+				(3, SETT, 300 * setter_balance_factor),
+				(4, SETT, 400 * setter_balance_factor),
+				(10, SETT, setter_balance_factor),
+				(11, SETT, setter_balance_factor * 1000),
+				(20, SETT, setter_balance_factor),
+				(21, SETT, setter_balance_factor * 2000),
+				(30, SETT, setter_balance_factor),
+				(31, SETT, setter_balance_factor * 2000),
+				(40, SETT, setter_balance_factor),
+				(41, SETT, setter_balance_factor * 2000),
+				(50, SETT, setter_balance_factor),
+				(51, SETT, setter_balance_factor * 2000),
+				(60, SETT, setter_balance_factor),
+				(61, SETT, setter_balance_factor * 2000),
+				(70, SETT, setter_balance_factor),
+				(71, SETT, setter_balance_factor * 2000),
+				(80, SETT, setter_balance_factor),
+				(81, SETT, setter_balance_factor * 2000),
+				(100, SETT, 2000 * setter_balance_factor),
+				(101, SETT, 2000 * setter_balance_factor),
+				// This allows us to have a total_payout different from 0.
+				(999, SETT, 1_000_000_000_000),
+			],
 			validator_pool: false,
 			nominate: true,
 			validator_count: 2,
@@ -390,7 +506,12 @@ impl ExtBuilder {
 		let mut storage = frame_system::GenesisConfig::default()
 			.build_storage::<Test>()
 			.unwrap();
-		let balance_factor = if ExistentialDeposit::get() > 1 {
+		let native_balance_factor = if ExistentialDeposits::get(DNAR) > 1 {
+			256
+		} else {
+			1
+		};
+		let setter_balance_factor = if ExistentialDeposits::get(SETT) > 1 {
 			256
 		} else {
 			1
@@ -403,34 +524,12 @@ impl ExtBuilder {
 			.map(|x| ((x + 1) * 10 + 1) as AccountId)
 			.collect::<Vec<_>>();
 
-		let _ = pallet_balances::GenesisConfig::<Test> {
-			balances: vec![
-				(1, 10 * balance_factor),
-				(2, 20 * balance_factor),
-				(3, 300 * balance_factor),
-				(4, 400 * balance_factor),
-				(10, balance_factor),
-				(11, balance_factor * 1000),
-				(20, balance_factor),
-				(21, balance_factor * 2000),
-				(30, balance_factor),
-				(31, balance_factor * 2000),
-				(40, balance_factor),
-				(41, balance_factor * 2000),
-				(50, balance_factor),
-				(51, balance_factor * 2000),
-				(60, balance_factor),
-				(61, balance_factor * 2000),
-				(70, balance_factor),
-				(71, balance_factor * 2000),
-				(80, balance_factor),
-				(81, balance_factor * 2000),
-				(100, 2000 * balance_factor),
-				(101, 2000 * balance_factor),
-				// This allows us to have a total_payout different from 0.
-				(999, 1_000_000_000_000),
-			],
-		}.assimilate_storage(&mut storage);
+		orml_tokens::GenesisConfig::<Runtime> {
+			endowed_accounts: self.endowed_accounts,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+		t.into();
 
 		let mut stakers = vec![];
 		if self.has_stakers {
