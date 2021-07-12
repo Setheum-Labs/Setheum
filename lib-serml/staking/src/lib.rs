@@ -1,6 +1,6 @@
-// This file is part of Substrate.
+// This file is part of Setheum.
 
-// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2017-2021 Setheum Labs.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,8 @@ pub mod slashing;
 pub mod inflation;
 pub mod weights;
 
+use primitives::{CurrencyId, Balance};
+use support::EraIndex;
 use sp_std::{
 	result,
 	prelude::*,
@@ -87,9 +89,6 @@ macro_rules! log {
 }
 
 pub const MAX_UNLOCKING_CHUNKS: usize = 32;
-
-/// Counter for the number of eras that have passed.
-pub type EraIndex = u32;
 
 /// Counter for the number of "reward" points earned by a given validator.
 pub type RewardPoint = u32;
@@ -418,17 +417,61 @@ impl<T: Config> SessionInterface<<T as frame_system::Config>::AccountId> for T w
 	}
 }
 
-/// Handler for determining how much of a balance should be paid out on the current era.
+/// Support for Setheum Staking Pallet.
+///
+/// A trait for types that can provide the amount of issuance to award to the stakers.
+#![cfg_attr(not(feature = "std"), no_std)]
+
+pub trait Issuance<EraIndex> {
+	pub fn native_issuance(era_duration: EraIndex) -> Balance;
+}
+
+// Minimal implementations for when you don't actually want any issuance
+impl Issuance<EraIndex> for () {
+	pub fn native_issuance(_era_duration: EraIndex) -> Balance {
+		0
+	}
+}
+
+impl Issuance<EraIndex> for () {
+	pub fn native_issuance(_era_duration: EraIndex) -> Balance { 0 }
+}
+
+/// A type that provides era issuance according to setheum's rules
+/// Initial issuance is 14400 / era
+/// Issuance is cut in half every 4032 eras
+pub struct SetheumHalving<T>(sp_std::marker::PhantomData<T>);
+
+impl Issuance<u64, Balance> for SetheumHalving {
+	/// Provides era issuance according to setheum's rules.
+	/// Initial issuance is 14400 / era.
+	/// Issuance is cut in half every 4032 eras.
+	fn native_issuance(era_duration: EraIndex) -> Balance {
+		let halving_interval = T::HalvingInterval::get();
+		let initial_issuance = T::InitialIssuance::get();
+		let halvings = era_duration / halving_interval;
+		// Force era reward to zero when right shift is undefined.
+		if halvings >= 64 {
+			return 0;
+		}
+
+		// Subsidy is cut in half every 4,032 eras which will
+		// occur approximately every 2 years (each era is 4 hours).
+		(initial_issuance >> halvings).into()
+	}
+}
+
+/// Handler for determining how much of a balance in both currencies should be paid out on the current era.
 pub trait EraPayout<Balance> {
 	/// Determine the payout for this era.
 	///
-	/// Returns the amount to be paid to stakers in this era, as well as whatever else should be
-	/// paid out ("the rest").
+	/// Returns the setter and native amounts to be paid to stakers in this era, as well as whatever else should be
+	/// paid out in native ("the rest") - in the form of [`setter_payout`, `native_payout`, `native_rest`] Balances.
 	fn era_payout(
 		total_staked: Balance,
 		total_issuance: Balance,
 		era_duration_millis: u64,
-	) -> (Balance, Balance);
+	) -> (Balance, Balance, Balance);
 }
 
 impl<Balance: Default> EraPayout<Balance> for () {
@@ -437,7 +480,7 @@ impl<Balance: Default> EraPayout<Balance> for () {
 		_total_issuance: Balance,
 		_era_duration_millis: u64,
 	) -> (Balance, Balance) {
-		(Default::default(), Default::default())
+		(Default::default(), Default::default(), Default::default())
 	}
 }
 
@@ -452,16 +495,17 @@ impl<
 		total_staked: Balance,
 		total_issuance: Balance,
 		era_duration_millis: u64,
-	) -> (Balance, Balance) {
-		let (validator_payout, max_payout) = inflation::compute_total_payout(
+	) -> (Balance, Balance, Balance) {
+		let (setter_validator_payout, max_payout) = inflation::compute_total_payout(
 			&T::get(),
 			total_staked,
 			total_issuance,
 			// Duration of era; more than u64::MAX is rewarded as u64::MAX.
 			era_duration_millis,
 		);
-		let rest = max_payout.saturating_sub(validator_payout.clone());
-		(validator_payout, rest)
+		let (native_validator_payout) = T::Issuance::native_issuance(native_issuance_payout);
+		let native_rest = native_issuance_payout.saturating_sub(native_validator_payout.clone());
+		(setter_validator_payout, native_validator_payout, native_rest)
 	}
 }
 
@@ -637,6 +681,14 @@ pub mod pallet {
 
 		/// Handler for the unbalanced increment when rewarding a staker.
 		type Reward: OnUnbalanced<PositiveImbalanceOf<Self>>;
+
+		/// The number of eras between each halvening,
+		/// 4,032 eras (2 years, each era is 4 hours) halving interval.
+		type HalvingInterval = EraIndex;
+
+		/// The per-era issuance before any halvenings. 
+		/// Decimal places should be accounted for here.
+		type InitialIssuance = BalanceOf<T>;
 
 		/// Number of sessions per era.
 		#[pallet::constant]
@@ -865,7 +917,7 @@ pub mod pallet {
 	/// Eras that haven't finished yet or has been removed doesn't have reward.
 	#[pallet::storage]
 	#[pallet::getter(fn eras_validator_reward)]
-	pub type ErasValidatorReward<T: Config> = StorageMap<_, Twox64Concat, EraIndex, BalanceOf<T>>;
+	pub type ErasValidatorReward<T: Config> = StorageMap<_, Twox64Concat, EraIndex, BalanceOf<T>, BalanceOf<T>>;
 
 	/// Rewards for the last `HISTORY_DEPTH` eras.
 	/// If reward hasn't been set or has been removed then 0 reward is returned.
@@ -1057,8 +1109,8 @@ pub mod pallet {
 		/// The era payout has been set; the first balance is the validator-payout; the second is
 		/// the remainder from the maximum amount of reward.
 		/// \[era_index, validator_payout, remainder\]
-		EraPayout(EraIndex, BalanceOf<T>, BalanceOf<T>),
-		/// The staker has been rewarded by this amount. \[stash, amount\]
+		EraPayout(EraIndex, BalanceOf<T>, BalanceOf<T>, BalanceOf<T>),
+		/// The staker has been rewarded by this amount in native currency. \[stash, amount\]
 		Reward(T::AccountId, BalanceOf<T>),
 		/// One validator (and its nominators) has been slashed by the given amount.
 		/// \[validator, amount\]
@@ -1093,6 +1145,8 @@ pub mod pallet {
 		NotController,
 		/// Not a stash account.
 		NotStash,
+		/// No Rewad Payout in Native Currency.
+		NoNativePayout,
 		/// Stash is already bonded.
 		AlreadyBonded,
 		/// Controller is already paired.
@@ -2205,26 +2259,54 @@ impl<T: Config> Pallet<T> {
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
 	/// to pay the right payee for the given staker account.
-	fn make_payout(stash: &T::AccountId, amount: BalanceOf<T>) -> Option<PositiveImbalanceOf<T>> {
+	fn make_payout(stash: &T::AccountId, setter_amount: BalanceOf<T>, native_amount: BalanceOf<T>) -> DispatchResult {
+		Self::make_setter_payout(stash, setter_amount);
+		Self::make_native_payout(stash, native_amount);
+	}
+
+	/// Actually make a payment to a staker. This uses the currency's reward function
+	/// to pay the right payee for the given staker account.
+	fn make_setter_payout(stash: &T::AccountId, setter_amount: BalanceOf<T>) -> Option<DispatchResult> {
+		let dest = Self::payee(stash);
+		match dest {
+			RewardDestination::Stash => 
+				T::SerpTreasury::issue_setter(stash, setter_amount).ok(),
+				),
+			RewardDestination::Account(dest_account) => {
+				Some(T::SerpTreasury::issue_setter(&dest_account, setter_amount).ok())
+			},
+			RewardDestination::None => None,
+		}
+	}
+
+	/// Actually make a payment to a staker. This uses the currency's reward function
+	/// to pay the right payee for the given staker account.
+	fn make_native_payout(stash: &T::AccountId, native_amount: BalanceOf<T>) -> Option<PositiveImbalanceOf<T>> {
+		
+		/// ensure that the native_amount is not zero
+		ensure!(
+			!native_amount.is_zero(),
+			Error::<T>::NoNativePayout,
+		);
 		let dest = Self::payee(stash);
 		match dest {
 			RewardDestination::Controller => Self::bonded(stash)
 				.and_then(|controller|
-					Some(T::Currency::deposit_creating(&controller, amount))
+					Some(T::Currency::deposit_creating(&controller, native_amount))
 				),
 			RewardDestination::Stash =>
-				T::Currency::deposit_into_existing(stash, amount).ok(),
+				T::Currency::deposit_into_existing(stash, native_amount).ok(),
 			RewardDestination::Staked => Self::bonded(stash)
 				.and_then(|c| Self::ledger(&c).map(|l| (c, l)))
 				.and_then(|(controller, mut l)| {
-					l.active += amount;
-					l.total += amount;
-					let r = T::Currency::deposit_into_existing(stash, amount).ok();
+					l.active += native_amount;
+					l.total += native_amount;
+					let r = T::Currency::deposit_into_existing(stash, native_amount).ok();
 					Self::update_ledger(&controller, &l);
 					r
 				}),
 			RewardDestination::Account(dest_account) => {
-				Some(T::Currency::deposit_creating(&dest_account, amount))
+				Some(T::Currency::deposit_creating(&dest_account, native_amount))
 			},
 			RewardDestination::None => None,
 		}
@@ -2356,13 +2438,22 @@ impl<T: Config> Pallet<T> {
 			let era_duration = (now_as_millis_u64 - active_era_start).saturated_into::<u64>();
 			let staked = Self::eras_total_stake(&active_era.index);
 			let issuance = T::Currency::total_issuance();
-			let (validator_payout, rest) = T::EraPayout::era_payout(staked, issuance, era_duration);
+			let (
+				validator_setter_payout,
+				validator_native_payout,
+				native_rest
+			) = T::EraPayout::era_payout(
+				staked,
+				issuance,
+				era_duration
+			);
 
-			Self::deposit_event(Event::<T>::EraPayout(active_era.index, validator_payout, rest));
+			Self::deposit_event(Event::<T>::EraPayout(active_era.index, validator_setter_payout, validator_native_payout, native_rest));
 
 			// Set ending era reward.
-			<ErasValidatorReward<T>>::insert(&active_era.index, validator_payout);
-			T::RewardRemainder::on_unbalanced(T::Currency::issue(rest));
+			<ErasValidatorReward<T>>::insert(&active_era.index, validator_setter_payout, validator_native_payout);
+			
+			T::RewardRemainder::on_unbalanced(T::Currency::issue(native_rest));
 		}
 	}
 
