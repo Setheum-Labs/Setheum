@@ -546,28 +546,3 @@ impl CurrencyIdMapping for () {
 		None
 	}
 }
-
-/// Support for Setheum Staking Pallet.
-///
-/// A trait for types that can provide the amount of issuance to award to the stakers.
-#![cfg_attr(not(feature = "std"), no_std)]
-
-pub trait Issuance<EraIndex, Balance> {
-	fn issuance(era_duration: EraIndex) -> Balance;
-}
-
-// Minimal implementations for when you don't actually want any issuance
-impl Issuance<u64, Balance> for () {
-	fn issuance(_era_duration: EraIndex) -> Balance {
-		0
-	}
-}
-
-impl Issuance<u64, Balance> for () {
-	fn issuance(_era_duration: EraIndex) -> Balance { 0 }
-}
-
-/// A type that provides era issuance according to setheum's rules
-/// Initial issuance is 14400 / era
-/// Issuance is cut in half every 4032 eras
-pub struct SetheumHalving;
