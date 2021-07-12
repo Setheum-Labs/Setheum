@@ -33,8 +33,10 @@ pub mod slashing;
 pub mod inflation;
 pub mod weights;
 
-use primitives::{CurrencyId, Balance};
+use primitives::Balance;
 use support::EraIndex;
+use serp_treasury::SerpTreasury;
+
 use sp_std::{
 	result,
 	prelude::*,
