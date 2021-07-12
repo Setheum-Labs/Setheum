@@ -35,9 +35,12 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>},
 		Staking: setheum_staking::{Pallet, Call, Config<T>, Storage, Event<T>, ValidateUnsigned},
 		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
+
 	}
 );
 
@@ -79,6 +82,54 @@ impl pallet_balances::Config for Test {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type WeightInfo = ();
+}
+parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ
+	];
+	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
+	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
+	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
+	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
+	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
+}
+
+impl serp_treasury::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
+	type SerplusSerpupRatio = SerplusSerpupRatio;
+	type SettPaySerpupRatio = SettPaySerpupRatio;
+	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
+	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SerpAuctionManagerHandler = MockSerpAuctionManager;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type Dex = SetheumDEX;
+	type MaxAuctionsCount = MaxAuctionsCount;
+	type PalletId = SerpTreasuryPalletId;
+	type WeightInfo = ();
+}
+parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+impl orml_tokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = ();
+	type MaxLocks = ();
 }
 impl pallet_indices::Config for Test {
 	type AccountIndex = AccountIndex;
@@ -146,6 +197,12 @@ setheum_staking_reward_curve::build! {
 }
 parameter_types! {
 	pub const RewardCurve: &'static sp_runtime::curve::PiecewiseLinear<'static> = &I_NPOS;
+	/// The number of eras between each halvening,
+	/// 4,032 eras (2 years, each era is 4 hours) halving interval.
+	pub const HalvingInterval: u64 = 4032;
+	/// The per-era issuance before any halvenings. 
+	/// Decimal places should be accounted for here.
+	pub const InitialIssuance: u64 = 14400;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 	pub const MaxIterations: u32 = 20;
 }
@@ -189,6 +246,9 @@ impl setheum_staking::Config for Test {
 	type BondingDuration = ();
 	type SessionInterface = Self;
 	type EraPayout = setheum_staking::ConvertCurve<RewardCurve>;
+	type HalvingInterval = HalvingInterval;
+	type InitialIssuance = InitialIssuance;
+	type SerpTreasury = SerpTreasury;
 	type NextNewSession = Session;
 	type ElectionLookahead = ();
 	type Call = Call;
