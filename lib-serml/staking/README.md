@@ -1,14 +1,14 @@
 # Staking Module
 
-Setheum Staking supports multicurrency rewards, such that in Setheum, staking the 
+Serp Staking supports multicurrency rewards, such that in Setheum, staking the 
 Dinar (DNAR) will reward the Dinar (DNAR) and the Setter (SETT).
 The Setter reward uses the min. to max. inflation rate reward type, while the Dinar reward uses a limited amount staking reward with a 24 months halving period. The halving period is 36 MONTHS IN Neom Network for NEOM with min. and max. inflation reward strategy.
 
 The Staking module is used to manage funds at stake by network maintainers.
 
-- [`staking::Config`](https://docs.rs/setheum-staking/latest/setheum_staking/trait.Config.html)
-- [`Call`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html)
-- [`Module`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.Module.html)
+- [`staking::Config`](https://docs.rs/serp-staking/latest/serp_staking/trait.Config.html)
+- [`Call`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html)
+- [`Module`](https://docs.rs/serp-staking/latest/serp_staking/struct.Module.html)
 
 ## Overview
 
@@ -52,16 +52,16 @@ which holds some or all of the funds that become frozen in place as part of the 
 is paired with an active **controller** account, which issues instructions on how they shall be
 used.
 
-An account pair can become bonded using the [`bond`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.bond) call.
+An account pair can become bonded using the [`bond`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.bond) call.
 
 Stash accounts can change their associated controller using the
-[`set_controller`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.set_controller) call.
+[`set_controller`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.set_controller) call.
 
 There are three possible roles that any staked account pair can be in: `Validator`, `Nominator`
-and `Idle` (defined in [`StakerStatus`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.StakerStatus.html)). There are three
+and `Idle` (defined in [`StakerStatus`](https://docs.rs/serp-staking/latest/serp_staking/enum.StakerStatus.html)). There are three
 corresponding instructions to change between roles, namely:
-[`validate`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.validate),
-[`nominate`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.nominate), and [`chill`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.chill).
+[`validate`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.validate),
+[`nominate`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.nominate), and [`chill`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.chill).
 
 #### Validating
 
@@ -73,7 +73,7 @@ _might_ get elected at the _next era_ as a validator. The result of the election
 by nominators and their votes.
 
 An account can become a validator candidate via the
-[`validate`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.validate) call.
+[`validate`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.validate) call.
 
 #### Nomination
 
@@ -85,7 +85,7 @@ between the validator and its nominators. This rule incentivizes the nominators 
 the misbehaving/offline validators as much as possible, simply because the nominators will also
 lose funds if they vote poorly.
 
-An account can become a nominator via the [`nominate`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.nominate) call.
+An account can become a nominator via the [`nominate`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.nominate) call.
 
 #### Rewards and Slash
 
@@ -106,7 +106,7 @@ Slashing logic is further described in the documentation of the `slashing` modul
 
 Similar to slashing, rewards are also shared among a validator and its associated nominators.
 Yet, the reward funds are not always transferred to the stash account and can be configured. See
-[Reward Calculation](https://docs.rs/setheum-staking/latest/setheum_staking/#reward-calculation) for more details.
+[Reward Calculation](https://docs.rs/serp-staking/latest/serp_staking/#reward-calculation) for more details.
 
 #### Chilling
 
@@ -114,7 +114,7 @@ Finally, any of the roles above can choose to step back temporarily and just chi
 This means that if they are a nominator, they will not be considered as voters anymore and if
 they are validators, they will no longer be a candidate for the next election.
 
-An account can step back via the [`chill`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.chill) call.
+An account can step back via the [`chill`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.chill) call.
 
 ### Session managing
 
@@ -139,7 +139,7 @@ The Staking module contains many public storage items and (im)mutable functions.
 ```rust
 use frame_support::{decl_module, dispatch};
 use frame_system::ensure_signed;
-use setheum_staking::{self as staking};
+use serp_staking::{self as staking};
 
 pub trait Config: staking::Config {}
 
@@ -161,7 +161,7 @@ decl_module! {
 ### Era payout
 
 The era payout is computed using yearly inflation curve defined at
-[`T::RewardCurve`](https://docs.rs/setheum-staking/latest/setheum_staking/trait.Config.html#associatedtype.RewardCurve) as such:
+[`T::RewardCurve`](https://docs.rs/serp-staking/latest/serp_staking/trait.Config.html#associatedtype.RewardCurve) as such:
 
 ```nocompile
 staker_payout = yearly_inflation(npos_token_staked / total_tokens) * total_tokens / era_per_year
@@ -172,7 +172,7 @@ This payout is used to reward stakers as defined in next section
 remaining_payout = max_yearly_inflation * total_tokens / era_per_year - staker_payout
 ```
 The remaining reward is send to the configurable end-point
-[`T::RewardRemainder`](https://docs.rs/setheum-staking/latest/setheum_staking/trait.Config.html#associatedtype.RewardRemainder).
+[`T::RewardRemainder`](https://docs.rs/serp-staking/latest/serp_staking/trait.Config.html#associatedtype.RewardRemainder).
 
 ### Reward Calculation
 
@@ -184,29 +184,29 @@ defined staking rate. The full specification can be found
 
 Total reward is split among validators and their nominators depending on the number of points
 they received during the era. Points are added to a validator using
-[`reward_by_ids`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.reward_by_ids) or
-[`reward_by_indices`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.reward_by_indices).
+[`reward_by_ids`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.reward_by_ids) or
+[`reward_by_indices`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.reward_by_indices).
 
-[`Module`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.Module.html) implements
+[`Module`](https://docs.rs/serp-staking/latest/serp_staking/struct.Module.html) implements
 [`pallet_authorship::EventHandler`](https://docs.rs/pallet-authorship/latest/pallet_authorship/trait.EventHandler.html) to add reward
 points to block producer and block producer of referenced uncles.
 
 The validator and its nominator split their reward as following:
 
 The validator can declare an amount, named
-[`commission`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.ValidatorPrefs.html#structfield.commission), that does not get shared
+[`commission`](https://docs.rs/serp-staking/latest/serp_staking/struct.ValidatorPrefs.html#structfield.commission), that does not get shared
 with the nominators at each reward payout through its
-[`ValidatorPrefs`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.ValidatorPrefs.html). This value gets deducted from the total reward
+[`ValidatorPrefs`](https://docs.rs/serp-staking/latest/serp_staking/struct.ValidatorPrefs.html). This value gets deducted from the total reward
 that is paid to the validator and its nominators. The remaining portion is split among the
 validator and all of the nominators that nominated the validator, proportional to the value
 staked behind this validator (_i.e._ dividing the
-[`own`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.Exposure.html#structfield.own) or
-[`others`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.Exposure.html#structfield.others) by
-[`total`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.Exposure.html#structfield.total) in [`Exposure`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.Exposure.html)).
+[`own`](https://docs.rs/serp-staking/latest/serp_staking/struct.Exposure.html#structfield.own) or
+[`others`](https://docs.rs/serp-staking/latest/serp_staking/struct.Exposure.html#structfield.others) by
+[`total`](https://docs.rs/serp-staking/latest/serp_staking/struct.Exposure.html#structfield.total) in [`Exposure`](https://docs.rs/serp-staking/latest/serp_staking/struct.Exposure.html)).
 
 All entities who receive a reward have the option to choose their reward destination through the
-[`Payee`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.Payee.html) storage item (see
-[`set_payee`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.set_payee)), to be one of the following:
+[`Payee`](https://docs.rs/serp-staking/latest/serp_staking/struct.Payee.html) storage item (see
+[`set_payee`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.set_payee)), to be one of the following:
 
 - Controller account, (obviously) not increasing the staked value.
 - Stash account, not increasing the staked value.
@@ -217,14 +217,14 @@ All entities who receive a reward have the option to choose their reward destina
 Any funds already placed into stash can be the target of the following operations:
 
 The controller account can free a portion (or all) of the funds using the
-[`unbond`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.unbond) call. Note that the funds are not immediately
-accessible. Instead, a duration denoted by [`BondingDuration`](https://docs.rs/setheum-staking/latest/setheum_staking/trait.Config.html#associatedtype.BondingDuration)
+[`unbond`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.unbond) call. Note that the funds are not immediately
+accessible. Instead, a duration denoted by [`BondingDuration`](https://docs.rs/serp-staking/latest/serp_staking/trait.Config.html#associatedtype.BondingDuration)
 (in number of eras) must pass until the funds can actually be removed. Once the
-`BondingDuration` is over, the [`withdraw_unbonded`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.withdraw_unbonded)
+`BondingDuration` is over, the [`withdraw_unbonded`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.withdraw_unbonded)
 call can be used to actually withdraw the funds.
 
 Note that there is a limitation to the number of fund-chunks that can be scheduled to be
-unlocked in the future via [`unbond`](https://docs.rs/setheum-staking/latest/setheum_staking/enum.Call.html#variant.unbond). In case this maximum
+unlocked in the future via [`unbond`](https://docs.rs/serp-staking/latest/serp_staking/enum.Call.html#variant.unbond). In case this maximum
 (`MAX_UNLOCKING_CHUNKS`) is reached, the bonded account _must_ first wait until a successful
 call to `withdraw_unbonded` to remove some of the chunks.
 
@@ -241,7 +241,7 @@ threshold.
 
 ## GenesisConfig
 
-The Staking module depends on the [`GenesisConfig`](https://docs.rs/setheum-staking/latest/setheum_staking/struct.GenesisConfig.html). The
+The Staking module depends on the [`GenesisConfig`](https://docs.rs/serp-staking/latest/serp_staking/struct.GenesisConfig.html). The
 `GenesisConfig` is optional and allow to set some initial stakers.
 
 ## Related Modules

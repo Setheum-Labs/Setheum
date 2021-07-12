@@ -22,7 +22,7 @@ use sp_arithmetic::{PerThing, Perbill, PerU16, Percent, Perquintill};
 /// error is asserted to be less or equal to 8/accuracy or 8*f64::EPSILON
 fn test_precision<P: PerThing>(stake: P, ideal_stake: P, falloff: P) {
 	let accuracy_f64 = Into::<u128>::into(P::ACCURACY) as f64;
-	let res = setheum_staking_reward_fn::compute_inflation(stake, ideal_stake, falloff);
+	let res = serp_staking_reward_fn::compute_inflation(stake, ideal_stake, falloff);
 	let res = Into::<u128>::into(res.deconstruct()) as f64 / accuracy_f64;
 
 	let expect = float_i_npos(stake, ideal_stake, falloff);

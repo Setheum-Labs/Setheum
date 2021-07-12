@@ -37,7 +37,7 @@ frame_support::construct_runtime!(
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>},
-		Staking: setheum_staking::{Pallet, Call, Config<T>, Storage, Event<T>, ValidateUnsigned},
+		Staking: serp_staking::{Pallet, Call, Config<T>, Storage, Event<T>, ValidateUnsigned},
 		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
 
@@ -148,8 +148,8 @@ impl pallet_timestamp::Config for Test {
 	type WeightInfo = ();
 }
 impl pallet_session::historical::Config for Test {
-	type FullIdentification = setheum_staking::Exposure<AccountId, Balance>;
-	type FullIdentificationOf = setheum_staking::ExposureOf<Test>;
+	type FullIdentification = serp_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = serp_staking::ExposureOf<Test>;
 }
 
 sp_runtime::impl_opaque_keys! {
@@ -181,11 +181,11 @@ impl pallet_session::Config for Test {
 	type SessionHandler = TestSessionHandler;
 	type Event = Event;
 	type ValidatorId = AccountId;
-	type ValidatorIdOf = setheum_staking::StashOf<Test>;
+	type ValidatorIdOf = serp_staking::StashOf<Test>;
 	type DisabledValidatorsThreshold = ();
 	type WeightInfo = ();
 }
-setheum_staking_reward_curve::build! {
+serp_staking_reward_curve::build! {
 	const I_NPOS: sp_runtime::curve::PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,
 		max_inflation: 0_100_000,
@@ -222,7 +222,7 @@ impl frame_election_provider_support::ElectionProvider<AccountId, BlockNumber>
 	for MockElectionProvider
 {
 	type Error = ();
-	type DataProvider = setheum_staking::Module<Test>;
+	type DataProvider = serp_staking::Module<Test>;
 
 	fn elect() -> Result<
 		(sp_npos_elections::Supports<AccountId>, frame_support::weights::Weight),
@@ -232,7 +232,7 @@ impl frame_election_provider_support::ElectionProvider<AccountId, BlockNumber>
 	}
 }
 
-impl setheum_staking::Config for Test {
+impl serp_staking::Config for Test {
 	type Currency = Balances;
 	type UnixTime = pallet_timestamp::Pallet<Self>;
 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
@@ -245,7 +245,7 @@ impl setheum_staking::Config for Test {
 	type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
 	type BondingDuration = ();
 	type SessionInterface = Self;
-	type EraPayout = setheum_staking::ConvertCurve<RewardCurve>;
+	type EraPayout = serp_staking::ConvertCurve<RewardCurve>;
 	type HalvingInterval = HalvingInterval;
 	type InitialIssuance = InitialIssuance;
 	type SerpTreasury = SerpTreasury;

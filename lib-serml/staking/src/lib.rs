@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! # Setheum Staking Pallet
+//! # Serp Staking Pallet
 
 #![recursion_limit = "128"]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -418,7 +418,7 @@ impl<T: Config> SessionInterface<<T as frame_system::Config>::AccountId> for T w
 	}
 }
 
-/// Support for Setheum Staking Pallet.
+/// Support for Serp Staking Pallet.
 ///
 /// A trait for types that can provide the amount of issuance to award to the stakers.
 #![cfg_attr(not(feature = "std"), no_std)]

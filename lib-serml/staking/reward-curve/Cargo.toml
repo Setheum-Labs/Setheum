@@ -1,5 +1,5 @@
 [package]
-name = "setheum-staking-reward-curve"
+name = "serp-staking-reward-curve"
 version = "0.8.0"
 authors = ["Setheum Labs"]
 

@@ -15,7 +15,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Setheum Staking pallet benchmarking.
+//! Serp Staking pallet benchmarking.
 
 use super::*;
 use crate::Pallet as Staking;
