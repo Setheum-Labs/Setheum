@@ -33,9 +33,8 @@ pub mod slashing;
 pub mod inflation;
 pub mod weights;
 
-use primitives::Balance;
-use support::EraIndex;
-use serp_treasury::SerpTreasury;
+use support::{EraIndex, SerpTreasury, StandardValidator};
+// use serp_treasury::SerpTreasury;
 
 use sp_std::{
 	result,
@@ -691,6 +690,10 @@ pub mod pallet {
 		/// The per-era issuance before any halvenings. 
 		/// Decimal places should be accounted for here.
 		type InitialIssuance = BalanceOf<T>;
+
+		/// SERP Treasury for issuing/burning stable currency adjust standard value
+		/// adjustment
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// Number of sessions per era.
 		#[pallet::constant]
