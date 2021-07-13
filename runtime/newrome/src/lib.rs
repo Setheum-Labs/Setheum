@@ -1677,7 +1677,7 @@ pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
 pub type DexPrecompile =
 	runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, Dex>;
 
-	#[cfg(feature = "with-ethereum-compatibility")]
+	#[cfg(feature = "with-sevm")]
 static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
 impl setheum_evm::Config for Runtime {

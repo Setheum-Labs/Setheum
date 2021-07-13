@@ -473,13 +473,13 @@ fn schedule_call_precompile_should_work() {
 
 		let from_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
 		let to_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
 			assert_eq!(Balances::reserved_balance(from_account.clone()), 300000);
 			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
 		}
-		#[cfg(feature = "with-ethereum-compatibility")]
+		#[cfg(feature = "with-sevm")]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
 			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);
@@ -487,13 +487,13 @@ fn schedule_call_precompile_should_work() {
 		}
 
 		run_to_block(5);
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999894290);
 			assert_eq!(Balances::reserved_balance(from_account), 0);
 			assert_eq!(Balances::free_balance(to_account), 1000000001000);
 		}
-		#[cfg(feature = "with-ethereum-compatibility")]
+		#[cfg(feature = "with-sevm")]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999999000);
 			assert_eq!(Balances::reserved_balance(from_account), 0);
@@ -541,13 +541,13 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 
 		let from_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
 		let to_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
 			assert_eq!(Balances::reserved_balance(from_account.clone()), 300000);
 			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
 		}
-		#[cfg(feature = "with-ethereum-compatibility")]
+		#[cfg(feature = "with-sevm")]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
 			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);
@@ -576,13 +576,13 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 		);
 
 		run_to_block(4);
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999898614);
 			assert_eq!(Balances::reserved_balance(from_account), 0);
 			assert_eq!(Balances::free_balance(to_account), 1000000000000);
 		}
-		#[cfg(feature = "with-ethereum-compatibility")]
+		#[cfg(feature = "with-sevm")]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
 			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);

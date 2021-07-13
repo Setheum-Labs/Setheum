@@ -169,7 +169,7 @@ impl<
 				);
 
 				let mut _fee: PalletBalanceOf<Runtime> = Default::default();
-				#[cfg(not(feature = "with-ethereum-compatibility"))]
+				#[cfg(not(feature = "with-sevm"))]
 				{
 					// reserve the transaction fee for gas_limit
 					use sp_runtime::traits::Convert;
@@ -247,7 +247,7 @@ impl<
 
 				Scheduler::cancel_named(task_id).map_err(|_| ExitError::Other("Cancel schedule failed".into()))?;
 
-				#[cfg(not(feature = "with-ethereum-compatibility"))]
+				#[cfg(not(feature = "with-sevm"))]
 				{
 					// unreserve the transaction fee for gas_limit
 					let from_account = AddressMapping::get_account_id(&from);

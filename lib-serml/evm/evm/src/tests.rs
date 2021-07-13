@@ -95,7 +95,7 @@ fn should_create_and_call_contract() {
 
 		let contract_address = result.address;
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(contract_address);
 
 		assert_eq!(contract_address, H160::from_str("5f8bd49cd9f0cb2bd5bb9d4320dfe9b61023249d").unwrap());
@@ -200,7 +200,7 @@ fn call_reverts_with_message() {
 
 		let contract_address = result.address;
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(contract_address);
 
 		// call method `foo`
@@ -259,7 +259,7 @@ fn should_deploy_payable_contract() {
 			Runner::<Test>::create(alice(), contract, amount, 100000, 100000, <Test as Config>::config()).unwrap();
 		let contract_address = result.address;
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(contract_address);
 
 		assert_eq!(result.exit_reason, ExitReason::Succeed(ExitSucceed::Returned));
@@ -339,7 +339,7 @@ fn should_transfer_from_contract() {
 
 		let contract_address = result.address;
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(contract_address);
 
 		// send via transfer
@@ -439,7 +439,7 @@ fn contract_should_deploy_contracts() {
 		assert_eq!(balance(alice()), alice_balance);
 		let factory_contract_address = result.address;
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(factory_contract_address);
 
 		assert_eq!(balance(result.address), 0);
@@ -509,7 +509,7 @@ fn contract_should_deploy_contracts_without_payable() {
 		assert_eq!(balance(alice()), alice_balance);
 		let factory_contract_address = result.address;
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(result.address);
 
 		// Factory.createContract
@@ -1076,7 +1076,7 @@ fn storage_limit_should_work() {
 
 		let factory_contract_address = result.address;
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(factory_contract_address);
 
 		assert_eq!(balance(factory_contract_address), 0);
@@ -1196,7 +1196,7 @@ fn evm_execute_mode_should_work() {
 		assert_eq!(balance(alice()), alice_balance);
 		let factory_contract_address = result.address;
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(result.address);
 
 		let context = InvokeContext {
@@ -1361,7 +1361,7 @@ fn should_update_storage() {
 
 		assert_eq!(ContractStorageSizes::<Test>::get(&contract_address), used_storage);
 
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
+		#[cfg(not(feature = "with-sevm"))]
 		deploy_free(contract_address);
 
 		// call method `set(123)`

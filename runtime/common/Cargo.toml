@@ -65,4 +65,4 @@ std = [
 	"primitives/std",
 	"setheum-transaction-payment/std",
 ]
-with-ethereum-compatibility = []
+with-sevm = []

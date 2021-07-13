@@ -65,5 +65,5 @@ std = [
 	"orml-traits/std",
 	"support/std",
 ]
-with-ethereum-compatibility = []
+with-sevm = []
 try-runtime = ["frame-support/try-runtime"]
