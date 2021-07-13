@@ -198,7 +198,6 @@ runtime-benchmarks = [
 	"orml-tokens/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 
-	"setheum-chainbridge/runtime-benchmarks",
 	"setheum-nft/runtime-benchmarks",
 
 	"sp-api/disable-logging",
