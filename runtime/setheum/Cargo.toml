@@ -164,7 +164,7 @@ std = [
 	"orml-rewards/std",
 	"orml-nft/std",
 
-	"setheum-renvm-bridge/std,
+	"setheum-renvm-bridge/std",
 	"setheum-dex/std",
 	"setheum-incentives/std",
 	"setheum-evm/std",
