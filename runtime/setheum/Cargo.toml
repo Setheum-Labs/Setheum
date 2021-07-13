@@ -33,8 +33,6 @@ pallet-randomness-collective-flip = { default-features = false, git = "https://g
 pallet-recovery = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-session = { version = "3.0.0", features = ["historical"], default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
-serp-staking = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-serp-staking-reward-curve = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-sudo = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-timestamp = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-tips = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
@@ -87,6 +85,8 @@ setheum-prices = { path = "../../lib-serml/prices", default-features = false }
 # - serp
 serp-auction = { path = "../../lib-serml/serp/serp-auction", default-features = false }
 serp-treasury = { path = "../../lib-serml/serp/serp-treasury", default-features = false }
+serp-staking = { default-features = false, path = "../../lib-serml/serp/serp-staking" }
+serp-staking-reward-curve = { default-features = false, path = "../../lib-serml/serp/serp-staking/reward-curve" }
 # - settmint
 settmint-engine = { path = "../../lib-serml/settmint/settmint-engine", default-features = false }
 settmint-gateway = { path = "../../lib-serml/settmint/settmint-gateway", default-features = false }
@@ -164,7 +164,7 @@ std = [
 	"orml-rewards/std",
 	"orml-nft/std",
 
-	"setheum-renvm-bridge/std
+	"setheum-renvm-bridge/std,
 	"setheum-dex/std",
 	"setheum-incentives/std",
 	"setheum-evm/std",
