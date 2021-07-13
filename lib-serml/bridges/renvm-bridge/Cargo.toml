@@ -22,7 +22,7 @@ orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
 
 # local dependencies
 support = { package = "setheum-support", path = "../support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.3.1"
