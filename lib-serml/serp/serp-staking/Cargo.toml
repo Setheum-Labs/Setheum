@@ -52,7 +52,7 @@ rand_chacha = { version = "0.2" }
 parking_lot = "0.11.1"
 hex = "0.4"
 orml-currencies = { path = "../../../lib-openrml/currencies" }
-serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
+serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
 
 [features]
 default = ["std"]
