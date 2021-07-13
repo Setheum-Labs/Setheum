@@ -44,7 +44,7 @@ sp-tracing = { git = "https://github.com/paritytech/substrate", branch = "polkad
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-serp-staking-reward-curve = { path = "../reward-curve" }
+serp-staking-reward-curve = { path = "../serp-staking/reward-curve" }
 substrate-test-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 frame-benchmarking = { version = "3.1.0", git = "https://github.com/paritytech/substrate" }
 frame-election-provider-support = { features = ["runtime-benchmarks"], git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
