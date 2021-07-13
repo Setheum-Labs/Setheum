@@ -19,14 +19,14 @@ frame-system = { git = "https://github.com/paritytech/substrate", branch = "polk
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
 
 # orml dependencies
-orml-traits = { path = "../../lib-openrml/tokens", default-features = false }
+orml-traits = { path = "../../../lib-openrml/tokens", default-features = false }
 
 # local dependencies
 support = { package = "setheum-support", path = "../../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
-orml-tokens = { path = "../../lib-openrml/tokens" }
+orml-tokens = { path = "../../../lib-openrml/tokens" }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
