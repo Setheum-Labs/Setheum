@@ -90,7 +90,7 @@ use pallet_session::historical as pallet_session_historical;
 /// Weights for pallets used in the runtime.
 mod weights;
 
-pub use pallet_staking::StakerStatus;
+pub use serp_staking::StakerStatus;
 pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -848,7 +848,7 @@ impl pallet_tips::Config for Runtime {
 	type WeightInfo = ();
 }
 
-// TODO: Update to `setheum-staking` and it's allied implementations
+// TODO: Update to `serp-staking` and it's allied implementations
 parameter_types! {
 	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
 }
@@ -856,7 +856,7 @@ parameter_types! {
 impl pallet_session::Config for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = pallet_staking::StashOf<Self>;
+	type ValidatorIdOf = serp_staking::StashOf<Self>;
 	type ShouldEndSession = Babe;
 	type NextSessionRotation = Babe;
 	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
@@ -867,11 +867,11 @@ impl pallet_session::Config for Runtime {
 }
 
 impl pallet_session::historical::Config for Runtime {
-	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
-	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
+	type FullIdentification = serp_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = serp_staking::ExposureOf<Runtime>;
 }
 
-pallet_staking_reward_curve::build! {
+serp_staking_reward_curve::build! {
 	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,
 		max_inflation: 0_100_000,
@@ -884,9 +884,15 @@ pallet_staking_reward_curve::build! {
 
 parameter_types! {
 	pub const SessionsPerEra: sp_staking::SessionIndex = 3; // 3 hours
-	pub const BondingDuration: pallet_staking::EraIndex = 0; // No bonding duration. can actively immediate bond/unbond anytime
-	pub const SlashDeferDuration: pallet_staking::EraIndex = 2; // 6 hours
+	pub const BondingDuration: serp_staking::EraIndex = 0; // No bonding duration. can actively immediate bond/unbond anytime
+	pub const SlashDeferDuration: serp_staking::EraIndex = 2; // 6 hours
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
+	/// The number of eras between each halvening,
+	/// 4,032 eras (2 years, each era is 4 hours) halving interval.
+	pub const HalvingInterval: u64 = 4032;
+	/// The per-era issuance before any halvenings. 
+	/// Decimal places should be accounted for here.
+	pub const InitialIssuance: u64 = 144000;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
 	pub const MaxIterations: u32 = 5;
@@ -894,7 +900,7 @@ parameter_types! {
 	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
 }
 
-impl pallet_staking::Config for Runtime {
+impl serp_staking::Config for Runtime {
 	type Currency = Balances;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = U128CurrencyToVote;
@@ -902,6 +908,9 @@ impl pallet_staking::Config for Runtime {
 	type Event = Event;
 	type Slash = Treasury; // send the slashed funds to the pallet treasury.
 	type Reward = (); // rewards are minted from the void
+	type HalvingInterval = HalvingInterval; // halving interval for native currency rewards.
+	type InitialIssuance = InitialIssuance; // initial issuance for native currency rewards.
+	type SerpTreasury = SerpTreasury;
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	type SlashDeferDuration = SlashDeferDuration;
@@ -1725,7 +1734,7 @@ construct_runtime!(
 		Authorship: pallet_authorship::{Module, Call, Storage, Inherent} = 18,
 		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned} = 19,
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event, ValidateUnsigned} = 20,
-		Staking: pallet_staking::{Module, Call, Config<T>, Storage, Event<T>} = 21,
+		Staking: serp_staking::{Module, Call, Config<T>, Storage, Event<T>} = 21,
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>} = 22,
 		Historical: pallet_session_historical::{Module} = 23,
 

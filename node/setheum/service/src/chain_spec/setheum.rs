@@ -179,7 +179,7 @@ fn setheum_genesis(
 				.map(|x| (x.0.clone(), x.0.clone(), setheum_session_keys(x.2.clone(), x.3.clone())))
 				.collect::<Vec<_>>(),
 		}),
-		pallet_staking: Some(StakingConfig {
+		serp_staking: Some(StakingConfig {
 			validator_count: 5,
 			minimum_validator_count: 1,
 			stakers: initial_authorities

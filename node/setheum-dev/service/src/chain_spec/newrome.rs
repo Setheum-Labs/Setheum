@@ -270,7 +270,7 @@ fn testnet_genesis(
 				.map(|x| (x.0.clone(), x.0.clone(), newrome_session_keys(x.2.clone(), x.3.clone())))
 				.collect::<Vec<_>>(),
 		}),
-		pallet_staking: Some(StakingConfig {
+		serp_staking: Some(StakingConfig {
 			validator_count: initial_authorities.len() as u32 * 2,
 			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities
@@ -407,7 +407,7 @@ fn newrome_genesis(
 				.map(|x| (x.0.clone(), x.0.clone(), newrome_session_keys(x.2.clone(), x.3.clone())))
 				.collect::<Vec<_>>(),
 		}),
-		pallet_staking: Some(StakingConfig {
+		serp_staking: Some(StakingConfig {
 			validator_count: 5,
 			minimum_validator_count: 1,
 			stakers: initial_authorities

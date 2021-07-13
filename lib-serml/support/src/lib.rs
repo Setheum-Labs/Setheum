@@ -23,10 +23,11 @@ use codec::{Decode, Encode, FullCodec, HasCompact};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
 	evm::{CallInfo, EvmAddress},
-	CurrencyId,
+	CurrencyId, EraIndex,
 };
 use sp_core::H160;
 use sp_runtime::{
+	Perbill, curve::PiecewiseLinear,
 	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
