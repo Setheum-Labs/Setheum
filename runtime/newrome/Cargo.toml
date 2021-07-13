@@ -40,6 +40,7 @@ pallet-tips = { default-features = false, git = "https://github.com/paritytech/s
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-treasury = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-staking-reward-curve = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 sp-api = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 sp-block-builder = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
@@ -86,7 +87,6 @@ setheum-prices = { path = "../../lib-serml/prices", default-features = false }
 serp-auction = { path = "../../lib-serml/serp/serp-auction", default-features = false }
 serp-treasury = { path = "../../lib-serml/serp/serp-treasury", default-features = false }
 serp-staking = { default-features = false, path = "../../lib-serml/serp/serp-staking" }
-serp-staking-reward-curve = { default-features = false, path = "../../lib-serml/serp/serp-staking/reward-curve" }
 # - settmint
 settmint-engine = { path = "../../lib-serml/settmint/settmint-engine", default-features = false }
 settmint-gateway = { path = "../../lib-serml/settmint/settmint-gateway", default-features = false }

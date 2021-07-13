@@ -871,7 +871,7 @@ impl pallet_session::historical::Config for Runtime {
 	type FullIdentificationOf = serp_staking::ExposureOf<Runtime>;
 }
 
-serp_staking_reward_curve::build! {
+pallet_staking_reward_curve::build! {
 	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,
 		max_inflation: 0_100_000,

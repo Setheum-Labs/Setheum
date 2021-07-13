@@ -185,7 +185,7 @@ impl pallet_session::Config for Test {
 	type DisabledValidatorsThreshold = ();
 	type WeightInfo = ();
 }
-serp_staking_reward_curve::build! {
+pallet_staking_reward_curve::build! {
 	const I_NPOS: sp_runtime::curve::PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,
 		max_inflation: 0_100_000,
