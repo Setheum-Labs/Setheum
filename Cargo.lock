@@ -4093,6 +4093,7 @@ dependencies = [
  "pallet-recovery",
  "pallet-scheduler",
  "pallet-session",
+ "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-tips",
@@ -4104,7 +4105,6 @@ dependencies = [
  "serde",
  "serp-auction",
  "serp-staking",
- "serp-staking-reward-curve",
  "serp-treasury",
  "setheum-chainbridge",
  "setheum-currencies",
@@ -4190,6 +4190,7 @@ dependencies = [
  "pallet-recovery",
  "pallet-scheduler",
  "pallet-session",
+ "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-tips",
@@ -4201,7 +4202,6 @@ dependencies = [
  "serde",
  "serp-auction",
  "serp-staking",
- "serp-staking-reward-curve",
  "serp-treasury",
  "setheum-chainbridge",
  "setheum-currencies",
@@ -4931,6 +4931,17 @@ dependencies = [
  "sp-staking 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
  "sp-std 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
  "sp-trie 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
+]
+
+[[package]]
+name = "pallet-staking-reward-curve"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4#1d04678e20555e623c974ee1127bc8a45abcf3d6"
+dependencies = [
+ "proc-macro-crate 1.0.0",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -7381,13 +7392,13 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
  "pallet-session",
+ "pallet-staking-reward-curve",
  "pallet-timestamp",
  "parity-scale-codec",
  "parking_lot 0.11.1",
  "paste",
  "rand_chacha 0.2.2",
  "serde",
- "serp-staking-reward-curve",
  "serp-treasury",
  "setheum-primitives",
  "setheum-support",
@@ -7401,17 +7412,6 @@ dependencies = [
  "sp-tracing 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
  "static_assertions",
  "substrate-test-utils",
-]
-
-[[package]]
-name = "serp-staking-reward-curve"
-version = "0.8.0"
-dependencies = [
- "proc-macro-crate 1.0.0",
- "proc-macro2",
- "quote",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.4)",
- "syn",
 ]
 
 [[package]]
@@ -7895,6 +7895,7 @@ dependencies = [
  "pallet-recovery",
  "pallet-scheduler",
  "pallet-session",
+ "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-tips",
@@ -7906,7 +7907,6 @@ dependencies = [
  "serde",
  "serp-auction",
  "serp-staking",
- "serp-staking-reward-curve",
  "serp-treasury",
  "setheum-chainbridge",
  "setheum-currencies",
