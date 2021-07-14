@@ -98,8 +98,8 @@ pub use primitives::{
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, ExchangeRate, GasToWeight,
 	OffchainSolutionWeightLimit, Price, Rate, Ratio, TimeStampedPrice, 
-	NEOM, MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR RENBTC,
-	USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
+	NEOM, MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR RENBTC,
+	USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
 mod benchmarking;
@@ -1067,7 +1067,7 @@ parameter_type_with_key! {
 				TokenSymbol::JCAD => cent(*currency_id),
 				TokenSymbol::JCHF => cent(*currency_id),
 				TokenSymbol::JSGD => cent(*currency_id),
-				TokenSymbol::JBRL => cent(*currency_id),
+				TokenSymbol::JSEK => cent(*currency_id),
 				TokenSymbol::JSAR => cent(*currency_id)
 
 				TokenSymbol::RENBTC |
@@ -1112,8 +1112,8 @@ parameter_types! {
 			&JAUD => &AUD,
 			&JCAD => &CAD,
 			&JCHF => &CHF,
+			&JSEK => &SEK,
 			&JSGD => &SGD,
-			&JBRL => &BRL,
 			&JSAR => &SAR,
 			_ => None,
 		}
@@ -1133,10 +1133,10 @@ parameter_types! {
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (NSETT).
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR
+		NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
-		USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
+		USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 	];
 }
 
@@ -1285,7 +1285,7 @@ impl serp_auction::Config for Runtime {
 
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
-		JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR
+		JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR
 	];
 	pub const GetReserveCurrencyId: CurrencyId = NSETT;
 }
@@ -1404,8 +1404,8 @@ parameter_types! {
 		TradingPair::new(SETT, JAUD),
 		TradingPair::new(SETT, JCAD),
 		TradingPair::new(SETT, JCHF),
+		TradingPair::new(SETT, JSEK),
 		TradingPair::new(SETT, JSGD),
-		TradingPair::new(SETT, JBRL),
 		TradingPair::new(SETT, JSAR),
 		
 		TradingPair::new(NSETT, RENBTC),
@@ -1463,7 +1463,7 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
-		MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR, RENBTC
+		MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR, RENBTC
 	];
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }
