@@ -12,7 +12,6 @@ members = [
 	"lib-serml/prices",
 	"lib-serml/serp/serp-auction",
 	"lib-serml/serp/serp-staking",
-	"lib-serml/serp/serp-staking/reward-fn",
 	"lib-serml/serp/serp-treasury",
 	"lib-serml/settmint/settmint-engine",
 	"lib-serml/settmint/settmint-gateway",
