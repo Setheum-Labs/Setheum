@@ -35,7 +35,7 @@ primitives = { package = "setheum-primitives", path = "../../../primitives", def
 support = { package = "setheum-support", path = "../../support", default-features = false }
 
 # Optional imports for benchmarking
-frame-benchmarking = { version = "3.1.0", default-features = false, git = "https://github.com/paritytech/substrate", optional = true }
+frame-benchmarking = { default-features = false, git = "https://github.com/paritytech/substrate", optional = true }
 rand_chacha = { version = "0.2", default-features = false, optional = true }
 
 [dev-dependencies]
@@ -46,7 +46,7 @@ pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "p
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-staking-reward-curve = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 substrate-test-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-frame-benchmarking = { version = "3.1.0", git = "https://github.com/paritytech/substrate" }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate" }
 frame-election-provider-support = { features = ["runtime-benchmarks"], git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 rand_chacha = { version = "0.2" }
 parking_lot = "0.11.1"
