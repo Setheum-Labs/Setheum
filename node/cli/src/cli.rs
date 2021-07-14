@@ -77,6 +77,11 @@ pub enum Subcommand {
 
 /// An overarching CLI command definition.
 #[derive(Debug, StructOpt)]
+#[structopt(settings = &[
+	structopt::clap::AppSettings::GlobalVersion,
+	structopt::clap::AppSettings::ArgsNegateSubcommands,
+	structopt::clap::AppSettings::SubcommandsNegateReqs,
+])]
 pub struct Cli {
 	/// Possible subcommand with parameters.
 	#[structopt(subcommand)]
@@ -89,6 +94,6 @@ pub struct Cli {
 	/// Instant block sealing
 	///
 	/// Can only be used with `--dev`
-	#[structopt(long = "instant-sealing")]
+	#[structopt(long = "instant-sealing", requires = "dev")]
 	pub instant_sealing: bool,
 }
