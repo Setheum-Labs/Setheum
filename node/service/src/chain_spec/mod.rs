@@ -65,7 +65,7 @@ where
 	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
-/// Generate an Aura authority key.
+/// Generate an Babe authority key.
 pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, GrandpaId, BabeId) {
 	(
 		get_account_id_from_seed::<sr25519::Public>(&format!("{}//stash", seed)),
@@ -73,4 +73,35 @@ pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, Grandp
 		get_from_seed::<GrandpaId>(seed),
 		get_from_seed::<BabeId>(seed),
 	)
+}
+
+/// Generate an Babe authority key for Neom.
+pub fn get_neom_authority_keys_from_seed(seed: &str) -> (AccountId, BabeId) {
+	(
+		get_account_id_from_seed::<sr25519::Public>(seed),
+		get_from_seed::<BabeId>(seed),
+	)
+}
+
+/// Returns `evm_genesis_accounts`
+pub fn evm_genesis() -> BTreeMap<H160, GenesisAccount<Balance, Nonce>> {
+	let contracts_json = &include_bytes!("../../../../predeploy-contracts/resources/bytecodes.json")[..];
+	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
+	let mut accounts = BTreeMap::new();
+	for (_, address, code_string) in contracts {
+		let account = GenesisAccount {
+			nonce: 0u32,
+			balance: 0u128,
+			storage: BTreeMap::new(),
+			code: Bytes::from_str(&code_string).unwrap().0,
+		};
+
+		let addr = H160::from_slice(
+			from_hex(address.as_str())
+				.expect("predeploy-contracts must specify address")
+				.as_slice(),
+		);
+		accounts.insert(addr, account);
+	}
+	accounts
 }
