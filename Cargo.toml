@@ -7,6 +7,8 @@ members = [
 	"node/setheum-dev/cli",
 	"node/setheum-dev/service",
 
+	"lib-serml/bridges/renvm-bridge",
+	"lib-serml/bridges/chainbridge",
 	"lib-serml/dex/dex",
 	"lib-serml/dex/incentives",
 	"lib-serml/prices",
