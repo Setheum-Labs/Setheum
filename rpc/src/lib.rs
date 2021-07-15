@@ -38,6 +38,8 @@ pub use sc_rpc::SubscriptionTaskExecutor;
 
 pub use sc_rpc::DenyUnsafe;
 
+pub use evm_rpc::{EVMApi, EVMApiServer, EVMRuntimeRPCApi};
+
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
 
@@ -102,6 +104,7 @@ where
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: orml_oracle_rpc::OracleRuntimeApi<Block, DataProviderId, CurrencyId, runtime_common::TimeStampedPrice>,
+	C::Api: EVMRuntimeRPCApi<Block, Balance>,
 	C::Api: BabeApi<Block>,
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + Sync + Send + 'static,
@@ -164,6 +167,7 @@ where
 		finality_provider,
 	)));
 	io.extend_with(OracleApi::to_delegate(Oracle::new(client.clone())));
+	io.extend_with(EVMApiServer::to_delegate(EVMApi::new(client, deny_unsafe)));
 
 	io
 }

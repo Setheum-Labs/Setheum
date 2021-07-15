@@ -33,5 +33,6 @@ pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrat
 orml-oracle-rpc = { path = "../lib-openrml/oracle/rpc" }
 
 # local dependencies
+evm-rpc = { path = "../lib-serml/evm/evm/rpc" }
 runtime-common = { path = "../runtime/common" }
 primitives = { package = "setheum-primitives", path = "../primitives" }
