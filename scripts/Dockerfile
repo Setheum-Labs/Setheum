@@ -57,11 +57,11 @@ LABEL maintainer="jbashir52@gmail.com"
 
 RUN useradd -m -u 1000 -U -s /bin/sh -d /setheum setheum
 
-COPY --from=builder /setheum/target/$PROFILE/setheum-dev /usr/local/bin
+COPY --from=builder /app/target/release/setheum /usr/local/bin
 
 # checks
-RUN ldd /usr/local/node/setheum-dev && \
-	/usr/local/node/setheum-dev --version
+RUN ldd /usr/local/bin/setheum && \
+	/usr/local/bin/setheum --version
 
 # Shrinking
 RUN rm -rf /usr/lib/python* && \
@@ -74,4 +74,4 @@ RUN mkdir /setheum/data
 
 VOLUME ["/setheum/data"]
 
-ENTRYPOINT ["/usr/local/node/setheum-dev"]
+ENTRYPOINT ["/usr/local/bin/setheum"]
