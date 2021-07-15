@@ -1786,75 +1786,75 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 1,
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 2,
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage} = 3,
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Call, Storage} = 3,
 
 		// Tokens & Related
-		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>} = 4,
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>} = 5,
-		Currencies: setheum_currencies::{Module, Call, Event<T>} = 6,
-		NFT: setheum_nft::{Module, Call, Event<T>} = 7,
-		Vesting: orml_vesting::{Module, Storage, Call, Event<T>, Config<T>} = 8,
-		TransactionPayment: setheum_transaction_payment::{Module, Call, Storage} = 9,
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 4,
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 5,
+		Currencies: setheum_currencies::{Pallet, Call, Event<T>} = 6,
+		NFT: setheum_nft::{Pallet, Call, Event<T>} = 7,
+		Vesting: orml_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 8,
+		TransactionPayment: setheum_transaction_payment::{Pallet, Call, Storage} = 9,
 		AirDrop: setheum_airdrop::{Pallet, Call, Storage, Event<T>, Config<T>} = 142,
 
 		// Treasury
-		Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>} = 10,
-		Bounties: pallet_bounties::{Module, Call, Storage, Event<T>} = 11,
-		Tips: pallet_tips::{Module, Call, Storage, Event<T>} = 12,
+		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 10,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 11,
+		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 12,
 
 		// Utility
-		Utility: pallet_utility::{Module, Call, Event} = 13,
-		Multisig: pallet_multisig::{Module, Call, Storage, Event<T>} = 14,
-		Recovery: pallet_recovery::{Module, Call, Storage, Event<T>} = 15,
-		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>} = 16 ,
-		Indices: pallet_indices::{Module, Call, Storage, Config<T>, Event<T>} = 17,
+		Utility: pallet_utility::{Pallet, Call, Event} = 13,
+		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 14,
+		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 15,
+		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 16 ,
+		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 17,
 
 		// Consensus & Staking
-		Authorship: pallet_authorship::{Module, Call, Storage, Inherent} = 18,
-		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned} = 19,
-		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event, ValidateUnsigned} = 20,
-		Staking: serp_staking::{Module, Call, Config<T>, Storage, Event<T>} = 21,
-		Session: pallet_session::{Module, Call, Storage, Event, Config<T>} = 22,
+		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 18,
+		Babe: pallet_babe::{Pallet, Call, Storage, Config, Inherent, ValidateUnsigned} = 19,
+		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 20,
+		Staking: serp_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 21,
+		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
 		Historical: pallet_session_historical::{Module} = 23,
 
 		// Governance
-		GeneralCouncil: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 24,
-		GeneralCouncilMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>} = 25,
-		SetheumJury: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
-		SetheumJuryMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 31,
-		FinancialCouncil: pallet_collective::<Instance3>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 26,
-		FinancialCouncilMembership: pallet_membership::<Instance3>::{Module, Call, Storage, Event<T>, Config<T>} = 27,
-		ExchangeCouncil: pallet_collective::<Instance4>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
-		ExchangeCouncilMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>} = 33,
-		TechnicalCommittee: pallet_collective::<Instance5>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
-		TechnicalCommitteeMembership: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 29,
-		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>} = 34,
+		GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 24,
+		GeneralCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 25,
+		SetheumJury: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
+		SetheumJuryMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 31,
+		FinancialCouncil: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 26,
+		FinancialCouncilMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 27,
+		ExchangeCouncil: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
+		ExchangeCouncilMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 33,
+		TechnicalCommittee: pallet_collective::<Instance5>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
+		TechnicalCommitteeMembership: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 29,
+		Authority: orml_authority::{Pallet, Call, Event<T>, Origin<T>} = 34,
 		
 		// Oracle
 		//
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>} = 35,
+		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Config<T>, Event<T>} = 35,
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		OperatorMembershipSetheum: pallet_membership::<Instance6>::{Module, Call, Storage, Event<T>, Config<T>} = 36,
+		OperatorMembershipSetheum: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 36,
 
 		// ORML Core
-		Auction: orml_auction::{Module, Storage, Call, Event<T>} = 37,
-		Rewards: orml_rewards::{Module, Storage, Call} = 38,
-		OrmlNFT: orml_nft::{Module, Storage, Config<T>} = 39,
+		Auction: orml_auction::{Pallet, Storage, Call, Event<T>} = 37,
+		Rewards: orml_rewards::{Pallet, Storage, Call} = 38,
+		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 39,
 
 		// Setheum Core
-		Prices: setheum_prices::{Module, Storage, Call, Event<T>} = 40,
-		SerpAuctionManager: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned} 41,
-		SerpTreasury: serp_treasury::{Module, Storage, Call, Config, Event<T>} = 42,
+		Prices: setheum_prices::{Pallet, Storage, Call, Event<T>} = 40,
+		SerpAuctionManager: serp_auction::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} 41,
+		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 42,
 
 		// Dex
-		Dex: dex::{Module, Storage, Call, Event<T>, Config<T>} = 43,
-		Incentives: setheum_incentives::{Module, Storage, Call, Event<T>} = 44,
+		Dex: dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 43,
+		Incentives: setheum_incentives::{Pallet, Storage, Call, Event<T>} = 44,
 
 		// Settmint
-		SettmintEngine: settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned} = 45,
-		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>} = 46,
-		SettmintManager: settmint_manager::{Module, Storage, Call, Event<T>} = 47,
+		SettmintEngine: settmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 45,
+		SettmintGateway: settmint_gateway::{Pallet, Storage, Call, Event<T>} = 46,
+		SettmintManager: settmint_manager::{Pallet, Storage, Call, Event<T>} = 47,
 
 		// Smart contracts
 		// Setheum EVM (SEVM)
@@ -1869,7 +1869,7 @@ construct_runtime!(
 		SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>} = 54,
 
 		// Dev
-		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>} = 255,
+		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 255,
 	}
 );
 

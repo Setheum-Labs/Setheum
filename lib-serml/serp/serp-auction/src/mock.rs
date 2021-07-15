@@ -300,12 +300,12 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		SerpAuctionManagerModule: serp_auction::{Module, Storage, Call, Event<T>, ValidateUnsigned},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		AuctionModule: orml_auction::{Module, Storage, Call, Event<T>},
-		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Event<T>},
-		SetheumDEX: dex::{Module, Storage, Call, Event<T>, Config<T>},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		SerpAuctionManagerModule: serp_auction::{Pallet, Storage, Call, Event<T>, ValidateUnsigned},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		AuctionModule: orml_auction::{Pallet, Storage, Call, Event<T>},
+		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Event<T>},
+		SetheumDEX: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 

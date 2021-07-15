@@ -373,14 +373,14 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		SettmintGateway: settmint_gateway::{Module, Storage, Call, Event<T>},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		Currencies: orml_currencies::{Module, Call, Event<T>},
-		SettmintManagerModule: settmint_manager::{Module, Storage, Call, Event<T>},
-		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Event<T>},
-		SettmintEngineModule: settmint_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		SettmintGateway: settmint_gateway::{Pallet, Storage, Call, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
+		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		SettmintManagerModule: settmint_manager::{Pallet, Storage, Call, Event<T>},
+		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Event<T>},
+		SettmintEngineModule: settmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned},
 	}
 );
 
