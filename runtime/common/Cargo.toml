@@ -39,7 +39,7 @@ pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-setheum-service = {  path = "../../node/setheum/service" }
+setheum-service = {  path = "../../node/service" }
 orml-tokens = { path = "../../lib-openrml/tokens" }
 orml-nft = { path = "../../lib-openrml/nft" }
 setheum-currencies = { path = "../../lib-serml/tokens/currencies" }
