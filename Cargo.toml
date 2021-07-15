@@ -2,9 +2,9 @@ cargo-features = ["resolver"]
 
 [workspace]
 members = [
-	"node/setheum",
-	"node/setheum/cli",
-	"node/setheum/service",
+	"node",
+	"node/cli",
+	"node/service",
 
 	"lib-serml/airdrop",
 	"lib-serml/bridges/*",
