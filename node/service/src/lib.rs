@@ -22,13 +22,14 @@
 //! Setheum service. Specialized wrapper over substrate service.
 
 use std::sync::Arc;
-
-use setheum_primitives::Block;
 use prometheus_endpoint::Registry;
 use sc_client_api::{ExecutorProvider, RemoteBackend};
+use sc_consensus::LongestChain;
+use sc_consensus_aura::ImportQueueParams;
 use sc_executor::native_executor_instance;
+use sc_network::NetworkService;
 use sc_finality_grandpa::FinalityProofProvider as GrandpaFinalityProofProvider;
-use sc_service::{config::Configuration, error::Error as ServiceError, PartialComponents, RpcHandlers, TaskManager};
+use sc_service::{config::Configuration, error::Error as ServiceError, PartialComponents, RpcHandlers, Role, TFullBackend, TFullClient, TaskManager};
 use sp_inherents::InherentDataProviders;
 use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
 
@@ -40,6 +41,20 @@ pub use setheum_runtime;
 pub use neom_runtime;
 #[cfg(feature = "with-newrome-runtime")]
 pub use newrome_runtime;
+#[cfg(feature = "with-newrome-runtime")]
+use sc_consensus_aura::StartAuraParams;
+
+use setheum_primitives::{Block, Hash};
+#[cfg(feature = "with-newrome-runtime")]
+use futures::stream::StreamExt;
+use mock_timestamp_data_provider::MockTimestampInherentDataProvider;
+
+use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
+use sp_consensus::SlotData;
+use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
+use sp_keystore::SyncCryptoStorePtr;
+use sp_trie::PrefixedMemoryDB;
+use substrate_prometheus_endpoint::Registry;
 
 pub use sc_executor::NativeExecutionDispatch;
 pub use sc_service::{
@@ -54,7 +69,7 @@ mod mock_timestamp_data_provider;
 
 #[cfg(feature = "with-newrome-runtime")]
 native_executor_instance!(
-	pub NewromeExecutor,
+	pub NewRomeExecutor,
 	newrome_runtime::api::dispatch,
 	newrome_runtime::native_version,
 	frame_benchmarking::benchmarking::HostFunctions,
@@ -85,7 +100,7 @@ pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Neom` network.
 	fn is_neom(&self) -> bool;
 
-	/// Returns if this is a configuration for the `Newrome` network.
+	/// Returns if this is a configuration for the `NewRome` network.
 	fn is_newrome(&self) -> bool;
 }
 
@@ -101,7 +116,18 @@ impl IdentifyVariant for Box<dyn ChainSpec> {
 	fn is_newrome(&self) -> bool {
 		self.id().starts_with("newrome") || self.id().starts_with("rom")
 	}
+
+	fn is_newrome_dev(&self) -> bool {
+		self.id().starts_with("newrome-dev")
+	}
 }
+
+pub const NEWROME_RUNTIME_NOT_AVAILABLE: &str =
+	"NewRome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.";
+pub const NEOM_RUNTIME_NOT_AVAILABLE: &str =
+	"Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.";
+pub const SETHEUM_RUNTIME_NOT_AVAILABLE: &str =
+	"Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.";
 
 /// Setheum's full backend.
 type FullBackend = sc_service::TFullBackend<Block>;
@@ -187,28 +213,42 @@ where
 
 	let inherent_data_providers = sp_inherents::InherentDataProviders::new();
 
-	let import_queue = if instant_sealing {
-		inherent_data_providers
-			.register_provider(mock_timestamp_data_provider::MockTimestampInherentDataProvider)
-			.map_err(Into::into)
-			.map_err(sp_consensus::error::Error::InherentData)?;
+	let import_queue = if dev {
+		if instant_sealing {
+			inherent_data_providers
+				.register_provider(mock_timestamp_data_provider::MockTimestampInherentDataProvider)
+				.map_err(Into::into)
+				.map_err(sp_consensus::error::Error::InherentData)?;
 
-		sc_consensus_manual_seal::import_queue(
-			Box::new(client.clone()),
-			&task_manager.spawn_handle(),
-			config.prometheus_registry(),
-		)
+			sc_consensus_manual_seal::import_queue(
+				Box::new(client.clone()),
+				&task_manager.spawn_handle(),
+				config.prometheus_registry(),
+			)
+		} else {
+			sc_consensus_babe::import_queue(
+				babe_link.clone(),
+				block_import.clone(),
+				Some(Box::new(justification_import)),
+				client.clone(),
+				select_chain.clone(),
+				inherent_data_providers.clone(),
+				&task_manager.spawn_handle(),
+				config.prometheus_registry(),
+				sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
+			)?
+		};
 	} else {
 		sc_consensus_babe::import_queue(
-			babe_link.clone(),
-			block_import.clone(),
-			Some(Box::new(justification_import)),
-			client.clone(),
-			select_chain.clone(),
-			inherent_data_providers.clone(),
-			&task_manager.spawn_handle(),
-			config.prometheus_registry(),
-			sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
+				babe_link.clone(),
+				block_import.clone(),
+				Some(Box::new(justification_import)),
+				client.clone(),
+				select_chain.clone(),
+				inherent_data_providers.clone(),
+				&task_manager.spawn_handle(),
+				config.prometheus_registry(),
+				sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
 		)?
 	};
 
@@ -585,7 +625,7 @@ pub fn new_chain_ops(
 	ServiceError,
 > {
 	config.keystore = sc_service::config::KeystoreConfig::InMemory;
-	if config.chain_spec.is_newrome() {
+	if config.chain_spec.is_newrome_dev() || config.chain_spec.is_newrome() {
 		#[cfg(feature = "with-newrome-runtime")]
 		{
 			let PartialComponents {
@@ -594,11 +634,11 @@ pub fn new_chain_ops(
 				import_queue,
 				task_manager,
 				..
-			} = new_partial::<newrome_runtime::RuntimeApi, NewromeExecutor>(config, false, false)?;
-			Ok((Arc::new(Client::Newrome(client)), backend, import_queue, task_manager))
+			} = new_partial(config, config.chain_spec.is_newrome_dev(), false)?;
+			Ok((Arc::new(Client::NewRome(client)), backend, import_queue, task_manager))
 		}
 		#[cfg(not(feature = "with-newrome-runtime"))]
-		Err("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.".into())
+		Err(NEWROME_RUNTIME_NOT_AVAILABLE.into())
 	} else if config.chain_spec.is_neom() {
 		#[cfg(feature = "with-neom-runtime")]
 		{
@@ -612,7 +652,7 @@ pub fn new_chain_ops(
 			Ok((Arc::new(Client::Neom(client)), backend, import_queue, task_manager))
 		}
 		#[cfg(not(feature = "with-neom-runtime"))]
-		Err("Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.".into())
+		Err(NEOM_RUNTIME_NOT_AVAILABLE.into())
 	} else {
 		#[cfg(feature = "with-setheum-runtime")]
 		{
@@ -626,7 +666,7 @@ pub fn new_chain_ops(
 			Ok((Arc::new(Client::Setheum(client)), backend, import_queue, task_manager))
 		}
 		#[cfg(not(feature = "with-setheum-runtime"))]
-		Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
+		Err(SETHEUM_RUNTIME_NOT_AVAILABLE.into())
 	}
 }
 
@@ -636,17 +676,17 @@ pub fn build_light(config: Configuration) -> Result<TaskManager, ServiceError> {
 		#[cfg(feature = "with-setheum-runtime")]
 		return new_light::<setheum_runtime::RuntimeApi, SetheumExecutor>(config).map(|r| r.0);
 		#[cfg(not(feature = "with-setheum-runtime"))]
-		Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
+		Err(SETHEUM_RUNTIME_NOT_AVAILABLE.into())
 	} else if config.chain_spec.is_neom() {
 		#[cfg(feature = "with-neom-runtime")]
 		return new_light::<neom_runtime::RuntimeApi, NeomExecutor>(config).map(|r| r.0);
 		#[cfg(not(feature = "with-neom-runtime"))]
-		Err("Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.".into())
+		Err(NEOM_RUNTIME_NOT_AVAILABLE.into())
 	} else {
 		#[cfg(feature = "with-newrome-runtime")]
-		return new_light::<newrome_runtime::RuntimeApi, NewromeExecutor>(config).map(|r| r.0);
+		return new_light::<newrome_runtime::RuntimeApi, NewRomeExecutor>(config).map(|r| r.0);
 		#[cfg(not(feature = "with-newrome-runtime"))]
-		Err("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.".into())
+		Err(NEWROME_RUNTIME_NOT_AVAILABLE.into())
 	}
 }
 
@@ -663,7 +703,7 @@ pub fn build_full(
 			Ok((Arc::new(Client::Setheum(client)), network_status_sinks, task_manager))
 		}
 		#[cfg(not(feature = "with-setheum-runtime"))]
-		Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into())
+		Err(SETHEUM_RUNTIME_NOT_AVAILABLE.into())
 	} else if config.chain_spec.is_neom() {
 		#[cfg(feature = "with-neom-runtime")]
 		{
@@ -672,15 +712,211 @@ pub fn build_full(
 			Ok((Arc::new(Client::Neom(client)), network_status_sinks, task_manager))
 		}
 		#[cfg(not(feature = "with-neom-runtime"))]
-		Err("Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.".into())
+		Err(NEOM_RUNTIME_NOT_AVAILABLE.into())
 	} else {
 		#[cfg(feature = "with-newrome-runtime")]
 		{
 			let (task_manager, _, client, _, _, network_status_sinks) =
-				new_full::<newrome_runtime::RuntimeApi, NewromeExecutor>(config, instant_sealing, test)?;
-			Ok((Arc::new(Client::Newrome(client)), network_status_sinks, task_manager))
+				new_full::<newrome_runtime::RuntimeApi, NewRomeExecutor>(config, instant_sealing, test)?;
+			Ok((Arc::new(Client::NewRome(client)), network_status_sinks, task_manager))
 		}
 		#[cfg(not(feature = "with-newrome-runtime"))]
-		Err("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.".into())
+		Err(NEWROME_RUNTIME_NOT_AVAILABLE.into())
 	}
+}
+
+/// Builds a new object suitable for chain operations.
+pub fn new_chain_ops(
+	mut config: &mut Configuration,
+) -> Result<
+	(
+		Arc<Client>,
+		Arc<FullBackend>,
+		sp_consensus::import_queue::BasicQueue<Block, PrefixedMemoryDB<BlakeTwo256>>,
+		TaskManager,
+	),
+	ServiceError,
+> {
+	config.keystore = sc_service::config::KeystoreConfig::InMemory;
+	if config.chain_spec.is_newrome_dev() || config.chain_spec.is_newrome() {
+		#[cfg(feature = "with- newrome-runtime")]
+		{
+			let PartialComponents {
+				client,
+				backend,
+				import_queue,
+				task_manager,
+				..
+			} = new_partial(config, config.chain_spec.is_newrome_dev(), false)?;
+			Ok((Arc::new(Client::NewRome(client)), backend, import_queue, task_manager))
+		}
+		#[cfg(not(feature = "with- newrome-runtime"))]
+		Err(NEWROME_RUNTIME_NOT_AVAILABLE.into())
+	} else if config.chain_spec.is_neom() {
+		#[cfg(feature = "with-neom-runtime")]
+		{
+			let PartialComponents {
+				client,
+				backend,
+				import_queue,
+				task_manager,
+				..
+			} = new_partial::<neom_runtime::RuntimeApi, NeomExecutor>(config, false, false)?;
+			Ok((Arc::new(Client::Neom(client)), backend, import_queue, task_manager))
+		}
+		#[cfg(not(feature = "with-neom-runtime"))]
+		Err(NEOM_RUNTIME_NOT_AVAILABLE.into())
+	} else {
+		#[cfg(feature = "with-setheum-runtime")]
+		{
+			let PartialComponents {
+				client,
+				backend,
+				import_queue,
+				task_manager,
+				..
+			} = new_partial::<setheum_runtime::RuntimeApi, SetheumExecutor>(config, false, false)?;
+			Ok((Arc::new(Client::Setheum(client)), backend, import_queue, task_manager))
+		}
+		#[cfg(not(feature = "with-setheum-runtime"))]
+		Err(SETHEUM_RUNTIME_NOT_AVAILABLE.into())
+	}
+}
+
+#[cfg(feature = "with-newrome-runtime")]
+fn inner_newrome_dev(config: Configuration, instant_sealing: bool) -> Result<TaskManager, ServiceError> {
+	let sc_service::PartialComponents {
+		client,
+		backend,
+		mut task_manager,
+		import_queue,
+		keystore_container,
+		select_chain: maybe_select_chain,
+		transaction_pool,
+		other: (mut telemetry, _),
+	} = new_partial::<newrome_runtime::RuntimeApi, NewRomeExecutor>(&config, true, instant_sealing)?;
+
+	let (network, system_rpc_tx, network_starter) = sc_service::build_network(sc_service::BuildNetworkParams {
+		config: &config,
+		client: client.clone(),
+		transaction_pool: transaction_pool.clone(),
+		spawn_handle: task_manager.spawn_handle(),
+		import_queue,
+		on_demand: None,
+		block_announce_validator_builder: None,
+	})?;
+
+	if config.offchain_worker.enabled {
+		sc_service::build_offchain_workers(&config, task_manager.spawn_handle(), client.clone(), network.clone());
+	}
+
+	let (block_import, babe_link) = sc_consensus_babe::block_import(
+		sc_consensus_babe::Config::get_or_compute(&*client)?,
+		grandpa_block_import,
+		client.clone(),
+	)?;
+
+	let prometheus_registry = config.prometheus_registry().cloned();
+
+	let role = config.role.clone();
+	let force_authoring = config.force_authoring;
+	let backoff_authoring_blocks: Option<()> = None;
+
+	let select_chain =
+		maybe_select_chain.expect("In newrome dev mode, `new_partial` will return some `select_chain`; qed");
+
+	if role.is_authority() {
+		let proposer_factory = sc_basic_authorship::ProposerFactory::new(
+			task_manager.spawn_handle(),
+			client.clone(),
+			transaction_pool.clone(),
+			prometheus_registry.as_ref(),
+			telemetry.as_ref().map(|x| x.handle()),
+		);
+
+		if instant_sealing {
+			let pool = transaction_pool.pool().clone();
+			let commands_stream = pool.validated_pool().import_notification_stream().map(|_| {
+				sc_consensus_manual_seal::rpc::EngineCommand::SealNewBlock {
+					create_empty: false,
+					finalize: true,
+					parent_hash: None,
+					sender: None,
+				}
+			});
+
+			let authorship_future =
+				sc_consensus_manual_seal::run_manual_seal(sc_consensus_manual_seal::ManualSealParams {
+					block_import: client.clone(),
+					env: proposer_factory,
+					client: client.clone(),
+					pool,
+					commands_stream,
+					select_chain,
+					consensus_data_provider: None,
+					create_inherent_data_providers: |_, _| async {
+						Ok((
+							sp_timestamp::InherentDataProvider::from_system_time(),
+							MockTimestampInherentDataProvider,
+						))
+					},
+				});
+			// we spawn the future on a background thread managed by service.
+			task_manager
+				.spawn_essential_handle()
+				.spawn_blocking("instant-seal", authorship_future);
+		} else {
+		sc_consensus_babe::import_queue(
+				babe_link.clone(),
+				block_import.clone(),
+				Some(Box::new(justification_import)),
+				client.clone(),
+				select_chain.clone(),
+				inherent_data_providers.clone(),
+				&task_manager.spawn_handle(),
+				config.prometheus_registry(),
+				sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
+		)?
+		}
+	}
+
+	let rpc_extensions_builder = {
+		let client = client.clone();
+		let transaction_pool = transaction_pool.clone();
+
+		Box::new(move |deny_unsafe, _| -> acala_rpc::RpcExtension {
+			let deps = acala_rpc::FullDeps {
+				client: client.clone(),
+				pool: transaction_pool.clone(),
+				deny_unsafe,
+			};
+
+			acala_rpc::create_full(deps)
+		})
+	};
+
+	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
+		on_demand: None,
+		remote_blockchain: None,
+		rpc_extensions_builder,
+		client,
+		transaction_pool,
+		task_manager: &mut task_manager,
+		config,
+		keystore: keystore_container.sync_keystore(),
+		backend,
+		network,
+		system_rpc_tx,
+		telemetry: telemetry.as_mut(),
+	})?;
+
+	network_starter.start_network();
+
+	Ok(task_manager)
+}
+
+// TODO: Update `inner_newrome-dev` or consider removing it
+#[cfg(feature = "with-newrome-runtime")]
+pub fn newrome_dev(config: Configuration, instant_sealing: bool) -> Result<TaskManager, ServiceError> {
+	inner_newrome_dev(config, instant_sealing)
 }
