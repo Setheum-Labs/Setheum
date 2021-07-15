@@ -12,6 +12,9 @@ codec = { package = "parity-scale-codec", version = "2.0.0", default-features = 
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
 hex-literal = { version = "0.3.1" }
 libsecp256k1 = { version = "0.3.4", default-features = false, optional = true }
+
+evm = { version = "0.26.0", optional = true, default-features = false }
+
 # Substrate dependencies
 frame-benchmarking = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", optional = true }
 frame-executive = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
@@ -69,6 +72,9 @@ orml-rewards = { path = "../../lib-openrml/rewards", default-features = false }
 orml-nft= { path = "../../lib-openrml/nft", default-features = false }
 
 # local dependencies
+# - airdrop
+setheum-airdrop = { path = "../../lib-serml/airdrop", default-features = false }
+
 # - bridges
 setheum-chainbridge = { path = "../../lib-serml/bridges/chainbridge", default-features = false }
 setheum-renvm-bridge = { path = "../../lib-serml/bridges/renvm-bridge", default-features = false }
@@ -165,6 +171,7 @@ std = [
 	"orml-rewards/std",
 	"orml-nft/std",
 
+	"setheum-airdrop/std",
 	"setheum-renvm-bridge/std",
 	"setheum-dex/std",
 	"setheum-incentives/std",
@@ -210,13 +217,11 @@ runtime-benchmarks = [
 # in WASM.
 disable-runtime-api = []
 
-# A feature that should be enabled when the runtime should be build for on-chain
-# deployment. This will disable stuff that shouldn't be part of the on-chain wasm
-# to make it smaller like logging for example.
-on-chain-release-build = [
-	"sp-api/disable-logging",
+with-sevm = [
+	"evm",
+	"setheum-evm/with-sevm",
+	"runtime-common/with-sevm",
 ]
-
 try-runtime = [
 	"frame-try-runtime",
 	"frame-executive/try-runtime",
@@ -250,6 +255,7 @@ try-runtime = [
 	"orml-rewards/try-runtime",
 	"orml-nft/try-runtime",
 
+	"setheum-airdrop/try-runtime",
 	"setheum-renvm-bridge/try-runtime",
 	"setheum-dex/try-runtime",
 	"setheum-incentives/try-runtime",
