@@ -170,8 +170,8 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SGDJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_BRLJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(BRLJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_SEKJ_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SEKJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_SARJ_SETT".to_string(),
@@ -223,8 +223,8 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSGD), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_JBRL_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JBRL), DexShare::Token(NSETT))).unwrap(),
+					symbol: "LP_JSEK_NSETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSEK), DexShare::Token(NSETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_JSAR_NSETT".to_string(),
@@ -264,7 +264,7 @@ create_currency_id! {
 		CADJ("Setheum Canadian Dollar", 12) = 8,
 		CHFJ("Setheum Swiss Franc", 12) = 9,
  		SGDJ("Setheum Singapore Dollar", 12) = 10,
-		BRLJ("Setheum Brazilian Real", 12) = 11,
+		SEKJ("Setheum Swedish Krona", 12) = 11,
  		SARJ("Setheum Saudi Riyal", 12) = 12,
 		/// Neom Network >---------------------->>
 		NEOM("Neom", 10) = 128, // could consider having 12 decimals too.
@@ -279,7 +279,7 @@ create_currency_id! {
 		JCAD("Neom Canadian Dollar", 12) = 136,
 		JCHF("Neom Swiss Franc", 12) = 137,
  		JSGD("Neom Singapore Dollar", 12) = 138,
-		JBRL("Neom Brazilian Real", 12) = 139,
+		JSEK("Neom Swedish Krona", 12) = 139,
  		JSAR("Neom Saudi Riyal", 12) = 140,
 		 
 		// Foreign System Currencies
@@ -294,7 +294,7 @@ create_currency_id! {
 		CAD("Fiat Canadian Dollar", 12) = 186,
 		CHF("Fiat Swiss Franc", 12) = 187,
  		SGD("Fiat Singapore Dollar", 12) = 188,
-		BRL("Fiat Brazilian Real", 12) = 189,
+		SEK("Fiat Swedish Krona", 12) = 189,
  		SAR("Fiat Saudi Riyal", 12) = 190,
 		KWD("Fiat Kuwaiti Dinar", 12) = 191,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
 		JOD("Fiat Jordanian Dinar", 12) = 192,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.

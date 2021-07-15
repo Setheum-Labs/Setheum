@@ -98,8 +98,8 @@ pub use primitives::{
 pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights, ExchangeRate, GasToWeight,
 	OffchainSolutionWeightLimit, Price, Rate, Ratio, TimeStampedPrice, 
-	NEOM, MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR RENBTC,
-	USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
+	NEOM, MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR RENBTC,
+	USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
 mod benchmarking;
@@ -592,7 +592,7 @@ parameter_types! {
 	pub const SetheumJuryMaxMembers: u32 = 50;
 }
 
-type SetheumJuryInstance = pallet_collective::Instance1;
+type SetheumJuryInstance = pallet_collective::Instance2;
 impl pallet_collective::Config<SetheumJuryInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -604,7 +604,7 @@ impl pallet_collective::Config<SetheumJuryInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type SetheumJuryMembershipInstance = pallet_membership::Instance1;
+type SetheumJuryMembershipInstance = pallet_membership::Instance2;
 impl pallet_membership::Config<SetheumJuryMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrThreeFourthsSetheumJury;
@@ -624,7 +624,7 @@ parameter_types! {
 	pub const FinancialCouncilMaxMembers: u32 = 50;
 }
 
-type FinancialCouncilInstance = pallet_collective::Instance2;
+type FinancialCouncilInstance = pallet_collective::Instance3;
 impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -656,7 +656,7 @@ parameter_types! {
 	pub const ExchangeCouncilMaxMembers: u32 = 50;
 }
 
-type ExchangeCouncilInstance = pallet_collective::Instance2;
+type ExchangeCouncilInstance = pallet_collective::Instance4;
 impl pallet_collective::Config<ExchangeCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -668,7 +668,7 @@ impl pallet_collective::Config<ExchangeCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type ExchangeCouncilMembershipInstance = pallet_membership::Instance2;
+type ExchangeCouncilMembershipInstance = pallet_membership::Instance4;
 impl pallet_membership::Config<ExchangeCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsExchangeCouncil;
@@ -688,7 +688,7 @@ parameter_types! {
 	pub const TechnicalCouncilMaxMembers: u32 = 50;
 }
 
-type TechnicalCommitteeInstance = pallet_collective::Instance4;
+type TechnicalCommitteeInstance = pallet_collective::Instance5;
 impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -700,7 +700,7 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
+type TechnicalCommitteeMembershipInstance = pallet_membership::Instance5;
 
 impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime {
 	type Event = Event;
@@ -1067,7 +1067,7 @@ parameter_type_with_key! {
 				TokenSymbol::JCAD => cent(*currency_id),
 				TokenSymbol::JCHF => cent(*currency_id),
 				TokenSymbol::JSGD => cent(*currency_id),
-				TokenSymbol::JBRL => cent(*currency_id),
+				TokenSymbol::JSEK => cent(*currency_id),
 				TokenSymbol::JSAR => cent(*currency_id)
 
 				TokenSymbol::RENBTC |
@@ -1112,8 +1112,8 @@ parameter_types! {
 			&JAUD => &AUD,
 			&JCAD => &CAD,
 			&JCHF => &CHF,
+			&JSEK => &SEK,
 			&JSGD => &SGD,
-			&JBRL => &BRL,
 			&JSAR => &SAR,
 			_ => None,
 		}
@@ -1133,10 +1133,10 @@ parameter_types! {
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (NSETT).
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR
+		NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
-		USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP
+		USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 	];
 }
 
@@ -1285,7 +1285,7 @@ impl serp_auction::Config for Runtime {
 
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
-		JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR
+		JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR
 	];
 	pub const GetReserveCurrencyId: CurrencyId = NSETT;
 }
@@ -1404,8 +1404,8 @@ parameter_types! {
 		TradingPair::new(SETT, JAUD),
 		TradingPair::new(SETT, JCAD),
 		TradingPair::new(SETT, JCHF),
+		TradingPair::new(SETT, JSEK),
 		TradingPair::new(SETT, JSGD),
-		TradingPair::new(SETT, JBRL),
 		TradingPair::new(SETT, JSAR),
 		
 		TradingPair::new(NSETT, RENBTC),
@@ -1463,7 +1463,7 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
-		MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR, RENBTC
+		MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR, RENBTC
 	];
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }
@@ -1713,17 +1713,18 @@ construct_runtime!(
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>} = 22,
 		Historical: pallet_session_historical::{Module} = 23,
 
+		// TODO: Update pallet index - starting from here.
 		// Governance
 		GeneralCouncil: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 24,
 		GeneralCouncilMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>} = 25,
-		FinancialCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 26,
-		FinancialCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 27,
-		TechnicalCommittee: pallet_collective::<Instance4>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
-		TechnicalCommitteeMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>} = 29,
-		SetheumJury: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
-		SetheumJuryMembership: pallet_membership::<Instance1>::{Module, Call, Storage, Event<T>, Config<T>} = 31,
-		ExchangeCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
-		ExchangeCouncilMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 33,
+		SetheumJury: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 24,
+		SetheumJuryMembership: pallet_membership::<Instance2>::{Module, Call, Storage, Event<T>, Config<T>} = 31,
+		FinancialCouncil: pallet_collective::<Instance3>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 26,
+		FinancialCouncilMembership: pallet_membership::<Instance3>::{Module, Call, Storage, Event<T>, Config<T>} = 27,
+		ExchangeCouncil: pallet_collective::<Instance4>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
+		ExchangeCouncilMembership: pallet_membership::<Instance4>::{Module, Call, Storage, Event<T>, Config<T>} = 33,
+		TechnicalCommittee: pallet_collective::<Instance5>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
+		TechnicalCommitteeMembership: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 29,
 		Authority: orml_authority::{Module, Call, Event<T>, Origin<T>} = 34,
 		
 		// Oracle
@@ -1731,7 +1732,7 @@ construct_runtime!(
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
 		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Config<T>, Event<T>} = 35,
 		// OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 36,
+		OperatorMembershipSetheum: pallet_membership::<Instance6>::{Module, Call, Storage, Event<T>, Config<T>} = 36,
 
 		// ORML Core
 		Auction: orml_auction::{Module, Storage, Call, Event<T>} = 37,

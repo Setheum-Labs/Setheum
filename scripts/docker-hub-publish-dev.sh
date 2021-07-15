@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-VERSION=$(git rev-parse --short HEAD)
+set -e
 
-docker build . -t setheum/setheum-node:$VERSION --no-cache
-docker push setheum/setheum-node:$VERSION
+VERSION=$(git rev-parse --short HEAD)
+NODE_NAME=acala/mandala-node
+BUILD_ARGS="--features with-mandala-runtime --features=with-sevm"
+
+docker build -f scripts/Dockerfile . -t $NODE_NAME:$VERSION --no-cache --build-arg GIT_COMMIT=${VERSION} --build-arg BUILD_ARGS="$BUILD_ARGS"
+docker push $NODE_NAME:$VERSION

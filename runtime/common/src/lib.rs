@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Common runtime code for Setheum, Neom and Newrome.
+//! Common runtime code for Setheum, Neom and NewRome.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -43,9 +43,9 @@ pub use precompile::{
 };
 pub use primitives::currency::{
 	TokenInfo, 
-	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ,
-	NEOM, MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSGD, JBRL, JSAR, RENBTC,
-	USD, EUR, JPY, GBP, AUD, CAD, CHF, SGD, BRL, SAR, KWD, JOD, BHD, KYD, OMR, GIP,
+	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ,
+	NEOM, MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR, RENBTC,
+	USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
