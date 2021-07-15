@@ -20,9 +20,10 @@
 #![allow(clippy::borrowed_box)]
 
 use crate::cli::{Cli, Subcommand};
-use sc_cli::{Role, RuntimeVersion, SubstrateCli};
-use sc_service::ChainType;
+use sc_cli::{ChainSpec, Result, Role, RuntimeVersion, SubstrateCli};
 use service::{chain_spec, IdentifyVariant};
+use sc_service::config::PrometheusConfig;
+use sp_runtime::traits::Block as BlockT;
 
 fn get_exec_name() -> Option<String> {
 	std::env::current_exe()
@@ -45,7 +46,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn author() -> String {
-		"Setheum Labs".into()
+		env!("CARGO_PKG_AUTHORS").into()
 	}
 
 	fn support_url() -> String {
@@ -57,16 +58,9 @@ impl SubstrateCli for Cli {
 	}
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		let id = if id.is_empty() {
-			let n = get_exec_name().unwrap_or_default();
-			["setheum", "neom", "newrome"]
-				.iter()
-				.cloned()
-				.find(|&chain| n.starts_with(chain))
-				.unwrap_or("setheum")
-		} else {
-			id
-		};
+		if id.is_empty() {
+			return Err("Not specific which chain to run.".into());
+		}
 
 		Ok(match id {
 			#[cfg(feature = "with-newrome-runtime")]
@@ -81,6 +75,8 @@ impl SubstrateCli for Cli {
 			"neom" => Box::new(chain_spec::neom::neom_config()?),
 			#[cfg(feature = "with-neom-runtime")]
 			"neom-latest" => Box::new(chain_spec::neom::latest_neom_config()?),
+			#[cfg(feature = "with-neom-runtime")]
+			"neom-dev" => Box::new(chain_spec::neom::neom_dev_config()?),
 			#[cfg(feature = "with-setheum-runtime")]
 			"setheum" => Box::new(chain_spec::setheum::setheum_config()?),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -102,21 +98,21 @@ impl SubstrateCli for Cli {
 					}
 
 					#[cfg(not(feature = "with-neom-runtime"))]
-					return Err("Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.".into());
+					return Err(service::NEOM_RUNTIME_NOT_AVAILABLE.into());
 				} else if starts_with("setheum") {
 					#[cfg(feature = "with-setheum-runtime")]
 					{
 						Box::new(chain_spec::setheum::ChainSpec::from_json_file(path)?)
 					}
 					#[cfg(not(feature = "with-setheum-runtime"))]
-					return Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into());
+					return Err(service::SETHEUM_RUNTIME_NOT_AVAILABLE.into());
 				} else {
 					#[cfg(feature = "with-newrome-runtime")]
 					{
 						Box::new(chain_spec::newrome::ChainSpec::from_json_file(path)?)
 					}
 					#[cfg(not(feature = "with-newrome-runtime"))]
-					return Err("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.".into());
+					return Err(service::NEWROME_RUNTIME_NOT_AVAILABLE.into());
 				}
 			}
 		})
@@ -127,17 +123,17 @@ impl SubstrateCli for Cli {
 			#[cfg(feature = "with-setheum-runtime")]
 			return &service::setheum_runtime::VERSION;
 			#[cfg(not(feature = "with-setheum-runtime"))]
-			panic!("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.");
+			panic!("{}", service::SETHEUM_RUNTIME_NOT_AVAILABLE);
 		} else if spec.is_neom() {
 			#[cfg(feature = "with-neom-runtime")]
 			return &service::neom_runtime::VERSION;
 			#[cfg(not(feature = "with-neom-runtime"))]
-			panic!("Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.");
+			panic!("{}", service::NEOM_RUNTIME_NOT_AVAILABLE);
 		} else {
 			#[cfg(feature = "with-newrome-runtime")]
 			return &service::newrome_runtime::VERSION;
 			#[cfg(not(feature = "with-newrome-runtime"))]
-			panic!("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.");
+			panic!("{}", service::NEWROME_RUNTIME_NOT_AVAILABLE);
 		}
 	}
 }
@@ -156,31 +152,44 @@ fn set_default_ss58_version(spec: &Box<dyn service::ChainSpec>) {
 	sp_core::crypto::set_default_ss58_version(ss58_version);
 }
 
+macro_rules! with_runtime_or_err {
+	($chain_spec:expr, { $( $code:tt )* }) => {
+		if $chain_spec.is_setheum() {
+			#[cfg(feature = "with-setheum-runtime")]
+			#[allow(unused_imports)]
+			use service::{setheum_runtime::{Block, RuntimeApi}, SetheumExecutor as Executor};
+			#[cfg(feature = "with-setheum-runtime")]
+			$( $code )*
+
+			#[cfg(not(feature = "with-setheum-runtime"))]
+			return Err(service::SETHEUM_RUNTIME_NOT_AVAILABLE.into());
+		} else if $chain_spec.is_neom() {
+			#[cfg(feature = "with-neom-runtime")]
+			#[allow(unused_imports)]
+			use service::{neom_runtime::{Block, RuntimeApi}, NeomExecutor as Executor};
+			#[cfg(feature = "with-neom-runtime")]
+			$( $code )*
+
+			#[cfg(not(feature = "with-neom-runtime"))]
+			return Err(service::NEOM_RUNTIME_NOT_AVAILABLE.into());
+		} else {
+			#[cfg(feature = "with-newrome-runtime")]
+			#[allow(unused_imports)]
+			use service::{newrome_runtime::{Block, RuntimeApi}, NewRomeExecutor as Executor};
+			#[cfg(feature = "with-newrome-runtime")]
+			$( $code )*
+
+			#[cfg(not(feature = "with-newrome-runtime"))]
+			return Err(service::NEWROME_RUNTIME_NOT_AVAILABLE.into());
+		}
+	}
+}
+
 /// Parses setheum specific CLI arguments and run the service.
 pub fn run() -> sc_cli::Result<()> {
 	let cli = Cli::from_args();
 
 	match &cli.subcommand {
-		None => {
-			let runner = cli.create_runner(&cli.run)?;
-			let chain_spec = &runner.config().chain_spec;
-
-			set_default_ss58_version(chain_spec);
-
-			if cli.instant_sealing && chain_spec.chain_type() != ChainType::Development {
-				return Err("Instant sealing can be turned on only in `--dev` mode".into());
-			}
-
-			runner.run_node_until_exit(|config| async move {
-				match config.role {
-					Role::Light => service::build_light(config),
-					_ => {
-						service::build_full(config, cli.instant_sealing, false).map(|(_, _, task_manager)| task_manager)
-					}
-				}
-				.map_err(sc_cli::Error::Service)
-			})
-		}
 
 		Some(Subcommand::Inspect(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
@@ -200,16 +209,9 @@ pub fn run() -> sc_cli::Result<()> {
 
 			set_default_ss58_version(chain_spec);
 
-			#[cfg(feature = "with-setheum-runtime")]
-			return runner.sync_run(|config| cmd.run::<service::setheum_runtime::Block, service::SetheumExecutor>(config));
-
-			#[cfg(feature = "with-neom-runtime")]
-			return runner
-				.sync_run(|config| cmd.run::<service::neom_runtime::Block, service::NeomExecutor>(config));
-
-			#[cfg(feature = "with-newrome-runtime")]
-			return runner
-				.sync_run(|config| cmd.run::<service::newrome_runtime::Block, service::NewromeExecutor>(config));
+			with_runtime_or_err!(chain_spec, {
+				return runner.sync_run(|config| cmd.run::<Block, Executor>(config));
+			})
 		}
 
 		Some(Subcommand::Key(cmd)) => cmd.run(&cli),
@@ -294,46 +296,31 @@ pub fn run() -> sc_cli::Result<()> {
 
 			set_default_ss58_version(chain_spec);
 
-			if chain_spec.is_setheum() {
-				#[cfg(feature = "with-setheum-runtime")]
+			with_runtime_or_err!(chain_spec, {
 				return runner.async_run(|config| {
 					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
 					let task_manager = sc_service::TaskManager::new(config.task_executor.clone(), registry)
 						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
-					Ok((
-						cmd.run::<service::setheum_runtime::Block, service::SetheumExecutor>(config),
-						task_manager,
-					))
+					Ok((cmd.run::<Block, Executor>(config), task_manager))
 				});
-				#[cfg(not(feature = "with-setheum-runtime"))]
-				return Err("Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.".into());
-			} else if chain_spec.is_neom() {
-				#[cfg(feature = "with-neom-runtime")]
-				return runner.async_run(|config| {
-					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
-					let task_manager = sc_service::TaskManager::new(config.task_executor.clone(), registry)
-						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
-					Ok((
-						cmd.run::<service::neom_runtime::Block, service::NeomExecutor>(config),
-						task_manager,
-					))
-				});
-				#[cfg(not(feature = "with-neom-runtime"))]
-				return Err("Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.".into());
-			} else {
-				#[cfg(feature = "with-newrome-runtime")]
-				return runner.async_run(|config| {
-					let registry = config.prometheus_config.as_ref().map(|cfg| &cfg.registry);
-					let task_manager = sc_service::TaskManager::new(config.task_executor.clone(), registry)
-						.map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
-					Ok((
-						cmd.run::<service::newrome_runtime::Block, service::NewromeExecutor>(config),
-						task_manager,
-					))
-				});
-				#[cfg(not(feature = "with-newrome-runtime"))]
-				return Err("Newrome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.".into());
-			}
+			})
+		}
+
+		None => {
+			let runner = cli.create_runner(&cli.run)?;
+			let chain_spec = &runner.config().chain_spec;
+
+			set_default_ss58_version(chain_spec);
+
+			runner.run_node_until_exit(|config| async move {
+				match config.role {
+					Role::Light => service::build_light(config),
+					_ => {
+						service::build_full(config, cli.instant_sealing, false).map(|(_, _, task_manager)| task_manager)
+					}
+				}
+				.map_err(sc_cli::Error::Service)
+			})
 		}
 	}
 }
