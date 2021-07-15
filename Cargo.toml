@@ -1,3 +1,5 @@
+cargo-features = ["resolver"]
+
 [workspace]
 members = [
 	"node/setheum",
@@ -115,7 +117,7 @@ x25519-dalek = { opt-level = 3 }
 yamux = { opt-level = 3 }
 zeroize = { opt-level = 3 }
 
-# TODO: patch this rev d6c33e7ec313f9bd5e319dc0a5a3ace5543f9617
+# TODO: check to maybe patch this substrate rev d6c33e7ec313f9bd5e319dc0a5a3ace5543f9617
 
 [patch."https://github.com/paritytech/substrate"]
 frame-benchmarking = { git = "https://github.com/paritytech//substrate", rev = "1d04678e20555e623c974ee1127bc8a45abcf3d6" }
