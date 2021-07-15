@@ -11782,8 +11782,8 @@ dependencies = [
 
 [[package]]
 name = "xcm"
-version = "0.9.7"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.7#5d35bac7408a4cb12a578764217d06f3920b36aa"
+version = "0.9.8"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.8#3a10ee63c0b5703a1c802db3438ab7e01344a8ce"
 dependencies = [
  "derivative",
  "impl-trait-for-tuples 0.2.1",
