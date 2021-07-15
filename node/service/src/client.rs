@@ -105,7 +105,7 @@ where
 /// Execute something with the client instance.
 ///
 /// As there exist multiple chains inside Setheum, like Setheum itself, Neom,
-/// Newrome etc, there can exist different kinds of client types. As these
+/// NewRome etc, there can exist different kinds of client types. As these
 /// client types differ in the generics that are being used, we can not easily
 /// return them from a function. For returning them from a function there exists
 /// [`Client`]. However, the problem on how to use this client instance still
@@ -145,7 +145,7 @@ pub trait ClientHandle {
 #[derive(Clone)]
 pub enum Client {
 	#[cfg(feature = "with-newrome-runtime")]
-	Newrome(Arc<crate::FullClient<newrome_runtime::RuntimeApi, crate::NewromeExecutor>>),
+	NewRome(Arc<crate::FullClient<newrome_runtime::RuntimeApi, crate::NewRomeExecutor>>),
 	#[cfg(feature = "with-neom-runtime")]
 	Neom(Arc<crate::FullClient<neom_runtime::RuntimeApi, crate::NeomExecutor>>),
 	#[cfg(feature = "with-setheum-runtime")]
@@ -156,7 +156,7 @@ impl ClientHandle for Client {
 	fn execute_with<T: ExecuteWithClient>(&self, t: T) -> T::Output {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => T::execute_with_client::<_, _, crate::FullBackend>(t, client.clone()),
+			Self::NewRome(client) => T::execute_with_client::<_, _, crate::FullBackend>(t, client.clone()),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => T::execute_with_client::<_, _, crate::FullBackend>(t, client.clone()),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -169,7 +169,7 @@ impl sc_client_api::UsageProvider<Block> for Client {
 	fn usage_info(&self) -> sc_client_api::ClientInfo<Block> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.usage_info(),
+			Self::NewRome(client) => client.usage_info(),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.usage_info(),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -182,7 +182,7 @@ impl sc_client_api::BlockBackend<Block> for Client {
 	fn block_body(&self, id: &BlockId<Block>) -> sp_blockchain::Result<Option<Vec<<Block as BlockT>::Extrinsic>>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.block_body(id),
+			Self::NewRome(client) => client.block_body(id),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.block_body(id),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -193,7 +193,7 @@ impl sc_client_api::BlockBackend<Block> for Client {
 	fn block(&self, id: &BlockId<Block>) -> sp_blockchain::Result<Option<SignedBlock<Block>>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.block(id),
+			Self::NewRome(client) => client.block(id),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.block(id),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -204,7 +204,7 @@ impl sc_client_api::BlockBackend<Block> for Client {
 	fn block_status(&self, id: &BlockId<Block>) -> sp_blockchain::Result<BlockStatus> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.block_status(id),
+			Self::NewRome(client) => client.block_status(id),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.block_status(id),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -215,7 +215,7 @@ impl sc_client_api::BlockBackend<Block> for Client {
 	fn justification(&self, id: &BlockId<Block>) -> sp_blockchain::Result<Option<Justification>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.justification(id),
+			Self::NewRome(client) => client.justification(id),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.justification(id),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -226,7 +226,7 @@ impl sc_client_api::BlockBackend<Block> for Client {
 	fn block_hash(&self, number: NumberFor<Block>) -> sp_blockchain::Result<Option<<Block as BlockT>::Hash>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.block_hash(number),
+			Self::NewRome(client) => client.block_hash(number),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.block_hash(number),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -237,7 +237,7 @@ impl sc_client_api::BlockBackend<Block> for Client {
 	fn extrinsic(&self, hash: &<Block as BlockT>::Hash) -> sp_blockchain::Result<Option<<Block as BlockT>::Extrinsic>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.extrinsic(hash),
+			Self::NewRome(client) => client.extrinsic(hash),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.extrinsic(hash),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -248,7 +248,7 @@ impl sc_client_api::BlockBackend<Block> for Client {
 	fn have_extrinsic(&self, hash: &<Block as BlockT>::Hash) -> sp_blockchain::Result<bool> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.have_extrinsic(hash),
+			Self::NewRome(client) => client.have_extrinsic(hash),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.have_extrinsic(hash),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -261,7 +261,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	fn storage(&self, id: &BlockId<Block>, key: &StorageKey) -> sp_blockchain::Result<Option<StorageData>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.storage(id, key),
+			Self::NewRome(client) => client.storage(id, key),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.storage(id, key),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -272,7 +272,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	fn storage_keys(&self, id: &BlockId<Block>, key_prefix: &StorageKey) -> sp_blockchain::Result<Vec<StorageKey>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.storage_keys(id, key_prefix),
+			Self::NewRome(client) => client.storage_keys(id, key_prefix),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.storage_keys(id, key_prefix),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -287,7 +287,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	) -> sp_blockchain::Result<Option<<Block as BlockT>::Hash>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.storage_hash(id, key),
+			Self::NewRome(client) => client.storage_hash(id, key),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.storage_hash(id, key),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -302,7 +302,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	) -> sp_blockchain::Result<Vec<(StorageKey, StorageData)>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.storage_pairs(id, key_prefix),
+			Self::NewRome(client) => client.storage_pairs(id, key_prefix),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.storage_pairs(id, key_prefix),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -318,7 +318,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	) -> sp_blockchain::Result<KeyIterator<'a, <crate::FullBackend as sc_client_api::Backend<Block>>::State, Block>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.storage_keys_iter(id, prefix, start_key),
+			Self::NewRome(client) => client.storage_keys_iter(id, prefix, start_key),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.storage_keys_iter(id, prefix, start_key),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -334,7 +334,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	) -> sp_blockchain::Result<Option<StorageData>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.child_storage(id, child_info, key),
+			Self::NewRome(client) => client.child_storage(id, child_info, key),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.child_storage(id, child_info, key),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -350,7 +350,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	) -> sp_blockchain::Result<Vec<StorageKey>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.child_storage_keys(id, child_info, key_prefix),
+			Self::NewRome(client) => client.child_storage_keys(id, child_info, key_prefix),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.child_storage_keys(id, child_info, key_prefix),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -366,7 +366,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	) -> sp_blockchain::Result<Option<<Block as BlockT>::Hash>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.child_storage_hash(id, child_info, key),
+			Self::NewRome(client) => client.child_storage_hash(id, child_info, key),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.child_storage_hash(id, child_info, key),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -381,7 +381,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	) -> sp_blockchain::Result<Option<(NumberFor<Block>, BlockId<Block>)>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.max_key_changes_range(first, last),
+			Self::NewRome(client) => client.max_key_changes_range(first, last),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.max_key_changes_range(first, last),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -398,7 +398,7 @@ impl sc_client_api::StorageProvider<Block, crate::FullBackend> for Client {
 	) -> sp_blockchain::Result<Vec<(NumberFor<Block>, u32)>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.key_changes(first, last, storage_key, key),
+			Self::NewRome(client) => client.key_changes(first, last, storage_key, key),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.key_changes(first, last, storage_key, key),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -411,7 +411,7 @@ impl sp_blockchain::HeaderBackend<Block> for Client {
 	fn header(&self, id: BlockId<Block>) -> sp_blockchain::Result<Option<Header>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.header(&id),
+			Self::NewRome(client) => client.header(&id),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.header(&id),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -422,7 +422,7 @@ impl sp_blockchain::HeaderBackend<Block> for Client {
 	fn info(&self) -> sp_blockchain::Info<Block> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.info(),
+			Self::NewRome(client) => client.info(),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.info(),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -433,7 +433,7 @@ impl sp_blockchain::HeaderBackend<Block> for Client {
 	fn status(&self, id: BlockId<Block>) -> sp_blockchain::Result<sp_blockchain::BlockStatus> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.status(id),
+			Self::NewRome(client) => client.status(id),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.status(id),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -444,7 +444,7 @@ impl sp_blockchain::HeaderBackend<Block> for Client {
 	fn number(&self, hash: Hash) -> sp_blockchain::Result<Option<BlockNumber>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.number(hash),
+			Self::NewRome(client) => client.number(hash),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.number(hash),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -455,7 +455,7 @@ impl sp_blockchain::HeaderBackend<Block> for Client {
 	fn hash(&self, number: BlockNumber) -> sp_blockchain::Result<Option<Hash>> {
 		match self {
 			#[cfg(feature = "with-newrome-runtime")]
-			Self::Newrome(client) => client.hash(number),
+			Self::NewRome(client) => client.hash(number),
 			#[cfg(feature = "with-neom-runtime")]
 			Self::Neom(client) => client.hash(number),
 			#[cfg(feature = "with-setheum-runtime")]
