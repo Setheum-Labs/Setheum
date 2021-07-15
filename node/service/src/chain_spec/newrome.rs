@@ -231,7 +231,7 @@ fn testnet_genesis(
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
 		dollar, get_all_module_accounts, SetheumOracleConfig, BabeConfig, Balance, BalancesConfig,
-		SettmintEngineConfig, SerpTreasuryConfig, DexConfig, EnabledTradingPairs,
+		DexConfig, EnabledTradingPairs,
 		GeneralCouncilMembershipConfig, SetheumJuryMembershipConfig, GrandpaConfig,
 		FinancialCouncilMembershipConfig, ExchangeCouncilMembershipConfig, IndicesConfig,
 		NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OrmlNFTConfig,
