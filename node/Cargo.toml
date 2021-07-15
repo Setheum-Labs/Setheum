@@ -16,7 +16,6 @@ parity-util-mem = { version = "0.9.0", default-features = false, features = ["je
 # local dependencies
 setheum-cli = { path = "cli" }
 setheum-service = { path = "service" }
-newrome-runtime = { path = "../../runtime/newrome", optional = true }
 
 [features]
 default = [ "with-newrome-runtime" ]

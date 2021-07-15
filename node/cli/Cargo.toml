@@ -6,23 +6,29 @@ edition = "2018"
 
 [dependencies]
 # external dependencies
+log = "0.4.8"
 structopt = "0.3.8"
+codec = { package = "parity-scale-codec", version = "2.0.0" }
 
 # Substrate dependencies
 sp-core = { optional = true, git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
 sc-cli = { version = "0.9.0", optional = true, git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
 sc-service = { version = "0.9.0", optional = true, git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
-frame-benchmarking-cli = { optional = true, git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.4" }
+sc-tracing = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sc-telemetry = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", optional = true }
+try-runtime-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", optional = true }
 
 # local dependencies
-inspect = { package = "setheum-inspect", path = "../../../inspect" }
+inspect = { package = "setheum-inspect", path = "../../inspect" }
 service = { package = "setheum-service", path = "../service", default-features = false, optional = true }
 
 [build-dependencies]
-substrate-build-script-utils = { version = "3.0.0", default-features = false }
+orml-build-script-utils = { path = "../../orml/build-script-utils"}
 
 [features]
-default = [ "wasmtime", "cli", "with-newrome-runtime" ]
+default = [ "wasmtime", "cli" ]
 wasmtime = [ "sc-cli/wasmtime" ]
 cli = [
 	"service",
@@ -30,9 +36,11 @@ cli = [
 	"sc-cli",
 	"sc-service",
 	"frame-benchmarking-cli",
+	"try-runtime-cli",
 ]
 runtime-benchmarks = [ "service/runtime-benchmarks" ]
 with-newrome-runtime = [
+	"try-runtime-cli",
 	"service/with-newrome-runtime",
 ]
 with-neom-runtime = [
@@ -42,5 +50,8 @@ with-setheum-runtime = [
 	"service/with-setheum-runtime",
 ]
 with-all-runtime = [
+	"with-newrome-runtime",
+	"with-neom-runtime",
+	"with-setheum-runtime",
 	"service/with-all-runtime",
 ]
