@@ -69,6 +69,9 @@ orml-rewards = { path = "../../lib-openrml/rewards", default-features = false }
 orml-nft= { path = "../../lib-openrml/nft", default-features = false }
 
 # local dependencies
+# - airdrop
+setheum-airdrop = { path = "../../lib-serml/airdrop", default-features = false }
+
 # - bridges
 setheum-chainbridge = { path = "../../lib-serml/bridges/chainbridge", default-features = false }
 setheum-renvm-bridge = { path = "../../lib-serml/bridges/renvm-bridge", default-features = false }
@@ -165,6 +168,7 @@ std = [
 	"orml-rewards/std",
 	"orml-nft/std",
 
+	"setheum-airdrop/std",
 	"setheum-renvm-bridge/std",
 	"setheum-dex/std",
 	"setheum-incentives/std",
@@ -250,6 +254,7 @@ try-runtime = [
 	"orml-rewards/try-runtime",
 	"orml-nft/try-runtime",
 
+	"setheum-airdrop/try-runtime",
 	"setheum-renvm-bridge/try-runtime",
 	"setheum-dex/try-runtime",
 	"setheum-incentives/try-runtime",
