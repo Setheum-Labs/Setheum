@@ -44,6 +44,7 @@ pub mod mocks;
 pub type BlockNumber = u32;
 pub type Price = FixedU128;
 pub type ExchangeRate = FixedU128;
+pub type CashDropRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
@@ -218,6 +219,18 @@ pub trait SerpTreasury<AccountId> {
 
 	/// Burn Reserve asset (Setter (SETT))
 	fn burn_setter(who, amount: Self::Balance) -> DispatchResult;
+}
+
+/// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol).
+pub trait SettPay<AccountId> {
+	type Balance;
+	type CurrencyId;
+
+	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
+	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
+
+	/// deposit cashdrop of `currency_id` relative to `transfer_amount` for `who`
+	fn deposit_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
