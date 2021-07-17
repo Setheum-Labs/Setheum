@@ -46,7 +46,7 @@ pallet-balances = { version = "3.0.0", git = "https://github.com/paritytech/subs
 pallet-timestamp = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-staking-reward-curve = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 substrate-test-utils = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-frame-benchmarking = { git = "https://github.com/paritytech/substrate" }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate",  branch = "polkadot-v0.9.8" }
 frame-election-provider-support = { features = ["runtime-benchmarks"], version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 rand_chacha = { version = "0.2" }
 parking_lot = "0.11.1"
