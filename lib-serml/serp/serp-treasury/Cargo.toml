@@ -25,9 +25,9 @@ support = { package = "setheum-support", path = "../../support", default-feature
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
-sp-core = "3.0.0"
-sp-io = "3.0.0"
-pallet-balances = "3.0.0"
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 orml-currencies = { path = "../../../lib-openrml/currencies", default-features = false }
 orml-auction = { path = "../../../lib-openrml/auction", default-features = false }
 setheum-dex = { path = "../..//dex/dex" }

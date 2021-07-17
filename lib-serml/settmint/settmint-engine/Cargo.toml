@@ -28,8 +28,8 @@ settmint-manager = { package = "settmint-manager", path = "../settmint-manager",
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
-sp-core = "3.0.0"
-pallet-balances = "3.0.0"
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
 orml-currencies = { path = "../../../lib-openrml/currencies" }
 setheum-dex = { path = "../../dex/dex" }
 serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
