@@ -35,7 +35,7 @@ primitives = { package = "setheum-primitives", path = "../../../primitives", def
 support = { package = "setheum-support", path = "../../support", default-features = false }
 
 # Optional imports for benchmarking
-frame-benchmarking = { version = "3.0.0", default-features = false, git = "https://github.com/paritytech/substrate", optional = true }
+frame-benchmarking = { default-features = false, git = "https://github.com/paritytech/substrate", optional = true, branch = "polkadot-v0.9.4" }
 rand_chacha = { version = "0.2", default-features = false, optional = true }
 
 [dev-dependencies]
