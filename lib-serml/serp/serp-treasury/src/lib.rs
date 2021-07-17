@@ -444,7 +444,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::GetDexerCurrencyId::get(), who, dexer)
 	}
 
-	/// deposit surplus(propperstable currency) to serp treasury by `from`
+	/// deposit surplus(propper stable currency) to serp treasury by `from`
 	fn deposit_serplus(currency_id: CurrencyId, from: &T::AccountId, serplus: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(currency_id, from, &Self::account_id(), serplus)
 	}
