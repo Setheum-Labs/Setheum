@@ -128,7 +128,6 @@ macro_rules! create_currency_id {
 			];
 
 			let mut lp_tokens = vec![
-				// Setheum Network LPs
 				Token {
 					symbol: "LP_DNAR_SETT".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETT))).unwrap(),
@@ -166,12 +165,12 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(CHFJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SGDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SGDJ), DexShare::Token(SETT))).unwrap(),
-				},
-				Token {
 					symbol: "LP_SEKJ_SETT".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SEKJ), DexShare::Token(SETT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SGDJ_SETT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SGDJ), DexShare::Token(SETT))).unwrap(),
 				},
 				Token {
 					symbol: "LP_SARJ_SETT".to_string(),
@@ -263,8 +262,8 @@ create_currency_id! {
  		AUDJ("Setheum Australian Dollar", 12) = 7,
 		CADJ("Setheum Canadian Dollar", 12) = 8,
 		CHFJ("Setheum Swiss Franc", 12) = 9,
- 		SGDJ("Setheum Singapore Dollar", 12) = 10,
-		SEKJ("Setheum Swedish Krona", 12) = 11,
+		SEKJ("Setheum Swedish Krona", 12) = 10,
+ 		SGDJ("Setheum Singapore Dollar", 12) = 11,
  		SARJ("Setheum Saudi Riyal", 12) = 12,
 		/// Neom Network >---------------------->>
 		NEOM("Neom", 10) = 128, // could consider having 12 decimals too.
@@ -278,11 +277,11 @@ create_currency_id! {
  		JAUD("Neom Australian Dollar", 12) = 135,
 		JCAD("Neom Canadian Dollar", 12) = 136,
 		JCHF("Neom Swiss Franc", 12) = 137,
- 		JSGD("Neom Singapore Dollar", 12) = 138,
-		JSEK("Neom Swedish Krona", 12) = 139,
+		JSEK("Neom Swedish Krona", 12) = 138,
+ 		JSGD("Neom Singapore Dollar", 12) = 139,
  		JSAR("Neom Saudi Riyal", 12) = 140,
 		 
-		// Foreign System Currencies
+		// Foreign Currencies
 		RENBTC("Ren Bitcoin", 8) = 141,
 
 		/// Fiat Currencies as Pegs - only for price feed
@@ -293,9 +292,10 @@ create_currency_id! {
  		AUD("Fiat Australian Dollar", 12) = 185,
 		CAD("Fiat Canadian Dollar", 12) = 186,
 		CHF("Fiat Swiss Franc", 12) = 187,
- 		SGD("Fiat Singapore Dollar", 12) = 188,
-		SEK("Fiat Swedish Krona", 12) = 189,
+		SEK("Fiat Swedish Krona", 12) = 188,
+ 		SGD("Fiat Singapore Dollar", 12) = 189,
  		SAR("Fiat Saudi Riyal", 12) = 190,
+		 
 		KWD("Fiat Kuwaiti Dinar", 12) = 191,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
 		JOD("Fiat Jordanian Dinar", 12) = 192,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
 		BHD("Fiat Bahraini Dirham", 12) = 193,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
@@ -344,27 +344,27 @@ impl CurrencyId {
 
 	pub fn split_dex_share_currency_id(&self) -> Option<(Self, Self)> {
 		match self {
-			CurrencyId::DexShare(token_symbol_0, token_symbol_1) => {
-				let symbol_0: CurrencyId = (*token_symbol_0).into();
-				let symbol_1: CurrencyId = (*token_symbol_1).into();
-				Some((symbol_0, symbol_1))
+			CurrencyId::DexShare(dex_share_0, dex_share_1) => {
+				let currency_id_0: CurrencyId = (*dex_share_0).into();
+				let currency_id_1: CurrencyId = (*dex_share_1).into();
+				Some((currency_id_0, currency_id_1))
 			}
 			_ => None,
 		}
 	}
 
 	pub fn join_dex_share_currency_id(currency_id_0: Self, currency_id_1: Self) -> Option<Self> {
-		let token_symbol_0 = match currency_id_0 {
+		let dex_share_0 = match currency_id_0 {
 			CurrencyId::Token(symbol) => DexShare::Token(symbol),
 			CurrencyId::Erc20(address) => DexShare::Erc20(address),
 			_ => return None,
 		};
-		let token_symbol_1 = match currency_id_1 {
+		let dex_share_1 = match currency_id_1 {
 			CurrencyId::Token(symbol) => DexShare::Token(symbol),
 			CurrencyId::Erc20(address) => DexShare::Erc20(address),
 			_ => return None,
 		};
-		Some(CurrencyId::DexShare(token_symbol_0, token_symbol_1))
+		Some(CurrencyId::DexShare(dex_share_0, dex_share_1))
 	}
 }
 

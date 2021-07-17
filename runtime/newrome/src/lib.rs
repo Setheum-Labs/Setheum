@@ -108,7 +108,7 @@ pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights,
 	ExchangeRate, GasToWeight, OffchainSolutionWeightLimit, Price, Rate, Ratio,
 	RuntimeBlockLength, RuntimeBlockWeights,SystemContractsFilter, TimeStampedPrice, 
-	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, SEKJ, SARJ RENBTC,
+	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
 	USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
@@ -1076,8 +1076,8 @@ parameter_type_with_key! {
 				TokenSymbol::AUDJ => cent(*currency_id),
 				TokenSymbol::CADJ => cent(*currency_id),
 				TokenSymbol::CHFJ => cent(*currency_id),
-				TokenSymbol::SGDJ => cent(*currency_id),
 				TokenSymbol::SEKJ => cent(*currency_id),
+				TokenSymbol::SGDJ => cent(*currency_id),
 				TokenSymbol::SARJ => cent(*currency_id)
 
 				TokenSymbol::RENBTC |
@@ -1143,7 +1143,7 @@ parameter_types! {
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETT).
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, SEKJ, SARJ
+		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
 		USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP
@@ -1295,7 +1295,7 @@ impl serp_auction::Config for Runtime {
 
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
-		USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, SEKJ, SARJ
+		USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
 }
