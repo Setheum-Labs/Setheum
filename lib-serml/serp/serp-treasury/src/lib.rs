@@ -22,8 +22,7 @@
 //!
 //! SERP Treasury manages the Settmint, and handle excess serplus
 //! and stabilize SettCurrencies standards timely in order to keep the
-//! system healthy. It's the only entry for issuing/burning stable
-//! coins for the entire system. It manages the TES (Token Elasticity of Supply).
+//! system healthy. It manages the TES (Token Elasticity of Supply).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
