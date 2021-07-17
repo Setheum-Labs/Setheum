@@ -55,7 +55,7 @@ pub mod module {
 		/// serplus/standard/reserve. Root can always do this.
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
-		/// The Currency for managing assets related to Settmint
+		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// The stable currency ids
