@@ -177,6 +177,7 @@ sp-trie = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d1
 sp-version = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
 sp-wasm-interface = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
 frame-system-benchmarking = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
+sc-basic-authorship = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
 sc-consensus-uncles = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
 sc-executor-wasmtime = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
 sp-authorship = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
