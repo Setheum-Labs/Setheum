@@ -44,6 +44,7 @@ pub mod mocks;
 pub type BlockNumber = u32;
 pub type Price = FixedU128;
 pub type ExchangeRate = FixedU128;
+pub type CashDropRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
