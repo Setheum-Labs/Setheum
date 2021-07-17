@@ -3,6 +3,7 @@ name = "setheum"
 version = "0.8.0"
 authors = ["Setheum Labs"]
 edition = "2018"
+default-run = "setheum"
 
 [[bin]]
 name = "setheum"

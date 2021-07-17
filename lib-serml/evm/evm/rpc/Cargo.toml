@@ -11,16 +11,16 @@ ethereum-types = "0.11.0"
 rustc-hex = "2.1.0"
 serde = { version = "1.0.124", features = ["derive"] }
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sc-rpc-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-storage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+frame-support = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-transaction-payment-rpc-runtime-api = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sc-rpc-api = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-api = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-blockchain = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-core = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-io = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-rpc = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-runtime = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-storage = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 setheum-evm-rpc-runtime-api = { path = "runtime_api" }
 setheum-evm = { path = ".." }

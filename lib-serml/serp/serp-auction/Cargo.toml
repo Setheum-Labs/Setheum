@@ -10,11 +10,11 @@ serde = { version = "1.0.101", optional = true }
 codec = { default-features = false, package = "parity-scale-codec", version = "2.0.0" }
 
 # Substrate dependencies
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+frame-support = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+frame-system = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-io = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-runtime = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-std = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
 orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
@@ -25,8 +25,8 @@ support = { package = "setheum-support", path = "../../support", default-feature
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
-sp-core = "3.0.0"
-pallet-balances = "3.0.0"
+sp-core = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-balances = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 orml-auction = { path = "../../../lib-openrml/auction" }
 serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
 setheum-dex = { path = "../../dex/dex" }
