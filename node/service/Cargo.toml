@@ -37,7 +37,7 @@ sc-basic-authorship = { git = 'https://github.com/paritytech/substrate.git', bra
 sc-network = { git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.8" }
 sc-cli = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sc-rpc = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false, optional = true }
 sp-trie = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sp-timestamp = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 substrate-prometheus-endpoint = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8"}

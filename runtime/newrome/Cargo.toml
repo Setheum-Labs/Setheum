@@ -16,7 +16,7 @@ libsecp256k1 = { version = "0.3.4", default-features = false, optional = true }
 evm = { version = "0.26.0", optional = true, default-features = false }
 
 # Substrate dependencies
-frame-benchmarking = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", optional = true }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false, optional = true }
 frame-executive = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 frame-support = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 frame-system = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
