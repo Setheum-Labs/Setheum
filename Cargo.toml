@@ -117,7 +117,10 @@ x25519-dalek = { opt-level = 3 }
 yamux = { opt-level = 3 }
 zeroize = { opt-level = 3 }
 
-[patch."https://github.com/paritytech/substrate"]frame-election-provider-support = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
+[patch."https://github.com/paritytech/substrate"]
+frame-benchmarking = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
+frame-benchmarking-cli = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
+frame-election-provider-support = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
 frame-executive = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
 frame-support = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }
 frame-support-procedural = { git = "https://github.com/paritytech//substrate", rev = "1b758b2a8d151d97d2242260c465b6df9cb8a7a4" }

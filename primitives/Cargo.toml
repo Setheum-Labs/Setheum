@@ -12,9 +12,9 @@ codec = { package = "parity-scale-codec", version = "2.0.0", default-features = 
 
 # Substrate dependencies
 max-encoded-len = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.5", default-features = false }
-sp-core = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-runtime = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-std = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+sp-core = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+sp-runtime = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+sp-std = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 # Special dependencies
 evm = { version = "0.26.0", default-features = false, features = ["with-codec"] }
@@ -22,7 +22,7 @@ chainbridge = { git = "https://github.com/Slixon-Technologies/chainbridge-substr
 
 [dev-dependencies]
 serde_json = { version = "1.0.64" }
-frame-support = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+frame-support = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 [features]
 default = ["std"]
