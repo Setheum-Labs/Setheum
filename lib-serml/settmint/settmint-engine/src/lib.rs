@@ -59,12 +59,6 @@ mod tests;
 
 pub use module::*;
 
-pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/settmint-engine/data/";
-pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/settmint-engine/lock/";
-pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/settmint-engine/max-iterations/";
-pub const LOCK_DURATION: u64 = 100;
-pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
-
 pub type SettmintManagerOf<T> = settmint_manager::Module<T>;
 
 // typedef to help polkadot.js disambiguate Change with different generic
