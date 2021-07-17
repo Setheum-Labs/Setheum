@@ -1,4 +1,3 @@
-cargo-features = ["resolver"]
 
 [workspace]
 members = [
@@ -13,7 +12,10 @@ members = [
 	"lib-serml/evm/*",
 	"lib-serml/example",
 	"lib-serml/prices",
-	"lib-serml/serp/*",
+	"lib-serml/serp/serp-auction",
+	# "lib-serml/serp/serp-settpay",
+	"lib-serml/serp/serp-staking",
+	"lib-serml/serp/serp-treasury",
 	"lib-serml/settmint/*",
 	"lib-serml/support",
 	"lib-serml/tokens/*",
@@ -45,8 +47,6 @@ members = [
 	"lib-openrml/weight-gen",
 	"lib-openrml/weight-meter",
 ]
-
-resolver = "2"
 
 [profile.dev]
 split-debuginfo = "unpacked"
