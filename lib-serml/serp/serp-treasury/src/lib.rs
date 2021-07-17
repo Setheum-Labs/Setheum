@@ -124,6 +124,8 @@ pub mod module {
 		/// The Stablecoin Price is stable and indifferent from peg
 		/// therefore cannot serp
 		PriceIsStableCannotSerp
+		/// Invalid Currency Type
+		InvalidCurrencyType
 	}
 
 	#[pallet::event]
@@ -138,36 +140,6 @@ pub mod module {
 		CurrencySerpedUp(Balance, CurrencyId),
 		/// Currency SerpDown has been triggered successfully.
 		CurrencySerpDownTriggered(Balance, CurrencyId),
-	}
-
-	/// The maximum amount of reserve amount for sale per setter auction
-	#[pallet::storage]
-	#[pallet::getter(fn expected_setter_auction_size)]
-	pub type ExpectedSetterAuctionSize<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
-
-	#[pallet::genesis_config]
-	pub struct GenesisConfig {
-		pub expected_setter_auction_size: Vec<(CurrencyId, Balance)>,
-	}
-
-	#[cfg(feature = "std")]
-	impl Default for GenesisConfig {
-		fn default() -> Self {
-			GenesisConfig {
-				expected_setter_auction_size: vec![],
-			}
-		}
-	}
-
-	#[pallet::genesis_build]
-	impl<T: Config> GenesisBuild<T> for GenesisConfig {
-		fn build(&self) {
-			self.expected_setter_auction_size
-				.iter()
-				.for_each(|(currency_id, size)| {
-					ExpectedSetterAuctionSize::<T>::insert(currency_id, size);
-				});
-		}
 	}
 
 	#[pallet::pallet]
@@ -486,22 +458,5 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// Burn Reserve asset (Setter (SETT))
 	fn burn_setter(who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, amount)
-	}
-}
-
-#[cfg(feature = "std")]
-impl GenesisConfig {
-	/// Direct implementation of `GenesisBuild::build_storage`.
-	///
-	/// Kept in order not to break dependency.
-	pub fn build_storage<T: Config>(&self) -> Result<sp_runtime::Storage, String> {
-		<Self as GenesisBuild<T>>::build_storage(self)
-	}
-
-	/// Direct implementation of `GenesisBuild::assimilate_storage`.
-	///
-	/// Kept in order not to break dependency.
-	pub fn assimilate_storage<T: Config>(&self, storage: &mut sp_runtime::Storage) -> Result<(), String> {
-		<Self as GenesisBuild<T>>::assimilate_storage(self, storage)
 	}
 }
