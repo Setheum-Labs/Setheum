@@ -1,4 +1,4 @@
-# Setheum Network Node
+# Setheum Node
 
 Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Setheum SERML, ready for hacking :rocket:
 
