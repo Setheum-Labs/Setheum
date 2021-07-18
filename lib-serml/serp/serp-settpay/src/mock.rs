@@ -238,7 +238,6 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 parameter_types! {
-	pub CashDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
 	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM, SETT, USDJ];
 	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
 	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
@@ -252,7 +251,6 @@ impl Config for Runtime {
 	type Currency = Currencies;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
-	type CashDropCurrencyIds = CashDropCurrencyIds;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
 	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
