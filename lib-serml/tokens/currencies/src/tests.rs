@@ -116,7 +116,7 @@ fn multi_currency_should_work() {
 		.build()
 		.execute_with(|| {
 			<EVM as EVMTrait<AccountId>>::set_origin(alice());
-			assert_ok!(Currencies::transfer(Some(alice()).into(), bob(), X_TOKEN_ID, 50));
+			assert_ok!(Currencies::transfer(Some(alice()).into(), bob(), X_TOKEN_ID, 50, false));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 50);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 150);
 		});
@@ -143,11 +143,11 @@ fn native_currency_should_work() {
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_ok!(Currencies::transfer_native_currency(Some(alice()).into(), bob(), 50));
+			assert_ok!(Currencies::transfer_native_currency(Some(alice()).into(), bob(), 50, false));
 			assert_eq!(NativeCurrency::free_balance(&alice()), 50);
 			assert_eq!(NativeCurrency::free_balance(&bob()), 150);
 
-			assert_ok!(NativeCurrency::transfer(&alice(), &bob(), 10));
+			assert_ok!(NativeCurrency::transfer(&alice(), &bob(), 10, false));
 			assert_eq!(NativeCurrency::free_balance(&alice()), 40);
 			assert_eq!(NativeCurrency::free_balance(&bob()), 160);
 
@@ -181,12 +181,12 @@ fn basic_currency_adapting_pallet_balances_transfer() {
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_ok!(AdaptedBasicCurrency::transfer(&alice(), &bob(), 50));
+			assert_ok!(AdaptedBasicCurrency::transfer(&alice(), &bob(), 50, false));
 			assert_eq!(PalletBalances::total_balance(&alice()), 50);
 			assert_eq!(PalletBalances::total_balance(&bob()), 150);
 
 			// creation fee
-			assert_ok!(AdaptedBasicCurrency::transfer(&alice(), &eva(), 10));
+			assert_ok!(AdaptedBasicCurrency::transfer(&alice(), &eva(), 10, false));
 			assert_eq!(PalletBalances::total_balance(&alice()), 40);
 			assert_eq!(PalletBalances::total_balance(&eva()), 10);
 		});
@@ -275,7 +275,7 @@ fn call_event_should_work() {
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_ok!(Currencies::transfer(Some(alice()).into(), bob(), X_TOKEN_ID, 50));
+			assert_ok!(Currencies::transfer(Some(alice()).into(), bob(), X_TOKEN_ID, 50, false));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 50);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 150);
 			System::assert_last_event(Event::currencies(crate::Event::Transferred(
@@ -289,7 +289,8 @@ fn call_event_should_work() {
 				X_TOKEN_ID,
 				&alice(),
 				&bob(),
-				10
+				10,
+				false
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 40);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 160);
@@ -394,7 +395,8 @@ fn erc20_ensure_withdraw_should_work() {
 				Origin::signed(alice()),
 				bob(),
 				CurrencyId::Erc20(erc20_address()),
-				100
+				100,
+				false
 			));
 			assert_ok!(Currencies::ensure_can_withdraw(
 				CurrencyId::Erc20(erc20_address()),
@@ -425,7 +427,8 @@ fn erc20_transfer_should_work() {
 				Origin::signed(alice()),
 				bob(),
 				CurrencyId::Erc20(erc20_address()),
-				100
+				100,
+				false
 			));
 
 			assert_eq!(
@@ -450,7 +453,8 @@ fn erc20_transfer_should_work() {
 				Origin::signed(bob()),
 				alice(),
 				CurrencyId::Erc20(erc20_address()),
-				10
+				10,
+				false
 			));
 
 			assert_eq!(Currencies::free_balance(CurrencyId::Erc20(erc20_address()), &bob()), 90);
@@ -484,12 +488,12 @@ fn erc20_transfer_should_fail() {
 			<EVM as EVMTrait<AccountId>>::set_origin(bob());
 			// empty address
 			assert!(
-				Currencies::transfer(Origin::signed(alice()), bob(), CurrencyId::Erc20(H160::default()), 100).is_err()
+				Currencies::transfer(Origin::signed(alice()), bob(), CurrencyId::Erc20(H160::default()), 100, false).is_err()
 			);
 
 			// bob can't transfer. bob balance 0
 			assert!(
-				Currencies::transfer(Origin::signed(bob()), alice(), CurrencyId::Erc20(erc20_address()), 1).is_err()
+				Currencies::transfer(Origin::signed(bob()), alice(), CurrencyId::Erc20(erc20_address()), 1, false).is_err()
 			);
 		});
 }
@@ -672,7 +676,8 @@ fn erc20_repatriate_reserved_should_work() {
 				Origin::signed(alice()),
 				bob(),
 				CurrencyId::Erc20(erc20_address()),
-				bob_balance
+				bob_balance,
+				false,
 			));
 
 			assert_eq!(
