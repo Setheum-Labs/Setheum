@@ -222,7 +222,7 @@ pub trait SerpTreasury<AccountId> {
 }
 
 /// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol).
-pub trait SettPay<AccountId> {
+pub trait CashDrop<AccountId> {
 	type Balance;
 	type CurrencyId;
 
