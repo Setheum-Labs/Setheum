@@ -50,10 +50,6 @@ pub mod module {
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		/// The origin which may update parameters and handle
-		/// serplus/standard/reserve. Root can always do this.
-		type UpdateOrigin: EnsureOrigin<Self::Origin>;
-
 		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
@@ -86,6 +82,10 @@ pub mod module {
 
 		/// SERP Treasury for depositing cashdrop.
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+
+		/// The origin which may update parameters and handle
+		/// serplus/standard/reserve. Root can always do this.
+		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
