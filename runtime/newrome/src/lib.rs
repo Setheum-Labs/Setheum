@@ -1289,7 +1289,7 @@ impl serp_auction::Config for Runtime {
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type SerpTreasury = SerpTreasury;
 	type Dex = Dex;
-	type PriceSource = Prices;
+	type PriceSource = SerpPrices;
 	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
 	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
 }
@@ -1379,7 +1379,7 @@ parameter_types! {
 
 impl settmint_engine::Config for Runtime {
 	type Event = Event;
-	type PriceSource = Prices;
+	type PriceSource = SerpPrices;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
@@ -1465,10 +1465,35 @@ impl serp_treasury::Config for Runtime {
 	type CharityFundAcc = CharityFundAccount;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = SetheumDEX;
+	type Dex = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
+}
+
+parameter_types! {
+	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM, SETT, USDJ];
+	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
+	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ];
+	pub const DefaultCashDropRate: CashDropRate = CashDropRate::::saturating_from_rational(2 : 100); // 2% cashdrop
+	pub const DefaultMinimumClaimableTransfer: Balance = 10;
+	pub const SettPayPalletId: PalletId = PalletId(*b"set/tpay");
+}
+
+impl serp_settpay::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
+	type RewardableCurrencyIds = RewardableCurrencyIds;
+	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
+	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
+	type DefaultCashDropRate = DefaultCashDropRate;
+	type DefaultMinimumClaimableTransfer = DefaultMinimumClaimableTransfer;
+	type SerpTreasury = SerpTreasuryModule;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type PalletId = SettPayPalletId;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -1667,7 +1692,7 @@ pub type NFTPrecompile =
 pub type StateRentPrecompile =
 	runtime_common::StateRentPrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, EVM>;
 pub type OraclePrecompile =
-	runtime_common::OraclePrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, Prices>;
+	runtime_common::OraclePrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, SerpPrices>;
 pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
 	AccountId,
 	EvmAddressMapping<Runtime>,
@@ -1821,14 +1846,14 @@ construct_runtime!(
 		// Governance
 		GeneralCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 24,
 		GeneralCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 25,
-		SetheumJury: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
-		SetheumJuryMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 31,
-		FinancialCouncil: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 26,
-		FinancialCouncilMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 27,
-		ExchangeCouncil: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
-		ExchangeCouncilMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 33,
-		TechnicalCommittee: pallet_collective::<Instance5>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
-		TechnicalCommitteeMembership: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 29,
+		SetheumJury: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 26,
+		SetheumJuryMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 27,
+		FinancialCouncil: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 28,
+		FinancialCouncilMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 29,
+		ExchangeCouncil: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 30,
+		ExchangeCouncilMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 31,
+		TechnicalCommittee: pallet_collective::<Instance5>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
+		TechnicalCommitteeMembership: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 33,
 		Authority: orml_authority::{Pallet, Call, Event<T>, Origin<T>} = 34,
 		
 		// Oracle
@@ -1843,31 +1868,32 @@ construct_runtime!(
 		Rewards: orml_rewards::{Pallet, Storage, Call} = 38,
 		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 39,
 
-		// Setheum Core
-		Prices: serp_prices::{Pallet, Storage, Call, Event<T>} = 40,
-		SerpAuctionManager: serp_auction::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} 41,
-		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 42,
+		// SERP Core
+		SerpAuctionManager: serp_auction::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} 40,
+		SerpPrices: serp_prices::{Pallet, Storage, Call, Event<T>} = 41,
+		SerpSettPay: serp_settpay::{Pallet, Storage, Call, Event<T>} = 42,
+		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 43,
 
 		// Dex
-		Dex: dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 43,
-		Incentives: setheum_incentives::{Pallet, Storage, Call, Event<T>} = 44,
+		Dex: dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 44,
+		Incentives: setheum_incentives::{Pallet, Storage, Call, Event<T>} = 45,
 
 		// Settmint
-		SettmintEngine: settmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 45,
-		SettmintGateway: settmint_gateway::{Pallet, Storage, Call, Event<T>} = 46,
-		SettmintManager: settmint_manager::{Pallet, Storage, Call, Event<T>} = 47,
+		SettmintEngine: settmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 46,
+		SettmintGateway: settmint_gateway::{Pallet, Storage, Call, Event<T>} = 47,
+		SettmintManager: settmint_manager::{Pallet, Storage, Call, Event<T>} = 48,
 
 		// Smart contracts
 		// Setheum EVM (SEVM)
-		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 48,
-		EVMBridge: setheum_evm_bridge::{Pallet} = 49,
-		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 50,
-		EvmManager: setheum_evm_manager::{Pallet, Storage} = 51,
+		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 49,
+		EVMBridge: setheum_evm_bridge::{Pallet} = 50,
+		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 51,
+		EvmManager: setheum_evm_manager::{Pallet, Storage} = 52,
 
 		// Bridges
-		RenVmBridge: setheum_renvm_bridge::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned} = 52,
-		ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 53,
-		SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>} = 54,
+		// RenVmBridge: setheum_renvm_bridge::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned} = 53,
+		// ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 54,
+		// SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>} = 55,
 
 		// Dev
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 255,
