@@ -1171,8 +1171,9 @@ impl setheum_prices::Config for Runtime {
 	type PegCurrencyIds = PegCurrencyIds;
 	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type Dex = Dex;
+	type DEX = Dex;
 	type Currency = Currencies;
+	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
 	type WeightInfo = weights::setheum_prices::WeightInfo<Runtime>;
 }
 
