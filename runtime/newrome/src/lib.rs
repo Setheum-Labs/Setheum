@@ -884,16 +884,17 @@ pallet_staking_reward_curve::build! {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: sp_staking::SessionIndex = 3; // 3 hours
-	pub const BondingDuration: serp_staking::EraIndex = 0; // No bonding duration. can actively immediate bond/unbond anytime
-	pub const SlashDeferDuration: serp_staking::EraIndex = 2; // 6 hours
+	// TODO: Update to match a 1:100 ratio of setheum's halving system.
+	pub const SessionsPerEra: sp_staking::SessionIndex = 1; // 1 hours
+	pub const BondingDuration: serp_staking::EraIndex = 2; // 2 hours
+	pub const SlashDeferDuration: serp_staking::EraIndex = 2; // 2 hours
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 	/// The number of eras between each halvening,
-	/// 4,032 eras (24 hours, each era is 4 hours) halving interval.
-	pub const HalvingInterval: u64 = 6;
+	/// 168 eras (7 days, each era is 1 hour) halving interval.
+	pub const HalvingInterval: EraIndex = 168;
 	/// The per-era issuance before any halvenings. 
 	/// Decimal places should be accounted for here.
-	pub const InitialIssuance: u64 = 1440000;
+	pub const InitialIssuance: Balance = 5_760_000 * dollar(DNAR);
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
 	pub const MaxIterations: u32 = 5;
