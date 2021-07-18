@@ -214,7 +214,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
 			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
 			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
-			let serp_balance = T::Currency::total_balance(currency_id, &Self::account_id());
+			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
@@ -226,7 +226,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
 			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
 			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
-			let serp_balance = T::Currency::total_balance(T::SetterCurrencyId::get(), &Self::account_id());
+			let serp_balance = T::Currency::free_balance(T::SetterCurrencyId::get(), &Self::account_id());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
@@ -241,7 +241,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
 			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
 			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
-			let serp_balance = T::Currency::total_balance(currency_id, &Self::account_id());
+			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
