@@ -229,8 +229,11 @@ pub trait SettPay<AccountId> {
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
 	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
 
-	/// deposit cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn deposit_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
+	/// deposit cashdrop of `SETT` of `cashdrop_amount` to `who`
+	fn deposit_setter_drop(who: &AccountId, cashdrop_amount: Self::Balance) -> DispatchResult;
+
+	/// deposit cashdrop of `currency_id` relative to `cashdrop_amount` for `who`
+	fn deposit_settcurrency_drop(currency_id: Self::CurrencyId, who: &AccountId, cashdrop_amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
