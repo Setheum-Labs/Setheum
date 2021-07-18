@@ -130,7 +130,55 @@ impl orml_currencies::Config for Runtime {
 
 pub struct MockPriceSource;
 impl PriceProvider<CurrencyId> for MockPriceSource {
+	fn get_peg_currency_by_currency_id(_currency_id: CurrencyId) -> CurrencyId {
+		Default::default()
+	}
+
+	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_fiat_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_fiat_usd_fixed_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_settusd_fixed_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_stablecoin_fixed_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_stablecoin_market_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
 	fn get_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_market_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_coin_to_peg_relative_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_setter_basket_peg_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_setter_fixed_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_market_price(_currency_id: CurrencyId) -> Option<Price> {
 		Some(Price::one())
 	}
 
@@ -142,27 +190,22 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 
 	fn unlock_price(_currency_id: CurrencyId) {}
 }
-// TODO: Update
+
 pub struct MockSerpAuctionManager;
 impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 	type AuctionId = AuctionId;
 
-	fn new_setter_auction(
-		_refund_recipient: &AccountId,
-		_currency_id: Self::CurrencyId,
-		_amount: Self::Balance,
-		_target: Self::Balance,
-	) -> DispatchResult {
-		Ok(())
-	}
-
 	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
 		Ok(())
 	}
 
-	fn new_serplus_auction(_amount: Self::Balance) -> DispatchResult {
+	fn new_setter_auction(_amount: Self::Balance, _fix: Self::Balance, _currency_id: Self::CurrencyId) -> DispatchResult {
+		Ok(())
+	}
+
+	fn new_serplus_auction(_amount: Self::Balance, _currency_id: Self::CurrencyId) -> DispatchResult {
 		Ok(())
 	}
 
@@ -170,19 +213,15 @@ impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
 		Ok(())
 	}
 
-	fn get_total_standard_in_auction() -> Self::Balance {
+	fn get_total_serplus_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 
-	fn get_total_target_in_auction() -> Self::Balance {
+	fn get_total_settcurrency_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 
-	fn get_total_setter_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		Default::default()
-	}
-
-	fn get_total_diamond_in_auction() -> Self::Balance {
+	fn get_total_setter_in_auction() -> Self::Balance {
 		Default::default()
 	}
 }

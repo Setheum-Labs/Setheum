@@ -230,8 +230,56 @@ impl MockPriceSource {
 	}
 }
 impl PriceProvider<CurrencyId> for MockPriceSource {
+	fn get_peg_currency_by_currency_id(_currency_id: CurrencyId) -> CurrencyId {
+		Default::default()
+	}
+
+	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_fiat_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_fiat_usd_fixed_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_settusd_fixed_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_stablecoin_fixed_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_stablecoin_market_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
 	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
 		RELATIVE_PRICE.with(|v| *v.borrow_mut())
+	}
+
+	fn get_market_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_coin_to_peg_relative_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_setter_basket_peg_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_setter_fixed_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_market_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
 	}
 
 	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
