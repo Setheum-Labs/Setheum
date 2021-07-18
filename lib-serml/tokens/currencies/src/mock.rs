@@ -38,6 +38,12 @@ use sp_std::str::FromStr;
 
 pub use crate as currencies;
 
+// Currencies constants - CurrencyId/TokenSymbol
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR); // Setheum Dinar
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM); // Setheum Dirham
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub const MaximumBlockWeight: u32 = 1024;
@@ -94,6 +100,33 @@ impl tokens::Config for Runtime {
 	type OnDust = tokens::TransferDust<Runtime, DustAccount>;
 	type WeightInfo = ();
 	type MaxLocks = MaxLocks;
+}
+
+parameter_types! {
+	pub CashDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
+	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM, SETT, USDJ];
+	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
+	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
+	pub const DefaultCashDropRate: CashDropRate = CashDropRate::one();
+	pub const DefaultMinimumClaimableTransfer: Balance = 10;
+	pub const SettPayPalletId: PalletId = PalletId(*b"set/tpay");
+}
+
+impl serp_settpay::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
+	type CashDropCurrencyIds = CashDropCurrencyIds;
+	type RewardableCurrencyIds = RewardableCurrencyIds;
+	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
+	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
+	type DefaultCashDropRate = DefaultCashDropRate;
+	type DefaultMinimumClaimableTransfer = DefaultMinimumClaimableTransfer;
+	type SerpTreasury = SerpTreasuryModule;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type PalletId = SettPayPalletId;
+	type WeightInfo = ();
 }
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -199,9 +232,10 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currencies: currencies::{Pallet, Call, Event<T>},
 		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
 		EVMBridge: setheum_evm_bridge::{Pallet},
+		SettPay: serp_settpay::{Pallet, Storage, Call, Event<T>},
+		Currencies: currencies::{Pallet, Call, Event<T>},
 	}
 );
 

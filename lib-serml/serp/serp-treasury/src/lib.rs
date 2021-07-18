@@ -325,6 +325,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			let relative_price = dinar_price.checked_div(&setter_fixed_price);
 			/// the initial amount is the equivalent of the serpdown amount -
 			/// but in the (higher) fixed price not the (lower) market price
+			// TODO: Check to update-vvvvvvvvvvvvvvvvv!
 			let initial_amount = amount.checked_div(&relative_price);
 			/// ensure that the amounts are not zero
 			ensure!(

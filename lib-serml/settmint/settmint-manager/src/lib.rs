@@ -84,7 +84,7 @@ pub mod module {
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId, Amount, Balance, CurrencyId, BlockNumber>;
 
 		/// The setter's module id, keep all reserves of Settmint.
 		#[pallet::constant]

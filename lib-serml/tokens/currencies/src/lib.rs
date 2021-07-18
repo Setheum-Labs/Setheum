@@ -39,6 +39,7 @@ use orml_traits::{
 	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
 use primitives::{evm::EvmAddress, CurrencyId};
+use support::{AddressMapping, CashDrop, CashDropClaim, EVMBridge, InvokeContext};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, Saturating, StaticLookup, Zero},
@@ -49,7 +50,6 @@ use sp_std::{
 	fmt::Debug,
 	marker, result,
 };
-use support::{AddressMapping, EVMBridge, InvokeContext};
 
 mod mock;
 mod tests;
@@ -90,6 +90,8 @@ pub mod module {
 		/// Mapping from address to account id.
 		type AddressMapping: AddressMapping<Self::AccountId>;
 		type EVMBridge: EVMBridge<Self::AccountId, BalanceOf<Self>>;
+		/// SERP SettPay CashDrop for rewarding claimants with cashdrop (cashback) on transfer.
+		type CashDrop: CashDrop<Self::AccountId, BalanceOf<T>, CurrencyIdOf<T>>;
 	}
 
 	#[pallet::error]
@@ -125,7 +127,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		// TODO: Update to add "claim_cashdrop" using `claim: bool`
+		/// `claim` accepts a `bool` input (CashDropClaim)
 		/// Transfer some balance to another account under `currency_id`.
 		///
 		/// The dispatch origin for this call must be `Signed` by the
@@ -136,15 +138,19 @@ pub mod module {
 			dest: <T::Lookup as StaticLookup>::Source,
 			currency_id: CurrencyIdOf<T>,
 			#[pallet::compact] amount: BalanceOf<T>,
+			claim: CashDropClaim,
 		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
+			if claim = true {
+				T::CashDrop::claim_cashdrop(currency_id, &from, amount)
+			}
 			Ok(().into())
 		}
 
 		/// Transfer some native currency to another account.
-		// TODO: Update to add "claim_cashdrop" using `claim: bool`
+		/// `claim` accepts a `bool` input (CashDropClaim)
 		///
 		/// The dispatch origin for this call must be `Signed` by the
 		/// transactor.
@@ -153,10 +159,14 @@ pub mod module {
 			origin: OriginFor<T>,
 			dest: <T::Lookup as StaticLookup>::Source,
 			#[pallet::compact] amount: BalanceOf<T>,
+			claim: CashDropClaim,
 		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			T::NativeCurrency::transfer(&from, &to, amount)?;
+			if claim = true {
+				T::CashDrop::claim_cashdrop(T::GetNativeCurrencyId::get(), &from, amount)
+			}
 
 			Self::deposit_event(Event::Transferred(T::GetNativeCurrencyId::get(), from, to, amount));
 			Ok(().into())
@@ -262,7 +272,6 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		}
 	}
 
-	// TODO: Update to add "claim_cashdrop" using `claim: bool`
 	fn transfer(
 		currency_id: Self::CurrencyId,
 		from: &T::AccountId,
@@ -279,7 +288,6 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 				let origin = T::EVMBridge::get_origin().unwrap_or_default();
 				let origin_address = T::AddressMapping::get_or_create_evm_address(&origin);
 				let address = T::AddressMapping::get_or_create_evm_address(&to);
-				// TODO: Update to add "claim_cashdrop" using `claim: bool`
 				T::EVMBridge::transfer(
 					InvokeContext {
 						contract,
@@ -431,10 +439,6 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 		}
 	}
 
-	// TODO: Update to add "claim_cashdrop" using `claim: bool` -
-	// TODO:  - Maybe add Claim cashdrop to reserve too, since it -
-	// TODO:  - transfers, to "claim_cashdrop" or make it false `claimed: bool = false`.
-	// TODO: - BUT I LEAN TOWARDS THE LATTER.
 	fn reserve(currency_id: Self::CurrencyId, who: &T::AccountId, value: Self::Balance) -> DispatchResult {
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
@@ -592,7 +596,6 @@ where
 		<Pallet<T>>::ensure_can_withdraw(GetCurrencyId::get(), who, amount)
 	}
 
-	// TODO: Update to add "claim_cashdrop" using `claim: bool` -
 	fn transfer(from: &T::AccountId, to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		<Pallet<T> as MultiCurrency<T::AccountId>>::transfer(GetCurrencyId::get(), from, to, amount)
 	}
@@ -725,7 +728,6 @@ where
 		Currency::ensure_can_withdraw(who, amount, WithdrawReasons::all(), new_balance)
 	}
 
-	// TODO: Update to add "claim_cashdrop" using `claim: bool` -
 	fn transfer(from: &AccountId, to: &AccountId, amount: Self::Balance) -> DispatchResult {
 		Currency::transfer(from, to, amount, ExistenceRequirement::AllowDeath)
 	}
@@ -843,7 +845,6 @@ where
 	}
 }
 
-	// TODO: Update to add "claim_cashdrop" using `claim: bool` -
 impl<T: Config> TransferAll<T::AccountId> for Pallet<T> {
 	#[transactional]
 	fn transfer_all(source: &T::AccountId, dest: &T::AccountId) -> DispatchResult {
