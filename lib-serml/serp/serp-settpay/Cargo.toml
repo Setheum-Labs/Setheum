@@ -31,7 +31,7 @@ pallet-balances = { version = "3.0.0", git = "https://github.com/paritytech/subs
 orml-currencies = { path = "../../../lib-openrml/currencies", default-features = false }
 orml-tokens = { path = "../../../lib-openrml/tokens" }
 orml-auction = { path = "../../../lib-openrml/auction", default-features = false }
-setheum-dex = { path = "../..//dex/dex" }
+setheum-dex = { path = "../../dex/dex" }
 serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
 
 [features]
