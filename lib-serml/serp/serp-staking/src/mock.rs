@@ -280,11 +280,11 @@ parameter_types! {
 	pub const BondingDuration: EraIndex = 3;
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &I_NPOS;
 	/// The number of eras between each halvening,
-	/// 4,032 eras (2 years, each era is 4 hours) halving interval.
-	pub const HalvingInterval: u64 = 4032;
+	/// 12_096 eras (2 years, each era is 3 hour) halving interval.
+	pub const HalvingInterval: EraIndex = 12_096;
 	/// The per-era issuance before any halvenings. 
 	/// Decimal places should be accounted for here.
-	pub const InitialIssuance: u64 = 14400;
+	pub const InitialIssuance: Balance = 10_800;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 }
 
