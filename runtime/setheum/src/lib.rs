@@ -1149,7 +1149,7 @@ parameter_types! {
 	];
 }
 
-impl setheum_prices::Config for Runtime {
+impl serp_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
@@ -1173,7 +1173,7 @@ impl setheum_prices::Config for Runtime {
 	type DEX = Dex;
 	type Currency = Currencies;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
-	type WeightInfo = weights::setheum_prices::WeightInfo<Runtime>;
+	type WeightInfo = weights::serp_prices::WeightInfo<Runtime>;
 }
 
 // TODO: Remove Other incentives except for DexIncentive 
@@ -1767,7 +1767,7 @@ construct_runtime!(
 		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 39,
 
 		// Setheum Core
-		Prices: setheum_prices::{Pallet, Storage, Call, Event<T>} = 40,
+		Prices: serp_prices::{Pallet, Storage, Call, Event<T>} = 40,
 		SerpAuctionManager: serp_auction::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} 41,
 		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 42,
 

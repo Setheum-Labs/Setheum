@@ -27,7 +27,7 @@ pub mod dex;
 pub mod settmint_gateway;
 pub mod setheum_incentives;
 pub mod setheum_nft;
-pub mod setheum_prices;
+pub mod serp_prices;
 pub mod setheum_transaction_payment;
 
 pub mod orml_auction;

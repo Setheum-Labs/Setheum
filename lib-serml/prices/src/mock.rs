@@ -36,7 +36,7 @@ use support::{mocks::MockCurrencyIdMapping, ExchangeRate, Ratio};
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
-mod setheum_prices {
+mod serp_prices {
 	pub use super::super::*;
 }
 
