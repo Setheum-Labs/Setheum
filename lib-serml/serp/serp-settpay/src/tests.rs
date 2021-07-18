@@ -93,7 +93,7 @@ fn claim_native_cashdrop_works() {
 		assert_eq!(Currencies::free_balance(DNAR, &SETTPAY_TREASURY), 100_000);
 
 		assert_eq!(
-			SetheumPrices::get_relative_price(DNAR, SETT),
+			SerpPrices::get_relative_price(DNAR, SETT),
 			Some(Price::saturating_from_rational(10000, 1)) /* 1DNAR = 100SETT, right shift the decimal point (12-10)
 			                                                 * places */
 		);
@@ -121,7 +121,7 @@ fn claim_dexer_cashdrop_works() {
 		assert_eq!(Currencies::free_balance(DRAM, &SETTPAY_TREASURY), 100_000);
 
 		assert_eq!(DRAM
-			SetheumPrices::get_relative_price(DRAM, SETT),
+			SerpPrices::get_relative_price(DRAM, SETT),
 			Some(Price::saturating_from_rational(10000, 1)) /* 1DRAM = 100SETT, right shift the decimal point (12-10)
 			                                                 * places */
 		);

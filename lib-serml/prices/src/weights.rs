@@ -33,7 +33,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./lib-serml/prices/src/weights.rs
+// --output=./lib-serml/serp/serp-prices/src/weights.rs
 // --template=./templates/setheum-weight-template.hbs
 
 

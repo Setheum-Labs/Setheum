@@ -4530,7 +4530,7 @@ dependencies = [
  "setheum-evm-rpc-runtime-api",
  "setheum-incentives",
  "setheum-nft",
- "setheum-prices",
+ "serp-prices",
  "setheum-primitives",
  "setheum-renvm-bridge",
  "setheum-support",
@@ -4629,7 +4629,7 @@ dependencies = [
  "setheum-evm-rpc-runtime-api",
  "setheum-incentives",
  "setheum-nft",
- "setheum-prices",
+ "serp-prices",
  "setheum-primitives",
  "setheum-renvm-bridge",
  "setheum-support",
@@ -6551,7 +6551,7 @@ dependencies = [
  "setheum-dex",
  "setheum-evm",
  "setheum-nft",
- "setheum-prices",
+ "serp-prices",
  "setheum-primitives",
  "setheum-service",
  "setheum-support",
@@ -8315,7 +8315,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-prices"
+name = "serp-prices"
 version = "0.8.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8462,7 +8462,7 @@ dependencies = [
  "setheum-evm-rpc-runtime-api",
  "setheum-incentives",
  "setheum-nft",
- "setheum-prices",
+ "serp-prices",
  "setheum-primitives",
  "setheum-renvm-bridge",
  "setheum-support",

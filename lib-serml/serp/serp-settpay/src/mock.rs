@@ -604,7 +604,7 @@ construct_runtime!(
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Event<T>},
-		SetheumPrices: prices::{Pallet, Storage, Call, Event<T>},
+		SerpPrices: prices::{Pallet, Storage, Call, Event<T>},
 		SettPay: serp_settpay::{Pallet, Storage, Call, Event<T>},
 	}
 );

@@ -58,7 +58,7 @@ The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, 
 For all the SERML (Setheum Runtime Module Library) modules like the;
 [bridges](./lib-serml/bridges), 
 [dex](./lib-serml/dex), 
-[prices](./lib-serml/prices), 
+[prices](./lib-serml/serp/serp-prices), 
 [support](./lib-serml/support), 
 [tokens](./lib-serml/tokens), 
 [NFTs](./lib-serml/nft), 
