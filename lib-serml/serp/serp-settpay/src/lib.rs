@@ -27,12 +27,13 @@
 
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
-use orml_traits::MultiCurrency;
+use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber,
 };
+use sp_std::{convert::TryInto, result};
 use support::{SerpTreasury, CashDropRate, Price, Rate, Ratio};
 mod mock;
 mod tests;
@@ -53,29 +54,35 @@ pub mod module {
 		/// serplus/standard/reserve. Root can always do this.
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
-		/// The stable currency ids.
-		type StableCurrencyIds: Get<Vec<CurrencyId>>;
-
-		/// The entire cashdrop currency ids.
-		type CashDropCurrencyIds: Get<Vec<CurrencyId>>;
-
-		/// The cashdrop currency ids that receive Setter.
-		type SetterDropCurrencyIds: Get<Vec<CurrencyId>>;
-
-		/// The cashdrop currency ids that receive SettCurrencies.
-		type SetCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
+		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
+		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		#[pallet::constant]
 		/// Setter (SETT) currency Stablecoin currency id.
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
-		#[pallet::constant]
-		/// The default minimum transfer value to secure settpay from dusty claims.
-		type DefaultMinimumClaimableTransfer: Get<Balance>;
+		/// The stable currency ids.
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
+
+		/// The cashdrop currency ids that can be rewarded as CashDrop.
+		type CashDropCurrencyIds: Get<Vec<CurrencyId>>;
+
+		/// The cashdrop currency ids that can be rewarded with CashDrop.
+		type RewardableCurrencyIds: Get<Vec<CurrencyId>>;
+
+		/// The cashdrop currency ids that receive Setter.
+		type NonStableDropCurrencyIds: Get<Vec<CurrencyId>>;
+
+		/// The cashdrop currency ids that receive SettCurrencies.
+		type SetCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		#[pallet::constant]
 		/// The default cashdrop rate to be issued to claims.
-		type DefaultCashDropRate: Get<Balance>;
+		type DefaultCashDropRate: Get<CashDropRate>;
+
+		#[pallet::constant]
+		/// The default minimum transfer value to secure settpay from dusty claims.
+		type DefaultMinimumClaimableTransfer: Get<Balance>;
 
 		/// SERP Treasury for depositing cashdrop.
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
@@ -90,8 +97,12 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
+		/// Invalid Currency Type.
+		InvalidCurrencyType,
 		/// CashDrop is not available.
 		CashdropNotAvailable,
+		/// Transfer is too low for CashDrop.
+		TransferTooLowForCashDrop
 	}
 
 	#[pallet::event]
@@ -112,7 +123,7 @@ pub mod module {
 
 	/// Mapping to Minimum Claimable Transfer.
 	#[pallet::storage]
-	#[pallet::getter(fn cashdrop_rate)]
+	#[pallet::getter(fn minimum_claimable_transfer)]
 	pub type MinimumClaimableTransfer<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	#[pallet::pallet]
@@ -126,17 +137,32 @@ pub mod module {
 		#[pallet::weight(<T as Config>::WeightInfo::update_cashdrop_rate(
 			currency.len() as CurrencyId,
 			numerator.len() as u32,
-			denominator.len() as u32)
-		)]
+			denominator.len() as u32))]
 		#[transactional]
 		pub fn update_cashdrop_rate(
 			origin: OriginFor<T>,
+			currency: CurrencyId,
 			numerator: u32,
 			denominator: u32,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			for (numerator) in numerator && denominator in (denominator) {
-				GetCashDropRate::<T>::insert(numerator, denominator);
+			for (currency) in currency && (numerator) in numerator && denominator in (denominator) {
+				GetCashDropRate::<T>::insert(currency, numerator, denominator);
+			}
+			Ok(().into())
+		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::update_minimum_claimable_transfer(
+			currency.len() as CurrencyId, denominator.len() as Balance))]
+		#[transactional]
+		pub fn update_minimum_claimable_transfer(
+			origin: OriginFor<T>,
+			currency: CurrencyId,
+			amount: Balance,
+		) -> DispatchResultWithPostInfo {
+			T::UpdateOrigin::ensure_origin(origin)?;
+			for (currency) in currency && amount in (amount) {
+				MinimumClaimableTransfer::<T>::insert(currency, amount);
 			}
 			Ok(().into())
 		}
@@ -149,54 +175,92 @@ impl<T: Config> Pallet<T> {
 		T::PalletId::get().into_account()
 	}
 
-	pub fn get_cashdrop_ratio(currency_id: T::CurrencyId) -> <u64, u64> {
+	pub fn get_cashdrop_rate(currency_id: T::CurrencyId) -> (u32, u32) {
 		ensure!(
 			T::CashDropCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
 		)
 		Self::cashdrop_rate(currency_id).unwrap_or_else(T::DefaultCashDropRate::get)
 	}
+
+	pub fn get_minimum_claimable_transfer(currency_id: T::CurrencyId) -> Balance {
+		ensure!(
+			T::CashDropCurrencyIds.contains(currency_id),
+			Error::<T>::InvalidCurrencyType,
+		)
+		Self::minimum_claimable_transfer(currency_id).unwrap_or_else(T::DefaultMinimumClaimableTransfer::get)
+	}
 }
 
-impl<T: Config> SettPay<T::AccountId> for Pallet<T> {
+impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult {
+	fn claim_cashdrop(currency_id: CurrencyId, who: &AccountId, transfer_amount: Balance) -> DispatchResult {
 		ensure!(
-			T::CashDropCurrencyIds.contains(currency_id),
+			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
 		)
+		let minimum_claimable_transfer = Self::get_minimum_claimable_transfer(currency_id);
 		ensure!(
-			T::CashDropCurrencyIds.contains(currency_id),
-			Error::<T>::InvalidCurrencyType,
+			transfer_amount >= minimum_claimable_transfer,
+			Error::<T>::TransferTooLowForCashDrop,
 		)
+		let setter_fixed_price = T::Price::get_setter_fixed_price();
+
+		if currency_id == T::SetterCurrencyId::get() {
+			let (cashdrop_numerator, cashdrop_denominator) = Self::get_cashdrop_rate(currency_id);
+			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
+			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
+			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
+			let serp_balance = T::Currency::total_balance(currency_id, &Self::account_id());
+			ensure!(
+				balance_cashdrop_amount <= serp_balance,
+				Error::<T>::CashdropNotAvailable,
+			)
+
+			Self::deposit_setter_drop(who, balance_cashdrop_amount)?;
+		} else if T::NonStableDropCurrencyIds.contains(currency_id) {
+			let (cashdrop_numerator, cashdrop_denominator) = Self::get_cashdrop_rate(currency_id);
+			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
+			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
+			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
+			let serp_balance = T::Currency::total_balance(T::SetterCurrencyId::get(), &Self::account_id());
+			ensure!(
+				balance_cashdrop_amount <= serp_balance,
+				Error::<T>::CashdropNotAvailable,
+			)
+			let currency_price = T::Price::get_price(currency_id);
+			let relative_price = currency_price.saturating_mul(&setter_fixed_price);
+			relative_cashdrop_amount = relative_price.saturating_mul(balance_cashdrop_amount);
+
+			Self::deposit_setter_drop(who, relative_cashdrop_amount)?;
+		} else if T::SetCurrencyDropCurrencyIds.contains(currency_id) {
+			let (cashdrop_numerator, cashdrop_denominator) = Self::get_cashdrop_rate(currency_id);
+			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
+			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
+			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
+			let serp_balance = T::Currency::total_balance(currency_id, &Self::account_id());
+			ensure!(
+				balance_cashdrop_amount <= serp_balance,
+				Error::<T>::CashdropNotAvailable,
+			)
+
+			Self::deposit_settcurrency_drop(currency_id, who, balance_cashdrop_amount)?;
+		}
+		Ok(())
 	}
 
-	/// deposit cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn deposit_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult {
-
-	}
-}
-
-impl<T: Config> Pallet<T> {
-	/// Convert `Balance` to `Amount`.
-	fn amount_try_from_balance(b: Balance) -> result::Result<Amount, Error<T>> {
-		TryInto::<Amount>::try_into(b).map_err(|_| Error::<T>::AmountConvertFailed)
+	/// deposit cashdrop of `SETT` of `cashdrop_amount` to `who`
+	fn deposit_setter_drop(who: &AccountId, cashdrop_amount: Balance) -> DispatchResult {
+		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), who, cashdrop_amount)
+		Self::deposit_event(Event::CashDrops(T::GetSetterCurrencyId::get(), who, cashdrop_amount));
 	}
 
-	/// Convert the absolute value of `Amount` to `Balance`.
-	fn balance_try_from_amount_abs(a: Amount) -> result::Result<Balance, Error<T>> {
-		TryInto::<Balance>::try_into(a.saturating_abs()).map_err(|_| Error::<T>::AmountConvertFailed)
-	}
-
-	pub fn total_reserve() -> Balance {
-		let reserve_currency = T::GetReserveCurrencyId::get();
-		T::Currency::free_balance(&reserve_currency, &Self::account_id())
-	}
-	
-	fn get_total_reserve() -> Self::Balance {
-		Self::total_reserve()
+	/// deposit cashdrop of `currency_id` of `cashdrop_amount` to `who`
+	fn deposit_settcurrency_drop(currency_id: CurrencyId, who: &AccountId, cashdrop_amount: Balance) -> DispatchResult {
+		T::Currency::transfer(currency_id, &Self::account_id(), who, cashdrop_amount)
+		Self::deposit_event(Event::CashDrops(currency_id, who, cashdrop_amount));
 	}
 }
