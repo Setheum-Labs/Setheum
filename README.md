@@ -58,7 +58,7 @@ The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, 
 For all the SERML (Setheum Runtime Module Library) modules like the;
 [bridges](./lib-serml/bridges), 
 [dex](./lib-serml/dex), 
-[prices](./lib-serml/prices), 
+[prices](./lib-serml/serp/serp-prices), 
 [support](./lib-serml/support), 
 [tokens](./lib-serml/tokens), 
 [NFTs](./lib-serml/nft), 
@@ -142,7 +142,7 @@ Bench bot can take care of syncing branch with `master` and generating WeightInf
 
 ### Generate module weights
 
-Comment on a PR `/bench runtime module <setheum_name>` i.e.: `setheum_prices`
+Comment on a PR `/bench runtime module <setheum_name>` i.e.: `serp_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
 

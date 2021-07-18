@@ -1,5 +1,5 @@
 [package]
-name = "setheum-prices"
+name = "serp-prices"
 version = "0.8.0"
 authors = ["Setheum Labs"]
 edition = "2018"

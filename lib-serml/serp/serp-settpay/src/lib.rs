@@ -60,9 +60,6 @@ pub mod module {
 		/// The stable currency ids.
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
-		/// The cashdrop currency ids that can be rewarded as CashDrop.
-		type CashDropCurrencyIds: Get<Vec<CurrencyId>>;
-
 		/// The cashdrop currency ids that can be rewarded with CashDrop.
 		type RewardableCurrencyIds: Get<Vec<CurrencyId>>;
 
@@ -177,7 +174,7 @@ impl<T: Config> Pallet<T> {
 
 	pub fn get_cashdrop_rate(currency_id: T::CurrencyId) -> (u32, u32) {
 		ensure!(
-			T::CashDropCurrencyIds.contains(currency_id),
+			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
 		)
 		Self::cashdrop_rate(currency_id).unwrap_or_else(T::DefaultCashDropRate::get)
@@ -185,7 +182,7 @@ impl<T: Config> Pallet<T> {
 
 	pub fn get_minimum_claimable_transfer(currency_id: T::CurrencyId) -> Balance {
 		ensure!(
-			T::CashDropCurrencyIds.contains(currency_id),
+			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
 		)
 		Self::minimum_claimable_transfer(currency_id).unwrap_or_else(T::DefaultMinimumClaimableTransfer::get)

@@ -26,91 +26,133 @@ use mock::{Event, *};
 use sp_runtime::traits::BadOrigin;
 
 #[test]
-fn issue_standard_works() {
+fn cashdrop_rate_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
-
-		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000));
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 2000);
-
-		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000));
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 3000);
+		// set the cashdrop_rate of USDJ to 5%.
+		assert_ok!(SettPay::update_cashdrop_rate(Origin::signed(ALICE), USDJ, 5, 100));
+		// get cashdrop_rate.
+		assert_eq!(SettPay::get_cashdrop_rate(USDJ), 5, 100);
 	});
 }
 
 #[test]
-fn burn_standard_works() {
+fn minimum_claimable_transfer_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
-		assert_ok!(SerpTreasuryModule::burn_standard(&ALICE, 300));
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 700);
+		// set the minimum_claimable_transfer of USDJ to 20,
+		assert_ok!(SettPay::update_minimum_claimable_transfer(Origin::signed(ALICE), USDJ, 20));
+		// get minimum_claimable_transfer.
+		assert_eq!(SettPay::get_minimum_claimable_transfer(USDJ), 20);
 	});
 }
 
 #[test]
-fn issue_dexer_works() {
+fn claim_setter_cashdrop_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 1000);
+		assert_ok!(SettPay::update_cashdrop_rate(Origin::signed(ALICE), SETT, 5, 100));
+		assert_eq!(SettPay::get_cashdrop_rate(SETT), 5, 100);
 
-		assert_ok!(SerpTreasuryModule::issue_dexer(&ALICE, 1000));
-		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 2000);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 100_000);
+		assert_eq!(Currencies::free_balance(SETT, &BOB), 100_000);
+		assert_eq!(Currencies::free_balance(SETT, &SETTPAY_TREASURY), 100_000);
 
-		assert_ok!(SerpTreasuryModule::issue_dexer(&ALICE, 1000));
-		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 3000);
+		assert_ok!(Currencies::transfer(&ALICE, &BOB, SETT, 10_000, true));
+		assert_ok!(SettPay::claim_cashdrop(SETT, &ALICE, 10_000));
+
+		assert_eq!(Currencies::free_balance(SETT, &SETTPAY_TREASURY), 99_500);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 90_500);
+		assert_eq!(Currencies::free_balance(SETT, &BOB), 110_000);
 	});
 }
 
 #[test]
-fn burn_dexer_works() {
+fn claim_settcurrency_cashdrop_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 1000);
-		assert_ok!(SerpTreasuryModule::burn_dexer(&ALICE, 300));
-		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 700);
+		// uses the default cashdrop rate of 2%
+		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 100_000);
+		assert_eq!(Currencies::free_balance(USDJ, &BOB), 100_000);
+		assert_eq!(Currencies::free_balance(USDJ, &SETTPAY_TREASURY), 100_000);
+
+		assert_ok!(Currencies::transfer(&ALICE, &BOB, USDJ, 10_000, true));
+		assert_ok!(SettPay::claim_cashdrop(USDJ, &ALICE, 10_000));
+
+		assert_eq!(Currencies::free_balance(USDJ, &SETTPAY_TREASURY), 99_800);
+		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 90_200);
+		assert_eq!(Currencies::free_balance(USDJ, &BOB), 110_000);
 	});
 }
 
 #[test]
-fn deposit_serplus_works() {
+fn claim_native_cashdrop_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
-		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 0);
-		assert_ok!(SerpTreasuryModule::deposit_serplus(USDJ, &ALICE, 300));
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 700);
-		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 300);
-	});
-}
+		assert_ok!(SettPay::update_cashdrop_rate(Origin::signed(ALICE), DNAR, 5, 100));
+		assert_eq!(SettPay::get_cashdrop_rate(DNAR), 5, 100);
 
-#[test]
-fn deposit_setter_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SerpTreasuryModule::total_reserve(SETT), 0);
-		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
-		assert_eq!(SerpTreasuryModule::deposit_setter(&ALICE, SETT, 10000).is_ok(), false);
-		assert_ok!(SerpTreasuryModule::deposit_setter(&ALICE, SETT, 500));
-		assert_eq!(SerpTreasuryModule::total_reserve(SETT), 500);
-		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 500);
-		assert_eq!(Currencies::free_balance(SETT, &ALICE), 500);
-	});
-}
+		assert_eq!(Currencies::free_balance(DNAR, &ALICE), 100_000);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 100_000);
+		assert_eq!(Currencies::free_balance(DNAR, &BOB), 100_000);
+		assert_eq!(Currencies::free_balance(DNAR, &SETTPAY_TREASURY), 100_000);
 
-#[test]
-fn get_propper_proportion_works() {
-	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpTreasuryModule::get_propper_proportion(40),
-			Ratio::saturating_from_rational(40, Currencies::total_issuance(USDJ))
+			SerpPrices::get_relative_price(DNAR, SETT),
+			Some(Price::saturating_from_rational(10000, 1)) /* 1DNAR = 100SETT, right shift the decimal point (12-10)
+			                                                 * places */
 		);
+
+		assert_ok!(Currencies::transfer(&ALICE, &BOB, DNAR, 10_000, true));
+		assert_ok!(SettPay::claim_cashdrop(DNAR, &ALICE, 10_000));
+
+		assert_eq!(Currencies::free_balance(DNAR, &SETTPAY_TREASURY), 100_000);
+		assert_eq!(Currencies::free_balance(SETT, &SETTPAY_TREASURY), 50_000);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 150_000);
+		assert_eq!(Currencies::free_balance(DNAR, &ALICE), 90_000);
+		assert_eq!(Currencies::free_balance(DNAR, &BOB), 110_000);
 	});
 }
 
 #[test]
-fn auction_serplus_works() {
+fn claim_dexer_cashdrop_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(SerpTreasuryModule::auction_serplus(Origin::signed(5), 100, USDJ), BadOrigin,);
+		assert_ok!(SettPay::update_cashdrop_rate(Origin::signed(ALICE), DRAM, 5, 100));
+		assert_eq!(SettPay::get_cashdrop_rate(DRAM), 5, 100);
 
-		assert_eq!(TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut()), 0);
-		assert_ok!(SerpTreasuryModule::auction_serplus(Origin::signed(1), 100, USDJ));
-		assert_eq!(TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut()), 1);
+		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 100_000);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 100_000);
+		assert_eq!(Currencies::free_balance(DRAM, &BOB), 100_000);
+		assert_eq!(Currencies::free_balance(DRAM, &SETTPAY_TREASURY), 100_000);
+
+		assert_eq!(DRAM
+			SerpPrices::get_relative_price(DRAM, SETT),
+			Some(Price::saturating_from_rational(10000, 1)) /* 1DRAM = 100SETT, right shift the decimal point (12-10)
+			                                                 * places */
+		);
+		
+		assert_ok!(Currencies::transfer(&ALICE, &BOB, DRAM, 10_000, true));
+		assert_ok!(SettPay::claim_cashdrop(DRAM, &ALICE, 10_000));
+
+		assert_eq!(Currencies::free_balance(DRAM, &SETTPAY_TREASURY), 100_000);
+		assert_eq!(Currencies::free_balance(SETT, &SETTPAY_TREASURY), 50_000);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 150_000);
+		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 90_000);
+		assert_eq!(Currencies::free_balance(DRAM, &BOB), 110_000);
+	});
+}
+
+#[test]
+fn deposit_setter_drop_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 100_000);
+
+		assert_ok!(SettPay::deposit_setter_drop(&ALICE, 2_000));
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 102_000);
+	});
+}
+
+#[test]
+fn deposit_settcurrency_drop_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 100_000);
+
+		assert_ok!(SettPay::deposit_settcurrency_drop(&ALICE, 2_000));
+		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 102_000);
 	});
 }

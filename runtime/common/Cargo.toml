@@ -45,7 +45,7 @@ orml-nft = { path = "../../lib-openrml/nft" }
 setheum-currencies = { path = "../../lib-serml/tokens/currencies" }
 setheum-nft = { path = "../../lib-serml/tokens/nft" }
 setheum-dex = { path = "../../lib-serml/dex/dex" }
-setheum-prices = { path = "../../lib-serml/prices" }
+serp-prices = { path = "../../lib-serml/serp/serp-prices" }
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment" }
 
 [features]

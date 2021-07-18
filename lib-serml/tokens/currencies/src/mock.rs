@@ -103,11 +103,10 @@ impl tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub CashDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
 	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM, SETT, USDJ];
 	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
 	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
-	pub const DefaultCashDropRate: CashDropRate = CashDropRate::one();
+	pub const DefaultCashDropRate: CashDropRate = CashDropRate::::saturating_from_rational(2 : 100); // 2% cashdrop
 	pub const DefaultMinimumClaimableTransfer: Balance = 10;
 	pub const SettPayPalletId: PalletId = PalletId(*b"set/tpay");
 }
@@ -117,7 +116,6 @@ impl serp_settpay::Config for Runtime {
 	type Currency = Currencies;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
-	type CashDropCurrencyIds = CashDropCurrencyIds;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
 	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;

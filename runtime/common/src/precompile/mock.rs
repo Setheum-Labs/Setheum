@@ -423,7 +423,7 @@ ord_parameter_types! {
 	pub const One: AccountId = AccountId::new([1u8; 32]);
 }
 
-impl setheum_prices::Config for Test {
+impl serp_prices::Config for Test {
 	type Event = Event;
 	type Source = Oracle;
 	type GetStableCurrencyId = GetStableCurrencyId;
@@ -499,7 +499,7 @@ frame_support::construct_runtime!(
 		EVMManager: setheum_evm_manager::{Pallet, Storage},
 		NFTModule: setheum_nft::{Pallet, Call, Event<T>},
 		TransactionPayment: setheum_transaction_payment::{Pallet, Call, Storage},
-		Prices: setheum_prices::{Pallet, Storage, Call, Event<T>},
+		Prices: serp_prices::{Pallet, Storage, Call, Event<T>},
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
 		Utility: pallet_utility::{Pallet, Call, Event},
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},

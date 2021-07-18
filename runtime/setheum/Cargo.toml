@@ -84,12 +84,12 @@ setheum-evm-accounts = { path = "../../lib-serml/evm/evm-accounts", default-feat
 setheum-evm-bridge = { path = "../../lib-serml/evm/evm-bridge", default-features = false }
 setheum-evm-manager = { path = "../../lib-serml/evm/evm-manager", default-features = false }
 setheum-evm-rpc-runtime-api = { path = "../../lib-serml/evm/evm/rpc/runtime_api",  default-features = false }
-# - prices
-setheum-prices = { path = "../../lib-serml/prices", default-features = false }
 # - serp
 serp-auction = { path = "../../lib-serml/serp/serp-auction", default-features = false }
+serp-settpay = { path = "../../lib-serml/serp/serp-settpay", default-features = false }
+serp-prices = { path = "../../lib-serml/serp/serp-prices", default-features = false }
+serp-staking = { path = "../../lib-serml/serp/serp-staking", default-features = false }
 serp-treasury = { path = "../../lib-serml/serp/serp-treasury", default-features = false }
-serp-staking = { default-features = false, path = "../../lib-serml/serp/serp-staking" }
 # - settmint
 settmint-engine = { path = "../../lib-serml/settmint/settmint-engine", default-features = false }
 settmint-gateway = { path = "../../lib-serml/settmint/settmint-gateway", default-features = false }
@@ -138,7 +138,6 @@ std = [
 	"pallet-recovery/std",
 	"pallet-scheduler/std",
 	"pallet-session/std",
-	"serp-staking/std",
 	"pallet-sudo/std",
 	"pallet-timestamp/std",
 	"pallet-tips/std",
@@ -169,6 +168,7 @@ std = [
 	"orml-nft/std",
 
 	"setheum-airdrop/std",
+	"setheum-chainbridge/std",
 	"setheum-renvm-bridge/std",
 	"setheum-dex/std",
 	"setheum-incentives/std",
@@ -176,8 +176,10 @@ std = [
 	"setheum-evm-accounts/std",
 	"setheum-evm-bridge/std",
 	"setheum-evm-manager/std",
-	"setheum-prices/std",
 	"serp-auction/std",
+	"serp-prices/std",
+	"serp-settpay/std",
+	"serp-staking/std",
 	"serp-treasury/std",
 	"settmint-engine/std",
 	"settmint-gateway/std",
@@ -261,7 +263,7 @@ try-runtime = [
 	"setheum-evm-accounts/try-runtime",
 	"setheum-evm-bridge/try-runtime",
 	"setheum-evm-manager/try-runtime",
-	"setheum-prices/try-runtime",
+	"serp-prices/try-runtime",
 	"serp-auction/try-runtime",
 	"serp-treasury/try-runtime",
 	"settmint-engine/try-runtime",

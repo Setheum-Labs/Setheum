@@ -36,7 +36,7 @@ use support::{mocks::MockCurrencyIdMapping, ExchangeRate, Ratio};
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
-mod setheum_prices {
+mod serp_prices {
 	pub use super::super::*;
 }
 
@@ -394,7 +394,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		SetheumPrices: prices::{Pallet, Storage, Call, Event<T>},
+		SerpPrices: prices::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 	}
 );
