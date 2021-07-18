@@ -45,6 +45,7 @@ pub type BlockNumber = u32;
 pub type Price = FixedU128;
 pub type ExchangeRate = FixedU128;
 pub type CashDropRate = FixedU128;
+pub type CashDropClaim = bool;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
@@ -221,7 +222,7 @@ pub trait SerpTreasury<AccountId> {
 	fn burn_setter(who, amount: Self::Balance) -> DispatchResult;
 }
 
-/// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol).
+/// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol) for CashDrop.
 pub trait CashDrop<AccountId> {
 	type Balance;
 	type CurrencyId;
