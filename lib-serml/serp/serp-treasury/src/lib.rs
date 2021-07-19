@@ -130,9 +130,6 @@ pub mod module {
 	#[pallet::event]
 	#[pallet::generate_deposit(fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// The expected amount size for per lot collateral auction of the
-		/// reserve type updated. \[reserve_type, new_size\]
-		ExpectedSetterAuctionSizeUpdated(CurrencyId, Balance),
 		/// Currency SerpUp has been delivered successfully.
 		CurrencySerpUpDelivered(Balance, CurrencyId),
 		/// Currency SerpUp has been completed successfully.
