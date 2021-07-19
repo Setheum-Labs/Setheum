@@ -45,6 +45,7 @@ pub type AuctionId = u32;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
+pub const CHARITY_FUND: AccountId = 4;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -523,11 +524,14 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
-	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
-	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM
+	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
+	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
+	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
 
-	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
+	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
+	
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
@@ -535,17 +539,38 @@ parameter_types! {
 	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
+parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETT => 10_000,
+			&AUDJ => 10_000,
+			&CHFJ => 10_000,
+			&EURJ => 10_000,
+			&GBPJ => 10_000,
+			&JPYJ => 10_000,
+			&USDJ => 10_000,
+			_ => 0,
+		}
+	};
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
+	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSetterCurrencyId = GetSetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
+	type SetheumTreasuryAcc = TreasuryPalletId;
+	type CharityFundAcc = CHARITY_FUND;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = SetheumDEX;
