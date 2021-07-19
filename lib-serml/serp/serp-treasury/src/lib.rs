@@ -29,7 +29,7 @@
 
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
-use orml_traits::{MultiCurrency, MultiCurrencyExtended};
+use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, BlockNumber, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
@@ -61,8 +61,15 @@ pub mod module {
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
+		/// Native (DNAR/NEOM) currency Stablecoin currency id
+		type GetStableCurrencyMinimumSupply: GetByKey<Self::CurrencyId, Self::Balance>;
+
 		#[pallet::constant]
-		/// Setter (SETT) currency Stablecoin currency id
+		/// Native (DNAR/NEOM) currency Stablecoin currency id
+		type GetNativeCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// Setter (SETT/NSETT) currency Stablecoin currency id
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -310,45 +317,91 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	/// get the minimum supply of a settcurrency - by key
+	fn get_minimum_supply(currency_id: CurrencyId) -> Balance {
+		T::GetStableCurrencyMinimumSupply::get(currency_id)
+	}
 	/// buy back and burn surplus(stable currencies) with auction
 	/// Create the necessary serp down parameters and starts new auction.
 	fn on_serpdown(currency_id: CurrencyId, amount: Amount) -> DispatchResult {
 		/// ensure that the currency is a SettCurrency
 		ensure!(
-			T::StableCurrencyIds::get().contains(&currency_id),
+			T::StableCurrencyIds::get().contains(currency_id),
 			Error::<T>::InvalidCyrrencyType,
 		);
 		let setter_fixed_price = T::Price::get_setter_fixed_price();
 		
-		if currency_id == T::GetSetterCurrencyId::get() {
-			let dinar = T::GetNativeCurrencyId::get();
-			let dinar_price = T::Price::get_price(&dinar);
-			let relative_price = dinar_price.checked_div(&setter_fixed_price);
-			/// the initial amount is the equivalent of the serpdown amount -
-			/// but in the (higher) fixed price not the (lower) market price
-			// TODO: Check to update-vvvvvvvvvvvvvvvvv!
-			let initial_amount = amount.checked_div(&relative_price);
-			/// ensure that the amounts are not zero
-			ensure!(
-				!initial_amount.is_zero() && !amount.is_zero(),
-				Error::<T>::InvalidAmount,
-			);
-			/// Diamond Auction if it's to serpdown Setter.
-			T::SerpAuctionManagerHandler::new_diamond_auction(&initial_amount, &amount)
+		let total_supply = T::Currency::total_issuance(currency_id);
+		let minimum_supply = Self::get_minimum_supply(currency_id);
+		let removed_amount = &total_supply.saturating_sub(amount);
 
-		} else {
-			let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id)?;
-			let relative_price = setter_fixed_price.checked_div(&settcurrency_fixed_price);
-			/// the initial amount is the equivalent of the serpdown amount -
-			/// but in the (higher) fixed price not the (lower) market price
-			let initial_setter_amount = amount.checked_div(&relative_price);
-			/// ensure that the amounts are not zero
+		if removed_amount >= &minimum_supply {
+			if currency_id == T::GetSetterCurrencyId::get() {
+				let dinar = T::GetNativeCurrencyId::get();
+				let dinar_price = T::Price::get_price(&dinar);
+				let relative_price = dinar_price.checked_div(&setter_fixed_price);
+				/// the initial amount is the equivalent of the serpdown amount -
+				/// but in the (higher) fixed price not the (lower) market price
+				// TODO: Check to update-vvvvvvvvvvvvvvvvv!
+				let initial_amount = amount.checked_div(&relative_price);
+				/// ensure that the amounts are not zero
+				ensure!(
+					!initial_amount.is_zero() && !amount.is_zero(),
+					Error::<T>::InvalidAmount,
+				);
+				/// Diamond Auction if it's to serpdown Setter.
+				T::SerpAuctionManagerHandler::new_diamond_auction(&initial_amount, &amount)
+
+			} else {
+				let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id)?;
+				let relative_price = setter_fixed_price.checked_div(&settcurrency_fixed_price);
+				/// the initial amount is the equivalent of the serpdown amount -
+				/// but in the (higher) fixed price not the (lower) market price
+				let initial_setter_amount = amount.checked_div(&relative_price);
+				/// ensure that the amounts are not zero
+				ensure!(
+					!initial_setter_amount.is_zero() && !amount.is_zero(),
+					Error::<T>::InvalidAmount,
+				);
+				/// Setter Auction if it's not to serpdown Setter.
+				T::SerpAuctionManagerHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
+			}
+		} else let balanced_amount = total_supply.saturating_sub(&minimum_supply);
 			ensure!(
-				!initial_setter_amount.is_zero() && !amount.is_zero(),
-				Error::<T>::InvalidAmount,
+				total_supply.saturating_sub(&balanced_amount) >= &minimum_supply,
+				Error::<T>::MinSupplyReached,
 			);
-			/// Setter Auction if it's not to serpdown Setter.
-			T::SerpAuctionManagerHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
+			
+			if currency_id == T::GetSetterCurrencyId::get() {
+				let dinar = T::GetNativeCurrencyId::get();
+				let dinar_price = T::Price::get_price(&dinar);
+				let relative_price = dinar_price.checked_div(&setter_fixed_price);
+				/// the initial amount is the equivalent of the serpdown amount -
+				/// but in the (higher) fixed price not the (lower) market price
+				// TODO: Check to update-vvvvvvvvvvvvvvvvv!
+				let initial_amount = &balanced_amount.checked_div(&relative_price);
+				/// ensure that the amounts are not zero
+				ensure!(
+					!initial_amount.is_zero() && !balanced_amount.is_zero(),
+					Error::<T>::InvalidAmount,
+				);
+				/// Diamond Auction if it's to serpdown Setter.
+				T::SerpAuctionManagerHandler::new_diamond_auction(&initial_amount, &balanced_amount)
+
+			} else {
+				let settcurrency_fixed_price = T::Price::get_stablecoin_fixed_price(currency_id)?;
+				let relative_price = setter_fixed_price.checked_div(&settcurrency_fixed_price);
+				/// the initial amount is the equivalent of the serpdown amount -
+				/// but in the (higher) fixed price not the (lower) market price
+				let initial_setter_amount = &balanced_amount.checked_div(&relative_price);
+				/// ensure that the amounts are not zero
+				ensure!(
+					!initial_setter_amount.is_zero() && !balanced_amount.is_zero(),
+					Error::<T>::InvalidAmount,
+				);
+				/// Setter Auction if it's not to serpdown Setter.
+				T::SerpAuctionManagerHandler::new_setter_auction(&initial_setter_amount, &balanced_amount, &currency_id)
+			}
 		}
 
 		Self::deposit_event(Event::CurrencySerpDownTriggered(amount, currency_id));
@@ -444,18 +497,17 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		let total_supply = T::Currency::total_issuance(T::GetDexerCurrencyId::get());
 		let max_supply = Self::get_dexer_max_supply();
-		if dexer + total_supply <= max_supply {
+		if dexer.saturating_add(&total_supply) <= &max_supply {
 			T::Currency::deposit(T::GetDexerCurrencyId::get(), who, dexer)?;
-		} else let to_amount = dexer.saturating_add(total_supply) {
-			let remainder = to_amount.saturating_sub(max_supply);
-			let balanced_amount = to_amount.saturating_sub(remainder);
+		} else let to_amount = dexer.saturating_add(&total_supply) {
+			let remainder = &to_amount.saturating_sub(&max_supply);
+			let balanced_amount = &to_amount.saturating_sub(&remainder);
 			ensure!(
-				balanced_amount <= max_supply,
-				Error::<T>::DexerMaxSupplied,
+				&balanced_amount <= &max_supply,
+				Error::<T>::MaxSupplyReached,
 			);
-			T::Currency::deposit(T::GetDexerCurrencyId::get(), who, balanced_amount)?;
+			T::Currency::deposit(T::GetDexerCurrencyId::get(), who, &balanced_amount)?;
 		}
-		T::Currency::deposit(T::GetDexerCurrencyId::get(), who, dexer)?;
 		Ok(())
 	}
 
