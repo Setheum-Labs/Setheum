@@ -66,8 +66,12 @@ pub mod module {
 		type GetSetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// SettinDes (DRAM) dexer currency id
+		/// SettinDes (DRAM/MENA) dexer currency id
 		type GetDexerCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Dexer (DRAM/MENA) maximum supply
+		type GetDexerMaxSupply: Get<Balance>;
 
 		/// SERP-TES Adjustment Frequency.
 		/// Schedule for when to trigger SERP-TES
@@ -315,7 +319,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::InvalidCyrrencyType,
 		);
 		let setter_fixed_price = T::Price::get_setter_fixed_price();
-
+		
 		if currency_id == T::GetSetterCurrencyId::get() {
 			let dinar = T::GetNativeCurrencyId::get();
 			let dinar_price = T::Price::get_price(&dinar);
@@ -340,7 +344,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			let initial_setter_amount = amount.checked_div(&relative_price);
 			/// ensure that the amounts are not zero
 			ensure!(
-				!initial_amount.is_zero() && !amount.is_zero(),
+				!initial_setter_amount.is_zero() && !amount.is_zero(),
 				Error::<T>::InvalidAmount,
 			);
 			/// Setter Auction if it's not to serpdown Setter.
@@ -431,8 +435,26 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, setter)
 	}
 
+	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum or `MENA` in Neom).
+	fn get_dexer_max_supply() -> Self::Balance {
+		T::GetDexerMaxSupply::get()
+	}
+
 	/// Issue Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the Dex token balance.
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
+		let total_supply = T::Currency::total_issuance(T::GetDexerCurrencyId::get());
+		let max_supply = Self::get_dexer_max_supply();
+		if dexer + total_supply <= max_supply {
+			T::Currency::deposit(T::GetDexerCurrencyId::get(), who, dexer)?;
+		} else let to_amount = dexer.saturating_add(total_supply) {
+			let remainder = to_amount.saturating_sub(max_supply);
+			let balanced_amount = to_amount.saturating_sub(remainder);
+			ensure!(
+				balanced_amount <= max_supply,
+				Error::<T>::DexerMaxSupplied,
+			);
+			T::Currency::deposit(T::GetDexerCurrencyId::get(), who, balanced_amount)?;
+		}
 		T::Currency::deposit(T::GetDexerCurrencyId::get(), who, dexer)?;
 		Ok(())
 	}
