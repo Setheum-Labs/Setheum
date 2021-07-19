@@ -155,6 +155,10 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
+	fn get_minimum_supply(_: CurrencyId) -> Balance {
+		unimplemented!()
+	}
+
 	fn on_serpdown(_: CurrencyId, _: Amount) -> DispatchResult {
 		unimplemented!()
 	}
