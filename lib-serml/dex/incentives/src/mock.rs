@@ -272,6 +272,7 @@ impl orml_rewards::Config for Runtime {
 	type WeightInfo = ();
 }
 
+// TODO: Add AccumulationPeriod
 parameter_types! {
 	pub const DexIncentivePool: AccountId = 10;
 	pub const DexPremiumPool: AccountId = 11;
@@ -311,6 +312,7 @@ ord_parameter_types! {
 	pub const Four: AccountId = 4;
 }
 
+// TODO: Add AccumulationPeriod
 impl Config for Runtime {
 	type Event = Event;
 	type DexIncentivePool = DexIncentivePool;
