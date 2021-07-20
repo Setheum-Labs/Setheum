@@ -4517,6 +4517,8 @@ dependencies = [
  "runtime-common",
  "serde",
  "serp-auction",
+ "serp-prices",
+ "serp-settpay",
  "serp-staking",
  "serp-treasury",
  "setheum-airdrop",
@@ -4530,7 +4532,6 @@ dependencies = [
  "setheum-evm-rpc-runtime-api",
  "setheum-incentives",
  "setheum-nft",
- "serp-prices",
  "setheum-primitives",
  "setheum-renvm-bridge",
  "setheum-support",
@@ -4616,6 +4617,8 @@ dependencies = [
  "runtime-common",
  "serde",
  "serp-auction",
+ "serp-prices",
+ "serp-settpay",
  "serp-staking",
  "serp-treasury",
  "setheum-airdrop",
@@ -4629,7 +4632,6 @@ dependencies = [
  "setheum-evm-rpc-runtime-api",
  "setheum-incentives",
  "setheum-nft",
- "serp-prices",
  "setheum-primitives",
  "setheum-renvm-bridge",
  "setheum-support",
@@ -6547,11 +6549,11 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "serde_json",
+ "serp-prices",
  "setheum-currencies",
  "setheum-dex",
  "setheum-evm",
  "setheum-nft",
- "serp-prices",
  "setheum-primitives",
  "setheum-service",
  "setheum-support",
@@ -7909,6 +7911,48 @@ dependencies = [
 ]
 
 [[package]]
+name = "serp-prices"
+version = "0.8.0"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "orml-tokens",
+ "orml-traits",
+ "parity-scale-codec",
+ "serde",
+ "setheum-primitives",
+ "setheum-support",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+]
+
+[[package]]
+name = "serp-settpay"
+version = "0.8.0"
+dependencies = [
+ "frame-benchmarking 3.1.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "orml-auction",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "parity-scale-codec",
+ "serde",
+ "serp-treasury",
+ "setheum-dex",
+ "setheum-primitives",
+ "setheum-support",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
+]
+
+[[package]]
 name = "serp-staking"
 version = "0.8.0"
 dependencies = [
@@ -8046,6 +8090,7 @@ dependencies = [
  "pallet-timestamp",
  "parity-scale-codec",
  "serde",
+ "serp-settpay",
  "setheum-evm",
  "setheum-evm-bridge",
  "setheum-primitives",
@@ -8315,24 +8360,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serp-prices"
-version = "0.8.0"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
- "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
- "orml-tokens",
- "orml-traits",
- "parity-scale-codec",
- "serde",
- "setheum-primitives",
- "setheum-support",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
- "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
-]
-
-[[package]]
 name = "setheum-primitives"
 version = "0.8.0"
 dependencies = [
@@ -8449,6 +8476,8 @@ dependencies = [
  "runtime-common",
  "serde",
  "serp-auction",
+ "serp-prices",
+ "serp-settpay",
  "serp-staking",
  "serp-treasury",
  "setheum-airdrop",
@@ -8462,7 +8491,6 @@ dependencies = [
  "setheum-evm-rpc-runtime-api",
  "setheum-incentives",
  "setheum-nft",
- "serp-prices",
  "setheum-primitives",
  "setheum-renvm-bridge",
  "setheum-support",
