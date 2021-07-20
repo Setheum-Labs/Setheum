@@ -332,7 +332,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
+	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
@@ -366,7 +366,7 @@ parameter_types! {
 impl prices::Config for Runtime {
 	type Event = Event;
 	type Source = MockDataProvider;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
@@ -524,7 +524,7 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
-	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
 	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
 	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
 
@@ -560,7 +560,7 @@ impl serp_treasury::Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
 	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
@@ -604,7 +604,7 @@ parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;

@@ -162,7 +162,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// Setter (SETT) currency Stablecoin currency id
-		type GetSetterCurrencyId: Get<CurrencyId>;
+		type SetterCurrencyId: Get<CurrencyId>;
 
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
@@ -415,7 +415,7 @@ impl<T: Config> Pallet<T> {
 				if let Some(last_bidder) = last_bidder {
 					// there's bid before, transfer the setter from new bidder to last bidder
 					T::Currency::transfer(
-						T::GetSetterCurrencyId::get(),
+						T::SetterCurrencyId::get(),
 						&new_bidder,
 						last_bidder,
 						diamond_auction.fix,
@@ -740,10 +740,10 @@ impl<T: Config> SerpAuctionManager<T::AccountId> for Pallet<T> {
 		// set ending time for Setter Auction
 		let auction_id = T::Auction::new_auction(start_time, Some(end_block))?;
 
-		let setter = T::GetSetterCurrencyId::get();
+		let setter = T::SetterCurrencyId::get();
 
 		// set settcurrency_id accepted for setter auction (Only SettCurrencies are accepted)
-		if !settcurrency_id = T::GetSetterCurrencyId::get() {
+		if !settcurrency_id = T::SetterCurrencyId::get() {
 			<SetterAuctions<T>>::insert(
 				auction_id,
 				SetterAuctionItem {

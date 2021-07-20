@@ -326,7 +326,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
+	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
@@ -360,7 +360,7 @@ parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Source = MockDataProvider;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;

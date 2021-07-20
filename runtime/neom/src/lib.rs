@@ -1147,7 +1147,7 @@ parameter_types! {
 impl serp_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
@@ -1177,7 +1177,7 @@ impl serp_prices::Config for Runtime {
 // TODO - implemented from `setheum_dex` module.
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NEOM;
-	pub const GetSetterCurrencyId: CurrencyId = NSETT;
+	pub const SetterCurrencyId: CurrencyId = NSETT;
 	pub const GetDexerCurrencyId: CurrencyId = MENA;
 	pub const GetSettUSDCurrencyId: CurrencyId = JUSD;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
@@ -1280,7 +1280,7 @@ impl serp_auction::Config for Runtime {
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type SerpTreasury = SerpTreasury;
 	type Dex = Dex;
 	type PriceSource = SerpPrices;
@@ -1464,7 +1464,7 @@ impl serp_treasury::Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
 	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
@@ -1495,7 +1495,7 @@ parameter_types! {
 impl serp_settpay::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
@@ -1519,7 +1519,7 @@ parameter_types! {
 impl setheum_transaction_payment::Config for Runtime {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type Currency = Balances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = Treasury;

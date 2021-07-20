@@ -245,7 +245,7 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ
 	];
-	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
 	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
 	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
 
@@ -281,7 +281,7 @@ impl serp_treasury::Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
 	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;

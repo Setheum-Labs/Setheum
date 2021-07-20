@@ -190,7 +190,7 @@ parameter_types! {
 		USDJ,
 		ZARJ,
 	];
-	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
 	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
 	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
 
@@ -226,7 +226,7 @@ impl serp_treasury::Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type GetDexerCurrencyId = GetDexerCurrencyId;
 	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
@@ -343,7 +343,7 @@ parameter_types! {
 	pub const MaxAuctionsCount: u32 = 10_000;
 
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
-	pub const GetSetterCurrencyId: CurrencyId = SETT;
+	pub const SetterCurrencyId: CurrencyId = SETT;
 }
 
 impl Config for Runtime {
@@ -357,7 +357,7 @@ impl Config for Runtime {
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
 	type Dex = SetheumDEX;
 	type PriceSource = MockPriceSource;

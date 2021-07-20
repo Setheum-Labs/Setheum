@@ -164,14 +164,14 @@ impl dex::Config for Runtime {
 parameter_types! {
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![SETT, DOT];
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::one();
-	pub const GetSetterCurrencyId: CurrencyId = SETT;
+	pub const SetterCurrencyId: CurrencyId = SETT;
 	pub static TransactionByteFee: u128 = 1;
 }
 
 impl Config for Runtime {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type Currency = PalletBalances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = ();

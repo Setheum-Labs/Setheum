@@ -70,7 +70,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// Setter (SETT/NSETT) currency Stablecoin currency id
-		type GetSetterCurrencyId: Get<CurrencyId>;
+		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
 		/// SettinDes (DRAM/MENA) dexer currency id
@@ -336,7 +336,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let removed_amount = &total_supply.saturating_sub(amount);
 
 		if removed_amount >= &minimum_supply {
-			if currency_id == T::GetSetterCurrencyId::get() {
+			if currency_id == T::SetterCurrencyId::get() {
 				let dinar = T::GetNativeCurrencyId::get();
 				let dinar_price = T::Price::get_price(&dinar);
 				let relative_price = dinar_price.checked_div(&setter_fixed_price);
@@ -372,7 +372,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				Error::<T>::MinSupplyReached,
 			);
 			
-			if currency_id == T::GetSetterCurrencyId::get() {
+			if currency_id == T::SetterCurrencyId::get() {
 				let dinar = T::GetNativeCurrencyId::get();
 				let dinar_price = T::Price::get_price(&dinar);
 				let relative_price = dinar_price.checked_div(&setter_fixed_price);
@@ -480,12 +480,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
-		T::Currency::deposit(T::GetSetterCurrencyId::get(), who, setter)?;
+		T::Currency::deposit(T::SetterCurrencyId::get(), who, setter)?;
 		Ok(())
 	}
 
 	fn burn_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, setter)
+		T::Currency::withdraw(T::SetterCurrencyId::get(), who, setter)
 	}
 
 	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum or `MENA` in Neom).
@@ -523,11 +523,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
 	fn deposit_setter(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
-		T::Currency::transfer(T::GetSetterCurrencyId::get(), from, &Self::account_id(), amount)
+		T::Currency::transfer(T::SetterCurrencyId::get(), from, &Self::account_id(), amount)
 	}
 
 	/// Burn Reserve asset (Setter (SETT))
 	fn burn_setter(who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(T::GetSetterCurrencyId::get(), who, amount)
+		T::Currency::withdraw(T::SetterCurrencyId::get(), who, amount)
 	}
 }
