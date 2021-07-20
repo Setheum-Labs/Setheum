@@ -154,7 +154,7 @@ fn total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(SettmintManagerModule::total_reserve(0);
 		assert_ok!(Currencies::deposit(SETT,&SettmintManagerModule::account_id()), 10));
-		assert_eq!(SettmintManagerModule::total_reserve(10);
+		assert_eq!(SettmintManagerModule::total_reserve(10));
 	});
 }
 
@@ -162,6 +162,6 @@ fn total_reserve_works() {
 fn get_total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(SettmintManagerModule::deposit_setter(&ALICE, 500));
-		assert_eq!(SettmintManagerModule::get_total_reserve(500);
+		assert_eq!(SettmintManagerModule::get_total_reserve(500));
 	});
 }

@@ -2274,9 +2274,9 @@ impl<T: Config> Pallet<T> {
 	fn make_setter_payout(stash: &T::AccountId, setter_amount: BalanceOf<T>) -> Option<DispatchResult> {
 		let dest = Self::payee(stash);
 		match dest {
-			RewardDestination::Stash => 
+			RewardDestination::Stash => {
 				T::SerpTreasury::issue_setter(stash, setter_amount).ok(),
-				),
+			},
 			RewardDestination::Account(dest_account) => {
 				Some(T::SerpTreasury::issue_setter(&dest_account, setter_amount).ok())
 			},

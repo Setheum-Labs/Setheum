@@ -158,7 +158,7 @@ pub mod module {
 			amount: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			for (currency) in currency && amount in (amount) {
+			for (currency, amount) in MinimumClaimableTransfer {
 				MinimumClaimableTransfer::<T>::insert(currency, amount);
 			}
 			Ok(().into())
@@ -176,7 +176,7 @@ impl<T: Config> Pallet<T> {
 		ensure!(
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
-		)
+		);
 		Self::cashdrop_rate(currency_id).unwrap_or_else(T::DefaultCashDropRate::get)
 	}
 
@@ -184,7 +184,7 @@ impl<T: Config> Pallet<T> {
 		ensure!(
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
-		)
+		);
 		Self::minimum_claimable_transfer(currency_id).unwrap_or_else(T::DefaultMinimumClaimableTransfer::get)
 	}
 }
@@ -198,12 +198,12 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 		ensure!(
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
-		)
+		);
 		let minimum_claimable_transfer = Self::get_minimum_claimable_transfer(currency_id);
 		ensure!(
 			transfer_amount >= minimum_claimable_transfer,
 			Error::<T>::TransferTooLowForCashDrop,
-		)
+		);
 		let setter_fixed_price = T::Price::get_setter_fixed_price();
 
 		if currency_id == T::SetterCurrencyId::get() {
@@ -215,7 +215,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
-			)
+			);
 
 			Self::deposit_setter_drop(who, balance_cashdrop_amount)?;
 		} else if T::NonStableDropCurrencyIds.contains(currency_id) {
@@ -227,7 +227,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
-			)
+			);
 			let currency_price = T::Price::get_price(currency_id);
 			let relative_price = currency_price.saturating_mul(&setter_fixed_price);
 			relative_cashdrop_amount = relative_price.saturating_mul(balance_cashdrop_amount);
@@ -242,7 +242,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
-			)
+			);
 
 			Self::deposit_settcurrency_drop(currency_id, who, balance_cashdrop_amount)?;
 		}
