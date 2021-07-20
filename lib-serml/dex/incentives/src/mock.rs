@@ -275,7 +275,6 @@ impl orml_rewards::Config for Runtime {
 parameter_types! {
 	pub const DexIncentivePool: AccountId = 10;
 	pub const DexPremiumPool: AccountId = 11;
-	pub const DexPremiumRewardRates: CurrencyId = SETT;
 	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
 	pub const SetterCurrencyId: CurrencyId = SETT;
 	pub const DexerCurrencyId: CurrencyId = DRAM;
@@ -320,7 +319,6 @@ impl Config for Runtime {
 	type DexPremiumInflationRate = DexPremiumInflationRate;
 	type SetterCurrencyId = SetterCurrencyId;
 	type DexerCurrencyId = DexerCurrencyId;
-	type ExtraCurrencyId = ExtraCurrencyId
 	type NativeCurrencyId = NativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;
