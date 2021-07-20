@@ -54,7 +54,7 @@ pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
 	) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardManager<AccountId, CurrencyId, Balance, Balance>
+impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardManager<AccountId, CurrencyId, Balance, StandardBalance>
 	for ()
 {
 	fn check_position_valid(
