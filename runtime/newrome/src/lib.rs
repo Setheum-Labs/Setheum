@@ -973,6 +973,10 @@ impl setheum_democracy::Config for Runtime {
 	type EnactmentPeriod = EnactmentPeriod;
 	type LaunchPeriod = LaunchPeriod;
 	type VotingPeriod = VotingPeriod;
+	type GovernanceCurrencyIds = GovernanceCurrencyIds;
+	type NativeCurrencyId = NativeCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type MinimumDeposit = MinimumDeposit;
 	type GoldenMinimumDepositMultiple = GoldenMinimumDepositMultiple;
 	type SetterMinimumDepositMultiple = SetterMinimumDepositMultiple;
@@ -1193,7 +1197,6 @@ parameter_types! {
 	pub const GetPlusCurrencyId: CurrencyId = SETT; // TODO: Update and remove
 	pub const GetBonusCurrencyId: CurrencyId = USDJ; // TODO: Update and remove
 	pub const GetExtraCurrencyId: CurrencyId = EURJ; // TODO: Update and remove
-	pub const GetDexCurrencyId: CurrencyId = DRAM; // TODO: Update and remove
 	pub const GetDexerMaxSupply: Balance = 1_032_000_000 * dollar(DRAM); // 1.032 Billion DRAM
 }
 
@@ -1591,7 +1594,7 @@ impl setheum_incentives::Config for Runtime {
 	type PremiumCurrencyId = GetPremiumCurrencyId;
 	type PlusCurrencyId = GetPlusCurrencyId;
 	type BonusCurrencyId = GetBonusCurrencyId
-	type DexCurrencyId = GetDexCurrencyId;
+	type GetDexerCurrencyId = GetDexerCurrencyId;
 	type ExtraCurrencyId = GetExtraCurrencyId
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
