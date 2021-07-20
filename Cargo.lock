@@ -8588,6 +8588,7 @@ dependencies = [
  "parity-scale-codec",
  "setheum-primitives",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
 ]
@@ -9677,6 +9678,31 @@ dependencies = [
 [[package]]
 name = "sp-io"
 version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5#9c572625f6557dfdb19f47474369a0327d51dfbc"
+dependencies = [
+ "futures 0.3.15",
+ "hash-db",
+ "libsecp256k1",
+ "log",
+ "parity-scale-codec",
+ "parking_lot 0.11.1",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-keystore 0.9.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-maybe-compressed-blob 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-state-machine 0.9.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-trie 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "tracing",
+ "tracing-core",
+]
+
+[[package]]
+name = "sp-io"
+version = "3.0.0"
 source = "git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.8#1b758b2a8d151d97d2242260c465b6df9cb8a7a4"
 dependencies = [
  "futures 0.3.15",
@@ -9779,6 +9805,22 @@ dependencies = [
 [[package]]
 name = "sp-keystore"
 version = "0.9.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5#9c572625f6557dfdb19f47474369a0327d51dfbc"
+dependencies = [
+ "async-trait",
+ "derive_more",
+ "futures 0.3.15",
+ "merlin",
+ "parity-scale-codec",
+ "parking_lot 0.11.1",
+ "schnorrkel",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+]
+
+[[package]]
+name = "sp-keystore"
+version = "0.9.0"
 source = "git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.8#1b758b2a8d151d97d2242260c465b6df9cb8a7a4"
 dependencies = [
  "async-trait",
@@ -9829,6 +9871,15 @@ dependencies = [
 name = "sp-maybe-compressed-blob"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4#1d04678e20555e623c974ee1127bc8a45abcf3d6"
+dependencies = [
+ "ruzstd",
+ "zstd",
+]
+
+[[package]]
+name = "sp-maybe-compressed-blob"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5#9c572625f6557dfdb19f47474369a0327d51dfbc"
 dependencies = [
  "ruzstd",
  "zstd",
@@ -9932,6 +9983,14 @@ dependencies = [
 name = "sp-panic-handler"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4#1d04678e20555e623c974ee1127bc8a45abcf3d6"
+dependencies = [
+ "backtrace",
+]
+
+[[package]]
+name = "sp-panic-handler"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5#9c572625f6557dfdb19f47474369a0327d51dfbc"
 dependencies = [
  "backtrace",
 ]
@@ -10292,6 +10351,29 @@ dependencies = [
 [[package]]
 name = "sp-state-machine"
 version = "0.9.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5#9c572625f6557dfdb19f47474369a0327d51dfbc"
+dependencies = [
+ "hash-db",
+ "log",
+ "num-traits",
+ "parity-scale-codec",
+ "parking_lot 0.11.1",
+ "rand 0.7.3",
+ "smallvec 1.6.1",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-panic-handler 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-trie 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "thiserror",
+ "tracing",
+ "trie-db",
+ "trie-root",
+]
+
+[[package]]
+name = "sp-state-machine"
+version = "0.9.0"
 source = "git+https://github.com/paritytech//substrate?branch=polkadot-v0.9.8#1b758b2a8d151d97d2242260c465b6df9cb8a7a4"
 dependencies = [
  "hash-db",
@@ -10609,6 +10691,20 @@ dependencies = [
  "parity-scale-codec",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
+ "trie-db",
+ "trie-root",
+]
+
+[[package]]
+name = "sp-trie"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5#9c572625f6557dfdb19f47474369a0327d51dfbc"
+dependencies = [
+ "hash-db",
+ "memory-db",
+ "parity-scale-codec",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.5)",
  "trie-db",
  "trie-root",
 ]

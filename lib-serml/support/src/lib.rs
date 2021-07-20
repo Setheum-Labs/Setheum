@@ -19,23 +19,20 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode, FullCodec, HasCompact};
+use codec::{Decode, Encode};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
 	evm::{CallInfo, EvmAddress},
-	CurrencyId, EraIndex,
+	CurrencyId,
 };
 use sp_core::H160;
 use sp_runtime::{
-	Perbill, curve::PiecewiseLinear,
-	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
+	traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
-	convert::TryInto,
-	fmt::Debug,
 	prelude::*,
 };
 
@@ -228,7 +225,7 @@ pub trait SerpTreasury<AccountId> {
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// Burn Reserve asset (Setter (SETT))
-	fn burn_setter(who, amount: Self::Balance) -> DispatchResult;
+	fn burn_setter(who: &AccountId, amount: Self::Balance) -> DispatchResult;
 }
 
 /// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol) for CashDrop.
@@ -271,7 +268,7 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 }
 
 pub trait PriceProvider<CurrencyId> {
-	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> Self::CurrencyId>;
+	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> Self::CurrencyId;
 	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_fiat_price(fiat_currency_id: CurrencyId) -> Option<Price>;
 	fn get_fiat_usd_fixed_price() -> Option<Price>;
