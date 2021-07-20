@@ -114,7 +114,7 @@ parameter_types! {
 impl serp_settpay::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;

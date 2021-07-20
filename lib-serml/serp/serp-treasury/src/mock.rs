@@ -267,8 +267,9 @@ parameter_types! {
 		USDJ,
 		ZARJ,
 	];
-	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
-	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
+	pub const DexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
+	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
@@ -281,12 +282,30 @@ parameter_types! {
 	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
+parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETT => 10_000,
+			&AUDJ => 10_000,
+			&CHFJ => 10_000,
+			&EURJ => 10_000,
+			&GBPJ => 10_000,
+			&JPYJ => 10_000,
+			&USDJ => 10_000,
+			_ => 0,
+		}
+	};
+}
+
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
-	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
+	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;

@@ -154,6 +154,8 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		SettPayTreasuryPalletId::get().into_account(),
 		WellfareTreasuryPalletId::get().into_account(),
 		IncentivesPalletId::get().into_account(),
+		DexIncentivePool::get(),
+		DexPremiumPool::get(),
 		ZeroAccountId::get(),
 	]
 }
@@ -962,6 +964,10 @@ impl setheum_democracy::Config for Runtime {
 	type EnactmentPeriod = EnactmentPeriod;
 	type LaunchPeriod = LaunchPeriod;
 	type VotingPeriod = VotingPeriod;
+	type GovernanceCurrencyIds = GovernanceCurrencyIds;
+	type NativeCurrencyId = NativeCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type MinimumDeposit = MinimumDeposit;
 	type GoldenMinimumDepositMultiple = GoldenMinimumDepositMultiple;
 	type SetterMinimumDepositMultiple = SetterMinimumDepositMultiple;
@@ -1143,7 +1149,7 @@ parameter_types! {
 impl serp_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
@@ -1167,22 +1173,13 @@ impl serp_prices::Config for Runtime {
 	type WeightInfo = weights::serp_prices::WeightInfo<Runtime>;
 }
 
-// TODO: Remove Other incentives except for DexIncentive 
-// TODO - and update DexPremium to the new Incentive model
-// TODO - based on trading volume, this new method will be 
-// TODO - implemented from `setheum_dex` module.
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NEOM;
-	pub const GetSetterCurrencyId: CurrencyId = NSETT;
-	pub const GetDexerCurrencyId: CurrencyId = MENA;
+	pub const SetterCurrencyId: CurrencyId = NSETT;
+	pub const DexerCurrencyId: CurrencyId = MENA;
 	pub const GetSettUSDCurrencyId: CurrencyId = JUSD;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
-	pub const GetIncentiveCurrencyId: CurrencyId = MENA;
-	pub const GetPremiumCurrencyId: CurrencyId = NSETT; // TODO: Update
-	pub const GetPlusCurrencyId: CurrencyId = NSETT; // TODO: Update and remove
-	pub const GetBonusCurrencyId: CurrencyId = JUSD; // TODO: Update and remove
-	pub const GetExtraCurrencyId: CurrencyId = JEUR; // TODO: Update and remove
-	pub const GetDexCurrencyId: CurrencyId = MENA; // TODO: Update and remove
+	pub const GetDexerMaxSupply: Balance = 10_320_000_000 * dollar(MENA); // 10.32 Billion MENA
 }
 
 impl setheum_currencies::Config for Runtime {
@@ -1276,7 +1273,7 @@ impl serp_auction::Config for Runtime {
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type SerpTreasury = SerpTreasury;
 	type Dex = Dex;
 	type PriceSource = SerpPrices;
@@ -1439,12 +1436,30 @@ parameter_types! {
 	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
+parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETT => 10_000,
+			&AUDJ => 10_000,
+			&CHFJ => 10_000,
+			&EURJ => 10_000,
+			&GBPJ => 10_000,
+			&JPYJ => 10_000,
+			&USDJ => 10_000,
+			_ => 0,
+		}
+	};
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
-	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
+	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;
@@ -1473,7 +1488,7 @@ parameter_types! {
 impl serp_settpay::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
@@ -1497,7 +1512,7 @@ parameter_types! {
 impl setheum_transaction_payment::Config for Runtime {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type Currency = Balances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = Treasury;
@@ -1530,23 +1545,42 @@ impl orml_rewards::Config for Runtime {
 	type Handler = Incentives;
 }
 
-// TODO: Remove Other incentives except for DexIncentive 
-// TODO - and update ExchangeFeeWaiver (DexFeeWaiverIncentive) to the new Incentive model
-// TODO - based on trading volume, this new method will be 
-// TODO - implemented from `setheum_dex` module.
+// TODO: Add AccumulationPeriod
+parameter_types! {
+	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
+	pub DexIncentivePool: AccountId = AccountId::from([0u8; 32]);
+	pub DexPremiumPool: AccountId = AccountId::from([0u8; 32]);
+}
+
+parameter_type_with_key! {
+	pub DexPremiumRewardRates: |_currency_id: CurrencyId| -> (Rate, Rate) {
+		match currency_id {
+			&LP_NEOM_NSETT => (22, 100),
+			&LP_MENA_NSETT => (13, 100),
+			&LP_JUSD_NSETT => (12, 100),
+			&LP_JEUR_NSETT => (11, 100),
+			&LP_JJPY_NSETT => (5, 100),
+			&LP_JGBP_NSETT => (5, 100),
+			&LP_JAUD_NSETT => (5, 100),
+			&LP_JCAD_NSETT => (5, 100),
+			&LP_JCHF_NSETT => (5, 100),
+			&LP_JSGD_NSETT => (5, 100),
+			&LP_JSEK_NSETT => (5, 100),
+			&LP_JSAR_NSETT => (5, 100),
+			&LP_RENBTC_NSETT => (2, 100),
+			_ => None,
+		}
+	};
+}
+
 impl setheum_incentives::Config for Runtime {
 	type Event = Event;
-	type DexIncentivePool = ZeroAccountId;
-	type DexPremiumPool = ZeroAccountId;
-	type DexPlusPool = ZeroAccountId;
-	type DexBonusPool = ZeroAccountId;
-	type DexExtraPool = ZeroAccountId;
-	type IncentiveCurrencyId = GetIncentiveCurrencyId;
-	type PremiumCurrencyId = GetPremiumCurrencyId;
-	type PlusCurrencyId = GetPlusCurrencyId;
-	type BonusCurrencyId = GetBonusCurrencyId
-	type DexCurrencyId = GetDexCurrencyId;
-	type ExtraCurrencyId = GetExtraCurrencyId
+	type DexIncentivePool = DexIncentivePool;
+	type DexPremiumPool = DexPremiumPool;
+	type DexPremiumRewardRates = DexPremiumRewardRates;
+	type DexPremiumInflationRate = DexPremiumInflationRate;
+	type SetterCurrencyId = SetterCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;

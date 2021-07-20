@@ -34,6 +34,7 @@ use sp_runtime::{
 use sp_staking::offence::{OffenceDetails, OnOffenceHandler};
 use std::{cell::RefCell, collections::HashSet};
 use frame_election_provider_support::onchain;
+use primitives::{TokenSymbol, TradingPair};
 
 pub const INIT_TIMESTAMP: u64 = 30_000;
 pub const BLOCK_TIME: u64 = 1000;
@@ -43,6 +44,54 @@ pub(crate) type AccountId = u64;
 pub(crate) type AccountIndex = u64;
 pub(crate) type BlockNumber = u64;
 pub(crate) type Balance = u128;
+
+pub const ALICE: AccountId = 1;
+pub const BOB: AccountId = 2;
+pub const CAROL: AccountId = 3;
+pub const CHARITY_FUND: AccountId = 4;
+
+// Currencies constants - CurrencyId/TokenSymbol
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
+pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
+pub const BRLJ: CurrencyId = CurrencyId::Token(TokenSymbol::BRLJ);
+pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
+pub const CLPJ: CurrencyId = CurrencyId::Token(TokenSymbol::CLPJ);
+pub const CNYJ: CurrencyId = CurrencyId::Token(TokenSymbol::CNYJ);
+pub const COPJ: CurrencyId = CurrencyId::Token(TokenSymbol::COPJ);
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
+pub const HKDJ: CurrencyId = CurrencyId::Token(TokenSymbol::HKDJ);
+pub const HUFJ: CurrencyId = CurrencyId::Token(TokenSymbol::HUFJ);
+pub const IDRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IDRJ);
+pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
+pub const KESJ: CurrencyId = CurrencyId::Token(TokenSymbol::KESJ);
+pub const KRWJ: CurrencyId = CurrencyId::Token(TokenSymbol::KRWJ);
+pub const KZTJ: CurrencyId = CurrencyId::Token(TokenSymbol::KZTJ);
+pub const MXNJ: CurrencyId = CurrencyId::Token(TokenSymbol::MXNJ);
+pub const MYRJ: CurrencyId = CurrencyId::Token(TokenSymbol::MYRJ);
+pub const NGNJ: CurrencyId = CurrencyId::Token(TokenSymbol::NGNJ);
+pub const NOKJ: CurrencyId = CurrencyId::Token(TokenSymbol::NOKJ);
+pub const NZDJ: CurrencyId = CurrencyId::Token(TokenSymbol::NZDJ);
+pub const PENJ: CurrencyId = CurrencyId::Token(TokenSymbol::PENJ);
+pub const PHPJ: CurrencyId = CurrencyId::Token(TokenSymbol::PHPJ);
+pub const PKRJ: CurrencyId = CurrencyId::Token(TokenSymbol::PKRJ);
+pub const PLNJ: CurrencyId = CurrencyId::Token(TokenSymbol::PLNJ);
+pub const QARJ: CurrencyId = CurrencyId::Token(TokenSymbol::QARJ);
+pub const RONJ: CurrencyId = CurrencyId::Token(TokenSymbol::RONJ);
+pub const RUBJ: CurrencyId = CurrencyId::Token(TokenSymbol::RUBJ);
+pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
+pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
+pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
+pub const THBJ: CurrencyId = CurrencyId::Token(TokenSymbol::THBJ);
+pub const TRYJ: CurrencyId = CurrencyId::Token(TokenSymbol::TRYJ);
+pub const TWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::TWDJ);
+pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
 
 thread_local! {
 	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
@@ -196,10 +245,14 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ
 	];
-	pub const GetSetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT
-	pub const GetDexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
+	pub const DexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
+	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
+	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
+	
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
 	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
@@ -207,17 +260,38 @@ parameter_types! {
 	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
+parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETT => 10_000,
+			&AUDJ => 10_000,
+			&CHFJ => 10_000,
+			&EURJ => 10_000,
+			&GBPJ => 10_000,
+			&JPYJ => 10_000,
+			&USDJ => 10_000,
+			_ => 0,
+		}
+	};
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
-	type GetSetterCurrencyId = GetSetterCurrencyId;
-	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
+	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;
 	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
 	type CharityFundSerpupRatio = CharityFundSerpupRatio;
+	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
+	type SetheumTreasuryAcc = TreasuryPalletId;
+	type CharityFundAcc = CHARITY_FUND;
 	type SerpAuctionManagerHandler = MockSerpAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = SetheumDEX;

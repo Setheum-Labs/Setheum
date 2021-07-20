@@ -54,6 +54,7 @@ const BIG_NAY: Vote = Vote { aye: false, conviction: Conviction::Locked1x };
 
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 
 const MAX_PROPOSALS: u32 = 100;
 
@@ -169,6 +170,9 @@ parameter_types! {
 	pub const MaxProposals: u32 = MAX_PROPOSALS;
 	pub static PreimageByteDeposit: u64 = 0;
 	pub static InstantAllowed: bool = false;
+	pub const NativeCurrencyId: CurrencyId = DNAR;
+	pub const DexerCurrencyId: CurrencyId = DRAM;
+	pub const SetterCurrencyId: CurrencyId = SETT;
 	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETT, DRAM];
 }
 ord_parameter_types! {
@@ -196,12 +200,15 @@ impl Config for Test {
 	type EnactmentPeriod = EnactmentPeriod;
 	type LaunchPeriod = LaunchPeriod;
 	type VotingPeriod = VotingPeriod;
+	type GovernanceCurrencyIds = GovernanceCurrencyIds;
+	type NativeCurrencyId = NativeCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	type MinimumDeposit = MinimumDeposit;
 	type GoldenMinimumDepositMultiple = GoldenMinimumDepositMultiple;
 	type SetterMinimumDepositMultiple = SetterMinimumDepositMultiple;
 	type SilverMinimumDepositMultiple = SilverMinimumDepositMultiple;
-	type GovernanceCurrencyIds = GovernanceCurrencyIds;
 	type ExternalOrigin = EnsureSignedBy<Two, u64>;
 	type ExternalMajorityOrigin = EnsureSignedBy<Three, u64>;
 	type ExternalDefaultOrigin = EnsureSignedBy<One, u64>;

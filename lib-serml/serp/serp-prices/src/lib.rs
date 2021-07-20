@@ -70,7 +70,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The Setter currency id, it should be SETT in Setheum.
-		type GetSetterCurrencyId: Get<CurrencyId>;
+		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
 		/// The SettUSD currency id, it should be USDJ in Setheum.
@@ -238,7 +238,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::PegCurrencyIds::get(&currency_id) == &fiat_currency_id,
 			Error::<T>::InvalidPegPair,
 		);
-		if currency_id == T::GetSetterCurrencyId::get() {
+		if currency_id == T::SetterCurrencyId::get() {
 			Self::get_setter_fixed_price()
 		} else if { currency_id == T::GetSettUSDCurrencyId::get() {
 			Self::get_settusd_fixed_price()
@@ -321,11 +321,11 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		if currency_id == T::GetSetterCurrencyId::get() {
+		if currency_id == T::SetterCurrencyId::get() {
 			let basket_price = Self::get_setter_fixed_price();
 			let coin_price = Self::get_market_price(currency_id);
 			coin_price.checked_div(&basket_price)
-		} else if !currency_id == T::GetSetterCurrencyId::get() {
+		} else if !currency_id == T::SetterCurrencyId::get() {
 			let fiat_currency_id = Self::get_peg_currency_by_currency_id(&currency_id);
 			ensure!(
 				T::FiatCurrencyIds::get().contains(&fiat_currency_id),

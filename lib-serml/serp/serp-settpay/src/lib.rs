@@ -55,7 +55,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// Setter (SETT) currency Stablecoin currency id.
-		type GetSetterCurrencyId: Get<CurrencyId>;
+		type SetterCurrencyId: Get<CurrencyId>;
 
 		/// The stable currency ids.
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
@@ -251,8 +251,8 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 
 	/// deposit cashdrop of `SETT` of `cashdrop_amount` to `who`
 	fn deposit_setter_drop(who: &AccountId, cashdrop_amount: Balance) -> DispatchResult {
-		T::Currency::transfer(T::GetSetterCurrencyId::get(), &Self::account_id(), who, cashdrop_amount)
-		Self::deposit_event(Event::CashDrops(T::GetSetterCurrencyId::get(), who, cashdrop_amount));
+		T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, cashdrop_amount)
+		Self::deposit_event(Event::CashDrops(T::SetterCurrencyId::get(), who, cashdrop_amount));
 	}
 
 	/// deposit cashdrop of `currency_id` of `cashdrop_amount` to `who`

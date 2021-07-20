@@ -158,8 +158,8 @@ pub trait SerpTreasury<AccountId> {
 	/// get reserve asset amount of serp treasury
 	fn get_total_setter() -> Self::Balance;
 
-	/// calculate the proportion of specific standard amount for the whole system
-	fn get_standard_proportion(amount: Self::Balance) -> Ratio;
+	/// calculate the proportion of specific currency amount for the whole system
+	fn get_propper_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio;
 
 	/// SerpUp ratio for Serplus Auctions / Swaps
 	fn get_serplus_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
@@ -176,17 +176,23 @@ pub trait SerpTreasury<AccountId> {
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
+	/// get the minimum supply of a settcurrency - by key
+	fn get_minimum_supply(currency_id: Self::CurrencyId) -> Self::Balance;
+
 	/// buy back and burn surplus(stable currencies) with auction
 	/// Create the necessary serp down parameters and starts new auction.
 	fn on_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
-	/// Triggers SERP-TES for Serping to stabilize stablecoin prices.
-	fn on_serp_tes() -> DispatchResult;
 
 	/// Determines whether to SerpUp or SerpDown based on price swing (+/-)).
 	/// positive means "Serp Up", negative means "Serp Down".
 	/// Then it calls the necessary option to serp the currency supply (up/down).
 	fn serp_tes(currency_id: Self::CurrencyId) -> DispatchResult;
+
+	/// Trigger SERP-TES for all stablecoins
+	/// Check all stablecoins stability and elasticity
+	/// and calls the serp to stabilise the unstable one(s)
+	/// on SERP-TES.
+	fn on_serp_tes() -> DispatchResult;
 
 	/// issue standard to `who`
 	fn issue_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
@@ -206,6 +212,9 @@ pub trait SerpTreasury<AccountId> {
 	/// burn setter of `who`
 	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
+	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum or `MENA` in Neom).
+	fn get_dexer_max_supply() -> Self::Balance;
+	
 	/// Issue Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the DEX token balance.
 	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
