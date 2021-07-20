@@ -163,6 +163,8 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		SettPayTreasuryPalletId::get().into_account(),
 		WellfareTreasuryPalletId::get().into_account(),
 		IncentivesPalletId::get().into_account(),
+		DexIncentivePool::get(),
+		DexPremiumPool::get(),
 		ZeroAccountId::get(),
 	]
 }
@@ -1180,21 +1182,12 @@ impl serp_prices::Config for Runtime {
 	type WeightInfo = weights::serp_prices::WeightInfo<Runtime>;
 }
 
-// TODO: Remove Other incentives except for DexIncentive 
-// TODO - and update DexPremium to the new Incentive model
-// TODO - based on trading volume, this new method will be 
-// TODO - implemented from `setheum_dex` module.
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 	pub const SetterCurrencyId: CurrencyId = SETT;
 	pub const DexerCurrencyId: CurrencyId = DRAM;
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
-	pub const GetIncentiveCurrencyId: CurrencyId = DRAM;
-	pub const GetPremiumCurrencyId: CurrencyId = SETT; // TODO: Update
-	pub const GetPlusCurrencyId: CurrencyId = SETT; // TODO: Update and remove
-	pub const GetBonusCurrencyId: CurrencyId = USDJ; // TODO: Update and remove
-	pub const GetExtraCurrencyId: CurrencyId = EURJ; // TODO: Update and remove
 	pub const GetDexerMaxSupply: Balance = 1_032_000_000 * dollar(DRAM); // 1.032 Billion DRAM
 }
 
@@ -1577,23 +1570,42 @@ impl orml_rewards::Config for Runtime {
 	type Handler = Incentives;
 }
 
-// TODO: Remove Other incentives except for DexIncentive 
-// TODO - and update ExchangeFeeWaiver (DexFeeWaiverIncentive) to the new Incentive model
-// TODO - based on trading volume, this new method will be 
-// TODO - implemented from `setheum_dex` module.
+// TODO: Add AccumulationPeriod
+parameter_types! {
+	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
+	pub DexIncentivePool: AccountId = AccountId::from([0u8; 32]);
+	pub DexPremiumPool: AccountId = AccountId::from([0u8; 32]);
+}
+
+parameter_type_with_key! {
+	pub DexPremiumRewardRates: |_currency_id: CurrencyId| -> (Rate, Rate) {
+		match currency_id {
+			&LP_DNAR_SETT => (22, 100),
+			&LP_DRAM_SETT => (13, 100),
+			&LP_USDJ_SETT => (12, 100),
+			&LP_EURJ_SETT => (11, 100),
+			&LP_JPYJ_SETT => (5, 100),
+			&LP_GBPJ_SETT => (5, 100),
+			&LP_AUDJ_SETT => (5, 100),
+			&LP_CADJ_SETT => (5, 100),
+			&LP_CHFJ_SETT => (5, 100),
+			&LP_SGDJ_SETT => (5, 100),
+			&LP_SEKJ_SETT => (5, 100),
+			&LP_SARJ_SETT => (5, 100),
+			&LP_RENBTC_SETT => (2, 100),
+			_ => None,
+		}
+	};
+}
+
 impl setheum_incentives::Config for Runtime {
 	type Event = Event;
-	type DexIncentivePool = ZeroAccountId;
-	type DexPremiumPool = ZeroAccountId;
-	type DexPlusPool = ZeroAccountId;
-	type DexBonusPool = ZeroAccountId;
-	type DexExtraPool = ZeroAccountId;
-	type IncentiveCurrencyId = GetIncentiveCurrencyId;
-	type PremiumCurrencyId = GetPremiumCurrencyId;
-	type PlusCurrencyId = GetPlusCurrencyId;
-	type BonusCurrencyId = GetBonusCurrencyId
+	type DexIncentivePool = DexIncentivePool;
+	type DexPremiumPool = DexPremiumPool;
+	type DexPremiumRewardRates = DexPremiumRewardRates;
+	type DexPremiumInflationRate = DexPremiumInflationRate;
+	type SetterCurrencyId = SetterCurrencyId;
 	type DexerCurrencyId = DexerCurrencyId;
-	type ExtraCurrencyId = GetExtraCurrencyId
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
