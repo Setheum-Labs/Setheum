@@ -178,7 +178,7 @@ pub mod pallet {
 		/// The Dex Currency ID.
 		///
 		/// It is DRAM in Setheum Network, MENA in Neom Network.
-		type GetDexerCurrencyId: Get<CurrencyIdOf<Self>>
+		type DexerCurrencyId: Get<CurrencyIdOf<Self>>
 
 		/// The  Currency ID.
 		///
@@ -596,7 +596,7 @@ pub mod pallet {
 			} else if currency_id == T::SetterCurrencyId::get() {
 				let minimum_setter_deposit = &minimum_deposit * T::SetterMinimumDepositMultiple::get();
 				ensure!(value >= &minimum_setter_deposit, Error::<T>::ValueLow);
-			} else if currency_id == T::GetDexerCurrencyId::get() {
+			} else if currency_id == T::DexerCurrencyId::get() {
 				let silver_price = T::Price::get_price(&currency_id);
 				let relative_price = silver_price.checked_div(&setter_price);
 				let silver_relative_base = &minimum_deposit * &relative_price;

@@ -964,7 +964,7 @@ impl setheum_democracy::Config for Runtime {
 	type VotingPeriod = VotingPeriod;
 	type GovernanceCurrencyIds = GovernanceCurrencyIds;
 	type NativeCurrencyId = NativeCurrencyId;
-	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type MinimumDeposit = MinimumDeposit;
 	type GoldenMinimumDepositMultiple = GoldenMinimumDepositMultiple;
@@ -1178,7 +1178,7 @@ impl serp_prices::Config for Runtime {
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NEOM;
 	pub const SetterCurrencyId: CurrencyId = NSETT;
-	pub const GetDexerCurrencyId: CurrencyId = MENA;
+	pub const DexerCurrencyId: CurrencyId = MENA;
 	pub const GetSettUSDCurrencyId: CurrencyId = JUSD;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
 	pub const GetIncentiveCurrencyId: CurrencyId = MENA;
@@ -1465,7 +1465,7 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
 	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
@@ -1567,7 +1567,7 @@ impl setheum_incentives::Config for Runtime {
 	type PremiumCurrencyId = GetPremiumCurrencyId;
 	type PlusCurrencyId = GetPlusCurrencyId;
 	type BonusCurrencyId = GetBonusCurrencyId
-	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
 	type ExtraCurrencyId = GetExtraCurrencyId
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;

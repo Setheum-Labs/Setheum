@@ -171,7 +171,7 @@ parameter_types! {
 	pub static PreimageByteDeposit: u64 = 0;
 	pub static InstantAllowed: bool = false;
 	pub const NativeCurrencyId: CurrencyId = DNAR;
-	pub const GetDexerCurrencyId: CurrencyId = DRAM;
+	pub const DexerCurrencyId: CurrencyId = DRAM;
 	pub const SetterCurrencyId: CurrencyId = SETT;
 	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETT, DRAM];
 }
@@ -202,7 +202,7 @@ impl Config for Test {
 	type VotingPeriod = VotingPeriod;
 	type GovernanceCurrencyIds = GovernanceCurrencyIds;
 	type NativeCurrencyId = NativeCurrencyId;
-	type GetDexerCurrencyId = GetDexerCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	type MinimumDeposit = MinimumDeposit;

@@ -74,7 +74,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// SettinDes (DRAM/MENA) dexer currency id
-		type GetDexerCurrencyId: Get<CurrencyId>;
+		type DexerCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
 		/// The Dexer (DRAM/MENA) maximum supply
@@ -495,10 +495,10 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// Issue Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the Dex token balance.
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
-		let total_supply = T::Currency::total_issuance(T::GetDexerCurrencyId::get());
+		let total_supply = T::Currency::total_issuance(T::DexerCurrencyId::get());
 		let max_supply = Self::get_dexer_max_supply();
 		if dexer.saturating_add(&total_supply) <= &max_supply {
-			T::Currency::deposit(T::GetDexerCurrencyId::get(), who, dexer)?;
+			T::Currency::deposit(T::DexerCurrencyId::get(), who, dexer)?;
 		} else let to_amount = dexer.saturating_add(&total_supply) {
 			let remainder = &to_amount.saturating_sub(&max_supply);
 			let balanced_amount = &to_amount.saturating_sub(&remainder);
@@ -506,14 +506,14 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				&balanced_amount <= &max_supply,
 				Error::<T>::MaxSupplyReached,
 			);
-			T::Currency::deposit(T::GetDexerCurrencyId::get(), who, &balanced_amount)?;
+			T::Currency::deposit(T::DexerCurrencyId::get(), who, &balanced_amount)?;
 		}
 		Ok(())
 	}
 
 	/// Burn Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the Dex token balance.
 	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(T::GetDexerCurrencyId::get(), who, dexer)
+		T::Currency::withdraw(T::DexerCurrencyId::get(), who, dexer)
 	}
 
 	/// deposit surplus(propper stable currency) to serp treasury by `from`
