@@ -28,11 +28,11 @@ use frame_support::{
 };
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::TokenSymbol;
+use primitives::{CurrencyId, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 use sp_std::cell::RefCell;
-pub use support::{SerpTreasury, DEXManager, Price, Ratio};
+pub use support::{SerpTreasury, DEXManager, Price, Rate, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -272,19 +272,13 @@ impl orml_rewards::Config for Runtime {
 	type WeightInfo = ();
 }
 
-// TODO: Remove Other incentives except for DexIncentive 
-// TODO - and update DexPremium to the new Incentive model
-// TODO - based on trading volume, this new method will be 
-// TODO - implemented from `setheum_dex` module.
 parameter_types! {
-	// TODO: Remove Other incentives except for DexIncentive 
-	// TODO - and update DexPremium to the new Incentive model
-	// TODO - based on trading volume, this new method will be 
-	// TODO - implemented from `setheum_dex` module.
 	pub const DexIncentivePool: AccountId = 10;
 	pub const DexPremiumPool: AccountId = 11;
-	pub const IncentiveCurrencyId: CurrencyId = DRAM;
-	pub const PremiumCurrencyId: CurrencyId = SETT;
+	pub const DexPremiumRewardRates: CurrencyId = SETT;
+	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
+	pub const SetterCurrencyId: CurrencyId = SETT;
+	pub const DexerCurrencyId: CurrencyId = DRAM;
 	pub const NativeCurrencyId: CurrencyId = DNAR;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
@@ -302,6 +296,18 @@ parameter_types! {
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 }
 
+parameter_type_with_key! {
+	pub DexPremiumRewardRates: |_currency_id: CurrencyId| -> (Rate, Rate) {
+		match currency_id {
+			&CHFJ_USDJ_LP => (10, 100),
+			&CHFJ_SETT_LP => (20, 100),
+			&DNAR_USDJ_LP => (20, 100),
+			&DNAR_SETT_LP => (50, 100),
+			_ => None,
+		}
+	};
+}
+
 ord_parameter_types! {
 	pub const Four: AccountId = 4;
 }
@@ -310,8 +316,10 @@ impl Config for Runtime {
 	type Event = Event;
 	type DexIncentivePool = DexIncentivePool;
 	type DexPremiumPool = DexPremiumPool;
-	type IncentiveCurrencyId = IncentiveCurrencyId;
-	type PremiumCurrencyId = PremiumCurrencyId;
+	type DexPremiumRewardRates = DexPremiumRewardRates;
+	type DexPremiumInflationRate = DexPremiumInflationRate;
+	type SetterCurrencyId = SetterCurrencyId;
+	type DexerCurrencyId = DexerCurrencyId;
 	type ExtraCurrencyId = ExtraCurrencyId
 	type NativeCurrencyId = NativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
