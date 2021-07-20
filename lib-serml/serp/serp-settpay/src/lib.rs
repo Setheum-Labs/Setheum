@@ -143,7 +143,7 @@ pub mod module {
 			denominator: u32,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			for (currency) in currency && (numerator) in numerator && denominator in (denominator) {
+			for (currency, numerator, denominator) in GetCashDropRate::<T>::iter() {
 				GetCashDropRate::<T>::insert(currency, numerator, denominator);
 			}
 			Ok(().into())
