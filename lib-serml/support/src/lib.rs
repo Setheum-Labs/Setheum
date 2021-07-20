@@ -223,9 +223,6 @@ pub trait SerpTreasury<AccountId> {
 
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
-
-	/// Burn Reserve asset (Setter (SETT))
-	fn burn_setter(who: &AccountId, amount: Self::Balance) -> DispatchResult;
 }
 
 /// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol) for CashDrop.
