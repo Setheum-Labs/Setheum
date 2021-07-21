@@ -1,3 +1,4 @@
+cargo-features = ["resolver"]
 
 [workspace]
 members = [
@@ -43,6 +44,8 @@ members = [
 	"lib-openrml/weight-gen",
 	"lib-openrml/weight-meter",
 ]
+
+resolver = "2"
 
 [profile.dev]
 split-debuginfo = "unpacked"

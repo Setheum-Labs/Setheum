@@ -27,15 +27,15 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::collapsible_if)]
 
-use frame_support::{pallet_prelude::*, transactional, PalletId};
+use frame_support::{log, pallet_prelude::*, transactional, PalletId};
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, Zero},
-	DispatchResult, PalletId, RuntimeDebug,
+	ArithmeticError, DispatchResult, RuntimeDebug,
 };
 use sp_std::{convert::TryInto, result};
-use support::{SerpTreasury, StandardValidator};
+use support::{BlockNumber, SerpTreasury, StandardValidator};
 
 mod mock;
 mod tests;
@@ -84,7 +84,7 @@ pub mod module {
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
-		type SerpTreasury: SerpTreasury<Self::AccountId, Amount, Balance, CurrencyId, BlockNumber>;
+		type SerpTreasury: SerpTreasury<Self::AccountId>;
 
 		/// The setter's module id, keep all reserves of Settmint.
 		#[pallet::constant]
@@ -96,10 +96,6 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		StandardOverflow,
-		StandardTooLow,
-		ReserveOverflow,
-		ReserveTooLow,
 		AmountConvertFailed,
 		InvalidStandardType,
 	}
@@ -247,16 +243,16 @@ impl<T: Config> Pallet<T> {
 			let new_reserve = if reserve_adjustment.is_positive() {
 				p.reserve
 					.checked_add(reserve_balance)
-					.ok_or(Error::<T>::ReserveOverflow)
+					.ok_or(ArithmeticError::Overflow)
 			} else {
 				p.reserve
 					.checked_sub(reserve_balance)
-					.ok_or(Error::<T>::ReserveTooLow)
+					.ok_or(ArithmeticError::Underflow)
 			}?;
 			let new_standard = if standard_adjustment.is_positive() {
-				p.standard.checked_add(standard_balance).ok_or(Error::<T>::StandardOverflow)
+				p.standard.checked_add(standard_balance).ok_or(ArithmeticError::Overflow)
 			} else {
-				p.standard.checked_sub(standard_balance).ok_or(Error::<T>::StandardTooLow)
+				p.standard.checked_sub(standard_balance).ok_or(ArithmeticError::Underflow)
 			}?;
 
 			// increase account ref if new position
@@ -265,7 +261,7 @@ impl<T: Config> Pallet<T> {
 					// No providers for the locks. This is impossible under normal circumstances
 					// since the funds that are under the lock will themselves be stored in the
 					// account and therefore will need a reference.
-					frame_support::debug::warn!(
+					log::warn!(
 						"Warning: Attempt to introduce lock consumer reference, yet no providers. \
 						This is unexpected but should be safe."
 					);
@@ -295,24 +291,24 @@ impl<T: Config> Pallet<T> {
 				total_positions
 					.standard
 					.checked_add(standard_balance)
-					.ok_or(Error::<T>::StandardOverflow)
+					.ok_or(ArithmeticError::Overflow)
 			} else {
 				total_positions
 					.standard
 					.checked_sub(standard_balance)
-					.ok_or(Error::<T>::StandardTooLow)
+					.ok_or(ArithmeticError::Underflow)
 			}?;
 
 			total_positions.reserve = if reserve_adjustment.is_positive() {
 				total_positions
 					.reserve
 					.checked_add(reserve_balance)
-					.ok_or(Error::<T>::ReserveOverflow)
+					.ok_or(ArithmeticError::Overflow)
 			} else {
 				total_positions
 					.reserve
 					.checked_sub(reserve_balance)
-					.ok_or(Error::<T>::ReserveTooLow)
+					.ok_or(ArithmeticError::Underflow)
 			}?;
 
 			Ok(())
@@ -333,10 +329,10 @@ impl<T: Config> Pallet<T> {
 
 	pub fn total_reserve() -> Balance {
 		let reserve_currency = T::GetReserveCurrencyId::get();
-		T::Currency::free_balance(&reserve_currency, &Self::account_id())
+		T::Currency::free_balance(reserve_currency, &Self::account_id())
 	}
 	
-	fn get_total_reserve() -> Self::Balance {
+	fn get_total_reserve() -> Balance {
 		Self::total_reserve()
 	}
 }

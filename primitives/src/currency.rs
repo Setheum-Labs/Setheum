@@ -280,10 +280,8 @@ create_currency_id! {
 		JSEK("Neom Swedish Krona", 12) = 138,
  		JSGD("Neom Singapore Dollar", 12) = 139,
  		JSAR("Neom Saudi Riyal", 12) = 140,
-		 
 		// Foreign Currencies
 		RENBTC("Ren Bitcoin", 8) = 141,
-
 		/// Fiat Currencies as Pegs - only for price feed
 		USD("Fiat US Dollar", 12) = 181,
 		EUR("Fiat Euro", 12) =182,
@@ -295,14 +293,12 @@ create_currency_id! {
 		SEK("Fiat Swedish Krona", 12) = 188,
  		SGD("Fiat Singapore Dollar", 12) = 189,
  		SAR("Fiat Saudi Riyal", 12) = 190,
-		 
-		KWD("Fiat Kuwaiti Dinar", 12) = 191,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		JOD("Fiat Jordanian Dinar", 12) = 192,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		BHD("Fiat Bahraini Dirham", 12) = 193,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		KYD("Fiat Cayman Islands Dollar", 12) = 194,	// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		OMR("Fiat Omani Riyal", 12) = 195,				// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		GIP("Fiat Gibraltar Pound", 12) = 196,			// part of the Setter pegs, not having single settcurrencies they peg like the rest of the fiats here.
-		/// Ends at 255
+		KWD("Fiat Kuwaiti Dinar", 12) = 191,		
+		JOD("Fiat Jordanian Dinar", 12) = 192,		
+		BHD("Fiat Bahraini Dirham", 12) = 193,		
+		KYD("Fiat Cayman Islands Dollar", 12) = 194,
+		OMR("Fiat Omani Riyal", 12) = 195,			
+		GIP("Fiat Gibraltar Pound", 12) = 196,		
 	}
 }
 

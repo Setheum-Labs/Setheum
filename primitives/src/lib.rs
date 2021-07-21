@@ -154,7 +154,9 @@ pub enum ReserveIdentifier {
 	SettMint,
 	Nft,
 	TransactionPayment,
-	// TODO: Add Settpay or CashDrops
+	
+	// always the last, indicate number of variants
+	Count,
 }
 
 /// Ethereum precompiles

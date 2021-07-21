@@ -26,15 +26,16 @@
 #![allow(clippy::unused_unit)]
 
 use frame_support::{pallet_prelude::*, transactional, PalletId};
-use frame_system::pallet_prelude::*;
+use frame_system::{pallet_prelude::*,Pallet};
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
-use primitives::{Amount, Balance, CurrencyId};
+use primitives::{AccountId, Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber,
 };
+use sp_core::U256;
 use sp_std::{convert::TryInto, result};
-use support::{SerpTreasury, CashDropRate, Price, Rate, Ratio};
+use support::{SerpTreasury, CashDrop, CashDropRate, Price, Rate, Ratio};
 mod mock;
 mod tests;
 pub mod weights;
@@ -116,12 +117,12 @@ pub mod module {
 	/// operation.
 	#[pallet::storage]
 	#[pallet::getter(fn cashdrop_rate)]
-	pub type GetCashDropRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, u32, u32, ValueQuery>;
+	pub type GetCashDropRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, (u32, u32), OptionQuery>;
 
 	/// Mapping to Minimum Claimable Transfer.
 	#[pallet::storage]
 	#[pallet::getter(fn minimum_claimable_transfer)]
-	pub type MinimumClaimableTransfer<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
+	pub type MinimumClaimableTransfer<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, OptionQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -143,7 +144,7 @@ pub mod module {
 			denominator: u32,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			for (currency) in currency && (numerator) in numerator && denominator in (denominator) {
+			for (currency, numerator, denominator) in GetCashDropRate::<T>::iter() {
 				GetCashDropRate::<T>::insert(currency, numerator, denominator);
 			}
 			Ok(().into())
@@ -158,7 +159,7 @@ pub mod module {
 			amount: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			for (currency) in currency && amount in (amount) {
+			for (currency, amount) in MinimumClaimableTransfer {
 				MinimumClaimableTransfer::<T>::insert(currency, amount);
 			}
 			Ok(().into())
@@ -176,7 +177,7 @@ impl<T: Config> Pallet<T> {
 		ensure!(
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
-		)
+		);
 		Self::cashdrop_rate(currency_id).unwrap_or_else(T::DefaultCashDropRate::get)
 	}
 
@@ -184,12 +185,12 @@ impl<T: Config> Pallet<T> {
 		ensure!(
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
-		)
+		);
 		Self::minimum_claimable_transfer(currency_id).unwrap_or_else(T::DefaultMinimumClaimableTransfer::get)
 	}
 }
 
-impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
+impl<T: Config> CashDrop<AccountId> for Pallet<T> {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
@@ -198,12 +199,12 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 		ensure!(
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
-		)
+		);
 		let minimum_claimable_transfer = Self::get_minimum_claimable_transfer(currency_id);
 		ensure!(
 			transfer_amount >= minimum_claimable_transfer,
 			Error::<T>::TransferTooLowForCashDrop,
-		)
+		);
 		let setter_fixed_price = T::Price::get_setter_fixed_price();
 
 		if currency_id == T::SetterCurrencyId::get() {
@@ -215,7 +216,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
-			)
+			);
 
 			Self::deposit_setter_drop(who, balance_cashdrop_amount)?;
 		} else if T::NonStableDropCurrencyIds.contains(currency_id) {
@@ -227,12 +228,12 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
-			)
+			);
 			let currency_price = T::Price::get_price(currency_id);
 			let relative_price = currency_price.saturating_mul(&setter_fixed_price);
-			relative_cashdrop_amount = relative_price.saturating_mul(balance_cashdrop_amount);
+			let relative_cashdrop = relative_price.saturating_mul(balance_cashdrop_amount);
 
-			Self::deposit_setter_drop(who, relative_cashdrop_amount)?;
+			Self::deposit_setter_drop(who, relative_cashdrop)?;
 		} else if T::SetCurrencyDropCurrencyIds.contains(currency_id) {
 			let (cashdrop_numerator, cashdrop_denominator) = Self::get_cashdrop_rate(currency_id);
 			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
@@ -242,7 +243,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
-			)
+			);
 
 			Self::deposit_settcurrency_drop(currency_id, who, balance_cashdrop_amount)?;
 		}
@@ -251,13 +252,13 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 
 	/// deposit cashdrop of `SETT` of `cashdrop_amount` to `who`
 	fn deposit_setter_drop(who: &AccountId, cashdrop_amount: Balance) -> DispatchResult {
-		T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, cashdrop_amount)
+		T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, cashdrop_amount);
 		Self::deposit_event(Event::CashDrops(T::SetterCurrencyId::get(), who, cashdrop_amount));
 	}
 
 	/// deposit cashdrop of `currency_id` of `cashdrop_amount` to `who`
 	fn deposit_settcurrency_drop(currency_id: CurrencyId, who: &AccountId, cashdrop_amount: Balance) -> DispatchResult {
-		T::Currency::transfer(currency_id, &Self::account_id(), who, cashdrop_amount)
+		T::Currency::transfer(currency_id, &Self::account_id(), who, cashdrop_amount);
 		Self::deposit_event(Event::CashDrops(currency_id, who, cashdrop_amount));
 	}
 }

@@ -19,23 +19,20 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode, FullCodec, HasCompact};
+use codec::{Decode, Encode};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
 	evm::{CallInfo, EvmAddress},
-	CurrencyId, EraIndex,
+	CurrencyId,
 };
 use sp_core::H160;
 use sp_runtime::{
-	Perbill, curve::PiecewiseLinear,
-	traits::{AtLeast32BitUnsigned, Convert, MaybeSerializeDeserialize},
+	traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
-	convert::TryInto,
-	fmt::Debug,
 	prelude::*,
 };
 
@@ -49,7 +46,7 @@ pub type CashDropClaim = bool;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
-pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
+pub trait StandardValidator<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
 		currency_id: CurrencyId,
 		reserve_balance: Balance,
@@ -57,7 +54,7 @@ pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
 	) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardManager<AccountId, CurrencyId, Balance, Balance>
+impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardValidator<AccountId, CurrencyId, Balance, StandardBalance>
 	for ()
 {
 	fn check_position_valid(
@@ -69,7 +66,7 @@ impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardManager<A
 	}
 }
 
-pub trait SetheumDEXManager<AccountId, CurrencyId, Balance> {
+pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_swap_target_amount(
@@ -101,7 +98,7 @@ pub trait SetheumDEXManager<AccountId, CurrencyId, Balance> {
 	) -> sp_std::result::Result<Balance, DispatchError>;
 }
 
-impl<AccountId, CurrencyId, Balance> SetheumDEXManager<AccountId, CurrencyId, Balance> for ()
+impl<AccountId, CurrencyId, Balance> DEXManager<AccountId, CurrencyId, Balance> for ()
 where
 	Balance: Default,
 {
@@ -226,9 +223,6 @@ pub trait SerpTreasury<AccountId> {
 
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
-
-	/// Burn Reserve asset (Setter (SETT))
-	fn burn_setter(who, amount: Self::Balance) -> DispatchResult;
 }
 
 /// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol) for CashDrop.
@@ -271,7 +265,7 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 }
 
 pub trait PriceProvider<CurrencyId> {
-	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> Self::CurrencyId>;
+	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> CurrencyId;
 	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_fiat_price(fiat_currency_id: CurrencyId) -> Option<Price>;
 	fn get_fiat_usd_fixed_price() -> Option<Price>;

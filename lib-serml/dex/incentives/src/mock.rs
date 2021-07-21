@@ -209,10 +209,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	fn deposit_setter(_: AccountId, _:Balance) -> DispatchResult {
 		unimplemented!()
 	}
-
-	fn burn_setter(_: AccountId, _:Balance) -> DispatchResult {
-		unimplemented!()
-	}
 }
 
 pub struct MockDex;
