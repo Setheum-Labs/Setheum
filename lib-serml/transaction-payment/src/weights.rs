@@ -52,7 +52,7 @@ pub trait WeightInfo {
 }
 
 /// Weights for setheum_transaction_payment using the Setheum node and recommended hardware.
-pub struct SetheumWeight<T>(_);
+pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn set_default_fee_token() -> Weight {
 		(3_000_000 as Weight)
