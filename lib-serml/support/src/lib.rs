@@ -294,7 +294,7 @@ pub trait DEXIncentives<AccountId, CurrencyId, Balance> {
 }
 
 impl<AccountId, CurrencyId, Balance> DEXIncentives<AccountId, CurrencyId, Balance> for () {
-	fn dex_premium_rewards(_: CurrencyId) -> Balance{
+	fn dex_premium_rewards(_: CurrencyId) -> Option<Balance> {
 		Some(Default::default())
 	}
 

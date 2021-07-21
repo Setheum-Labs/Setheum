@@ -233,7 +233,7 @@ impl<T: Config> Pallet<T> {
 }
 
 impl<T: Config> DEXIncentives<T::AccountId, CurrencyId, Balance> for Pallet<T> {
-	fn dex_premium_rewards(lp_currency_id: CurrencyId) -> Balance {
+	fn dex_premium_rewards(lp_currency_id: CurrencyId) -> Option<Balance> {
 		ensure!(
 			lp_currency_id.is_dex_share_currency_id(),
 			Error::<T>::InvalidCurrencyId
