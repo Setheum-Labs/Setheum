@@ -23,7 +23,7 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, BlockNumber, CurrencyId, TokenSymbol};
+use primitives::{Amount, BlockNumber, CurrencyId, ReserveIdentifier, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
 	testing::Header,
@@ -33,7 +33,7 @@ use sp_runtime::{
 use std::{collections::BTreeMap, str::FromStr};
 use support::mocks::MockAddressMapping;
 
-mod setheum_evm {
+mod evm_mod {
 	pub use super::super::*;
 }
 
@@ -69,6 +69,7 @@ impl frame_system::Config for Test {
 
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
+	pub const MaxReserves: u32 = 50;
 }
 impl pallet_balances::Config for Test {
 	type Balance = u64;
@@ -76,8 +77,10 @@ impl pallet_balances::Config for Test {
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type WeightInfo = ();
 	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -178,7 +181,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
+		EVM: evm_mod::{Pallet, Config<T>, Call, Storage, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
@@ -253,7 +256,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<Test>::default()
 		.assimilate_storage(&mut t)
 		.unwrap();
-	setheum_evm::GenesisConfig::<Test> {
+	evm_mod::GenesisConfig::<Test> {
 		accounts,
 		treasury: Default::default(),
 	}
@@ -275,6 +278,7 @@ pub fn reserved_balance(address: H160) -> u64 {
 	Balances::reserved_balance(account_id)
 }
 
+#[cfg(not(feature = "with-sevm"))]
 pub fn deploy_free(contract: H160) {
 	let _ = EVM::deploy_free(Origin::signed(CouncilAccount::get()), contract);
 }
