@@ -46,7 +46,7 @@ pub type CashDropClaim = bool;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
-pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
+pub trait StandardValidator<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
 		currency_id: CurrencyId,
 		reserve_balance: Balance,
@@ -54,7 +54,7 @@ pub trait StandardManager<AccountId, CurrencyId, Balance, StandardBalance> {
 	) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardManager<AccountId, CurrencyId, Balance, StandardBalance>
+impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardValidator<AccountId, CurrencyId, Balance, StandardBalance>
 	for ()
 {
 	fn check_position_valid(
@@ -66,7 +66,7 @@ impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardManager<A
 	}
 }
 
-pub trait SetheumDEXManager<AccountId, CurrencyId, Balance> {
+pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_swap_target_amount(
@@ -98,7 +98,7 @@ pub trait SetheumDEXManager<AccountId, CurrencyId, Balance> {
 	) -> sp_std::result::Result<Balance, DispatchError>;
 }
 
-impl<AccountId, CurrencyId, Balance> SetheumDEXManager<AccountId, CurrencyId, Balance> for ()
+impl<AccountId, CurrencyId, Balance> DEXManager<AccountId, CurrencyId, Balance> for ()
 where
 	Balance: Default,
 {
