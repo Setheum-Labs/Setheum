@@ -32,7 +32,7 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use frame_support::{log, pallet_prelude::*, transactional};
-use frame_system::pallet_prelude::*,
+use frame_system::pallet_prelude::*;
 use orml_traits::{Auction, AuctionHandler, Change, MultiCurrency, OnNewBidResult};
 use primitives::{AuctionId, Balance, CurrencyId};
 use sp_runtime::{

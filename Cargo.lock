@@ -5958,6 +5958,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "primitives-proc-macro"
+version = "0.8.0"
+dependencies = [
+ "proc-macro-crate 1.0.0",
+ "proc-macro2",
+ "quote",
+ "sha3 0.9.1",
+ "syn",
+]
+
+[[package]]
 name = "proc-macro-crate"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8150,7 +8161,7 @@ dependencies = [
 
 [[package]]
 name = "setheum-evm"
-version = "1.0.0"
+version = "0.8.0"
 dependencies = [
  "env_logger 0.7.1",
  "evm",
@@ -8182,7 +8193,7 @@ dependencies = [
 
 [[package]]
 name = "setheum-evm-accounts"
-version = "1.0.0"
+version = "0.8.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8203,21 +8214,22 @@ dependencies = [
 
 [[package]]
 name = "setheum-evm-bridge"
-version = "1.0.0"
+version = "0.8.0"
 dependencies = [
  "ethereum-types",
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "impl-trait-for-tuples 0.2.1",
+ "num_enum",
  "pallet-balances 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "pallet-timestamp",
  "parity-scale-codec",
  "primitive-types",
+ "primitives-proc-macro",
  "serde",
  "setheum-evm",
  "setheum-primitives",
  "setheum-support",
- "sha3 0.9.1",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8226,7 +8238,7 @@ dependencies = [
 
 [[package]]
 name = "setheum-evm-manager"
-version = "1.0.0"
+version = "0.8.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8250,7 +8262,7 @@ dependencies = [
 
 [[package]]
 name = "setheum-evm-rpc"
-version = "1.0.0"
+version = "0.8.0"
 dependencies = [
  "ethereum-types",
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8274,7 +8286,7 @@ dependencies = [
 
 [[package]]
 name = "setheum-evm-rpc-runtime-api"
-version = "0.1.0"
+version = "0.8.0"
 dependencies = [
  "ethereum-types",
  "setheum-primitives",

@@ -84,7 +84,7 @@ pub mod module {
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
-		type SerpTreasury: SerpTreasury<Self::AccountId, Amount, Balance, CurrencyId, BlockNumber>;
+		type SerpTreasury: SerpTreasury<Self::AccountId>;
 
 		/// The setter's module id, keep all reserves of Settmint.
 		#[pallet::constant]
@@ -329,7 +329,7 @@ impl<T: Config> Pallet<T> {
 
 	pub fn total_reserve() -> Balance {
 		let reserve_currency = T::GetReserveCurrencyId::get();
-		T::Currency::free_balance(&reserve_currency, &Self::account_id())
+		T::Currency::free_balance(reserve_currency, &Self::account_id())
 	}
 	
 	fn get_total_reserve() -> Balance {

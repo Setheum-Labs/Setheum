@@ -25,7 +25,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{Config, pallet_prelude::*, transactional, PalletId};
+use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::{pallet_prelude::*,Pallet};
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{AccountId, Amount, Balance, CurrencyId};
@@ -117,7 +117,7 @@ pub mod module {
 	/// operation.
 	#[pallet::storage]
 	#[pallet::getter(fn cashdrop_rate)]
-	pub type GetCashDropRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, u32, u32, ValueQuery>;
+	pub type GetCashDropRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, (u32, u32), OptionQuery>;
 
 	/// Mapping to Minimum Claimable Transfer.
 	#[pallet::storage]
@@ -190,7 +190,7 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
+impl<T: Config> CashDrop<AccountId> for Pallet<T> {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
@@ -231,7 +231,7 @@ impl<T: Config> CashDrop<T::AccountId> for Pallet<T> {
 			);
 			let currency_price = T::Price::get_price(currency_id);
 			let relative_price = currency_price.saturating_mul(&setter_fixed_price);
-			relative_cashdrop = relative_price.saturating_mul(balance_cashdrop_amount);
+			let relative_cashdrop = relative_price.saturating_mul(balance_cashdrop_amount);
 
 			Self::deposit_setter_drop(who, relative_cashdrop)?;
 		} else if T::SetCurrencyDropCurrencyIds.contains(currency_id) {
