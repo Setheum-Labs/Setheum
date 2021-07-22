@@ -550,7 +550,7 @@ impl<T: Config> Pallet<T> {
 			// issue native token to winner, it shouldn't fail and affect the process.
 			// but even it failed, just the winner did not get the amount. it can be fixed
 			// by treasury council. TODO: transfer from RESERVED TREASURY instead of issuing
-			let currency_id = T::GetNativeCurrencyId::get()
+			let currency_id = T::GetNativeCurrencyId::get();
 			let _ = T::Currency::deposit(&currency_id, &bidder, diamond_auction.amount);
 
 			Self::deposit_event(Event::DiamondAuctionDealt(
