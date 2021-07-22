@@ -71,12 +71,6 @@ impl SubstrateCli for Cli {
 			"newrome" => Box::new(chain_spec::newrome::newrome_testnet_config()?),
 			#[cfg(feature = "with-newrome-runtime")]
 			"newrome-latest" => Box::new(chain_spec::newrome::latest_newrome_testnet_config()?),
-			#[cfg(feature = "with-neom-runtime")]
-			"neom" => Box::new(chain_spec::neom::neom_config()?),
-			#[cfg(feature = "with-neom-runtime")]
-			"neom-latest" => Box::new(chain_spec::neom::latest_neom_config()?),
-			#[cfg(feature = "with-neom-runtime")]
-			"neom-dev" => Box::new(chain_spec::neom::neom_dev_config()?),
 			#[cfg(feature = "with-setheum-runtime")]
 			"setheum" => Box::new(chain_spec::setheum::setheum_config()?),
 			#[cfg(feature = "with-setheum-runtime")]
@@ -91,15 +85,7 @@ impl SubstrateCli for Cli {
 						.unwrap_or(false)
 				};
 
-				if starts_with("neom") {
-					#[cfg(feature = "with-neom-runtime")]
-					{
-						Box::new(chain_spec::neom::ChainSpec::from_json_file(path)?)
-					}
-
-					#[cfg(not(feature = "with-neom-runtime"))]
-					return Err(service::NEOM_RUNTIME_NOT_AVAILABLE.into());
-				} else if starts_with("setheum") {
+				if starts_with("setheum") {
 					#[cfg(feature = "with-setheum-runtime")]
 					{
 						Box::new(chain_spec::setheum::ChainSpec::from_json_file(path)?)
@@ -124,11 +110,6 @@ impl SubstrateCli for Cli {
 			return &service::setheum_runtime::VERSION;
 			#[cfg(not(feature = "with-setheum-runtime"))]
 			panic!("{}", service::SETHEUM_RUNTIME_NOT_AVAILABLE);
-		} else if spec.is_neom() {
-			#[cfg(feature = "with-neom-runtime")]
-			return &service::neom_runtime::VERSION;
-			#[cfg(not(feature = "with-neom-runtime"))]
-			panic!("{}", service::NEOM_RUNTIME_NOT_AVAILABLE);
 		} else {
 			#[cfg(feature = "with-newrome-runtime")]
 			return &service::newrome_runtime::VERSION;
@@ -141,9 +122,7 @@ impl SubstrateCli for Cli {
 fn set_default_ss58_version(spec: &Box<dyn service::ChainSpec>) {
 	use sp_core::crypto::Ss58AddressFormat;
 
-	let ss58_version = if spec.is_neom() {
-		Ss58AddressFormat::NeomAccount
-	} else if spec.is_setheum() {
+	let ss58_version = if spec.is_setheum() {
 		Ss58AddressFormat::SetheumAccount
 	} else {
 		Ss58AddressFormat::SubstrateAccount
@@ -163,15 +142,6 @@ macro_rules! with_runtime_or_err {
 
 			#[cfg(not(feature = "with-setheum-runtime"))]
 			return Err(service::SETHEUM_RUNTIME_NOT_AVAILABLE.into());
-		} else if $chain_spec.is_neom() {
-			#[cfg(feature = "with-neom-runtime")]
-			#[allow(unused_imports)]
-			use service::{neom_runtime::{Block, RuntimeApi}, NeomExecutor as Executor};
-			#[cfg(feature = "with-neom-runtime")]
-			$( $code )*
-
-			#[cfg(not(feature = "with-neom-runtime"))]
-			return Err(service::NEOM_RUNTIME_NOT_AVAILABLE.into());
 		} else {
 			#[cfg(feature = "with-newrome-runtime")]
 			#[allow(unused_imports)]

@@ -43,15 +43,11 @@ with-newrome-runtime = [
 	"try-runtime-cli",
 	"service/with-newrome-runtime",
 ]
-with-neom-runtime = [
-	"service/with-neom-runtime",
-]
 with-setheum-runtime = [
 	"service/with-setheum-runtime",
 ]
 with-all-runtime = [
 	"with-newrome-runtime",
-	"with-neom-runtime",
 	"with-setheum-runtime",
 	"service/with-all-runtime",
 ]

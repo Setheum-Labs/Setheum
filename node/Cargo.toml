@@ -27,10 +27,6 @@ with-newrome-runtime = [
 	"setheum-service/with-newrome-runtime",
 	"setheum-cli/with-newrome-runtime",
 ]
-with-neom-runtime = [
-	"setheum-service/with-neom-runtime",
-	"setheum-cli/with-neom-runtime",
-]
 with-setheum-runtime = [
 	"setheum-service/with-setheum-runtime",
 	"setheum-cli/with-setheum-runtime",

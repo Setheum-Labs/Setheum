@@ -32,7 +32,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./runtime/neom/src/weights/
+// --output=./runtime/setheum/src/weights/
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]

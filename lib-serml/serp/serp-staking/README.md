@@ -2,7 +2,8 @@
 
 Serp Staking supports multicurrency rewards, such that in Setheum, staking the 
 Dinar (DNAR) will reward the Dinar (DNAR) and the Setter (SETT).
-The Setter reward uses the min. to max. inflation rate reward type, while the Dinar reward uses a limited amount staking reward with a 24 months halving period. The halving period is 36 MONTHS IN Neom Network for NEOM with min. and max. inflation reward strategy.
+The Setter reward uses the min. to max. inflation rate reward type,
+while the Dinar reward uses a limited amount staking reward with a 24 months halving period
 
 The Staking module is used to manage funds at stake by network maintainers.
 

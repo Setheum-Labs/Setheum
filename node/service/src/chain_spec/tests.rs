@@ -23,31 +23,16 @@
 use setheum_primitives::{AccountId, Balance, BlockNumber};
 
 #[test]
-#[cfg(feature = "with-neom-runtime")]
+#[cfg(feature = "with-setheum-runtime")]
 fn setheum_foundation_accounts_config_is_correct() {
 	use sp_core::crypto::Ss58Codec;
 
-	let setheum_foundation_accounts = neom_runtime::SetheumFoundationAccounts::get();
+	let setheum_foundation_accounts = setheum_runtime::SetheumFoundationAccounts::get();
 	assert!(setheum_foundation_accounts
 		.contains(&AccountId::from_string("5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh").unwrap()),);
 	// Todo: Update vvvvvvvvvvvvv!
 	// assert!(setheum_foundation_accounts
 	// 	.contains(&AccountId::from_string("pndshZqDAC9GutDvv7LzhGhgWeGv5YX9puFA8xDidHXCyjd").unwrap()),);
-}
-
-#[test]
-fn check_neom_vesting() {
-	let vesting_json = &include_bytes!("../../../../resources/neom-vesting-NEOM.json")[..];
-	let vesting: Vec<(AccountId, BlockNumber, BlockNumber, u32, Balance)> =
-		serde_json::from_slice(vesting_json).unwrap();
-
-	// ensure no duplicates exist.
-	let unique_vesting_accounts = vesting
-		.iter()
-		.map(|(x, _, _, _, _)| x)
-		.cloned()
-		.collect::<std::collections::BTreeSet<_>>();
-	assert_eq!(unique_vesting_accounts.len(), vesting.len());
 }
 
 #[test]
@@ -66,21 +51,9 @@ fn check_setheum_vesting() {
 }
 
 #[test]
-fn check_neom_allocation() {
-	let allocation_json = &include_bytes!("../../../../resources/neom-allocation-NEOM.json")[..];
-	let _: Vec<(AccountId, Balance)> = serde_json::from_slice(allocation_json).unwrap();
-}
-
-#[test]
 fn check_setheum_allocation() {
 	let allocation_json = &include_bytes!("../../../../resources/setheum-allocation-DNAR.json")[..];
 	let _: Vec<(AccountId, Balance)> = serde_json::from_slice(allocation_json).unwrap();
-}
-
-#[test]
-fn check_neom_airdrop() {
-	let airdrop_json = &include_bytes!("../../../../resources/newrome-airdrop-NEOM.json")[..];
-	let _: Vec<(AccountId, Balance)> = serde_json::from_slice(airdrop_json).unwrap();
 }
 
 #[test]

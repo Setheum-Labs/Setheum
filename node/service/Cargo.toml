@@ -70,7 +70,6 @@ setheum-primitives = { path = "../../primitives" }
 # runtime dependencies
 runtime-common = { path = "../../runtime/common" }
 newrome-runtime = { path = "../../runtime/newrome", optional = true }
-neom-runtime = { path = "../../runtime/neom", optional = true }
 setheum-runtime = { path = "../../runtime/setheum", optional = true }
 
 # TODO: consider removing
@@ -83,25 +82,19 @@ default = [ "std" ]
 std = []
 runtime-benchmarks = [
 	"newrome-runtime/runtime-benchmarks",
-	"neom-runtime/runtime-benchmarks",
 	"setheum-runtime/runtime-benchmarks",
 ]
 try-runtime = [
 	"newrome-runtime/try-runtime",
-	"neom-runtime/try-runtime",
 	"setheum-runtime/try-runtime",
 ]
 with-newrome-runtime = [
 	"newrome-runtime",
-]
-with-neom-runtime = [
-	"neom-runtime",
 ]
 with-setheum-runtime = [
 	"setheum-runtime",
 ]
 with-all-runtime = [
 	"with-newrome-runtime",
-	"with-neom-runtime",
 	"with-setheum-runtime",
 ]

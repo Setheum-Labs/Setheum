@@ -62,7 +62,7 @@ pub mod module {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// The vault account to keep rewards for type DexIncentive PoolId
-		/// Receives Setter - SETT/NSETT
+		/// Receives Setter - SETT
 		#[pallet::constant]
 		type DexIncentivePool: Get<Self::AccountId>;
 
@@ -80,18 +80,18 @@ pub mod module {
 		#[pallet::constant]
 		type DexPremiumInflationRate: Get<Balance>;
 
-		/// The Incentive reward type (SETT/NSETT)
-		/// SETT in Setheum, NSETT in Neom
+		/// The Incentive reward type (SETT)
+		/// SETT in Setheum.
 		#[pallet::constant]
 		type SetterCurrencyId: Get<CurrencyId>;
 
-		/// The Premium reward type (DRAM/MENA)
-		/// DRAM in Setheum, MENA in Neom.
+		/// The Premium reward type (DRAM)
+		/// DRAM in Setheum.
 		#[pallet::constant]
 		type DexerCurrencyId: Get<CurrencyId>;
 
-		/// The Native Currency type (DNAR/NEOM)
-		/// DNAR in Setheum, NEOM in Neom
+		/// The Native Currency type (DNAR)
+		/// DNAR in Setheum.
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 

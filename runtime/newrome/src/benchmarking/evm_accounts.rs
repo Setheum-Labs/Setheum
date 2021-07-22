@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, AccountId, EvmAccounts, Runtime, NEOM};
+use crate::{dollar, AccountId, EvmAccounts, Runtime, DNAR};
 
-use super::utils::set_neom_balance;
+use super::utils::set_setheum_balance;
 use codec::Encode;
 use frame_benchmarking::{account, whitelisted_caller};
 use frame_system::RawOrigin;
@@ -49,7 +49,7 @@ runtime_benchmarks! {
 	claim_account {
 		let caller: AccountId = whitelisted_caller();
 		let eth: AccountId = account("eth", 0, SEED);
-		set_neom_balance(&bob_account_id(), 1_000 * dollar(NEOM));
+		set_setheum_balance(&bob_account_id(), 1_000 * dollar(DNAR));
 	}: _(RawOrigin::Signed(caller), EvmAccounts::eth_address(&alice()), EvmAccounts::eth_sign(&alice(), &caller.encode(), &[][..]))
 
 	claim_default_account {

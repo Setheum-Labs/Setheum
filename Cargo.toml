@@ -24,7 +24,6 @@ members = [
 
 	"runtime/common",
 	"runtime/newrome",
-	"runtime/neom",
 	"runtime/setheum",
 
 	"lib-openrml/auction",

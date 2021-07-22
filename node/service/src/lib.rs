@@ -37,8 +37,6 @@ pub use client::*;
 
 #[cfg(feature = "with-setheum-runtime")]
 pub use setheum_runtime;
-#[cfg(feature = "with-neom-runtime")]
-pub use neom_runtime;
 #[cfg(feature = "with-newrome-runtime")]
 pub use newrome_runtime;
 #[cfg(feature = "with-newrome-runtime")]
@@ -75,14 +73,6 @@ native_executor_instance!(
 	frame_benchmarking::benchmarking::HostFunctions,
 );
 
-#[cfg(feature = "with-neom-runtime")]
-native_executor_instance!(
-	pub NeomExecutor,
-	neom_runtime::api::dispatch,
-	neom_runtime::native_version,
-	frame_benchmarking::benchmarking::HostFunctions,
-);
-
 #[cfg(feature = "with-setheum-runtime")]
 native_executor_instance!(
 	pub SetheumExecutor,
@@ -97,9 +87,6 @@ pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Setheum` network.
 	fn is_setheum(&self) -> bool;
 
-	/// Returns if this is a configuration for the `Neom` network.
-	fn is_neom(&self) -> bool;
-
 	/// Returns if this is a configuration for the `NewRome` network.
 	fn is_newrome(&self) -> bool;
 }
@@ -107,10 +94,6 @@ pub trait IdentifyVariant {
 impl IdentifyVariant for Box<dyn ChainSpec> {
 	fn is_setheum(&self) -> bool {
 		self.id().starts_with("setheum") || self.id().starts_with("set")
-	}
-
-	fn is_neom(&self) -> bool {
-		self.id().starts_with("neom") || self.id().starts_with("neo")
 	}
 
 	fn is_newrome(&self) -> bool {
@@ -124,8 +107,7 @@ impl IdentifyVariant for Box<dyn ChainSpec> {
 
 pub const NEWROME_RUNTIME_NOT_AVAILABLE: &str =
 	"NewRome runtime is not available. Please compile the node with `--features with-newrome-runtime` to enable it.";
-pub const NEOM_RUNTIME_NOT_AVAILABLE: &str =
-	"Neom runtime is not available. Please compile the node with `--features with-neom-runtime` to enable it.";
+
 pub const SETHEUM_RUNTIME_NOT_AVAILABLE: &str =
 	"Setheum runtime is not available. Please compile the node with `--features with-setheum-runtime` to enable it.";
 
@@ -639,20 +621,6 @@ pub fn new_chain_ops(
 		}
 		#[cfg(not(feature = "with-newrome-runtime"))]
 		Err(NEWROME_RUNTIME_NOT_AVAILABLE.into())
-	} else if config.chain_spec.is_neom() {
-		#[cfg(feature = "with-neom-runtime")]
-		{
-			let PartialComponents {
-				client,
-				backend,
-				import_queue,
-				task_manager,
-				..
-			} = new_partial::<neom_runtime::RuntimeApi, NeomExecutor>(config, false, false)?;
-			Ok((Arc::new(Client::Neom(client)), backend, import_queue, task_manager))
-		}
-		#[cfg(not(feature = "with-neom-runtime"))]
-		Err(NEOM_RUNTIME_NOT_AVAILABLE.into())
 	} else {
 		#[cfg(feature = "with-setheum-runtime")]
 		{
@@ -677,11 +645,6 @@ pub fn build_light(config: Configuration) -> Result<TaskManager, ServiceError> {
 		return new_light::<setheum_runtime::RuntimeApi, SetheumExecutor>(config).map(|r| r.0);
 		#[cfg(not(feature = "with-setheum-runtime"))]
 		Err(SETHEUM_RUNTIME_NOT_AVAILABLE.into())
-	} else if config.chain_spec.is_neom() {
-		#[cfg(feature = "with-neom-runtime")]
-		return new_light::<neom_runtime::RuntimeApi, NeomExecutor>(config).map(|r| r.0);
-		#[cfg(not(feature = "with-neom-runtime"))]
-		Err(NEOM_RUNTIME_NOT_AVAILABLE.into())
 	} else {
 		#[cfg(feature = "with-newrome-runtime")]
 		return new_light::<newrome_runtime::RuntimeApi, NewRomeExecutor>(config).map(|r| r.0);
@@ -704,15 +667,6 @@ pub fn build_full(
 		}
 		#[cfg(not(feature = "with-setheum-runtime"))]
 		Err(SETHEUM_RUNTIME_NOT_AVAILABLE.into())
-	} else if config.chain_spec.is_neom() {
-		#[cfg(feature = "with-neom-runtime")]
-		{
-			let (task_manager, _, client, _, _, network_status_sinks) =
-				new_full::<neom_runtime::RuntimeApi, NeomExecutor>(config, instant_sealing, test)?;
-			Ok((Arc::new(Client::Neom(client)), network_status_sinks, task_manager))
-		}
-		#[cfg(not(feature = "with-neom-runtime"))]
-		Err(NEOM_RUNTIME_NOT_AVAILABLE.into())
 	} else {
 		#[cfg(feature = "with-newrome-runtime")]
 		{
@@ -752,20 +706,6 @@ pub fn new_chain_ops(
 		}
 		#[cfg(not(feature = "with- newrome-runtime"))]
 		Err(NEWROME_RUNTIME_NOT_AVAILABLE.into())
-	} else if config.chain_spec.is_neom() {
-		#[cfg(feature = "with-neom-runtime")]
-		{
-			let PartialComponents {
-				client,
-				backend,
-				import_queue,
-				task_manager,
-				..
-			} = new_partial::<neom_runtime::RuntimeApi, NeomExecutor>(config, false, false)?;
-			Ok((Arc::new(Client::Neom(client)), backend, import_queue, task_manager))
-		}
-		#[cfg(not(feature = "with-neom-runtime"))]
-		Err(NEOM_RUNTIME_NOT_AVAILABLE.into())
 	} else {
 		#[cfg(feature = "with-setheum-runtime")]
 		{

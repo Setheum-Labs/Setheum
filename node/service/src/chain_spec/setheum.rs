@@ -28,7 +28,7 @@ use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{traits::Zero, FixedPointNumber, FixedU128, Perbill};
 use sp_std::collections::btree_map::BTreeMap;
 
-use crate::chain_spec::{get_account_id_from_seed, get_setheum_authority_keys_from_seed, Extensions, TELEMETRY_URL};
+use crate::chain_spec::{Extensions, TELEMETRY_URL};
 use setheum_runtime::{
 	cent, dollar, get_all_module_accounts, SetheumOracleConfig, BabeConfig, Balance, BalancesConfig,
 	DexConfig, EnabledTradingPairs,
@@ -100,6 +100,7 @@ pub fn latest_setheum_config() -> Result<ChainSpec, String> {
 			let airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(airdrop_accounts_json).unwrap();
 			let other_allocation_json = &include_bytes!("../../../../resources/setheum-allocation-DNAR.json")[..];
 			let other_allocation: Vec<(AccountId, Balance)> = serde_json::from_slice(other_allocation_json).unwrap();
+			// TODO: Update to add `setheum-allocation-SETT.json` and `setheum-allocation-DRAM.json` too.
 
 			// TODO: Update!
 			// Initial PoA authorities
@@ -219,6 +220,7 @@ pub fn latest_setheum_config() -> Result<ChainSpec, String> {
 				"total allocation must be equal to 258 million DNAR"
 			);
 
+			// TODO: Update to add `setheum-vesting-SETT.json` and `setheum-vesting-DRAM.json` too.
 			let vesting_list_json = &include_bytes!("../../../../resources/setheum-vesting-DNAR.json")[..];
 			let vesting_list: Vec<(AccountId, BlockNumber, BlockNumber, u32, Balance)> =
 				serde_json::from_slice(vesting_list_json).unwrap();

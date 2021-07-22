@@ -536,17 +536,17 @@ fn newrome_genesis(
 				let dnar_airdrop_accounts_json = &include_bytes!("../../../../resources/newrome-airdrop-DNAR.json")[..];
 				let dnar_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(dnar_airdrop_accounts_json).unwrap();
-				let neom_airdrop_accounts_json = &include_bytes!("../../../../resources/newrome-airdrop-NEOM.json")[..];
-				let neom_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(neom_airdrop_accounts_json).unwrap();
+				let sett_airdrop_accounts_json = &include_bytes!("../../../../resources/newrome-airdrop-SETT.json")[..];
+				let sett_airdrop_accounts: Vec<(AccountId, Balance)> =
+					serde_json::from_slice(sett_airdrop_accounts_json).unwrap();
 
 				dnar_airdrop_accounts
 					.iter()
 					.map(|(account_id, dnar_amount)| (account_id.clone(), AirDropCurrencyId::DNAR, *dnar_amount))
 					.chain(
-						neom_airdrop_accounts
+						sett_airdrop_accounts
 							.iter()
-							.map(|(account_id, neom_amount)| (account_id.clone(), AirDropCurrencyId::NEOM, *neom_amount)),
+							.map(|(account_id, sett_amount)| (account_id.clone(), AirDropCurrencyId::SETT, *sett_amount)),
 					)
 					.collect::<Vec<_>>()
 			},
