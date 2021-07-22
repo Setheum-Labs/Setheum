@@ -288,11 +288,16 @@ pub trait ExchangeRateProvider {
 }
 
 pub trait DEXIncentives<AccountId, CurrencyId, Balance> {
+	fn dex_premium_rewards(lp_currency_id: CurrencyId) -> Balance;
 	fn do_deposit_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 	fn do_withdraw_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 }
 
 impl<AccountId, CurrencyId, Balance> DEXIncentives<AccountId, CurrencyId, Balance> for () {
+	fn dex_premium_rewards(_: CurrencyId) -> Option<Balance> {
+		Some(Default::default())
+	}
+
 	fn do_deposit_dex_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
 		Ok(())
 	}
