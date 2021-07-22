@@ -6,9 +6,9 @@ run:
 run-sevm:
 	cargo run --features with-newrome-runtime --features with-sevm -- --dev -lruntime=debug -levm=debug --instant-sealing
 
-.PHONY: run-neom
-run-neom:
-	cargo run --features with-neom-runtime -- --chain=neom
+.PHONY: run-setheum
+run-setheum:
+	cargo run --features with-setheum-runtime -- --chain=setheum
 
 .PHONY: toolchain
 toolchain:
@@ -31,8 +31,8 @@ check: githooks
 	SKIP_WASM_BUILD= cargo check --features with-newrome-runtime
 
 .PHONY: check
-check-neom: githooks
-	SKIP_WASM_BUILD= cargo check --features with-neom-runtime
+check-setheum: githooks
+	SKIP_WASM_BUILD= cargo check --features with-setheum-runtime
 
 .PHONY: check-tests
 check-tests: githooks
@@ -48,7 +48,7 @@ check-runtimes:
 .PHONY: check-benchmarks
 check-benchmarks:
 	SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p newrome-runtime
-	SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p neom-runtime
+	SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p setheum-runtime
 
 .PHONY: check-debug
 check-debug:
@@ -94,10 +94,6 @@ target/debug/setheum:
 build: githooks
 	SKIP_WASM_BUILD= cargo build --features with-newrome-runtime
 
-.PHONY: build-neom
-build: githooks
-	SKIP_WASM_BUILD= cargo build --features with-neom-runtime
-
 .PHONY: build-setheum
 build: githooks
 	SKIP_WASM_BUILD= cargo build --features with-setheum-runtime
@@ -141,13 +137,13 @@ cargo-update:
 build-wasm-newrome:
 	./scripts/build-only-wasm.sh -p newrome-runtime --features=with-sevm
 
-.PHONY: build-wasm-neom
+.PHONY: build-wasm-setheum
 build-wasm-newrome:
-	./scripts/build-only-wasm.sh -p neom-runtime --features=on-chain-release-build
+	./scripts/build-only-wasm.sh -p setheum-runtime --features=on-chain-release-build
 
-.PHONY: srtool-build-wasm-neom
-srtool-build-wasm-neom:
-	PACKAGE=neom-runtime BUILD_OPTS="--features on-chain-release-build" ./scripts/srtool-build.sh
+.PHONY: srtool-build-wasm-setheum
+srtool-build-wasm-setheum:
+	PACKAGE=setheum-runtime BUILD_OPTS="--features on-chain-release-build" ./scripts/srtool-build.sh
 
 .PHONY: generate-tokens
 generate-tokens:

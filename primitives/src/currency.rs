@@ -180,59 +180,6 @@ macro_rules! create_currency_id {
 					symbol: "LP_RENBTC_SETT".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETT))).unwrap(),
 				},
-				// Neom Network LPs
-				Token {
-					symbol: "LP_NEOM_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(NEOM), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_MENA_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(MENA), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JUSD_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JUSD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JEUR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JEUR), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JJPY_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JJPY), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JGBP_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JGBP), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JAUD_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JAUD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JCAD_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JCAD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JCHF_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JCHF), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JSGD_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSGD), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JSEK_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSEK), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_JSAR_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JSAR), DexShare::Token(NSETT))).unwrap(),
-				},
-				Token {
-					symbol: "LP_RENBTC_NSETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(NSETT))).unwrap(),
-				},
 			];
 			tokens.append(&mut lp_tokens);
 
@@ -243,7 +190,7 @@ macro_rules! create_currency_id {
 
 create_currency_id! {
 	// Represent a Token symbol with 8 bit
-	// Bit 8 : 0 for Setheum Network, 1 for Neom Network
+	// Bit 8 : 0 for Setheum Network
 	// Bit 7 : Reserved
 	// Bit 6 - 1 : The token ID
 	#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
@@ -252,7 +199,7 @@ create_currency_id! {
 	pub enum TokenSymbol {
 		/// Setheum Network
 		DNAR("Setheum Dinar", 10) = 0, // could consider having 12 decimals too.
-		DRAM("Setheum Dirham", 10) = 1, // could consider having 12 decimals too.
+		DRAM("Setheum Dirham", 12) = 1,
 		SETT("Setter", 12) = 2,
 		// SettCurrencies
 		USDJ("Setheum US Dollar", 12) = 3,
@@ -265,21 +212,6 @@ create_currency_id! {
 		SEKJ("Setheum Swedish Krona", 12) = 10,
  		SGDJ("Setheum Singapore Dollar", 12) = 11,
  		SARJ("Setheum Saudi Riyal", 12) = 12,
-		/// Neom Network >---------------------->>
-		NEOM("Neom", 10) = 128, // could consider having 12 decimals too.
-		MENA("Mena", 10) = 129, // could consider having 12 decimals too.
-		NSETT("Neom Setter", 12) = 130,
-		// SettCurrencies
-		JUSD("Neom US Dollar", 12) = 131,
-		JEUR("Neom Euro", 12) = 132,
-		JJPY("Neom Japanese Yen", 12) = 133,
-		JGBP("Neom Pound Sterling", 12) = 134,
- 		JAUD("Neom Australian Dollar", 12) = 135,
-		JCAD("Neom Canadian Dollar", 12) = 136,
-		JCHF("Neom Swiss Franc", 12) = 137,
-		JSEK("Neom Swedish Krona", 12) = 138,
- 		JSGD("Neom Singapore Dollar", 12) = 139,
- 		JSAR("Neom Saudi Riyal", 12) = 140,
 		// Foreign Currencies
 		RENBTC("Ren Bitcoin", 8) = 141,
 		/// Fiat Currencies as Pegs - only for price feed

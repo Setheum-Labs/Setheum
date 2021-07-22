@@ -3,8 +3,8 @@
 set -e
 
 VERSION=$1
-NODE_NAME=setheum/neom-node
-BUILD_ARGS="--features with-neom-runtime"
+NODE_NAME=setheum/setheum-node
+BUILD_ARGS="--features with-setheum-runtime"
 
 if [[ -z "$1" ]] ; then
     VERSION=$(git rev-parse --short HEAD)

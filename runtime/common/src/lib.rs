@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Common runtime code for Setheum, Neom and NewRome.
+//! Common runtime code for Setheum and NewRome.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -43,8 +43,7 @@ pub use precompile::{
 };
 pub use primitives::currency::{
 	TokenInfo, 
-	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ,
-	NEOM, MENA, NSETT, JUSD, JEUR, JJPY, JGBP, JAUD, JCAD, JCHF, JSEK, JSGD, JSAR, RENBTC,
+	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ, RENBTC,
 	USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP,
 };
 

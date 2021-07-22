@@ -29,8 +29,6 @@ use sp_std::{collections::btree_map::BTreeMap, str::FromStr};
 
 #[cfg(feature = "with-setheum-runtime")]
 pub mod setheum;
-#[cfg(feature = "with-neom-runtime")]
-pub mod neom;
 #[cfg(feature = "with-newrome-runtime")]
 pub mod newrome;
 
@@ -75,8 +73,8 @@ pub fn get_authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, Grandp
 	)
 }
 
-/// Generate an Babe authority key for Neom.
-pub fn get_neom_authority_keys_from_seed(seed: &str) -> (AccountId, BabeId) {
+/// Generate an Babe authority key for Setheum.
+pub fn get_setheum_authority_keys_from_seed(seed: &str) -> (AccountId, BabeId) {
 	(
 		get_account_id_from_seed::<sr25519::Public>(seed),
 		get_from_seed::<BabeId>(seed),

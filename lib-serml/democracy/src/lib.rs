@@ -26,7 +26,7 @@
 //! In Setheum Democracy, it is a multi-currency democracy where a participant can
 //! lock not just one type of currency but a multiple. 
 //! This provides multiple governance tokens not just one.
-//! In Setheum, it is two (DNAR and DRAM in SetheumNetwork / NEOM and MENA in NeomNetwork).
+//! In Setheum, it is two (DNAR and DRAM).
 
 #![recursion_limit="128"]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -167,22 +167,22 @@ pub mod pallet {
 		/// The Governance Currency IDs.
 		///
 		/// There are 3 (three). 
-		/// It is DNAR, DRAM and SETT in Setheum Network, NEOM, MENA and NSETT in Neom Network.
+		/// It is DNAR, DRAM and SETT.
 		type GovernanceCurrencyIds: Get<Vec<CurrencyIdOf<Self>>>;
 		
 		/// The Native Currency ID.
 		///
-		/// It is DNAR in Setheum Network, NEOM in Neom Network.
+		/// It is DNAR in Setheum.
 		type NativeCurrencyId: Get<CurrencyIdOf<Self>>
 
 		/// The Dex Currency ID.
 		///
-		/// It is DRAM in Setheum Network, MENA in Neom Network.
+		/// It is DRAM in Setheum.
 		type DexerCurrencyId: Get<CurrencyIdOf<Self>>
 
 		/// The  Currency ID.
 		///
-		/// It is SETT in Setheum Network, NSETT in Neom Network.
+		/// It is SETT in Setheum.
 		type SetterCurrencyId: Get<CurrencyIdOf<Self>>
 
 		/// The minimum amount to be used as a deposit for a public referendum proposal.

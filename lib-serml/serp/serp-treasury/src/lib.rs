@@ -61,19 +61,19 @@ pub mod module {
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
-		/// Native (DNAR/NEOM) currency Stablecoin currency id
+		/// Native (DNAR) currency Stablecoin currency id
 		type GetStableCurrencyMinimumSupply: GetByKey<Self::CurrencyId, Self::Balance>;
 
 		#[pallet::constant]
-		/// Native (DNAR/NEOM) currency Stablecoin currency id
+		/// Native (DNAR) currency Stablecoin currency id
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// Setter (SETT/NSETT) currency Stablecoin currency id
+		/// Setter (SETT) currency Stablecoin currency id
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// SettinDes (DRAM/MENA) dexer currency id
+		/// SettinDes (DRAM) dexer currency id
 		type DexerCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -489,12 +489,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::SetterCurrencyId::get(), who, setter)
 	}
 
-	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum or `MENA` in Neom).
+	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum).
 	fn get_dexer_max_supply() -> Self::Balance {
 		T::GetDexerMaxSupply::get()
 	}
 
-	/// Issue Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the Dex token balance.
+	/// Issue Dexer (`DRAM` in Setheum). `dexer` here just referring to the Dex token balance.
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		let total_supply = T::Currency::total_issuance(T::DexerCurrencyId::get());
 		let max_supply = Self::get_dexer_max_supply();
@@ -512,7 +512,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// Burn Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the Dex token balance.
+	/// Burn Dexer (`DRAM` in Setheum). `dexer` here just referring to the Dex token balance.
 	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::DexerCurrencyId::get(), who, dexer)
 	}

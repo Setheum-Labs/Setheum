@@ -209,13 +209,13 @@ pub trait SerpTreasury<AccountId> {
 	/// burn setter of `who`
 	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
-	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum or `MENA` in Neom).
+	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum).
 	fn get_dexer_max_supply() -> Self::Balance;
 	
-	/// Issue Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the DEX token balance.
+	/// Issue Dexer (`DRAM` in Setheum). `dexer` here just referring to the DEX token balance.
 	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
-	/// Burn Dexer (`DRAM` in Setheum or `MENA` in Neom). `dexer` here just referring to the DEX token balance.
+	/// Burn Dexer (`DRAM` in Setheum). `dexer` here just referring to the DEX token balance.
 	fn burn_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// deposit surplus(propperstable currency) to serp treasury by `from`
