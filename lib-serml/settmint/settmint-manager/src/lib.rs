@@ -150,6 +150,7 @@ impl<T: Config> Pallet<T> {
 		standard_adjustment: Amount,
 	) -> DispatchResult {
 		// mutate reserve and standard
+		// TODO: Update, see what's wrong
 		Self::update_reserve(who, currency_id, reserve_adjustment, standard_adjustment)?;
 
 		let reserve_balance_adjustment = Self::balance_try_from_amount_abs(reserve_adjustment)?;
@@ -164,20 +165,21 @@ impl<T: Config> Pallet<T> {
 		);
 	
 		if reserve_adjustment.is_positive() {
-			T::Currency::transfer(reserve_currency, who, &setheum_account,
+			T::Currency::transfer(reserve_currency, &who, &setheum_account,
 				T::Convert::convert((reserve_currency, reserve_balance_adjustment)))?;
 		} else if reserve_adjustment.is_negative() {
-			T::Currency::transfer(reserve_currency, &setheum_account, who,
+			T::Currency::transfer(reserve_currency, &setheum_account, &who,
 				T::Convert::convert((reserve_currency, reserve_balance_adjustment)))?;
 		}
 
+		// TODO: Update! convert from u128 to balance before acting on SerpTreasury.
 		if standard_adjustment.is_positive() {
 			// issue standard with reserve backed by SERP Treasury
-			T::SerpTreasury::issue_standard(currency_id, who, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
+			T::SerpTreasury::issue_standard(&currency_id, &who, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		} else if standard_adjustment.is_negative() {
 			// repay standard
 			// burn standard by SERP Treasury
-			T::SerpTreasury::burn_standard(who, currency_id, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
+			T::SerpTreasury::burn_standard(&who, currency_id, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		}
 
 		// ensure it passes StandardValidator check

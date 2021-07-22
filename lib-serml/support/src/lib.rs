@@ -295,7 +295,7 @@ pub trait DEXIncentives<AccountId, CurrencyId, Balance> {
 
 impl<AccountId, CurrencyId, Balance> DEXIncentives<AccountId, CurrencyId, Balance> for () {
 	fn dex_premium_rewards(_: CurrencyId) -> Option<Balance> {
-		Some(Default::default())
+		None
 	}
 
 	fn do_deposit_dex_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {

@@ -28,7 +28,7 @@
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::{pallet_prelude::*,Pallet};
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
-use primitives::{AccountId, Amount, Balance, CurrencyId};
+use primitives::{AccountId, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber,
@@ -151,7 +151,7 @@ pub mod module {
 		}
 
 		#[pallet::weight(<T as Config>::WeightInfo::update_minimum_claimable_transfer(
-			currency.len() as CurrencyId, denominator.len() as Balance))]
+			currency.len() as CurrencyId, amount.len() as Balance))]
 		#[transactional]
 		pub fn update_minimum_claimable_transfer(
 			origin: OriginFor<T>,
@@ -159,7 +159,7 @@ pub mod module {
 			amount: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			for (currency, amount) in MinimumClaimableTransfer {
+			for (currency, amount) in MinimumClaimableTransfer::<T>::iter() {
 				MinimumClaimableTransfer::<T>::insert(currency, amount);
 			}
 			Ok(().into())
