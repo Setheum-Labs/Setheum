@@ -293,25 +293,6 @@ pub trait DEXIncentives<AccountId, CurrencyId, Balance> {
 	fn do_withdraw_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 }
 
-impl<AccountId, CurrencyId, Balance> DEXIncentives<AccountId, CurrencyId, Balance> for ()
-where
-	Balance: Default,
-{
-
-
-	fn dex_premium_rewards(_: CurrencyId) -> Option<Balance> {
-		Some(Default::default())
-	}
-
-	fn do_deposit_dex_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
-		Ok(())
-	}
-
-	fn do_withdraw_dex_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
-		Ok(())
-	}
-}
-
 /// Return true if the call of EVM precompile contract is allowed.
 pub trait PrecompileCallerFilter {
 	fn is_allowed(caller: H160) -> bool;
