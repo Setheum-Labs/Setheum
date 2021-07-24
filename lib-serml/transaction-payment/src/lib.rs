@@ -846,8 +846,7 @@ where
 		};
 
 		// distribute fee
-		<T as Config>::OnTransactionPaym
-		ent::on_unbalanced(actual_payment);
+		<T as Config>::OnTransactionPayment::on_unbalanced(actual_payment);
 
 		Ok(())
 	}

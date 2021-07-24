@@ -824,8 +824,8 @@ fn inner_newrome_dev(config: Configuration, instant_sealing: bool) -> Result<Tas
 		let client = client.clone();
 		let transaction_pool = transaction_pool.clone();
 
-		Box::new(move |deny_unsafe, _| -> setheum_rpc::RpcExtension {
-			let deps = acala_rpc::FullDeps {
+		Box::new(move |deny_unsafe, _| -> acala_rpc::RpcExtension {
+			let deps = setheum_rpc::FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),
 				deny_unsafe,
