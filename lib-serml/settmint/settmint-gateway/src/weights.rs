@@ -55,7 +55,7 @@ pub trait WeightInfo {
 }
 
 /// Weights for settmint_gateway using the Setheum node and recommended hardware.
-pub struct SetheumWeight<T>(_);
+pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn authorize() -> Weight {
 		(14_000_000 as Weight)
