@@ -1695,7 +1695,7 @@ parameter_types! {
 	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
 }
 
-#[cfg(feature = "with-sevm")]
+#[cfg(feature = "with-ethereum-compatibility")]
 parameter_types! {
 	pub const NativeTokenExistentialDeposit: Balance = 1;
 	pub const NewContractExtraBytes: u32 = 0;
@@ -1705,7 +1705,7 @@ parameter_types! {
 	pub const DeploymentFee: Balance = 0;
 }
 
-#[cfg(not(feature = "with-sevm"))]
+#[cfg(not(feature = "with-ethereum-compatibility"))]
 parameter_types! {
 	pub NativeTokenExistentialDeposit: Balance = microcent(DNAR);
 	pub const NewContractExtraBytes: u32 = 10_000;
@@ -1742,7 +1742,7 @@ pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
 pub type DexPrecompile =
 	runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, Dex>;
 
-	#[cfg(feature = "with-sevm")]
+	#[cfg(feature = "with-ethereum-compatibility")]
 static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
 impl setheum_evm::Config for Runtime {
@@ -1773,7 +1773,7 @@ impl setheum_evm::Config for Runtime {
 	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
 	type WeightInfo = weights::setheum_evm::WeightInfo<Runtime>;
 
-	#[cfg(feature = "with-sevm")]
+	#[cfg(feature = "with-ethereum-compatibility")]
 	fn config() -> &'static evm::Config {
 		&ISTANBUL_CONFIG
 	}

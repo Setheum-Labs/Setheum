@@ -278,7 +278,7 @@ pub fn reserved_balance(address: H160) -> u64 {
 	Balances::reserved_balance(account_id)
 }
 
-#[cfg(not(feature = "with-sevm"))]
+#[cfg(not(feature = "with-ethereum-compatibility"))]
 pub fn deploy_free(contract: H160) {
 	let _ = EVM::deploy_free(Origin::signed(CouncilAccount::get()), contract);
 }

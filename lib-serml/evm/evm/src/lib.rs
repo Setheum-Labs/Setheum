@@ -351,7 +351,7 @@ pub mod module {
 					<Pallet<T>>::on_contract_initialization(&contract_address, &source, out)
 						.expect("Genesis contract failed to initialize");
 
-					#[cfg(not(feature = "with-sevm"))]
+					#[cfg(not(feature = "with-ethereum-compatibility"))]
 					<Pallet<T>>::mark_deployed(*address, None).expect("Genesis contract failed to deploy");
 
 					let mut count = 0;
@@ -527,7 +527,7 @@ pub mod module {
 
 			let _from_account = T::AddressMapping::get_account_id(&from);
 			let _payed: NegativeImbalanceOf<T>;
-			#[cfg(not(feature = "with-sevm"))]
+			#[cfg(not(feature = "with-ethereum-compatibility"))]
 			{
 				// unreserve the transaction fee for gas_limit
 				let weight = T::GasToWeight::convert(gas_limit);
@@ -546,7 +546,7 @@ pub mod module {
 
 			let used_gas: u64 = info.used_gas.unique_saturated_into();
 
-			#[cfg(not(feature = "with-sevm"))]
+			#[cfg(not(feature = "with-ethereum-compatibility"))]
 			{
 				use sp_runtime::traits::Zero;
 				let refund_gas = gas_limit.saturating_sub(used_gas);
@@ -925,9 +925,9 @@ impl<T: Config> Pallet<T> {
 		let contract_info = ContractInfo {
 			code_hash,
 			maintainer: *maintainer,
-			#[cfg(feature = "with-sevm")]
+			#[cfg(feature = "with-ethereum-compatibility")]
 			deployed: true,
-			#[cfg(not(feature = "with-sevm"))]
+			#[cfg(not(feature = "with-ethereum-compatibility"))]
 			deployed: false,
 		};
 

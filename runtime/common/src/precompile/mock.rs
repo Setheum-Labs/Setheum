@@ -33,19 +33,15 @@ use setheum_support::{
 };
 use orml_traits::{parameter_type_with_key, MultiReservableCurrency};
 pub use primitives::{
-	evm::EvmAddress, Amount, BlockNumber, CurrencyId, DexShare, Header, Nonce, TokenSymbol, TradingPair,
+	evm::EvmAddress, Amount, BlockNumber, CurrencyId, DexShare, Header, Nonce, ReserveIdentifier, TokenSymbol,
+	TradingPair,
 };
-use sha3::{Digest, Keccak256};
 use sp_core::{crypto::AccountId32, H160, H256};
 use sp_runtime::{
 	traits::{BlakeTwo256, Convert, IdentityLookup, One as OneT},
 	DispatchResult, FixedPointNumber, FixedU128, Perbill,
 };
-use sp_std::{
-	collections::btree_map::BTreeMap,
-	convert::{TryFrom, TryInto},
-	str::FromStr,
-};
+use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, str::FromStr};
 
 pub type AccountId = AccountId32;
 type Key = CurrencyId;
@@ -86,6 +82,7 @@ parameter_types! {
 	pub const ExpiresIn: u32 = 600;
 	pub const RootOperatorAccountId: AccountId = ALICE;
 	pub static OracleMembers: Vec<AccountId> = vec![ALICE, BOB, EVA];
+	pub const MaxHasDispatchedSize: u32 = 40;
 }
 
 pub struct Members;
@@ -105,6 +102,7 @@ impl orml_oracle::Config for Test {
 	type OracleValue = Price;
 	type RootOperatorAccountId = RootOperatorAccountId;
 	type Members = Members;
+	type MaxHasDispatchedSize = MaxHasDispatchedSize;
 	type WeightInfo = ();
 }
 
@@ -134,6 +132,7 @@ impl orml_tokens::Config for Test {
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1;
+	pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Test {
@@ -142,22 +141,54 @@ impl pallet_balances::Config for Test {
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type WeightInfo = ();
 	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
+	type WeightInfo = ();
 }
 
+// Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
+pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
+pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
+pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
+pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
+pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
-pub const LDOT: CurrencyId = CurrencyId::Token(TokenSymbol::LDOT);
+
+pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const LP_DNAR_USDJ: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::USDJ));
 
+// Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
+pub const BRL: CurrencyId = CurrencyId::Token(TokenSymbol::BRL);
+pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
+pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
+pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
+pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
+pub const JPY: CurrencyId = CurrencyId::Token(TokenSymbol::JPY);
+pub const QAR: CurrencyId = CurrencyId::Token(TokenSymbol::QAR);
+pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
+pub const SEK: CurrencyId = CurrencyId::Token(TokenSymbol::SEK);
+pub const SGD: CurrencyId = CurrencyId::Token(TokenSymbol::SGD);
+pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
+pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
+pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
+pub const BHD: CurrencyId = CurrencyId::Token(TokenSymbol::BHD);
+pub const KYD: CurrencyId = CurrencyId::Token(TokenSymbol::KYD);
+pub const OMR: CurrencyId = CurrencyId::Token(TokenSymbol::OMR);
+pub const GIP: CurrencyId = CurrencyId::Token(TokenSymbol::GIP);
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 }
 
+// TODO: Update!
 impl setheum_currencies::Config for Test {
 	type Event = Event;
 	type MultiCurrency = Tokens;
@@ -180,12 +211,15 @@ impl setheum_evm_manager::Config for Test {
 parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
+	pub const DataDepositPerByte: Balance = 10;
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 impl setheum_nft::Config for Test {
 	type Event = Event;
+	type Currency = Balances;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
+	type DataDepositPerByte = DataDepositPerByte;
 	type PalletId = NftPalletId;
 	type WeightInfo = ();
 }
@@ -206,15 +240,15 @@ impl orml_nft::Config for Test {
 
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
-	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![CurrencyId::Token(TokenSymbol::USDJ)];
+	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![CurrencyId::Token(TokenSymbol::SETT)];
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
 impl setheum_transaction_payment::Config for Test {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyId = GetStableCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type Currency = Balances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = ();
@@ -311,10 +345,10 @@ impl DEXIncentives<AccountId, CurrencyId, Balance> for MockDEXIncentives {
 
 ord_parameter_types! {
 	pub const ListingOrigin: AccountId = ALICE;
-	pub const UpdateOrigin: AccountId = ALICE;
 }
 
 parameter_types! {
+	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
@@ -322,12 +356,12 @@ parameter_types! {
 impl setheum_dex::Config for Test {
 	type Event = Event;
 	type Currency = Tokens;
+	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
 	type WeightInfo = ();
 	type DEXIncentives = MockDEXIncentives;
-	type UpdateOriginOrigin = EnsureSignedBy<UpdateOriginOrigin, AccountId>;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 
@@ -414,22 +448,74 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 }
 
 parameter_types! {
-	pub StableCurrencyFixedPrice: Price = Price::saturating_from_rational(1, 1);
-	pub const GetStakingCurrencyId: CurrencyId = DOT;
-	pub const GetLiquidCurrencyId: CurrencyId = LDOT;
+	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
+	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
+	pub FiatUsdFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	
+	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegFourCurrencyId: CurrencyId = JOD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegFiveCurrencyId: CurrencyId = BHD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegSixCurrencyId: CurrencyId = KYD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegSevenCurrencyId: CurrencyId = OMR; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegEightCurrencyId: CurrencyId = CHF; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETT).
+	
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
+		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
+	];
+	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
+		AUD, CAD, CHF, EUR, GBP, JPY, QAR, SAR,
+		SEK, SGD, USD, JOD, BHD, KYD, OMR, GIP
+	];
+}
+
+parameter_type_with_key! {
+	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
+		match currency_id {
+			&AUDJ => &AUD,
+			&CADJ => &CAD,
+			&CHFJ => &CHF,
+			&EURJ => &EUR,
+			&GBPJ => &GBP,
+			&JPYJ => &JPY,
+			&SARJ => &SAR,
+			&SEKJ => &SEK,
+			&SGDJ => &SGD,
+			&USDJ => &USD,
+			_ => None,
+		}
+	};
 }
 
 ord_parameter_types! {
 	pub const One: AccountId = AccountId::new([1u8; 32]);
 }
 
-impl serp_prices::Config for Test {
+impl setheum_prices::Config for Test {
 	type Event = Event;
 	type Source = Oracle;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
-	type GetStakingCurrencyId = GetStakingCurrencyId;
-	type GetLiquidCurrencyId = GetLiquidCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
+	type FiatUsdFixedPrice = FiatUsdFixedPrice;
+	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
+	type GetSetterPegTwoCurrencyId = GetSetterPegTwoCurrencyId;
+	type GetSetterPegThreeCurrencyId = GetSetterPegThreeCurrencyId;
+	type GetSetterPegFourCurrencyId = GetSetterPegFourCurrencyId;
+	type GetSetterPegFiveCurrencyId = GetSetterPegFiveCurrencyId;
+	type GetSetterPegSixCurrencyId = GetSetterPegSixCurrencyId;
+	type GetSetterPegSevenCurrencyId = GetSetterPegSevenCurrencyId;
+	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
+	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
+	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
+	type PegCurrencyIds = PegCurrencyIds;
+	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type LiquidStakingExchangeRateProvider = MockLiquidStakingExchangeProvider;
 	type DEX = DexModule;
@@ -499,7 +585,7 @@ frame_support::construct_runtime!(
 		EVMManager: setheum_evm_manager::{Pallet, Storage},
 		NFTModule: setheum_nft::{Pallet, Call, Event<T>},
 		TransactionPayment: setheum_transaction_payment::{Pallet, Call, Storage},
-		Prices: serp_prices::{Pallet, Storage, Call, Event<T>},
+		Prices: setheum_prices::{Pallet, Storage, Call, Event<T>},
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
 		Utility: pallet_utility::{Pallet, Call, Event},
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
@@ -581,14 +667,4 @@ pub fn get_task_id(output: Vec<u8>) -> Vec<u8> {
 	num[..].copy_from_slice(&output[32 - 4..32]);
 	let task_id_len: u32 = u32::from_be_bytes(num);
 	return output[32..32 + task_id_len as usize].to_vec();
-}
-
-pub fn get_function_selector(s: &str) -> [u8; 4] {
-	// create a SHA3-256 object
-	let mut hasher = Keccak256::new();
-	// write input message
-	hasher.update(s);
-	// read hash digest
-	let result = hasher.finalize();
-	result[..4].try_into().unwrap()
 }

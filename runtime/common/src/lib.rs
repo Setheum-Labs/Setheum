@@ -33,7 +33,13 @@ use primitives::{
 	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
 use sp_core::H160;
-use sp_runtime::{traits::Convert, transaction_validity::TransactionPriority, Perbill};
+use sp_runtime::{
+	// TODO: move after https://github.com/paritytech/substrate/pull/9209
+	offchain::storage_lock::BlockNumberProvider,
+	traits::Convert,
+	transaction_validity::TransactionPriority,
+	Perbill,
+};
 use static_assertions::const_assert;
 
 pub mod precompile;

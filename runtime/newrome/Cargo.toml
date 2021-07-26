@@ -219,10 +219,10 @@ runtime-benchmarks = [
 # in WASM.
 disable-runtime-api = []
 
-with-sevm = [
+with-ethereum-compatibility = [
 	"evm",
-	"setheum-evm/with-sevm",
-	"runtime-common/with-sevm",
+	"setheum-evm/with-ethereum-compatibility",
+	"runtime-common/with-ethereum-compatibility",
 ]
 try-runtime = [
 	"frame-try-runtime",
