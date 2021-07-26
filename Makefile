@@ -15,11 +15,11 @@ toolchain:
 	./scripts/init.sh
 
 .PHONY: build
-build: githooks
+build: 
 	SKIP_WASM_BUILD= cargo build --features with-newrome-runtime
 
 .PHONY: build-full
-build-full: githooks
+build-full:
 	cargo build --features with-newrome-runtime
 
 .PHONY: build-all
@@ -27,15 +27,15 @@ build-all:
 	cargo build --locked --features with-all-runtime
 
 .PHONY: check
-check: githooks
+check:
 	SKIP_WASM_BUILD= cargo check --features with-newrome-runtime
 
 .PHONY: check
-check-setheum: githooks
+check-setheum: 
 	SKIP_WASM_BUILD= cargo check --features with-setheum-runtime
 
 .PHONY: check-tests
-check-tests: githooks
+check-tests: 
 	SKIP_WASM_BUILD= cargo check --features with-all-runtime --tests --all
 
 .PHONY: check-all
@@ -59,11 +59,11 @@ check-try-runtime:
 	SKIP_WASM_BUILD= cargo check --features try-runtime --features with-all-runtime
 
 .PHONY: test
-test: githooks
+test: 
 	SKIP_WASM_BUILD= cargo test --features with-newrome-runtime --all
 
 .PHONY: test-sevm
-test: githooks
+test: 
 	SKIP_WASM_BUILD= cargo test --all --features with-sevm test_setheum_evm
 	SKIP_WASM_BUILD= cargo test --all --features with-sevm should_not_kill_contract_on_transfer_all
 	SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_work
@@ -91,28 +91,16 @@ target/debug/setheum:
 	SKIP_WASM_BUILD= cargo build --features with-newrome-runtime
 
 .PHONY: build-newrome
-build: githooks
+build: 
 	SKIP_WASM_BUILD= cargo build --features with-newrome-runtime
 
 .PHONY: build-setheum
-build: githooks
+build: 
 	SKIP_WASM_BUILD= cargo build --features with-setheum-runtime
 
 .PHONY: build-all
-build: githooks
+build: 
 	SKIP_WASM_BUILD= cargo build --features with-all-runtime
-
-GITHOOKS_SRC = $(wildcard githooks/*)
-GITHOOKS_DEST = $(patsubst githooks/%, .git/hooks/%, $(GITHOOKS_SRC))
-
-.git/hooks:
-	mkdir .git/hooks
-
-.git/hooks/%: githooks/%
-	cp $^ $@
-
-.PHONY: githooks
-githooks: .git/hooks $(GITHOOKS_DEST)
 
 .PHONY: start
 start: toolchain submodule build-full
