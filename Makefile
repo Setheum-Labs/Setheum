@@ -114,8 +114,8 @@ GITHOOKS_DEST = $(patsubst githooks/%, .git/hooks/%, $(GITHOOKS_SRC))
 .PHONY: githooks
 githooks: .git/hooks $(GITHOOKS_DEST)
 
-.PHONY: init
-init: toolchain submodule build-full
+.PHONY: start
+start: toolchain submodule build-full
 
 .PHONY: submodule
 submodule:

@@ -92,7 +92,7 @@ git config --global submodule.recurse true
 Install required tools and install git hooks:
 
 ```bash
-make init
+make start
 ```
 
 Build all native code:
