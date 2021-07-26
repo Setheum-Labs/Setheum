@@ -290,6 +290,7 @@ parameter_types! {
 		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
 	];
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
+	pub const AccumulatePeriod: BlockNumber = 20; /// 20 every blocks
 }
 
 parameter_type_with_key! {
@@ -308,7 +309,6 @@ ord_parameter_types! {
 	pub const Four: AccountId = 4;
 }
 
-// TODO: Add AccumulationPeriod
 impl Config for Runtime {
 	type Event = Event;
 	type DexIncentivePool = DexIncentivePool;
@@ -319,8 +319,8 @@ impl Config for Runtime {
 	type DexerCurrencyId = DexerCurrencyId;
 	type NativeCurrencyId = NativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
+	type AccumulatePeriod = AccumulatePeriod;
 	type UpdateOrigin = EnsureSignedBy<Four, AccountId>;
-	type AccumulatePeriodUpdateOrigin = EnsureSignedBy<Four, AccountId>;
 	type SerpTreasury = MockSerpTreasury;
 	type Currency = TokensModule;
 	type Dex = MockDex;

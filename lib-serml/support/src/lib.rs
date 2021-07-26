@@ -39,12 +39,12 @@ use sp_std::{
 pub mod mocks;
 
 pub type BlockNumber = u32;
-pub type Price = FixedU128;
-pub type ExchangeRate = FixedU128;
 pub type CashDropRate = FixedU128;
 pub type CashDropClaim = bool;
-pub type Ratio = FixedU128;
+pub type ExchangeRate = FixedU128;
+pub type Price = FixedU128;
 pub type Rate = FixedU128;
+pub type Ratio = FixedU128;
 
 pub trait StandardValidator<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
@@ -68,6 +68,8 @@ impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardValidator
 
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
+
+	fn get_liquidity_token_address(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<H160>;
 
 	fn get_swap_target_amount(
 		path: &[CurrencyId],
@@ -96,6 +98,26 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		max_supply_amount: Balance,
 		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError>;
+
+	fn add_liquidity(
+		who: &AccountId,
+		currency_id_a: CurrencyId,
+		currency_id_b: CurrencyId,
+		max_amount_a: Balance,
+		max_amount_b: Balance,
+		min_share_increment: Balance,
+		stake_increment_share: bool,
+	) -> DispatchResult;
+
+	fn remove_liquidity(
+		who: &AccountId,
+		currency_id_a: CurrencyId,
+		currency_id_b: CurrencyId,
+		remove_share: Balance,
+		min_withdrawn_a: Balance,
+		min_withdrawn_b: Balance,
+		by_unstake: bool,
+	) -> DispatchResult;
 }
 
 impl<AccountId, CurrencyId, Balance> DEXManager<AccountId, CurrencyId, Balance> for ()
@@ -104,6 +126,10 @@ where
 {
 	fn get_liquidity_pool(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> (Balance, Balance) {
 		Default::default()
+	}
+
+	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
+		Some(Default::default())
 	}
 
 	fn get_swap_target_amount(
@@ -140,6 +166,30 @@ where
 		_price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Ok(Default::default())
+	}
+
+	fn add_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_max_amount_a: Balance,
+		_max_amount_b: Balance,
+		_min_share_increment: Balance,
+		_stake_increment_share: bool,
+	) -> DispatchResult {
+		Ok(())
+	}
+
+	fn remove_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_remove_share: Balance,
+		_min_withdrawn_a: Balance,
+		_min_withdrawn_b: Balance,
+		_by_unstake: bool,
+	) -> DispatchResult {
+		Ok(())
 	}
 }
 
@@ -415,25 +465,6 @@ pub trait TransactionPayment<AccountId, Balance, NegativeImbalance> {
 		class: DispatchClass,
 	) -> Result<(), TransactionValidityError>;
 }
-
-// TODO: Use this logic for SettPayCashDrop
-// pub trait TransactionPayment<AccountId, Balance, NegativeImbalance> {
-// 	fn reserve_fee(who: &AccountId, weight: Weight) -> Result<Balance, DispatchError>;
-// 	fn unreserve_fee(who: &AccountId, fee: Balance);
-// 	fn unreserve_and_charge_fee(
-// 		who: &AccountId,
-// 		weight: Weight,
-// 	) -> Result<(Balance, NegativeImbalance), TransactionValidityError>;
-// 	fn refund_fee(who: &AccountId, weight: Weight, payed: NegativeImbalance) -> Result<(), TransactionValidityError>;
-// 	fn charge_fee(
-// 		who: &AccountId,
-// 		len: u32,
-// 		weight: Weight,
-// 		tip: Balance,
-// 		pays_fee: Pays,
-// 		class: DispatchClass,
-// 	) -> Result<(), TransactionValidityError>;
-// }
 
 #[cfg(feature = "std")]
 use frame_support::traits::Imbalance;

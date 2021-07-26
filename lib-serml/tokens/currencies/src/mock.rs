@@ -103,6 +103,11 @@ impl tokens::Config for Runtime {
 }
 
 parameter_types! {
+	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
+		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
+	];
 	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM, SETT, USDJ];
 	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
 	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
@@ -111,15 +116,28 @@ parameter_types! {
 	pub const SettPayPalletId: PalletId = PalletId(*b"set/tpay");
 }
 
+parameter_type_with_key! {
+	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, {
+		match currency_id {
+			&DNAR => (5, 100), // 5% cashdrop.
+			&DRAM => (5, 100), // 5% cashdrop.
+			&SETT => (5, 100), // 5% cashdrop.
+			&USDJ => (5, 100), // 5% cashdrop.
+			_ => 0,
+		}
+	};
+}
+
 impl serp_settpay::Config for Runtime {
 	type Event = Event;
-	type Currency = Currencies;
+	type Currency = Tokens;
 	type SetterCurrencyId = SetterCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
 	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type DefaultCashDropRate = DefaultCashDropRate;
+	type GetCashDropRates = GetCashDropRates;
 	type DefaultMinimumClaimableTransfer = DefaultMinimumClaimableTransfer;
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;

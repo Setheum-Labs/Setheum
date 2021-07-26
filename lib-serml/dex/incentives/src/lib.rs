@@ -101,8 +101,9 @@ pub mod module {
 		/// The origin which may update incentives related params
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
-		/// The origin which may update incentives Accumulate Period.
-		type AccumulatePeriodUpdateOrigin: EnsureOrigin<Self::Origin>;
+		/// The period to accumulate rewards
+		#[pallet::constant]
+		type AccumulatePeriod: Get<Self::BlockNumber>;
 
 		/// SERP treasury to issue rewards in stablecoin (Setter (SETT)).
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
@@ -145,13 +146,6 @@ pub mod module {
 	#[pallet::storage]
 	#[pallet::getter(fn dex_incentive_rewards)]
 	pub type DexIncentiveRewards<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
-
-	/// Mapping to AccumulatePeriod for reward accumulation
-	/// in blocknumber to accumulate rewards periodically.
-	/// The period to accumulate rewards.
-	#[pallet::storage]
-	#[pallet::getter(fn accumulate_period)]
-	pub type AccumulatePeriod<T: Config> = StorageMap<_, Twox64Concat, BlockNumber, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -207,19 +201,6 @@ pub mod module {
 			for (currency_id, amount) in updates {
 				ensure!(currency_id.is_dex_share_currency_id(), Error::<T>::InvalidCurrencyId);
 				DexIncentiveRewards::<T>::insert(currency_id, amount);
-			}
-			Ok(().into())
-		}
-
-		#[pallet::weight(<T as Config>::WeightInfo::update_accumulate_period(updates.len() as u32))]
-		#[transactional]
-		pub fn update_accumulate_period(
-			origin: OriginFor<T>,
-			blocknumber: BlockNumber,
-		) -> DispatchResultWithPostInfo {
-			T::AccumulatePeriodUpdateOrigin::ensure_origin(origin)?;
-			for (blocknumber) in updates {
-				AccumulatePeriod::<T>::insert(blocknumber);
 			}
 			Ok(().into())
 		}
@@ -306,8 +287,7 @@ impl<T: Config> RewardHandler<T::AccountId> for Pallet<T> {
 		let mut accumulated_rewards: Vec<(CurrencyId, Balance)> = vec![];
 
 		// accumulate reward periodically
-		let accumulation_period = Self::accumulate_period();
-		if now % accumulation_period == Zero::zero() {
+		if now % T::AccumulatePeriod::get() == Zero::zero() {
 			let mut accumulated_incentive: Balance = Zero::zero();
 			let mut accumulated_premium: Balance = Zero::zero();
 			let incentive_currency_id = T::SetterCurrencyId::get();

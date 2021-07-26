@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, SetheumOracle, AccountId, Amount, SettmintEngine, ReserveCurrencyIds, CurrencyId, SettmintGateway, Indices, Price, Rate,
+	dollar, SetheumOracle, AccountId, Amount, SettmintEngine, StandardCurrencyIds, CurrencyId, SettmintGateway, Indices, Price, Rate,
 	Ratio, Runtime, USDJ, SETT,
 };
 
@@ -58,10 +58,10 @@ runtime_benchmarks! {
 	}: _(RawOrigin::Signed(caller), SETT, to_lookup)
 
 	unauthorize_all {
-		let c in 0 .. ReserveCurrencyIds::get().len().saturating_sub(1) as u32;
+		let c in 0 .. StandardCurrencyIds::get().len().saturating_sub(1) as u32;
 
 		let caller: AccountId = account("caller", 0, SEED);
-		let currency_ids = ReserveCurrencyIds::get();
+		let currency_ids = StandardCurrencyIds::get();
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = Indices::unlookup(to);
 
@@ -78,7 +78,7 @@ runtime_benchmarks! {
 	// adjust both reserve and standard
 	adjust_position {
 		let caller: AccountId = account("caller", 0, SEED);
-		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
+		let currency_id: CurrencyId = StandardCurrencyIds::get()[0];
 		let reserve_price = Price::one();		// 1 USD
 		let standard_value = 100 * dollar(USDJ);
 		let standard_exchange_rate = SettmintEngine::get_standard_exchange_rate(currency_id);
@@ -95,7 +95,7 @@ runtime_benchmarks! {
 	}: _(RawOrigin::Signed(caller), currency_id, reserve_amount.try_into().unwrap(), standard_amount)
 
 	transfer_position_from {
-		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
+		let currency_id: CurrencyId = StandardCurrencyIds::get()[0];
 		let sender: AccountId = account("sender", 0, SEED);
 		let sender_lookup = Indices::unlookup(sender.clone());
 		let receiver: AccountId = account("receiver", 0, SEED);

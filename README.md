@@ -171,10 +171,10 @@ SKIP_WASM_BUILD= cargo test --features with-newrome-runtime --all
 
 ### Test Setheum-EVM (SEVM Testnet)
 ```bash
-SKIP_WASM_BUILD= cargo test --all --features with-sevm test_setheum_evm
-SKIP_WASM_BUILD= cargo test --all --features with-sevm should_not_kill_contract_on_transfer_all
-SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_work
-SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_handle_invalid_input
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility test_setheum_evm
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility should_not_kill_contract_on_transfer_all
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_work
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_handle_invalid_input
 ```
 
 ### Test All Runtimes (Testnet + Mainnet)
@@ -190,10 +190,10 @@ cargo test --features runtime-benchmarks --features with-all-runtime --features 
 ### Test All - Runtimes, SEVM, Benchmarking (Testnet + Mainnet)
 ```bash
 SKIP_WASM_BUILD= cargo test --all --features with-all-runtime
-SKIP_WASM_BUILD= cargo test --all --features with-sevm test_setheum_evm
-SKIP_WASM_BUILD= cargo test --all --features with-sevm should_not_kill_contract_on_transfer_all
-SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_work
-SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_handle_invalid_input
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility test_setheum_evm
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility should_not_kill_contract_on_transfer_all
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_work
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_handle_invalid_input
 cargo test --features runtime-benchmarks --features with-all-runtime --features --all benchmarking
 ```
 
@@ -224,7 +224,7 @@ cargo run --features with-newrome-runtime -- --dev -lruntime=debug --instant-sea
 You can start a development chain with:
 
 ```bash
-cargo run --features with-newrome-runtime --features with-sevm -- --dev -lruntime=debug -levm=debug --instant-sealing
+cargo run --features with-newrome-runtime --features with-ethereum-compatibility -- --dev -lruntime=debug -levm=debug --instant-sealing
 ```
 
 ### Purge - Development (Dev Chain)
@@ -250,7 +250,7 @@ cargo run --features with-newrome-runtime -- --dev -lruntime=debug --instant-sea
 ### Build NewRome WASM
 
 ```bash
-./scripts/build-only-wasm.sh -p newrome-runtime --features=with-sevm
+./scripts/build-only-wasm.sh -p newrome-runtime --features=with-ethereum-compatibility
 ```
 
 ## Mainnet (Setheum - `Not Production Ready!`)

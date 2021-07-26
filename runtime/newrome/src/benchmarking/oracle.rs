@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{SetheumDataProvider, SetheumOracle, ReserveCurrencyIds, FixedPointNumber, Origin, Price, Runtime, System};
+use crate::{SetheumDataProvider, SetheumOracle, StandardCurrencyIds, FixedPointNumber, Origin, Price, Runtime, System};
 
 use frame_support::traits::OnFinalize;
 use orml_benchmarking::runtime_benchmarks_instance;
@@ -29,8 +29,8 @@ runtime_benchmarks_instance! {
 
 	// feed values
 	feed_values {
-		let c in 0 .. ReserveCurrencyIds::get().len().saturating_sub(1) as u32;
-		let currency_ids = ReserveCurrencyIds::get();
+		let c in 0 .. StandardCurrencyIds::get().len().saturating_sub(1) as u32;
+		let currency_ids = StandardCurrencyIds::get();
 		let mut values = vec![];
 
 		for i in 0 .. c {
@@ -39,7 +39,7 @@ runtime_benchmarks_instance! {
 	}: _(Origin::root(), values)
 
 	on_finalize {
-		let currency_ids = ReserveCurrencyIds::get();
+		let currency_ids = StandardCurrencyIds::get();
 		let mut values = vec![];
 
 		for currency_id in currency_ids {

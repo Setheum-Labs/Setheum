@@ -51,44 +51,17 @@ pub const CHARITY_FUND: AccountId = 4;
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
-pub const AEDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AEDJ);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
-pub const BRLJ: CurrencyId = CurrencyId::Token(TokenSymbol::BRLJ);
 pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
 pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
-pub const CLPJ: CurrencyId = CurrencyId::Token(TokenSymbol::CLPJ);
-pub const CNYJ: CurrencyId = CurrencyId::Token(TokenSymbol::CNYJ);
-pub const COPJ: CurrencyId = CurrencyId::Token(TokenSymbol::COPJ);
 pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
 pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
-pub const HKDJ: CurrencyId = CurrencyId::Token(TokenSymbol::HKDJ);
-pub const HUFJ: CurrencyId = CurrencyId::Token(TokenSymbol::HUFJ);
-pub const IDRJ: CurrencyId = CurrencyId::Token(TokenSymbol::IDRJ);
 pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
-pub const KESJ: CurrencyId = CurrencyId::Token(TokenSymbol::KESJ);
-pub const KRWJ: CurrencyId = CurrencyId::Token(TokenSymbol::KRWJ);
-pub const KZTJ: CurrencyId = CurrencyId::Token(TokenSymbol::KZTJ);
-pub const MXNJ: CurrencyId = CurrencyId::Token(TokenSymbol::MXNJ);
-pub const MYRJ: CurrencyId = CurrencyId::Token(TokenSymbol::MYRJ);
-pub const NGNJ: CurrencyId = CurrencyId::Token(TokenSymbol::NGNJ);
-pub const NOKJ: CurrencyId = CurrencyId::Token(TokenSymbol::NOKJ);
-pub const NZDJ: CurrencyId = CurrencyId::Token(TokenSymbol::NZDJ);
-pub const PENJ: CurrencyId = CurrencyId::Token(TokenSymbol::PENJ);
-pub const PHPJ: CurrencyId = CurrencyId::Token(TokenSymbol::PHPJ);
-pub const PKRJ: CurrencyId = CurrencyId::Token(TokenSymbol::PKRJ);
-pub const PLNJ: CurrencyId = CurrencyId::Token(TokenSymbol::PLNJ);
-pub const QARJ: CurrencyId = CurrencyId::Token(TokenSymbol::QARJ);
-pub const RONJ: CurrencyId = CurrencyId::Token(TokenSymbol::RONJ);
-pub const RUBJ: CurrencyId = CurrencyId::Token(TokenSymbol::RUBJ);
 pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
 pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
 pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
-pub const THBJ: CurrencyId = CurrencyId::Token(TokenSymbol::THBJ);
-pub const TRYJ: CurrencyId = CurrencyId::Token(TokenSymbol::TRYJ);
-pub const TWDJ: CurrencyId = CurrencyId::Token(TokenSymbol::TWDJ);
-pub const TZSJ: CurrencyId = CurrencyId::Token(TokenSymbol::TZSJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const ZARJ: CurrencyId = CurrencyId::Token(TokenSymbol::ZARJ);
+
 
 // LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
 pub const LP_CHFJ_USDJ: CurrencyId =
@@ -97,44 +70,17 @@ pub const LP_USDJ_DNAR: CurrencyId =
 CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DNAR));
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
-pub const AED: CurrencyId = CurrencyId::Token(TokenSymbol::AED);
-pub const AUD: CurrencyId = CurrencyId::Token(TokenSymbol::AUD);
 pub const BRL: CurrencyId = CurrencyId::Token(TokenSymbol::BRL);
 pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
 pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
-pub const CLP: CurrencyId = CurrencyId::Token(TokenSymbol::CLP);
-pub const CNY: CurrencyId = CurrencyId::Token(TokenSymbol::CNY);
-pub const COP: CurrencyId = CurrencyId::Token(TokenSymbol::COP);
 pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
 pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
-pub const HKD: CurrencyId = CurrencyId::Token(TokenSymbol::HKD);
-pub const HUF: CurrencyId = CurrencyId::Token(TokenSymbol::HUF);
-pub const IDR: CurrencyId = CurrencyId::Token(TokenSymbol::IDR);
 pub const JPY: CurrencyId = CurrencyId::Token(TokenSymbol::JPY);
-pub const KES: CurrencyId = CurrencyId::Token(TokenSymbol::KES);
-pub const KRW: CurrencyId = CurrencyId::Token(TokenSymbol::KRW);
-pub const KZT: CurrencyId = CurrencyId::Token(TokenSymbol::KZT);
-pub const MXN: CurrencyId = CurrencyId::Token(TokenSymbol::MXN);
-pub const MYR: CurrencyId = CurrencyId::Token(TokenSymbol::MYR);
-pub const NGN: CurrencyId = CurrencyId::Token(TokenSymbol::NGN);
-pub const NOK: CurrencyId = CurrencyId::Token(TokenSymbol::NOK);
-pub const NZD: CurrencyId = CurrencyId::Token(TokenSymbol::NZD);
-pub const PEN: CurrencyId = CurrencyId::Token(TokenSymbol::PEN);
-pub const PHP: CurrencyId = CurrencyId::Token(TokenSymbol::PHP);
-pub const PKR: CurrencyId = CurrencyId::Token(TokenSymbol::PKR);
-pub const PLN: CurrencyId = CurrencyId::Token(TokenSymbol::PLN);
 pub const QAR: CurrencyId = CurrencyId::Token(TokenSymbol::QAR);
-pub const RON: CurrencyId = CurrencyId::Token(TokenSymbol::RON);
-pub const RUB: CurrencyId = CurrencyId::Token(TokenSymbol::RUB);
 pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
 pub const SEK: CurrencyId = CurrencyId::Token(TokenSymbol::SEK);
 pub const SGD: CurrencyId = CurrencyId::Token(TokenSymbol::SGD);
-pub const THB: CurrencyId = CurrencyId::Token(TokenSymbol::THB);
-pub const TRY: CurrencyId = CurrencyId::Token(TokenSymbol::TRY);
-pub const TWD: CurrencyId = CurrencyId::Token(TokenSymbol::TWD);
-pub const TZS: CurrencyId = CurrencyId::Token(TokenSymbol::TZS);
 pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
-pub const ZAR: CurrencyId = CurrencyId::Token(TokenSymbol::ZAR);
 pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
 pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
 pub const BHD: CurrencyId = CurrencyId::Token(TokenSymbol::BHD);
@@ -273,44 +219,16 @@ parameter_type_with_key! {
 parameter_type_with_key! {
 	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
 		match currency_id {
-			&AEDJ => &AED,
 			&AUDJ => &AUD,
-			&BRLJ => &BRL,
 			&CADJ => &CAD,
 			&CHFJ => &CHF,
-			&CLPJ => &CLP,
-			&CNYJ => &CNY,
-			&COPJ => &COP,
 			&EURJ => &EUR,
 			&GBPJ => &GBP,
-			&HKDJ => &HKD,
-			&HUFJ => &HUF,
-			&IDRJ => &IDR,
 			&JPYJ => &JPY,
-			&KESJ => &KES,
-			&KRWJ => &KRW,
-			&KZTJ => &KZT,
-			&MXNJ => &MXN,
-			&MYRJ => &MYR,
-			&NGNJ => &NGN,
-			&NOKJ => &NOK,
-			&NZDJ => &NZD,
-			&PENJ => &PEN,
-			&PHPJ => &PHP,
-			&PKRJ => &PKR,
-			&PLNJ => &PLN,
-			&QARJ => &QAR,
-			&RONJ => &RON,
-			&RUBJ => &RUB,
 			&SARJ => &SAR,
 			&SEKJ => &SEK,
 			&SGDJ => &SGD,
-			&THBJ => &THB,
-			&TRYJ => &TRY,
-			&TWDJ => &TWD,
-			&TZSJ => &TZS,
 			&USDJ => &USD,
-			&ZARJ => &ZAR,
 			_ => None,
 		}
 	};
@@ -348,18 +266,14 @@ parameter_types! {
 	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETT).
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETT).
 	
+	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, AEDJ, AUDJ, BRLJ, CADJ, CHFJ, CLPJ, CNYJ, COPJ, EURJ,
-		GBPJ, HKDJ, HUFJ, IDRJ, JPYJ, KESJ, KRWJ, KZTJ, MXNJ, MYRJ,
-		NGNJ, NOKJ, NZDJ, PENJ, PHPJ, PKRJ, PLNJ, QARJ, RONJ, RUBJ,
-		SARJ, SEKJ, SGDJ, THBJ, TRYJ, TWDJ, TZSJ, USDJ, ZARJ,
+		SETT, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
+		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
-		AED, AUD, BRL, CAD, CHF, CLP, CNY, COP, EUR, GBP,
-		HKD, HUF, IDR, JPY, KES, KRW, KZT, MXN, MYR, NGN,
-		NOK, NZD, PEN, PHP, PKR, PLN, QAR, RON, RUB, SAR,
-		SEK, SGD, THB, TRY, TWD, TZS, USD, ZAR, KWD, JOD,
-		BHD, KYD, OMR, GIP
+		AUD, CAD, CHF, EUR, GBP, JPY, QAR, SAR,
+		SEK, SGD, USD, JOD, BHD, KYD, OMR, GIP
 	];
 }
 
@@ -601,6 +515,27 @@ parameter_types! {
 	pub const SettPayPalletId: PalletId = PalletId(*b"set/tpay");
 }
 
+parameter_type_with_key! {
+	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, {
+		match currency_id {
+			&DNAR => (5, 100), // 5% cashdrop.
+			&DRAM => (5, 100), // 5% cashdrop.
+			&SETT => (5, 100), // 5% cashdrop.
+			&AUDJ => (5, 100), // 5% cashdrop.
+			&CADJ => (5, 100), // 5% cashdrop.
+			&CHFJ => (5, 100), // 5% cashdrop.
+			&EURJ => (5, 100), // 5% cashdrop.
+			&GBPJ => (5, 100), // 5% cashdrop.
+			&JPYJ => (5, 100), // 5% cashdrop.
+			&SARJ => (5, 100), // 5% cashdrop.
+			&SEKJ => (5, 100), // 5% cashdrop.
+			&SGDJ => (5, 100), // 5% cashdrop.
+			&USDJ => (5, 100), // 5% cashdrop.
+			_ => 0,
+		}
+	};
+}
+
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -610,6 +545,7 @@ impl Config for Runtime {
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
 	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type DefaultCashDropRate = DefaultCashDropRate;
+	type GetCashDropRates = GetCashDropRates;
 	type DefaultMinimumClaimableTransfer = DefaultMinimumClaimableTransfer;
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;

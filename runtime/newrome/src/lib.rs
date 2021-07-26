@@ -79,7 +79,7 @@ use setheum_currencies::{BasicCurrencyAdapter, Currency};
 use setheum_evm::{CallInfo, CreateInfo};
 use setheum_evm_accounts::EvmAddressMapping;
 use setheum_evm_manager::EvmCurrencyIdMapping;
-use setheum_support::CurrencyIdMapping;
+use setheum_support::{, CashDropRate, CurrencyIdMapping, Rate, Ratio};
 use setheum_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use orml_tokens::CurrencyAdapter;
 use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
@@ -1490,10 +1490,31 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM, SETT, USDJ];
 	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ];
+	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
 	pub const DefaultCashDropRate: CashDropRate = CashDropRate::::saturating_from_rational(2 : 100); // 2% cashdrop
 	pub const DefaultMinimumClaimableTransfer: Balance = 10;
 	pub const SettPayPalletId: PalletId = PalletId(*b"set/tpay");
+}
+
+parameter_type_with_key! {
+	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, {
+		match currency_id {
+			&DNAR => (5, 100), // 5% cashdrop.
+			&DRAM => (5, 100), // 5% cashdrop.
+			&SETT => (5, 100), // 5% cashdrop.
+			&AUDJ => (5, 100), // 5% cashdrop.
+			&CADJ => (5, 100), // 5% cashdrop.
+			&CHFJ => (5, 100), // 5% cashdrop.
+			&EURJ => (5, 100), // 5% cashdrop.
+			&GBPJ => (5, 100), // 5% cashdrop.
+			&JPYJ => (5, 100), // 5% cashdrop.
+			&SARJ => (5, 100), // 5% cashdrop.
+			&SEKJ => (5, 100), // 5% cashdrop.
+			&SGDJ => (5, 100), // 5% cashdrop.
+			&USDJ => (5, 100), // 5% cashdrop.
+			_ => 0,
+		}
+	};
 }
 
 impl serp_settpay::Config for Runtime {
@@ -1505,6 +1526,7 @@ impl serp_settpay::Config for Runtime {
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
 	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type DefaultCashDropRate = DefaultCashDropRate;
+	type GetCashDropRates = GetCashDropRates;
 	type DefaultMinimumClaimableTransfer = DefaultMinimumClaimableTransfer;
 	type SerpTreasury = SerpTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
@@ -1576,6 +1598,7 @@ parameter_types! {
 	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
 	pub DexIncentivePool: AccountId = AccountId::from([0u8; 32]);
 	pub DexPremiumPool: AccountId = AccountId::from([0u8; 32]);
+	pub const AccumulatePeriod: BlockNumber = MINUTES; // Every minute - per minute accumulation
 }
 
 parameter_type_with_key! {
@@ -1609,8 +1632,8 @@ impl setheum_incentives::Config for Runtime {
 	type DexerCurrencyId = DexerCurrencyId;
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
+	type AccumulatePeriod = AccumulatePeriod;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type AccumulatePeriodUpdateOrigin = EnsureRootOrTwoThirdsExchangeCouncil; //TODO: When Sudo is removed, change to `EnsureHalfFinancialCouncilOrTwoThirdsExchangeCouncil`.
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type Dex = Dex;
@@ -1695,7 +1718,7 @@ parameter_types! {
 	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
 }
 
-#[cfg(feature = "with-sevm")]
+#[cfg(feature = "with-ethereum-compatibility")]
 parameter_types! {
 	pub const NativeTokenExistentialDeposit: Balance = 1;
 	pub const NewContractExtraBytes: u32 = 0;
@@ -1705,7 +1728,7 @@ parameter_types! {
 	pub const DeploymentFee: Balance = 0;
 }
 
-#[cfg(not(feature = "with-sevm"))]
+#[cfg(not(feature = "with-ethereum-compatibility"))]
 parameter_types! {
 	pub NativeTokenExistentialDeposit: Balance = microcent(DNAR);
 	pub const NewContractExtraBytes: u32 = 10_000;
@@ -1742,7 +1765,7 @@ pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
 pub type DexPrecompile =
 	runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, Dex>;
 
-	#[cfg(feature = "with-sevm")]
+	#[cfg(feature = "with-ethereum-compatibility")]
 static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
 impl setheum_evm::Config for Runtime {
@@ -1773,7 +1796,7 @@ impl setheum_evm::Config for Runtime {
 	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
 	type WeightInfo = weights::setheum_evm::WeightInfo<Runtime>;
 
-	#[cfg(feature = "with-sevm")]
+	#[cfg(feature = "with-ethereum-compatibility")]
 	fn config() -> &'static evm::Config {
 		&ISTANBUL_CONFIG
 	}

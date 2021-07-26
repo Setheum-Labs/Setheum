@@ -16,10 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, SerpTreasury, Currencies, CurrencyId, Runtime, DNAR, USDJ, SETT};
+use crate::{dollar, CashDrop, Currencies, CurrencyId, Runtime, DNAR, USDJ, SETT};
 
 use frame_system::RawOrigin;
-use setheum_support::SerpTreasury;
+use setheum_support::CashDrop;
 use orml_benchmarking::runtime_benchmarks;
 use orml_traits::MultiCurrency;
 use sp_std::prelude::*;
@@ -29,18 +29,18 @@ runtime_benchmarks! {
 
 	_ {}
 
-	auction_serplus {
-		Currencies::deposit(SETT, &SerpTreasury::account_id(), 10_000 * dollar(SETT))?;
-	}: _(RawOrigin::Root, SETT, 1_000 * dollar(SETT), 1_000 * dollar(DNAR), true)
+	update_minimum_claimable_transfer {
+		let c in 0 .. RewardableCurrencyIds::get().len().saturating_sub(1) as u32;
+		let currency_ids = RewardableCurrencyIds::get();
+		let caller: AccountId = account("caller", 0, SEED);
+		let mut values = vec![];
+		let base_currency_id = GetStableCurrencyId::get();
 
-	auction_diamond {
-		let currency_id: CurrencyId = USDJ;
-		Currencies::deposit(DNAR, &SerpTreasury::account_id(), 10_000 * dollar(DNAR))?;
-	}: _(RawOrigin::Root, DNAR, 1_000 * dollar(DNAR), 1_000 * dollar(USDJ), true)
-
-	auction_setter {
-		Currencies::deposit(SETT, &SerpTreasury::account_id(), 10_000 * dollar(SETT))?;
-	}: _(RawOrigin::Root, SETT, 1_000 * dollar(SETT), 1_000 * dollar(USDJ), true)
+		for i in 0 .. c {
+			let currency_id = currency_ids[i as usize];
+			values.push((currency_id, 100 * dollar(DNAR)));
+		}
+	}: _(RawOrigin::Root, values)
 }
 
 #[cfg(test)]
@@ -56,23 +56,9 @@ mod tests {
 	}
 
 	#[test]
-	fn test_auction_serplus() {
+	fn update_minimum_claimable_transfer() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_auction_serplus());
-		});
-	}
-
-	#[test]
-	fn test_auction_diamond() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_auction_diamond());
-		});
-	}
-
-	#[test]
-	fn test_auction_setter() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_auction_setter());
+			assert_ok!(test_benchmark_update_minimum_claimable_transfer());
 		});
 	}
 }
