@@ -8314,6 +8314,7 @@ dependencies = [
  "max-encoded-len 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "num_enum",
  "parity-scale-codec",
+ "primitives-proc-macro",
  "serde",
  "serde_json",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
