@@ -34,12 +34,15 @@ pub type AccountId = u128;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
-pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
+pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const USDJ_CHFJ_PAIR: TradingPair = TradingPair(USDJ, CHFJ);
-pub const USDJ_DNAR_PAIR: TradingPair = TradingPair(USDJ, DNAR);
-pub const DNAR_CHFJ_PAIR: TradingPair = TradingPair(DNAR, CHFJ);
+
+parameter_types! {
+	pub static USDJBTCPair: TradingPair = TradingPair::from_currency_ids(USDJ, BTC).unwrap();
+	pub static USDJDRAMPair: TradingPair = TradingPair::from_currency_ids(USDJ, DRAM).unwrap();
+	pub static DRAMBTCPair: TradingPair = TradingPair::from_currency_ids(DRAM, BTC).unwrap();
+}
 
 mod dex {
 	pub use super::super::*;
@@ -94,6 +97,10 @@ impl orml_tokens::Config for Runtime {
 
 pub struct MockDEXIncentives;
 impl DEXIncentives<AccountId, CurrencyId, Balance> for MockDEXIncentives {
+	fn dex_premium_rewards(lp_currency_id: CurrencyId) -> Option<Balance> {
+		Default::default()
+	}
+
 	fn do_deposit_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		Tokens::reserve(lp_currency_id, who, amount)
 	}
@@ -106,23 +113,23 @@ impl DEXIncentives<AccountId, CurrencyId, Balance> for MockDEXIncentives {
 
 ord_parameter_types! {
 	pub const ListingOrigin: AccountId = 3;
-	pub const UpdateOrigin: AccountId = 3;
 }
 
 parameter_types! {
+	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const DEXPalletId: PalletId = PalletId(*b"DNAR/dex");
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
+	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type DEXIncentives = MockDEXIncentives;
-	type UpdateOrigin = EnsureSignedBy<UpdateOrigin, AccountId>;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 
@@ -136,13 +143,13 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SetheumDEX: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		DexModule: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 	initial_listing_trading_pairs: Vec<(TradingPair, (Balance, Balance), (Balance, Balance), BlockNumber)>,
 	initial_enabled_trading_pairs: Vec<TradingPair>,
 	initial_added_liquidity_pools: Vec<(AccountId, Vec<(TradingPair, (Balance, Balance))>)>,
@@ -151,15 +158,13 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
+			balances: vec![
 				(ALICE, USDJ, 1_000_000_000_000_000_000u128),
 				(BOB, USDJ, 1_000_000_000_000_000_000u128),
-				(ALICE, EURJ, 1_000_000_000_000_000_000u128),
-				(BOB, EURJ, 1_000_000_000_000_000_000u128),
-				(ALICE, CHFJ, 1_000_000_000_000_000_000u128),
-				(BOB, CHFJ, 1_000_000_000_000_000_000u128),
-				(ALICE, DNAR, 1_000_000_000_000_000_000u128),
-				(BOB, DNAR, 1_000_000_000_000_000_000u128),
+				(ALICE, BTC, 1_000_000_000_000_000_000u128),
+				(BOB, BTC, 1_000_000_000_000_000_000u128),
+				(ALICE, DRAM, 1_000_000_000_000_000_000u128),
+				(BOB, DRAM, 1_000_000_000_000_000_000u128),
 			],
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: vec![],
@@ -169,32 +174,8 @@ impl Default for ExtBuilder {
 }
 
 impl ExtBuilder {
-	pub fn initialize_listing_trading_pairs(mut self) -> Self {
-		self.initial_listing_trading_pairs = vec![
-			(
-				USDJ_DNAR_PAIR,
-				(5_000_000_000_000u128, 1_000_000_000_000u128),
-				(5_000_000_000_000_000u128, 1_000_000_000_000_000u128),
-				10,
-			),
-			(
-				USDJ_CHFJ_PAIR,
-				(20_000_000_000_000u128, 1_000_000_000u128),
-				(20_000_000_000_000_000u128, 1_000_000_000_000u128),
-				10,
-			),
-			(
-				DNAR_CHFJ_PAIR,
-				(4_000_000_000_000u128, 1_000_000_000u128),
-				(4_000_000_000_000_000u128, 1_000_000_000_000u128),
-				20,
-			),
-		];
-		self
-	}
-
 	pub fn initialize_enabled_trading_pairs(mut self) -> Self {
-		self.initial_enabled_trading_pairs = vec![USDJ_DNAR_PAIR, USDJ_CHFJ_PAIR, DNAR_CHFJ_PAIR];
+		self.initial_enabled_trading_pairs = vec![USDJDRAMPair::get(), USDJBTCPair::get(), DRAMBTCPair::get()];
 		self
 	}
 
@@ -202,9 +183,9 @@ impl ExtBuilder {
 		self.initial_added_liquidity_pools = vec![(
 			who,
 			vec![
-				(USDJ_DNAR_PAIR, (1_000_000u128, 2_000_000u128)),
-				(USDJ_CHFJ_PAIR, (1_000_000u128, 2_000_000u128)),
-				(DNAR_CHFJ_PAIR, (1_000_000u128, 2_000_000u128)),
+				(USDJDRAMPair::get(), (1_000_000u128, 2_000_000u128)),
+				(USDJBTCPair::get(), (1_000_000u128, 2_000_000u128)),
+				(DRAMBTCPair::get(), (1_000_000u128, 2_000_000u128)),
 			],
 		)];
 		self
@@ -216,7 +197,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
