@@ -516,7 +516,7 @@ parameter_types! {
 }
 
 parameter_type_with_key! {
-	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, {
+	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, Balance) {
 		match currency_id {
 			&DNAR => (5, 100), // 5% cashdrop.
 			&DRAM => (5, 100), // 5% cashdrop.
@@ -533,7 +533,7 @@ parameter_type_with_key! {
 			&USDJ => (5, 100), // 5% cashdrop.
 			_ => 0,
 		}
-	};
+	}
 }
 
 impl Config for Runtime {
