@@ -20,8 +20,8 @@
 use super::*;
 use crate::precompile::{
 	mock::{
-		aca_evm_address, alice, alice_evm_addr, ausd_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
-		get_task_id, lp_aca_ausd_evm_address, new_test_ext, renbtc_evm_address, run_to_block, Balances, DexModule,
+		dnar_evm_address, alice, alice_evm_addr, usdj_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
+		get_task_id, lp_dnar_usdj_evm_address, new_test_ext, renbtc_evm_address, run_to_block, Balances, DexModule,
 		DexPrecompile, Event as TestEvent, MultiCurrencyPrecompile, Oracle, OraclePrecompile, Origin, Price,
 		ScheduleCallPrecompile, System, Test, ALICE, USDJ, SETT, INITIAL_BALANCE, RENBTC,
 	},
@@ -60,7 +60,7 @@ pub type WithSystemContractFilter = AllPrecompiles<
 >;
 
 #[test]
-fn precompile_filter_works_on_acala_precompiles() {
+fn precompile_filter_works_on_setheum_precompiles() {
 	let precompile = H160::from_low_u64_be(PRECOMPILE_ADDRESS_START);
 
 	let mut non_system = [0u8; 20];
@@ -136,20 +136,20 @@ fn multicurrency_precompile_should_work() {
 		input[1 * 32..4 + 1 * 32].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryName).to_be_bytes());
 
 		// Token
-		context.caller = aca_evm_address();
+		context.caller = dnar_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
-		expected_output[27..32].copy_from_slice(&b"Acala"[..]);
+		expected_output[27..32].copy_from_slice(&b"Setheum Dinar"[..]);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_aca_ausd_evm_address();
+		context.caller = lp_dnar_usdj_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
-		expected_output[9..32].copy_from_slice(&b"LP Acala - Acala Dollar"[..]);
+		expected_output[9..32].copy_from_slice(&b"LP Setheum - Setheum US Dollar"[..]);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
 
@@ -159,7 +159,7 @@ fn multicurrency_precompile_should_work() {
 		input[1 * 32..4 + 1 * 32].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QuerySymbol).to_be_bytes());
 
 		// Token
-		context.caller = aca_evm_address();
+		context.caller = dnar_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -168,7 +168,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_aca_ausd_evm_address();
+		context.caller = lp_dnar_usdj_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -183,7 +183,7 @@ fn multicurrency_precompile_should_work() {
 			.copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryDecimals).to_be_bytes());
 
 		// Token
-		context.caller = aca_evm_address();
+		context.caller = dnar_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -192,7 +192,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_aca_ausd_evm_address();
+		context.caller = lp_dnar_usdj_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -207,7 +207,7 @@ fn multicurrency_precompile_should_work() {
 			.copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryTotalIssuance).to_be_bytes());
 
 		// Token
-		context.caller = aca_evm_address();
+		context.caller = dnar_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -216,7 +216,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_aca_ausd_evm_address();
+		context.caller = lp_dnar_usdj_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let expected_output = [0u8; 32];
@@ -232,7 +232,7 @@ fn multicurrency_precompile_should_work() {
 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 
 		// Token
-		context.caller = aca_evm_address();
+		context.caller = dnar_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -241,7 +241,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_aca_ausd_evm_address();
+		context.caller = lp_dnar_usdj_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let expected_output = [0u8; 32];
@@ -262,7 +262,7 @@ fn multicurrency_precompile_should_work() {
 		let to_balance = Balances::free_balance(bob());
 
 		// Token
-		context.caller = aca_evm_address();
+		context.caller = dnar_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let expected_output: Vec<u8> = vec![];
@@ -272,7 +272,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(Balances::free_balance(bob()), to_balance + 1);
 
 		// DexShare
-		context.caller = lp_aca_ausd_evm_address();
+		context.caller = lp_dnar_usdj_evm_address();
 		assert_noop!(
 			MultiCurrencyPrecompile::execute(&input, None, &context),
 			ExitError::Other("BalanceTooLow".into())
@@ -385,7 +385,7 @@ fn schedule_call_precompile_should_work() {
 		// from
 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// target
-		U256::from(aca_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from(dnar_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 		// value
 		U256::from(0).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// gas_limit
@@ -517,7 +517,7 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 		// from
 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// target
-		U256::from(aca_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from(dnar_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 		// value
 		U256::from(0).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// gas_limit
@@ -620,7 +620,7 @@ fn dex_precompile_get_liquidity_should_work() {
 		// RENBTC
 		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// USDJ
-		U256::from_big_endian(&ausd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 
 		let mut expected_output = [0u8; 64];
 		U256::from(1_000).to_big_endian(&mut expected_output[..32]);
@@ -665,7 +665,7 @@ fn dex_precompile_get_liquidity_token_address_should_work() {
 		// RENBTC
 		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// USDJ
-		U256::from_big_endian(&ausd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		let address = H160::from_str("0x0000000000000000000000010000000100000004").unwrap();
@@ -724,7 +724,7 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 		// RENBTC
 		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 		// USDJ
-		U256::from_big_endian(&ausd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(989).to_big_endian(&mut expected_output[..32]);
@@ -773,7 +773,7 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 		// RENBTC
 		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 		// USDJ
-		U256::from_big_endian(&ausd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(1).to_big_endian(&mut expected_output[..32]);
@@ -826,7 +826,7 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 		// RENBTC
 		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 		// USDJ
-		U256::from_big_endian(&ausd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
+		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(989).to_big_endian(&mut expected_output[..32]);
@@ -879,7 +879,7 @@ fn dex_precompile_swap_with_exact_target_should_work() {
 		// RENBTC
 		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 		// USDJ
-		U256::from_big_endian(&ausd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
+		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(1).to_big_endian(&mut expected_output[..32]);
