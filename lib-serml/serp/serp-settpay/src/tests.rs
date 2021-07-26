@@ -28,8 +28,7 @@ use sp_runtime::traits::BadOrigin;
 #[test]
 fn cashdrop_rate_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		// set the cashdrop_rate of USDJ to 5%.
-		assert_ok!(SettPay::update_cashdrop_rate(Origin::signed(ALICE), USDJ, 5, 100));
+		// set the cashdrop_rate of USDJ to 5%
 		// get cashdrop_rate.
 		assert_eq!(SettPay::get_cashdrop_rate(USDJ), 5, 100);
 	});
@@ -48,7 +47,6 @@ fn minimum_claimable_transfer_works() {
 #[test]
 fn claim_setter_cashdrop_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettPay::update_cashdrop_rate(Origin::signed(ALICE), SETT, 5, 100));
 		assert_eq!(SettPay::get_cashdrop_rate(SETT), 5, 100);
 
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 100_000);
@@ -84,7 +82,6 @@ fn claim_settcurrency_cashdrop_works() {
 #[test]
 fn claim_native_cashdrop_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettPay::update_cashdrop_rate(Origin::signed(ALICE), DNAR, 5, 100));
 		assert_eq!(SettPay::get_cashdrop_rate(DNAR), 5, 100);
 
 		assert_eq!(Currencies::free_balance(DNAR, &ALICE), 100_000);
@@ -112,7 +109,6 @@ fn claim_native_cashdrop_works() {
 #[test]
 fn claim_dexer_cashdrop_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettPay::update_cashdrop_rate(Origin::signed(ALICE), DRAM, 5, 100));
 		assert_eq!(SettPay::get_cashdrop_rate(DRAM), 5, 100);
 
 		assert_eq!(Currencies::free_balance(DRAM, &ALICE), 100_000);

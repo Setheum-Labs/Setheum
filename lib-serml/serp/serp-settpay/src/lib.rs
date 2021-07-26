@@ -27,7 +27,7 @@
 
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::{pallet_prelude::*,Pallet};
-use orml_traits::{MultiCurrency, MultiCurrencyExtended};
+use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{AccountId, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
@@ -71,8 +71,22 @@ pub mod module {
 		type SetCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		#[pallet::constant]
-		/// The default cashdrop rate to be issued to claims.
+		/// The cashdrop rate to be issued to claims by `currency_id`.
+		/// 
+		/// The first item of the tuple is the numerator of the cashdrop rate, second
+		/// item is the denominator, cashdrop_rate = numerator / denominator,
+		/// use (u32, u32) over `Rate` type to minimize internal division
+		/// operation.
 		type DefaultCashDropRate: Get<CashDropRate>;
+
+		#[pallet::constant]
+		/// The default cashdrop rate to be issued to claims.
+		/// 
+		/// The first item of the tuple is the numerator of the cashdrop rate, second
+		/// item is the denominator, cashdrop_rate = numerator / denominator,
+		/// use (u32, u32) over `Rate` type to minimize internal division
+		/// operation.
+		type GetCashDropRates: Get<GetByKey>;
 
 		#[pallet::constant]
 		/// The default minimum transfer value to secure settpay from dusty claims.
@@ -110,15 +124,6 @@ pub mod module {
 		CashDrops(CurrencyId, AccountId, Balance),
 	}
 
-	/// Mapping to Cashdrop rate.
-	/// The first item of the tuple is the numerator of the cashdrop rate, second
-	/// item is the denominator, cashdrop_rate = numerator / denominator,
-	/// use (u32, u32) over `Rate` type to minimize internal division
-	/// operation.
-	#[pallet::storage]
-	#[pallet::getter(fn cashdrop_rate)]
-	pub type GetCashDropRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, (u32, u32), OptionQuery>;
-
 	/// Mapping to Minimum Claimable Transfer.
 	#[pallet::storage]
 	#[pallet::getter(fn minimum_claimable_transfer)]
@@ -132,24 +137,6 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(<T as Config>::WeightInfo::update_cashdrop_rate(
-			currency.len() as CurrencyId,
-			numerator.len() as u32,
-			denominator.len() as u32))]
-		#[transactional]
-		pub fn update_cashdrop_rate(
-			origin: OriginFor<T>,
-			currency: CurrencyId,
-			numerator: u32,
-			denominator: u32,
-		) -> DispatchResultWithPostInfo {
-			T::UpdateOrigin::ensure_origin(origin)?;
-			for (currency, numerator, denominator) in GetCashDropRate::<T>::iter() {
-				GetCashDropRate::<T>::insert(currency, numerator, denominator);
-			}
-			Ok(().into())
-		}
-
 		#[pallet::weight(<T as Config>::WeightInfo::update_minimum_claimable_transfer(
 			currency.len() as CurrencyId, amount.len() as Balance))]
 		#[transactional]
@@ -178,7 +165,7 @@ impl<T: Config> Pallet<T> {
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		Self::cashdrop_rate(currency_id).unwrap_or_else(T::DefaultCashDropRate::get)
+		T::GetCashDropRates::get(currency_id).unwrap_or_else(T::DefaultCashDropRate::get)
 	}
 
 	pub fn get_minimum_claimable_transfer(currency_id: CurrencyId) -> Balance {

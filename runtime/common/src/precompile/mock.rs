@@ -184,6 +184,7 @@ pub const BHD: CurrencyId = CurrencyId::Token(TokenSymbol::BHD);
 pub const KYD: CurrencyId = CurrencyId::Token(TokenSymbol::KYD);
 pub const OMR: CurrencyId = CurrencyId::Token(TokenSymbol::OMR);
 pub const GIP: CurrencyId = CurrencyId::Token(TokenSymbol::GIP);
+
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 }
