@@ -39,12 +39,12 @@ use sp_std::{
 pub mod mocks;
 
 pub type BlockNumber = u32;
-pub type Price = FixedU128;
-pub type ExchangeRate = FixedU128;
 pub type CashDropRate = FixedU128;
 pub type CashDropClaim = bool;
-pub type Ratio = FixedU128;
+pub type ExchangeRate = FixedU128;
+pub type Price = FixedU128;
 pub type Rate = FixedU128;
+pub type Ratio = FixedU128;
 
 pub trait StandardValidator<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
