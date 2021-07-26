@@ -29,14 +29,14 @@ runtime_benchmarks! {
 
 	_ {}
 
-	auction_serplus {// TODO: update
+	auction_serplus {
 		Currencies::deposit(SETT, &SerpTreasury::account_id(), 10_000 * dollar(SETT))?;
-	}: _(RawOrigin::Root, SETT, 1_000 * dollar(SETT), 1_000 * dollar(USDJ), true)
+	}: _(RawOrigin::Root, SETT, 1_000 * dollar(SETT), 1_000 * dollar(DNAR), true)
 
-	auction_diamond { // TODO: update
+	auction_diamond {
 		let currency_id: CurrencyId = USDJ;
-		Currencies::deposit(SETT, &SerpTreasury::account_id(), 10_000 * dollar(SETT))?;
-	}: _(RawOrigin::Root, SETT, 1_000 * dollar(SETT), 1_000 * dollar(USDJ), true)
+		Currencies::deposit(DNAR, &SerpTreasury::account_id(), 10_000 * dollar(DNAR))?;
+	}: _(RawOrigin::Root, DNAR, 1_000 * dollar(DNAR), 1_000 * dollar(USDJ), true)
 
 	auction_setter {
 		Currencies::deposit(SETT, &SerpTreasury::account_id(), 10_000 * dollar(SETT))?;
