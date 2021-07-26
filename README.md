@@ -75,7 +75,7 @@ This project contains some configuration files to help get started :hammer_and_w
 Follow the [Rust setup instructions](./doc/rust-setup.md) before using the included Makefile to
 build the Setheum node.
 
-## Build
+## Initialisation
 
 Install Rust:
 
@@ -92,50 +92,188 @@ git config --global submodule.recurse true
 Install required tools and install git hooks:
 
 ```bash
-make start
+./scripts/init.sh submodule build-full
+git submodule update --init --recursive
+
 ```
 
+## Build
 Build all native code:
 
+### Build NewRome (Testnet) - `SKIP_WASM_BUILD`
 ```bash
-make build
+SKIP_WASM_BUILD= cargo build --features with-newrome-runtime
 ```
 
-## Run
+### Build Full NewRome (Testnet)
+```bash
+cargo build --features with-newrome-runtime
+```
 
+### Build All Runtimes (Testnet + Mainnet)
+```bash
+cargo build --locked --features with-all-runtime
+```
+
+## Check
+Check all native code:
+
+### Check NewRome (Testnet)
+```bash
+SKIP_WASM_BUILD= cargo check --features with-newrome-runtime
+```
+
+### Check Setheum (Mainnet)
+```bash
+SKIP_WASM_BUILD= cargo check --features with-setheum-runtime
+```
+
+### Check All Tests (Testnet + Mainnet)
+```bash
+SKIP_WASM_BUILD= cargo check --features with-all-runtime --tests --all
+```
+
+### Check All Runtimes (Testnet + Mainnet)
+```bash
+SKIP_WASM_BUILD= cargo check --features with-all-runtime --tests --all
+```
+
+### Check All Benchmarks (Testnet + Mainnet)
+```bash
+SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p newrome-runtime
+SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p setheum-runtime
+```
+
+### Check All Runtimes & Benchmarks (Testnet + Mainnet)
+```bash
+SKIP_WASM_BUILD= cargo check --features with-all-runtime --tests --all
+SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p newrome-runtime
+SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p setheum-runtime
+```
+
+### Check Debug (Testnet)
+```bash
+RUSTFLAGS="-Z macro-backtrace" SKIP_WASM_BUILD= cargo +nightly check --features with-newrome-runtime
+```
+
+### Check `try-runtime` (Testnet + Mainnet)
+```bash
+SKIP_WASM_BUILD= cargo check --features try-runtime --features with-all-runtime
+```
+
+## Test
+Test all native code:
+
+### Test (Testnet)
+```bash
+SKIP_WASM_BUILD= cargo test --features with-newrome-runtime --all
+```
+
+### Test Setheum-EVM (SEVM Testnet)
+```bash
+SKIP_WASM_BUILD= cargo test --all --features with-sevm test_setheum_evm
+SKIP_WASM_BUILD= cargo test --all --features with-sevm should_not_kill_contract_on_transfer_all
+SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_work
+SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_handle_invalid_input
+```
+
+### Test All Runtimes (Testnet + Mainnet)
+```bash
+SKIP_WASM_BUILD= cargo test --all --features with-all-runtime
+```
+
+### Test All Benchmarking (Testnet + Mainnet)
+```bash
+cargo test --features runtime-benchmarks --features with-all-runtime --features --all benchmarking
+```
+
+### Test All - Runtimes, SEVM, Benchmarking (Testnet + Mainnet)
+```bash
+SKIP_WASM_BUILD= cargo test --all --features with-all-runtime
+SKIP_WASM_BUILD= cargo test --all --features with-sevm test_setheum_evm
+SKIP_WASM_BUILD= cargo test --all --features with-sevm should_not_kill_contract_on_transfer_all
+SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_work
+SKIP_WASM_BUILD= cargo test --all --features with-sevm schedule_call_precompile_should_handle_invalid_input
+cargo test --features runtime-benchmarks --features with-all-runtime --features --all benchmarking
+```
+
+## Update
+
+### Update Cargo
+```bash
+cargo update
+```
+
+### Update ORML
+```bash
+cd lib-openrml && git checkout master && git pull
+git add lib-openrml
+cargo-update check-all
+```
+
+## Development (NewRome Dev)
+
+### Run - NewRome (Dev Chain)
 You can start a development chain with:
 
 ```bash
-make run
+cargo run --features with-newrome-runtime -- --dev -lruntime=debug --instant-sealing
 ```
 
-## Development
-
-To type check:
+### Run - SEVM Development (Dev Chain - NewRome)
+You can start a development chain with:
 
 ```bash
-make check-all
+cargo run --features with-newrome-runtime --features with-sevm -- --dev -lruntime=debug -levm=debug --instant-sealing
 ```
 
-To purge old chain data:
+### Purge - Development (Dev Chain)
+```bash
+target/debug/setheum purge-chain --dev -y
+```
+
+### Restart - Development (Dev Chain - NewRome)
+```bash
+target/debug/setheum purge-chain --dev -y
+cargo run --features with-newrome-runtime -- --dev -lruntime=debug --instant-sealing
+```
+
+### Restart - Development (Dev Chain - NewRome)
+You can start a development chain with:
 
 ```bash
-make purge
+cargo run --features with-newrome-runtime -- --dev -lruntime=debug --instant-sealing
 ```
 
-To purge old chain data and run
+## TestNet (NewRome)
+
+### Build NewRome WASM
 
 ```bash
-make restart
+./scripts/build-only-wasm.sh -p newrome-runtime --features=with-sevm
 ```
 
-Update ORML
+## Mainnet (Setheum - `Not Production Ready!`)
+
+### Build Setheum WASM
 
 ```bash
-make update
+./scripts/build-only-wasm.sh -p setheum-runtime --features=on-chain-release-build
 ```
 
-__Note:__ All build command from Makefile are designed for local development purposes and hence have `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.
+### Build Setheum WASM (srtool)
+
+```bash
+PACKAGE=setheum-runtime BUILD_OPTS="--features on-chain-release-build" ./scripts/srtool-build.sh
+```
+
+### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
+
+```bash
+./scripts/generate-tokens-and-predeploy-contracts.sh
+```
+
+__Note:__ All build commands with `SKIP_WASM_BUILD` are designed for local development purposes and hence have the `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.
 
 ## 6. Bench Bot
 Bench bot can take care of syncing branch with `master` and generating WeightInfos for module or runtime.
