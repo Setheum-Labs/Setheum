@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{SetheumOracle, ReserveCurrencyIds, CurrencyId, Origin, Price, Prices, Runtime, SETT};
+use crate::{SetheumOracle, StandardCurrencyIds, CurrencyId, Origin, Price, Prices, Runtime, SETT};
 
 use frame_system::RawOrigin;
 use orml_benchmarking::runtime_benchmarks;
@@ -29,14 +29,14 @@ runtime_benchmarks! {
 	_ {}
 
 	lock_price {
-		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
+		let currency_id: CurrencyId = StandardCurrencyIds::get()[0];
 
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
 	}: _(RawOrigin::Root, SETT)
 
 	unlock_price {
-		let currency_id: CurrencyId = ReserveCurrencyIds::get()[0];
+		let currency_id: CurrencyId = StandardCurrencyIds::get()[0];
 
 		// feed price
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;

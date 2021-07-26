@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, AccountId, ReserveCurrencyIds, CurrencyId, GetStableCurrencyId, Incentives, Rate, Rewards, Runtime,
+	dollar, AccountId, StandardCurrencyIds, CurrencyId, GetStableCurrencyId, Incentives, Rate, Rewards, Runtime,
 	TokenSymbol, DNAR, USDJ, SETT,
 };
 
@@ -63,8 +63,8 @@ runtime_benchmarks! {
 
 	// TODO: Update - add all other dex rewards ...
 	update_dex_incentive_rewards {
-		let c in 0 .. ReserveCurrencyIds::get().len().saturating_sub(1) as u32;
-		let currency_ids = ReserveCurrencyIds::get();
+		let c in 0 .. StandardCurrencyIds::get().len().saturating_sub(1) as u32;
+		let currency_ids = StandardCurrencyIds::get();
 		let caller: AccountId = account("caller", 0, SEED);
 		let mut values = vec![];
 		let base_currency_id = GetStableCurrencyId::get();

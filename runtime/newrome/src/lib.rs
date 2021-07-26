@@ -1598,6 +1598,7 @@ parameter_types! {
 	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
 	pub DexIncentivePool: AccountId = AccountId::from([0u8; 32]);
 	pub DexPremiumPool: AccountId = AccountId::from([0u8; 32]);
+	pub const AccumulatePeriod: BlockNumber = MINUTES; // Every minute - per minute accumulation
 }
 
 parameter_type_with_key! {
@@ -1631,8 +1632,8 @@ impl setheum_incentives::Config for Runtime {
 	type DexerCurrencyId = DexerCurrencyId;
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
+	type AccumulatePeriod = AccumulatePeriod;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type AccumulatePeriodUpdateOrigin = EnsureRootOrTwoThirdsExchangeCouncil; //TODO: When Sudo is removed, change to `EnsureHalfFinancialCouncilOrTwoThirdsExchangeCouncil`.
 	type SerpTreasury = SerpTreasury;
 	type Currency = Currencies;
 	type Dex = Dex;

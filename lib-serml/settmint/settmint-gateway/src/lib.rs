@@ -191,7 +191,7 @@ pub mod module {
 		}
 
 		/// Cancel all authorization of caller
-		#[pallet::weight(<T as Config>::WeightInfo::unauthorize_all(<T as settmint_engine::Config>::ReserveCurrencyIds::get().len() as u32))]
+		#[pallet::weight(<T as Config>::WeightInfo::unauthorize_all(<T as settmint_engine::Config>::StandardCurrencyIds::get().len() as u32))]
 		#[transactional]
 		pub fn unauthorize_all(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
