@@ -366,7 +366,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				/// Setter Auction if it's not to serpdown Setter.
 				T::SerpAuctionManagerHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
 			}
-		} else let balanced_amount = total_supply.saturating_sub(&minimum_supply);
+		} else {
+			let balanced_amount = total_supply.saturating_sub(&minimum_supply);
 			ensure!(
 				total_supply.saturating_sub(&balanced_amount) >= &minimum_supply,
 				Error::<T>::MinSupplyReached,
