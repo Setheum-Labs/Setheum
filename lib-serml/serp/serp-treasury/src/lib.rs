@@ -35,7 +35,8 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber,
 };
-use support::{SerpTreasury, DEXManager, Ratio};
+use support::{DEXManager, Ratio, SerpTreasury};
+use prices::*;
 mod mock;
 mod tests;
 pub mod weights;
