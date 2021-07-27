@@ -341,7 +341,6 @@ pub trait ExchangeRateProvider {
 }
 
 pub trait DEXIncentives<AccountId, CurrencyId, Balance> {
-	fn dex_premium_rewards(lp_currency_id: CurrencyId) -> Option<Balance>;
 	fn do_deposit_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 	fn do_withdraw_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 }
