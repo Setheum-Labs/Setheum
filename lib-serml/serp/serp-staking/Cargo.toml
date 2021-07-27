@@ -9,7 +9,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 static_assertions = "1.1.0"
-serde = { version = "1.0.101", optional = true }
+serde = { version = "1.0.126", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
 
 sp-std = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
@@ -70,11 +70,11 @@ std = [
 	"sp-application-crypto/std",
 	"log/std",
 	"frame-election-provider-support/std",
+	"orml-tokens/std",
 	"orml-traits/std",
 	"orml-utilities/std",
 	"primitives/std",
 	"support/std",
-	"orml-tokens/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",

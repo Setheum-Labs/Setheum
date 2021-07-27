@@ -1,6 +1,6 @@
-// This file is part of Setheum.
+// This file is part of Substrate.
 
-// Copyright (C) 2021 Setheum Labs.
+// Copyright (C) 2021 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,7 @@
 // --template=./.maintain/frame-weight-template.hbs
 
 
+#![cfg_attr(rustfmt, rustfmt_skip)]
 #![allow(unused_parens)]
 #![allow(unused_imports)]
 
