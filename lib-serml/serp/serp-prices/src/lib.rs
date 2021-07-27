@@ -37,7 +37,7 @@ use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, GetByKey, MultiCurrency};
 use primitives::{
 	currency::{Amount, DexShare},
-	Balance, CurrencyId, GetDecimals
+	Balance, CurrencyId,
 };
 use sp_runtime::{
 	traits::{CheckedDiv, CheckedMul},
@@ -224,7 +224,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 
 	/// get the price of a stablecoin's fiat peg
-	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>{
+	fn get_peg_price(currency_id: CurrencyId) -> Option<Price> {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
@@ -240,7 +240,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		);
 		if currency_id == T::SetterCurrencyId::get() {
 			Self::get_setter_fixed_price()
-		} else if { currency_id == T::GetSettUSDCurrencyId::get() {
+		} else if currency_id == T::GetSettUSDCurrencyId::get() {
 			Self::get_settusd_fixed_price()
 		} else {
 			// if locked price exists, return it, otherwise return latest price from oracle.
@@ -258,7 +258,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			T::FiatCurrencyIds::get().contains(&fiat_currency_id),
 			Error::<T>::InvalidFiatCurrencyType,
 		);
-		if { fiat_currency_id == T::GetFiatUSDCurrencyId::get() {
+		if fiat_currency_id == T::GetFiatUSDCurrencyId::get() {
 			Self::get_fiat_usd_fixed_price()
 		}
 		// if locked price exists, return it, otherwise return latest price from oracle.
@@ -279,7 +279,6 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			Error::<T>::InvalidCurrencyType,
 		);
 		Self::get_peg_price(&currency_id)
-		}
 	}
 
 	/// get the market price (not fixed price, for SERP-TES) of a
@@ -401,7 +400,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		let maybe_feed_price = if T::FiatCurrencyIds::get().contains(&currency_id) {
 			// if it is a FiatCurrency, return fiat price
 			let fiat_currency_id = &currency_id;
-			Self::get_fiat_price(&fiat_currency_id))
+			Self::get_fiat_price(&fiat_currency_id);
 		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = match symbol_0 {
 				DexShare::Token(token) => CurrencyId::Token(token),
@@ -445,7 +444,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		let maybe_feed_price = if T::FiatCurrencyIds::get().contains(&currency_id) {
 			// if it is a FiatCurrency, return fiat price
 			let fiat_currency_id = &currency_id;
-			Self::get_fiat_price(&fiat_currency_id))
+			Self::get_fiat_price(&fiat_currency_id);
 		} else if T::StableCurrencyIds::get().contains(&currency_id) {
 			// if it is a SettCurrency, return fixed price
 			Some(Self::get_stablecoin_fixed_price(&currency_id))
