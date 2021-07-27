@@ -92,7 +92,8 @@ pub mod module {
 		type DefaultMinimumClaimableTransfer: Get<Balance>;
 
 		/// SERP Treasury for depositing cashdrop.
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId>;
+		
 
 		/// The origin which may update parameters and handle
 		/// serplus/standard/reserve. Root can always do this.

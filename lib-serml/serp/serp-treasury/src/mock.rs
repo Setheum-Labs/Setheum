@@ -241,8 +241,7 @@ parameter_types! {
 		ZARJ,
 	];
 	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
-	pub const DexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
-	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
@@ -277,8 +276,7 @@ impl Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type DexerCurrencyId = DexerCurrencyId;
-	type GetDexerMaxSupply = GetDexerMaxSupply;
+	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
 	type SettPaySerpupRatio = SettPaySerpupRatio;

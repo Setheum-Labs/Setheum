@@ -195,6 +195,8 @@ pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, P
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+	pub const SetterCurrencyId: CurrencyId = SETT;
+	pub const DirhamCurrencyId: CurrencyId = DRAM;
 }
 impl orml_currencies::Config for Runtime {
 	type Event = Event;
@@ -272,6 +274,9 @@ impl Config for Test {
 	const MAX_NOMINATIONS: u32 = 16;
 	type Currency = Balances;
 	type MultiCurrency = Tokens;
+	type SetterCurrencyId = SetterCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
+	type NativeCurrencyId = NativeCurrencyId;
 	type PriceSource = MockPriceSource;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;

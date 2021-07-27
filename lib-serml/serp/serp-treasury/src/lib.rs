@@ -75,11 +75,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// SettinDes (DRAM) dexer currency id
-		type DexerCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Dexer (DRAM/MENA) maximum supply
-		type GetDexerMaxSupply: Get<Balance>;
+		type DirhamCurrencyId: Get<CurrencyId>;
 
 		/// SERP-TES Adjustment Frequency.
 		/// Schedule for when to trigger SERP-TES
@@ -118,6 +114,7 @@ pub mod module {
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
+		// TODO: Update!
 		#[pallet::constant]
 		/// The cap of lots when an auction is created
 		type MaxAuctionsCount: Get<u32>;
@@ -266,7 +263,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// SerpUp ratio for SettPay Cashdrops
 	fn get_settpay_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// SettPay SerpUp Pool - 60%
-		let settpay_account = T::SettPayTreasuryAcc::get();
+		let settpay_account = T::SettPayTreasuryAcc::get().into_account();
 		let settpay_propper T::SettPaySerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, settpay_account, settpay_propper);
 
@@ -277,7 +274,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// SerpUp ratio for Setheum Treasury
 	fn get_treasury_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Setheum Treasury SerpUp Pool - 10%
-		let treasury_account = T::SetheumTreasuryAcc::get();
+		let treasury_account = T::SetheumTreasuryAcc::get().into_account();
 		let treasury_propper = T::SetheumTreasurySerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, treasury_account, treasury_propper);
 
@@ -289,7 +286,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// TODO: update to 20%
 		// Charity Fund SerpUp Pool - 20%
-		let charity_fund_account = T::CharityFundAcc::get();
+		let charity_fund_account = T::CharityFundAcc::get().into_account();
 		let charity_fund_propper = T::CharityFundSerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, charity_fund_account, charity_fund_propper);
 
@@ -491,32 +488,15 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::SetterCurrencyId::get(), who, setter)
 	}
 
-	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum).
-	fn get_dexer_max_supply() -> Self::Balance {
-		T::GetDexerMaxSupply::get()
-	}
-
 	/// Issue Dexer (`DRAM` in Setheum). `dexer` here just referring to the Dex token balance.
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
-		let total_supply = T::Currency::total_issuance(T::DexerCurrencyId::get());
-		let max_supply = Self::get_dexer_max_supply();
-		if dexer.saturating_add(&total_supply) <= &max_supply {
-			T::Currency::deposit(T::DexerCurrencyId::get(), who, dexer)?;
-		} else let to_amount = dexer.saturating_add(&total_supply) {
-			let remainder = &to_amount.saturating_sub(&max_supply);
-			let balanced_amount = &to_amount.saturating_sub(&remainder);
-			ensure!(
-				&balanced_amount <= &max_supply,
-				Error::<T>::MaxSupplyReached,
-			);
-			T::Currency::deposit(T::DexerCurrencyId::get(), who, &balanced_amount)?;
-		}
+		T::Currency::deposit(T::DirhamCurrencyId::get(), who, dexer)?;
 		Ok(())
 	}
 
 	/// Burn Dexer (`DRAM` in Setheum). `dexer` here just referring to the Dex token balance.
 	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(T::DexerCurrencyId::get(), who, dexer)
+		T::Currency::withdraw(T::DirhamCurrencyId::get(), who, dexer)
 	}
 
 	/// deposit surplus(propper stable currency) to serp treasury by `from`

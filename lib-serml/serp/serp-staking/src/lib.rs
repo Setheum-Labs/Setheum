@@ -842,6 +842,21 @@ pub mod pallet {
 		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
 		type MultiCurrency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
+		/// The Incentive reward type (SETT)
+		/// SETT in Setheum.
+		#[pallet::constant]
+		type SetterCurrencyId: Get<CurrencyId>;
+
+		/// The Premium reward type (DRAM)
+		/// DRAM in Setheum.
+		#[pallet::constant]
+		type DirhamCurrencyId: Get<CurrencyId>;
+
+		/// The Native Currency type (DNAR)
+		/// DNAR in Setheum.
+		#[pallet::constant]
+		type NativeCurrencyId: Get<CurrencyId>;
+
 		/// The price source of all types of currencies related to Settmint
 		type PriceSource: PriceProvider<CurrencyId>;
 

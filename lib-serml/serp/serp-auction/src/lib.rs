@@ -174,7 +174,8 @@ pub mod module {
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
 
 		/// SERP Treasury to escrow assets related to auction
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId>;
+		
 
 		/// Dex to get exchange info
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
