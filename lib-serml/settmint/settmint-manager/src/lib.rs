@@ -25,9 +25,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
-#![allow(clippy::collapsible_if)]
 
-use frame_support::{log, pallet_prelude::*, transactional, PalletId};
+use frame_support::{log, pallet_prelude::*, traits::MaxEncodedLen, transactional, PalletId};
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
@@ -42,8 +41,8 @@ mod tests;
 
 pub use module::*;
 
-/// A reserved standard position.
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default)]
+/// A settmint standard position.
+#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default, MaxEncodedLen)]
 pub struct Position {
 	/// The amount of reserve.
 	pub reserve: Balance,
@@ -102,12 +101,13 @@ pub mod module {
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
+	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
 		/// Position updated. \[owner, reserve_type, reserve_adjustment,
 		/// standard_adjustment\]
 		PositionUpdated(T::AccountId, CurrencyId, Amount, Amount),
 		/// Transfer setter. \[from, to, currency_id\]
-		TransferReserve(T::AccountId, T::AccountId, CurrencyId),
+		TransferPosition(T::AccountId, T::AccountId, CurrencyId),
 	}
 
 	/// The reserved standard positions, map from
@@ -151,7 +151,7 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		// mutate reserve and standard
 		// TODO: Update, see what's wrong
-		Self::update_reserve(who, currency_id, reserve_adjustment, standard_adjustment)?;
+		Self::update_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
 
 		let reserve_balance_adjustment = Self::balance_try_from_amount_abs(reserve_adjustment)?;
 		let standard_balance_adjustment = Self::balance_try_from_amount_abs(standard_adjustment)?;
@@ -196,7 +196,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// transfer whole setter reserve of `from` to `to`
-	pub fn transfer_reserve(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
+	pub fn transfer_position(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		// get `from` position data
 		let Position { reserve, standard } = Self::positions(currency_id, from);
 
@@ -218,20 +218,20 @@ impl<T: Config> Pallet<T> {
 		let reserve_adjustment = Self::amount_try_from_balance(reserve)?;
 		let standard_adjustment = Self::amount_try_from_balance(standard)?;
 
-		Self::update_reserve(
+		Self::update_position(
 			from,
 			currency_id,
 			reserve_adjustment.saturating_neg(),
 			standard_adjustment.saturating_neg(),
 		)?;
-		Self::update_reserve(to, currency_id, reserve_adjustment, standard_adjustment)?;
+		Self::update_position(to, currency_id, reserve_adjustment, standard_adjustment)?;
 
-		Self::deposit_event(Event::TransferReserve(from.clone(), to.clone(), currency_id));
+		Self::deposit_event(Event::TransferPosition(from.clone(), to.clone(), currency_id));
 		Ok(())
 	}
 
 	/// mutate records of reserves and standards
-	fn update_reserve(
+	fn update_position(
 		who: &T::AccountId,
 		currency_id: CurrencyId,
 		reserve_adjustment: Amount,
@@ -259,7 +259,7 @@ impl<T: Config> Pallet<T> {
 
 			// increase account ref if new position
 			if p.reserve.is_zero() && p.standard.is_zero() {
-				if frame_system::Module::<T>::inc_consumers(who).is_err() {
+				if frame_system::Pallet::<T>::inc_consumers(who).is_err() {
 					// No providers for the locks. This is impossible under normal circumstances
 					// since the funds that are under the lock will themselves be stored in the
 					// account and therefore will need a reference.
@@ -277,7 +277,7 @@ impl<T: Config> Pallet<T> {
 
 			if p.reserve.is_zero() && p.standard.is_zero() {
 				// decrease account ref if zero position
-				frame_system::Module::<T>::dec_consumers(who);
+				frame_system::Pallet::<T>::dec_consumers(who);
 
 				// remove position storage if zero position
 				*may_be_position = None;

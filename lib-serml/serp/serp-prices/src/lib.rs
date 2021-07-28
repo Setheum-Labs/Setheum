@@ -36,9 +36,10 @@ use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, GetByKey, MultiCurrency};
 use primitives::{
-	currency::{Amount, DexShare},
+	currency::{DexShare},
 	Balance, CurrencyId,
 };
+use sp_core::U256;
 use sp_runtime::{
 	traits::{CheckedDiv, CheckedMul},
 	FixedPointNumber,
@@ -61,10 +62,6 @@ pub mod module {
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		/// Convert currency amount (Balance) in the setter basket currency aggregation
-		/// to price (Price )value (setter stable currency (SETT))
-		type Convert: Convert<(Price, Balance), Balance>;
-
 		/// The data source, such as Oracle.
 		type Source: DataProvider<CurrencyId, Price> + DataFeeder<CurrencyId, Price, Self::AccountId>;
 
@@ -80,7 +77,7 @@ pub mod module {
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The peg currency of a stablecoin.
-		type PegCurrencyIds: GetByKey<Self::CurrencyId, Self::CurrencyId>;
+		type PegCurrencyIds: GetByKey<CurrencyId, CurrencyId>;
 
 		/// The list of valid Fiat currency types that define the stablecoin pegs
 		type FiatCurrencyIds: Get<Vec<CurrencyId>>;
@@ -153,18 +150,12 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Converting Amount has failed
-		AmountConvertFailed,
-		/// Converting Balance has failed
-		BalanceConvertFailed,
 		/// Invalid fiat currency id
 		InvalidFiatCurrencyType,
 		/// Invalid stable currency id
 		InvalidCurrencyType,
 		/// Invalid peg pair (peg-to-currency-by-key-pair)
 		InvalidPegPair,
-		/// Converting Price has failed
-		PriceConvertFailed,
 	}
 
 	#[pallet::event]
@@ -219,7 +210,7 @@ pub mod module {
 
 impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get stablecoin's fiat peg currency type by id
-	fn get_peg_currency_by_currency_id(currency_id: Self::CurrencyId) -> Self::CurrencyId {
+	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> Self::CurrencyId {
 		T::PegCurrencyIds::get(&currency_id)
 	}
 
@@ -383,9 +374,10 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 										+ peg_eight_price
 										+ peg_nine_price
 										+ peg_ten_price;
-		let currencies_amount: Balance = 10;
-		let currency_convert = Self::price_try_from_balance(currencies_amount)?;
-		total_basket_worth.checked_div(&currency_convert)
+		let currencies_amount: U256 = U256::from(10);
+		let basket_worth: U256 = U256::from(&total_basket_worth);
+		&basket_worth.checked_div(&currencies_amount).and_then(|n| TryInto::<Balance>::try_into(n).ok())
+			.unwrap_or_else(Zero::zero);
 	}
 
 	/// Get the fixed price of Setter currency (SETT)
@@ -460,14 +452,12 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			let (pool_0, _) = T::DEX::get_liquidity_pool(token_0, token_1);
 			let total_shares = T::Currency::total_issuance(currency_id);
 
+
 			return {
-				if let (Some(ratio), Some(price_0)) = (
-					Price::checked_from_rational(pool_0, total_shares),
-					Self::get_price(token_0),
-				) {
-					ratio
-						.checked_mul(&price_0)
-						.and_then(|n| n.checked_mul(&Price::saturating_from_integer(2)))
+				if let (Some(price_0), Some(price_1)) = (Self::get_price(token_0), Self::get_price(token_1)) {
+					let (pool_0, pool_1) = T::DEX::get_liquidity_pool(token_0, token_1);
+					let total_shares = T::Currency::total_issuance(currency_id);
+					lp_token_fair_price(total_shares, pool_0, pool_1, price_0, price_1)
 				} else {
 					None
 				}
@@ -499,34 +489,26 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 }
 
-impl<T: Config> Pallet<T> {
-	
-	/// Convert the absolute value of `Balance` to `Amount`.
-	fn amount_try_from_balance_abs(b: Balance) -> result::Result<Balance, Error<T>> {
-		TryInto::<Amount>::try_into(b.saturating_abs()).map_err(|_| Error::<T>::BalanceConvertFailed)
-	}
-
-	/// Convert the absolute value of `Price` to `Amount`.
-	fn amount_try_from_price_abs(p: Price) -> result::Result<Amount, Error<T>> {
-		TryInto::<Amount>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::AmountConvertFailed)
-	}
-
-	/// Convert the absolute value of `Price` to `Balance`.
-	fn balance_try_from_price_abs(p: Price) -> result::Result<Balance, Error<T>> {
-		TryInto::<Balance>::try_into(p.saturating_abs()).map_err(|_| Error::<T>::PriceConvertFailed)
-	}
-	/// Convert `Amount` to `Balance`.
-	fn balance_try_from_amount(a: Amount) -> result::Result<Amount, Error<T>> {
-		TryInto::<Balance>::try_into(a).map_err(|_| Error::<T>::BalanceConvertFailed)
-	}
-
-	/// Convert `Amount` to `Price`.
-	fn price_try_from_amount(a: Amount) -> result::Result<Price, Error<T>> {
-		TryInto::<Price>::try_into(a).map_err(|_| Error::<T>::AmountConvertFailed)
-	}
-
-	/// Convert `Balance` to `Price`.
-	fn price_try_from_balance(b: Balance) -> result::Result<Price, Error<T>> {
-		TryInto::<Price>::try_into(b).map_err(|_| Error::<T>::PriceConvertFailed)
-	}
+/// The fair price is determined by the external feed price and the size of the liquidity pool:
+/// https://blog.alphafinance.io/fair-lp-token-pricing/
+/// fair_price = (pool_0 * pool_1)^0.5 * (price_0 * price_1)^0.5 / total_shares * 2
+fn lp_token_fair_price(
+	total_shares: Balance,
+	pool_a: Balance,
+	pool_b: Balance,
+	price_a: Price,
+	price_b: Price,
+) -> Option<Price> {
+	U256::from(pool_a)
+		.saturating_mul(U256::from(pool_b))
+		.integer_sqrt()
+		.saturating_mul(
+			U256::from(price_a.into_inner())
+				.saturating_mul(U256::from(price_b.into_inner()))
+				.integer_sqrt(),
+		)
+		.checked_div(U256::from(total_shares))
+		.and_then(|n| n.checked_mul(U256::from(2)))
+		.and_then(|r| TryInto::<u128>::try_into(r).ok())
+		.map(Price::from_inner)
 }
