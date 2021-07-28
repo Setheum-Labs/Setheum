@@ -41,8 +41,8 @@ use primitives::{
 };
 use sp_core::U256;
 use sp_runtime::{
-	traits::{CheckedDiv, CheckedMul},
-	FixedPointNumber, One, Zero,
+	traits::{CheckedDiv, CheckedMul, Zero},
+	FixedPointNumber,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{CurrencyIdMapping, DEXManager, ExchangeRateProvider, Price, PriceProvider};
