@@ -42,7 +42,7 @@ use primitives::{
 use sp_core::U256;
 use sp_runtime::{
 	traits::{CheckedDiv, CheckedMul},
-	FixedPointNumber,
+	FixedPointNumber, One, Zero,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{CurrencyIdMapping, DEXManager, ExchangeRateProvider, Price, PriceProvider};
@@ -210,7 +210,7 @@ pub mod module {
 
 impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get stablecoin's fiat peg currency type by id
-	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> Self::CurrencyId {
+	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> CurrencyId {
 		T::PegCurrencyIds::get(&currency_id)
 	}
 
