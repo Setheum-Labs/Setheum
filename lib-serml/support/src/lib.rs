@@ -221,7 +221,7 @@ pub trait SerpTreasury<AccountId> {
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_surpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// buy back and burn surplus(stable currencies) with auction.
 	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;

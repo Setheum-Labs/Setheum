@@ -31,7 +31,7 @@ fn airdrop_work() {
 		System::set_block_number(1);
 		assert_noop!(Airdrop::airdrop(Origin::signed(BOB), ALICE, DRAM, 10000), BadOrigin,);
 		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, DRAM, 10000));
-		System::assert_last_event(Event::airdrop(RawEvent::Airdrop(ALICE, DRAM, 10000)));
+		System::assert_last_event(Event::AirDrop(RawEvent::Airdrop(ALICE, DRAM, 10000)));
 		assert_eq!(Airdrop::airdrops(ALICE, DRAM), 10000);
 	});
 }
@@ -45,7 +45,7 @@ fn update_airdrop_work() {
 		assert_eq!(Airdrop::airdrops(ALICE, DNAR), 20000);
 		assert_noop!(Airdrop::update_airdrop(Origin::signed(BOB), ALICE, DNAR, 0), BadOrigin,);
 		assert_ok!(Airdrop::update_airdrop(Origin::root(), ALICE, DNAR, 0));
-		System::assert_last_event(Event::airdrop(RawEvent::UpdateAirdrop(ALICE, DNAR, 0)));
+		System::assert_last_event(Event::AirDrop(RawEvent::UpdateAirdrop(ALICE, DNAR, 0)));
 		assert_eq!(Airdrop::airdrops(ALICE, DNAR), 0);
 	});
 }
