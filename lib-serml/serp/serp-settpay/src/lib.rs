@@ -79,21 +79,21 @@ pub mod module {
 		/// operation.
 		type DefaultCashDropRate: Get<CashDropRate>;
 
-		#[pallet::constant]
 		/// The default cashdrop rate to be issued to claims.
 		/// 
 		/// The first item of the tuple is the numerator of the cashdrop rate, second
 		/// item is the denominator, cashdrop_rate = numerator / denominator,
 		/// use (u32, u32) over `Rate` type to minimize internal division
 		/// operation.
-		type GetCashDropRates: Get<GetByKey>;
+		type GetCashDropRates: GetByKey<CurrencyId, CashDropRate>;
 
 		#[pallet::constant]
 		/// The default minimum transfer value to secure settpay from dusty claims.
 		type DefaultMinimumClaimableTransfer: Get<Balance>;
 
 		/// SERP Treasury for depositing cashdrop.
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId>;
+		
 
 		/// The origin which may update parameters and handle
 		/// serplus/standard/reserve. Root can always do this.

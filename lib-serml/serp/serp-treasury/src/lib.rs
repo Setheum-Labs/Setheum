@@ -30,12 +30,14 @@
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
-use primitives::{Amount, Balance, BlockNumber, CurrencyId};
+use primitives::{Balance, BlockNumber, CurrencyId};
+use sp_core::U256;
 use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	DispatchError, DispatchResult, FixedPointNumber,
 };
-use support::{SerpTreasury, DEXManager, Ratio};
+use support::{DEXManager, Ratio, SerpTreasury};
+use prices::*;
 mod mock;
 mod tests;
 pub mod weights;
@@ -74,11 +76,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// SettinDes (DRAM) dexer currency id
-		type DexerCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Dexer (DRAM/MENA) maximum supply
-		type GetDexerMaxSupply: Get<Balance>;
+		type DirhamCurrencyId: Get<CurrencyId>;
 
 		/// SERP-TES Adjustment Frequency.
 		/// Schedule for when to trigger SERP-TES
@@ -117,6 +115,7 @@ pub mod module {
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
+		// TODO: Update!
 		#[pallet::constant]
 		/// The cap of lots when an auction is created
 		type MaxAuctionsCount: Get<u32>;
@@ -133,7 +132,7 @@ pub mod module {
 	pub enum Error<T> {
 		/// The Stablecoin Price is stable and indifferent from peg
 		/// therefore cannot serp
-		PriceIsStableCannotSerp
+		PriceIsStableCannotSerp,
 		/// Invalid Currency Type
 		InvalidCurrencyType
 	}
@@ -265,8 +264,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// SerpUp ratio for SettPay Cashdrops
 	fn get_settpay_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// SettPay SerpUp Pool - 60%
-		let settpay_account = T::SettPayTreasuryAcc::get();
-		let settpay_propper T::SettPaySerpupRatio::get() * amount;
+		let settpay_account = T::SettPayTreasuryAcc::get().into_account();
+		let settpay_propper = T::SettPaySerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, settpay_account, settpay_propper);
 
 		Self::deposit_event(Event::CurrencySerpUpDelivered(amount, currency_id));
@@ -276,7 +275,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// SerpUp ratio for Setheum Treasury
 	fn get_treasury_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Setheum Treasury SerpUp Pool - 10%
-		let treasury_account = T::SetheumTreasuryAcc::get();
+		let treasury_account = T::SetheumTreasuryAcc::get().into_account();
 		let treasury_propper = T::SetheumTreasurySerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, treasury_account, treasury_propper);
 
@@ -288,7 +287,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// TODO: update to 20%
 		// Charity Fund SerpUp Pool - 20%
-		let charity_fund_account = T::CharityFundAcc::get();
+		let charity_fund_account = T::CharityFundAcc::get().into_account();
 		let charity_fund_propper = T::CharityFundSerpupRatio::get() * amount;
 		Self::issue_propper(currency_id, charity_fund_account, charity_fund_propper);
 
@@ -366,7 +365,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				/// Setter Auction if it's not to serpdown Setter.
 				T::SerpAuctionManagerHandler::new_setter_auction(&initial_setter_amount, &amount, &currency_id)
 			}
-		} else let balanced_amount = total_supply.saturating_sub(&minimum_supply);
+		} else {
+			let balanced_amount = total_supply.saturating_sub(&minimum_supply);
 			ensure!(
 				total_supply.saturating_sub(&balanced_amount) >= &minimum_supply,
 				Error::<T>::MinSupplyReached,
@@ -418,30 +418,50 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		);
 		let market_price = T::Prices::get_stablecoin_market_price(&currency_id)?;
 		let fixed_price = T::Prices::get_stablecoin_fixed_price(&currency_id)?;
-		let fixed_price_amount = T::Prices::amount_try_from_price_abs(&fixed_price)?;
-		let market_price_amount = T::Prices::amount_try_from_price_abs(&market_price)?;
-		let fixed_price_percent_amount = fixed_price_amount.checked_div(100);
-		let percentage = market_price_amount.checked_div(fixed_price_percent_amount);
-		let differed_amount = 100.checked_sub(&percentage);
-		let differed_amount_balance = T::Prices::balance_try_from_amount(&differed_amount)?;
+
+		let fixed_price_amount = U256 = U256::from(&fixed_price)?;
+		let market_price_amount = U256 = U256::from(&market_price)?;
+		
+		let market_price_percent_amount = U256 = U256::from(&market_price_amount).checked_div(U256::from(100));
+		let fixed_price_percent_amount = U256 = U256::from(&fixed_price_amount).checked_div(U256::from(100));
+		
 		let total_supply = T::Currency::total_issuance(currency_id);
-		let supply_ratio = total_supply.checked_div(100);
-		let serp_supply = supply_ratio.checked_mul(total_supply);
-		/// ensure that the differed amount is not zero
-		ensure!(
-			!differed_amount.is_zero(),
-			Error::<T>::PriceIsStableCannotSerp,
-		);
-		/// ensure that the differed amount is not zero
-		ensure!(
-			!differed_amount_balance.is_zero(),
-			Error::<T>::PriceIsStableCannotSerp,
-		);
+
 		/// if price difference is positive -> SerpUp, else if negative ->SerpDown.
-		if differed_amount.is_positive() {
-			T::SerpTreasury::on_serpup(&currency_id, &serp_supply)?;
-		} else if differed_amount.is_negative() {
-			T::SerpTreasury::on_serpdown(&currency_id, &serp_supply)?;
+		if &market_price_amount > &fixed_price_amount {
+			let percentage = &market_price_amount.checked_div(&fixed_price_percent_amount);
+			let differed_percentage = &percentage.checked_sub(U256::from(100));
+
+			let inverted_serp_supply: U256 = U256::from(&total_supply)
+				.saturating_mul(U256::from(100.saturating_sub(&differed_percentage)));
+			let serp_supply: U256 = U256::from(&total_supply).saturating_sub(&inverted_serp_supply);
+			let serp_supply_balance = &serp_supply.and_then(|n| TryInto::<Balance>::try_into(n).ok())
+			.unwrap_or_else(Zero::zero);
+
+			/// ensure that the differed amount is not zero
+			ensure!(
+				!serp_supply_balance.is_zero(),
+				Error::<T>::PriceIsStableCannotSerp,
+			);
+			T::SerpTreasury::on_serpup(&currency_id, &serp_supply_balance)?;
+
+		} else if &fixed_price_amount > &market_price_amount {
+			let percentage = &fixed_price_amount.checked_div(&market_price_percent_amount);
+			let differed_percentage = &percentage.checked_sub(U256::from(100));
+
+			let inverted_serp_supply: U256 = U256::from(&total_supply)
+				.saturating_mul(U256::from(100.saturating_sub(&differed_percentage)));
+			let serp_supply: U256 = U256::from(&total_supply).saturating_sub(&inverted_serp_supply);
+			let serp_supply_balance = &serp_supply.and_then(|n| TryInto::<Balance>::try_into(n).ok())
+			.unwrap_or_else(Zero::zero);
+
+			/// ensure that the differed amount is not zero
+			ensure!(
+				!serp_supply_balance.is_zero(),
+				Error::<T>::PriceIsStableCannotSerp,
+			);
+			T::SerpTreasury::on_serpdown(&currency_id, &serp_supply_balance)?;
+			
 		}
 		Ok(())
 	}
@@ -489,32 +509,15 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::SetterCurrencyId::get(), who, setter)
 	}
 
-	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum).
-	fn get_dexer_max_supply() -> Self::Balance {
-		T::GetDexerMaxSupply::get()
-	}
-
 	/// Issue Dexer (`DRAM` in Setheum). `dexer` here just referring to the Dex token balance.
 	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
-		let total_supply = T::Currency::total_issuance(T::DexerCurrencyId::get());
-		let max_supply = Self::get_dexer_max_supply();
-		if dexer.saturating_add(&total_supply) <= &max_supply {
-			T::Currency::deposit(T::DexerCurrencyId::get(), who, dexer)?;
-		} else let to_amount = dexer.saturating_add(&total_supply) {
-			let remainder = &to_amount.saturating_sub(&max_supply);
-			let balanced_amount = &to_amount.saturating_sub(&remainder);
-			ensure!(
-				&balanced_amount <= &max_supply,
-				Error::<T>::MaxSupplyReached,
-			);
-			T::Currency::deposit(T::DexerCurrencyId::get(), who, &balanced_amount)?;
-		}
+		T::Currency::deposit(T::DirhamCurrencyId::get(), who, dexer)?;
 		Ok(())
 	}
 
 	/// Burn Dexer (`DRAM` in Setheum). `dexer` here just referring to the Dex token balance.
 	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(T::DexerCurrencyId::get(), who, dexer)
+		T::Currency::withdraw(T::DirhamCurrencyId::get(), who, dexer)
 	}
 
 	/// deposit surplus(propper stable currency) to serp treasury by `from`

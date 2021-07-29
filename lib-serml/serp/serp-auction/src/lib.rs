@@ -174,7 +174,8 @@ pub mod module {
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
 
 		/// SERP Treasury to escrow assets related to auction
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId>;
+		
 
 		/// Dex to get exchange info
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
@@ -281,7 +282,7 @@ impl<T: Config> Pallet<T> {
 			T::SerpTreasury::issue_setter(&bidder, diamond_auction.fix)?;
 
 			// decrease account ref of bidder
-			frame_system::Module::<T>::dec_consumers(&bidder);
+			frame_system::Pallet::<T>::dec_consumers(&bidder);
 		}
 
 		// decrease total propper setter in auction as we refunded the bidder
@@ -297,7 +298,7 @@ impl<T: Config> Pallet<T> {
 			T::SerpTreasury::issue_propper(setter_auction.currency, &bidder, setter_auction.fix)?;
 
 			// decrease account ref of bidder
-			frame_system::Module::<T>::dec_consumers(&bidder);
+			frame_system::Pallet::<T>::dec_consumers(&bidder);
 		}
 
 		// decrease total propper settcurrency in auction as we refunded the bidder
@@ -313,7 +314,7 @@ impl<T: Config> Pallet<T> {
 			T::Currency::deposit(T::GetNativeCurrencyId::get(), &bidder, bid_price)?;
 
 			// decrease account ref of bidder
-			frame_system::Module::<T>::dec_consumers(&bidder);
+			frame_system::Pallet::<T>::dec_consumers(&bidder);
 		}
 		// decrease total native currency in auction as we refunded the bidder
 		TotalSurplusInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(serplus_auction.amount, serplus_auction.currency));
@@ -619,7 +620,7 @@ impl<T: Config> Pallet<T> {
 	/// increment `new_bidder` reference and decrement `last_bidder`
 	/// reference if any
 	fn swap_bidders(new_bidder: &T::AccountId, last_bidder: Option<&T::AccountId>) {
-		if frame_system::Module::<T>::inc_consumers(new_bidder).is_err() {
+		if frame_system::Pallet::<T>::inc_consumers(new_bidder).is_err() {
 			// No providers for the locks. This is impossible under normal circumstances
 			// since the funds that are under the lock will themselves be stored in the
 			// account and therefore will need a reference.
@@ -632,7 +633,7 @@ impl<T: Config> Pallet<T> {
 		}
 
 		if let Some(who) = last_bidder {
-			frame_system::Module::<T>::dec_consumers(who);
+			frame_system::Pallet::<T>::dec_consumers(who);
 		}
 	}
 }
@@ -677,7 +678,7 @@ impl<T: Config> AuctionHandler<T::AccountId, Balance, T::BlockNumber, AuctionId>
 
 		if let Some((bidder, _)) = &winner {
 			// decrease account ref of winner
-			frame_system::Module::<T>::dec_consumers(bidder);
+			frame_system::Pallet::<T>::dec_consumers(bidder);
 		}
 	}
 }

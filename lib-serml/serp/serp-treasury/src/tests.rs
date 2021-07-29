@@ -98,7 +98,7 @@ fn deposit_setter_works() {
 fn get_propper_proportion_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpTreasuryModule::get_propper_proportion(40),
+			SerpTreasuryModule::get_propper_proportion(40, USDJ),
 			Ratio::saturating_from_rational(40, Currencies::total_issuance(USDJ))
 		);
 	});

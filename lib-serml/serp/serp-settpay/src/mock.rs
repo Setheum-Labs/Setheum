@@ -439,7 +439,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
 	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
-	pub const DexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
 	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
@@ -475,7 +475,7 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type DexerCurrencyId = DexerCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
 	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
@@ -516,7 +516,7 @@ parameter_types! {
 }
 
 parameter_type_with_key! {
-	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, {
+	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, Balance) {
 		match currency_id {
 			&DNAR => (5, 100), // 5% cashdrop.
 			&DRAM => (5, 100), // 5% cashdrop.
@@ -533,7 +533,7 @@ parameter_type_with_key! {
 			&USDJ => (5, 100), // 5% cashdrop.
 			_ => 0,
 		}
-	};
+	}
 }
 
 impl Config for Runtime {

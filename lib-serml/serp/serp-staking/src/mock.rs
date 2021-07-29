@@ -1,6 +1,6 @@
-// This file is part of Setheum.
+// This file is part of Substrate.
 
-// Copyright (C) 2018-2021 Setheum Labs.
+// Copyright (C) 2018-2021 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,13 +17,16 @@
 
 //! Test utilities
 
-use crate::*;
 use crate as staking;
+use crate::*;
+use frame_election_provider_support::onchain;
 use frame_support::{
 	assert_ok, parameter_types,
 	traits::{Currency, FindAuthor, Get, OnInitialize, OneSessionHandler},
 	weights::constants::RocksDbWeight,
 };
+use orml_traits::parameter_type_with_key;
+use primitives::{TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_io;
 use sp_runtime::{
@@ -33,38 +36,20 @@ use sp_runtime::{
 };
 use sp_staking::offence::{OffenceDetails, OnOffenceHandler};
 use std::{cell::RefCell, collections::HashSet};
-use frame_election_provider_support::onchain;
-use primitives::{TokenSymbol, TradingPair};
 
 pub const INIT_TIMESTAMP: u64 = 30_000;
 pub const BLOCK_TIME: u64 = 1000;
+
+// Currencies constants - CurrencyId/TokenSymbol
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 
 /// The AccountId alias in this test module.
 pub(crate) type AccountId = u64;
 pub(crate) type AccountIndex = u64;
 pub(crate) type BlockNumber = u64;
 pub(crate) type Balance = u128;
-
-pub const ALICE: AccountId = 1;
-pub const BOB: AccountId = 2;
-pub const CAROL: AccountId = 3;
-pub const CHARITY_FUND: AccountId = 4;
-
-// Currencies constants - CurrencyId/TokenSymbol
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
-pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
-pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
-pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
-pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
-pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
-pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
-pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
-pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
-pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
-
 
 thread_local! {
 	static SESSION: RefCell<(Vec<AccountId>, HashSet<AccountId>)> = RefCell::new(Default::default());
@@ -76,16 +61,19 @@ impl OneSessionHandler<AccountId> for OtherSessionHandler {
 	type Key = UintAuthorityId;
 
 	fn on_genesis_session<'a, I: 'a>(_: I)
-		where I: Iterator<Item=(&'a AccountId, Self::Key)>, AccountId: 'a {}
+	where
+		I: Iterator<Item = (&'a AccountId, Self::Key)>,
+		AccountId: 'a,
+	{
+	}
 
-	fn on_new_session<'a, I: 'a>(_: bool, validators: I, _: I,)
-		where I: Iterator<Item=(&'a AccountId, Self::Key)>, AccountId: 'a
+	fn on_new_session<'a, I: 'a>(_: bool, validators: I, _: I)
+	where
+		I: Iterator<Item = (&'a AccountId, Self::Key)>,
+		AccountId: 'a,
 	{
 		SESSION.with(|x| {
-			*x.borrow_mut() = (
-				validators.map(|x| x.0.clone()).collect(),
-				HashSet::new(),
-			)
+			*x.borrow_mut() = (validators.map(|x| x.0.clone()).collect(), HashSet::new())
 		});
 	}
 
@@ -119,10 +107,9 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent},
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
-		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Staking: staking::{Pallet, Call, Config<T>, Storage, Event<T>},
 		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
 	}
@@ -132,7 +119,8 @@ frame_support::construct_runtime!(
 pub struct Author11;
 impl FindAuthor<AccountId> for Author11 {
 	fn find_author<'a, I>(_digests: I) -> Option<AccountId>
-		where I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
 		Some(11)
 	}
@@ -153,7 +141,7 @@ parameter_types! {
 }
 
 impl frame_system::Config for Test {
-	type BaseCallFilter = ();
+	type BaseCallFilter = frame_support::traits::AllowAll;
 	type BlockWeights = ();
 	type BlockLength = ();
 	type DbWeight = RocksDbWeight;
@@ -192,17 +180,6 @@ impl orml_tokens::Config for Runtime {
 	type OnDust = ();
 	type MaxLocks = ();
 }
-parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = DNAR;
-}
-impl orml_currencies::Config for Runtime {
-	type Event = Event;
-	type MultiCurrency = Tokens;
-	type NativeCurrency = AdaptedBasicCurrency;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type WeightInfo = ();
-}
-pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 impl pallet_balances::Config for Test {
 	type MaxLocks = MaxLocks;
 	type MaxReserves = ();
@@ -214,62 +191,18 @@ impl pallet_balances::Config for Test {
 	type AccountStore = System;
 	type WeightInfo = ();
 }
+pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
+
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SGDJ, BRLJ, SARJ
-	];
-	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
-	pub const DexerCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
-	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
-
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
-	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	
-	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
+	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+	pub const SetterCurrencyId: CurrencyId = SETT;
+	pub const DirhamCurrencyId: CurrencyId = DRAM;
 }
-
-parameter_type_with_key! {
-	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETT => 10_000,
-			&AUDJ => 10_000,
-			&CHFJ => 10_000,
-			&EURJ => 10_000,
-			&GBPJ => 10_000,
-			&JPYJ => 10_000,
-			&USDJ => 10_000,
-			_ => 0,
-		}
-	};
-}
-
-impl serp_treasury::Config for Runtime {
+impl orml_currencies::Config for Runtime {
 	type Event = Event;
-	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+	type MultiCurrency = Tokens;
+	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type DexerCurrencyId = DexerCurrencyId;
-	type GetDexerMaxSupply = GetDexerMaxSupply;
-	type SerpTesSchedule = SerpTesSchedule;
-	type SerplusSerpupRatio = SerplusSerpupRatio;
-	type SettPaySerpupRatio = SettPaySerpupRatio;
-	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
-	type CharityFundSerpupRatio = CharityFundSerpupRatio;
-	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type SetheumTreasuryAcc = TreasuryPalletId;
-	type CharityFundAcc = CHARITY_FUND;
-	type SerpAuctionManagerHandler = MockSerpAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = SetheumDEX;
-	type MaxAuctionsCount = MaxAuctionsCount;
-	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 parameter_types! {
@@ -313,7 +246,7 @@ impl pallet_timestamp::Config for Test {
 	type MinimumPeriod = MinimumPeriod;
 	type WeightInfo = ();
 }
-pallet_staking_reward_curve::build! {
+serp_staking_reward_curve::build! {
 	const I_NPOS: PiecewiseLinear<'static> = curve!(
 		min_inflation: 0_025_000,
 		max_inflation: 0_100_000,
@@ -326,28 +259,7 @@ pallet_staking_reward_curve::build! {
 parameter_types! {
 	pub const BondingDuration: EraIndex = 3;
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &I_NPOS;
-	/// The number of eras between each halvening,
-	/// 12_096 eras (2 years, each era is 3 hour) halving interval.
-	pub const HalvingInterval: EraIndex = 12_096;
-	/// The per-era issuance before any halvenings. 
-	/// Decimal places should be accounted for here.
-	pub const InitialIssuance: Balance = 10_800;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
-}
-
-thread_local! {
-	pub static REWARD_REMAINDER_UNBALANCED: RefCell<u128> = RefCell::new(0);
-}
-
-pub struct RewardRemainderMock;
-
-impl OnUnbalanced<NegativeImbalanceOf<Test>> for RewardRemainderMock {
-	fn on_nonzero_unbalanced(amount: NegativeImbalanceOf<Test>) {
-		REWARD_REMAINDER_UNBALANCED.with(|v| {
-			*v.borrow_mut() += amount.peek();
-		});
-		drop(amount);
-	}
 }
 
 impl onchain::Config for Test {
@@ -361,15 +273,16 @@ impl onchain::Config for Test {
 impl Config for Test {
 	const MAX_NOMINATIONS: u32 = 16;
 	type Currency = Balances;
+	type MultiCurrency = Tokens;
+	type SetterCurrencyId = SetterCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
+	type NativeCurrencyId = NativeCurrencyId;
+	type PriceSource = MockPriceSource;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
-	type RewardRemainder = RewardRemainderMock;
 	type Event = Event;
 	type Slash = ();
 	type Reward = ();
-	type HalvingInterval = HalvingInterval;
-	type InitialIssuance = InitialIssuance;
-	type SerpTreasury = SerpTreasury;
 	type SessionsPerEra = SessionsPerEra;
 	type SlashDeferDuration = SlashDeferDuration;
 	type SlashCancelOrigin = frame_system::EnsureRoot<Self::AccountId>;
@@ -412,60 +325,6 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
-				/// native endowments.
-				//
-				(1, DNAR, 10 * native_balance_factor),
-				(2, DNAR, 20 * native_balance_factor),
-				(3, DNAR, 300 * native_balance_factor),
-				(4, DNAR, 400 * native_balance_factor),
-				(10, DNAR, native_balance_factor),
-				(11, DNAR, native_balance_factor * 1000),
-				(20, DNAR, native_balance_factor),
-				(21, DNAR, native_balance_factor * 2000),
-				(30, DNAR, native_balance_factor),
-				(31, DNAR, native_balance_factor * 2000),
-				(40, DNAR, native_balance_factor),
-				(41, DNAR, native_balance_factor * 2000),
-				(50, DNAR, native_balance_factor),
-				(51, DNAR, native_balance_factor * 2000),
-				(60, DNAR, native_balance_factor),
-				(61, DNAR, native_balance_factor * 2000),
-				(70, DNAR, native_balance_factor),
-				(71, DNAR, native_balance_factor * 2000),
-				(80, DNAR, native_balance_factor),
-				(81, DNAR, native_balance_factor * 2000),
-				(100, DNAR, 2000 * native_balance_factor),
-				(101, DNAR, 2000 * native_balance_factor),
-				// This allows us to have a total_payout different from 0.
-				(999, DNAR, 1_000_000_000_000),
-				/// setter endowments.
-				//
-				(1, SETT, 10 * setter_balance_factor),
-				(2, SETT, 20 * setter_balance_factor),
-				(3, SETT, 300 * setter_balance_factor),
-				(4, SETT, 400 * setter_balance_factor),
-				(10, SETT, setter_balance_factor),
-				(11, SETT, setter_balance_factor * 1000),
-				(20, SETT, setter_balance_factor),
-				(21, SETT, setter_balance_factor * 2000),
-				(30, SETT, setter_balance_factor),
-				(31, SETT, setter_balance_factor * 2000),
-				(40, SETT, setter_balance_factor),
-				(41, SETT, setter_balance_factor * 2000),
-				(50, SETT, setter_balance_factor),
-				(51, SETT, setter_balance_factor * 2000),
-				(60, SETT, setter_balance_factor),
-				(61, SETT, setter_balance_factor * 2000),
-				(70, SETT, setter_balance_factor),
-				(71, SETT, setter_balance_factor * 2000),
-				(80, SETT, setter_balance_factor),
-				(81, SETT, setter_balance_factor * 2000),
-				(100, SETT, 2000 * setter_balance_factor),
-				(101, SETT, 2000 * setter_balance_factor),
-				// This allows us to have a total_payout different from 0.
-				(999, SETT, 1_000_000_000_000),
-			],
 			validator_pool: false,
 			nominate: true,
 			validator_count: 2,
@@ -548,33 +407,44 @@ impl ExtBuilder {
 	}
 	fn build(self) -> sp_io::TestExternalities {
 		sp_tracing::try_init_simple();
-		let mut storage = frame_system::GenesisConfig::default()
-			.build_storage::<Test>()
-			.unwrap();
-		let native_balance_factor = if ExistentialDeposits::get(DNAR) > 1 {
-			256
-		} else {
-			1
-		};
-		let setter_balance_factor = if ExistentialDeposits::get(SETT) > 1 {
-			256
-		} else {
-			1
-		};
+		let mut storage = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+		let balance_factor = if ExistentialDeposit::get() > 1 { 256 } else { 1 };
 
 		let num_validators = self.num_validators.unwrap_or(self.validator_count);
 		// Check that the number of validators is sensible.
 		assert!(num_validators <= 8);
-		let validators = (0..num_validators)
-			.map(|x| ((x + 1) * 10 + 1) as AccountId)
-			.collect::<Vec<_>>();
+		let validators =
+			(0..num_validators).map(|x| ((x + 1) * 10 + 1) as AccountId).collect::<Vec<_>>();
 
-		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+		let _ = pallet_balances::GenesisConfig::<Test> {
+			balances: vec![
+				(1, 10 * balance_factor),
+				(2, 20 * balance_factor),
+				(3, 300 * balance_factor),
+				(4, 400 * balance_factor),
+				(10, balance_factor),
+				(11, balance_factor * 1000),
+				(20, balance_factor),
+				(21, balance_factor * 2000),
+				(30, balance_factor),
+				(31, balance_factor * 2000),
+				(40, balance_factor),
+				(41, balance_factor * 2000),
+				(50, balance_factor),
+				(51, balance_factor * 2000),
+				(60, balance_factor),
+				(61, balance_factor * 2000),
+				(70, balance_factor),
+				(71, balance_factor * 2000),
+				(80, balance_factor),
+				(81, balance_factor * 2000),
+				(100, 2000 * balance_factor),
+				(101, 2000 * balance_factor),
+				// This allows us to have a total_payout different from 0.
+				(999, 1_000_000_000_000),
+			],
 		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-		t.into();
+		.assimilate_storage(&mut storage);
 
 		let mut stakers = vec![];
 		if self.has_stakers {
@@ -593,11 +463,11 @@ impl ExtBuilder {
 				(31, 30, stake_31, StakerStatus::<AccountId>::Validator),
 				(41, 40, balance_factor * 1000, status_41),
 				// nominator
-				(101, 100, balance_factor * 500, StakerStatus::<AccountId>::Nominator(nominated))
+				(101, 100, balance_factor * 500, StakerStatus::<AccountId>::Nominator(nominated)),
 			];
 		}
-		let _ = staking::GenesisConfig::<Test>{
-			stakers: stakers,
+		let _ = staking::GenesisConfig::<Test> {
+			stakers,
 			validator_count: self.validator_count,
 			minimum_validator_count: self.minimum_validator_count,
 			invulnerables: self.invulnerables,
@@ -609,12 +479,12 @@ impl ExtBuilder {
 		.assimilate_storage(&mut storage);
 
 		let _ = pallet_session::GenesisConfig::<Test> {
-			keys: validators.iter().map(|x| (
-				*x,
-				*x,
-				SessionKeys { other: UintAuthorityId(*x as u64) }
-			)).collect(),
-		}.assimilate_storage(&mut storage);
+			keys: validators
+				.iter()
+				.map(|x| (*x, *x, SessionKeys { other: UintAuthorityId(*x as u64) }))
+				.collect(),
+		}
+		.assimilate_storage(&mut storage);
 
 		let mut ext = sp_io::TestExternalities::from(storage);
 		ext.execute_with(|| {
@@ -679,42 +549,46 @@ fn check_nominators() {
 	// in if the nomination was submitted before the current era.
 	let era = active_era();
 	<Nominators<Test>>::iter()
-		.filter_map(|(nominator, nomination)|
-			if nomination.submitted_in > era {
-				Some(nominator)
-			} else {
-				None
-		})
+		.filter_map(
+			|(nominator, nomination)| {
+				if nomination.submitted_in > era {
+					Some(nominator)
+				} else {
+					None
+				}
+			},
+		)
 		.for_each(|nominator| {
-		// must be bonded.
-		assert_is_stash(nominator);
-		let mut sum = 0;
-		Session::validators()
-			.iter()
-			.map(|v| Staking::eras_stakers(era, v))
-			.for_each(|e| {
-				let individual = e.others.iter().filter(|e| e.who == nominator).collect::<Vec<_>>();
-				let len = individual.len();
-				match len {
-					0 => { /* not supporting this validator at all. */ },
-					1 => sum += individual[0].value,
-					_ => panic!("nominator cannot back a validator more than once."),
-				};
-			});
+			// must be bonded.
+			assert_is_stash(nominator);
+			let mut sum = 0;
+			Session::validators()
+				.iter()
+				.map(|v| Staking::eras_stakers(era, v))
+				.for_each(|e| {
+					let individual =
+						e.others.iter().filter(|e| e.who == nominator).collect::<Vec<_>>();
+					let len = individual.len();
+					match len {
+						0 => { /* not supporting this validator at all. */ },
+						1 => sum += individual[0].value,
+						_ => panic!("nominator cannot back a validator more than once."),
+					};
+				});
 
-		let nominator_stake = Staking::slashable_balance_of(&nominator);
-		// a nominator cannot over-spend.
-		assert!(
-			nominator_stake >= sum,
-			"failed: Nominator({}) stake({}) >= sum divided({})",
-			nominator,
-			nominator_stake,
-			sum,
-		);
+			let nominator_stake = Staking::slashable_balance_of(&nominator);
+			// a nominator cannot over-spend.
+			assert!(
+				nominator_stake >= sum,
+				"failed: Nominator({}) stake({}) >= sum divided({})",
+				nominator,
+				nominator_stake,
+				sum,
+			);
 
-		let diff = nominator_stake - sum;
-		assert!(diff < 100);
-	});
+			let diff = nominator_stake - sum;
+			assert!(diff < 100);
+		});
 }
 
 fn assert_is_stash(acc: AccountId) {
@@ -724,10 +598,7 @@ fn assert_is_stash(acc: AccountId) {
 fn assert_ledger_consistent(ctrl: AccountId) {
 	// ensures ledger.total == ledger.active + sum(ledger.unlocking).
 	let ledger = Staking::ledger(ctrl).expect("Not a controller.");
-	let real_total: Balance = ledger
-		.unlocking
-		.iter()
-		.fold(ledger.active, |a, c| a + c.value);
+	let real_total: Balance = ledger.unlocking.iter().fold(ledger.active, |a, c| a + c.value);
 	assert_eq!(real_total, ledger.total);
 	assert!(
 		ledger.active >= Balances::minimum_balance() || ledger.active == 0,
@@ -749,16 +620,8 @@ pub(crate) fn current_era() -> EraIndex {
 pub(crate) fn bond_validator(stash: AccountId, ctrl: AccountId, val: Balance) {
 	let _ = Balances::make_free_balance_be(&stash, val);
 	let _ = Balances::make_free_balance_be(&ctrl, val);
-	assert_ok!(Staking::bond(
-		Origin::signed(stash),
-		ctrl,
-		val,
-		RewardDestination::Controller,
-	));
-	assert_ok!(Staking::validate(
-		Origin::signed(ctrl),
-		ValidatorPrefs::default()
-	));
+	assert_ok!(Staking::bond(Origin::signed(stash), ctrl, val, RewardDestination::Controller));
+	assert_ok!(Staking::validate(Origin::signed(ctrl), ValidatorPrefs::default()));
 }
 
 pub(crate) fn bond_nominator(
@@ -769,12 +632,7 @@ pub(crate) fn bond_nominator(
 ) {
 	let _ = Balances::make_free_balance_be(&stash, val);
 	let _ = Balances::make_free_balance_be(&ctrl, val);
-	assert_ok!(Staking::bond(
-		Origin::signed(stash),
-		ctrl,
-		val,
-		RewardDestination::Controller,
-	));
+	assert_ok!(Staking::bond(Origin::signed(stash), ctrl, val, RewardDestination::Controller));
 	assert_ok!(Staking::nominate(Origin::signed(ctrl), target));
 }
 
@@ -870,9 +728,7 @@ pub(crate) fn reward_time_per_era() -> u64 {
 }
 
 pub(crate) fn reward_all_elected() {
-	let rewards = <Test as Config>::SessionInterface::validators()
-		.into_iter()
-		.map(|v| (v, 1));
+	let rewards = <Test as Config>::SessionInterface::validators().into_iter().map(|v| (v, 1));
 
 	<Pallet<Test>>::reward_by_ids(rewards)
 }
@@ -896,26 +752,28 @@ pub(crate) fn on_offence_in_era(
 	for &(bonded_era, start_session) in bonded_eras.iter() {
 		if bonded_era == era {
 			let _ = Staking::on_offence(offenders, slash_fraction, start_session);
-			return;
+			return
 		} else if bonded_era > era {
-			break;
+			break
 		}
 	}
 
 	if Staking::active_era().unwrap().index == era {
-		let _ =
-			Staking::on_offence(
-				offenders,
-				slash_fraction,
-				Staking::eras_start_session_index(era).unwrap()
-			);
+		let _ = Staking::on_offence(
+			offenders,
+			slash_fraction,
+			Staking::eras_start_session_index(era).unwrap(),
+		);
 	} else {
 		panic!("cannot slash in era {}", era);
 	}
 }
 
 pub(crate) fn on_offence_now(
-	offenders: &[OffenceDetails<AccountId, pallet_session::historical::IdentificationTuple<Test>>],
+	offenders: &[OffenceDetails<
+		AccountId,
+		pallet_session::historical::IdentificationTuple<Test>,
+	>],
 	slash_fraction: &[Perbill],
 ) {
 	let now = Staking::active_era().unwrap().index;
@@ -924,29 +782,26 @@ pub(crate) fn on_offence_now(
 
 pub(crate) fn add_slash(who: &AccountId) {
 	on_offence_now(
-		&[
-			OffenceDetails {
-				offender: (who.clone(), Staking::eras_stakers(active_era(), who.clone())),
-				reporters: vec![],
-			},
-		],
+		&[OffenceDetails {
+			offender: (who.clone(), Staking::eras_stakers(active_era(), who.clone())),
+			reporters: vec![],
+		}],
 		&[Perbill::from_percent(10)],
 	);
 }
 
 /// Make all validator and nominator request their payment
 pub(crate) fn make_all_reward_payment(era: EraIndex) {
-	let validators_with_reward =
-		ErasRewardPoints::<Test>::get(era).individual.keys().cloned().collect::<Vec<_>>();
+	let validators_with_reward = ErasRewardPoints::<Test>::get(era)
+		.individual
+		.keys()
+		.cloned()
+		.collect::<Vec<_>>();
 
 	// reward validators
 	for validator_controller in validators_with_reward.iter().filter_map(Staking::bonded) {
 		let ledger = <Ledger<Test>>::get(&validator_controller).unwrap();
-		assert_ok!(Staking::payout_stakers(
-			Origin::signed(1337),
-			ledger.stash,
-			era
-		));
+		assert_ok!(Staking::payout_stakers(Origin::signed(1337), ledger.stash, era));
 	}
 }
 
@@ -971,13 +826,11 @@ macro_rules! assert_session_era {
 }
 
 pub(crate) fn staking_events() -> Vec<staking::Event<Test>> {
-	System::events().into_iter().map(|r| r.event).filter_map(|e| {
-		if let Event::Staking(inner) = e {
-			Some(inner)
-		} else {
-			None
-		}
-	}).collect()
+	System::events()
+		.into_iter()
+		.map(|r| r.event)
+		.filter_map(|e| if let Event::Staking(inner) = e { Some(inner) } else { None })
+		.collect()
 }
 
 pub(crate) fn balances(who: &AccountId) -> (Balance, Balance) {

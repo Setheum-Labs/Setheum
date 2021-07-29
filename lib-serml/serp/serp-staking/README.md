@@ -1,9 +1,7 @@
 # Staking Module
 
 Serp Staking supports multicurrency rewards, such that in Setheum, staking the 
-Dinar (DNAR) will reward the Dinar (DNAR) and the Setter (SETT).
-The Setter reward uses the min. to max. inflation rate reward type,
-while the Dinar reward uses a limited amount staking reward with a 24 months halving period
+Dinar (DNAR) will reward the Dirham (DRAM) and the Setter (SETT).
 
 The Staking module is used to manage funds at stake by network maintainers.
 
@@ -168,12 +166,6 @@ The era payout is computed using yearly inflation curve defined at
 staker_payout = yearly_inflation(npos_token_staked / total_tokens) * total_tokens / era_per_year
 ```
 This payout is used to reward stakers as defined in next section
-
-```nocompile
-remaining_payout = max_yearly_inflation * total_tokens / era_per_year - staker_payout
-```
-The remaining reward is send to the configurable end-point
-[`T::RewardRemainder`](https://docs.rs/serp-staking/latest/serp_staking/trait.Config.html#associatedtype.RewardRemainder).
 
 ### Reward Calculation
 

@@ -976,7 +976,7 @@ impl setheum_democracy::Config for Runtime {
 	type VotingPeriod = VotingPeriod;
 	type GovernanceCurrencyIds = GovernanceCurrencyIds;
 	type NativeCurrencyId = NativeCurrencyId;
-	type DexerCurrencyId = DexerCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type MinimumDeposit = MinimumDeposit;
 	type GoldenMinimumDepositMultiple = GoldenMinimumDepositMultiple;
@@ -1186,7 +1186,7 @@ impl serp_prices::Config for Runtime {
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 	pub const SetterCurrencyId: CurrencyId = SETT;
-	pub const DexerCurrencyId: CurrencyId = DRAM;
+	pub const DirhamCurrencyId: CurrencyId = DRAM;
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
 	pub const GetDexerMaxSupply: Balance = 1_032_000_000 * dollar(DRAM); // 1.032 Billion DRAM
@@ -1468,7 +1468,7 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type DexerCurrencyId = DexerCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
 	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
 	type SerplusSerpupRatio = SerplusSerpupRatio;
@@ -1628,7 +1628,7 @@ impl setheum_incentives::Config for Runtime {
 	type DexPremiumRewardRates = DexPremiumRewardRates;
 	type DexPremiumInflationRate = DexPremiumInflationRate;
 	type SetterCurrencyId = SetterCurrencyId;
-	type DexerCurrencyId = DexerCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;

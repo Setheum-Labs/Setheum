@@ -219,6 +219,9 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
 			(SETT, DNAR) => (400, 100),
 			(CHFJ, SETT) => (100, 500),
 			(DNAR, SETT) => (100, 400),
+			(DRAM, SETT) => (100, 400),
+			(DRAM, DNAR) => (100, 400),
+			(DRAM, CHF) => (100, 400),
 			_ => (0, 0),
 		}
 	}
@@ -271,10 +274,10 @@ impl orml_rewards::Config for Runtime {
 // TODO: Add AccumulationPeriod
 parameter_types! {
 	pub const DexIncentivePool: AccountId = 10;
-	pub const DexPremiumPool: AccountId = 11;
-	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
+	pub const DexBonusPool: AccountId = 11;
 	pub const SetterCurrencyId: CurrencyId = SETT;
-	pub const DexerCurrencyId: CurrencyId = DRAM;
+	pub const GetSettUSDCurrencyId: CurrencyId = SETT;
+	pub const DirhamCurrencyId: CurrencyId = DRAM;
 	pub const NativeCurrencyId: CurrencyId = DNAR;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT, // Setter   -  The Defacto stablecoin & settmint reserve asset
@@ -290,19 +293,7 @@ parameter_types! {
 		GIPJ, // Setheum GIP (Gibraltar Pound stablecoin)
 	];
 	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
-	pub const AccumulatePeriod: BlockNumber = 20; /// 20 every blocks
-}
-
-parameter_type_with_key! {
-	pub DexPremiumRewardRates: |_currency_id: CurrencyId| -> (Rate, Rate) {
-		match currency_id {
-			&CHFJ_USDJ_LP => (10, 100),
-			&CHFJ_SETT_LP => (20, 100),
-			&DNAR_USDJ_LP => (20, 100),
-			&DNAR_SETT_LP => (50, 100),
-			_ => None,
-		}
-	};
+	pub AccumulatePeriod: BlockNumber = 20; /// 20 every blocks
 }
 
 ord_parameter_types! {
@@ -312,11 +303,10 @@ ord_parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type DexIncentivePool = DexIncentivePool;
-	type DexPremiumPool = DexPremiumPool;
-	type DexPremiumRewardRates = DexPremiumRewardRates;
-	type DexPremiumInflationRate = DexPremiumInflationRate;
+	type DexBonusPool = DexBonusPool;
 	type SetterCurrencyId = SetterCurrencyId;
-	type DexerCurrencyId = DexerCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
 	type NativeCurrencyId = NativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
 	type AccumulatePeriod = AccumulatePeriod;

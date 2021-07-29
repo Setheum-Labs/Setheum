@@ -9,7 +9,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 static_assertions = "1.1.0"
-serde = { version = "1.0.101", optional = true }
+serde = { version = "1.0.126", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
 
 sp-std = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
@@ -52,7 +52,6 @@ rand_chacha = { version = "0.2" }
 parking_lot = "0.11.1"
 hex = "0.4"
 orml-currencies = { path = "../../../lib-openrml/currencies" }
-serp-treasury = { package = "serp-treasury", path = "../serp-treasury" }
 
 [features]
 default = ["std"]
@@ -70,11 +69,11 @@ std = [
 	"sp-application-crypto/std",
 	"log/std",
 	"frame-election-provider-support/std",
+	"orml-tokens/std",
 	"orml-traits/std",
 	"orml-utilities/std",
 	"primitives/std",
 	"support/std",
-	"orml-tokens/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",

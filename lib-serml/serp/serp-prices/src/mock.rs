@@ -63,6 +63,7 @@ pub const LP_USDJ_DNAR: CurrencyId =
 CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DNAR));
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
+pub const AUD: CurrencyId = CurrencyId::Token(TokenSymbol::AUD);
 pub const BRL: CurrencyId = CurrencyId::Token(TokenSymbol::BRL);
 pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
 pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
@@ -212,7 +213,7 @@ parameter_type_with_key! {
 
 parameter_type_with_key! {
 	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
-		match currency_id {
+		match _currency_id {
 			&AUDJ => &AUD,
 			&CADJ => &CAD,
 			&CHFJ => &CHF,
@@ -308,7 +309,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		SerpPrices: prices::{Pallet, Storage, Call, Event<T>},
+		SerpPrices: serp_prices::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 	}
 );
