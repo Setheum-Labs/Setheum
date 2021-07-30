@@ -1,42 +1,41 @@
-// This file is part of Setheum.
+// This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// SPDX-License-Identifier: Apache-2.0
 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 //! The crate's tests.
 
-use crate as setheum_democracy;
 use super::*;
+use crate as pallet_democracy;
 use codec::Encode;
 use frame_support::{
-	assert_noop, assert_ok, parameter_types, ord_parameter_types,
-	traits::{SortedMembers, OnInitialize, Filter, GenesisBuild},
+	assert_noop, assert_ok, ord_parameter_types, parameter_types,
+	traits::{Filter, GenesisBuild, OnInitialize, SortedMembers},
 	weights::Weight,
 };
-use frame_system::{EnsureSignedBy, EnsureRoot};
-use orml_traits::{parameter_type_with_key, MultiReservableCurrency, MultiLockableCurrency};
-use primitives::{Amount, TokenSymbol};
+use frame_system::{EnsureRoot, EnsureSignedBy};
+use pallet_balances::{BalanceLock, Error as BalancesError};
 use sp_core::H256;
 use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup, BadOrigin},
-	testing::Header, Perbill,
+	testing::Header,
+	traits::{BadOrigin, BlakeTwo256, IdentityLookup},
+	Perbill,
 };
-use pallet_balances::{BalanceLock, Error as BalancesError};
 
 mod cancellation;
+mod decoders;
 mod delegation;
 mod external_proposing;
 mod fast_tracking;
@@ -45,16 +44,11 @@ mod preimage;
 mod public_proposals;
 mod scheduling;
 mod voting;
-mod decoders;
 
 const AYE: Vote = Vote { aye: true, conviction: Conviction::None };
 const NAY: Vote = Vote { aye: false, conviction: Conviction::None };
 const BIG_AYE: Vote = Vote { aye: true, conviction: Conviction::Locked1x };
 const BIG_NAY: Vote = Vote { aye: false, conviction: Conviction::Locked1x };
-
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 
 const MAX_PROPOSALS: u32 = 100;
 
@@ -69,9 +63,8 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Config, Event<T>},
-		Democracy: setheum_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
@@ -141,39 +134,17 @@ impl pallet_balances::Config for Test {
 	type AccountStore = System;
 	type WeightInfo = ();
 }
-parameter_type_with_key! {
-	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
-		Default::default()
-	};
-}
-impl orml_tokens::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type Amount = Amount;
-	type CurrencyId = CurrencyId;
-	type WeightInfo = ();
-	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = ();
-	type MaxLocks = ();
-}
 parameter_types! {
 	pub const LaunchPeriod: u64 = 2;
 	pub const VotingPeriod: u64 = 2;
 	pub const FastTrackVotingPeriod: u64 = 2;
-	pub const MinimumDeposit: u64 = 1; // Calculated in Setter (SETT) value.
-	pub GoldenMinimumDepositMultiple: u32 = 1; // 1x of the `MinimumDeposit` is minimum deposit for DNAR (1).
-	pub SetterMinimumDepositMultiple: u32 = 2; // 2x of the `MinimumDeposit` is minimum deposit for SETT (2).
-	pub SilverMinimumDepositMultiple: u32 = 3; // 3x of the `MinimumDeposit` is minimum deposit for DRAM (3).
+	pub const MinimumDeposit: u64 = 1;
 	pub const EnactmentPeriod: u64 = 2;
 	pub const CooloffPeriod: u64 = 2;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = MAX_PROPOSALS;
 	pub static PreimageByteDeposit: u64 = 0;
 	pub static InstantAllowed: bool = false;
-	pub const NativeCurrencyId: CurrencyId = DNAR;
-	pub const DirhamCurrencyId: CurrencyId = DRAM;
-	pub const SetterCurrencyId: CurrencyId = SETT;
-	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETT, DRAM];
 }
 ord_parameter_types! {
 	pub const One: u64 = 1;
@@ -196,19 +167,11 @@ impl Config for Test {
 	type Proposal = Call;
 	type Event = Event;
 	type Currency = pallet_balances::Pallet<Self>;
-	type MultiCurrency = Tokens;
 	type EnactmentPeriod = EnactmentPeriod;
 	type LaunchPeriod = LaunchPeriod;
 	type VotingPeriod = VotingPeriod;
-	type GovernanceCurrencyIds = GovernanceCurrencyIds;
-	type NativeCurrencyId = NativeCurrencyId;
-	type DirhamCurrencyId = DirhamCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	type MinimumDeposit = MinimumDeposit;
-	type GoldenMinimumDepositMultiple = GoldenMinimumDepositMultiple;
-	type SetterMinimumDepositMultiple = SetterMinimumDepositMultiple;
-	type SilverMinimumDepositMultiple = SilverMinimumDepositMultiple;
 	type ExternalOrigin = EnsureSignedBy<Two, u64>;
 	type ExternalMajorityOrigin = EnsureSignedBy<Three, u64>;
 	type ExternalDefaultOrigin = EnsureSignedBy<One, u64>;
@@ -232,10 +195,14 @@ impl Config for Test {
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-	pallet_balances::GenesisConfig::<Test>{
+	pallet_balances::GenesisConfig::<Test> {
 		balances: vec![(1, 10), (2, 20), (3, 30), (4, 40), (5, 50), (6, 60)],
-	}.assimilate_storage(&mut t).unwrap();
-	setheum_democracy::GenesisConfig::<Test>::default().assimilate_storage(&mut t).unwrap();
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+	pallet_democracy::GenesisConfig::<Test>::default()
+		.assimilate_storage(&mut t)
+		.unwrap();
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| System::set_block_number(1));
 	ext
@@ -284,19 +251,11 @@ fn set_balance_proposal_hash_and_note(value: u64) -> H256 {
 }
 
 fn propose_set_balance(who: u64, value: u64, delay: u64) -> DispatchResult {
-	Democracy::propose(
-		Origin::signed(who),
-		set_balance_proposal_hash(value),
-		delay,
-	)
+	Democracy::propose(Origin::signed(who), set_balance_proposal_hash(value), delay)
 }
 
 fn propose_set_balance_and_note(who: u64, value: u64, delay: u64) -> DispatchResult {
-	Democracy::propose(
-		Origin::signed(who),
-		set_balance_proposal_hash_and_note(value),
-		delay,
-	)
+	Democracy::propose(Origin::signed(who), set_balance_proposal_hash_and_note(value), delay)
 }
 
 fn next_block() {

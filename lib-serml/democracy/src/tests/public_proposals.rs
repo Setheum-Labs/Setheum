@@ -1,34 +1,33 @@
-// This file is part of Setheum.
+// This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// SPDX-License-Identifier: Apache-2.0
 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 //! The tests for the public proposal queue.
 
 use super::*;
 
 #[test]
-fn backing_for_proposal_should_work() {
+fn backing_for_should_work() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(propose_set_balance_and_note(1, 2, 2));
 		assert_ok!(propose_set_balance_and_note(1, 4, 4));
 		assert_ok!(propose_set_balance_and_note(1, 3, 3));
-		assert_eq!(Democracy::backing_for(0), Some(DNAR, 2));
-		assert_eq!(Democracy::backing_for(1), Some(DNAR, 4));
-		assert_eq!(Democracy::backing_for(2), Some(DNAR, 3));
+		assert_eq!(Democracy::backing_for(0), Some(2));
+		assert_eq!(Democracy::backing_for(1), Some(4));
+		assert_eq!(Democracy::backing_for(2), Some(3));
 	});
 }
 
@@ -40,9 +39,9 @@ fn deposit_for_proposals_should_be_taken() {
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
-		assert_eq!(Tokens::free_balance(DNAR, 1), 5);
-		assert_eq!(Tokens::free_balance(DNAR, 2), 15);
-		assert_eq!(Tokens::free_balance(DNAR, 5), 35);
+		assert_eq!(Balances::free_balance(1), 5);
+		assert_eq!(Balances::free_balance(2), 15);
+		assert_eq!(Balances::free_balance(5), 35);
 	});
 }
 
@@ -55,9 +54,9 @@ fn deposit_for_proposals_should_be_returned() {
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
 		assert_ok!(Democracy::second(Origin::signed(5), 0, u32::MAX));
 		fast_forward_to(3);
-		assert_eq!(Tokens::free_balance(DNAR, 1), 10);
-		assert_eq!(Tokens::free_balance(DNAR, 2), 20);
-		assert_eq!(Tokens::free_balance(DNAR, 5), 50);
+		assert_eq!(Balances::free_balance(1), 10);
+		assert_eq!(Balances::free_balance(2), 20);
+		assert_eq!(Balances::free_balance(5), 50);
 	});
 }
 
@@ -90,10 +89,7 @@ fn poor_seconder_should_not_work() {
 fn invalid_seconds_upper_bound_should_not_work() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(propose_set_balance_and_note(1, 2, 5));
-		assert_noop!(
-			Democracy::second(Origin::signed(2), 0, 0),
-			Error::<Test>::WrongUpperBound
-		);
+		assert_noop!(Democracy::second(Origin::signed(2), 0, 0), Error::<Test>::WrongUpperBound);
 	});
 }
 
@@ -106,7 +102,7 @@ fn cancel_proposal_should_work() {
 		assert_noop!(Democracy::cancel_proposal(Origin::signed(1), 0), BadOrigin);
 		assert_ok!(Democracy::cancel_proposal(Origin::root(), 0));
 		assert_eq!(Democracy::backing_for(0), None);
-		assert_eq!(Democracy::backing_for(1), Some(DNAR, 4));
+		assert_eq!(Democracy::backing_for(1), Some(4));
 	});
 }
 
@@ -123,7 +119,7 @@ fn blacklisting_should_work() {
 		assert_ok!(Democracy::blacklist(Origin::root(), hash, None));
 
 		assert_eq!(Democracy::backing_for(0), None);
-		assert_eq!(Democracy::backing_for(1), Some(DNAR, 4));
+		assert_eq!(Democracy::backing_for(1), Some(4));
 
 		assert_noop!(propose_set_balance_and_note(1, 2, 2), Error::<Test>::ProposalBlacklisted);
 

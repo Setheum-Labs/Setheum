@@ -1,22 +1,21 @@
-// This file is part of Setheum.
+// This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+// Copyright (C) 2020-2021 Parity Technologies (UK) Ltd.
+// SPDX-License-Identifier: Apache-2.0
 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-//! The tests for various partial storage decoders
+//! The for various partial storage decoders
 
 use super::*;
 use frame_support::storage::{migration, unhashed};
@@ -67,7 +66,7 @@ fn pre_image() {
 		assert_noop!(Democracy::check_pre_image_is_missing(key), Error::<Test>::NotImminent);
 
 		for l in vec![0, 10, 100, 1000u32] {
-			let available = PreimageStatus::Available{
+			let available = PreimageStatus::Available {
 				data: (0..l).map(|i| i as u8).collect(),
 				provider: 0,
 				deposit: 0,
@@ -77,8 +76,10 @@ fn pre_image() {
 
 			Preimages::<Test>::insert(key, available);
 			assert_eq!(Democracy::pre_image_data_len(key), Ok(l));
-			assert_noop!(Democracy::check_pre_image_is_missing(key),
-				Error::<Test>::DuplicatePreimage);
+			assert_noop!(
+				Democracy::check_pre_image_is_missing(key),
+				Error::<Test>::DuplicatePreimage
+			);
 		}
 	})
 }
