@@ -95,22 +95,6 @@ impl orml_tokens::Config for Runtime {
 	type MaxLocks = ();
 }
 
-pub struct MockDEXIncentives;
-impl DEXIncentives<AccountId, CurrencyId, Balance> for MockDEXIncentives {
-	fn dex_premium_rewards(lp_currency_id: CurrencyId) -> Option<Balance> {
-		Default::default()
-	}
-
-	fn do_deposit_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
-		Tokens::reserve(lp_currency_id, who, amount)
-	}
-
-	fn do_withdraw_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
-		let _ = Tokens::unreserve(lp_currency_id, who, amount);
-		Ok(())
-	}
-}
-
 ord_parameter_types! {
 	pub const ListingOrigin: AccountId = 3;
 }
@@ -129,7 +113,6 @@ impl Config for Runtime {
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
-	type DEXIncentives = MockDEXIncentives;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 

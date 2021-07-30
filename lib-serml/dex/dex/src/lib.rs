@@ -40,7 +40,7 @@ use sp_runtime::{
 	ArithmeticError, DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{CurrencyIdMapping, DEXIncentives, DEXManager, ExchangeRate, Ratio};
+use support::{CurrencyIdMapping, DEXManager, ExchangeRate, Ratio};
 
 mod mock;
 mod tests;
@@ -115,9 +115,6 @@ pub mod module {
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
-
-		/// DEX incentives
-		type DEXIncentives: DEXIncentives<Self::AccountId, CurrencyId, Balance>;
 
 		/// The origin which may list, enable or disable trading pairs.
 		type ListingOrigin: EnsureOrigin<Self::Origin>;
@@ -280,7 +277,6 @@ pub mod module {
 									*deposit_amount_0,
 									*deposit_amount_1,
 									Default::default(),
-									false,
 								),
 								_ => Err(Error::<T>::MustBeEnabled.into()),
 							};
@@ -346,13 +342,7 @@ pub mod module {
 		/// - `max_amount_b`: maximum amount of currency_id_b is allowed to inject to liquidity
 		///   pool.
 		/// - `min_share_increment`: minimum acceptable share amount.
-		/// - `stake_increment_share`: indicates whether to stake increased dex share to earn
-		///   incentives
-		#[pallet::weight(if *stake_increment_share {
-			<T as Config>::WeightInfo::add_liquidity_and_stake()
-		} else {
-			<T as Config>::WeightInfo::add_liquidity()
-		})]
+		#[pallet::weight(<T as Config>::WeightInfo::add_liquidity())]
 		#[transactional]
 		pub fn add_liquidity(
 			origin: OriginFor<T>,
@@ -361,7 +351,6 @@ pub mod module {
 			#[pallet::compact] max_amount_a: Balance,
 			#[pallet::compact] max_amount_b: Balance,
 			#[pallet::compact] min_share_increment: Balance,
-			stake_increment_share: bool,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			Self::do_add_liquidity(
@@ -371,7 +360,6 @@ pub mod module {
 				max_amount_a,
 				max_amount_b,
 				min_share_increment,
-				stake_increment_share,
 			)?;
 			Ok(().into())
 		}
@@ -418,19 +406,14 @@ pub mod module {
 
 		/// Remove liquidity from specific liquidity pool in the form of burning
 		/// shares, and withdrawing currencies in trading pairs from liquidity
-		/// pool in proportion, and withdraw liquidity incentive interest.
+		/// pool in proportion.
 		///
 		/// - `currency_id_a`: currency id A.
 		/// - `currency_id_b`: currency id B.
 		/// - `remove_share`: liquidity amount to remove.
 		/// - `min_withdrawn_a`: minimum acceptable withrawn for currency_id_a.
 		/// - `min_withdrawn_b`: minimum acceptable withrawn for currency_id_b.
-		/// - `by_unstake`: this flag indicates whether to withdraw share which is on incentives.
-		#[pallet::weight(if *by_unstake {
-			<T as Config>::WeightInfo::remove_liquidity_by_unstake()
-		} else {
-			<T as Config>::WeightInfo::remove_liquidity()
-		})]
+		#[pallet::weight(<T as Config>::WeightInfo::remove_liquidity())]
 		#[transactional]
 		pub fn remove_liquidity(
 			origin: OriginFor<T>,
@@ -439,7 +422,6 @@ pub mod module {
 			#[pallet::compact] remove_share: Balance,
 			#[pallet::compact] min_withdrawn_a: Balance,
 			#[pallet::compact] min_withdrawn_b: Balance,
-			by_unstake: bool,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			Self::do_remove_liquidity(
@@ -449,7 +431,6 @@ pub mod module {
 				remove_share,
 				min_withdrawn_a,
 				min_withdrawn_b,
-				by_unstake,
 			)?;
 			Ok(().into())
 		}
@@ -829,7 +810,6 @@ impl<T: Config> Pallet<T> {
 		max_amount_a: Balance,
 		max_amount_b: Balance,
 		min_share_increment: Balance,
-		stake_increment_share: bool,
 	) -> DispatchResult {
 		let trading_pair =
 			TradingPair::from_currency_ids(currency_id_a, currency_id_b).ok_or(Error::<T>::InvalidCurrencyId)?;
@@ -920,10 +900,6 @@ impl<T: Config> Pallet<T> {
 			*pool_0 = pool_0.checked_add(pool_0_increment).ok_or(ArithmeticError::Overflow)?;
 			*pool_1 = pool_1.checked_add(pool_1_increment).ok_or(ArithmeticError::Overflow)?;
 
-			if stake_increment_share {
-				T::DEXIncentives::do_deposit_dex_share(who, dex_share_currency_id, share_increment)?;
-			}
-
 			Self::deposit_event(Event::AddLiquidity(
 				who.clone(),
 				trading_pair.first(),
@@ -944,7 +920,6 @@ impl<T: Config> Pallet<T> {
 		remove_share: Balance,
 		min_withdrawn_a: Balance,
 		min_withdrawn_b: Balance,
-		by_unstake: bool,
 	) -> DispatchResult {
 		if remove_share.is_zero() {
 			return Ok(());
@@ -971,9 +946,6 @@ impl<T: Config> Pallet<T> {
 				Error::<T>::UnacceptableLiquidityWithdrawn,
 			);
 
-			if by_unstake {
-				T::DEXIncentives::do_withdraw_dex_share(who, dex_share_currency_id, remove_share)?;
-			}
 			T::Currency::withdraw(dex_share_currency_id, &who, remove_share)?;
 			T::Currency::transfer(trading_pair.first(), &module_account_id, &who, pool_0_decrement)?;
 			T::Currency::transfer(trading_pair.second(), &module_account_id, &who, pool_1_decrement)?;
@@ -1305,7 +1277,6 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 		max_amount_a: Balance,
 		max_amount_b: Balance,
 		min_share_increment: Balance,
-		stake_increment_share: bool,
 	) -> DispatchResult {
 		Self::do_add_liquidity(
 			who,
@@ -1314,7 +1285,6 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 			max_amount_a,
 			max_amount_b,
 			min_share_increment,
-			stake_increment_share,
 		)
 	}
 
@@ -1325,7 +1295,6 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 		remove_share: Balance,
 		min_withdrawn_a: Balance,
 		min_withdrawn_b: Balance,
-		by_unstake: bool,
 	) -> DispatchResult {
 		Self::do_remove_liquidity(
 			who,
@@ -1334,7 +1303,6 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 			remove_share,
 			min_withdrawn_a,
 			min_withdrawn_b,
-			by_unstake,
 		)
 	}
 }

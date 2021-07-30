@@ -819,11 +819,11 @@ fn add_liquidity_work() {
 			System::set_block_number(1);
 
 			assert_noop!(
-				DexModule::add_liquidity(Origin::signed(ALICE), DNAR, USDJ, 100_000_000, 100_000_000, 0, false),
+				DexModule::add_liquidity(Origin::signed(ALICE), DNAR, USDJ, 100_000_000, 100_000_000, 0),
 				Error::<Runtime>::MustBeEnabled
 			);
 			assert_noop!(
-				DexModule::add_liquidity(Origin::signed(ALICE), USDJ, DRAM, 0, 100_000_000, 0, false),
+				DexModule::add_liquidity(Origin::signed(ALICE), USDJ, DRAM, 0, 100_000_000, 0),
 				Error::<Runtime>::InvalidLiquidityIncrement
 			);
 
@@ -847,8 +847,7 @@ fn add_liquidity_work() {
 				DRAM,
 				5_000_000_000_000,
 				1_000_000_000_000,
-				0,
-				false,
+				0
 			));
 			System::assert_last_event(Event::DexModule(crate::Event::AddLiquidity(
 				ALICE,
@@ -886,7 +885,7 @@ fn add_liquidity_work() {
 			assert_eq!(Tokens::free_balance(DRAM, &BOB), 1_000_000_000_000_000_000);
 
 			assert_noop!(
-				DexModule::add_liquidity(Origin::signed(BOB), USDJ, DRAM, 4, 1, 0, true,),
+				DexModule::add_liquidity(Origin::signed(BOB), USDJ, DRAM, 4, 1, 0,),
 				Error::<Runtime>::InvalidLiquidityIncrement,
 			);
 
@@ -898,7 +897,6 @@ fn add_liquidity_work() {
 					50_000_000_000_000,
 					8_000_000_000_000,
 					80_000_000_000_001,
-					true,
 				),
 				Error::<Runtime>::UnacceptableShareIncrement
 			);
@@ -910,7 +908,6 @@ fn add_liquidity_work() {
 				50_000_000_000_000,
 				8_000_000_000_000,
 				80_000_000_000_000,
-				true,
 			));
 			System::assert_last_event(Event::DexModule(crate::Event::AddLiquidity(
 				BOB,
@@ -954,7 +951,6 @@ fn remove_liquidity_work() {
 				5_000_000_000_000,
 				1_000_000_000_000,
 				0,
-				false
 			));
 			assert_noop!(
 				DexModule::remove_liquidity(
@@ -964,7 +960,6 @@ fn remove_liquidity_work() {
 					100_000_000,
 					0,
 					0,
-					false,
 				),
 				Error::<Runtime>::InvalidCurrencyId
 			);
@@ -990,7 +985,6 @@ fn remove_liquidity_work() {
 					8_000_000_000_000,
 					4_000_000_000_001,
 					800_000_000_000,
-					false,
 				),
 				Error::<Runtime>::UnacceptableLiquidityWithdrawn
 			);
@@ -1002,7 +996,6 @@ fn remove_liquidity_work() {
 					8_000_000_000_000,
 					4_000_000_000_000,
 					800_000_000_001,
-					false,
 				),
 				Error::<Runtime>::UnacceptableLiquidityWithdrawn
 			);
@@ -1013,7 +1006,6 @@ fn remove_liquidity_work() {
 				8_000_000_000_000,
 				4_000_000_000_000,
 				800_000_000_000,
-				false,
 			));
 			System::assert_last_event(Event::DexModule(crate::Event::RemoveLiquidity(
 				ALICE,
@@ -1043,7 +1035,6 @@ fn remove_liquidity_work() {
 				2_000_000_000_000,
 				0,
 				0,
-				false,
 			));
 			System::assert_last_event(Event::DexModule(crate::Event::RemoveLiquidity(
 				ALICE,
@@ -1069,8 +1060,7 @@ fn remove_liquidity_work() {
 				DRAM,
 				5_000_000_000_000,
 				1_000_000_000_000,
-				0,
-				true
+				0
 			));
 			assert_eq!(
 				Tokens::free_balance(USDJDRAMPair::get().dex_share_currency_id(), &BOB),
@@ -1087,7 +1077,6 @@ fn remove_liquidity_work() {
 				2_000_000_000_000,
 				0,
 				0,
-				true,
 			));
 			assert_eq!(
 				Tokens::free_balance(USDJDRAMPair::get().dex_share_currency_id(), &BOB),
@@ -1115,7 +1104,6 @@ fn do_swap_with_exact_supply_work() {
 				500_000_000_000_000,
 				100_000_000_000_000,
 				0,
-				false,
 			));
 			assert_ok!(DexModule::add_liquidity(
 				Origin::signed(ALICE),
@@ -1124,7 +1112,6 @@ fn do_swap_with_exact_supply_work() {
 				100_000_000_000_000,
 				10_000_000_000,
 				0,
-				false,
 			));
 
 			assert_eq!(
@@ -1253,7 +1240,6 @@ fn do_swap_with_exact_target_work() {
 				500_000_000_000_000,
 				100_000_000_000_000,
 				0,
-				false,
 			));
 			assert_ok!(DexModule::add_liquidity(
 				Origin::signed(ALICE),
@@ -1262,7 +1248,6 @@ fn do_swap_with_exact_target_work() {
 				100_000_000_000_000,
 				10_000_000_000,
 				0,
-				false,
 			));
 
 			assert_eq!(
