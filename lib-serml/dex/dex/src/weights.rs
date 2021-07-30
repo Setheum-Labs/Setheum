@@ -52,11 +52,9 @@ pub trait WeightInfo {
 	fn update_provisioning_parameters() -> Weight;
 	fn end_provisioning() -> Weight;
 	fn add_liquidity() -> Weight;
-	fn add_liquidity_and_stake() -> Weight;
 	fn add_provision() -> Weight;
 	fn claim_dex_share() -> Weight;
 	fn remove_liquidity() -> Weight;
-	fn remove_liquidity_by_unstake() -> Weight;
 	fn swap_with_exact_supply(u: u32, ) -> Weight;
 	fn swap_with_exact_target(u: u32, ) -> Weight;
 }
@@ -94,11 +92,6 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(8 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))
 	}
-	fn add_liquidity_and_stake() -> Weight {
-		(296_383_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(13 as Weight))
-			.saturating_add(T::DbWeight::get().writes(12 as Weight))
-	}
 	fn add_provision() -> Weight {
 		(197_944_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(8 as Weight))
@@ -113,11 +106,6 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 		(205_562_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(7 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))
-	}
-	fn remove_liquidity_by_unstake() -> Weight {
-		(339_614_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(12 as Weight))
-			.saturating_add(T::DbWeight::get().writes(12 as Weight))
 	}
 	fn swap_with_exact_supply(u: u32, ) -> Weight {
 		(156_409_000 as Weight)
@@ -167,11 +155,6 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(8 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(7 as Weight))
 	}
-	fn add_liquidity_and_stake() -> Weight {
-		(296_383_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(13 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(12 as Weight))
-	}
 	fn add_provision() -> Weight {
 		(197_944_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(8 as Weight))
@@ -186,11 +169,6 @@ impl WeightInfo for () {
 		(205_562_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(7 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(7 as Weight))
-	}
-	fn remove_liquidity_by_unstake() -> Weight {
-		(339_614_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(12 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(12 as Weight))
 	}
 	fn swap_with_exact_supply(u: u32, ) -> Weight {
 		(156_409_000 as Weight)

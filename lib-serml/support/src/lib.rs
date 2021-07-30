@@ -106,7 +106,6 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		max_amount_a: Balance,
 		max_amount_b: Balance,
 		min_share_increment: Balance,
-		stake_increment_share: bool,
 	) -> DispatchResult;
 
 	fn remove_liquidity(
@@ -116,7 +115,6 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		remove_share: Balance,
 		min_withdrawn_a: Balance,
 		min_withdrawn_b: Balance,
-		by_unstake: bool,
 	) -> DispatchResult;
 }
 
@@ -175,7 +173,6 @@ where
 		_max_amount_a: Balance,
 		_max_amount_b: Balance,
 		_min_share_increment: Balance,
-		_stake_increment_share: bool,
 	) -> DispatchResult {
 		Ok(())
 	}
@@ -187,7 +184,6 @@ where
 		_remove_share: Balance,
 		_min_withdrawn_a: Balance,
 		_min_withdrawn_b: Balance,
-		_by_unstake: bool,
 	) -> DispatchResult {
 		Ok(())
 	}
@@ -338,11 +334,6 @@ pub trait PriceProvider<CurrencyId> {
 
 pub trait ExchangeRateProvider {
 	fn get_exchange_rate() -> ExchangeRate;
-}
-
-pub trait DEXIncentives<AccountId, CurrencyId, Balance> {
-	fn do_deposit_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
-	fn do_withdraw_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 }
 
 /// Return true if the call of EVM precompile contract is allowed.
