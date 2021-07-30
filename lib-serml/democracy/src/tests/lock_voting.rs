@@ -1,20 +1,19 @@
-// This file is part of Setheum.
+// This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// SPDX-License-Identifier: Apache-2.0
 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 //! The tests for functionality concerning locking and lock-voting.
 
@@ -24,23 +23,19 @@ use std::convert::TryFrom;
 fn aye(x: u8, balance: u64) -> AccountVote<u64> {
 	AccountVote::Standard {
 		vote: Vote { aye: true, conviction: Conviction::try_from(x).unwrap() },
-		balance
+		balance,
 	}
 }
 
 fn nay(x: u8, balance: u64) -> AccountVote<u64> {
 	AccountVote::Standard {
 		vote: Vote { aye: false, conviction: Conviction::try_from(x).unwrap() },
-		balance
+		balance,
 	}
 }
 
 fn the_lock(amount: u64) -> BalanceLock<u64> {
-	BalanceLock {
-		id: DEMOCRACY_ID,
-		amount,
-		reasons: pallet_balances::Reasons::Misc,
-	}
+	BalanceLock { id: DEMOCRACY_ID, amount, reasons: pallet_balances::Reasons::Misc }
 }
 
 #[test]
@@ -51,7 +46,7 @@ fn lock_voting_should_work() {
 			2,
 			set_balance_proposal_hash_and_note(2),
 			VoteThreshold::SuperMajorityApprove,
-			0
+			0,
 		);
 		assert_ok!(Democracy::vote(Origin::signed(1), r, nay(5, 10)));
 		assert_ok!(Democracy::vote(Origin::signed(2), r, aye(4, 20)));
@@ -75,7 +70,10 @@ fn lock_voting_should_work() {
 		assert_ok!(Democracy::unlock(Origin::signed(2), 5));
 
 		// 2, 3, 4 got their way with the vote, so they cannot be reaped by others.
-		assert_noop!(Democracy::remove_other_vote(Origin::signed(1), 2, r), Error::<Test>::NoPermission);
+		assert_noop!(
+			Democracy::remove_other_vote(Origin::signed(1), 2, r),
+			Error::<Test>::NoPermission
+		);
 		// However, they can be unvoted by the owner, though it will make no difference to the lock.
 		assert_ok!(Democracy::remove_vote(Origin::signed(2), r));
 		assert_ok!(Democracy::unlock(Origin::signed(2), 2));
@@ -87,10 +85,12 @@ fn lock_voting_should_work() {
 		assert_eq!(Balances::locks(5), vec![]);
 		assert_eq!(Balances::free_balance(42), 2);
 
-
 		fast_forward_to(5);
 		// No change yet...
-		assert_noop!(Democracy::remove_other_vote(Origin::signed(1), 4, r), Error::<Test>::NoPermission);
+		assert_noop!(
+			Democracy::remove_other_vote(Origin::signed(1), 4, r),
+			Error::<Test>::NoPermission
+		);
 		assert_ok!(Democracy::unlock(Origin::signed(1), 4));
 		assert_eq!(Balances::locks(4), vec![the_lock(40)]);
 		fast_forward_to(6);
@@ -100,7 +100,10 @@ fn lock_voting_should_work() {
 		assert_eq!(Balances::locks(4), vec![]);
 
 		fast_forward_to(9);
-		assert_noop!(Democracy::remove_other_vote(Origin::signed(1), 3, r), Error::<Test>::NoPermission);
+		assert_noop!(
+			Democracy::remove_other_vote(Origin::signed(1), 3, r),
+			Error::<Test>::NoPermission
+		);
 		assert_ok!(Democracy::unlock(Origin::signed(1), 3));
 		assert_eq!(Balances::locks(3), vec![the_lock(30)]);
 		fast_forward_to(10);
@@ -146,7 +149,7 @@ fn lock_voting_should_work_with_delegation() {
 			2,
 			set_balance_proposal_hash_and_note(2),
 			VoteThreshold::SuperMajorityApprove,
-			0
+			0,
 		);
 		assert_ok!(Democracy::vote(Origin::signed(1), r, nay(5, 10)));
 		assert_ok!(Democracy::vote(Origin::signed(2), r, aye(4, 20)));
@@ -169,7 +172,7 @@ fn setup_three_referenda() -> (u32, u32, u32) {
 		2,
 		set_balance_proposal_hash_and_note(2),
 		VoteThreshold::SimpleMajority,
-		0
+		0,
 	);
 	assert_ok!(Democracy::vote(Origin::signed(5), r1, aye(4, 10)));
 
@@ -177,7 +180,7 @@ fn setup_three_referenda() -> (u32, u32, u32) {
 		2,
 		set_balance_proposal_hash_and_note(2),
 		VoteThreshold::SimpleMajority,
-		0
+		0,
 	);
 	assert_ok!(Democracy::vote(Origin::signed(5), r2, aye(3, 20)));
 
@@ -185,7 +188,7 @@ fn setup_three_referenda() -> (u32, u32, u32) {
 		2,
 		set_balance_proposal_hash_and_note(2),
 		VoteThreshold::SimpleMajority,
-		0
+		0,
 	);
 	assert_ok!(Democracy::vote(Origin::signed(5), r3, aye(2, 50)));
 
@@ -203,7 +206,10 @@ fn prior_lockvotes_should_be_enforced() {
 		// r.2 locked 50 until #6.
 
 		fast_forward_to(5);
-		assert_noop!(Democracy::remove_other_vote(Origin::signed(1), 5, r.2), Error::<Test>::NoPermission);
+		assert_noop!(
+			Democracy::remove_other_vote(Origin::signed(1), 5, r.2),
+			Error::<Test>::NoPermission
+		);
 		assert_ok!(Democracy::unlock(Origin::signed(5), 5));
 		assert_eq!(Balances::locks(5), vec![the_lock(50)]);
 		fast_forward_to(6);
@@ -211,7 +217,10 @@ fn prior_lockvotes_should_be_enforced() {
 		assert_ok!(Democracy::unlock(Origin::signed(5), 5));
 		assert_eq!(Balances::locks(5), vec![the_lock(20)]);
 		fast_forward_to(9);
-		assert_noop!(Democracy::remove_other_vote(Origin::signed(1), 5, r.1), Error::<Test>::NoPermission);
+		assert_noop!(
+			Democracy::remove_other_vote(Origin::signed(1), 5, r.1),
+			Error::<Test>::NoPermission
+		);
 		assert_ok!(Democracy::unlock(Origin::signed(5), 5));
 		assert_eq!(Balances::locks(5), vec![the_lock(20)]);
 		fast_forward_to(10);
@@ -219,7 +228,10 @@ fn prior_lockvotes_should_be_enforced() {
 		assert_ok!(Democracy::unlock(Origin::signed(5), 5));
 		assert_eq!(Balances::locks(5), vec![the_lock(10)]);
 		fast_forward_to(17);
-		assert_noop!(Democracy::remove_other_vote(Origin::signed(1), 5, r.0), Error::<Test>::NoPermission);
+		assert_noop!(
+			Democracy::remove_other_vote(Origin::signed(1), 5, r.0),
+			Error::<Test>::NoPermission
+		);
 		assert_ok!(Democracy::unlock(Origin::signed(5), 5));
 		assert_eq!(Balances::locks(5), vec![the_lock(10)]);
 		fast_forward_to(18);
@@ -297,7 +309,7 @@ fn locks_should_persist_from_voting_to_delegation() {
 			2,
 			set_balance_proposal_hash_and_note(2),
 			VoteThreshold::SimpleMajority,
-			0
+			0,
 		);
 		assert_ok!(Democracy::vote(Origin::signed(5), r, aye(4, 10)));
 		fast_forward_to(2);

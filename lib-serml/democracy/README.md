@@ -1,17 +1,11 @@
-# Setheum Democracy Pallet
+# Democracy Pallet
+
+- [`democracy::Trait`](https://docs.rs/pallet-democracy/latest/pallet_democracy/trait.Trait.html)
+- [`Call`](https://docs.rs/pallet-democracy/latest/pallet_democracy/enum.Call.html)
 
 ## Overview
 
-In Setheum Democracy, it is a multi-currency democracy where a participant can
-lock not just one type of currency but a multiple. 
-This provides multiple governance tokens not just one.
-Supports MultiCurrency Governance Model. In Setheum, it is three 
-(DNAR, SETT and DRAM).
-But only the native currency if allowed for voting while the others are allowed for proposing referendum..
-
-The Democracy pallet handles the administration of general stakeholder voting. It is based on the [FRAME Democracy Pallet](https://github.com/paritytech/substrate/frame/democracy).
-
-## FRAME Democracy Pallet Overview
+The Democracy pallet handles the administration of general stakeholder voting.
 
 There are two different queues that a proposal can be added to before it
 becomes a referendum, 1) the proposal queue consisting of all public proposals
