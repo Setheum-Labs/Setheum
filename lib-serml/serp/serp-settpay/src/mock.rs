@@ -136,8 +136,8 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 	}
 }
 
-pub struct MockDex;
-impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
+pub struct MockDEX;
+impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USDJ, DNAR) => (10000, 200),
@@ -336,55 +336,21 @@ impl orml_currencies::Config for Runtime {
 
 pub struct MockPriceSource;
 impl PriceProvider<CurrencyId> for MockPriceSource {
-	fn get_peg_currency_by_currency_id(_currency_id: CurrencyId) -> CurrencyId {
-		Default::default()
-	}
-
-	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_fiat_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_fiat_usd_fixed_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_settusd_fixed_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_stablecoin_fixed_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_stablecoin_market_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
+	
 
 	fn get_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
 		Some(Price::one())
 	}
 
-	fn get_market_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_coin_to_peg_relative_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_setter_basket_peg_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_setter_fixed_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
 	fn get_market_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+	
+	fn get_setter_price() -> Option<Price> {
 		Some(Price::one())
 	}
 

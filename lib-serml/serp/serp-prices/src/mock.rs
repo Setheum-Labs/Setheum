@@ -31,7 +31,7 @@ use sp_runtime::{
 	traits::{IdentityLookup, One as OneT, Zero},
 	DispatchError, FixedPointNumber,
 };
-use support::{mocks::MockCurrencyIdMapping, ExchangeRate, Ratio};
+use support::{mocks::MockCurrencyIdMapping, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -54,23 +54,24 @@ pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
 pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
 pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
 pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 
 // LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
-pub const LP_CHFJ_USDJ: CurrencyId =
-CurrencyId::DexShare(DexShare::Token(TokenSymbol::CHFJ), DexShare::Token(TokenSymbol::USDJ));
+pub const LP_BTC_USDJ: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::RENBTC), DexShare::Token(TokenSymbol::USDJ));
 pub const LP_USDJ_DNAR: CurrencyId =
 CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DNAR));
+pub const LP_USDJ_DRAM: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DRAM));
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
 pub const AUD: CurrencyId = CurrencyId::Token(TokenSymbol::AUD);
-pub const BRL: CurrencyId = CurrencyId::Token(TokenSymbol::BRL);
 pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
 pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
 pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
 pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
 pub const JPY: CurrencyId = CurrencyId::Token(TokenSymbol::JPY);
-pub const QAR: CurrencyId = CurrencyId::Token(TokenSymbol::QAR);
 pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
 pub const SEK: CurrencyId = CurrencyId::Token(TokenSymbol::SEK);
 pub const SGD: CurrencyId = CurrencyId::Token(TokenSymbol::SGD);
@@ -117,9 +118,9 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 	fn get(currency_id: &CurrencyId) -> Option<Price> {
 		match *currency_id {
 			USDJ => Some(Price::saturating_from_rational(99, 100)),
-			CHFJ => Some(Price::saturating_from_integer(50000)),
+			BTC => Some(Price::saturating_from_integer(50000)),
 			DNAR => Some(Price::saturating_from_integer(100)),
-			DNAR => Some(Price::zero()),
+			DRAM => Some(Price::zero()),
 			_ => None,
 		}
 	}
@@ -131,8 +132,8 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 	}
 }
 
-pub struct MockDex;
-impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
+pub struct MockDEX;
+impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USDJ, DNAR) => (10000, 200),
@@ -187,7 +188,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
 		_max_amount_a: Balance,
 		_max_amount_b: Balance,
 		_min_share_increment: Balance,
-		_deposit_increment_share: bool,
 	) -> DispatchResult {
 		unimplemented!()
 	}
@@ -199,7 +199,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
 		_remove_share: Balance,
 		_min_withdrawn_a: Balance,
 		_min_withdrawn_b: Balance,
-		_by_withdraw: bool,
 	) -> DispatchResult {
 		unimplemented!()
 	}
@@ -208,24 +207,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
-	};
-}
-
-parameter_type_with_key! {
-	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
-		match _currency_id {
-			&AUDJ => &AUD,
-			&CADJ => &CAD,
-			&CHFJ => &CHF,
-			&EURJ => &EUR,
-			&GBPJ => &GBP,
-			&JPYJ => &JPY,
-			&SARJ => &SAR,
-			&SEKJ => &SEK,
-			&SGDJ => &SGD,
-			&USDJ => &USD,
-			_ => None,
-		}
 	};
 }
 
@@ -247,6 +228,15 @@ ord_parameter_types! {
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
+	pub const GetFiatAUDCurrencyId: CurrencyId = AUD; // The AUD Fiat currency denomination.
+	pub const GetFiatCADCurrencyId: CurrencyId = CAD; // The CAD Fiat currency denomination.
+	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
+	pub const GetFiatEURCurrencyId: CurrencyId = EUR; // The EUR Fiat currency denomination.
+	pub const GetFiatGBPCurrencyId: CurrencyId = GBP; // The GBP Fiat currency denomination.
+	pub const GetFiatJPYCurrencyId: CurrencyId = JPY; // The JPY Fiat currency denomination.
+	pub const GetFiatSARCurrencyId: CurrencyId = SAR; // The SAR Fiat currency denomination.
+	pub const GetFiatSEKCurrencyId: CurrencyId = SEK; // The SEK Fiat currency denomination.
+	pub const GetFiatSGDCurrencyId: CurrencyId = SGD; // The SGD Fiat currency denomination.
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
 
@@ -263,12 +253,12 @@ parameter_types! {
 	
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
+		SETT, AUDJ, CADJ, BTC, EURJ, GBPJ,
 		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
-		AUD, CAD, CHF, EUR, GBP, JPY, QAR, SAR,
-		SEK, SGD, USD, JOD, BHD, KYD, OMR, GIP
+		AUD, CAD, CHF, EUR, GBP, JPY, SAR, SEK,
+		SGD, USD, JOD, BHD, KYD, OMR, GIP
 	];
 }
 
@@ -277,6 +267,15 @@ impl Config for Runtime {
 	type Source = MockDataProvider;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetFiatAUDCurrencyId = GetFiatAUDCurrencyId;
+	type GetFiatCADCurrencyId = GetFiatCADCurrencyId;
+	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
+	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
+	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
+	type GetFiatJPYCurrencyId = GetFiatJPYCurrencyId;
+	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
+	type GetFiatSEKCurrencyId = GetFiatSEKCurrencyId;
+	type GetFiatSGDCurrencyId = GetFiatSGDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
@@ -289,9 +288,6 @@ impl Config for Runtime {
 	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
 	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
 	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type PegCurrencyIds = PegCurrencyIds;
-	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = MockDEX;
 	type Currency = Tokens;

@@ -159,8 +159,13 @@ impl<T: Config> Pallet<T> {
 	pub fn account_id() -> T::AccountId {
 		T::PalletId::get().into_account()
 	}
+}
 
-	pub fn get_cashdrop_rate(currency_id: CurrencyId) -> (u32, u32) {
+impl<T: Config> CashDrop<AccountId> for Pallet<T> {
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+
+	fn get_cashdrop_rate(currency_id: CurrencyId) -> (u32, u32) {
 		ensure!(
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
@@ -168,18 +173,13 @@ impl<T: Config> Pallet<T> {
 		T::GetCashDropRates::get(currency_id).unwrap_or_else(T::DefaultCashDropRate::get)
 	}
 
-	pub fn get_minimum_claimable_transfer(currency_id: CurrencyId) -> Balance {
+	fn get_minimum_claimable_transfer(currency_id: CurrencyId) -> Balance {
 		ensure!(
 			T::RewardableCurrencyIds.contains(currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
 		Self::minimum_claimable_transfer(currency_id).unwrap_or_else(T::DefaultMinimumClaimableTransfer::get)
 	}
-}
-
-impl<T: Config> CashDrop<AccountId> for Pallet<T> {
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
 	fn claim_cashdrop(currency_id: CurrencyId, who: &AccountId, transfer_amount: Balance) -> DispatchResult {
