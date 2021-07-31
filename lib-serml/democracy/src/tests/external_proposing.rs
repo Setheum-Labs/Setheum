@@ -1,20 +1,19 @@
-// This file is part of Setheum.
+// This file is part of Substrate.
 
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// SPDX-License-Identifier: Apache-2.0
 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 //! The tests for functionality concerning the "external" origin.
 
@@ -35,17 +34,17 @@ fn veto_external_works() {
 		// cancelled.
 		assert!(!<NextExternal<Test>>::exists());
 		// fails - same proposal can't be resubmitted.
-		assert_noop!(Democracy::external_propose(
-			Origin::signed(2),
-			set_balance_proposal_hash(2),
-		), Error::<Test>::ProposalBlacklisted);
+		assert_noop!(
+			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash(2),),
+			Error::<Test>::ProposalBlacklisted
+		);
 
 		fast_forward_to(1);
 		// fails as we're still in cooloff period.
-		assert_noop!(Democracy::external_propose(
-			Origin::signed(2),
-			set_balance_proposal_hash(2),
-		), Error::<Test>::ProposalBlacklisted);
+		assert_noop!(
+			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash(2),),
+			Error::<Test>::ProposalBlacklisted
+		);
 
 		fast_forward_to(2);
 		// works; as we're out of the cooloff period.
@@ -68,10 +67,10 @@ fn veto_external_works() {
 
 		fast_forward_to(3);
 		// same proposal fails as we're still in cooloff
-		assert_noop!(Democracy::external_propose(
-			Origin::signed(2),
-			set_balance_proposal_hash(2),
-		), Error::<Test>::ProposalBlacklisted);
+		assert_noop!(
+			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash(2),),
+			Error::<Test>::ProposalBlacklisted
+		);
 		// different proposal works fine.
 		assert_ok!(Democracy::external_propose(
 			Origin::signed(2),
@@ -97,10 +96,7 @@ fn external_blacklisting_should_work() {
 		assert_noop!(Democracy::referendum_status(0), Error::<Test>::ReferendumInvalid);
 
 		assert_noop!(
-			Democracy::external_propose(
-				Origin::signed(2),
-				set_balance_proposal_hash_and_note(2),
-			),
+			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash_and_note(2),),
 			Error::<Test>::ProposalBlacklisted,
 		);
 	});
@@ -111,20 +107,17 @@ fn external_referendum_works() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(0);
 		assert_noop!(
-			Democracy::external_propose(
-				Origin::signed(1),
-				set_balance_proposal_hash(2),
-			),
+			Democracy::external_propose(Origin::signed(1), set_balance_proposal_hash(2),),
 			BadOrigin,
 		);
 		assert_ok!(Democracy::external_propose(
 			Origin::signed(2),
 			set_balance_proposal_hash_and_note(2),
 		));
-		assert_noop!(Democracy::external_propose(
-			Origin::signed(2),
-			set_balance_proposal_hash(1),
-		), Error::<Test>::DuplicateProposal);
+		assert_noop!(
+			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash(1),),
+			Error::<Test>::DuplicateProposal
+		);
 		fast_forward_to(2);
 		assert_eq!(
 			Democracy::referendum_status(0),
@@ -144,10 +137,7 @@ fn external_majority_referendum_works() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(0);
 		assert_noop!(
-			Democracy::external_propose_majority(
-				Origin::signed(1),
-				set_balance_proposal_hash(2)
-			),
+			Democracy::external_propose_majority(Origin::signed(1), set_balance_proposal_hash(2)),
 			BadOrigin,
 		);
 		assert_ok!(Democracy::external_propose_majority(
@@ -173,10 +163,7 @@ fn external_default_referendum_works() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(0);
 		assert_noop!(
-			Democracy::external_propose_default(
-				Origin::signed(3),
-				set_balance_proposal_hash(2)
-			),
+			Democracy::external_propose_default(Origin::signed(3), set_balance_proposal_hash(2)),
 			BadOrigin,
 		);
 		assert_ok!(Democracy::external_propose_default(
@@ -196,7 +183,6 @@ fn external_default_referendum_works() {
 		);
 	});
 }
-
 
 #[test]
 fn external_and_public_interleaving_works() {
@@ -223,9 +209,9 @@ fn external_and_public_interleaving_works() {
 		);
 		// replenish external
 		assert_ok!(Democracy::external_propose(
-				Origin::signed(2),
-				set_balance_proposal_hash_and_note(3),
-			));
+			Origin::signed(2),
+			set_balance_proposal_hash_and_note(3),
+		));
 
 		fast_forward_to(4);
 
@@ -257,9 +243,9 @@ fn external_and_public_interleaving_works() {
 		);
 		// replenish external
 		assert_ok!(Democracy::external_propose(
-				Origin::signed(2),
-				set_balance_proposal_hash_and_note(5),
-			));
+			Origin::signed(2),
+			set_balance_proposal_hash_and_note(5),
+		));
 
 		fast_forward_to(8);
 
