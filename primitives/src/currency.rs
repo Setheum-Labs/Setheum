@@ -198,7 +198,7 @@ create_currency_id! {
 	#[repr(u8)]
 	pub enum TokenSymbol {
 		/// Setheum Network
-		DNAR("Setheum Dinar", 10) = 0, // could consider having 12 decimals too.
+		DNAR("Setheum Dinar", 12) = 0,
 		DRAM("Setheum Dirham", 12) = 1,
 		SETT("Setter", 12) = 2,
 		// SettCurrencies
