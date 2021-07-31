@@ -41,6 +41,7 @@ pub mod mocks;
 pub type BlockNumber = u32;
 pub type CashDropRate = FixedU128;
 pub type CashDropClaim = bool;
+pub type FiatCurrencyId = CurrencyId;
 pub type ExchangeRate = FixedU128;
 pub type Price = FixedU128;
 pub type Rate = FixedU128;
@@ -279,6 +280,10 @@ pub trait CashDrop<AccountId> {
 	type Balance;
 	type CurrencyId;
 
+	fn get_cashdrop_rate(currency_id: Self::CurrencyId) -> (u32, u32);
+
+	fn get_minimum_claimable_transfer(currency_id: Self::CurrencyId) -> Self::Balance;
+
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
 	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
 
@@ -314,19 +319,10 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 }
 
 pub trait PriceProvider<CurrencyId> {
-	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> CurrencyId;
-	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_fiat_price(fiat_currency_id: CurrencyId) -> Option<Price>;
-	fn get_fiat_usd_fixed_price() -> Option<Price>;
-	fn get_settusd_fixed_price() -> Option<Price>;
-	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_stablecoin_market_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
-	fn get_market_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
-	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_setter_basket_peg_price() -> Option<Price>;
-	fn get_setter_fixed_price() -> Option<Price>;
 	fn get_market_price(currency_id: CurrencyId) -> Option<Price>;
+	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
+	fn get_setter_price() -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
 	fn lock_price(currency_id: CurrencyId);
 	fn unlock_price(currency_id: CurrencyId);
