@@ -971,6 +971,15 @@ parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETT;
 	pub const DirhamCurrencyId: CurrencyId = DRAM;
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
+	pub const GetFiatAUDCurrencyId: CurrencyId = AUD;
+	pub const GetFiatCADCurrencyId: CurrencyId = CAD;
+	pub const GetFiatCHFCurrencyId: CurrencyId = CHF;
+	pub const GetFiatEURCurrencyId: CurrencyId = EUR;
+	pub const GetFiatGBPCurrencyId: CurrencyId = GBP;
+	pub const GetFiatJPYCurrencyId: CurrencyId = JPY;
+	pub const GetFiatSARCurrencyId: CurrencyId = SAR;
+	pub const GetFiatSEKCurrencyId: CurrencyId = SEK;
+	pub const GetFiatSGDCurrencyId: CurrencyId = SGD;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
 }
 
@@ -1161,6 +1170,15 @@ impl serp_prices::Config for Runtime {
 	type Source = AggregatedDataProvider;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetFiatAUDCurrencyId = GetFiatAUDCurrencyId;
+	type GetFiatCADCurrencyId = GetFiatCADCurrencyId;
+	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
+	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
+	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
+	type GetFiatJPYCurrencyId = GetFiatJPYCurrencyId;
+	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
+	type GetFiatSEKCurrencyId = GetFiatSEKCurrencyId;
+	type GetFiatSGDCurrencyId = GetFiatSGDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
@@ -1173,9 +1191,6 @@ impl serp_prices::Config for Runtime {
 	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
 	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
 	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type PegCurrencyIds = PegCurrencyIds;
-	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type DEX = Dex;
 	type Currency = Currencies;
