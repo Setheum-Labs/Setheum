@@ -45,7 +45,7 @@ use sp_std::{
 	prelude::*, result::Result, vec
 };
 use support::{
-	DEXManager, PriceProvider, Ratio, SerpAuctionManager, SerpTreasury, SerpTreasuryExtended
+	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
 mod mock;
@@ -62,10 +62,6 @@ pub mod module {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
-		/// The origin which may update parameters and handle
-		/// serplus/standard/reserve. Root can always do this.
-		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -97,50 +93,14 @@ pub mod module {
 		/// (Blocktime/BlockNumber - every blabla block)
 		type SerpTesSchedule: Get<Self::BlockNumber>;
 
-		/// SerpUp ratio for Serplus Auctions / Swaps
-		/// The first item of the tuple is the numerator of the serpup rate, second
-		/// item is the denominator, serpup_rate = numerator / denominator,
-		/// use (u32, u32) over `Rate` type to minimize internal division
-		/// operation.
-		type BuybackSerpupRatio: Get<(u32, u32)>;
-
-		/// SerpUp ratio for SettPay Cashdrops
-		/// The first item of the tuple is the numerator of the serpup rate, second
-		/// item is the denominator, serpup_rate = numerator / denominator,
-		/// use (u32, u32) over `Rate` type to minimize internal division
-		/// operation.
-		type SettPaySerpupRatio: Get<(u32, u32)>;
-
-		/// SerpUp ratio for Setheum Treasury
-		/// The first item of the tuple is the numerator of the serpup rate, second
-		/// item is the denominator, serpup_rate = numerator / denominator,
-		/// use (u32, u32) over `Rate` type to minimize internal division
-		/// operation.
-		type SetheumTreasurySerpupRatio: Get<(u32, u32)>;
-
-		/// SerpUp ratio for Setheum Foundation's Charity Fund
-		/// The first item of the tuple is the numerator of the serpup rate, second
-		/// item is the denominator, serpup_rate = numerator / denominator,
-		/// use (u32, u32) over `Rate` type to minimize internal division
-		/// operation.
-		type CharityFundSerpupRatio: Get<(u32, u32)>;
-
 		#[pallet::constant]
 		/// SerpUp pool/account for receiving funds SettPay Cashdrops
 		/// SettPayTreasury account.
 		type SettPayTreasuryAcc: Get<PalletId>;
 
-		#[pallet::constant]
-		/// SerpUp pool/account for receiving funds Setheum Treasury
-		/// SetheumTreasury account.
-		type SetheumTreasuryAcc: Get<PalletId>;
-
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
 		type CharityFundAcc: Get<Self::AccountId>;
-
-		/// Auction manager creates different types of auction to handle system serplus and standard.
-		type SerpAuctionManagerHandler: SerpAuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
@@ -151,11 +111,6 @@ pub mod module {
 
 		/// The price source of currencies
 		type PriceSource: PriceProvider<CurrencyId>;
-
-		// TODO: Update!
-		#[pallet::constant]
-		/// The cap of lots when an auction is created
-		type MaxAuctionsCount: Get<u32>;
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
@@ -195,38 +150,6 @@ pub mod module {
 		SerpUp(Balance, CurrencyId),
 		/// Currency SerpDown has been triggered successfully.
 		SerpDown(Balance, CurrencyId),
-		/// The expected amount size for per lot Dinar auction of specific
-		/// Dinar type updated. \[Dinar_type, new_size\]
-		ExpectedDinarAuctionSizeUpdated(Balance),
-	}
-
-	/// The expected amount size for per lot Dinar auction of specific
-	/// Dinar type.
-	///
-	/// ExpectedDinarAuctionSize: Balance
-	#[pallet::storage]
-	#[pallet::getter(fn expected_dinar_auction_size)]
-	pub type ExpectedDinarAuctionSize<T: Config> = StorageValue<_, Balance, ValueQuery>;
-
-	#[pallet::genesis_config]
-	pub struct GenesisConfig {
-		pub expected_dinar_auction_size: Balance,
-	}
-
-	#[cfg(feature = "std")]
-	impl Default for GenesisConfig {
-		fn default() -> Self {
-			GenesisConfig {
-				expected_dinar_auction_size: Default::default(),
-			}
-		}
-	}
-
-	#[pallet::genesis_build]
-	impl<T: Config> GenesisBuild<T> for GenesisConfig {
-		fn build(&self) {
-			ExpectedDinarAuctionSize::<T>::put(&self.expected_dinar_auction_size);
-		}
 	}
 
 	#[pallet::pallet]
@@ -266,27 +189,6 @@ pub mod module {
 			}
 		}
 	}
-
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {
-		#[pallet::weight(T::WeightInfo::auction_dinar())]
-		#[transactional]
-		pub fn auction_dinar(
-			origin: OriginFor<T>,
-			amount: Balance,
-			target: Balance,
-			splited: bool,
-		) -> DispatchResultWithPostInfo {
-			T::UpdateOrigin::ensure_origin(origin)?;
-			<Self as SerpTreasuryExtended<T::AccountId>>::create_dinar_auction(
-				amount,
-				target,
-				Self::account_id(),
-				splited,
-			)?;
-			Ok(().into())
-		}
-	}
 }
 
 impl<T: Config> Pallet<T> {
@@ -300,10 +202,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
-	/// SerpUp ratio for Serplus Auctions / Swaps
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
 	fn get_buyback_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		// Setheum Treasury SerpUp Pool - 10%
-		let serping_amount: Balance = amount / 10;
+		// Setheum Treasury SerpUp Pool - 30%
+		let three: Balance = 3;
+		let serping_amount: Balance = three.saturating_mul(amount / 10);
 		
 		// try to use stable currency to swap reserve asset by exchange with DEX - to burn the Dinar (DNAR).
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
@@ -328,8 +231,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_settpay_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		let settpay_account = T::SettPayTreasuryAcc::get().into_account();
 
-		// SettPay SerpUp Pool - 70%
-		let seven: Balance = 7;
+		// SettPay SerpUp Pool - 60%
+		let six: Balance = 6;
 		let serping_amount: Balance = seven.saturating_mul(amount / 10);
 		// Issue the SerpUp propper to the SettPayVault
 		Self::issue_propper(currency_id, &settpay_account, serping_amount);
@@ -341,18 +244,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		let charity_fund_account = T::CharityFundAcc::get();
-		// Charity Fund SerpUp Pool - 10%
-		let serping_amount: Balance = amount / 10;
-		// Issue the SerpUp propper to the SettPayVault
-		Self::issue_propper(currency_id, &charity_fund_account, serping_amount);
-
-		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
-		Ok(())
-	}
-
-	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_setheum_treasury_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let charity_fund_account = T::SetheumTreasuryAcc::get().into_account();
 		// Charity Fund SerpUp Pool - 10%
 		let serping_amount: Balance = amount / 10;
 		// Issue the SerpUp propper to the SettPayVault
@@ -431,7 +322,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		);
 		Self::get_buyback_serpup(amount, currency_id);
 		Self::get_settpay_serpup(amount, currency_id);
-		Self::get_setheum_treasury_serpup(amount, currency_id);
 		Self::get_charity_fund_serpup(amount, currency_id);
 
 		<Pallet<T>>::deposit_event(Event::SerpUp(amount, currency_id));
@@ -442,8 +332,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_minimum_supply(currency_id: CurrencyId) -> Balance {
 		T::GetStableCurrencyMinimumSupply::get(&currency_id)
 	}
-	// buy back and burn surplus(stable currencies) with auction
-	// Create the necessary serp down parameters and starts new auction.
+	// buy back and burn surplus(stable currencies) with swap on DEX
+	// Create the necessary serp down parameters and swap currencies then burn swapped currencies.
+	//
+	// TODO: Update to add the burning of the stablecoins!
+	//
 	fn on_serpdown(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SettCurrency
 		ensure!(
@@ -577,7 +470,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		)
 	}
 
-	/// swap Dinar which not in auction to get exact Setter,
+	/// swap Dinar to get exact Setter,
 	/// return actual supply Dinar amount
 	fn swap_dinar_to_exact_setter(
 		target_amount: Balance,
@@ -609,63 +502,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			max_supply_amount,
 			price_impact_limit,
 		)
-	}
-
-	fn create_dinar_auction(
-		amount: Balance,
-		target: Balance,
-		refund_receiver: T::AccountId,
-		splited: bool,
-	) -> DispatchResult {
-
-		T::Currency::deposit(T::GetNativeCurrencyId::get(), &Self::account_id(), amount)?;
-
-		let mut unhandled_dinar_amount = amount;
-		let mut unhandled_target = target;
-		let expected_dinar_auction_size = Self::expected_dinar_auction_size();
-		let max_auctions_count: Balance = T::MaxAuctionsCount::get().into();
-		let lots_count = if !splited
-			|| max_auctions_count.is_zero()
-			|| expected_dinar_auction_size.is_zero()
-			|| amount <= expected_dinar_auction_size
-		{
-			One::one()
-		} else {
-			let mut count = amount
-				.checked_div(expected_dinar_auction_size)
-				.expect("dinar auction maximum size is not zero; qed");
-
-			let remainder = amount
-				.checked_rem(expected_dinar_auction_size)
-				.expect("dinar auction maximum size is not zero; qed");
-			if !remainder.is_zero() {
-				count = count.saturating_add(One::one());
-			}
-			sp_std::cmp::min(count, max_auctions_count)
-		};
-		let average_amount_per_lot = amount.checked_div(lots_count).expect("lots count is at least 1; qed");
-		let average_target_per_lot = target.checked_div(lots_count).expect("lots count is at least 1; qed");
-		let mut created_lots: Balance = Zero::zero();
-
-		while !unhandled_dinar_amount.is_zero() {
-			created_lots = created_lots.saturating_add(One::one());
-			let (lot_dinar_amount, lot_target) = if created_lots == lots_count {
-				// the last lot may be have some remnant than average
-				(unhandled_dinar_amount, unhandled_target)
-			} else {
-				(average_amount_per_lot, average_target_per_lot)
-			};
-
-			T::SerpAuctionManagerHandler::new_dinar_auction(
-				&refund_receiver,
-				lot_dinar_amount,
-				lot_target,
-			)?;
-
-			unhandled_dinar_amount = unhandled_dinar_amount.saturating_sub(lot_dinar_amount);
-			unhandled_target = unhandled_target.saturating_sub(lot_target);
-		}
-		Ok(())
 	}
 
 	/// Swap exact amount of Setter to SettCurrency,

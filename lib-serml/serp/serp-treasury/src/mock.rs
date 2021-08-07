@@ -36,7 +36,6 @@ use support::{Price, mocks::MockCurrencyIdMapping, Ratio};
 use sp_std::cell::RefCell;
 
 pub type AccountId = u128;
-pub type AuctionId = u32;
 pub type BlockNumber = u64;
 
 pub const ALICE: AccountId = 0;
@@ -171,40 +170,6 @@ impl setheum_dex::Config for Runtime {
 }
 
 thread_local! {
-	pub static TOTAL_DINAR_AUCTION: RefCell<u32> = RefCell::new(0);
-	pub static TOTAL_DINAR_IN_AUCTION: RefCell<Balance> = RefCell::new(0);
-}
-
-pub struct MockSerpAuctionManager;
-impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
-	type CurrencyId = CurrencyId;
-	type Balance = Balance;
-	type AuctionId = AuctionId;
-
-	fn new_dinar_auction(
-		_refund_recipient: &AccountId,
-		amount: Self::Balance,
-		_target: Self::Balance,
-	) -> DispatchResult {
-		TOTAL_DINAR_AUCTION.with(|v| *v.borrow_mut() += 1);
-		TOTAL_DINAR_IN_AUCTION.with(|v| *v.borrow_mut() += amount);
-		Ok(())
-	}
-
-	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn get_total_dinar_in_auction() -> Self::Balance {
-		TOTAL_DINAR_IN_AUCTION.with(|v| *v.borrow_mut())
-	}
-
-	fn get_total_target_in_auction() -> Self::Balance {
-		unimplemented!()
-	}
-}
-
-thread_local! {
 	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
 }
 
@@ -243,7 +208,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 
 ord_parameter_types! {
 	pub const One: AccountId = 1;
-	pub const MaxAuctionsCount: u32 = 5;
 }
 
 parameter_types! {
@@ -266,15 +230,9 @@ parameter_types! {
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	pub const SetheumTreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub CharutyFundAcc: AccountId = CHARITY_FUND;
 
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub BuybackSerpupRatio: (u32, u32) = (5, 100); // 5% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: (u32, u32) = (70, 100); // 70% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: (u32, u32) = (10, 100); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: (u32, u32) = (15, 100); // 15% of SerpUp to Setheum Foundation's Charity Fund.
-
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
@@ -303,19 +261,11 @@ impl Config for Runtime {
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
-	type BuybackSerpupRatio = BuybackSerpupRatio;
-	type SettPaySerpupRatio = SettPaySerpupRatio;
-	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
-	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type SetheumTreasuryAcc = SetheumTreasuryPalletId;
 	type CharityFundAcc = CharutyFundAcc;
-	type SerpAuctionManagerHandler = MockSerpAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type PriceSource = MockPriceSource;
-	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }

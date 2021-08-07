@@ -69,21 +69,6 @@ impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardValidator
 	}
 }
 
-pub trait SerpAuctionManager<AccountId> {
-	type CurrencyId;
-	type Balance;
-	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
-
-	fn new_dinar_auction(
-		refund_recipient: &AccountId,
-		amount: Self::Balance,
-		target: Self::Balance,
-	) -> DispatchResult;
-	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
-	fn get_total_dinar_in_auction() -> Self::Balance;
-	fn get_total_target_in_auction() -> Self::Balance;
-}
-
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
@@ -212,7 +197,7 @@ pub trait SerpTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
 
-	/// SerpUp ratio for Serplus Auctions / Swaps
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
 	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for SettPay Cashdrops
@@ -233,7 +218,7 @@ pub trait SerpTreasury<AccountId> {
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
-	/// buy back and burn surplus(stable currencies) with auction.
+	/// buy back and burn surplus(stable currencies) with swap by DEX.
 	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// get the minimum supply of a settcurrency - by key
@@ -292,14 +277,6 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		path: Option<&[Self::CurrencyId]>,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
-	// when setter needs serpdown
-	fn create_dinar_auction(
-		amount: Self::Balance,
-		target: Self::Balance,
-		refund_receiver: AccountId,
-		splited: bool,
-	) -> DispatchResult;
-	
 	/// When SettCurrency needs SerpDown
 	fn swap_setter_to_exact_settcurrency(
 		currency_id: Self::CurrencyId,

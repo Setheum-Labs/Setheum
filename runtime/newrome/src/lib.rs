@@ -100,7 +100,7 @@ pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
 pub use primitives::{
 	evm::EstimateResourcesRequest, AccountId, AccountIndex, AirDropCurrencyId,
-	Amount, AuctionId, AuthoritysOriginId, Balance, BlockNumber, Count, CurrencyId,
+	Amount, AuthoritysOriginId, Balance, BlockNumber, Count, CurrencyId,
 	DataProviderId, EraIndex, Hash, Moment, Nonce, ReserveIdentifier, Share, Signature,
 	TokenSymbol, TradingPair,
 };
@@ -1016,14 +1016,6 @@ impl setheum_democracy::Config for Runtime {
 	type MaxProposals = MaxProposals;
 }
 
-impl orml_auction::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type AuctionId = AuctionId;
-	type Handler = SerpAuctionManager;
-	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
-}
-
 impl orml_authority::Config for Runtime {
 	type Event = Event;
 	type Origin = Origin;
@@ -1266,33 +1258,6 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub DiamondAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(3 : 100); // 3% increment
-	pub SetterAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(2 : 100); // 2% increment
-	pub SerplusAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1% increment
-	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
-	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
-}
-
-impl serp_auction::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type Auction = Auction;
-	type DiamondAuctionMinimumIncrementSize = DiamondAuctionMinimumIncrementSize;
-	type SetterAuctionMinimumIncrementSize = SetterAuctionMinimumIncrementSize;
-	type SerplusAuctionMinimumIncrementSize = SerplusAuctionMinimumIncrementSize;
-	type AuctionTimeToClose = AuctionTimeToClose;
-	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type StableCurrencyIds = StableCurrencyIds;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type SerpTreasury = SerpTreasury;
-	type Dex = Dex;
-	type PriceSource = SerpPrices;
-	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
-	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
-}
-
-parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
 		USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 	];
@@ -1434,17 +1399,12 @@ impl dex::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MaxAuctionsCount: u32 = 100;
 	// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
 	pub const CharityFundAccount: AccountId = hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into();
 
 	pub SettPayTreasuryAccount: AccountId = SettPayTreasuryPalletId::get().into_account()
 	// TODO: Update SerpTesSchedule to an updatable param in the storage map, under financial council
 	pub SerpTesSchedule: BlockNumber = 12 * MINUTES; // Triggers SERP-TES for serping Every 12 minutes.
-	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
-	pub TreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
 parameter_type_with_key! {
@@ -1462,6 +1422,7 @@ parameter_type_with_key! {
 	};
 }
 
+// TODO: Update!
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -1479,10 +1440,7 @@ impl serp_treasury::Config for Runtime {
 	type SettPayTreasuryAcc = SettPayTreasuryAccount;
 	type TreasuryAcc = TreasuryAccount;
 	type CharityFundAcc = CharityFundAccount;
-	type SerpAuctionManagerHandler = MockSerpAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = Dex;
-	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
@@ -1921,12 +1879,10 @@ construct_runtime!(
 		OperatorMembershipSetheum: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 36,
 
 		// ORML Core
-		Auction: orml_auction::{Pallet, Storage, Call, Event<T>} = 37,
 		Rewards: orml_rewards::{Pallet, Storage, Call} = 38,
 		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 39,
 
 		// SERP Core
-		SerpAuctionManager: serp_auction::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} 40,
 		SerpPrices: serp_prices::{Pallet, Storage, Call, Event<T>} = 41,
 		SerpSettPay: serp_settpay::{Pallet, Storage, Call, Event<T>} = 42,
 		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 43,
@@ -2281,8 +2237,6 @@ impl_runtime_apis! {
 			let params = (&config, &whitelist);
 
 			// TODO: Update!
-			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
-			orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_currencies, benchmarking::currencies);
 			orml_add_benchmark!(params, batches, dex, benchmarking::dex);
@@ -2292,7 +2246,6 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, incentives, benchmarking::incentives);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
 			orml_add_benchmark!(params, batches, prices, benchmarking::prices);
-			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
 			orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
