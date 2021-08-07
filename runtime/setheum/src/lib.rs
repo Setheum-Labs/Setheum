@@ -1128,22 +1128,6 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
-		match currency_id {
-			&USDJ => &USD,
-			&EURJ => &EUR,
-			&JPYJ => &JPY,
-			&GBPJ => &GBP,
-			&AUDJ => &AUD,
-			&CADJ => &CAD,
-			&CHFJ => &CHF,
-			&SEKJ => &SEK,
-			&SGDJ => &SGD,
-			&SARJ => &SAR,
-			_ => None,
-		}
-	};
-
 	pub FiatUsdFixedPrice: Price = Price::saturating_from_rational(1, 1);
 
 	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETT).

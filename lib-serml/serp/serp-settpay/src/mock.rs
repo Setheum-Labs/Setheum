@@ -215,24 +215,6 @@ parameter_type_with_key! {
 	};
 }
 
-parameter_type_with_key! {
-	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
-		match currency_id {
-			&AUDJ => &AUD,
-			&CADJ => &CAD,
-			&CHFJ => &CHF,
-			&EURJ => &EUR,
-			&GBPJ => &GBP,
-			&JPYJ => &JPY,
-			&SARJ => &SAR,
-			&SEKJ => &SEK,
-			&SGDJ => &SGD,
-			&USDJ => &USD,
-			_ => None,
-		}
-	};
-}
-
 impl orml_tokens::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
@@ -251,6 +233,15 @@ ord_parameter_types! {
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
+	pub const GetFiatAUDCurrencyId: CurrencyId = AUD; // The AUD Fiat currency denomination.
+	pub const GetFiatCADCurrencyId: CurrencyId = CAD; // The CAD Fiat currency denomination.
+	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
+	pub const GetFiatEURCurrencyId: CurrencyId = EUR; // The EUR Fiat currency denomination.
+	pub const GetFiatGBPCurrencyId: CurrencyId = GBP; // The GBP Fiat currency denomination.
+	pub const GetFiatJPYCurrencyId: CurrencyId = JPY; // The JPY Fiat currency denomination.
+	pub const GetFiatSARCurrencyId: CurrencyId = SAR; // The SAR Fiat currency denomination.
+	pub const GetFiatSEKCurrencyId: CurrencyId = SEK; // The SEK Fiat currency denomination.
+	pub const GetFiatSGDCurrencyId: CurrencyId = SGD; // The SGD Fiat currency denomination.
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
 
@@ -281,6 +272,15 @@ impl prices::Config for Runtime {
 	type Source = MockDataProvider;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetFiatAUDCurrencyId = GetFiatAUDCurrencyId;
+	type GetFiatCADCurrencyId = GetFiatCADCurrencyId;
+	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
+	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
+	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
+	type GetFiatJPYCurrencyId = GetFiatJPYCurrencyId;
+	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
+	type GetFiatSEKCurrencyId = GetFiatSEKCurrencyId;
+	type GetFiatSGDCurrencyId = GetFiatSGDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
@@ -293,9 +293,6 @@ impl prices::Config for Runtime {
 	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
 	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
 	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type PegCurrencyIds = PegCurrencyIds;
-	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = MockDEX;
 	type Currency = Tokens;
