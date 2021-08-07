@@ -967,6 +967,15 @@ parameter_types! {
 	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETT, DRAM];
 }
 
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+	pub const SetterCurrencyId: CurrencyId = SETT;
+	pub const DirhamCurrencyId: CurrencyId = DRAM;
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
+	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
+	pub const GetDexerMaxSupply: Balance = 1_032_000_000 * dollar(DRAM); // 1.032 Billion DRAM
+}
+
 impl setheum_democracy::Config for Runtime {
 	type Proposal = Call;
 	type Event = Event;
