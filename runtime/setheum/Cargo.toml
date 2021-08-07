@@ -76,7 +76,6 @@ setheum-chainbridge = { path = "../../lib-serml/bridges/chainbridge", default-fe
 setheum-renvm-bridge = { path = "../../lib-serml/bridges/renvm-bridge", default-features = false }
 # - dex
 setheum-dex = { path = "../../lib-serml/dex/dex", default-features = false }
-setheum-incentives = { path = "../../lib-serml/dex/incentives", default-features = false }
 # - evm
 setheum-evm = { path = "../../lib-serml/evm/evm", default-features = false }
 setheum-evm-accounts = { path = "../../lib-serml/evm/evm-accounts", default-features = false }
@@ -168,7 +167,6 @@ std = [
 	"setheum-chainbridge/std",
 	"setheum-renvm-bridge/std",
 	"setheum-dex/std",
-	"setheum-incentives/std",
 	"setheum-evm/std",
 	"setheum-evm-accounts/std",
 	"setheum-evm-bridge/std",
@@ -253,7 +251,6 @@ try-runtime = [
 	"setheum-airdrop/try-runtime",
 	"setheum-renvm-bridge/try-runtime",
 	"setheum-dex/try-runtime",
-	"setheum-incentives/try-runtime",
 	"setheum-evm/try-runtime",
 	"setheum-evm-accounts/try-runtime",
 	"setheum-evm-bridge/try-runtime",

@@ -88,9 +88,6 @@ pub mod module {
 		/// The setter's module id, keep all reserves of Settmint.
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
-
-		/// Event handler which calls when update setter.
-		type OnUpdateSettMint: Happened<(Self::AccountId, CurrencyId, Amount, Balance)>;
 	}
 
 	#[pallet::error]
@@ -271,8 +268,6 @@ impl<T: Config> Pallet<T> {
 			}
 
 			p.reserve = new_reserve;
-
-			T::OnUpdateSettMint::happened(&(who.clone(), currency_id, standard_adjustment, p.standard));
 			p.standard = new_standard;
 
 			if p.reserve.is_zero() && p.standard.is_zero() {

@@ -150,8 +150,6 @@ parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	pub const WellfareTreasuryPalletId: PalletId = PalletId(*b"set/welf");
-	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 
@@ -162,10 +160,6 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
 		SettPayTreasuryPalletId::get().into_account(),
-		WellfareTreasuryPalletId::get().into_account(),
-		IncentivesPalletId::get().into_account(),
-		DexIncentivePool::get(),
-		DexPremiumPool::get(),
 		ZeroAccountId::get(),
 	]
 }
@@ -1270,7 +1264,6 @@ impl settmint_manager::Config for Runtime {
 	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSettMint = setheum_incentives::OnUpdateSettMint<Runtime>;
 }
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
@@ -1364,6 +1357,7 @@ impl settmint_gateway::Config for Runtime {
 }
 
 parameter_types! {
+	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(SETT, DNAR),
@@ -1387,12 +1381,11 @@ parameter_types! {
 impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
+	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
-	type DEXIncentives = Incentives;
 	type WeightInfo = weights::dex::WeightInfo<Runtime>;
-	type UpdateOrigin = EnsureRootOrHalfExchangeCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfExchangeCouncil`.
 	type ListingOrigin = EnsureRootOrHalfExchangeCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfExchangeCouncil`.
 }
 
@@ -1536,60 +1529,6 @@ impl setheum_evm_accounts::Config for Runtime {
 impl setheum_evm_manager::Config for Runtime {
 	type Currency = Balances;
 	type EVMBridge = EVMBridge;
-}
-
-impl orml_rewards::Config for Runtime {
-	type Share = Balance;
-	type Balance = Balance;
-	type PoolId = setheum_incentives::PoolId<AccountId>;
-	type Handler = Incentives;
-}
-
-parameter_types! {
-	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
-	pub DexIncentivePool: AccountId = AccountId::from([0u8; 32]);
-	pub DexPremiumPool: AccountId = AccountId::from([0u8; 32]);
-	pub const AccumulatePeriod: BlockNumber = MINUTES; // Every minute - per minute accumulation
-}
-
-parameter_type_with_key! {
-	pub DexPremiumRewardRates: |_currency_id: CurrencyId| -> (Rate, Rate) {
-		match currency_id {
-			&LP_DNAR_SETT => (22, 100),
-			&LP_DRAM_SETT => (13, 100),
-			&LP_USDJ_SETT => (12, 100),
-			&LP_EURJ_SETT => (11, 100),
-			&LP_JPYJ_SETT => (5, 100),
-			&LP_GBPJ_SETT => (5, 100),
-			&LP_AUDJ_SETT => (5, 100),
-			&LP_CADJ_SETT => (5, 100),
-			&LP_CHFJ_SETT => (5, 100),
-			&LP_SGDJ_SETT => (5, 100),
-			&LP_SEKJ_SETT => (5, 100),
-			&LP_SARJ_SETT => (5, 100),
-			&LP_RENBTC_SETT => (2, 100),
-			_ => None,
-		}
-	};
-}
-
-impl setheum_incentives::Config for Runtime {
-	type Event = Event;
-	type DexIncentivePool = DexIncentivePool;
-	type DexPremiumPool = DexPremiumPool;
-	type DexPremiumRewardRates = DexPremiumRewardRates;
-	type DexPremiumInflationRate = DexPremiumInflationRate;
-	type SetterCurrencyId = SetterCurrencyId;
-	type DirhamCurrencyId = DirhamCurrencyId;
-	type NativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type AccumulatePeriod = AccumulatePeriod;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type SerpTreasury = SerpTreasury;
-	type Currency = Currencies;
-	type Dex = Dex;
-	type PalletId = IncentivesPalletId;
-	type WeightInfo = weights::setheum_incentives::WeightInfo<Runtime>;
 }
 
 impl setheum_airdrop::Config for Runtime {
@@ -1872,7 +1811,6 @@ construct_runtime!(
 		OperatorMembershipSetheum: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 36,
 
 		// ORML Core
-		Rewards: orml_rewards::{Pallet, Storage, Call} = 38,
 		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 39,
 
 		// SERP Core
@@ -1882,7 +1820,6 @@ construct_runtime!(
 
 		// Dex
 		Dex: dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 44,
-		Incentives: setheum_incentives::{Pallet, Storage, Call, Event<T>} = 45,
 
 		// Settmint
 		SettmintEngine: settmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 46,
@@ -2235,8 +2172,6 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, dex, benchmarking::dex);
 			orml_add_benchmark!(params, batches, setheum_evm_accounts, benchmarking::evm_accounts);
 			orml_add_benchmark!(params, batches, setheum_evm, benchmarking::evm);
-			orml_add_benchmark!(params, batches, orml_rewards, benchmarking::rewards);
-			orml_add_benchmark!(params, batches, incentives, benchmarking::incentives);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
 			orml_add_benchmark!(params, batches, prices, benchmarking::prices);
 			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
