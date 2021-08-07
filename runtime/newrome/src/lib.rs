@@ -1176,15 +1176,6 @@ impl serp_prices::Config for Runtime {
 	type WeightInfo = weights::serp_prices::WeightInfo<Runtime>;
 }
 
-parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = DNAR;
-	pub const SetterCurrencyId: CurrencyId = SETT;
-	pub const DirhamCurrencyId: CurrencyId = DRAM;
-	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
-	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
-	pub const GetDexerMaxSupply: Balance = 1_032_000_000 * dollar(DRAM); // 1.032 Billion DRAM
-}
-
 impl setheum_currencies::Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
@@ -1401,8 +1392,7 @@ impl dex::Config for Runtime {
 parameter_types! {
 	// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
 	pub const CharityFundAccount: AccountId = hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into();
-
-	pub SettPayTreasuryAccount: AccountId = SettPayTreasuryPalletId::get().into_account()
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 	// TODO: Update SerpTesSchedule to an updatable param in the storage map, under financial council
 	pub SerpTesSchedule: BlockNumber = 12 * MINUTES; // Triggers SERP-TES for serping Every 12 minutes.
 }
@@ -1430,17 +1420,14 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SerplusSerpupRatio = SerplusSerpupRatio;
-	type SettPaySerpupRatio = SettPaySerpupRatio;
-	type TreasurySerpupRatio = TreasurySerpupRatio;
-	type CharityFundSerpupRatio = CharityFundSerpupRatio;
-	type SettPayTreasuryAcc = SettPayTreasuryAccount;
-	type TreasuryAcc = TreasuryAccount;
+	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
 	type CharityFundAcc = CharityFundAccount;
 	type Dex = Dex;
+	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type PriceSource = SerpPrices;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
@@ -1497,7 +1484,6 @@ parameter_types! {
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
 		DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ, RENBTC
 	];
-	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }
 
 impl setheum_transaction_payment::Config for Runtime {
