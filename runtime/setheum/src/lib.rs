@@ -972,7 +972,6 @@ parameter_types! {
 	pub const DirhamCurrencyId: CurrencyId = DRAM;
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
-	pub const GetDexerMaxSupply: Balance = 1_032_000_000 * dollar(DRAM); // 1.032 Billion DRAM
 }
 
 impl setheum_democracy::Config for Runtime {
