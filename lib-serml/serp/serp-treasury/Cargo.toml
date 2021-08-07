@@ -30,7 +30,6 @@ sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 orml-currencies = { path = "../../../lib-openrml/currencies" }
-orml-auction = { path = "../../../lib-openrml/auction" }
 setheum-dex = { path = "../..//dex/dex" }
 orml-tokens = { path = "../../../lib-openrml/tokens" }
 

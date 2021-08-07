@@ -32,7 +32,7 @@ use sp_runtime::{
 	DispatchError, FixedPointNumber,
 };
 use sp_std::cell::RefCell;
-use support::{ExchangeRate, MockCurrencyIdMapping, CashDropRate, Price, PriceProvider, Rate, Ratio,  SerpAuctionManager};
+use support::{ExchangeRate, MockCurrencyIdMapping, CashDropRate, Price, PriceProvider, Rate, Ratio};
 
 mod serp_settpay {
 	pub use super::super::*;
@@ -40,7 +40,6 @@ mod serp_settpay {
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
-pub type AuctionId = u32;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
@@ -363,60 +362,22 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
-pub struct MockSerpAuctionManager;
-impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
-	type AuctionId = AuctionId;
-
-	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
-		Ok(())
-	}
-
-	fn new_setter_auction(_amount: Self::Balance, _fix: Self::Balance, _currency_id: Self::CurrencyId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn new_serplus_auction(_amount: Self::Balance, _currency_id: Self::CurrencyId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn get_total_serplus_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		Default::default()
-	}
-
-	fn get_total_settcurrency_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		Default::default()
-	}
-
-	fn get_total_setter_in_auction() -> Self::Balance {
-		Default::default()
-	}
-}
-
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
-	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
-	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
-	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;  // Setter  currency ticker is USDJ/
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	
+	pub CharutyFundAcc: AccountId = CHARITY_FUND;
+
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub BuybackSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
+	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
 parameter_type_with_key! {
@@ -434,6 +395,7 @@ parameter_type_with_key! {
 	};
 }
 
+// TODO: Update
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -441,20 +403,14 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
-	type BuybackSerpupRatio = BuybackSerpupRatio;
-	type SettPaySerpupRatio = SettPaySerpupRatio;
-	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
-	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type SetheumTreasuryAcc = TreasuryPalletId;
-	type CharityFundAcc = CHARITY_FUND;
-	type SerpAuctionManagerHandler = MockSerpAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type CharityFundAcc = CharutyFundAcc;
 	type Dex = SetheumDEX;
-	type MaxAuctionsCount = MaxAuctionsCount;
+	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type PriceSource = MockPriceSource;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }

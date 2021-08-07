@@ -19,7 +19,6 @@
 //! A list of the different weight modules for our runtime.
 #![allow(clippy::unnecessary_cast)]
 
-pub mod serp_auction;
 pub mod settmint_engine;
 pub mod serp_treasury;
 pub mod setheum_currencies;
@@ -30,7 +29,6 @@ pub mod setheum_nft;
 pub mod serp_prices;
 pub mod setheum_transaction_payment;
 
-pub mod orml_auction;
 pub mod orml_authority;
 pub mod orml_oracle;
 pub mod orml_rewards;

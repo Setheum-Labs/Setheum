@@ -19,7 +19,6 @@
 #![cfg(feature = "runtime-benchmarks")]
 
 // module benchmarking (SERML)
-pub mod serp_auction;
 pub mod serp_treasury;
 pub mod dex;
 pub mod settmint_gateway;
@@ -28,7 +27,6 @@ pub mod prices;
 pub mod transaction_payment;
 
 // orml benchmarking
-pub mod auction;
 pub mod authority;
 pub mod currencies;
 pub mod oracle;

@@ -60,7 +60,6 @@ sp-transaction-pool = { default-features = false, version = "3.0.0", git = "http
 sp-version = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
-orml-auction = { path = "../../lib-openrml/auction", default-features = false }
 orml-authority = { path = "../../lib-openrml/authority", default-features = false }
 orml-benchmarking = { path = "../../lib-openrml/benchmarking", default-features = false, optional = true }
 orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
@@ -88,7 +87,6 @@ setheum-evm-bridge = { path = "../../lib-serml/evm/evm-bridge", default-features
 setheum-evm-manager = { path = "../../lib-serml/evm/evm-manager", default-features = false }
 setheum-evm-rpc-runtime-api = { path = "../../lib-serml/evm/evm/rpc/runtime_api",  default-features = false }
 # - serp
-serp-auction = { path = "../../lib-serml/serp/serp-auction", default-features = false }
 serp-settpay = { path = "../../lib-serml/serp/serp-settpay", default-features = false }
 serp-prices = { path = "../../lib-serml/serp/serp-prices", default-features = false }
 serp-staking = { path = "../../lib-serml/serp/serp-staking", default-features = false }
@@ -159,7 +157,6 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 
-	"orml-auction/std",
 	"setheum-chainbridge/std",
 	"orml-authority/std",
 	"orml-benchmarking/std",
@@ -179,7 +176,6 @@ std = [
 	"setheum-evm-accounts/std",
 	"setheum-evm-bridge/std",
 	"setheum-evm-manager/std",
-	"serp-auction/std",
 	"serp-prices/std",
 	"serp-settpay/std",
 	"serp-staking/std",
@@ -249,7 +245,6 @@ try-runtime = [
 	"pallet-treasury/try-runtime",
 	"pallet-utility/try-runtime",
 
-	"orml-auction/try-runtime",
 	"orml-authority/try-runtime",
 	"orml-oracle/try-runtime",
 	"orml-tokens/try-runtime",
@@ -266,7 +261,6 @@ try-runtime = [
 	"setheum-evm-bridge/try-runtime",
 	"setheum-evm-manager/try-runtime",
 	"serp-prices/try-runtime",
-	"serp-auction/try-runtime",
 	"serp-treasury/try-runtime",
 	"settmint-engine/try-runtime",
 	"settmint-gateway/try-runtime",
