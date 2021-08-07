@@ -24,13 +24,11 @@ pub mod serp_treasury;
 pub mod setheum_currencies;
 pub mod dex;
 pub mod settmint_gateway;
-pub mod setheum_incentives;
 pub mod setheum_nft;
 pub mod serp_prices;
 pub mod setheum_transaction_payment;
 
 pub mod orml_authority;
 pub mod orml_oracle;
-pub mod orml_rewards;
 pub mod orml_tokens;
 pub mod orml_vesting;
