@@ -45,48 +45,48 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for serp_treasury.
+/// Weight functions needed for module_cdp_treasury.
 pub trait WeightInfo {
-	fn auction_serplus() -> Weight;
-	fn auction_diamond() -> Weight;
-	fn auction_setter() -> Weight;
+	fn on_initialize(c: u32) -> Weight;
+	fn auction_dinar() -> Weight;
+	fn set_expected_dinar_auction_size() -> Weight;
 }
 
 /// Weights for serp_treasury using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
-	fn auction_serplus() -> Weight {
-		(27_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(3 as Weight))
-			.saturating_add(T::DbWeight::get().writes(4 as Weight))
+	fn on_initialize(c: u32) -> Weight {
+		(33_360_000 as Weight)
+			.saturating_add((23_139_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
 	}
-	fn auction_diamond() -> Weight {
-		(26_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(3 as Weight))
-			.saturating_add(T::DbWeight::get().writes(5 as Weight))
-	}
-	fn auction_setter() -> Weight {
+	fn auction_dinar() -> Weight {
 		(2_124_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
 			.saturating_add(T::DbWeight::get().writes(204 as Weight))
+	}
+	fn set_expected_dinar_auction_size() -> Weight {
+		(14_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 }
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
-	fn auction_serplus() -> Weight {
-		(27_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
+	fn on_initialize(c: u32) -> Weight {
+		(33_360_000 as Weight)
+			.saturating_add((23_139_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
+			.saturating_add(RocksDbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
 	}
-	fn auction_diamond() -> Weight {
-		(26_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
-	}
-	fn auction_setter() -> Weight {
+	fn auction_dinar() -> Weight {
 		(2_124_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(204 as Weight))
+	}
+	fn set_expected_dinar_auction_size() -> Weight {
+		(14_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}
 }

@@ -1,4 +1,4 @@
-# Setheum Democracy Pallet
+# Democracy Pallet
 
 - [`democracy::Trait`](https://docs.rs/pallet-democracy/latest/pallet_democracy/trait.Trait.html)
 - [`Call`](https://docs.rs/pallet-democracy/latest/pallet_democracy/enum.Call.html)

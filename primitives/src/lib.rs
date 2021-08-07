@@ -31,10 +31,12 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
 	MultiSignature, RuntimeDebug,
 };
+pub use num_traits::{
+	Bounded, CheckedAdd, CheckedDiv, CheckedMul, CheckedShl, CheckedShr, CheckedSub, One, Signed, Zero,
+};
 use sp_std::{convert::Into, prelude::*};
 
 pub use currency::{CurrencyId, DexShare, TokenSymbol};
-
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 

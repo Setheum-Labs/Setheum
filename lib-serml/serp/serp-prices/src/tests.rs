@@ -120,11 +120,11 @@ fn lp_token_fair_price_works() {
 fn get_peg_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpPrices::get_peg_price(USD),
+			SerpPrices::get_peg_price(USDJ),
 			Some(Price::saturating_from_integer(1000000u128))
 		); // 1 USD, right shift the decimal point (18-12) places
 		assert_eq!(
-			SerpPrices::get_peg_price(EUR),
+			SerpPrices::get_peg_price(EURJ),
 			Some(Price::saturating_from_integer(1500000u128))
 		);
 	});
@@ -189,24 +189,12 @@ fn get_relative_price_works() {
 			Some(Price::saturating_from_rational(101, 1)) /* 1DNAR = 100USDJ, right shift the decimal point (12-10)
 			                                                 * places */
 		);
-		assert_eq!(
-			SerpPrices::get_relative_price(USDJ, USD),
-			Some(Price::saturating_from_rational(1, 1)) // 1USDJ = 1USD
-		);
 	});
 }
 
 #[test]
 fn get_setter_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_price(GBP),
-			Some(Price::saturating_from_integer(1000000u128)),
-		);
-		assert_eq!(
-			SerpPrices::get_price(EUR),
-			Some(Price::saturating_from_integer(1000000u128)),
-		);
 		assert_eq!(
 			SerpPrices::get_price(KWD),
 			Some(Price::saturating_from_integer(1000000u128)),
@@ -228,15 +216,7 @@ fn get_setter_price_works() {
 			Some(Price::saturating_from_integer(1000000u128)),
 		);
 		assert_eq!(
-			SerpPrices::get_price(CHF),
-			Some(Price::saturating_from_integer(1000000u128)),
-		);
-		assert_eq!(
 			SerpPrices::get_price(GIP),
-			Some(Price::saturating_from_integer(1000000u128)),
-		);
-		assert_eq!(
-			SerpPrices::get_price(USD),
 			Some(Price::saturating_from_integer(1000000u128)),
 		);
 		assert_eq!(

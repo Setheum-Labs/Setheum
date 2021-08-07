@@ -46,7 +46,6 @@ pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
 pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
-pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
 pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
 pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
 pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
@@ -60,8 +59,6 @@ pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 // LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
 pub const LP_BTC_USDJ: CurrencyId =
 CurrencyId::DexShare(DexShare::Token(TokenSymbol::RENBTC), DexShare::Token(TokenSymbol::USDJ));
-pub const LP_USDJ_DNAR: CurrencyId =
-CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DNAR));
 pub const LP_USDJ_DRAM: CurrencyId =
 CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DRAM));
 

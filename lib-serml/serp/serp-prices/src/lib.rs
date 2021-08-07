@@ -35,13 +35,18 @@
 use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
-use primitives::{currency::DexShare, Balance, CurrencyId};
+use primitives::{
+	currency::DexShare,
+	Balance, CurrencyId, TokenSymbol,
+};
 use sp_core::U256;
 use sp_runtime::{
 	traits::CheckedDiv,
-	FixedPointNumber,
+	FixedPointNumber
 };
-use sp_std::convert::TryInto;
+use sp_std::{
+	convert::TryInto,
+};
 use support::{CurrencyIdMapping, DEXManager, Price, PriceProvider};
 
 mod mock;
@@ -71,6 +76,22 @@ pub mod module {
 		type GetSettUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
+		/// The FiatUSD currency id, it should be USD.
+		type GetFiatUSDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The FiatEUR currency id, it should be EUR.
+		type GetFiatEURCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The FiatJPY currency id, it should be JPY.
+		type GetFiatJPYCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The FiatGBP currency id, it should be GBP.
+		type GetFiatGBPCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
 		/// The FiatAUD currency id, it should be AUD.
 		type GetFiatAUDCurrencyId: Get<CurrencyId>;
 
@@ -83,22 +104,6 @@ pub mod module {
 		type GetFiatCHFCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The FiatEUR currency id, it should be EUR.
-		type GetFiatEURCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatGBP currency id, it should be GBP.
-		type GetFiatGBPCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatJPY currency id, it should be JPY.
-		type GetFiatJPYCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatSAR currency id, it should be SAR.
-		type GetFiatSARCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
 		/// The FiatSEK currency id, it should be SEK.
 		type GetFiatSEKCurrencyId: Get<CurrencyId>;
 
@@ -107,8 +112,8 @@ pub mod module {
 		type GetFiatSGDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The FiatUSD currency id, it should be USD.
-		type GetFiatUSDCurrencyId: Get<CurrencyId>;
+		/// The FiatSAR currency id, it should be SAR.
+		type GetFiatSARCurrencyId: Get<CurrencyId>;
 
 		/// The fixed price of SettUsd, it should be 1 USD in Setheum.
 		/// This represents the value of the US dollar which is used -
@@ -285,27 +290,40 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get the exchange rate of a specific SettCurrency peg to USD
 	/// Note: this returns the price for 1 basic unit
 	/// For the SERP TO USE WHEN STABILISING SettCurrency peg prices.
-	/// The currency Id should be a fiat it i.e. "USD".
+	/// The settcurrency_id matching to its peg,
 	fn get_peg_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
-			let token_0 = match symbol_0 {
-				DexShare::Token(token) => CurrencyId::Token(token),
-				DexShare::Erc20(address) => CurrencyId::Erc20(address),
-			};
-			let token_1 = match symbol_1 {
-				DexShare::Token(token) => CurrencyId::Token(token),
-				DexShare::Erc20(address) => CurrencyId::Erc20(address),
-			};
-
-			return {
-				if let (Some(price_0), Some(price_1)) = (Self::get_price(token_0), Self::get_price(token_1)) {
-					let (pool_0, pool_1) = T::DEX::get_liquidity_pool(token_0, token_1);
-					let total_shares = T::Currency::total_issuance(currency_id);
-					lp_token_fair_price(total_shares, pool_0, pool_1, price_0, price_1)
-				} else {
-					None
-				}
-			};
+		let maybe_feed_price = if currency_id == T::SetterCurrencyId::get() {
+			Self::get_setter_price()
+		} else if let CurrencyId::Token(TokenSymbol::USDJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::USDJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::EURJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::JPYJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::GBPJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::AUDJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::CADJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::CHFJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::SEKJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
+		} else if let CurrencyId::Token(TokenSymbol::SGDJ) = currency_id {
+			// if locked price exists, return it, otherwise return latest price from oracle.
+			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
 		} else {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(currency_id).or_else(|| T::Source::get(&currency_id))
@@ -361,6 +379,22 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			None
 		}
 	}
+
+	// /// Get the SERP-TES supply needed to be serped
+	// fn on_serp_tes(
+	// 	currency_id: CurrencyId
+	// ) -> Balance {
+	// 	let (Some(peg_price), Some(market_price)) = (
+	// 		Self::get_peg_price(currency_id), Self::get_market_price(currency_id)
+	// 	);
+	// 		
+	// 	let total_supply = T::Currency::total_issuance(currency_id);
+	// 	get_supply_change(
+	// 		market_price,
+	// 		peg_price,
+	// 		total_supply
+	// 	)
+	// }
 
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
@@ -473,3 +507,30 @@ fn setter_price(
 		.and_then(|r| TryInto::<u128>::try_into(r).ok())
 		.map(Price::from_inner)
 }
+
+// Get the SERP-TES supply needed to be serped
+// fn serp_tes_fn<T: UniqueSaturatedInto<Balance>>(
+// 	currency_id: CurrencyId,
+// 	total_supply: Balance,
+// 	peg_price: Price,
+// 	market_price: Price,
+// ) -> Balance {
+// 	let peg_to_supply = total_supply
+// 		.saturating_mul(peg_price.try_into(u128));
+// 	let market_to_supply = total_supply.try_into(u128)
+// 		.saturating_mul(market_price.try_into(u128));
+// 	let relative_supply_change = total_supply
+// 		.saturating_mul(market_to_supply.checked_div(peg_to_supply));
+// 
+// 	relative_supply_change
+// 		.and_then(|n| TryInto::<Balance>::try_into(n).ok())
+// 		.unwrap_or_else(Zero::zero)
+// }
+
+
+// Calculate the amount of supply change from a fraction given as `coin_price`, `peg_price` and  `supply`.
+// fn get_supply_change(coin_price: SubFixedU128<U128>, peg_price: SubFixedU128<U128>, supply: Balance) -> Balance {
+// 	type Fix = SubFixedU128<U128>;
+// 	let fraction = Fix::from_num(coin_price) / Fix::from_num(peg_price) - Fix::from_num(1);
+// 	fraction.saturating_mul_int(supply as u128).to_num::<u128>()
+// }
