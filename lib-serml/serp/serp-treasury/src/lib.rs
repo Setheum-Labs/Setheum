@@ -29,7 +29,7 @@
 
 use fixed::{types::extra::U128, FixedU128};
 use frame_support::{pallet_prelude::*, transactional, PalletId};
-use frame_system::pallet_prelude::*;
+use frame_system::pallet_prelude::*, GenesisConfig;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 // use sp_core::U256;
@@ -233,7 +233,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 		// SettPay SerpUp Pool - 60%
 		let six: Balance = 6;
-		let serping_amount: Balance = seven.saturating_mul(amount / 10);
+		let serping_amount: Balance = six.saturating_mul(amount / 10);
 		// Issue the SerpUp propper to the SettPayVault
 		Self::issue_propper(currency_id, &settpay_account, serping_amount);
 
@@ -258,7 +258,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let currency_id = T::SetterCurrencyId::get();
 		let one: u128 = 1;
 		let Some(market_price) = T::PriceSource::get_market_price(currency_id);
-		let market_to_num = Fix::from_num(market_price).to_num::<u128>();
+		let market_to_num = Fix::from_num(market_price).to_num::<u128>()
 			.ok_or(Error::<T>::InvalidFeedPrice);
 		let peg_price: U256 = U256::from(T::PriceSource::get_peg_price(currency_id))
 			.ok_or(Error::<T>::InvalidFeedPrice);
