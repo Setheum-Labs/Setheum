@@ -27,17 +27,18 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use fixed::{types::extra::U128, FixedU128};
+// use fixed::{types::extra::U128, FixedU128};
 use frame_support::{pallet_prelude::*, transactional, PalletId};
-use frame_system::pallet_prelude::*, GenesisConfig;
+use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
-// use sp_core::U256;
+use sp_core::U256;
 use sp_runtime::{
 	traits::{
-		AccountIdConversion, One,
-		Saturating, Zero,
+		AccountIdConversion, One, Convert,
+		Saturating, UniqueSaturatedInto, Zero,
 	},
+	FixedPointNumber, FixedPointOperand, FixedU128,
 	DispatchError, DispatchResult,
 };
 use sp_std::{
@@ -45,7 +46,7 @@ use sp_std::{
 	prelude::*, result::Result, vec
 };
 use support::{
-	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
+	ConvertPrice, DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
 mod mock;
@@ -254,26 +255,24 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	fn setter_on_tes() -> DispatchResult {
-		type Fix = FixedU128<U128>;
 		let currency_id = T::SetterCurrencyId::get();
-		let one: u128 = 1;
 		let Some(market_price) = T::PriceSource::get_market_price(currency_id);
-		let market_to_num = Fix::from_num(market_price).to_num::<u128>()
-			.ok_or(Error::<T>::InvalidFeedPrice);
-		let peg_price: U256 = U256::from(T::PriceSource::get_peg_price(currency_id))
-			.ok_or(Error::<T>::InvalidFeedPrice);
+		let Some(peg_price) = T::PriceSource::get_peg_price(currency_id);
 		let total_supply = T::Currency::total_issuance(currency_id);
 
-		match market_price {
-			market_price if market_price > peg_price => {
+		let market_price_into = Convert::convert(market_price);
+		let peg_price_into = Convert::convert(peg_price);
+
+		match market_price_into {
+			market_price_into if market_price_into > peg_price_into => {
 	
-				// safe from underflow because `peg_price` is checked to be less than `market_price`
-				let expand_by = get_supply_change(market_price, peg_price, total_supply);
+				// safe from underflow because `peg_price_into` is checked to be less than `market_price_into`
+				let expand_by = get_supply_change(market_price_into, peg_price_into, total_supply);
 				Self::on_serpup(currency_id, expand_by)?;
 			}
-			market_price if market_price < peg_price => {
-				// safe from underflow because `peg_price` is checked to be greater than `market_price`
-				let contract_by = get_supply_change(peg_price, market_price, total_supply);
+			market_price_into if market_price_into < peg_price_into => {
+				// safe from underflow because `peg_price_into` is checked to be greater than `market_price_into`
+				let contract_by = get_supply_change(peg_price_into, market_price_into, total_supply);
 				Self::on_serpdown(currency_id, contract_by)?;
 			}
 			_ => {}
@@ -284,22 +283,23 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	fn usdj_on_tes() -> DispatchResult {
 		let currency_id = T::GetSettUSDCurrencyId::get();
-		let market_price: U256 = U256::from(T::PriceSource::get_market_price(currency_id))
-			.ok_or(Error::<T>::InvalidFeedPrice);
-		let peg_price: U256 = U256::from(T::PriceSource::get_peg_price(currency_id))
-			.ok_or(Error::<T>::InvalidFeedPrice);
+		let Some(market_price) = T::PriceSource::get_market_price(currency_id);
+		let Some(peg_price) = T::PriceSource::get_peg_price(currency_id);
 		let total_supply = T::Currency::total_issuance(currency_id);
 
-		match market_price {
-			market_price if market_price > peg_price => {
+		let market_price_into: Balance = Convert::convert(market_price);
+		let peg_price_into: Balance = Convert::convert(peg_price);
+
+		match market_price_into {
+			market_price_into if market_price_into > peg_price_into => {
 	
-				// safe from underflow because `peg_price` is checked to be less than `market_price`
-				let expand_by = get_supply_change(market_price, peg_price, total_supply);
+				// safe from underflow because `peg_price_into` is checked to be less than `market_price_into`
+				let expand_by = get_supply_change(market_price_into, peg_price_into, total_supply);
 				Self::on_serpup(currency_id, expand_by)?;
 			}
-			market_price if market_price < peg_price => {
-				// safe from underflow because `peg_price` is checked to be greater than `market_price`
-				let contract_by = get_supply_change(peg_price, market_price, total_supply);
+			market_price_into if market_price_into < peg_price_into => {
+				// safe from underflow because `peg_price_into` is checked to be greater than `market_price_into`
+				let contract_by = get_supply_change(peg_price_into, market_price_into, total_supply);
 				Self::on_serpdown(currency_id, contract_by)?;
 			}
 			_ => {}
@@ -579,26 +579,14 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	}
 }
 
-#[cfg(feature = "std")]
-impl GenesisConfig {
-	/// Direct implementation of `GenesisBuild::build_storage`.
-	///
-	/// Kept in order not to break dependency.
-	pub fn build_storage<T: Config>(&self) -> Result<sp_runtime::Storage, String> {
-		<Self as GenesisBuild<T>>::build_storage(self)
-	}
-
-	/// Direct implementation of `GenesisBuild::assimilate_storage`.
-	///
-	/// Kept in order not to break dependency.
-	pub fn assimilate_storage<T: Config>(&self, storage: &mut sp_runtime::Storage) -> Result<(), String> {
-		<Self as GenesisBuild<T>>::assimilate_storage(self, storage)
+impl Convert<Price, Balance> for Pallet<T> {
+	fn convert(p: Price) -> Balance {
+		p
 	}
 }
 
 /// Calculate the amount of supply change from a fraction given as `nume_fraction`, `deno_fraction` and  `supply`.
-fn get_supply_change(nume_fraction: U256, deno_fraction: U256, supply: Balance) -> Balance {
-	type Fix = FixedU128<U128>;
-	let fraction = Fix::from_num(nume_fraction) / Fix::from_num(deno_fraction) - Fix::from_num(1);
-	fraction.saturating_mul_int(supply as u128).to_num::<u128>()
+fn get_supply_change(nume_fraction: u128, deno_fraction: u128, supply: u128) -> u128 {
+	let fraction = nume_fraction / deno_fraction - 1;
+	fraction.saturating_mul(supply)
 }

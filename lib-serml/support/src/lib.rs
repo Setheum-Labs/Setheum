@@ -32,6 +32,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
 use sp_std::{
+	convert::{TryFrom, TryInto},
 	cmp::{Eq, PartialEq},
 	fmt::Debug,
 	prelude::*,
@@ -48,6 +49,29 @@ pub type ExchangeRate = FixedU128; // FixedPointNumber
 pub type Price = FixedU128; // FixedPointNumber
 pub type Rate = FixedU128; // FixedPointNumber
 pub type Ratio = FixedU128; // FixedPointNumber
+
+/// Extensible conversion trait. Generic over both source and destination types.
+pub trait Convert<A, B> {
+	/// Make conversion.
+	fn convert(a: A) -> B;
+}
+
+impl<A, B: Default> Convert<A, B> for () {
+	fn convert(_: A) -> B {
+		Default::default()
+	}
+}
+/// Extensible conversion trait. Generic over both source and destination types.
+pub trait ConvertPrice<FixedU128, u128> {
+	/// Make conversion.
+	fn convert_price_to_balance(p: FixedU128) -> u128;
+}
+
+impl<FixedU128, u128: Default> ConvertPrice<FixedU128, u128> for () {
+	fn convert_price_to_balance(p: FixedU128) -> u128 {
+		Default::default()
+	}
+}
 
 pub trait StandardValidator<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
