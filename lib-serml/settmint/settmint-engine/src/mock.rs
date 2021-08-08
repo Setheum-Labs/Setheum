@@ -34,7 +34,6 @@ use sp_std::cell::RefCell;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
-pub type AuctionId = u32;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
@@ -195,10 +194,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 		}
 	}
 
-	fn get_market_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
 	fn get_coin_to_peg_relative_price(_currency_id: CurrencyId) -> Option<Price> {
 		Some(Price::one())
 	}
@@ -224,60 +219,22 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
-pub struct MockSerpAuctionManager;
-impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
-	type AuctionId = AuctionId;
-
-	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
-		Ok(())
-	}
-
-	fn new_setter_auction(_amount: Self::Balance, _fix: Self::Balance, _id: Self::CurrencyId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn new_serplus_auction(_amount: Self::Balance, _id: Self::CurrencyId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn get_total_serplus_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		Default::default()
-	}
-
-	fn get_total_settcurrency_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		Default::default()
-	}
-
-	fn get_total_setter_in_auction() -> Self::Balance {
-		Default::default()
-	}
-}
-
 parameter_types! {
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
 		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
 	];
-	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
-	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
-	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;  // Setter  currency ticker is USDJ/
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	
+	pub CharutyFundAcc: AccountId = CHARITY_FUND;
+
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
+	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
 parameter_type_with_key! {
@@ -302,26 +259,21 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SerplusSerpupRatio = SerplusSerpupRatio;
-	type SettPaySerpupRatio = SettPaySerpupRatio;
-	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
-	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type SetheumTreasuryAcc = TreasuryPalletId;
-	type CharityFundAcc = CHARITY_FUND;
-	type SerpAuctionManagerHandler = MockSerpAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type CharityFundAcc = CharutyFundAcc;
 	type Dex = SetheumDEX;
-	type MaxAuctionsCount = MaxAuctionsCount;
+	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type PriceSource = MockPriceSource;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 
 parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(USDJ, SETT), TradingPair::new(USDJ, EURJ)];
 }
@@ -329,11 +281,11 @@ parameter_types! {
 impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
+	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type DEXIncentives = ();
 	type WeightInfo = ();
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
 

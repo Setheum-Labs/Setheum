@@ -131,3 +131,5 @@ This call can only be made by the `VetoOrigin`.
 - `cancel_referendum` - Removes a referendum.
 - `cancel_queued` - Cancels a proposal that is queued for enactment.
 - `clear_public_proposal` - Removes all public proposals.
+
+License: Apache-2.0

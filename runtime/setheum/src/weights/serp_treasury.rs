@@ -44,19 +44,10 @@ use sp_std::marker::PhantomData;
 /// Weight functions for serp_treasury.
 pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> serp_treasury::WeightInfo for WeightInfo<T> {
-	fn auction_serplus() -> Weight {
-		(31_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(3 as Weight))
-			.saturating_add(T::DbWeight::get().writes(4 as Weight))
-	}
-	fn auction_diamond() -> Weight {
-		(28_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(3 as Weight))
-			.saturating_add(T::DbWeight::get().writes(5 as Weight))
-	}
-	fn auction_setter() -> Weight {
-		(1_858_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
-			.saturating_add(T::DbWeight::get().writes(204 as Weight))
+	fn on_initialize(c: u32) -> Weight {
+		(33_360_000 as Weight)
+			.saturating_add((23_139_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
 	}
 }

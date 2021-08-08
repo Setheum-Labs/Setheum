@@ -99,7 +99,7 @@ pub use sp_runtime::{Perbill, Percent, Permill, Perquintill};
 pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
 pub use primitives::{
-	evm::EstimateResourcesRequest, AccountId, AccountIndex, Amount, AuctionId,
+	evm::EstimateResourcesRequest, AccountId, AccountIndex, Amount,
 	AuthoritysOriginId, Balance, BlockNumber, Count, CurrencyId, DataProviderId,
 	EraIndex, Hash, Moment, Nonce, ReserveIdentifier, Share, Signature,
 	TokenSymbol, TradingPair,
@@ -150,8 +150,6 @@ parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	pub const WellfareTreasuryPalletId: PalletId = PalletId(*b"set/welf");
-	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 
@@ -162,10 +160,6 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
 		SettPayTreasuryPalletId::get().into_account(),
-		WellfareTreasuryPalletId::get().into_account(),
-		IncentivesPalletId::get().into_account(),
-		DexIncentivePool::get(),
-		DexPremiumPool::get(),
 		ZeroAccountId::get(),
 	]
 }
@@ -966,6 +960,23 @@ parameter_types! {
 	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETT, DRAM];
 }
 
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+	pub const SetterCurrencyId: CurrencyId = SETT;
+	pub const DirhamCurrencyId: CurrencyId = DRAM;
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
+	pub const GetFiatAUDCurrencyId: CurrencyId = AUD;
+	pub const GetFiatCADCurrencyId: CurrencyId = CAD;
+	pub const GetFiatCHFCurrencyId: CurrencyId = CHF;
+	pub const GetFiatEURCurrencyId: CurrencyId = EUR;
+	pub const GetFiatGBPCurrencyId: CurrencyId = GBP;
+	pub const GetFiatJPYCurrencyId: CurrencyId = JPY;
+	pub const GetFiatSARCurrencyId: CurrencyId = SAR;
+	pub const GetFiatSEKCurrencyId: CurrencyId = SEK;
+	pub const GetFiatSGDCurrencyId: CurrencyId = SGD;
+	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
+}
+
 impl setheum_democracy::Config for Runtime {
 	type Proposal = Call;
 	type Event = Event;
@@ -1013,14 +1024,6 @@ impl setheum_democracy::Config for Runtime {
 	type MaxVotes = MaxVotes;
 	type WeightInfo = setheum_democracy::weights::SubstrateWeight<Runtime>;
 	type MaxProposals = MaxProposals;
-}
-
-impl orml_auction::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type AuctionId = AuctionId;
-	type Handler = SerpAuctionManager;
-	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
 }
 
 impl orml_authority::Config for Runtime {
@@ -1119,22 +1122,6 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
-		match currency_id {
-			&USDJ => &USD,
-			&EURJ => &EUR,
-			&JPYJ => &JPY,
-			&GBPJ => &GBP,
-			&AUDJ => &AUD,
-			&CADJ => &CAD,
-			&CHFJ => &CHF,
-			&SEKJ => &SEK,
-			&SGDJ => &SGD,
-			&SARJ => &SAR,
-			_ => None,
-		}
-	};
-
 	pub FiatUsdFixedPrice: Price = Price::saturating_from_rational(1, 1);
 
 	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETT).
@@ -1161,6 +1148,15 @@ impl serp_prices::Config for Runtime {
 	type Source = AggregatedDataProvider;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetFiatAUDCurrencyId = GetFiatAUDCurrencyId;
+	type GetFiatCADCurrencyId = GetFiatCADCurrencyId;
+	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
+	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
+	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
+	type GetFiatJPYCurrencyId = GetFiatJPYCurrencyId;
+	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
+	type GetFiatSEKCurrencyId = GetFiatSEKCurrencyId;
+	type GetFiatSGDCurrencyId = GetFiatSGDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
@@ -1173,23 +1169,11 @@ impl serp_prices::Config for Runtime {
 	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
 	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
 	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type PegCurrencyIds = PegCurrencyIds;
-	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
 	type DEX = Dex;
 	type Currency = Currencies;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
 	type WeightInfo = weights::serp_prices::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = DNAR;
-	pub const SetterCurrencyId: CurrencyId = SETT;
-	pub const DirhamCurrencyId: CurrencyId = DRAM;
-	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
-	pub const GetFiatUSDCurrencyId: CurrencyId = USD;
-	pub const GetDexerMaxSupply: Balance = 1_032_000_000 * dollar(DRAM); // 1.032 Billion DRAM
 }
 
 impl setheum_currencies::Config for Runtime {
@@ -1265,33 +1249,6 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub DiamondAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(3 : 100); // 3% increment
-	pub SetterAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(2 : 100); // 2% increment
-	pub SerplusAuctionMinimumIncrementSize: Rate = Rate::saturating_from_rational(1, 100); // 1% increment
-	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
-	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
-}
-
-impl serp_auction::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type Auction = Auction;
-	type DiamondAuctionMinimumIncrementSize = DiamondAuctionMinimumIncrementSize;
-	type SetterAuctionMinimumIncrementSize = SetterAuctionMinimumIncrementSize;
-	type SerplusAuctionMinimumIncrementSize = SerplusAuctionMinimumIncrementSize;
-	type AuctionTimeToClose = AuctionTimeToClose;
-	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type StableCurrencyIds = StableCurrencyIds;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type SerpTreasury = SerpTreasury;
-	type Dex = Dex;
-	type PriceSource = SerpPrices;
-	type UnsignedPriority = runtime_common::SerpAuctionUnsignedPriority;
-	type WeightInfo = weights::serp_auction::WeightInfo<Runtime>;
-}
-
-parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
 		USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 	];
@@ -1306,7 +1263,6 @@ impl settmint_manager::Config for Runtime {
 	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSettMint = setheum_incentives::OnUpdateSettMint<Runtime>;
 }
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
@@ -1426,24 +1382,17 @@ impl dex::Config for Runtime {
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
-	type DEXIncentives = Incentives;
 	type WeightInfo = weights::dex::WeightInfo<Runtime>;
 	type UpdateOrigin = EnsureRootOrHalfExchangeCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfExchangeCouncil`.
 	type ListingOrigin = EnsureRootOrHalfExchangeCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfExchangeCouncil`.
 }
 
 parameter_types! {
-	pub const MaxAuctionsCount: u32 = 100;
 	// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
 	pub const CharityFundAccount: AccountId = hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into();
-
-	pub SettPayTreasuryAccount: AccountId = SettPayTreasuryPalletId::get().into_account()
+	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 	// TODO: Update SerpTesSchedule to an updatable param in the storage map, under financial council
 	pub SerpTesSchedule: BlockNumber = 12 * MINUTES; // Triggers SERP-TES for serping Every 12 minutes.
-	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
-	pub TreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
 }
 
 parameter_type_with_key! {
@@ -1460,7 +1409,7 @@ parameter_type_with_key! {
 		}
 	};
 }
-
+// TODO: Update!
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -1468,20 +1417,14 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SerplusSerpupRatio = SerplusSerpupRatio;
-	type SettPaySerpupRatio = SettPaySerpupRatio;
-	type TreasurySerpupRatio = TreasurySerpupRatio;
-	type CharityFundSerpupRatio = CharityFundSerpupRatio;
-	type SettPayTreasuryAcc = SettPayTreasuryAccount;
-	type TreasuryAcc = TreasuryAccount;
+	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
 	type CharityFundAcc = CharityFundAccount;
-	type SerpAuctionManagerHandler = MockSerpAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type Dex = Dex;
-	type MaxAuctionsCount = MaxAuctionsCount;
+	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type PriceSource = SerpPrices;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
@@ -1538,7 +1481,6 @@ parameter_types! {
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
 		DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ, RENBTC
 	];
-	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
 }
 
 impl setheum_transaction_payment::Config for Runtime {
@@ -1584,60 +1526,6 @@ impl setheum_evm_accounts::Config for Runtime {
 impl setheum_evm_manager::Config for Runtime {
 	type Currency = Balances;
 	type EVMBridge = EVMBridge;
-}
-
-impl orml_rewards::Config for Runtime {
-	type Share = Balance;
-	type Balance = Balance;
-	type PoolId = setheum_incentives::PoolId<AccountId>;
-	type Handler = Incentives;
-}
-
-// TODO: Add AccumulationPeriod
-parameter_types! {
-	pub const DexPremiumInflationRate: Balance = 200; // RATE PER ACCUMULATION PERIOD
-	pub DexIncentivePool: AccountId = AccountId::from([0u8; 32]);
-	pub DexPremiumPool: AccountId = AccountId::from([0u8; 32]);
-}
-
-parameter_type_with_key! {
-	pub DexPremiumRewardRates: |_currency_id: CurrencyId| -> (Rate, Rate) {
-		match currency_id {
-			&LP_DNAR_SETT => (22, 100),
-			&LP_DRAM_SETT => (13, 100),
-			&LP_USDJ_SETT => (12, 100),
-			&LP_EURJ_SETT => (11, 100),
-			&LP_JPYJ_SETT => (5, 100),
-			&LP_GBPJ_SETT => (5, 100),
-			&LP_AUDJ_SETT => (5, 100),
-			&LP_CADJ_SETT => (5, 100),
-			&LP_CHFJ_SETT => (5, 100),
-			&LP_SGDJ_SETT => (5, 100),
-			&LP_SEKJ_SETT => (5, 100),
-			&LP_SARJ_SETT => (5, 100),
-			&LP_RENBTC_SETT => (2, 100),
-			_ => None,
-		}
-	};
-}
-
-impl setheum_incentives::Config for Runtime {
-	type Event = Event;
-	type DexIncentivePool = DexIncentivePool;
-	type DexPremiumPool = DexPremiumPool;
-	type DexPremiumRewardRates = DexPremiumRewardRates;
-	type DexPremiumInflationRate = DexPremiumInflationRate;
-	type SetterCurrencyId = SetterCurrencyId;
-	type DirhamCurrencyId = DirhamCurrencyId;
-	type NativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type AccumulatePeriodUpdateOrigin = EnsureRootOrTwoThirdsExchangeCouncil; //TODO: When Sudo is removed, change to `EnsureHalfFinancialCouncilOrTwoThirdsExchangeCouncil`.
-	type SerpTreasury = SerpTreasury;
-	type Currency = Currencies;
-	type Dex = Dex;
-	type PalletId = IncentivesPalletId;
-	type WeightInfo = weights::setheum_incentives::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -1843,19 +1731,15 @@ construct_runtime!(
 		OperatorMembershipSetheum: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 36,
 
 		// ORML Core
-		Auction: orml_auction::{Pallet, Storage, Call, Event<T>} = 37,
-		Rewards: orml_rewards::{Pallet, Storage, Call} = 38,
 		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 39,
 
 		// SERP Core
-		SerpAuctionManager: serp_auction::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} 40,
 		SerpPrices: serp_prices::{Pallet, Storage, Call, Event<T>} = 41,
 		SerpSettPay: serp_settpay::{Pallet, Storage, Call, Event<T>} = 42,
 		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 43,
 
 		// Dex
 		Dex: dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 44,
-		Incentives: setheum_incentives::{Pallet, Storage, Call, Event<T>} = 45,
 
 		// Settmint
 		SettmintEngine: settmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 46,
@@ -2233,18 +2117,13 @@ impl_runtime_apis! {
 			let params = (&config, &whitelist);
 
 			// TODO: Update!
-			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
-			orml_add_benchmark!(params, batches, serp_auction, benchmarking::serp_auction);
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_currencies, benchmarking::currencies);
 			orml_add_benchmark!(params, batches, dex, benchmarking::dex);
 			orml_add_benchmark!(params, batches, setheum_evm_accounts, benchmarking::evm_accounts);
 			orml_add_benchmark!(params, batches, setheum_evm, benchmarking::evm);
-			orml_add_benchmark!(params, batches, orml_rewards, benchmarking::rewards);
-			orml_add_benchmark!(params, batches, incentives, benchmarking::incentives);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
 			orml_add_benchmark!(params, batches, prices, benchmarking::prices);
-			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
 			orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);

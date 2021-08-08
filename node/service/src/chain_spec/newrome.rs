@@ -531,7 +531,7 @@ fn newrome_genesis(
 		setheum_renvm_bridge: RenVmBridgeConfig {
 			ren_vm_public_key: hex!["4b939fc8ade87cb50b78987b1dda927460dc456a"],
 		},
-		module_airdrop: AirDropConfig {
+		setheum_airdrop: AirDropConfig {
 			airdrop_accounts: {
 				let dnar_airdrop_accounts_json = &include_bytes!("../../../../resources/newrome-airdrop-DNAR.json")[..];
 				let dnar_airdrop_accounts: Vec<(AccountId, Balance)> =

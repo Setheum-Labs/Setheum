@@ -32,7 +32,7 @@ use sp_runtime::{
 	DispatchError, FixedPointNumber,
 };
 use sp_std::cell::RefCell;
-use support::{ExchangeRate, MockCurrencyIdMapping, CashDropRate, Price, PriceProvider, Rate, Ratio,  SerpAuctionManager};
+use support::{ExchangeRate, MockCurrencyIdMapping, CashDropRate, Price, PriceProvider, Rate, Ratio};
 
 mod serp_settpay {
 	pub use super::super::*;
@@ -40,7 +40,6 @@ mod serp_settpay {
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
-pub type AuctionId = u32;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
@@ -136,8 +135,8 @@ impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 	}
 }
 
-pub struct MockDex;
-impl DEXManager<AccountId, CurrencyId, Balance> for MockDex {
+pub struct MockDEX;
+impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USDJ, DNAR) => (10000, 200),
@@ -216,24 +215,6 @@ parameter_type_with_key! {
 	};
 }
 
-parameter_type_with_key! {
-	pub PegCurrencyIds: |_currency_id: CurrencyId| -> CurrencyId {
-		match currency_id {
-			&AUDJ => &AUD,
-			&CADJ => &CAD,
-			&CHFJ => &CHF,
-			&EURJ => &EUR,
-			&GBPJ => &GBP,
-			&JPYJ => &JPY,
-			&SARJ => &SAR,
-			&SEKJ => &SEK,
-			&SGDJ => &SGD,
-			&USDJ => &USD,
-			_ => None,
-		}
-	};
-}
-
 impl orml_tokens::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
@@ -252,6 +233,15 @@ ord_parameter_types! {
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
+	pub const GetFiatAUDCurrencyId: CurrencyId = AUD; // The AUD Fiat currency denomination.
+	pub const GetFiatCADCurrencyId: CurrencyId = CAD; // The CAD Fiat currency denomination.
+	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
+	pub const GetFiatEURCurrencyId: CurrencyId = EUR; // The EUR Fiat currency denomination.
+	pub const GetFiatGBPCurrencyId: CurrencyId = GBP; // The GBP Fiat currency denomination.
+	pub const GetFiatJPYCurrencyId: CurrencyId = JPY; // The JPY Fiat currency denomination.
+	pub const GetFiatSARCurrencyId: CurrencyId = SAR; // The SAR Fiat currency denomination.
+	pub const GetFiatSEKCurrencyId: CurrencyId = SEK; // The SEK Fiat currency denomination.
+	pub const GetFiatSGDCurrencyId: CurrencyId = SGD; // The SGD Fiat currency denomination.
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
 
@@ -282,6 +272,15 @@ impl prices::Config for Runtime {
 	type Source = MockDataProvider;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetFiatAUDCurrencyId = GetFiatAUDCurrencyId;
+	type GetFiatCADCurrencyId = GetFiatCADCurrencyId;
+	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
+	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
+	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
+	type GetFiatJPYCurrencyId = GetFiatJPYCurrencyId;
+	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
+	type GetFiatSEKCurrencyId = GetFiatSEKCurrencyId;
+	type GetFiatSGDCurrencyId = GetFiatSGDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
@@ -294,9 +293,6 @@ impl prices::Config for Runtime {
 	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
 	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
 	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type PegCurrencyIds = PegCurrencyIds;
-	type FiatCurrencyIds = FiatCurrencyIds;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = MockDEX;
 	type Currency = Tokens;
@@ -336,55 +332,21 @@ impl orml_currencies::Config for Runtime {
 
 pub struct MockPriceSource;
 impl PriceProvider<CurrencyId> for MockPriceSource {
-	fn get_peg_currency_by_currency_id(_currency_id: CurrencyId) -> CurrencyId {
-		Default::default()
-	}
-
-	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_fiat_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_fiat_usd_fixed_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_settusd_fixed_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_stablecoin_fixed_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_stablecoin_market_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
+	
 
 	fn get_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
 		Some(Price::one())
 	}
 
-	fn get_market_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_coin_to_peg_relative_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_setter_basket_peg_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_setter_fixed_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
 	fn get_market_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+	
+	fn get_setter_price() -> Option<Price> {
 		Some(Price::one())
 	}
 
@@ -397,60 +359,22 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
-pub struct MockSerpAuctionManager;
-impl SerpAuctionManager<AccountId> for MockSerpAuctionManager {
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
-	type AuctionId = AuctionId;
-
-	fn new_diamond_auction(_amount: Self::Balance, _fix: Self::Balance) -> DispatchResult {
-		Ok(())
-	}
-
-	fn new_setter_auction(_amount: Self::Balance, _fix: Self::Balance, _currency_id: Self::CurrencyId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn new_serplus_auction(_amount: Self::Balance, _currency_id: Self::CurrencyId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
-		Ok(())
-	}
-
-	fn get_total_serplus_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		Default::default()
-	}
-
-	fn get_total_settcurrency_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		Default::default()
-	}
-
-	fn get_total_setter_in_auction() -> Self::Balance {
-		Default::default()
-	}
-}
-
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
-	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/NSETT
-	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/MENA
-	pub const GetDexerMaxSupply: Balance = 200_000; // SettinDEX currency ticker is DRAM/MENA
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;  // Setter  currency ticker is USDJ/
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	
+	pub CharutyFundAcc: AccountId = CHARITY_FUND;
+
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub SerplusSerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to buy back & burn NativeCurrency.
-	pub SettPaySerpupRatio: Permill = Permill::from_percent(60); // 60% of SerpUp to SettPay as Cashdrops.
-	pub SetheumTreasurySerpupRatio: Permill = Permill::from_percent(10); // 10% of SerpUp to network Treasury.
-	pub CharityFundSerpupRatio: Permill = Permill::from_percent(20); // 20% of SerpUp to Setheum Foundation's Charity Fund.
+	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
 parameter_type_with_key! {
@@ -468,6 +392,7 @@ parameter_type_with_key! {
 	};
 }
 
+// TODO: Update
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -475,20 +400,14 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type GetDexerMaxSupply = GetDexerMaxSupply;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SerplusSerpupRatio = SerplusSerpupRatio;
-	type SettPaySerpupRatio = SettPaySerpupRatio;
-	type SetheumTreasurySerpupRatio = SetheumTreasurySerpupRatio;
-	type CharityFundSerpupRatio = CharityFundSerpupRatio;
 	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type SetheumTreasuryAcc = TreasuryPalletId;
-	type CharityFundAcc = CHARITY_FUND;
-	type SerpAuctionManagerHandler = MockSerpAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type CharityFundAcc = CharutyFundAcc;
 	type Dex = SetheumDEX;
-	type MaxAuctionsCount = MaxAuctionsCount;
+	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type PriceSource = MockPriceSource;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }

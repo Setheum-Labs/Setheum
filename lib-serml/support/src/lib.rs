@@ -19,11 +19,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, FullCodec, HasCompact};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
-	evm::{CallInfo, EvmAddress},
 	CurrencyId,
+	evm::{CallInfo, EvmAddress},
 };
 use sp_core::H160;
 use sp_runtime::{
@@ -33,18 +33,21 @@ use sp_runtime::{
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
+	fmt::Debug,
 	prelude::*,
 };
 
 pub mod mocks;
 
+pub type Balance = u128;
 pub type BlockNumber = u32;
 pub type CashDropRate = FixedU128;
 pub type CashDropClaim = bool;
-pub type ExchangeRate = FixedU128;
-pub type Price = FixedU128;
-pub type Rate = FixedU128;
-pub type Ratio = FixedU128;
+pub type FiatCurrencyId = CurrencyId;
+pub type ExchangeRate = FixedU128; // FixedPointNumber
+pub type Price = FixedU128; // FixedPointNumber
+pub type Rate = FixedU128; // FixedPointNumber
+pub type Ratio = FixedU128; // FixedPointNumber
 
 pub trait StandardValidator<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
@@ -191,54 +194,32 @@ where
 
 /// An abstraction of serp treasury for the SERP (Setheum Elastic Reserve Protocol).
 pub trait SerpTreasury<AccountId> {
-	type Amount;
 	type Balance;
 	type CurrencyId;
-	type BlockNumber;
 
-	fn get_adjustment_frequency() -> Self::BlockNumber;
-
-	/// get reserve asset amount of serp treasury
-	fn get_total_setter() -> Self::Balance;
-
-	/// calculate the proportion of specific currency amount for the whole system
-	fn get_propper_proportion(amount: Self::Balance, currency_id: Self::CurrencyId) -> Ratio;
-
-	/// SerpUp ratio for Serplus Auctions / Swaps
-	fn get_serplus_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for SettPay Cashdrops
 	fn get_settpay_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
-	/// SerpUp ratio for Setheum Treasury
-	fn get_treasury_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+	
+	/// Trigger SERP-TES when required for Setter (SETT) to serp_down or serp_up.
+	fn setter_on_tes() -> DispatchResult;
+
+	/// Trigger SERP-TES when required for USDJ to serp_down or serp_up.
+	fn usdj_on_tes() -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
-	/// buy back and burn surplus(stable currencies) with auction.
+	/// buy back and burn surplus(stable currencies) with swap by DEX.
 	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// get the minimum supply of a settcurrency - by key
 	fn get_minimum_supply(currency_id: Self::CurrencyId) -> Self::Balance;
-
-	/// buy back and burn surplus(stable currencies) with auction
-	/// Create the necessary serp down parameters and starts new auction.
-	fn on_surpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
-
-	/// Determines whether to SerpUp or SerpDown based on price swing (+/-)).
-	/// positive means "Serp Up", negative means "Serp Down".
-	/// Then it calls the necessary option to serp the currency supply (up/down).
-	fn serp_tes(currency_id: Self::CurrencyId) -> DispatchResult;
-
-	/// Trigger SERP-TES for all stablecoins
-	/// Check all stablecoins stability and elasticity
-	/// and calls the serp to stabilise the unstable one(s)
-	/// on SERP-TES.
-	fn on_serp_tes() -> DispatchResult;
 
 	/// issue standard to `who`
 	fn issue_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
@@ -258,9 +239,12 @@ pub trait SerpTreasury<AccountId> {
 	/// burn setter of `who`
 	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
-	/// Get the Maximum supply of the Dexer (`DRAM` in Setheum).
-	fn get_dexer_max_supply() -> Self::Balance;
-	
+	/// issue dinar of amount dinar to `who`
+	fn issue_dinar(who: &AccountId, dinar: Self::Balance) -> DispatchResult;
+
+	/// burn dinar of `who`
+	fn burn_dinar(who: &AccountId, dinar: Self::Balance) -> DispatchResult;
+
 	/// Issue Dexer (`DRAM` in Setheum). `dexer` here just referring to the DEX token balance.
 	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
@@ -268,16 +252,52 @@ pub trait SerpTreasury<AccountId> {
 	fn burn_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
 
 	/// deposit surplus(propperstable currency) to serp treasury by `from`
-	fn deposit_surplus(currency_id: Self::CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
+	fn deposit_serplus(currency_id: Self::CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
 
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
+
+	// refund remain Dinar to refund recipient from SERP
+	fn withdraw_dinar(to: &AccountId, amount: Self::Balance) -> DispatchResult;
+}
+
+pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
+	// when setter needs serpdown
+	fn swap_exact_dinar_to_setter(
+		supply_amount: Self::Balance,
+		maybe_path: Option<&[Self::CurrencyId]>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	// when setter needs serpdown
+	fn swap_dinar_to_exact_setter(
+		target_amount: Self::Balance,
+		path: Option<&[Self::CurrencyId]>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	/// When SettCurrency needs SerpDown
+	fn swap_setter_to_exact_settcurrency(
+		currency_id: Self::CurrencyId,
+		target_amount: Self::Balance,
+		path: Option<&[Self::CurrencyId]>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	/// When StableCurrency gets SerpUp
+	fn swap_exact_stablecurrency_to_dinar(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+		maybe_path: Option<&[Self::CurrencyId]>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
 }
 
 /// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol) for CashDrop.
 pub trait CashDrop<AccountId> {
 	type Balance;
 	type CurrencyId;
+
+	fn get_cashdrop_rate(currency_id: Self::CurrencyId) -> (u32, u32);
+
+	fn get_minimum_claimable_transfer(currency_id: Self::CurrencyId) -> Self::Balance;
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
 	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
@@ -289,44 +309,12 @@ pub trait CashDrop<AccountId> {
 	fn deposit_settcurrency_drop(currency_id: Self::CurrencyId, who: &AccountId, cashdrop_amount: Self::Balance) -> DispatchResult;
 }
 
-pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
-	fn swap_exact_setter_in_auction_to_settcurrency(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-		min_target_amount: Self::Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
-
-	fn swap_setter_not_in_auction_with_exact_settcurrency(
-		currency_id: Self::CurrencyId,
-		target_amount: Self::Balance,
-		max_supply_amount: Self::Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
-
-	fn create_reserve_auctions(
-		currency_id: Self::CurrencyId,
-		amount: Self::Balance,
-		target: Self::Balance,
-		refund_receiver: AccountId,
-		splited: bool,
-	) -> DispatchResult;
-}
-
 pub trait PriceProvider<CurrencyId> {
-	fn get_peg_currency_by_currency_id(currency_id: CurrencyId) -> CurrencyId;
-	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_fiat_price(fiat_currency_id: CurrencyId) -> Option<Price>;
-	fn get_fiat_usd_fixed_price() -> Option<Price>;
-	fn get_settusd_fixed_price() -> Option<Price>;
-	fn get_stablecoin_fixed_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_stablecoin_market_price(currency_id: CurrencyId) -> Option<Price>;
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
-	fn get_market_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
-	fn get_coin_to_peg_relative_price(currency_id: CurrencyId) -> Option<Price>;
-	fn get_setter_basket_peg_price() -> Option<Price>;
-	fn get_setter_fixed_price() -> Option<Price>;
 	fn get_market_price(currency_id: CurrencyId) -> Option<Price>;
+	fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
+	fn get_setter_price() -> Option<Price>;
+	// fn on_serp_tes(currency_id: CurrencyId) -> Balance;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
 	fn lock_price(currency_id: CurrencyId);
 	fn unlock_price(currency_id: CurrencyId);

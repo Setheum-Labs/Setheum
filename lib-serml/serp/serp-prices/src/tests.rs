@@ -117,135 +117,16 @@ fn lp_token_fair_price_works() {
 }
 
 #[test]
-fn get_peg_currency_by_currency_id_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_peg_currency_by_currency_id(CHFJ),
-			CHF
-		);
-		assert_eq!(
-			SerpPrices::get_peg_currency_by_currency_id(USDJ),
-			USD
-		);
-		assert_eq!(
-			SerpPrices::get_peg_currency_by_currency_id(EURJ),
-			EUR
-		);
-		assert_eq!(
-			SerpPrices::get_peg_currency_by_currency_id(SETT),
-			None
-		);
-		assert_eq!(
-			SerpPrices::get_peg_currency_by_currency_id(USD),
-			None
-		);
-		assert_eq!(
-			SerpPrices::get_peg_currency_by_currency_id(DNAR),
-			None
-		);
-	});
-}
-
-#[test]
 fn get_peg_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_peg_price(CHFJ),
-			Some(Price::saturating_from_integer(1500000u128))
-		); // 1.5 USD, right shift the decimal point (18-12) places
 		assert_eq!(
 			SerpPrices::get_peg_price(USDJ),
 			Some(Price::saturating_from_integer(1000000u128))
 		); // 1 USD, right shift the decimal point (18-12) places
 		assert_eq!(
-			SerpPrices::get_peg_price(SETT),
+			SerpPrices::get_peg_price(EURJ),
 			Some(Price::saturating_from_integer(1500000u128))
-		); // 1.5 USD, right shift the decimal point (18-12) places
-		assert_eq!(SerpPrices::get_peg_price(DNAR), Some(Price::zero()));
-		assert_eq!(SerpPrices::get_peg_price(USD), Some(Price::zero()));
-	});
-}
-
-#[test]
-fn get_fiat_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_fiat_price(CHF),
-			Some(Price::saturating_from_integer(1500000u128))
-		); // 1.5 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_fiat_price(USD),
-			Some(Price::saturating_from_integer(1000000u128))
-		); // 1 USD, right shift the decimal point (18-12) places
-		assert_eq!(SerpPrices::get_fiat_price(DNAR), Some(Price::zero()));
-		assert_eq!(SerpPrices::get_fiat_price(SETT), Some(Price::zero()));
-		assert_eq!(SerpPrices::get_fiat_price(USDJ), Some(Price::zero()));
-	});
-}
-
-#[test]
-fn get_fiat_usd_fixed_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_fiat_usd_fixed_price(),
-			Some(Price::saturating_from_integer(1000000u128))
-		); // 1 USD, right shift the decimal point (18-12) places
-	});
-}
-
-#[test]
-fn get_settusd_fixed_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_settusd_fixed_price(),
-			Some(Price::saturating_from_integer(1606750u128))
-		); // 1.60675 USD, right shift the decimal point (18-12) places
-	});
-}
-
-#[test]
-fn get_stablecoin_fixed_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_stablecoin_fixed_price(USDJ),
-			Some(Price::saturating_from_integer(1000000u128))
-		); // 1 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_stablecoin_fixed_price(USDJ),
-			Some(Price::saturating_from_integer(1000000u128))
-		); // 1 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_stablecoin_fixed_price(SETT),
-			Some(Price::saturating_from_integer(1560000u128))
-		); // 1.56 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_stablecoin_fixed_price(EURJ),
-			Some(Price::saturating_from_integer(1200000u128))
-		); // 1.2 USD, right shift the decimal point (18-12) places
-		assert_eq!(SerpPrices::get_stablecoin_fixed_price(DNAR), Some(Price::zero()));
-	});
-}
-
-#[test]
-fn get_stablecoin_market_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_stablecoin_market_price(USDJ),
-			Some(Price::saturating_from_integer(1000000u128))
-		); // 1 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_stablecoin_market_price(USDJ),
-			Some(Price::saturating_from_integer(1000000u128))
-		); // 1 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_stablecoin_market_price(SETT),
-			Some(Price::saturating_from_integer(1560000u128))
-		); // 1.56 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_stablecoin_market_price(EURJ),
-			Some(Price::saturating_from_integer(1200000u128))
-		); // 1.2 USD, right shift the decimal point (18-12) places
-		assert_eq!(SerpPrices::get_stablecoin_market_price(DNAR), Some(Price::zero()));
+		);
 	});
 }
 
@@ -253,14 +134,13 @@ fn get_stablecoin_market_price_works() {
 fn get_price_from_oracle() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpPrices::get_price(CHFJ),
+			SerpPrices::get_price(BTC),
 			Some(Price::saturating_from_integer(500000000000000u128))
-		); // 50000 USD, right shift the decimal point (18-10) places
+		); // 50000 USD, right shift the decimal point (18-8) places
 		assert_eq!(
-			SerpPrices::get_price(DNAR),
-			Some(Price::saturating_from_integer(10000000000u128))
+			SerpPrices::get_price(DRAM),
+			Some(Price::saturating_from_integer(100000000u128))
 		); // 100 USD, right shift the decimal point (18-12) places
-		assert_eq!(SerpPrices::get_price(DNAR), Some(Price::zero()));
 	});
 }
 
@@ -269,7 +149,7 @@ fn get_price_of_stable_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			SerpPrices::get_price(USDJ),
-			Some(Price::saturating_from_integer(1000000))
+			Some(Price::saturating_from_integer(1000000u128))
 		); // 1 USD, right shift the decimal point (18-12) places
 	});
 }
@@ -277,24 +157,27 @@ fn get_price_of_stable_currency_id() {
 #[test]
 fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(MockDex::get_liquidity_pool(USDJ, DNAR), (10000, 200));
+		assert_eq!(MockDEX::get_liquidity_pool(USDJ, DRAM), (10000, 200));
+		assert_eq!(SerpPrices::get_price(LP_USDJ_DRAM), None);
+		assert_ok!(Tokens::deposit(LP_USDJ_DRAM, &1, 100));
+		assert_eq!(Tokens::total_issuance(LP_USDJ_DRAM), 100);
 		assert_eq!(
-			SerpPrices::get_price(LP_USDJ_DNAR),
-			None
+			SerpPrices::get_price(USDJ),
+			Some(Price::saturating_from_rational(1000000u128, 1))
 		);
-		assert_ok!(Tokens::deposit(LP_USDJ_DNAR, &1, 100));
-		assert_eq!(Tokens::total_issuance(LP_USDJ_DNAR), 100);
-		assert_eq!(SerpPrices::get_price(USDJ), Some(Price::saturating_from_rational(1000000u128, 1)));
 		assert_eq!(
-			SerpPrices::get_price(LP_USDJ_DNAR),
-			Some(Price::saturating_from_rational(200000000u128, 1))	// 10000/100 * Price::saturating_from_rational(1000000u128, 1) * 2
+			SerpPrices::get_price(LP_USDJ_DRAM),
+			lp_token_fair_price(
+				Tokens::total_issuance(LP_USDJ_DRAM),
+				MockDEX::get_liquidity_pool(USDJ, DRAM).0,
+				MockDEX::get_liquidity_pool(USDJ, DRAM).1,
+				SerpPrices::get_price(USDJ).unwrap(),
+				SerpPrices::get_price(DRAM).unwrap()
+			)
 		);
 
-		assert_eq!(MockDex::get_liquidity_pool(CHFJ, USDJ), (0, 0));
-		assert_eq!(
-			SerpPrices::get_price(LP_CHFJ_USDJ),
-			None
-		);
+		assert_eq!(MockDEX::get_liquidity_pool(BTC, USDJ), (0, 0));
+		assert_eq!(SerpPrices::get_price(LP_BTC_USDJ), None);
 	});
 }
 
@@ -303,111 +186,42 @@ fn get_relative_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			SerpPrices::get_relative_price(DNAR, USDJ),
-			Some(Price::saturating_from_rational(10000, 1)) /* 1DNAR = 100USDJ, right shift the decimal point (12-10)
+			Some(Price::saturating_from_rational(101, 1)) /* 1DNAR = 100USDJ, right shift the decimal point (12-10)
 			                                                 * places */
 		);
-		assert_eq!(
-			SerpPrices::get_relative_price(CHFJ, USDJ),
-			Some(Price::saturating_from_rational(500000000, 1)) /* 1CHFJ = 50000USDJ, right shift the decimal point
-			                                                     * (12-8) places */
-		);
-		assert_eq!(
-			SerpPrices::get_relative_price(USDJ, USDJ),
-			Some(Price::saturating_from_rational(1, 1)) // 1USDJ = 1USDJ
-		);
-		assert_eq!(
-			SerpPrices::get_relative_price(USDJ, USD),
-			Some(Price::saturating_from_rational(1, 1)) // 1USDJ = 1USD
-		);
-		assert_eq!(
-			SerpPrices::get_relative_price(EUR, USD),
-			Some(Price::saturating_from_rational(10, 8)) // 1EUR = 1.25USD
-		);
-		assert_eq!(SerpPrices::get_relative_price(USDJ, DNAR), None);
 	});
 }
 
 #[test]
-fn get_market_relative_price_works() {
+fn get_setter_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpPrices::get_market_relative_price(DNAR, USDJ),
-			Some(Price::saturating_from_rational(10000, 1)) /* 1DNAR = 100USDJ, right shift the decimal point (12-10)
-			                                                 * places */
+			SerpPrices::get_price(KWD),
+			Some(Price::saturating_from_integer(1000000u128)),
 		);
 		assert_eq!(
-			SerpPrices::get_market_relative_price(CHFJ, USDJ),
-			Some(Price::saturating_from_rational(500000000, 1)) /* 1CHFJ = 50000USDJ, right shift the decimal point
-			                                                     * (12-8) places */
+			SerpPrices::get_price(JOD),
+			Some(Price::saturating_from_integer(1000000u128)),
 		);
 		assert_eq!(
-			SerpPrices::get_market_relative_price(USDJ, USDJ),
-			Some(Price::saturating_from_rational(1, 1)) // 1USDJ = 1USDJ
+			SerpPrices::get_price(BHD),
+			Some(Price::saturating_from_integer(1000000u128)),
 		);
 		assert_eq!(
-			SerpPrices::get_market_relative_price(USDJ, USD),
-			Some(Price::saturating_from_rational(1, 1)) // 1USDJ = 1USD
+			SerpPrices::get_price(KYD),
+			Some(Price::saturating_from_integer(1000000u128)),
 		);
 		assert_eq!(
-			SerpPrices::get_market_relative_price(EUR, USD),
-			Some(Price::saturating_from_rational(10, 8)) // 1EUR = 1.25USD
-		);
-		assert_eq!(SerpPrices::get_market_relative_price(USDJ, DNAR), None);
-	});
-}
-
-#[test]
-fn get_coin_to_peg_relative_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_coin_to_peg_relative_price(USDJ),
-			Some(Price::saturating_from_rational(1100000, 1))
-			// 1.1 USD, right shift the decimal point (18-12) places
-			// This means that the stablecoin's price is 10% above the peg,
-			// meaning demand is 10% higher than supply, thus needs 10% serping.
+			SerpPrices::get_price(OMR),
+			Some(Price::saturating_from_integer(1000000u128)),
 		);
 		assert_eq!(
-			SerpPrices::get_coin_to_peg_relative_price(EURJ),
-			Some(Price::saturating_from_rational(990000, 1))
-			// 0.99 EUR, right shift the decimal point (18-12) places
-			// This means that the stablecoin's price is 1% below the peg,
-			// meaning demand is 1% lower than supply, thus needs 1% serping.
+			SerpPrices::get_price(GIP),
+			Some(Price::saturating_from_integer(1000000u128)),
 		);
 		assert_eq!(
-			SerpPrices::get_coin_to_peg_relative_price(CHFJ),
-			Some(Price::saturating_from_rational(1000000, 1))
-			// 1 CHF, right shift the decimal point (18-12) places
-			// This means that the stablecoin's price is stable to the peg,
-			// meaning supply meets demand, thus doesn't need serping.
-		);
-		assert_eq!(
-			SerpPrices::get_coin_to_peg_relative_price(SETT),
-			Some(Price::saturating_from_rational(1200000, 1))
-			// 1.2 SETT-Basket, right shift the decimal point (18-12) places
-			// This means that the stablecoin's price is 20% above the peg,
-			// meaning demand is 20% higher than supply, thus needs 20% serping.
-		);
-		assert_eq!(SerpPrices::get_coin_to_peg_relative_price(DNAR), None);
-			// DNAR is not a stablecoin, so get_coin_to_peg_relative_price returns None
-	});
-}
-
-#[test]
-fn get_setter_basket_peg_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_setter_basket_peg_price(),
-			Some(Price::saturating_from_integer(1500750))
-		); // 1.500750 USD, right shift the decimal point (18-12) places
-	});
-}
-
-#[test]
-fn get_setter_fixed_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_setter_fixed_price(),
-			Some(Price::saturating_from_integer(1600000))
+			SerpPrices::get_setter_price(),
+			Some(Price::saturating_from_integer(1000000u128))
 		); // 1.600000 USD, right shift the decimal point (18-12) places
 	});
 }
@@ -416,14 +230,14 @@ fn get_setter_fixed_price_works() {
 fn get_market_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpPrices::get_market_price(CHFJ),
-			Some(Price::saturating_from_integer(1500000u128))
-		); // 1.5 USD, right shift the decimal point (18-12) places
+			SerpPrices::get_price(BTC),
+			Some(Price::saturating_from_integer(50000000000u128))
+		); // 50000 USD, right shift the decimal point (18-12) places
 		assert_eq!(
-			SerpPrices::get_market_price(DNAR),
-			Some(Price::saturating_from_integer(10000000000u128))
-		);
-		assert_eq!(SerpPrices::get_market_price(DNAR), Some(Price::zero()));
+			SerpPrices::get_price(DNAR),
+			Some(Price::saturating_from_integer(100000000u128))
+		); // 100 USD, right shift the decimal point (18-12) places
+		assert_eq!(SerpPrices::get_price(DNAR), Some(Price::zero()));
 	});
 }
 
@@ -431,12 +245,12 @@ fn get_market_price_works() {
 fn lock_price_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpPrices::get_price(CHFJ),
+			SerpPrices::get_price(BTC),
 			Some(Price::saturating_from_integer(500000000000000u128))
 		);
-		LockedPrice::<Runtime>::insert(CHFJ, Price::saturating_from_integer(80000));
+		LockedPrice::<Runtime>::insert(BTC, Price::saturating_from_integer(80000));
 		assert_eq!(
-			SerpPrices::get_price(CHFJ),
+			SerpPrices::get_price(BTC),
 			Some(Price::saturating_from_integer(800000000000000u128))
 		);
 	});
@@ -446,14 +260,14 @@ fn lock_price_work() {
 fn lock_price_call_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_noop!(SerpPrices::lock_price(Origin::signed(5), CHFJ), BadOrigin,);
-		assert_ok!(SerpPrices::lock_price(Origin::signed(1), CHFJ));
-		System::assert_last_event(Event::prices(crate::Event::LockPrice(
-			CHFJ,
+		assert_noop!(SerpPrices::lock_price(Origin::signed(5), BTC), BadOrigin,);
+		assert_ok!(SerpPrices::lock_price(Origin::signed(1), BTC));
+		System::assert_last_event(Event::SerpPrices(crate::Event::LockPrice(
+			BTC,
 			Price::saturating_from_integer(50000)
 		)));
 		assert_eq!(
-			SerpPrices::locked_price(CHFJ),
+			SerpPrices::locked_price(BTC),
 			Some(Price::saturating_from_integer(50000))
 		);
 	});
@@ -463,10 +277,10 @@ fn lock_price_call_work() {
 fn unlock_price_call_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		LockedPrice::<Runtime>::insert(CHFJ, Price::saturating_from_integer(80000));
-		assert_noop!(SerpPrices::unlock_price(Origin::signed(5), CHFJ), BadOrigin,);
-		assert_ok!(SerpPrices::unlock_price(Origin::signed(1), CHFJ));
-		System::assert_last_event(Event::prices(crate::Event::UnlockPrice(CHFJ)));
-		assert_eq!(SerpPrices::locked_price(CHFJ), None);
+		LockedPrice::<Runtime>::insert(BTC, Price::saturating_from_integer(80000));
+		assert_noop!(SerpPrices::unlock_price(Origin::signed(5), BTC), BadOrigin,);
+		assert_ok!(SerpPrices::unlock_price(Origin::signed(1), BTC));
+		System::assert_last_event(Event::SerpPrices(crate::Event::UnlockPrice(BTC)));
+		assert_eq!(SerpPrices::locked_price(BTC), None);
 	});
 }

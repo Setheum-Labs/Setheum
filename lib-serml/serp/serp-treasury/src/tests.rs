@@ -22,7 +22,7 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Event, *};
+use mock::*;
 use sp_runtime::traits::BadOrigin;
 
 #[test]
@@ -30,10 +30,10 @@ fn issue_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
 
-		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000));
+		assert_ok!(SerpTreasuryModule::issue_standard(USDJ, &ALICE, 1000));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 2000);
 
-		assert_ok!(SerpTreasuryModule::issue_standard(&ALICE, 1000));
+		assert_ok!(SerpTreasuryModule::issue_standard(USDJ, &ALICE, 1000));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 3000);
 	});
 }
@@ -42,7 +42,7 @@ fn issue_standard_works() {
 fn burn_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
-		assert_ok!(SerpTreasuryModule::burn_standard(&ALICE, 300));
+		assert_ok!(SerpTreasuryModule::burn_standard(USDJ, &ALICE, 300));
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 700);
 	});
 }
@@ -83,34 +83,11 @@ fn deposit_serplus_works() {
 #[test]
 fn deposit_setter_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SerpTreasuryModule::total_reserve(SETT), 0);
 		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
-		assert_eq!(SerpTreasuryModule::deposit_setter(&ALICE, SETT, 10000).is_ok(), false);
-		assert_ok!(SerpTreasuryModule::deposit_setter(&ALICE, SETT, 500));
-		assert_eq!(SerpTreasuryModule::total_reserve(SETT), 500);
+		assert_eq!(SerpTreasuryModule::deposit_setter(&ALICE, 10000).is_ok(), false);
+		assert_ok!(SerpTreasuryModule::deposit_setter(&ALICE, 500));
 		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 500);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 500);
-	});
-}
-
-#[test]
-fn get_propper_proportion_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpTreasuryModule::get_propper_proportion(40, USDJ),
-			Ratio::saturating_from_rational(40, Currencies::total_issuance(USDJ))
-		);
-	});
-}
-
-#[test]
-fn auction_serplus_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(SerpTreasuryModule::auction_serplus(Origin::signed(5), 100, USDJ), BadOrigin,);
-
-		assert_eq!(TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut()), 0);
-		assert_ok!(SerpTreasuryModule::auction_serplus(Origin::signed(1), 100, USDJ));
-		assert_eq!(TOTAL_SERPLUS_IN_AUCTION.with(|v| *v.borrow_mut()), 1);
 	});
 }

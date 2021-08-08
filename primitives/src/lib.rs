@@ -31,10 +31,12 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
 	MultiSignature, RuntimeDebug,
 };
+pub use num_traits::{
+	Bounded, CheckedAdd, CheckedDiv, CheckedMul, CheckedShl, CheckedShr, CheckedSub, One, Signed, Zero,
+};
 use sp_std::{convert::Into, prelude::*};
 
 pub use currency::{CurrencyId, DexShare, TokenSymbol};
-
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
@@ -78,9 +80,6 @@ pub type Balance = u128;
 
 /// Signed version of Balance
 pub type Amount = i128;
-
-/// Auction ID
-pub type AuctionId = u32;
 
 /// Share type
 pub type Share = u128;

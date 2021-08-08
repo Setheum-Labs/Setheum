@@ -60,7 +60,6 @@ parameter_types! {
 	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const SettmintEngineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-	pub const SerpAuctionUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
 }
 
 /// Check if the given `address` is a system contract.
