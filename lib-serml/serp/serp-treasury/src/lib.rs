@@ -28,31 +28,32 @@
 #![allow(clippy::unused_unit)]
 
 // use fixed::{types::extra::U128, FixedU128};
-use frame_support::{pallet_prelude::*, transactional, PalletId};
+use frame_support::{pallet_prelude::*, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
-use sp_core::U256;
 use sp_runtime::{
 	traits::{
-		AccountIdConversion, One, Convert,
-		Saturating, UniqueSaturatedInto, Zero,
+		AccountIdConversion, Convert,
+		UniqueSaturatedInto, Zero,
 	},
-	FixedPointNumber, FixedPointOperand, FixedU128,
 	DispatchError, DispatchResult,
 };
 use sp_std::{
-	convert::{TryFrom, TryInto},
-	prelude::*, result::Result, vec
+	prelude::*,
 };
 use support::{
-	ConvertPrice, DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
+	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
+mod market_price_to_balance_convertor;
+mod peg_price_to_balance_convertor;
 mod mock;
 mod tests;
 pub mod weights;
 
+pub use market_price_to_balance_convertor::MarketPriceToBalanceConvertor;
+pub use peg_price_to_balance_convertor::PegPriceToBalanceConvertor;
 pub use module::*;
 pub use weights::WeightInfo;
 
@@ -112,6 +113,10 @@ pub mod module {
 
 		/// The price source of currencies
 		type PriceSource: PriceProvider<CurrencyId>;
+
+		/// The default price rate for all stablecurrencies, if  `None` price is not returned
+		#[pallet::constant]
+		type DefaultPriceRate: Get<Price>;
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
@@ -177,8 +182,6 @@ pub mod module {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				let mut count: u32 = 0;
-				let native_currency_id = T::GetNativeCurrencyId::get();
-				let setter_currency_id = T::SetterCurrencyId::get();
 				Self::setter_on_tes();
 				count += 1;
 				Self::usdj_on_tes();
@@ -210,11 +213,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let serping_amount: Balance = three.saturating_mul(amount / 10);
 		
 		// try to use stable currency to swap reserve asset by exchange with DEX - to burn the Dinar (DNAR).
-		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		let relative_price = T::PriceSource::get_relative_price(currency_id, dinar_currency_id)
-			.ok_or(Error::<T>::InvalidFeedPrice);
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		
 		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_stablecurrency_to_dinar(
 			currency_id,
 			serping_amount,
@@ -254,14 +252,28 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	fn get_peg_price_balance(currency_id: Self::CurrencyId) -> Price {
+		T::PriceSource::get_peg_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
+	}
+
+	fn get_market_price_balance(currency_id: Self::CurrencyId) -> Price {
+		T::PriceSource::get_market_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
+	}
+
+	fn get_peg_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
+		crate::PegPriceToBalanceConvertor::<T>::convert((currency_id, balance))
+	}
+
+	fn get_market_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
+		crate::MarketPriceToBalanceConvertor::<T>::convert((currency_id, balance))
+	}
+
 	fn setter_on_tes() -> DispatchResult {
 		let currency_id = T::SetterCurrencyId::get();
-		let Some(market_price) = T::PriceSource::get_market_price(currency_id);
-		let Some(peg_price) = T::PriceSource::get_peg_price(currency_id);
+		let one: Balance = 1;
+		let market_price_into = Self::get_market_price_balance_value(currency_id, one);
+		let peg_price_into = Self::get_peg_price_balance_value(currency_id, one);
 		let total_supply = T::Currency::total_issuance(currency_id);
-
-		let market_price_into = Convert::convert(market_price);
-		let peg_price_into = Convert::convert(peg_price);
 
 		match market_price_into {
 			market_price_into if market_price_into > peg_price_into => {
@@ -283,13 +295,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	fn usdj_on_tes() -> DispatchResult {
 		let currency_id = T::GetSettUSDCurrencyId::get();
-		let Some(market_price) = T::PriceSource::get_market_price(currency_id);
-		let Some(peg_price) = T::PriceSource::get_peg_price(currency_id);
+		let one: Balance = 1;
+		let market_price_into = Self::get_market_price_balance_value(currency_id, one);
+		let peg_price_into = Self::get_peg_price_balance_value(currency_id, one);
 		let total_supply = T::Currency::total_issuance(currency_id);
-
-		let market_price_into: Balance = Convert::convert(market_price);
-		let peg_price_into: Balance = Convert::convert(peg_price);
-
+		
 		match market_price_into {
 			market_price_into if market_price_into > peg_price_into => {
 	
@@ -343,8 +353,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>:: InvalidCurrencyType,
 		);
-		let setter_fixed_price = T::PriceSource::get_setter_price()
-		.ok_or(Error::<T>::InvalidFeedPrice);
 		let total_supply = T::Currency::total_issuance(currency_id);
 		let minimum_supply = Self::get_minimum_supply(currency_id);
 
@@ -443,7 +451,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		maybe_path: Option<&[CurrencyId]>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		T::Currency::deposit(T::GetNativeCurrencyId::get(), &Self::account_id(), supply_amount)?;
 
 		let setter_currency_id = T::SetterCurrencyId::get();
 		let default_swap_path = &[dinar_currency_id, setter_currency_id];
@@ -459,8 +466,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			}
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit);
-
+		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit).unwrap_or_else(T::Currency::minimum_balance(setter_currency_id));
+		T::Currency::deposit(T::GetNativeCurrencyId::get(), &Self::account_id(), supply_amount)?;
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
 			swap_path,
@@ -493,7 +500,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 		let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
-				
 		T::Currency::deposit(dinar_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -530,7 +536,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 		let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
-				
+		
 		T::Currency::deposit(setter_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -567,8 +573,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			}
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit);
-
+		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit).unwrap_or_else(T::Currency::minimum_balance(dinar_currency_id));
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
 			swap_path,
@@ -576,12 +581,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			min_target_amount,
 			price_impact_limit,
 		)
-	}
-}
-
-impl Convert<Price, Balance> for Pallet<T> {
-	fn convert(p: Price) -> Balance {
-		p
 	}
 }
 
