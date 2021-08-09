@@ -234,6 +234,7 @@ parameter_types! {
 
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+	pub DefaultPriceRate: Price = Price::saturating_from_rational(1, 1);
 }
 
 parameter_type_with_key! {
@@ -266,6 +267,7 @@ impl Config for Runtime {
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type PriceSource = MockPriceSource;
+	type DefaultPriceRate = DefaultPriceRate;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }

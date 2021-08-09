@@ -32,6 +32,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
 use sp_std::{
+	convert::{TryFrom, TryInto},
 	cmp::{Eq, PartialEq},
 	fmt::Debug,
 	prelude::*,
@@ -48,6 +49,29 @@ pub type ExchangeRate = FixedU128; // FixedPointNumber
 pub type Price = FixedU128; // FixedPointNumber
 pub type Rate = FixedU128; // FixedPointNumber
 pub type Ratio = FixedU128; // FixedPointNumber
+
+/// Extensible conversion trait. Generic over both source and destination types.
+pub trait Convert<A, B> {
+	/// Make conversion.
+	fn convert(a: A) -> B;
+}
+
+impl<A, B: Default> Convert<A, B> for () {
+	fn convert(_: A) -> B {
+		Default::default()
+	}
+}
+/// Extensible conversion trait. Generic over both source and destination types.
+pub trait ConvertPrice<FixedU128, u128> {
+	/// Make conversion.
+	fn convert_price_to_balance(p: FixedU128) -> u128;
+}
+
+impl<FixedU128, u128: Default> ConvertPrice<FixedU128, u128> for () {
+	fn convert_price_to_balance(p: FixedU128) -> u128 {
+		Default::default()
+	}
+}
 
 pub trait StandardValidator<AccountId, CurrencyId, Balance, StandardBalance> {
 	fn check_position_valid(
@@ -206,6 +230,20 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 	
+	/// get the `peg_price` of a currency in converted `Balance` data type.
+	fn get_peg_price_balance(currency_id: Self::CurrencyId) -> Price;
+
+	/// get the `market price` of a currency in converted `Balance` data type.
+	fn get_market_price_balance(currency_id: Self::CurrencyId) -> Price;
+
+	/// get the balance value of  the`peg_price` of a currency
+	/// in converted `Balance` data type.
+	fn get_peg_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance;
+
+	/// get the balance value of  the`market price` of a currency
+	/// in converted `Balance` data type.
+	fn get_market_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance;
+
 	/// Trigger SERP-TES when required for Setter (SETT) to serp_down or serp_up.
 	fn setter_on_tes() -> DispatchResult;
 

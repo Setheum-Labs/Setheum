@@ -27,31 +27,33 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use fixed::{types::extra::U128, FixedU128};
-use frame_support::{pallet_prelude::*, transactional, PalletId};
-use frame_system::pallet_prelude::*, GenesisConfig;
+// use fixed::{types::extra::U128, FixedU128};
+use frame_support::{pallet_prelude::*, PalletId};
+use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
-// use sp_core::U256;
 use sp_runtime::{
 	traits::{
-		AccountIdConversion, One,
-		Saturating, Zero,
+		AccountIdConversion, Convert,
+		UniqueSaturatedInto, Zero,
 	},
 	DispatchError, DispatchResult,
 };
 use sp_std::{
-	convert::{TryFrom, TryInto},
-	prelude::*, result::Result, vec
+	prelude::*,
 };
 use support::{
-	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
+	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
+mod market_price_to_balance_convertor;
+mod peg_price_to_balance_convertor;
 mod mock;
 mod tests;
 pub mod weights;
 
+pub use market_price_to_balance_convertor::MarketPriceToBalanceConvertor;
+pub use peg_price_to_balance_convertor::PegPriceToBalanceConvertor;
 pub use module::*;
 pub use weights::WeightInfo;
 
@@ -111,6 +113,10 @@ pub mod module {
 
 		/// The price source of currencies
 		type PriceSource: PriceProvider<CurrencyId>;
+
+		/// The default price rate for all stablecurrencies, if  `None` price is not returned
+		#[pallet::constant]
+		type DefaultPriceRate: Get<Price>;
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
@@ -176,8 +182,6 @@ pub mod module {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				let mut count: u32 = 0;
-				let native_currency_id = T::GetNativeCurrencyId::get();
-				let setter_currency_id = T::SetterCurrencyId::get();
 				Self::setter_on_tes();
 				count += 1;
 				Self::usdj_on_tes();
@@ -209,11 +213,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let serping_amount: Balance = three.saturating_mul(amount / 10);
 		
 		// try to use stable currency to swap reserve asset by exchange with DEX - to burn the Dinar (DNAR).
-		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		let relative_price = T::PriceSource::get_relative_price(currency_id, dinar_currency_id)
-			.ok_or(Error::<T>::InvalidFeedPrice);
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		
 		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_stablecurrency_to_dinar(
 			currency_id,
 			serping_amount,
@@ -253,27 +252,39 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	fn get_peg_price_balance(currency_id: Self::CurrencyId) -> Price {
+		T::PriceSource::get_peg_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
+	}
+
+	fn get_market_price_balance(currency_id: Self::CurrencyId) -> Price {
+		T::PriceSource::get_market_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
+	}
+
+	fn get_peg_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
+		crate::PegPriceToBalanceConvertor::<T>::convert((currency_id, balance))
+	}
+
+	fn get_market_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
+		crate::MarketPriceToBalanceConvertor::<T>::convert((currency_id, balance))
+	}
+
 	fn setter_on_tes() -> DispatchResult {
-		type Fix = FixedU128<U128>;
 		let currency_id = T::SetterCurrencyId::get();
-		let one: u128 = 1;
-		let Some(market_price) = T::PriceSource::get_market_price(currency_id);
-		let market_to_num = Fix::from_num(market_price).to_num::<u128>()
-			.ok_or(Error::<T>::InvalidFeedPrice);
-		let peg_price: U256 = U256::from(T::PriceSource::get_peg_price(currency_id))
-			.ok_or(Error::<T>::InvalidFeedPrice);
+		let one: Balance = 1;
+		let market_price_into = Self::get_market_price_balance_value(currency_id, one);
+		let peg_price_into = Self::get_peg_price_balance_value(currency_id, one);
 		let total_supply = T::Currency::total_issuance(currency_id);
 
-		match market_price {
-			market_price if market_price > peg_price => {
+		match market_price_into {
+			market_price_into if market_price_into > peg_price_into => {
 	
-				// safe from underflow because `peg_price` is checked to be less than `market_price`
-				let expand_by = get_supply_change(market_price, peg_price, total_supply);
+				// safe from underflow because `peg_price_into` is checked to be less than `market_price_into`
+				let expand_by = get_supply_change(market_price_into, peg_price_into, total_supply);
 				Self::on_serpup(currency_id, expand_by)?;
 			}
-			market_price if market_price < peg_price => {
-				// safe from underflow because `peg_price` is checked to be greater than `market_price`
-				let contract_by = get_supply_change(peg_price, market_price, total_supply);
+			market_price_into if market_price_into < peg_price_into => {
+				// safe from underflow because `peg_price_into` is checked to be greater than `market_price_into`
+				let contract_by = get_supply_change(peg_price_into, market_price_into, total_supply);
 				Self::on_serpdown(currency_id, contract_by)?;
 			}
 			_ => {}
@@ -284,22 +295,21 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	fn usdj_on_tes() -> DispatchResult {
 		let currency_id = T::GetSettUSDCurrencyId::get();
-		let market_price: U256 = U256::from(T::PriceSource::get_market_price(currency_id))
-			.ok_or(Error::<T>::InvalidFeedPrice);
-		let peg_price: U256 = U256::from(T::PriceSource::get_peg_price(currency_id))
-			.ok_or(Error::<T>::InvalidFeedPrice);
+		let one: Balance = 1;
+		let market_price_into = Self::get_market_price_balance_value(currency_id, one);
+		let peg_price_into = Self::get_peg_price_balance_value(currency_id, one);
 		let total_supply = T::Currency::total_issuance(currency_id);
-
-		match market_price {
-			market_price if market_price > peg_price => {
+		
+		match market_price_into {
+			market_price_into if market_price_into > peg_price_into => {
 	
-				// safe from underflow because `peg_price` is checked to be less than `market_price`
-				let expand_by = get_supply_change(market_price, peg_price, total_supply);
+				// safe from underflow because `peg_price_into` is checked to be less than `market_price_into`
+				let expand_by = get_supply_change(market_price_into, peg_price_into, total_supply);
 				Self::on_serpup(currency_id, expand_by)?;
 			}
-			market_price if market_price < peg_price => {
-				// safe from underflow because `peg_price` is checked to be greater than `market_price`
-				let contract_by = get_supply_change(peg_price, market_price, total_supply);
+			market_price_into if market_price_into < peg_price_into => {
+				// safe from underflow because `peg_price_into` is checked to be greater than `market_price_into`
+				let contract_by = get_supply_change(peg_price_into, market_price_into, total_supply);
 				Self::on_serpdown(currency_id, contract_by)?;
 			}
 			_ => {}
@@ -343,8 +353,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>:: InvalidCurrencyType,
 		);
-		let setter_fixed_price = T::PriceSource::get_setter_price()
-		.ok_or(Error::<T>::InvalidFeedPrice);
 		let total_supply = T::Currency::total_issuance(currency_id);
 		let minimum_supply = Self::get_minimum_supply(currency_id);
 
@@ -443,7 +451,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		maybe_path: Option<&[CurrencyId]>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		T::Currency::deposit(T::GetNativeCurrencyId::get(), &Self::account_id(), supply_amount)?;
 
 		let setter_currency_id = T::SetterCurrencyId::get();
 		let default_swap_path = &[dinar_currency_id, setter_currency_id];
@@ -459,8 +466,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			}
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit);
-
+		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit).unwrap_or_else(T::Currency::minimum_balance(setter_currency_id));
+		T::Currency::deposit(T::GetNativeCurrencyId::get(), &Self::account_id(), supply_amount)?;
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
 			swap_path,
@@ -493,7 +500,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 		let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
-				
 		T::Currency::deposit(dinar_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -530,7 +536,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 		let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
-				
+		
 		T::Currency::deposit(setter_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -567,8 +573,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			}
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit);
-
+		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit).unwrap_or_else(T::Currency::minimum_balance(dinar_currency_id));
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
 			swap_path,
@@ -579,26 +584,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	}
 }
 
-#[cfg(feature = "std")]
-impl GenesisConfig {
-	/// Direct implementation of `GenesisBuild::build_storage`.
-	///
-	/// Kept in order not to break dependency.
-	pub fn build_storage<T: Config>(&self) -> Result<sp_runtime::Storage, String> {
-		<Self as GenesisBuild<T>>::build_storage(self)
-	}
-
-	/// Direct implementation of `GenesisBuild::assimilate_storage`.
-	///
-	/// Kept in order not to break dependency.
-	pub fn assimilate_storage<T: Config>(&self, storage: &mut sp_runtime::Storage) -> Result<(), String> {
-		<Self as GenesisBuild<T>>::assimilate_storage(self, storage)
-	}
-}
-
 /// Calculate the amount of supply change from a fraction given as `nume_fraction`, `deno_fraction` and  `supply`.
-fn get_supply_change(nume_fraction: U256, deno_fraction: U256, supply: Balance) -> Balance {
-	type Fix = FixedU128<U128>;
-	let fraction = Fix::from_num(nume_fraction) / Fix::from_num(deno_fraction) - Fix::from_num(1);
-	fraction.saturating_mul_int(supply as u128).to_num::<u128>()
+fn get_supply_change(nume_fraction: u128, deno_fraction: u128, supply: u128) -> u128 {
+	let fraction = nume_fraction / deno_fraction - 1;
+	fraction.saturating_mul(supply)
 }
