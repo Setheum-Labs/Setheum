@@ -18,7 +18,6 @@
 
 use super::*;
 use primitives::{Balance, CurrencyId};
-use support::Price;
 use sp_runtime::traits::Convert;
 use sp_runtime::FixedPointNumber;
 
@@ -29,6 +28,6 @@ where
 	T: Config,
 {
 	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
-		<Module<T>>::get_peg_price_balance(currency_id).saturating_mul_int(balance)
+		<<Pallet<T>>::get_peg_price_balance(currency_id).saturating_mul_int(balance)
 	}
 }

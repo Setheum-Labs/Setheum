@@ -21,13 +21,13 @@ use primitives::{Balance, CurrencyId};
 use sp_runtime::traits::Convert;
 use sp_runtime::FixedPointNumber;
 
-pub struct MarketPriceToBalanceConvertor<T>(sp_std::marker::PhantomData<T>);
+pub struct PriceToBalanceConvertor<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> Convert<(CurrencyId, Balance), Balance> for MarketPriceToBalanceConvertor<T>
+impl<T> Convert<(CurrencyId, Balance), Balance> for PriceToBalanceConvertor<T>
 where
 	T: Config,
 {
 	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
-		<<Pallet<T>>::get_market_price_balance(currency_id).saturating_mul_int(balance)
+		<<Pallet<T>>::get_price_balance(currency_id).saturating_mul_int(balance)
 	}
 }

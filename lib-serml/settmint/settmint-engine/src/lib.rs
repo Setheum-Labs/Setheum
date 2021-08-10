@@ -59,7 +59,7 @@ mod tests;
 
 pub use module::*;
 
-pub type SettmintManagerOf<T> = settmint_manager::Module<T>;
+pub type SettmintManagerOf<T> = settmint_manager::<Pallet<T>;
 
 // typedef to help polkadot.js disambiguate Change with different generic
 // parameters

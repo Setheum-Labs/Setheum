@@ -33,10 +33,7 @@ use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::{
-	traits::{
-		AccountIdConversion, Convert,
-		UniqueSaturatedInto, Zero,
-	},
+	traits::{AccountIdConversion, Convert, Zero},
 	DispatchError, DispatchResult,
 };
 use sp_std::{
@@ -46,12 +43,14 @@ use support::{
 	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
+mod price_to_balance_convertor;
 mod market_price_to_balance_convertor;
 mod peg_price_to_balance_convertor;
 mod mock;
 mod tests;
 pub mod weights;
 
+pub use price_to_balance_convertor::PriceToBalanceConvertor;
 pub use market_price_to_balance_convertor::MarketPriceToBalanceConvertor;
 pub use peg_price_to_balance_convertor::PegPriceToBalanceConvertor;
 pub use module::*;
@@ -182,10 +181,12 @@ pub mod module {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				let mut count: u32 = 0;
-				Self::setter_on_tes();
-				count += 1;
-				Self::usdj_on_tes();
-				count += 1;
+				if Self::setter_on_tes().is_ok() {
+					count += 1;
+				};
+				if Self::usdj_on_tes().is_ok() {
+					count += 1;
+				}
 
 				T::WeightInfo::on_initialize(count)
 			} else {
@@ -217,10 +218,10 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			currency_id,
 			serping_amount,
 			None,
-		);
+		)?;
 
 		// Burn Native Reserve asset (Dinar (DNAR))
-		Self::burn_dinar(&Self::account_id(), serping_amount);
+		Self::burn_dinar(&Self::account_id(), serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -234,7 +235,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let six: Balance = 6;
 		let serping_amount: Balance = six.saturating_mul(amount / 10);
 		// Issue the SerpUp propper to the SettPayVault
-		Self::issue_propper(currency_id, &settpay_account, serping_amount);
+		Self::issue_propper(currency_id, &settpay_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -246,7 +247,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Charity Fund SerpUp Pool - 10%
 		let serping_amount: Balance = amount / 10;
 		// Issue the SerpUp propper to the SettPayVault
-		Self::issue_propper(currency_id, &charity_fund_account, serping_amount);
+		Self::issue_propper(currency_id, &charity_fund_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -260,12 +261,20 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::PriceSource::get_market_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
 	}
 
+	fn get_price_balance(currency_id: Self::CurrencyId) -> Price {
+		T::PriceSource::get_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
+	}
+
 	fn get_peg_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
 		crate::PegPriceToBalanceConvertor::<T>::convert((currency_id, balance))
 	}
 
 	fn get_market_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
 		crate::MarketPriceToBalanceConvertor::<T>::convert((currency_id, balance))
+	}
+
+	fn get_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
+		crate::PriceToBalanceConvertor::<T>::convert((currency_id, balance))
 	}
 
 	fn setter_on_tes() -> DispatchResult {
@@ -330,9 +339,9 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			!amount.is_zero(),
 			Error::<T>::InvalidAmount,
 		);
-		Self::get_buyback_serpup(amount, currency_id);
-		Self::get_settpay_serpup(amount, currency_id);
-		Self::get_charity_fund_serpup(amount, currency_id);
+		Self::get_buyback_serpup(amount, currency_id)?;
+		Self::get_settpay_serpup(amount, currency_id)?;
+		Self::get_charity_fund_serpup(amount, currency_id)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUp(amount, currency_id));
 		Ok(())
@@ -365,13 +374,13 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_dinar_to_exact_setter(
 				amount,
 				None,
-			);
+			)?;
 		} else {
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_setter_to_exact_settcurrency(
 				currency_id,
 				amount,
 				None,
-			);
+			)?;
 		} 
 
 		<Pallet<T>>::deposit_event(Event::SerpDown(amount, currency_id));
@@ -444,39 +453,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 }
 
 impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
-	/// Swap exact amount of Dinar to Setter,
-	/// return actual target Setter amount
-	fn swap_exact_dinar_to_setter(
-		supply_amount: Balance,
-		maybe_path: Option<&[CurrencyId]>,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		let dinar_currency_id = T::GetNativeCurrencyId::get();
-
-		let setter_currency_id = T::SetterCurrencyId::get();
-		let default_swap_path = &[dinar_currency_id, setter_currency_id];
-		let swap_path = match maybe_path {
-			None => default_swap_path,
-			Some(path) => {
-				let path_length = path.len();
-				ensure!(
-					path_length >= 2 && path[0] == dinar_currency_id && path[path_length - 1] == setter_currency_id,
-					Error::<T>::InvalidSwapPath
-				);
-				path
-			}
-		};
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit).unwrap_or_else(T::Currency::minimum_balance(setter_currency_id));
-		T::Currency::deposit(T::GetNativeCurrencyId::get(), &Self::account_id(), supply_amount)?;
-		T::Dex::swap_with_exact_supply(
-			&Self::account_id(),
-			swap_path,
-			supply_amount,
-			min_target_amount,
-			price_impact_limit,
-		)
-	}
-
 	/// swap Dinar to get exact Setter,
 	/// return actual supply Dinar amount
 	fn swap_dinar_to_exact_setter(
@@ -498,8 +474,18 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				path
 			}
 		};
+		let one: Balance = 1;
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
+		let dinar_price_into = Self::get_price_balance_value(dinar_currency_id, one);
+		let setter_price_into = Self::get_price_balance_value(setter_currency_id, one);
+
+		// get a max_supply_amount of 105% of market value, marking the 5% slippage of `price_impact_limit`.
+		let relative_price = dinar_price_into / setter_price_into;
+		let max_supply_amount_full = target_amount / relative_price;
+		let max_supply_amount_fives = max_supply_amount_full / 20;
+		let max_supply_amount = max_supply_amount_fives * 21;
+
+		// let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
 		T::Currency::deposit(dinar_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -534,8 +520,18 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				path
 			}
 		};
+		let one: Balance = 1;
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
+		let setter_price_into = Self::get_price_balance_value(setter_currency_id, one);
+		let settcurrency_price_into = Self::get_price_balance_value(currency_id, one);
+
+		// get a max_supply_amount of 105% of market value, marking the 5% slippage of `price_impact_limit`.
+		let relative_price = setter_price_into / settcurrency_price_into;
+		let max_supply_amount_full = target_amount / relative_price;
+		let max_supply_amount_fives = max_supply_amount_full / 20;
+		let max_supply_amount = max_supply_amount_fives * 21;
+
+		// let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
 		
 		T::Currency::deposit(setter_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
@@ -572,8 +568,18 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				path
 			}
 		};
+		let one: Balance = 1;
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit).unwrap_or_else(T::Currency::minimum_balance(dinar_currency_id));
+		let stablecurrency_price_into = Self::get_price_balance_value(currency_id, one);
+		let dinar_price_into = Self::get_price_balance_value(dinar_currency_id, one);
+
+		// get a min_target_amount of 95% of market value, marking the 5% slippage of `price_impact_limit`.
+		let relative_price = dinar_price_into / stablecurrency_price_into;
+		let min_target_amount_full = supply_amount / relative_price;
+		let min_target_amount_fives = min_target_amount_full / 20;
+		let min_target_amount = min_target_amount_fives * 19;
+
+		// let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit);
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
 			swap_path,
