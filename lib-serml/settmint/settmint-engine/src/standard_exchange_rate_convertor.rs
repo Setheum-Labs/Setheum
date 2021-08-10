@@ -21,7 +21,7 @@ use primitives::{Balance, CurrencyId};
 use sp_runtime::traits::Convert;
 use sp_runtime::FixedPointNumber;
 
-pub struct StandardExchangeRateConvertor<T>(sp_std::marker::_);
+pub struct StandardExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
 
 impl<T> Convert<(CurrencyId, Balance), Balance> for StandardExchangeRateConvertor<T>
 where
