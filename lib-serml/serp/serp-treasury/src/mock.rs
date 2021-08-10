@@ -27,7 +27,6 @@ use orml_traits::parameter_type_with_key;
 use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
-	Permill,
 	testing::Header,
 	traits::{IdentityLookup, One as OneT, Zero},
 	DispatchError, FixedPointNumber,

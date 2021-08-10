@@ -130,7 +130,7 @@ pub mod module {
 			standard_adjustment: Amount,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			<settmint_engine::Module<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
+			<settmint_engine::<Pallet<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
 			Ok(().into())
 		}
 
@@ -150,7 +150,7 @@ pub mod module {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			Self::check_authorization(&from, &to, currency_id)?;
-			<settmint_manager::Module<T>>::transfer_reserve(&from, &to, currency_id)?;
+			<settmint_manager::<Pallet<T>>::transfer_reserve(&from, &to, currency_id)?;
 			Ok(().into())
 		}
 

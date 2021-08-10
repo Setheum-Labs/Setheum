@@ -19,7 +19,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode, FullCodec, HasCompact};
+use codec::{Decode, Encode};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
 	CurrencyId,
@@ -32,9 +32,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
 use sp_std::{
-	convert::{TryFrom, TryInto},
 	cmp::{Eq, PartialEq},
-	fmt::Debug,
 	prelude::*,
 };
 
@@ -61,14 +59,15 @@ impl<A, B: Default> Convert<A, B> for () {
 		Default::default()
 	}
 }
+
 /// Extensible conversion trait. Generic over both source and destination types.
-pub trait ConvertPrice<FixedU128, u128> {
+pub trait ConvertPrice<FixedU128, U128> {
 	/// Make conversion.
 	fn convert_price_to_balance(p: FixedU128) -> u128;
 }
 
-impl<FixedU128, u128: Default> ConvertPrice<FixedU128, u128> for () {
-	fn convert_price_to_balance(p: FixedU128) -> u128 {
+impl<FixedU128, U128: Default> ConvertPrice<FixedU128, U128> for () {
+	fn convert_price_to_balance(_p: FixedU128) -> u128 {
 		Default::default()
 	}
 }
@@ -236,6 +235,9 @@ pub trait SerpTreasury<AccountId> {
 	/// get the `market price` of a currency in converted `Balance` data type.
 	fn get_market_price_balance(currency_id: Self::CurrencyId) -> Price;
 
+	/// get the `market price` of a currency in converted `Balance` data type.
+	fn get_price_balance(currency_id: Self::CurrencyId) -> Price;
+
 	/// get the balance value of  the`peg_price` of a currency
 	/// in converted `Balance` data type.
 	fn get_peg_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance;
@@ -243,6 +245,10 @@ pub trait SerpTreasury<AccountId> {
 	/// get the balance value of  the`market price` of a currency
 	/// in converted `Balance` data type.
 	fn get_market_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance;
+
+	/// get the balance value of  the`market price` of a currency
+	/// in converted `Balance` data type.
+	fn get_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance;
 
 	/// Trigger SERP-TES when required for Setter (SETT) to serp_down or serp_up.
 	fn setter_on_tes() -> DispatchResult;
@@ -300,12 +306,6 @@ pub trait SerpTreasury<AccountId> {
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
-	// when setter needs serpdown
-	fn swap_exact_dinar_to_setter(
-		supply_amount: Self::Balance,
-		maybe_path: Option<&[Self::CurrencyId]>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
-
 	// when setter needs serpdown
 	fn swap_dinar_to_exact_setter(
 		target_amount: Self::Balance,
