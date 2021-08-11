@@ -29,7 +29,7 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureSignedBy};
 use setheum_support::{
-	mocks::MockAddressMapping, AddressMapping as AddressMappingT, DEXIncentives, ExchangeRate, ExchangeRateProvider,
+	mocks::MockAddressMapping, AddressMapping as AddressMappingT, ExchangeRate, ExchangeRateProvider,
 };
 use orml_traits::{parameter_type_with_key, MultiReservableCurrency};
 pub use primitives::{
@@ -332,18 +332,6 @@ impl pallet_scheduler::Config for Test {
 	type WeightInfo = ();
 }
 
-pub struct MockDEXIncentives;
-impl DEXIncentives<AccountId, CurrencyId, Balance> for MockDEXIncentives {
-	fn do_deposit_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
-		Tokens::reserve(lp_currency_id, who, amount)
-	}
-
-	fn do_withdraw_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
-		let _ = Tokens::unreserve(lp_currency_id, who, amount);
-		Ok(())
-	}
-}
-
 ord_parameter_types! {
 	pub const ListingOrigin: AccountId = ALICE;
 }
@@ -362,7 +350,6 @@ impl setheum_dex::Config for Test {
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
 	type WeightInfo = ();
-	type DEXIncentives = MockDEXIncentives;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 
