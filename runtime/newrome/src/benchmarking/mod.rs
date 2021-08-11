@@ -22,7 +22,6 @@
 pub mod serp_treasury;
 pub mod dex;
 pub mod settmint_gateway;
-pub mod incentives;
 pub mod prices;
 pub mod transaction_payment;
 
