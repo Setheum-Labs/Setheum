@@ -33,26 +33,18 @@ use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::{
-	traits::{AccountIdConversion, Convert, Zero},
-	DispatchError, DispatchResult,
+	traits::{AccountIdConversion, Zero},
+	DispatchError, DispatchResult
 };
-use sp_std::{
-	prelude::*,
-};
+use sp_std::prelude::*;
 use support::{
 	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
-mod price_to_balance_convertor;
-mod market_price_to_balance_convertor;
-mod peg_price_to_balance_convertor;
 mod mock;
 mod tests;
 pub mod weights;
 
-pub use price_to_balance_convertor::PriceToBalanceConvertor;
-pub use market_price_to_balance_convertor::MarketPriceToBalanceConvertor;
-pub use peg_price_to_balance_convertor::PegPriceToBalanceConvertor;
 pub use module::*;
 pub use weights::WeightInfo;
 
@@ -253,47 +245,24 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	fn get_peg_price_balance(currency_id: Self::CurrencyId) -> Price {
-		T::PriceSource::get_peg_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
-	}
-
-	fn get_market_price_balance(currency_id: Self::CurrencyId) -> Price {
-		T::PriceSource::get_market_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
-	}
-
-	fn get_price_balance(currency_id: Self::CurrencyId) -> Price {
-		T::PriceSource::get_price(currency_id).unwrap_or_else(T::DefaultPriceRate::get)
-	}
-
-	fn get_peg_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
-		crate::PegPriceToBalanceConvertor::<T>::convert((currency_id, balance))
-	}
-
-	fn get_market_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
-		crate::MarketPriceToBalanceConvertor::<T>::convert((currency_id, balance))
-	}
-
-	fn get_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance {
-		crate::PriceToBalanceConvertor::<T>::convert((currency_id, balance))
-	}
-
 	fn setter_on_tes() -> DispatchResult {
 		let currency_id = T::SetterCurrencyId::get();
-		let one: Balance = 1;
-		let market_price_into = Self::get_market_price_balance_value(currency_id, one);
-		let peg_price_into = Self::get_peg_price_balance_value(currency_id, one);
+		let market_price = <T as Config>::PriceSource::get_market_price(currency_id);
+		let peg_price = <T as Config>::PriceSource::get_peg_price(currency_id);
 		let total_supply = T::Currency::total_issuance(currency_id);
-
-		match market_price_into {
-			market_price_into if market_price_into > peg_price_into => {
+		
+		match market_price {
+			market_price if market_price > peg_price => {
 	
-				// safe from underflow because `peg_price_into` is checked to be less than `market_price_into`
-				let expand_by = get_supply_change(market_price_into, peg_price_into, total_supply);
+				// safe from underflow because `peg_price` is checked to be less than `market_price`
+				// expand_by = 0.2% of total_supply;
+				let expand_by = total_supply / 500;
 				Self::on_serpup(currency_id, expand_by)?;
 			}
-			market_price_into if market_price_into < peg_price_into => {
-				// safe from underflow because `peg_price_into` is checked to be greater than `market_price_into`
-				let contract_by = get_supply_change(peg_price_into, market_price_into, total_supply);
+			market_price if market_price < peg_price => {
+				// safe from underflow because `peg_price` is checked to be greater than `market_price`
+				// expand_by = 0.2% of total_supply;
+				let contract_by = total_supply / 500;
 				Self::on_serpdown(currency_id, contract_by)?;
 			}
 			_ => {}
@@ -304,21 +273,22 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	fn usdj_on_tes() -> DispatchResult {
 		let currency_id = T::GetSettUSDCurrencyId::get();
-		let one: Balance = 1;
-		let market_price_into = Self::get_market_price_balance_value(currency_id, one);
-		let peg_price_into = Self::get_peg_price_balance_value(currency_id, one);
+		let market_price = <T as Config>::PriceSource::get_market_price(currency_id);
+		let peg_price = <T as Config>::PriceSource::get_peg_price(currency_id);
 		let total_supply = T::Currency::total_issuance(currency_id);
-		
-		match market_price_into {
-			market_price_into if market_price_into > peg_price_into => {
+
+		match market_price {
+			market_price if market_price > peg_price => {
 	
-				// safe from underflow because `peg_price_into` is checked to be less than `market_price_into`
-				let expand_by = get_supply_change(market_price_into, peg_price_into, total_supply);
+				// safe from underflow because `peg_price` is checked to be less than `market_price`
+				// expand_by = 0.2% of total_supply;
+				let expand_by = total_supply / 500;
 				Self::on_serpup(currency_id, expand_by)?;
 			}
-			market_price_into if market_price_into < peg_price_into => {
-				// safe from underflow because `peg_price_into` is checked to be greater than `market_price_into`
-				let contract_by = get_supply_change(peg_price_into, market_price_into, total_supply);
+			market_price if market_price < peg_price => {
+				// safe from underflow because `peg_price` is checked to be greater than `market_price`
+				// expand_by = 0.2% of total_supply;
+				let contract_by = total_supply / 500;
 				Self::on_serpdown(currency_id, contract_by)?;
 			}
 			_ => {}
@@ -474,18 +444,16 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				path
 			}
 		};
-		let one: Balance = 1;
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let dinar_price_into = Self::get_price_balance_value(dinar_currency_id, one);
-		let setter_price_into = Self::get_price_balance_value(setter_currency_id, one);
 
-		// get a max_supply_amount of 105% of market value, marking the 5% slippage of `price_impact_limit`.
-		let relative_price = dinar_price_into / setter_price_into;
+		// get a min_target_amount of 105% of market value,
+		// marking the 5% slippage of `price_impact_limit`.
+		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(setter_currency_id, dinar_currency_id);
+		let relative_price = pool_1 / pool_0;
 		let max_supply_amount_full = target_amount / relative_price;
 		let max_supply_amount_fives = max_supply_amount_full / 20;
 		let max_supply_amount = max_supply_amount_fives * 21;
-
-		// let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
+		
 		T::Currency::deposit(dinar_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -520,19 +488,16 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				path
 			}
 		};
-		let one: Balance = 1;
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let setter_price_into = Self::get_price_balance_value(setter_currency_id, one);
-		let settcurrency_price_into = Self::get_price_balance_value(currency_id, one);
 
-		// get a max_supply_amount of 105% of market value, marking the 5% slippage of `price_impact_limit`.
-		let relative_price = setter_price_into / settcurrency_price_into;
+		// get a min_target_amount of 105% of market value,
+		// marking the 5% slippage of `price_impact_limit`.
+		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(currency_id, setter_currency_id);
+		let relative_price = pool_1 / pool_0;
 		let max_supply_amount_full = target_amount / relative_price;
 		let max_supply_amount_fives = max_supply_amount_full / 20;
 		let max_supply_amount = max_supply_amount_fives * 21;
 
-		// let Some(max_supply_amount) = T::Dex::get_swap_supply_amount(&swap_path, target_amount, price_impact_limit);
-		
 		T::Currency::deposit(setter_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -568,18 +533,16 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				path
 			}
 		};
-		let one: Balance = 1;
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-		let stablecurrency_price_into = Self::get_price_balance_value(currency_id, one);
-		let dinar_price_into = Self::get_price_balance_value(dinar_currency_id, one);
 
-		// get a min_target_amount of 95% of market value, marking the 5% slippage of `price_impact_limit`.
-		let relative_price = dinar_price_into / stablecurrency_price_into;
+		// get a min_target_amount of 95% of market value,
+		// marking the 5% slippage of `price_impact_limit`.
+		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(dinar_currency_id, currency_id);
+		let relative_price = pool_1 / pool_0;
 		let min_target_amount_full = supply_amount / relative_price;
 		let min_target_amount_fives = min_target_amount_full / 20;
 		let min_target_amount = min_target_amount_fives * 19;
 
-		// let Some(min_target_amount) = T::Dex::get_swap_target_amount(&swap_path, supply_amount, price_impact_limit);
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
 			swap_path,
@@ -588,10 +551,4 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			price_impact_limit,
 		)
 	}
-}
-
-/// Calculate the amount of supply change from a fraction given as `nume_fraction`, `deno_fraction` and  `supply`.
-fn get_supply_change(nume_fraction: u128, deno_fraction: u128, supply: u128) -> u128 {
-	let fraction = nume_fraction / deno_fraction - 1;
-	fraction.saturating_mul(supply)
 }
