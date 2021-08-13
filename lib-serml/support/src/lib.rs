@@ -250,38 +250,14 @@ pub trait SerpTreasury<AccountId> {
 	/// burn standard(stable currency) of `who`
 	fn burn_standard(currency_id: Self::CurrencyId, who: &AccountId, standard: Self::Balance) -> DispatchResult;
 
-	/// issue propper(stable currency) of amount propper to `who`
-	fn issue_propper(currency_id: Self::CurrencyId, who: &AccountId, propper: Self::Balance) -> DispatchResult;
-
-	/// burn propper(stable currency) of `who`
-	fn burn_propper(currency_id: Self::CurrencyId, who: &AccountId, propper: Self::Balance) -> DispatchResult;
-
 	/// issue setter of amount setter to `who`
 	fn issue_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
 	/// burn setter of `who`
 	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
-	/// issue dinar of amount dinar to `who`
-	fn issue_dinar(who: &AccountId, dinar: Self::Balance) -> DispatchResult;
-
-	/// burn dinar of `who`
-	fn burn_dinar(who: &AccountId, dinar: Self::Balance) -> DispatchResult;
-
-	/// Issue Dexer (`DRAM` in Setheum). `dexer` here just referring to the DEX token balance.
-	fn issue_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
-
-	/// Burn Dexer (`DRAM` in Setheum). `dexer` here just referring to the DEX token balance.
-	fn burn_dexer(who: &AccountId, dexer: Self::Balance) -> DispatchResult;
-
-	/// deposit surplus(propperstable currency) to serp treasury by `from`
-	fn deposit_serplus(currency_id: Self::CurrencyId, from: &AccountId, surplus: Self::Balance) -> DispatchResult;
-
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
-
-	// refund remain Dinar to refund recipient from SERP
-	fn withdraw_dinar(to: &AccountId, amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
