@@ -229,27 +229,6 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 	
-	/// get the `peg_price` of a currency in converted `Balance` data type.
-	fn get_peg_price_balance(currency_id: Self::CurrencyId) -> Price;
-
-	/// get the `market price` of a currency in converted `Balance` data type.
-	fn get_market_price_balance(currency_id: Self::CurrencyId) -> Price;
-
-	/// get the `market price` of a currency in converted `Balance` data type.
-	fn get_price_balance(currency_id: Self::CurrencyId) -> Price;
-
-	/// get the balance value of  the`peg_price` of a currency
-	/// in converted `Balance` data type.
-	fn get_peg_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance;
-
-	/// get the balance value of  the`market price` of a currency
-	/// in converted `Balance` data type.
-	fn get_market_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance;
-
-	/// get the balance value of  the`market price` of a currency
-	/// in converted `Balance` data type.
-	fn get_price_balance_value(currency_id: Self::CurrencyId, balance: Self::Balance) -> Self::Balance;
-
 	/// Trigger SERP-TES when required for Setter (SETT) to serp_down or serp_up.
 	fn setter_on_tes() -> DispatchResult;
 
