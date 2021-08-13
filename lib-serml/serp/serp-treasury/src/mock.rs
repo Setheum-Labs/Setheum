@@ -154,6 +154,16 @@ parameter_types! {
 		TradingPair::from_currency_ids(SEKJ, SETT).unwrap(),
 		TradingPair::from_currency_ids(SGDJ, SETT).unwrap(),
 		TradingPair::from_currency_ids(USDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(AUDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(CADJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(CHFJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(EURJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(GBPJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(JPYJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SARJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SEKJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SGDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDJ, DNAR).unwrap(),
 	];
 }
 
@@ -299,10 +309,16 @@ impl Default for ExtBuilder {
 			balances: vec![
 				(ALICE, USDJ, 1000),
 				(ALICE, SETT, 1000),
+				(ALICE, DNAR, 1000),
+				(ALICE, DRAM, 1000),
 				(BOB, USDJ, 1000),
 				(BOB, SETT, 1000),
+				(BOB, DNAR, 1000),
+				(BOB, DRAM, 1000),
 				(CHARITY_FUND, USDJ, 1000),
 				(CHARITY_FUND, SETT, 1000),
+				(CHARITY_FUND, DNAR, 1000),
+				(CHARITY_FUND, DRAM, 1000),
 			],
 		}
 	}

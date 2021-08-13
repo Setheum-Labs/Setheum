@@ -213,7 +213,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		)?;
 
 		// Burn Native Reserve asset (Dinar (DNAR))
-		Self::burn_dinar(&Self::account_id(), serping_amount)?;
+		T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -227,7 +227,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let six: Balance = 6;
 		let serping_amount: Balance = six.saturating_mul(amount / 10);
 		// Issue the SerpUp propper to the SettPayVault
-		Self::issue_propper(currency_id, &settpay_account, serping_amount)?;
+		Self::issue_standard(currency_id, &settpay_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -239,7 +239,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Charity Fund SerpUp Pool - 10%
 		let serping_amount: Balance = amount / 10;
 		// Issue the SerpUp propper to the SettPayVault
-		Self::issue_propper(currency_id, &charity_fund_account, serping_amount)?;
+		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -366,15 +366,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(currency_id, who, standard)
 	}
 
-	fn issue_propper(currency_id: CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult {
-		T::Currency::deposit(currency_id, who, propper)?;
-		Ok(())
-	}
-
-	fn burn_propper(currency_id: CurrencyId, who: &T::AccountId, propper: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(currency_id, who, propper)
-	}
-
 	fn issue_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(T::SetterCurrencyId::get(), who, setter)?;
 		Ok(())
@@ -385,40 +376,9 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		T::Currency::withdraw(T::SetterCurrencyId::get(), who, setter)
 	}
 
-	fn issue_dinar(who: &T::AccountId, dinar: Self::Balance) -> DispatchResult {
-		T::Currency::deposit(T::GetNativeCurrencyId::get(), who, dinar)?;
-		Ok(())
-	}
-
-	/// Burn Native Reserve asset (Dinar (DNAR))
-	fn burn_dinar(who: &T::AccountId, dinar: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(T::GetNativeCurrencyId::get(), who, dinar)
-	}
-
-	/// Issue Dexer (`DRAM` in Setheum). `dexer` here just referring to the Dex token balance.
-	fn issue_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
-		T::Currency::deposit(T::DirhamCurrencyId::get(), who, dexer)?;
-		Ok(())
-	}
-
-	/// Burn Dexer (`DRAM` in Setheum). `dexer` here just referring to the Dex token balance.
-	fn burn_dexer(who: &T::AccountId, dexer: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(T::DirhamCurrencyId::get(), who, dexer)
-	}
-
-	/// deposit surplus(propper stable currency) to serp treasury by `from`
-	fn deposit_serplus(currency_id: CurrencyId, from: &T::AccountId, serplus: Self::Balance) -> DispatchResult {
-		T::Currency::transfer(currency_id, from, &Self::account_id(), serplus)
-	}
-
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
 	fn deposit_setter(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::SetterCurrencyId::get(), from, &Self::account_id(), amount)
-	}
-
-	// refund remain Dinar to refund recipient from SERP
-	fn withdraw_dinar(to: &T::AccountId, amount: Self::Balance) -> DispatchResult {
-		T::Currency::transfer(T::GetNativeCurrencyId::get(), &Self::account_id(), to, amount)
 	}
 }
 
