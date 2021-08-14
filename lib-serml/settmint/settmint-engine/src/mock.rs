@@ -30,7 +30,7 @@ use sp_runtime::{
 	testing::{Header, TestXt},
 	traits::{IdentityLookup, One as OneT},
 };
-use support::{Price, mocks::MockCurrencyIdMapping, Ratio};
+use support::{Price, Ratio};
 use sp_std::cell::RefCell;
 
 pub type AccountId = u128;
@@ -148,7 +148,6 @@ impl settmint::Config for Runtime {
 	type Currency = Currencies;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
-	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettmintManagerPalletId;
 }

@@ -33,18 +33,16 @@ use frame_system::{
 	offchain::SendTransactionTypes,
 	pallet_prelude::*,
 };
-use settmint::Position;
-use orml_traits::Change;
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
-	traits::{Convert, Zero},
+	traits::Convert,
 	transaction_validity::{
 		TransactionPriority,
 	},
 	DispatchResult, FixedPointNumber,
 };
 use sp_std::prelude::*;
-use support::{ExchangeRate, Price, PriceProvider, Rate, Ratio};
+use support::{ExchangeRate, Price, PriceProvider, Ratio};
 
 mod standard_exchange_rate_convertor;
 mod mock;
