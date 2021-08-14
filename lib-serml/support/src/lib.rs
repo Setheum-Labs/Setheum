@@ -72,26 +72,6 @@ impl<FixedU128, U128: Default> ConvertPrice<FixedU128, U128> for () {
 	}
 }
 
-pub trait StandardValidator<AccountId, CurrencyId, Balance, StandardBalance> {
-	fn check_position_valid(
-		currency_id: CurrencyId,
-		reserve_balance: Balance,
-		standard_balance: StandardBalance,
-	) -> DispatchResult;
-}
-
-impl<AccountId, CurrencyId, Balance: Default, StandardBalance> StandardValidator<AccountId, CurrencyId, Balance, StandardBalance>
-	for ()
-{
-	fn check_position_valid(
-		_currency_id: CurrencyId,
-		_reserve_balance: Balance,
-		_standard_balance: StandardBalance,
-	) -> DispatchResult {
-		Ok(())
-	}
-}
-
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 

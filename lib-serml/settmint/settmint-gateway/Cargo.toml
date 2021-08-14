@@ -30,6 +30,7 @@ sp-io = { version = "3.0.0", git = "https://github.com/paritytech/substrate", br
 pallet-balances = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 orml-currencies = { path = "../../../lib-openrml/currencies" }
 orml-traits = { path = "../../../lib-openrml/traits" }
+setheum-dex = { path = "../../dex/dex" }
 serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
 
 [features]

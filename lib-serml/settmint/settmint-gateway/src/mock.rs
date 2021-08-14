@@ -24,15 +24,13 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::{offchain::SendTransactionTypes, EnsureSignedBy};
 use orml_traits::parameter_type_with_key;
-use primitives::{Balance, Moment, TokenSymbol};
+use primitives::{Balance, Moment, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
-	traits::{AccountIdConversion, IdentityLookup, One as OneT},
-	FixedPointNumber,
+	traits::{IdentityLookup, One as OneT},
 };
-use sp_std::cell::RefCell;
-use support::{ExchangeRate, Price, PriceProvider, Rate, Ratio};
+use support::{ExchangeRate, Price, PriceProvider, Ratio};
 
 mod settmint_gateway {
 	pub use super::super::*;
@@ -48,9 +46,19 @@ pub const CHARITY_FUND: AccountId = 4;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM); //  Setheum Dirham
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
+pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
+pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
+pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
+pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
+pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -79,6 +87,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -130,47 +139,7 @@ impl orml_currencies::Config for Runtime {
 
 pub struct MockPriceSource;
 impl PriceProvider<CurrencyId> for MockPriceSource {
-	fn get_peg_currency_by_currency_id(_currency_id: CurrencyId) -> CurrencyId {
-		Default::default()
-	}
-
-	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_fiat_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_fiat_usd_fixed_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_settusd_fixed_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_stablecoin_fixed_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_stablecoin_market_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
 	fn get_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_coin_to_peg_relative_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_setter_basket_peg_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_setter_fixed_price() -> Option<Price> {
 		Some(Price::one())
 	}
 
@@ -178,8 +147,16 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 		Some(Price::one())
 	}
 
-	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
+	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
 		Some(Price::one())
+	}
+
+	fn get_setter_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
+		None
 	}
 
 	fn lock_price(_currency_id: CurrencyId) {}
@@ -193,45 +170,8 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT,
-		AEDJ,
- 		AUDJ,
-		BRLJ,
-		CADJ,
-		CHFJ,
-		CLPJ,
-		CNYJ,
-		COPJ,
-		EURJ,
-		GBPJ,
-		HKDJ,
-		HUFJ,
-		IDRJ,
-		JPYJ,
- 		KESJ,
- 		KRWJ,
- 		KZTJ,
-		MXNJ,
-		MYRJ,
- 		NGNJ,
-		NOKJ,
-		NZDJ,
-		PENJ,
-		PHPJ,
- 		PKRJ,
-		PLNJ,
-		QARJ,
-		RONJ,
-		RUBJ,
- 		SARJ,
- 		SEKJ,
- 		SGDJ,
-		THBJ,
-		TRYJ,
-		TWDJ,
-		TZSJ,
-		USDJ,
-		ZARJ,
+		SETT, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
+		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
 	];
 	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;  // Setter  currency ticker is USDJ/
@@ -280,76 +220,74 @@ impl serp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MinimumPeriod: Moment = 1000;
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
+	pub const TradingPathLimit: u32 = 3;
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![
+		TradingPair::from_currency_ids(DNAR, SETT).unwrap(),
+		TradingPair::from_currency_ids(AUDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(CADJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(CHFJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(EURJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(GBPJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(JPYJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SARJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SEKJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SGDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(USDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(AUDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(CADJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(CHFJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(EURJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(GBPJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(JPYJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SARJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SEKJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SGDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDJ, DNAR).unwrap(),
+	];
 }
-impl pallet_timestamp::Config for Runtime {
-	type Moment = Moment;
-	type OnTimestampSet = ();
-	type MinimumPeriod = MinimumPeriod;
+
+impl setheum_dex::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type GetExchangeFee = GetExchangeFee;
+	type TradingPathLimit = TradingPathLimit;
+	type PalletId = DexPalletId;
+	type CurrencyIdMapping = ();
 	type WeightInfo = ();
+	type ListingOrigin = EnsureSignedBy<One, AccountId>;
+}
+
+parameter_types! {
+	pub const MinimumPeriod: Moment = 1000;
 }
 
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
-		AEDJ,
- 		AUDJ,
-		BRLJ,
+		AUDJ,
 		CADJ,
 		CHFJ,
-		CLPJ,
-		CNYJ,
-		COPJ,
 		EURJ,
 		GBPJ,
-		HKDJ,
-		HUFJ,
-		IDRJ,
 		JPYJ,
- 		KESJ,
- 		KRWJ,
- 		KZTJ,
-		MXNJ,
-		MYRJ,
- 		NGNJ,
-		NOKJ,
-		NZDJ,
-		PENJ,
-		PHPJ,
- 		PKRJ,
-		PLNJ,
-		QARJ,
-		RONJ,
-		RUBJ,
- 		SARJ,
- 		SEKJ,
- 		SGDJ,
-		THBJ,
-		TRYJ,
-		TWDJ,
-		TZSJ,
+		SARJ,
+		SEKJ,
+		SGDJ,
 		USDJ,
-		ZARJ,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
-	pub const UnsignedPriority: u64 = 1 << 20;
 }
 
 impl settmint_engine::Config for Runtime {
 	type Event = Event;
-	type PriceSource = MockPriceSource;
-	type StandardCurrencyIds = StandardCurrencyIds;
-	type GetReserveCurrencyId = GetReserveCurrencyId;
+	type StandardCurrencies = StandardCurrencyIds;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type SerpTreasury = SerpTreasuryModule;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type Dex = ();
-	type UnsignedPriority = UnsignedPriority;
-	type UnixTime = Timestamp;
-	type WeightInfo = ();
+	type ReserveCurrencyId = GetReserveCurrencyId;
+	type PriceSource = MockPriceSource;
 }
 
 parameter_types! {
@@ -362,10 +300,8 @@ impl settmint_manager::Config for Runtime {
 	type Currency = Tokens;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
-	type StandardValidator = SettmintEngineModule;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSettMint = ();
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
@@ -394,8 +330,9 @@ construct_runtime!(
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 		SettmintManagerModule: settmint_manager::{Pallet, Storage, Call, Event<T>},
-		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Event<T>},
-		SettmintEngineModule: settmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned},
+		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
+		SettmintEngineModule: settmint_engine::{Pallet, Storage, Call, Event<T>},
+		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
@@ -410,12 +347,6 @@ where
 	type Extrinsic = Extrinsic;
 }
 
-impl Config for Runtime {
-	type Event = Event;
-	type WeightInfo = ();
-}
-pub type SettmintGatewayModule = Module<Runtime>;
-
 pub struct ExtBuilder {
 	endowed_native: Vec<(AccountId, Balance)>,
 	balances: Vec<(AccountId, CurrencyId, Balance)>,
@@ -424,7 +355,8 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
+			endowed_native: vec![(ALICE, 1000)],
+			balances: vec![
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
 				(ALICE, DRAM, 1000),

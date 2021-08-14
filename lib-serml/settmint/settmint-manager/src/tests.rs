@@ -59,9 +59,6 @@ fn adjust_position_should_work() {
 		System::set_block_number(1);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 
-		// mock can't pass position valid check
-		assert_eq!(SettmintManagerModule::adjust_position(&ALICE, CHFJ, 500, 0).is_ok(), false);
-
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(EURJ, &SettmintManagerModule::account_id()), 0);
 		assert_eq!(SettmintManagerModule::total_positions(EURJ).standard, 0);
