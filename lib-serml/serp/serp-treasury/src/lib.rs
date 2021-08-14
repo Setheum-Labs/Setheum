@@ -31,8 +31,8 @@
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
-use primitives::{AccountId, Balance, CurrencyId};
-use sp_core::{H160, U256};
+use primitives::{Balance, CurrencyId};
+use sp_core::U256;
 use sp_runtime::{
 	traits::{AccountIdConversion, Zero},
 	DispatchError, DispatchResult
