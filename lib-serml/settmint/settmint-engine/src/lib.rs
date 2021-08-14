@@ -165,7 +165,6 @@ impl<T: Config> Pallet<T> {
 }
 
 impl<T: Config> StandardValidator<T::AccountId, CurrencyId, Balance, Balance> for Pallet<T> {
-
 	fn check_position_valid(
 		currency_id: CurrencyId,
 		reserve_balance: Balance,

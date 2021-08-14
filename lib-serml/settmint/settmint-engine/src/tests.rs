@@ -70,10 +70,6 @@ fn check_position_valid_failed_when_remain_standard_value_too_small() {
 #[test]
 fn adjust_position_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_noop!(
-			SettmintEngineModule::adjust_position(&ALICE, SETT, 100, 50),
-			Error::<Runtime>::InvalidStandardType,
-		);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 0);
 		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 0);
@@ -83,11 +79,11 @@ fn adjust_position_work() {
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 50);
 		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 50);
 		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).reserve, 100);
-		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 0, 20).is_ok(), false);
+		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 0, 20).is_ok(), true);
 		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 0, -20));
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 30);
-		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 30);
+		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 50);
+		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 50);
 		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).reserve, 100);
 	});
 }
