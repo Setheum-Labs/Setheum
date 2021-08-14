@@ -31,10 +31,9 @@ use frame_support::{pallet_prelude::*, traits::NamedReservableCurrency, transact
 use frame_system::pallet_prelude::*;
 use primitives::{Amount, Balance, CurrencyId, ReserveIdentifier};
 use sp_runtime::{
-	traits::{StaticLookup, Zero},
+	traits::StaticLookup,
 	DispatchResult,
 };
-use sp_std::vec::Vec;
 
 mod mock;
 mod tests;
@@ -70,7 +69,9 @@ pub mod module {
 	#[pallet::error]
 	pub enum Error<T> {
 		// No authorization
-		NoAuthorization,
+		NoPermission,
+		// Have authorized already
+		AlreadyAuthorized,
 	}
 
 	#[pallet::event]
@@ -130,7 +131,7 @@ pub mod module {
 			standard_adjustment: Amount,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			<settmint_engine::<Pallet<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
+			<settmint_engine::Pallet<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
 			Ok(().into())
 		}
 
@@ -150,7 +151,7 @@ pub mod module {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			Self::check_authorization(&from, &to, currency_id)?;
-			<settmint_manager::<Pallet<T>>::transfer_reserve(&from, &to, currency_id)?;
+			<settmint_manager::Pallet<T>>::transfer_position(&from, &to, currency_id)?;
 			Ok(().into())
 		}
 
@@ -167,8 +168,21 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
-			<Authorization<T>>::insert(&from, (currency_id, &to), true);
-			Self::deposit_event(Event::Authorization(from, to, currency_id));
+			if from == to {
+				return Ok(().into());
+			}
+			
+			Authorization::<T>::try_mutate_exists(&from, (currency_id, &to), |maybe_reserved| -> DispatchResult {
+				if maybe_reserved.is_none() {
+					let reserve_amount = T::DepositPerAuthorization::get();
+					<T as Config>::Currency::reserve_named(&RESERVE_ID, &from, reserve_amount)?;
+					*maybe_reserved = Some(reserve_amount);
+					Self::deposit_event(Event::Authorization(from.clone(), to.clone(), currency_id));
+					Ok(())
+				} else {
+					Err(Error::<T>::AlreadyAuthorized.into())
+				}
+			})?;
 			Ok(().into())
 		}
 
@@ -185,17 +199,17 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
-			<Authorization<T>>::remove(&from, (currency_id, &to));
+			Authorization::<T>::remove(&from, (currency_id, &to));
 			Self::deposit_event(Event::UnAuthorization(from, to, currency_id));
 			Ok(().into())
 		}
 
 		/// Cancel all authorization of caller
-		#[pallet::weight(<T as Config>::WeightInfo::unauthorize_all(<T as settmint_engine::Config>::StandardCurrencyIds::get().len() as u32))]
+		#[pallet::weight(<T as Config>::WeightInfo::unauthorize_all(<T as settmint_engine::Config>::StandardCurrencies::get().len() as u32))]
 		#[transactional]
 		pub fn unauthorize_all(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
-			<Authorization<T>>::remove_prefix(&from);
+			Authorization::<T>::remove_prefix(&from, None);
 			Self::deposit_event(Event::UnAuthorizationAll(from));
 			Ok(().into())
 		}
@@ -206,8 +220,8 @@ impl<T: Config> Pallet<T> {
 	/// Check if `from` has the authorization of `to` under STANDARD `currency_id`
 	fn check_authorization(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		ensure!(
-			from == to || Self::authorization(from, (currency_id, to)),
-			Error::<T>::NoAuthorization
+			from == to || Authorization::<T>::contains_key(from, (currency_id, to)),
+			Error::<T>::NoPermission
 		);
 		Ok(())
 	}

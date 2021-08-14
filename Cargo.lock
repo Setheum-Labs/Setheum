@@ -8577,6 +8577,7 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "serp-treasury",
+ "setheum-dex",
  "setheum-primitives",
  "setheum-support",
  "settmint-engine",
