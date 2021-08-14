@@ -190,11 +190,6 @@ impl<T: Config> Pallet<T> {
 		// get `from` position data
 		let Position { reserve, standard } = Self::positions(currency_id, from);
 
-		let Position {
-			reserve: to_reserve,
-			standard: to_standard,
-		} = Self::positions(currency_id, to);
-		
 		// balance -> amount
 		let reserve_adjustment = Self::amount_try_from_balance(reserve)?;
 		let standard_adjustment = Self::amount_try_from_balance(standard)?;
