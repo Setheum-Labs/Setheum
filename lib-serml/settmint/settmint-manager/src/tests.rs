@@ -28,26 +28,27 @@ use mock::{Event, *};
 fn standards_key() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 0);
-		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, EURJ, 100, 100));
-		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 100);
+		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, EURJ, 200, 200));
+		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 200);
+		assert_eq!(Currencies::free_balance(EURJ, &SettmintManagerModule::account_id()), 200);
 		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, EURJ, -100, -100));
-		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 0);
+		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 100);
 	});
 }
 
 #[test]
-fn check_update_reserve_overflow_work() {
+fn check_update_position_underflow_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		// reserve underflow
 		assert_noop!(
-			SettmintManagerModule::update_reserve(&ALICE, EURJ, -100, 0),
-			Error::<Runtime>::ReserveTooLow,
+			SettmintManagerModule::update_position(&ALICE, EURJ, -100, 0),
+			ArithmeticError::Underflow,
 		);
 
 		// standard underflow
 		assert_noop!(
-			SettmintManagerModule::update_reserve(&ALICE, EURJ, 0, -100),
-			Error::<Runtime>::StandardTooLow,
+			SettmintManagerModule::update_position(&ALICE, EURJ, 0, -100),
+			ArithmeticError::Underflow,
 		);
 	});
 }
@@ -63,6 +64,12 @@ fn adjust_position_should_work() {
 
 		// mock can't pass position valid check
 		assert_eq!(SettmintManagerModule::adjust_position(&ALICE, USDJ, 500, 0).is_ok(), false);
+
+		// reserve_adjustment is positive
+		assert_noop!(
+			SettmintManagerModule::adjust_position(&ALICE, EURJ, 1000, 0),
+			orml_tokens::Error::<Runtime>::KeepAlive,
+		);
 
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(EURJ, &SettmintManagerModule::account_id()), 0);
@@ -81,34 +88,41 @@ fn adjust_position_should_work() {
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 300);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).reserve, 500);
 		assert_eq!(Currencies::free_balance(EURJ, &ALICE), 150);
+		System::assert_last_event(Event::SettmintManagerModule(crate::Event::PositionUpdated(ALICE, EURJ, 500, 300)));
 
-		System::assert_last_event(Event::settmint_manager(crate::Event::PositionUpdated(ALICE, EURJ, 500, 300)));
+		// reserve_adjustment is negatives
+		// remove module account.
+		assert_eq!(Currencies::total_balance(EURJ, &SettmintManagerModule::account_id()), 500);
+		assert_eq!(System::account_exists(&SettmintManagerModule::account_id()), true);
+		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, EURJ, -500, 0));
+		assert_eq!(Currencies::free_balance(EURJ, &SettmintManagerModule::account_id()), 0);
+		assert_eq!(System::account_exists(&SettmintManagerModule::account_id()), false);
 	});
 }
 
 #[test]
-fn transfer_reserve_should_work() {
+fn transfer_position_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettmintManagerModule::update_reserve(&ALICE, EURJ, 400, 500));
-		assert_ok!(SettmintManagerModule::update_reserve(&BOB, EURJ, 100, 600));
+		assert_ok!(SettmintManagerModule::update_position(&ALICE, EURJ, 400, 500));
+		assert_ok!(SettmintManagerModule::update_position(&BOB, EURJ, 100, 600));
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 500);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).reserve, 400);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &BOB).standard, 600);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &BOB).reserve, 100);
 
-		assert_ok!(SettmintManagerModule::transfer_reserve(&ALICE, &BOB, EURJ));
+		assert_ok!(SettmintManagerModule::transfer_position(&ALICE, &BOB, EURJ));
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 0);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).reserve, 0);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &BOB).standard, 1100);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &BOB).reserve, 500);
 
-		System::assert_last_event(Event::settmint_manager(crate::Event::TransferReserve(ALICE, BOB, EURJ)));
+		System::assert_last_event(Event::SettmintManagerModule(crate::Event::TransferPosition(ALICE, BOB, EURJ)));
 	});
 }
 
 #[test]
-fn update_reserve_should_work() {
+fn update_position_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(SETT, &SettmintManagerModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
@@ -120,7 +134,7 @@ fn update_reserve_should_work() {
 
 		let alice_ref_count_0 = System::consumers(&ALICE);
 
-		assert_ok!(SettmintManagerModule::update_reserve(&ALICE, EURJ, 3000, 2000));
+		assert_ok!(SettmintManagerModule::update_position(&ALICE, EURJ, 3000, 2000));
 
 		// just update records
 		assert_eq!(SettmintManagerModule::total_positions(EURJ).standard, 2000);
@@ -138,7 +152,7 @@ fn update_reserve_should_work() {
 
 		// should remove position storage if zero
 		assert_eq!(<Positions<Runtime>>::contains_key(EURJ, &ALICE), true);
-		assert_ok!(SettmintManagerModule::update_reserve(&ALICE, EURJ, -3000, -2000));
+		assert_ok!(SettmintManagerModule::update_position(&ALICE, EURJ, -3000, -2000));
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 0);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).reserve, 0);
 		assert_eq!(<Positions<Runtime>>::contains_key(EURJ, &ALICE), false);
@@ -152,16 +166,16 @@ fn update_reserve_should_work() {
 #[test]
 fn total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SettmintManagerModule::total_reserve(0);
-		assert_ok!(Currencies::deposit(SETT,&SettmintManagerModule::account_id()), 10));
-		assert_eq!(SettmintManagerModule::total_reserve(10));
+		assert_eq!(SettmintManagerModule::total_reserve(), 10);
+		assert_ok!(Currencies::deposit(SETT, &SettmintManagerModule::account_id(), 10));
+		assert_eq!(SettmintManagerModule::total_reserve(), 10);
 	});
 }
 
 #[test]
 fn get_total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettmintManagerModule::deposit_setter(&ALICE, 500));
-		assert_eq!(SettmintManagerModule::get_total_reserve(500));
+		assert_ok!(Currencies::deposit(SETT, &ALICE, 500));
+		assert_eq!(SettmintManagerModule::get_total_reserve(), 500);
 	});
 }
