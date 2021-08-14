@@ -305,7 +305,6 @@ parameter_types! {
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub const MinimumStandardValue: Balance = 2;
-	pub const UnsignedPriority: u64 = 1 << 20;
 }
 
 impl Config for Runtime {
@@ -315,7 +314,6 @@ impl Config for Runtime {
 	type MinimumStandardValue = MinimumStandardValue;
 	type ReserveCurrencyId = GetReserveCurrencyId;
 	type PriceSource = MockPriceSource;
-	type UnsignedPriority = UnsignedPriority;
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;

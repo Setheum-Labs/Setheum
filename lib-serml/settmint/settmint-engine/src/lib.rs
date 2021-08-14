@@ -36,9 +36,6 @@ use frame_system::{
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::Convert,
-	transaction_validity::{
-		TransactionPriority,
-	},
 	DispatchResult, FixedPointNumber,
 };
 use sp_std::prelude::*;
@@ -78,13 +75,6 @@ pub mod module {
 
 		/// The price source of all types of currencies related to Settmint
 		type PriceSource: PriceProvider<CurrencyId>;
-
-		#[pallet::constant]
-		/// A configuration for base priority of unsigned transactions.
-		///
-		/// This is exposed so that it can be tuned for particular runtime, when
-		/// multiple modules send unsigned transactions.
-		type UnsignedPriority: Get<TransactionPriority>;
 	}
 
 	#[pallet::error]
