@@ -137,7 +137,7 @@ parameter_types! {
 	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 }
 
-impl settmint_manager::Config for Runtime {
+impl settmint::Config for Runtime {
 	type Event = Event;
 	type Convert = StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
@@ -284,6 +284,7 @@ impl dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
+	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
@@ -334,7 +335,7 @@ construct_runtime!(
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Config, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		SettmintManagerModule: settmint_manager::{Pallet, Storage, Call, Event<T>},
+		SettmintManagerModule: settmint::{Pallet, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		SetheumDEX: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}

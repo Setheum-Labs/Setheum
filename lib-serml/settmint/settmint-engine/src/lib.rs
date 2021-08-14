@@ -33,7 +33,7 @@ use frame_system::{
 	offchain::{SendTransactionTypes, SubmitTransaction},
 	pallet_prelude::*,
 };
-use settmint_manager::Position;
+use settmint::Position;
 use orml_traits::Change;
 use orml_utilities::{IterableStorageDoubleMapExtended, OffchainErr};
 use primitives::{Amount, Balance, CurrencyId};
@@ -54,12 +54,14 @@ use support::{
 	DEXManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
 };
 
+mod standard_exchange_rate_convertor;
 mod mock;
 mod tests;
 
+pub use standard_exchange_rate_convertor::StandardExchangeRateConvertor;
 pub use module::*;
 
-pub type SettmintManagerOf<T> = settmint_manager::<Pallet<T>;
+pub type SettmintOf<T> = settmint::<Pallet<T>;
 
 // typedef to help polkadot.js disambiguate Change with different generic
 // parameters
@@ -72,7 +74,7 @@ pub mod module {
 	use super::*;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + settmint_manager::Config + SendTransactionTypes<Call<Self>> {
+	pub trait Config: frame_system::Config + settmint::Config + SendTransactionTypes<Call<Self>> {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// The list of valid standard currency types
@@ -176,7 +178,7 @@ impl<T: Config> Pallet<T> {
 		reserve_adjustment: Amount,
 		standard_adjustment: Amount,
 	) -> DispatchResult {
-		<SettmintManagerOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
+		<SettmintOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
 		Ok(())
 	}
 }
