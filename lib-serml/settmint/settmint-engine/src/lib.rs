@@ -47,11 +47,11 @@ use sp_runtime::{
 	transaction_validity::{
 		InvalidTransaction, TransactionPriority, TransactionSource, TransactionValidity, ValidTransaction,
 	},
-	DispatchError, DispatchResult, FixedPointNumber, RandomNumberGenerator, RuntimeDebug,
+	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug,
 };
 use sp_std::prelude::*;
 use support::{
-	DEXManager, ExchangeRate, Price, PriceProvider, Rate, Ratio,
+	ExchangeRate, Price, PriceProvider, Rate, Ratio, StandardValidator
 };
 
 mod standard_exchange_rate_convertor;
@@ -101,9 +101,6 @@ pub mod module {
 		/// This is exposed so that it can be tuned for particular runtime, when
 		/// multiple modules send unsigned transactions.
 		type UnsignedPriority: Get<TransactionPriority>;
-
-		/// Weight information for the extrinsics in this module.
-		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::error]
