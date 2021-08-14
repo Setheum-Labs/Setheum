@@ -27,14 +27,14 @@
 #![allow(clippy::unused_unit)]
 
 use frame_support::{log, pallet_prelude::*, traits::MaxEncodedLen, transactional, PalletId};
-use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
+use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, Zero},
 	ArithmeticError, DispatchResult, RuntimeDebug,
 };
 use sp_std::{convert::TryInto, result};
-use support::{BlockNumber, SerpTreasury, StandardValidator};
+use support::{SerpTreasury, StandardValidator};
 
 mod mock;
 mod tests;
@@ -327,9 +327,5 @@ impl<T: Config> Pallet<T> {
 	pub fn total_reserve() -> Balance {
 		let reserve_currency = T::GetReserveCurrencyId::get();
 		T::Currency::free_balance(reserve_currency, &Self::account_id())
-	}
-	
-	fn get_total_reserve() -> Balance {
-		Self::total_reserve()
 	}
 }

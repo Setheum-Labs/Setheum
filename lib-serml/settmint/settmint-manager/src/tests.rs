@@ -30,7 +30,7 @@ fn standards_key() {
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 0);
 		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, EURJ, 200, 200));
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 200);
-		assert_eq!(Currencies::free_balance(EURJ, &SettmintManagerModule::account_id()), 200);
+		assert_eq!(Currencies::free_balance(SETT, &SettmintManagerModule::account_id()), 100);
 		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, EURJ, -100, -100));
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 100);
 	});
@@ -59,17 +59,8 @@ fn adjust_position_should_work() {
 		System::set_block_number(1);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 
-		// balance too low
-		assert_eq!(SettmintManagerModule::adjust_position(&ALICE, EURJ, 2000, 0).is_ok(), false);
-
 		// mock can't pass position valid check
-		assert_eq!(SettmintManagerModule::adjust_position(&ALICE, USDJ, 500, 0).is_ok(), false);
-
-		// reserve_adjustment is positive
-		assert_noop!(
-			SettmintManagerModule::adjust_position(&ALICE, EURJ, 1000, 0),
-			orml_tokens::Error::<Runtime>::KeepAlive,
-		);
+		assert_eq!(SettmintManagerModule::adjust_position(&ALICE, CHFJ, 500, 0).is_ok(), false);
 
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(EURJ, &SettmintManagerModule::account_id()), 0);
@@ -77,22 +68,22 @@ fn adjust_position_should_work() {
 		assert_eq!(SettmintManagerModule::total_positions(EURJ).reserve, 0);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 0);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).reserve, 0);
-		assert_eq!(Currencies::free_balance(EURJ, &ALICE), 0);
+		assert_eq!(Currencies::free_balance(EURJ, &ALICE), 1000);
 
 		// success
 		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, EURJ, 500, 300));
-		assert_eq!(Currencies::free_balance(SETT, &ALICE), 500);
-		assert_eq!(Currencies::free_balance(SETT, &SettmintManagerModule::account_id()), 500);
+		assert_eq!(Currencies::free_balance(SETT, &ALICE), 750);
+		assert_eq!(Currencies::free_balance(SETT, &SettmintManagerModule::account_id()), 250);
 		assert_eq!(SettmintManagerModule::total_positions(EURJ).standard, 300);
 		assert_eq!(SettmintManagerModule::total_positions(EURJ).reserve, 500);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).standard, 300);
 		assert_eq!(SettmintManagerModule::positions(EURJ, &ALICE).reserve, 500);
-		assert_eq!(Currencies::free_balance(EURJ, &ALICE), 150);
+		assert_eq!(Currencies::free_balance(EURJ, &ALICE), 1150);
 		System::assert_last_event(Event::SettmintManagerModule(crate::Event::PositionUpdated(ALICE, EURJ, 500, 300)));
 
 		// reserve_adjustment is negatives
 		// remove module account.
-		assert_eq!(Currencies::total_balance(EURJ, &SettmintManagerModule::account_id()), 500);
+		assert_eq!(Currencies::total_balance(EURJ, &SettmintManagerModule::account_id()), 0);
 		assert_eq!(System::account_exists(&SettmintManagerModule::account_id()), true);
 		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, EURJ, -500, 0));
 		assert_eq!(Currencies::free_balance(EURJ, &SettmintManagerModule::account_id()), 0);
@@ -166,16 +157,7 @@ fn update_position_should_work() {
 #[test]
 fn total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SettmintManagerModule::total_reserve(), 10);
 		assert_ok!(Currencies::deposit(SETT, &SettmintManagerModule::account_id(), 10));
 		assert_eq!(SettmintManagerModule::total_reserve(), 10);
-	});
-}
-
-#[test]
-fn get_total_reserve_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Currencies::deposit(SETT, &ALICE, 500));
-		assert_eq!(SettmintManagerModule::get_total_reserve(), 500);
 	});
 }

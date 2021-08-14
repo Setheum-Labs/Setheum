@@ -28,9 +28,9 @@ use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
-	traits::{AccountIdConversion, IdentityLookup},
+	traits::{IdentityLookup, One as OneT},
 };
-use support::{Price, Ratio, StandardValidator};
+use support::{Price, PriceProvider, Ratio, StandardValidator};
 use sp_std::cell::RefCell;
 
 pub type AccountId = u128;
@@ -109,6 +109,7 @@ impl orml_tokens::Config for Runtime {
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1;
+	pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -116,8 +117,10 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Module<Runtime>;
+	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
 }
 
@@ -292,8 +295,8 @@ impl StandardValidator<AccountId, CurrencyId, Balance, Balance> for MockStandard
 		_standard_balance: Balance,
 	) -> DispatchResult {
 		match currency_id {
-			SETT => Err(sp_runtime::DispatchError::Other("mock error")),
-			SETT => Ok(()),
+			CHFJ => Err(sp_runtime::DispatchError::Other("mock error")),
+			EURJ => Ok(()),
 			_ => Err(sp_runtime::DispatchError::Other("mock error")),
 		}
 	}
@@ -342,21 +345,27 @@ construct_runtime!(
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
-		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Event<T>},
+		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
 		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
+			balances: vec![
 				(ALICE, SETT, 1000),
+				(ALICE, USDJ, 1000),
+				(ALICE, EURJ, 1000),
+				(ALICE, CHFJ, 1000),
 				(BOB, SETT, 1000),
+				(BOB, USDJ, 1000),
+				(BOB, EURJ, 1000),
+				(BOB, CHFJ, 1000),
 			],
 		}
 	}
@@ -368,7 +377,7 @@ impl ExtBuilder {
 			.build_storage::<Runtime>()
 			.unwrap();
 		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
