@@ -54,9 +54,6 @@ fn check_position_valid_work() {
 			SettmintEngineModule::check_position_valid(SETT, 100, 50),
 			Error::<Runtime>::InvalidFeedPrice
 		);
-		MockPriceSource::set_relative_price(Some(Price::one()));
-
-		assert_ok!(SettmintEngineModule::check_position_valid(SETT, 100, 50));
 	});
 }
 
@@ -64,7 +61,7 @@ fn check_position_valid_work() {
 fn check_position_valid_failed_when_remain_standard_value_too_small() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			SettmintEngineModule::check_position_valid(SETT, 2, 1),
+			SettmintEngineModule::check_position_valid(USDJ, 2, 1),
 			Error::<Runtime>::RemainStandardValueTooSmall,
 		);
 	});
@@ -74,32 +71,32 @@ fn check_position_valid_failed_when_remain_standard_value_too_small() {
 fn adjust_position_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			SettmintEngineModule::adjust_position(&ALICE, DNAR, 100, 50),
+			SettmintEngineModule::adjust_position(&ALICE, SETT, 100, 50),
 			Error::<Runtime>::InvalidStandardType,
 		);
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 0);
-		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).standard, 0);
-		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).reserve, 0);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 100, 50));
+		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 0);
+		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).reserve, 0);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 100, 50));
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 50);
-		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).standard, 50);
-		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).reserve, 100);
-		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, 20).is_ok(), false);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, -20));
+		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 50);
+		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).reserve, 100);
+		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 0, 20).is_ok(), false);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 0, -20));
 		assert_eq!(Currencies::free_balance(SETT, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 30);
-		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).standard, 30);
-		assert_eq!(SettmintManagerModule::positions(SETT, ALICE).reserve, 100);
+		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 30);
+		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).reserve, 100);
 	});
 }
 
 #[test]
 fn remain_standard_value_too_small_check() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, 100, 50));
-		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, SETT, 0, -49).is_ok(), false);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETT, -100, -50));
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 100, 50));
+		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 0, -49).is_ok(), false);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, USDJ, -100, -50));
 	});
 }

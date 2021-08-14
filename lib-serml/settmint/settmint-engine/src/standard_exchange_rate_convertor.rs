@@ -28,6 +28,6 @@ where
 	T: Config,
 {
 	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
-		<<Pallet<T>>::get_standard_exchange_rate(currency_id).saturating_mul_int(balance)
+		<Pallet<T>>::get_standard_exchange_rate(currency_id).saturating_mul_int(balance)
 	}
 }
