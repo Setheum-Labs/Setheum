@@ -24,13 +24,14 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::TokenSymbol;
+use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, IdentityLookup},
 };
-use support::StandardValidator;
+use support::{Price, Ratio, StandardValidator};
+use sp_std::cell::RefCell;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -133,6 +134,83 @@ impl orml_currencies::Config for Runtime {
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
+parameter_types! {
+	pub const GetExchangeFee: (u32, u32) = (1, 100);
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const TradingPathLimit: u32 = 3;
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![
+		TradingPair::from_currency_ids(DNAR, SETT).unwrap(),
+		TradingPair::from_currency_ids(AUDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(CADJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(CHFJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(EURJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(GBPJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(JPYJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SARJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SEKJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SGDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(USDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(AUDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(CADJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(CHFJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(EURJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(GBPJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(JPYJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SARJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SEKJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SGDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDJ, DNAR).unwrap(),
+	];
+}
+
+impl setheum_dex::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type GetExchangeFee = GetExchangeFee;
+	type TradingPathLimit = TradingPathLimit;
+	type PalletId = DexPalletId;
+	type CurrencyIdMapping = ();
+	type WeightInfo = ();
+	type ListingOrigin = EnsureSignedBy<One, AccountId>;
+}
+
+thread_local! {
+	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+}
+
+pub struct MockPriceSource;
+impl MockPriceSource {
+	pub fn set_relative_price(price: Option<Price>) {
+		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
+	}
+}
+impl PriceProvider<CurrencyId> for MockPriceSource {
+
+	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
+		RELATIVE_PRICE.with(|v| *v.borrow_mut())
+	}
+
+	fn get_market_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_setter_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
+		None
+	}
+
+	fn lock_price(_currency_id: CurrencyId) {}
+
+	fn unlock_price(_currency_id: CurrencyId) {}
+}
+
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
@@ -140,44 +218,16 @@ ord_parameter_types! {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETT,
-		AEDJ,
  		AUDJ,
-		BRLJ,
 		CADJ,
 		CHFJ,
-		CLPJ,
-		CNYJ,
-		COPJ,
 		EURJ,
 		GBPJ,
-		HKDJ,
-		HUFJ,
-		IDRJ,
 		JPYJ,
- 		KESJ,
- 		KRWJ,
- 		KZTJ,
-		MXNJ,
-		MYRJ,
- 		NGNJ,
-		NOKJ,
-		NZDJ,
-		PENJ,
-		PHPJ,
- 		PKRJ,
-		PLNJ,
-		QARJ,
-		RONJ,
-		RUBJ,
  		SARJ,
  		SEKJ,
  		SGDJ,
-		THBJ,
-		TRYJ,
-		TWDJ,
-		TZSJ,
 		USDJ,
-		ZARJ,
 	];
 	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;  // Setter  currency ticker is USDJ/
@@ -251,44 +301,16 @@ impl StandardValidator<AccountId, CurrencyId, Balance, Balance> for MockStandard
 
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
-		AEDJ,
- 		AUDJ,
-		BRLJ,
+		AUDJ,
 		CADJ,
 		CHFJ,
-		CLPJ,
-		CNYJ,
-		COPJ,
 		EURJ,
 		GBPJ,
-		HKDJ,
-		HUFJ,
-		IDRJ,
 		JPYJ,
- 		KESJ,
- 		KRWJ,
- 		KZTJ,
-		MXNJ,
-		MYRJ,
- 		NGNJ,
-		NOKJ,
-		NZDJ,
-		PENJ,
-		PHPJ,
- 		PKRJ,
-		PLNJ,
-		QARJ,
-		RONJ,
-		RUBJ,
- 		SARJ,
- 		SEKJ,
- 		SGDJ,
-		THBJ,
-		TRYJ,
-		TWDJ,
-		TZSJ,
+		SARJ,
+		SEKJ,
+		SGDJ,
 		USDJ,
-		ZARJ,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETT;
 	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
@@ -304,7 +326,6 @@ impl Config for Runtime {
 	type StandardValidator = MockStandardValidator;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettmintManagerPalletId;
-	type OnUpdateSettMint = ();
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
@@ -322,6 +343,7 @@ construct_runtime!(
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Event<T>},
+		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
