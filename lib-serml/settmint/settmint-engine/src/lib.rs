@@ -61,7 +61,7 @@ mod tests;
 pub use standard_exchange_rate_convertor::StandardExchangeRateConvertor;
 pub use module::*;
 
-pub type SettmintOf<T> = settmint::<Pallet<T>;
+pub type SettmintOf<T> = settmint::Pallet<T>;
 
 // typedef to help polkadot.js disambiguate Change with different generic
 // parameters
