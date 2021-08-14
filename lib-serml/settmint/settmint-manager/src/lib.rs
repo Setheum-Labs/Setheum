@@ -194,13 +194,7 @@ impl<T: Config> Pallet<T> {
 			reserve: to_reserve,
 			standard: to_standard,
 		} = Self::positions(currency_id, to);
-		let new_to_reserve_balance = to_reserve
-			.checked_add(reserve)
-			.expect("existing reserve balance cannot overflow; qed");
-		let new_to_standard_balance = to_standard
-			.checked_add(standard)
-			.expect("existing standard balance cannot overflow; qed");
-
+		
 		// balance -> amount
 		let reserve_adjustment = Self::amount_try_from_balance(reserve)?;
 		let standard_adjustment = Self::amount_try_from_balance(standard)?;
