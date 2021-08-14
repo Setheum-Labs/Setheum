@@ -27,12 +27,12 @@ use orml_traits::parameter_type_with_key;
 use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
-	testing::Header,
+	testing::{Header, TestXt},
 	traits::{IdentityLookup, One as OneT, Zero},
 	DispatchError, FixedPointNumber,
 };
-use support::{Price, mocks::MockCurrencyIdMapping, Ratio};
 use sp_std::cell::RefCell;
+use support::{ExchangeRate, Price, PriceProvider, Rate, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -243,7 +243,54 @@ parameter_types! {
 
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+
+	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
+		DNAR,
+		DRAM,
+		SETT,
+ 		AUDJ,
+		CADJ,
+		CHFJ,
+		EURJ,
+		GBPJ,
+		JPYJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		USDJ,
+	];
+	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
+	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
+		SETT,
+ 		AUDJ,
+		CADJ,
+		CHFJ,
+		EURJ,
+		GBPJ,
+		JPYJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		USDJ,
+	];
+	pub const GetCashDropRate: (u32, u32) = (258, 10000); // 2.58% cashdrop.
 }
+
+parameter_type_with_key! {
+	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETT => 2,
+			&AUDJ => 2,
+			&CHFJ => 2,
+			&EURJ => 2,
+			&GBPJ => 2,
+			&JPYJ => 2,
+			&USDJ => 2,
+			_ => 0,
+		}
+	};
+}
+
 
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
@@ -275,6 +322,12 @@ impl Config for Runtime {
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type PriceSource = MockPriceSource;
+	type RewardableCurrencyIds = RewardableCurrencyIds;
+	type NonStableDropCurrencyIds = StableCurrencyIds;
+	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
+	type GetCashDropRate = GetCashDropRate;
+	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
