@@ -30,7 +30,7 @@ use sp_runtime::{
 	testing::Header,
 	traits::{IdentityLookup, One as OneT},
 };
-use support::{Price, PriceProvider, Ratio, StandardValidator};
+use support::{Price, PriceProvider, Ratio};
 use sp_std::cell::RefCell;
 
 pub type AccountId = u128;
@@ -286,22 +286,6 @@ impl Convert<(CurrencyId, Balance), Balance> for MockConvert {
 	}
 }
 
-// mock standard validator (checks if a standard is still valid or not)
-pub struct MockStandardValidator;
-impl StandardValidator<AccountId, CurrencyId, Balance, Balance> for MockStandardValidator {
-	fn check_position_valid(
-		currency_id: CurrencyId,
-		_reserve_balance: Balance,
-		_standard_balance: Balance,
-	) -> DispatchResult {
-		match currency_id {
-			CHFJ => Err(sp_runtime::DispatchError::Other("mock error")),
-			EURJ => Ok(()),
-			_ => Err(sp_runtime::DispatchError::Other("mock error")),
-		}
-	}
-}
-
 parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
 		AUDJ,
@@ -326,7 +310,6 @@ impl Config for Runtime {
 	type Currency = Currencies;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
-	type StandardValidator = MockStandardValidator;
 	type SerpTreasury = SerpTreasuryModule;
 	type PalletId = SettmintManagerPalletId;
 }
