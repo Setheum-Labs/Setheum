@@ -1261,7 +1261,6 @@ impl settmint_manager::Config for Runtime {
 	type Currency = Currencies;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
-	type StandardValidator = SettmintEngine;
 	type SerpTreasury = SerpTreasury;
 	type PalletId = SettmintManagerPalletId;
 }
@@ -1430,53 +1429,6 @@ impl serp_treasury::Config for Runtime {
 	type PriceSource = SerpPrices;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM, SETT, USDJ];
-	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
-	pub const DefaultCashDropRate: CashDropRate = CashDropRate::::saturating_from_rational(2 : 100); // 2% cashdrop
-	pub const DefaultMinimumClaimableTransfer: Balance = 10;
-	pub const SettPayPalletId: PalletId = PalletId(*b"set/tpay");
-}
-
-parameter_type_with_key! {
-	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, {
-		match currency_id {
-			&DNAR => (5, 100), // 5% cashdrop.
-			&DRAM => (5, 100), // 5% cashdrop.
-			&SETT => (5, 100), // 5% cashdrop.
-			&AUDJ => (5, 100), // 5% cashdrop.
-			&CADJ => (5, 100), // 5% cashdrop.
-			&CHFJ => (5, 100), // 5% cashdrop.
-			&EURJ => (5, 100), // 5% cashdrop.
-			&GBPJ => (5, 100), // 5% cashdrop.
-			&JPYJ => (5, 100), // 5% cashdrop.
-			&SARJ => (5, 100), // 5% cashdrop.
-			&SEKJ => (5, 100), // 5% cashdrop.
-			&SGDJ => (5, 100), // 5% cashdrop.
-			&USDJ => (5, 100), // 5% cashdrop.
-			_ => 0,
-		}
-	};
-}
-
-impl serp_settpay::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type SetterCurrencyId = SetterCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type RewardableCurrencyIds = RewardableCurrencyIds;
-	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
-	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
-	type DefaultCashDropRate = DefaultCashDropRate;
-	type GetCashDropRates = GetCashDropRates;
-	type DefaultMinimumClaimableTransfer = DefaultMinimumClaimableTransfer;
-	type SerpTreasury = SerpTreasuryModule;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type PalletId = SettPayPalletId;
-	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -1815,7 +1767,6 @@ construct_runtime!(
 
 		// SERP Core
 		SerpPrices: serp_prices::{Pallet, Storage, Call, Event<T>} = 41,
-		SerpSettPay: serp_settpay::{Pallet, Storage, Call, Event<T>} = 42,
 		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 43,
 
 		// Dex

@@ -40,8 +40,6 @@ pub mod mocks;
 
 pub type Balance = u128;
 pub type BlockNumber = u32;
-pub type CashDropRate = FixedU128;
-pub type CashDropClaim = bool;
 pub type FiatCurrencyId = CurrencyId;
 pub type ExchangeRate = FixedU128; // FixedPointNumber
 pub type Price = FixedU128; // FixedPointNumber
@@ -238,6 +236,9 @@ pub trait SerpTreasury<AccountId> {
 
 	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
+
+	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
+	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
@@ -261,25 +262,6 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		maybe_path: Option<&[Self::CurrencyId]>,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
-}
-
-/// An abstraction of settpay for the SERP (Setheum Elastic Reserve Protocol) for CashDrop.
-pub trait CashDrop<AccountId> {
-	type Balance;
-	type CurrencyId;
-
-	fn get_cashdrop_rate(currency_id: Self::CurrencyId) -> (u32, u32);
-
-	fn get_minimum_claimable_transfer(currency_id: Self::CurrencyId) -> Self::Balance;
-
-	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
-
-	/// deposit cashdrop of `SETT` of `cashdrop_amount` to `who`
-	fn deposit_setter_drop(who: &AccountId, cashdrop_amount: Self::Balance) -> DispatchResult;
-
-	/// deposit cashdrop of `currency_id` relative to `cashdrop_amount` for `who`
-	fn deposit_settcurrency_drop(currency_id: Self::CurrencyId, who: &AccountId, cashdrop_amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait PriceProvider<CurrencyId> {

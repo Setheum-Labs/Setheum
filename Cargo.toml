@@ -12,7 +12,6 @@ members = [
 	"lib-serml/evm/*",
 	"lib-serml/example",
 	"lib-serml/serp/serp-prices",
-	"lib-serml/serp/serp-settpay",
 	"lib-serml/serp/serp-staking",
 	"lib-serml/serp/serp-treasury",
 	"lib-serml/settmint/*",
