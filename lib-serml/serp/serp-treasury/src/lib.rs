@@ -38,7 +38,7 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
+	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
 mod mock;
@@ -104,10 +104,6 @@ pub mod module {
 
 		/// The price source of currencies
 		type PriceSource: PriceProvider<CurrencyId>;
-
-		/// The default price rate for all stablecurrencies, if  `None` price is not returned
-		#[pallet::constant]
-		type DefaultPriceRate: Get<Price>;
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
