@@ -28,7 +28,7 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use frame_support::{pallet_prelude::*, transactional};
+use frame_support::pallet_prelude::*;
 use frame_system::{
 	offchain::SendTransactionTypes,
 	pallet_prelude::*,
@@ -37,20 +37,14 @@ use settmint::Position;
 use orml_traits::Change;
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
-	offchain::{
-		storage::StorageValueRef,
-		storage_lock::{StorageLock, Time},
-	},
-	traits::{Convert, Saturating, Zero},
+	traits::{Convert, Zero},
 	transaction_validity::{
 		TransactionPriority,
 	},
-	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug,
+	DispatchResult, FixedPointNumber,
 };
 use sp_std::prelude::*;
-use support::{
-	ExchangeRate, Price, PriceProvider, Rate, Ratio, StandardValidator
-};
+use support::{ExchangeRate, Price, PriceProvider, Rate, Ratio};
 
 mod standard_exchange_rate_convertor;
 mod mock;
@@ -60,12 +54,6 @@ pub use standard_exchange_rate_convertor::StandardExchangeRateConvertor;
 pub use module::*;
 
 pub type SettmintOf<T> = settmint::Pallet<T>;
-
-// typedef to help polkadot.js disambiguate Change with different generic
-// parameters
-type ChangeOptionRate = Change<Option<Rate>>;
-type ChangeOptionRatio = Change<Option<Ratio>>;
-type ChangeBalance = Change<Balance>;
 
 #[frame_support::pallet]
 pub mod module {
@@ -112,7 +100,6 @@ pub mod module {
 	}
 
 	#[pallet::event]
-	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {}
 
 	/// Mapping from standard currency type to its exchange rate of standard units and
@@ -160,35 +147,6 @@ impl<T: Config> Pallet<T> {
 		standard_adjustment: Amount,
 	) -> DispatchResult {
 		<SettmintOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
-		Ok(())
-	}
-}
-
-impl<T: Config> StandardValidator<T::AccountId, CurrencyId, Balance, Balance> for Pallet<T> {
-	fn check_position_valid(
-		currency_id: CurrencyId,
-		reserve_balance: Balance,
-		standard_balance: Balance,
-	) -> DispatchResult {
-		if !standard_balance.is_zero() {
-			let standard_value = Self::get_standard_value(currency_id, standard_balance);
-			let feed_price = <T as Config>::PriceSource::get_relative_price(T::ReserveCurrencyId::get(), currency_id)
-				.ok_or(Error::<T>::InvalidFeedPrice)?;
-			let reserve_ratio =
-				Self::calculate_reserve_ratio(currency_id, reserve_balance, standard_balance, feed_price);
-
-			// ensure the currency is a settcurrency standard
-			ensure!(
-				T::StandardCurrencies::get().contains(&currency_id),
-				Error::<T>::InvalidStandardType,
-			);
-			// check the minimum_standard_value
-			ensure!(
-				standard_value >= T::MinimumStandardValue::get(),
-				Error::<T>::RemainStandardValueTooSmall,
-			);
-		}
-
 		Ok(())
 	}
 }

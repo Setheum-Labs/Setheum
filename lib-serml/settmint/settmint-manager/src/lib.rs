@@ -34,7 +34,7 @@ use sp_runtime::{
 	ArithmeticError, DispatchResult, RuntimeDebug,
 };
 use sp_std::{convert::TryInto, result};
-use support::{SerpTreasury, StandardValidator};
+use support::SerpTreasury;
 
 mod mock;
 mod tests;
@@ -77,9 +77,6 @@ pub mod module {
 		#[pallet::constant]
 		/// Setter (Valid Reserve) currency id
 		type GetReserveCurrencyId: Get<CurrencyId>;
-
-		/// Standard validator is used to know the validity of Settmint standards.
-		type StandardValidator: StandardValidator<Self::AccountId, CurrencyId, Balance, Balance>;
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
@@ -179,10 +176,6 @@ impl<T: Config> Pallet<T> {
 			T::SerpTreasury::burn_standard(currency_id, who, T::Convert::convert((currency_id, standard_balance_adjustment)))?;
 		}
 
-		// ensure it passes StandardValidator check
-		let Position { reserve, standard } = Self::positions(currency_id, who);
-		T::StandardValidator::check_position_valid(currency_id, reserve, standard)?;
-
 		Self::deposit_event(Event::PositionUpdated(
 			who.clone(),
 			currency_id,
@@ -207,9 +200,6 @@ impl<T: Config> Pallet<T> {
 		let new_to_standard_balance = to_standard
 			.checked_add(standard)
 			.expect("existing standard balance cannot overflow; qed");
-
-		// check new position
-		T::StandardValidator::check_position_valid(currency_id, new_to_reserve_balance, new_to_standard_balance)?;
 
 		// balance -> amount
 		let reserve_adjustment = Self::amount_try_from_balance(reserve)?;
