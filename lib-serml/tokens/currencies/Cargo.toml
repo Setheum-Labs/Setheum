@@ -34,7 +34,7 @@ tokens = { package = "orml-tokens", path = "../../../lib-openrml/tokens" }
 setheum-evm = { path = "../../evm/evm" }
 setheum-evm-bridge = { path = "../../evm/evm-bridge" }
 serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
-setheum-dex = { path = "../..//dex/dex" }
+setheum-dex = { path = "../../dex/dex" }
 
 [features]
 default = ["std"]
