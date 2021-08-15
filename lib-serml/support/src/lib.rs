@@ -201,12 +201,18 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar
 	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
-	/// SerpUp ratio for SettPay Cashdrops
-	fn get_settpay_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 	
+	/// SerpUp ratio for SettPay Cashdrops
+	fn get_cashdrop_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	/// Reward SETT cashdrop to vault
+	fn setter_cashdrop_to_vault() -> DispatchResult;
+
+	/// Reward USDJ cashdrop to vault
+	fn usdj_cashdrop_to_vault() -> DispatchResult;
+
 	/// Trigger SERP-TES when required for Setter (SETT) to serp_down or serp_up.
 	fn setter_on_tes() -> DispatchResult;
 

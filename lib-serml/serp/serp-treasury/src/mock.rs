@@ -21,18 +21,17 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, impl_outer_event, impl_outer_origin, ord_parameter_types, parameter_types};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
 use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
-	testing::{Header, TestXt},
-	traits::{IdentityLookup, One as OneT, Zero},
-	DispatchError, FixedPointNumber,
+	testing::Header,
+	traits::{IdentityLookup, One as OneT},
 };
 use sp_std::cell::RefCell;
-use support::{ExchangeRate, Price, PriceProvider, Rate, Ratio};
+use support::{Price, PriceProvider, Ratio};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -40,6 +39,8 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARITY_FUND: AccountId = 2;
+pub const SETTPAY: AccountId = 9;
+pub const VAULT: AccountId = 10;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -238,10 +239,12 @@ parameter_types! {
 	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	pub CharutyFundAcc: AccountId = CHARITY_FUND;
+	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
+	pub const SettPayTreasuryAccountId: AccountId = SETTPAY;
+	pub const CashDropVaultAccountId: AccountId = VAULT;
 
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 
 	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
@@ -260,8 +263,7 @@ parameter_types! {
 		USDJ,
 	];
 	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
-		SETT,
+	pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
  		AUDJ,
 		CADJ,
 		CHFJ,
@@ -273,7 +275,6 @@ parameter_types! {
  		SGDJ,
 		USDJ,
 	];
-	pub const GetCashDropRate: (u32, u32) = (258, 10000); // 2.58% cashdrop.
 }
 
 parameter_type_with_key! {
@@ -317,15 +318,16 @@ impl Config for Runtime {
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type CharityFundAcc = CharutyFundAcc;
+	type CashDropPeriod = CashDropPeriod;
+	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
+	type CashDropVaultAccountId = CashDropVaultAccountId;
+	type CharityFundAccountId = CharityFundAccountId;
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type PriceSource = MockPriceSource;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = StableCurrencyIds;
-	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
-	type GetCashDropRate = GetCashDropRate;
+	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
@@ -370,6 +372,10 @@ impl Default for ExtBuilder {
 				(CHARITY_FUND, SETT, 1000),
 				(CHARITY_FUND, DNAR, 1000),
 				(CHARITY_FUND, DRAM, 1000),
+				(SETTPAY, USDJ, 1000),
+				(SETTPAY, SETT, 1000),
+				(VAULT, USDJ, 1000),
+				(VAULT, SETT, 1000),
 			],
 		}
 	}
