@@ -28,14 +28,13 @@
 #![allow(clippy::unused_unit)]
 
 // use fixed::{types::extra::U128, FixedU128};
-use frame_support::{pallet_prelude::*, transactional, PalletId};
+use frame_support::{pallet_prelude::*, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
-use sp_core::U256;
 use sp_runtime::{
 	traits::{AccountIdConversion, Zero},
-	DispatchError, DispatchResult
+	DispatchError, DispatchResult, 
 };
 use sp_std::prelude::*;
 use support::{
@@ -87,14 +86,23 @@ pub mod module {
 		/// (Blocktime/BlockNumber - every blabla block)
 		type SerpTesSchedule: Get<Self::BlockNumber>;
 
-		#[pallet::constant]
+		// CashDrop period for transferring cashdrop from 
+		// the `SettPayTreasuryAccountId`.
+		// The ideal period is after every `24 hours`.
+		type CashDropPeriod: Get<Self::BlockNumber>;
+
 		/// SerpUp pool/account for receiving funds SettPay Cashdrops
 		/// SettPayTreasury account.
-		type SettPayTreasuryAcc: Get<PalletId>;
+		#[pallet::constant]
+		type SettPayTreasuryAccountId: Get<Self::AccountId>;
+
+		/// The vault account to keep the accumulated Cashdrop doses from the `SettPayTreasuryAccountId`.
+		#[pallet::constant]
+		type CashDropVaultAccountId: Get<Self::AccountId>;
 
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
-		type CharityFundAcc: Get<Self::AccountId>;
+		type CharityFundAccountId: Get<Self::AccountId>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
@@ -112,15 +120,7 @@ pub mod module {
 		type NonStableDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The cashdrop currency ids that receive SettCurrencies.
-		type SetCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
-
-		/// The default cashdrop rate to be issued to claims.
-		/// 
-		/// The first item of the tuple is the numerator of the cashdrop rate, second
-		/// item is the denominator, cashdrop_rate = numerator / denominator,
-		/// use (u32, u32) over `Rate` type to minimize internal division
-		/// operation.
-		type GetCashDropRate: Get<(u32, u32)>;
+		type SettCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
 		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
@@ -171,8 +171,10 @@ pub mod module {
 		SerpUp(Balance, CurrencyId),
 		/// Currency SerpDown has been triggered successfully.
 		SerpDown(Balance, CurrencyId),
-		/// CashDrop has been completed successfully.
-		CashDrops(CurrencyId, T::AccountId, Balance),
+		/// CashDrop has been claimed successfully.
+		CashDropClaim(CurrencyId, T::AccountId, Balance),
+		/// CashDrop has been deposited to vault successfully.
+		CashDropToVault(Balance, CurrencyId),
 	}
 
 	/// Mapping to Minimum Claimable Transfer.
@@ -194,9 +196,6 @@ pub mod module {
 		// TODO: Migrate `BlockNumber` to `Timestamp`
 		/// Triggers Serping for all system stablecoins at every block.
 		fn on_initialize(now: T::BlockNumber) -> Weight {
-			// TODO: Update for a global-adjustment-frequency to have it's own governed custom adjustment-frequency, 
-			// TODO: - and call serp_tes at a timestamp e.g. every 10 minutes
-			//
 			// SERP-TES Adjustment Frequency.
 			// Schedule for when to trigger SERP-TES
 			// (Blocktime/BlockNumber - every blabla block)
@@ -210,6 +209,22 @@ pub mod module {
 				if Self::usdj_on_tes().is_ok() {
 					count += 1;
 				}
+
+				T::WeightInfo::on_initialize(count)
+			} else if now % T::CashDropPeriod::get() == Zero::zero() {
+				// CashDrop period for transferring cashdrop from 
+				// the `SettPayTreasuryAccountId`.
+				// The ideal period is after every `24 hours`.
+				//
+				// SERP TES (Token Elasticity of Supply).
+				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
+				let mut count: u32 = 0;
+				if Self::setter_cashdrop_to_vault().is_ok() {
+					count += 1;
+				};
+				if Self::usdj_cashdrop_to_vault().is_ok() {
+					count += 1;
+				};
 
 				T::WeightInfo::on_initialize(count)
 			} else {
@@ -250,9 +265,21 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		let charity_fund_account = T::CharityFundAccountId::get();
+		// Charity Fund SerpUp Pool - 10%
+		let serping_amount: Balance = amount / 10;
+		// Issue the SerpUp propper to the SettPayVault
+		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
+
+		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		Ok(())
+	}
+
 	/// SerpUp ratio for SettPay Cashdrops
-	fn get_settpay_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let settpay_account = T::SettPayTreasuryAcc::get().into_account();
+	fn get_cashdrop_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		let settpay_account = &T::SettPayTreasuryAccountId::get();
 
 		// SettPay SerpUp Pool - 60%
 		let six: Balance = 6;
@@ -264,15 +291,33 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let charity_fund_account = T::CharityFundAcc::get();
-		// Charity Fund SerpUp Pool - 10%
-		let serping_amount: Balance = amount / 10;
-		// Issue the SerpUp propper to the SettPayVault
-		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
+	/// Reward SETT cashdrop to vault
+	fn setter_cashdrop_to_vault() -> DispatchResult {
+		let free_balance = T::Currency::free_balance(T::SetterCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
 
-		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		// Send 50% of funds to the CashDropVault
+		let five: Balance = 5;
+		let cashdrop_amount: Balance = five.saturating_mul(free_balance / 10);
+		
+		// Transfer the CashDrop propper Rewards to the CashDropVault	
+		T::Currency::transfer(T::SetterCurrencyId::get(), &T::SettPayTreasuryAccountId::get(), &T::CashDropVaultAccountId::get(), cashdrop_amount)?;
+
+		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::SetterCurrencyId::get()));
+		Ok(())
+	}
+
+	/// SerpUp ratio for SettPay Cashdrops
+	fn usdj_cashdrop_to_vault() -> DispatchResult {
+		let free_balance = T::Currency::free_balance(T::GetSettUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
+
+		// Send 50% of funds to the CashDropVault
+		let five: Balance = 5;
+		let cashdrop_amount: Balance = five.saturating_mul(free_balance / 10);
+		
+		// Transfer the CashDrop propper Rewards to the CashDropVault	
+		T::Currency::transfer(T::GetSettUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get(), &T::CashDropVaultAccountId::get(), cashdrop_amount)?;
+
+		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::GetSettUSDCurrencyId::get()));
 		Ok(())
 	}
 
@@ -341,7 +386,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::InvalidAmount,
 		);
 		Self::get_buyback_serpup(amount, currency_id)?;
-		Self::get_settpay_serpup(amount, currency_id)?;
+		Self::get_cashdrop_serpup(amount, currency_id)?;
 		Self::get_charity_fund_serpup(amount, currency_id)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUp(amount, currency_id));
@@ -423,25 +468,20 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			transfer_amount >= minimum_claimable_transfer,
 			Error::<T>::TransferTooLowForCashDrop,
 		);
-		let setter_fixed_price = <T as Config>::PriceSource::get_setter_price();
-		let (cashdrop_numerator, cashdrop_denominator) = T::GetCashDropRate::get();
 
 		if currency_id == T::SetterCurrencyId::get() {
-			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
-			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
-			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
+			let balance_cashdrop_amount = transfer_amount / 50; // 2%
 			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
 			);
 
-			T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, balance_cashdrop_amount);
-			Self::deposit_event(Event::CashDrops(T::SetterCurrencyId::get(), who.clone(), balance_cashdrop_amount.clone()));
+			T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, balance_cashdrop_amount)?;
+			Self::deposit_event(Event::CashDropClaim(T::SetterCurrencyId::get(), who.clone(), balance_cashdrop_amount.clone()));
 		} else if T::NonStableDropCurrencyIds::get().contains(&currency_id) {
-			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
-			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
-			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
+			
+			let balance_cashdrop_amount = transfer_amount / 100; // 1%
 			let serp_balance = T::Currency::free_balance(T::SetterCurrencyId::get(), &Self::account_id());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
@@ -453,20 +493,19 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			let relative_price = pool_1 / pool_0;
 			let relative_cashdrop = balance_cashdrop_amount / relative_price;
 		
-			T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, relative_cashdrop);
-			Self::deposit_event(Event::CashDrops(T::SetterCurrencyId::get(), who.clone(), relative_cashdrop.clone()));
-		} else if T::SetCurrencyDropCurrencyIds::get().contains(&currency_id) {
-			let transfer_drop = transfer_amount.saturating_mul(cashdrop_denominator.saturating_sub(cashdrop_numerator).unique_saturated_into());
-			let into_cashdrop_amount: U256 = U256::from(transfer_amount).saturating_sub(U256::from(transfer_drop));
-			let balance_cashdrop_amount = into_cashdrop_amount.and_then(|n| TryInto::<Balance>::try_into(n).ok()).unwrap_or_else(Zero::zero);
+			T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, relative_cashdrop)?;
+			Self::deposit_event(Event::CashDropClaim(T::SetterCurrencyId::get(), who.clone(), relative_cashdrop.clone()));
+		} else if T::SettCurrencyDropCurrencyIds::get().contains(&currency_id) {
+			
+			let balance_cashdrop_amount = transfer_amount / 50; // 4%
 			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
 			);
 
-			T::Currency::transfer(currency_id, &Self::account_id(), who, balance_cashdrop_amount);
-			Self::deposit_event(Event::CashDrops(currency_id, who.clone(), balance_cashdrop_amount.clone()));
+			T::Currency::transfer(currency_id, &Self::account_id(), who, balance_cashdrop_amount)?;
+			Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 		}
 		Ok(())
 	}
