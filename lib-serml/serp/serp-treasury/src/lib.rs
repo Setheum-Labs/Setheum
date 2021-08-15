@@ -251,12 +251,18 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let three: Balance = 3;
 		let serping_amount: Balance = three.saturating_mul(amount / 10);
 		
-		// try to use stable currency to swap reserve asset by exchange with DEX - to burn the Dinar (DNAR).
-		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_stablecurrency_to_dinar(
-			currency_id,
-			serping_amount,
-			None,
-		)?;
+		if currency_id == T::SetterCurrencyId::get() {
+			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setter_to_dinar(
+				serping_amount,
+				None,
+			)?;
+		} else {
+			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_settcurrency_to_dinar(
+				currency_id,
+				serping_amount,
+				None,
+			)?;
+		} 
 
 		// Burn Native Reserve asset (Dinar (DNAR))
 		T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), serping_amount)?;
@@ -597,12 +603,56 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		)
 	}
 
-	/// Swap exact amount of StableCurrency to Dinar,
-	/// return actual supply StableCurrency amount
+	/// Swap exact amount of Setter to Dinar,
+	/// return actual supply Setter amount
 	///
 	/// 
-	/// When StableCurrency gets SerpUp
-	fn swap_exact_stablecurrency_to_dinar(
+	/// When Setter gets SerpUp
+	fn swap_exact_setter_to_dinar(
+		supply_amount: Balance,
+		maybe_path: Option<&[CurrencyId]>,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		let currency_id = T::SetterCurrencyId::get();
+		let dinar_currency_id = T::GetNativeCurrencyId::get();
+		T::Currency::deposit(currency_id, &Self::account_id(), supply_amount)?;
+
+		let default_swap_path = &[currency_id, dinar_currency_id];
+		let swap_path = match maybe_path {
+			None => default_swap_path,
+			Some(path) => {
+				let path_length = path.len();
+				ensure!(
+					path_length >= 2 && path[0] == currency_id && path[path_length - 1] == dinar_currency_id,
+					Error::<T>::InvalidSwapPath
+				);
+				path
+			}
+		};
+		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
+
+		// get a min_target_amount of 95% of market value,
+		// marking the 5% slippage of `price_impact_limit`.
+		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(dinar_currency_id, currency_id);
+		let relative_price = pool_1 / pool_0;
+		let min_target_amount_full = supply_amount / relative_price;
+		let min_target_amount_fives = min_target_amount_full / 20;
+		let min_target_amount = min_target_amount_fives * 19;
+
+		T::Dex::swap_with_exact_supply(
+			&Self::account_id(),
+			swap_path,
+			supply_amount,
+			min_target_amount,
+			price_impact_limit,
+		)
+	}
+
+	/// Swap exact amount of Setter to Dinar,
+	/// return actual supply Setter amount
+	///
+	/// 
+	/// When Setter gets SerpUp
+	fn swap_exact_settcurrency_to_dinar(
 		currency_id: CurrencyId,
 		supply_amount: Balance,
 		maybe_path: Option<&[CurrencyId]>,

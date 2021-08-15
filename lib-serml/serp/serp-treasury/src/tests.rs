@@ -82,103 +82,69 @@ fn deposit_setter_works() {
 }
 
 #[test]
-fn swap_dinar_to_exact_setter() {
+fn swap_dinar_to_exact_setter_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(SetheumDEX::add_liquidity(
-			Origin::signed(ALICE),
-			SETT,
-			USDJ,
-			100,
-			1000,
-			0,
-		));
+		assert_ok!(Currencies::deposit(SETT, &ALICE, 10000));
+		assert_ok!(Currencies::deposit(DNAR, &ALICE, 10000));
 		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(ALICE),
 			SETT,
 			DNAR,
 			900,
-			1000,
-			0,
-		));
-		assert_ok!(SetheumDEX::add_liquidity(
-			Origin::signed(BOB),
-			DNAR,
-			USDJ,
-			1000,
 			1000,
 			0,
 		));
 		assert_ok!(Currencies::deposit(DNAR, &SerpTreasuryModule::account_id(), 10000));
+		assert_ok!(Currencies::deposit(SETT, &SerpTreasuryModule::account_id(), 10000));
 		assert_ok!(SerpTreasuryModule::swap_dinar_to_exact_setter(
-			100, None
+			10, None
 		));
-		assert_noop!(
-			SerpTreasuryModule::swap_dinar_to_exact_setter(100, Some(&vec![SETT])),
-			Error::<Runtime>::InvalidSwapPath
-		);
-		assert_noop!(
-			SerpTreasuryModule::swap_dinar_to_exact_setter(100, Some(&vec![DNAR, USDJ])),
-			Error::<Runtime>::InvalidSwapPath
-		);
-		assert_ok!(SerpTreasuryModule::swap_dinar_to_exact_setter(
-			100,
-			Some(&vec![SETT, DNAR, USDJ]),
-		));
-		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 200);
+		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 10000);
 	});
 }
 
 #[test]
-fn swap_exact_stablecurrency_to_dinar_work() {
+fn swap_exact_setter_to_dinar_work() {
 	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(Currencies::deposit(SETT, &ALICE, 10000));
+		assert_ok!(Currencies::deposit(DNAR, &ALICE, 10000));
 		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(ALICE),
-			SETT,
-			USDJ,
-			100,
-			1000,
-			0,
-		));
-		assert_ok!(SetheumDEX::add_liquidity(
-			Origin::signed(ALICE),
-			SETT,
 			DNAR,
+			SETT,
 			900,
 			1000,
 			0,
 		));
+		assert_ok!(Currencies::deposit(SETT, &SerpTreasuryModule::account_id(), 10000));
+		assert_ok!(SerpTreasuryModule::swap_exact_setter_to_dinar(
+			100, None
+		));
+		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 10000);
+	});
+}
+#[test]
+fn swap_exact_settcurrency_to_dinar_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(Currencies::deposit(USDJ, &BOB, 10000));
+		assert_ok!(Currencies::deposit(DNAR, &BOB, 10000));
 		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(BOB),
-			DNAR,
 			USDJ,
+			DNAR,
 			1000,
 			1000,
 			0,
 		));
-		assert_ok!(Currencies::deposit(SETT, &SerpTreasuryModule::account_id(), 10000));
-		assert_ok!(SerpTreasuryModule::swap_exact_stablecurrency_to_dinar(
-			SETT, 100, None
+		assert_ok!(Currencies::deposit(USDJ, &SerpTreasuryModule::account_id(), 10000));
+		assert_ok!(SerpTreasuryModule::swap_exact_settcurrency_to_dinar(
+			USDJ, 100, None
 		));
-		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 100);
+		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 100);
 
 		assert_noop!(
-			SerpTreasuryModule::swap_exact_stablecurrency_to_dinar(SETT, 100, Some(&vec![SETT])),
+			SerpTreasuryModule::swap_exact_settcurrency_to_dinar(USDJ, 100, Some(&vec![USDJ, DNAR])),
 			Error::<Runtime>::InvalidSwapPath
 		);
-		assert_noop!(
-			SerpTreasuryModule::swap_exact_stablecurrency_to_dinar(SETT, 100, Some(&vec![SETT, DNAR])),
-			Error::<Runtime>::InvalidSwapPath
-		);
-		assert_noop!(
-			SerpTreasuryModule::swap_exact_stablecurrency_to_dinar(SETT, 100, Some(&vec![DNAR, USDJ])),
-			Error::<Runtime>::InvalidSwapPath
-		);
-
-		assert_ok!(SerpTreasuryModule::swap_exact_stablecurrency_to_dinar(
-			SETT,
-			100,
-			Some(&vec![SETT, DNAR, USDJ])
-		));
-		assert_eq!(Currencies::free_balance(SETT, &SerpTreasuryModule::account_id()), 100);
 	});
 }
