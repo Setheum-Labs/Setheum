@@ -261,13 +261,18 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		path: Option<&[Self::CurrencyId]>,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
-	/// When StableCurrency gets SerpUp
-	fn swap_exact_stablecurrency_to_dinar(
-		currency_id: Self::CurrencyId,
+	/// When Setter gets SerpUp
+	fn swap_exact_setter_to_dinar(
 		supply_amount: Self::Balance,
 		maybe_path: Option<&[Self::CurrencyId]>,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
+	/// When SettCurrency gets SerpUp
+	fn swap_exact_settcurrency_to_dinar(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+		maybe_path: Option<&[Self::CurrencyId]>,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 }
 
 pub trait PriceProvider<CurrencyId> {
