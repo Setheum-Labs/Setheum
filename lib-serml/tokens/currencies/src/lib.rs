@@ -141,9 +141,9 @@ pub mod module {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-			if claim = true {
-				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)
-			}
+			if claim {
+				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)?
+			};
 			Ok(().into())
 		}
 
@@ -162,9 +162,9 @@ pub mod module {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			T::NativeCurrency::transfer(&from, &to, amount)?;
-			if claim = true {
-				T::SerpTreasury::claim_cashdrop(T::GetNativeCurrencyId::get(), &from, amount)
-			}
+			if claim {
+				T::SerpTreasury::claim_cashdrop(T::GetNativeCurrencyId::get(), &from, amount)?
+			};
 
 			Self::deposit_event(Event::Transferred(T::GetNativeCurrencyId::get(), from, to, amount));
 			Ok(().into())
