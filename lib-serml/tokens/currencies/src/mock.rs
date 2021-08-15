@@ -102,49 +102,6 @@ impl tokens::Config for Runtime {
 	type MaxLocks = MaxLocks;
 }
 
-parameter_types! {
-	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
-		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
-	];
-	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM, SETT, USDJ];
-	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![SETT, USDJ];
-	pub const DefaultCashDropRate: CashDropRate = CashDropRate::::saturating_from_rational(2 : 100); // 2% cashdrop
-	pub const DefaultMinimumClaimableTransfer: Balance = 10;
-	pub const SettPayPalletId: PalletId = PalletId(*b"set/tpay");
-}
-
-parameter_type_with_key! {
-	pub GetCashDropRates: |currency_id: CurrencyId| -> (Balance, Balance) {
-		match currency_id {
-			&DNAR => (5, 100), // 5% cashdrop.
-			&DRAM => (5, 100), // 5% cashdrop.
-			&SETT => (5, 100), // 5% cashdrop.
-			&USDJ => (5, 100), // 5% cashdrop.
-			_ => 0,
-		}
-	};
-}
-
-impl serp_settpay::Config for Runtime {
-	type Event = Event;
-	type Currency = Tokens;
-	type SetterCurrencyId = SetterCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type RewardableCurrencyIds = RewardableCurrencyIds;
-	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
-	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
-	type DefaultCashDropRate = DefaultCashDropRate;
-	type GetCashDropRates = GetCashDropRates;
-	type DefaultMinimumClaimableTransfer = DefaultMinimumClaimableTransfer;
-	type SerpTreasury = SerpTreasuryModule;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type PalletId = SettPayPalletId;
-	type WeightInfo = ();
-}
-
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
 
@@ -221,11 +178,153 @@ impl setheum_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
+parameter_types! {
+	pub const GetExchangeFee: (u32, u32) = (1, 100);
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const TradingPathLimit: u32 = 3;
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![
+		TradingPair::from_currency_ids(DNAR, SETT).unwrap(),
+		TradingPair::from_currency_ids(AUDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(CADJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(CHFJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(EURJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(GBPJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(JPYJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SARJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SEKJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(SGDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(USDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(AUDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(CADJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(CHFJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(EURJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(GBPJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(JPYJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SARJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SEKJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SGDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDJ, DNAR).unwrap(),
+	];
+}
+
+impl setheum_dex::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type GetExchangeFee = GetExchangeFee;
+	type TradingPathLimit = TradingPathLimit;
+	type PalletId = DexPalletId;
+	type CurrencyIdMapping = ();
+	type WeightInfo = ();
+	type ListingOrigin = EnsureSignedBy<One, AccountId>;
+}
+
+thread_local! {
+	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+}
+
+pub struct MockPriceSource;
+impl MockPriceSource {
+	pub fn set_relative_price(price: Option<Price>) {
+		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
+	}
+}
+impl PriceProvider<CurrencyId> for MockPriceSource {
+
+	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
+		RELATIVE_PRICE.with(|v| *v.borrow_mut())
+	}
+
+	fn get_market_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_setter_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
+		None
+	}
+
+	fn lock_price(_currency_id: CurrencyId) {}
+
+	fn unlock_price(_currency_id: CurrencyId) {}
+}
+
+ord_parameter_types! {
+	pub const One: AccountId = 1;
+}
+
+parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETT,
+ 		AUDJ,
+		CADJ,
+		CHFJ,
+		EURJ,
+		GBPJ,
+		JPYJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		USDJ,
+	];
+	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/
+	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;  // Setter  currency ticker is USDJ/
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
+	pub CharutyFundAcc: AccountId = CHARITY_FUND;
+
+	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+}
+
+parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETT => 10_000,
+			&AUDJ => 10_000,
+			&CHFJ => 10_000,
+			&EURJ => 10_000,
+			&GBPJ => 10_000,
+			&JPYJ => 10_000,
+			&USDJ => 10_000,
+			_ => 0,
+		}
+	};
+}
+
+impl serp_treasury::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
+	type SerpTesSchedule = SerpTesSchedule;
+	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
+	type CharityFundAcc = CharutyFundAcc;
+	type Dex = SetheumDEX;
+	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type PriceSource = MockPriceSource;
+	type PalletId = SerpTreasuryPalletId;
+	type WeightInfo = ();
+}
+
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type SerpTreasury = SerpTreasuryModule;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
@@ -250,7 +349,8 @@ frame_support::construct_runtime!(
 		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
 		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
 		EVMBridge: setheum_evm_bridge::{Pallet},
-		SettPay: serp_settpay::{Pallet, Storage, Call, Event<T>},
+		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
+		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 		Currencies: currencies::{Pallet, Call, Event<T>},
 	}
 );
