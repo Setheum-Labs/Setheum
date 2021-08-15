@@ -22,7 +22,7 @@ orml-utilities = { path = "../../../lib-openrml/utilities", default-features = f
 # local dependencies
 serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
-setheum-support = { package = "setheum-support", path = "../../support", default-features = false }
+support = { package = "setheum-support", path = "../../support", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
