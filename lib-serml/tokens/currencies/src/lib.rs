@@ -22,6 +22,7 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
+use code
 use codec::Codec;
 use frame_support::{
 	pallet_prelude::*,
@@ -39,7 +40,6 @@ use orml_traits::{
 	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
 use primitives::{evm::EvmAddress, CurrencyId};
-use support::{AddressMapping, EVMBridge, InvokeContext, SerpTreasury};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, Saturating, StaticLookup, Zero},
@@ -50,6 +50,7 @@ use sp_std::{
 	fmt::Debug,
 	marker, result,
 };
+use support::{AddressMapping, EVMBridge, InvokeContext, SerpTreasury};
 
 mod mock;
 mod tests;
@@ -90,6 +91,10 @@ pub mod module {
 
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
+
+		/// Mapping from address to account id.
+		type AddressMapping: AddressMapping<Self::AccountId>;
+		type EVMBridge: EVMBridge<Self::AccountId, BalanceOf<Self>>;
 	}
 
 	#[pallet::error]
@@ -106,14 +111,15 @@ pub mod module {
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
+	#[pallet::metadata(T::AccountId = "AccountId", BalanceOf<T> = "Balance", CurrencyIdOf<T> = "CurrencyId")]
 	pub enum Event<T: Config> {
-		/// Currency transfer success. [currency_id, from, to, amount]
+		/// Currency transfer success. \[currency_id, from, to, amount\]
 		Transferred(CurrencyIdOf<T>, T::AccountId, T::AccountId, BalanceOf<T>),
-		/// Update balance success. [currency_id, who, amount]
+		/// Update balance success. \[currency_id, who, amount\]
 		BalanceUpdated(CurrencyIdOf<T>, T::AccountId, AmountOf<T>),
-		/// Deposit success. [currency_id, who, amount]
+		/// Deposit success. \[currency_id, who, amount\]
 		Deposited(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
-		/// Withdraw success. [currency_id, who, amount]
+		/// Withdraw success. \[currency_id, who, amount\]
 		Withdrawn(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
 	}
 

@@ -386,7 +386,7 @@ pub fn erc20_address() -> EvmAddress {
 }
 
 pub fn deploy_contracts() {
-	let code = from_hex(include!("../../../evm/evm-bridge/src/erc20_demo_contract")).unwrap();
+	let code = from_hex(include!("../../evm/evm-bridge/src/erc20_demo_contract")).unwrap();
 	assert_ok!(EVM::create_network_contract(
 		Origin::signed(NetworkContractAccount::get()),
 		code,
