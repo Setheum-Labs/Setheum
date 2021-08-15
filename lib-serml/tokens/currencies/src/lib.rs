@@ -22,7 +22,6 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use code
 use codec::Codec;
 use frame_support::{
 	pallet_prelude::*,
@@ -87,7 +86,7 @@ pub mod module {
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = BalanceOf<Self>, CurrencyId = CurrencyId>;
 
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;

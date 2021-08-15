@@ -22,14 +22,15 @@
 
 use frame_support::{assert_ok, ord_parameter_types, parameter_types, traits::GenesisBuild, PalletId};
 use orml_traits::parameter_type_with_key;
-use primitives::{CurrencyId, TokenSymbol};
+use primitives::{CurrencyId, ReserveIdentifier, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
-	traits::{AccountIdConversion, IdentityLookup},
+	traits::{AccountIdConversion, IdentityLookup, One as OneT},
 	AccountId32, Perbill,
 };
-use support::{mocks::MockAddressMapping, AddressMapping};
+use sp_std::cell::RefCell;
+use support::{AddressMapping, mocks::MockAddressMapping, Price, PriceProvider, Ratio};
 
 use super::*;
 use frame_system::EnsureSignedBy;
@@ -38,11 +39,23 @@ use sp_std::str::FromStr;
 
 pub use crate as currencies;
 
+pub type BlockNumber = u64;
+
 // Currencies constants - CurrencyId/TokenSymbol
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR); // Setheum Dinar
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM); // Setheum Dirham
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT); // Setter   -  The Defacto stablecoin & settmint reserve asset
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ); // Setheum USD (US Dollar stablecoin)
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
+pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
+pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
+pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
+pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
+pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
+pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
+pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
+pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
+pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -87,7 +100,7 @@ parameter_type_with_key! {
 }
 
 parameter_types! {
-	pub DustAccount: AccountId = PalletId(*b"serml/dst").into_account();
+	pub DustAccount: AccountId = PalletId(*b"set/dust").into_account();
 	pub const MaxLocks: u32 = 100;
 }
 
@@ -111,6 +124,7 @@ parameter_types! {
 
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
+	pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -118,9 +132,11 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
-	type WeightInfo = ();
+	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
+	type WeightInfo = ();
 }
 
 pub type PalletBalances = pallet_balances::Pallet<Runtime>;
@@ -141,6 +157,10 @@ parameter_types! {
 }
 
 ord_parameter_types! {
+	pub const CharityFundAccountId:  AccountId32 = AccountId32::from([5u8; 32]);
+	pub const SettPayTreasuryAccountId:  AccountId32 = AccountId32::from([6u8; 32]);
+	pub const CashDropVaultAccountId:  AccountId32 = AccountId32::from([10u8; 32]);
+	
 	pub const CouncilAccount: AccountId32 = AccountId32::from([1u8; 32]);
 	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
 	pub const NetworkContractAccount: AccountId32 = AccountId32::from([0u8; 32]);
@@ -178,6 +198,14 @@ impl setheum_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
+impl orml_currencies::Config for Runtime {
+	type Event = Event;
+	type MultiCurrency = Tokens;
+	type NativeCurrency = AdaptedBasicCurrency;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type WeightInfo = ();
+}
+
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
@@ -209,7 +237,7 @@ parameter_types! {
 
 impl setheum_dex::Config for Runtime {
 	type Event = Event;
-	type Currency = Currencies;
+	type Currency = OrmlCurrencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
@@ -256,7 +284,7 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 ord_parameter_types! {
-	pub const One: AccountId = 1;
+	pub const One: AccountId32 = AccountId32::from([11u8; 32]);
 }
 
 parameter_types! {
@@ -278,12 +306,56 @@ parameter_types! {
 	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	pub CharutyFundAcc: AccountId = CHARITY_FUND;
 
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+
+	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
+		DNAR,
+		DRAM,
+		SETT,
+ 		AUDJ,
+		CADJ,
+		CHFJ,
+		EURJ,
+		GBPJ,
+		JPYJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		USDJ,
+	];
+	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
+	pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
+ 		AUDJ,
+		CADJ,
+		CHFJ,
+		EURJ,
+		GBPJ,
+		JPYJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		USDJ,
+	];
 }
+
+parameter_type_with_key! {
+	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETT => 2,
+			&AUDJ => 2,
+			&CHFJ => 2,
+			&EURJ => 2,
+			&GBPJ => 2,
+			&JPYJ => 2,
+			&USDJ => 2,
+			_ => 0,
+		}
+	};
+}
+
 
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
@@ -302,7 +374,7 @@ parameter_type_with_key! {
 
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
-	type Currency = Currencies;
+	type Currency = OrmlCurrencies;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
@@ -310,11 +382,18 @@ impl serp_treasury::Config for Runtime {
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type CharityFundAcc = CharutyFundAcc;
+	type CashDropPeriod = CashDropPeriod;
+	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
+	type CashDropVaultAccountId = CashDropVaultAccountId;
+	type CharityFundAccountId = CharityFundAccountId;
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type PriceSource = MockPriceSource;
+	type RewardableCurrencyIds = RewardableCurrencyIds;
+	type NonStableDropCurrencyIds = StableCurrencyIds;
+	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
+	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
@@ -351,6 +430,7 @@ frame_support::construct_runtime!(
 		EVMBridge: setheum_evm_bridge::{Pallet},
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
 		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		OrmlCurrencies: orml_currencies::{Pallet, Call, Event<T>},
 		Currencies: currencies::{Pallet, Call, Event<T>},
 	}
 );
@@ -386,7 +466,7 @@ pub fn erc20_address() -> EvmAddress {
 }
 
 pub fn deploy_contracts() {
-	let code = from_hex(include!("../../evm/evm-bridge/src/erc20_demo_contract")).unwrap();
+	let code = from_hex(include!("../../../evm/evm-bridge/src/erc20_demo_contract")).unwrap();
 	assert_ok!(EVM::create_network_contract(
 		Origin::signed(NetworkContractAccount::get()),
 		code,
@@ -395,27 +475,25 @@ pub fn deploy_contracts() {
 		10000
 	));
 
-	let event = Event::setheum_evm(setheum_evm::Event::Created(erc20_address()));
+	let event = Event::EVM(setheum_evm::Event::Created(erc20_address()));
 	assert_eq!(System::events().iter().last().unwrap().event, event);
 
 	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
 }
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self {
-			endowed_accounts: vec![],
-		}
+		Self { balances: vec![] }
 	}
 }
 
 impl ExtBuilder {
-	pub fn balances(mut self, endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>) -> Self {
-		self.endowed_accounts = endowed_accounts;
+	pub fn balances(mut self, balances: Vec<(AccountId, CurrencyId, Balance)>) -> Self {
+		self.balances = balances;
 		self
 	}
 
@@ -435,7 +513,7 @@ impl ExtBuilder {
 
 		pallet_balances::GenesisConfig::<Runtime> {
 			balances: self
-				.endowed_accounts
+				.balances
 				.clone()
 				.into_iter()
 				.filter(|(_, currency_id, _)| *currency_id == NATIVE_CURRENCY_ID)
@@ -446,8 +524,8 @@ impl ExtBuilder {
 		.unwrap();
 
 		tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self
-				.endowed_accounts
+			balances: self
+				.balances
 				.into_iter()
 				.filter(|(_, currency_id, _)| *currency_id != NATIVE_CURRENCY_ID)
 				.collect::<Vec<_>>(),
@@ -455,7 +533,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		setheum_evm::GenesisConfig::<Runtime>::default()
+		module_evm::GenesisConfig::<Runtime>::default()
 			.assimilate_storage(&mut t)
 			.unwrap();
 
