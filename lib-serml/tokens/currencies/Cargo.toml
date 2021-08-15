@@ -22,7 +22,7 @@ orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
 orml-utilities = { path = "../../../lib-openrml/utilities", default-features = false }
 
 # local dependencies
-serp-settpay = { package = "serp-settpay", path = "../../serp/serp-settpay", default-features = false }
+serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 support = { package = "setheum-support", path = "../../support", default-features = false }
 
@@ -33,6 +33,8 @@ pallet-timestamp = { version = "3.0.0", git = "https://github.com/paritytech/sub
 tokens = { package = "orml-tokens", path = "../../../lib-openrml/tokens" }
 setheum-evm = { path = "../../evm/evm" }
 setheum-evm-bridge = { path = "../../evm/evm-bridge" }
+serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
+setheum-dex = { path = "../..//dex/dex" }
 
 [features]
 default = ["std"]
@@ -47,7 +49,7 @@ std = [
 	"frame-system/std",
 	"orml-traits/std",
 	"orml-utilities/std",
-	"serp-settpay/std",
+	"serp-treasury/std",
 	"primitives/std",
 	"support/std",
 ]

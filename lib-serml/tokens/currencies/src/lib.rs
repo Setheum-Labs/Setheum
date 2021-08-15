@@ -39,7 +39,7 @@ use orml_traits::{
 	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
 use primitives::{evm::EvmAddress, CurrencyId};
-use support::{AddressMapping, CashDrop, CashDropClaim, EVMBridge, InvokeContext};
+use support::{AddressMapping, EVMBridge, InvokeContext, SerpTreasury};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, Saturating, StaticLookup, Zero},
@@ -84,14 +84,12 @@ pub mod module {
 		#[pallet::constant]
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
+		/// SERP Treasury for issuing/burning stable currency adjust standard value
+		/// adjustment
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
-
-		/// Mapping from address to account id.
-		type AddressMapping: AddressMapping<Self::AccountId>;
-		type EVMBridge: EVMBridge<Self::AccountId, BalanceOf<Self>>;
-		/// SERP SettPay CashDrop for rewarding claimants with cashdrop (cashback) on transfer.
-		type CashDrop: CashDrop<Self::AccountId, BalanceOf<T>, CurrencyIdOf<T>>;
 	}
 
 	#[pallet::error]
@@ -127,7 +125,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// `claim` accepts a `bool` input (CashDropClaim)
+		/// `claim` accepts a `bool` input
 		/// Transfer some balance to another account under `currency_id`.
 		///
 		/// The dispatch origin for this call must be `Signed` by the
@@ -138,19 +136,19 @@ pub mod module {
 			dest: <T::Lookup as StaticLookup>::Source,
 			currency_id: CurrencyIdOf<T>,
 			#[pallet::compact] amount: BalanceOf<T>,
-			claim: CashDropClaim,
+			claim: bool,
 		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
 			if claim = true {
-				T::CashDrop::claim_cashdrop(currency_id, &from, amount)
+				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)
 			}
 			Ok(().into())
 		}
 
 		/// Transfer some native currency to another account.
-		/// `claim` accepts a `bool` input (CashDropClaim)
+		/// `claim` accepts a `bool` input
 		///
 		/// The dispatch origin for this call must be `Signed` by the
 		/// transactor.
@@ -159,13 +157,13 @@ pub mod module {
 			origin: OriginFor<T>,
 			dest: <T::Lookup as StaticLookup>::Source,
 			#[pallet::compact] amount: BalanceOf<T>,
-			claim: CashDropClaim,
+			claim: bool,
 		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			T::NativeCurrency::transfer(&from, &to, amount)?;
 			if claim = true {
-				T::CashDrop::claim_cashdrop(T::GetNativeCurrencyId::get(), &from, amount)
+				T::SerpTreasury::claim_cashdrop(T::GetNativeCurrencyId::get(), &from, amount)
 			}
 
 			Self::deposit_event(Event::Transferred(T::GetNativeCurrencyId::get(), from, to, amount));
