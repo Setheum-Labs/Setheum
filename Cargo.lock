@@ -4563,11 +4563,11 @@ dependencies = [
  "setheum-chainbridge",
  "setheum-currencies",
  "setheum-dex",
- "setheum-evm",
- "setheum-evm-accounts",
- "setheum-evm-bridge",
- "setheum-evm-manager",
- "setheum-evm-rpc-runtime-api",
+ "module-evm",
+ "module-evm-accounts",
+ "module-evm-bridge",
+ "module-evm-manager",
+ "module-evm-rpc-runtime-api",
  "setheum-nft",
  "setheum-primitives",
  "setheum-renvm-bridge",
@@ -6493,7 +6493,7 @@ dependencies = [
  "serp-prices",
  "setheum-currencies",
  "setheum-dex",
- "setheum-evm",
+ "module-evm",
  "setheum-nft",
  "setheum-primitives",
  "setheum-service",
@@ -8034,8 +8034,8 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "serp-settpay",
- "setheum-evm",
- "setheum-evm-bridge",
+ "module-evm",
+ "module-evm-bridge",
  "setheum-primitives",
  "setheum-support",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8092,7 +8092,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-evm"
+name = "module-evm"
 version = "0.8.0"
 dependencies = [
  "env_logger 0.7.1",
@@ -8124,7 +8124,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-evm-accounts"
+name = "module-evm-accounts"
 version = "0.8.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8145,7 +8145,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-evm-bridge"
+name = "module-evm-bridge"
 version = "0.8.0"
 dependencies = [
  "ethereum-types",
@@ -8159,7 +8159,7 @@ dependencies = [
  "primitive-types",
  "primitives-proc-macro",
  "serde",
- "setheum-evm",
+ "module-evm",
  "setheum-primitives",
  "setheum-support",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8169,7 +8169,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-evm-manager"
+name = "module-evm-manager"
 version = "0.8.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8182,8 +8182,8 @@ dependencies = [
  "pallet-timestamp",
  "parity-scale-codec",
  "serde",
- "setheum-evm",
- "setheum-evm-bridge",
+ "module-evm",
+ "module-evm-bridge",
  "setheum-primitives",
  "setheum-support",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8193,7 +8193,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-evm-rpc"
+name = "module-evm-rpc"
 version = "0.8.0"
 dependencies = [
  "ethereum-types",
@@ -8205,8 +8205,8 @@ dependencies = [
  "sc-rpc-api",
  "serde",
  "serde_json",
- "setheum-evm",
- "setheum-evm-rpc-runtime-api",
+ "module-evm",
+ "module-evm-rpc-runtime-api",
  "sp-api 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-blockchain",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8217,7 +8217,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "setheum-evm-rpc-runtime-api"
+name = "module-evm-rpc-runtime-api"
 version = "0.8.0"
 dependencies = [
  "ethereum-types",
@@ -8341,7 +8341,7 @@ dependencies = [
  "sc-finality-grandpa-rpc",
  "sc-keystore",
  "sc-rpc",
- "setheum-evm-rpc",
+ "module-evm-rpc",
  "setheum-primitives",
  "sp-api 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-block-builder",
@@ -8408,11 +8408,11 @@ dependencies = [
  "setheum-chainbridge",
  "setheum-currencies",
  "setheum-dex",
- "setheum-evm",
- "setheum-evm-accounts",
- "setheum-evm-bridge",
- "setheum-evm-manager",
- "setheum-evm-rpc-runtime-api",
+ "module-evm",
+ "module-evm-accounts",
+ "module-evm-bridge",
+ "module-evm-manager",
+ "module-evm-rpc-runtime-api",
  "setheum-nft",
  "setheum-primitives",
  "setheum-renvm-bridge",
@@ -8473,8 +8473,8 @@ dependencies = [
  "sc-transaction-pool",
  "serde",
  "serde_json",
- "setheum-evm",
- "setheum-evm-rpc-runtime-api",
+ "module-evm",
+ "module-evm-rpc-runtime-api",
  "setheum-nft",
  "setheum-primitives",
  "setheum-renvm-bridge",

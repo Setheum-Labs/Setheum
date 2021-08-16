@@ -1,6 +1,6 @@
 [package]
-name = "setheum-evm-bridge"
-version = "0.8.0"
+name = "module-evm-bridge"
+version = "1.2.2"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -23,7 +23,7 @@ ethereum-types = { version = "0.11.0", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 primitives-proc-macro = { path = "../../../primitives/proc-macro" }
 support = { package = "setheum-support", path = "../../support", default-features = false }
-setheum-evm = { path = "../evm", default-features = false }
+module-evm = { path = "../evm", default-features = false }
 num_enum = { version = "0.5.1", default-features = false }
 
 [dev-dependencies]
@@ -46,6 +46,6 @@ std = [
 	"primitives/std",
 	"primitive-types/std",
 	"support/std",
-	"setheum-evm/std",
+	"module-evm/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

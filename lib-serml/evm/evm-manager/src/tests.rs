@@ -65,7 +65,7 @@ fn set_erc20_mapping_works() {
 				with_transaction_result(|| -> DispatchResult {
 					EvmCurrencyIdMapping::<Runtime>::set_erc20_mapping(erc20_address_not_exists())
 				}),
-				setheum_evm_bridge::Error::<Runtime>::InvalidReturnValue,
+				module_evm_bridge::Error::<Runtime>::InvalidReturnValue,
 			);
 		});
 }
@@ -101,7 +101,7 @@ fn name_works() {
 			}));
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::Token(TokenSymbol::DNAR)),
-				Some(b"Setheum".to_vec())
+				Some(b"Setheum Dinar".to_vec())
 			);
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::Erc20(erc20_address())),
@@ -115,7 +115,7 @@ fn name_works() {
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::USDJ))),
-				Some(b"LP Setheum - Setheum US Dollar".to_vec())
+				Some(b"LP Setheum Dinar - Setheum US Dollar".to_vec())
 			);
 
 			assert_eq!(
@@ -299,14 +299,14 @@ fn encode_evm_address_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::AUSD)
 				)),
 				H160::from_str("0x0000000000000000000000010200000000000001").ok()
 			);
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
-					DexShare::Token(TokenSymbol::USDJ),
+					DexShare::Token(TokenSymbol::AUSD),
 					DexShare::Erc20(erc20_address())
 				)),
 				H160::from_str("0x0000000000000000000000010000000102000000").ok()
@@ -322,7 +322,7 @@ fn encode_evm_address_works() {
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
-					DexShare::Token(TokenSymbol::DNAR),
+					DexShare::Token(TokenSymbol::ACA),
 					DexShare::Erc20(erc20_address_not_exists())
 				)),
 				None
@@ -350,9 +350,9 @@ fn decode_evm_address_works() {
 			}));
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(
-					EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::Token(TokenSymbol::DNAR)).unwrap()
+					EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::Token(TokenSymbol::ACA)).unwrap()
 				),
-				Some(CurrencyId::Token(TokenSymbol::DNAR))
+				Some(CurrencyId::Token(TokenSymbol::ACA))
 			);
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(
@@ -372,14 +372,14 @@ fn decode_evm_address_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(
 					EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
-						DexShare::Token(TokenSymbol::DNAR),
-						DexShare::Token(TokenSymbol::USDJ)
+						DexShare::Token(TokenSymbol::ACA),
+						DexShare::Token(TokenSymbol::AUSD)
 					))
 					.unwrap(),
 				),
 				Some(CurrencyId::DexShare(
-					DexShare::Token(TokenSymbol::DNAR),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::ACA),
+					DexShare::Token(TokenSymbol::AUSD)
 				))
 			);
 
@@ -387,13 +387,13 @@ fn decode_evm_address_works() {
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(
 					EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 						DexShare::Erc20(erc20_address()),
-						DexShare::Token(TokenSymbol::USDJ)
+						DexShare::Token(TokenSymbol::AUSD)
 					))
 					.unwrap()
 				),
 				Some(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::AUSD)
 				))
 			);
 
@@ -412,7 +412,7 @@ fn decode_evm_address_works() {
 			);
 
 			// decode invalid evm address
-			// CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR),
+			// CurrencyId::DexShare(DexShare::Token(TokenSymbol::ACA),
 			// DexShare::Erc20(erc20_address_not_exists()))
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(

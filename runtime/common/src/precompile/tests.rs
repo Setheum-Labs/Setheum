@@ -30,7 +30,7 @@ use crate::precompile::{
 use codec::Encode;
 use frame_support::{assert_noop, assert_ok};
 use hex_literal::hex;
-use setheum_evm::ExitError;
+use module_evm::ExitError;
 use setheum_support::AddressMapping;
 use orml_traits::DataFeeder;
 use primitives::{Balance, PREDEPLOY_ADDRESS_START};
@@ -469,8 +469,8 @@ fn schedule_call_precompile_should_work() {
 		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Scheduled(5, 0));
 		assert!(System::events().iter().any(|record| record.event == event));
 
-		let from_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
-		let to_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
+		let from_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
+		let to_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
 		#[cfg(not(feature = "with-ethereum-compatibility"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
@@ -537,8 +537,8 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(used_gas, 0);
 
-		let from_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
-		let to_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
+		let from_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
+		let to_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
 		#[cfg(not(feature = "with-ethereum-compatibility"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);

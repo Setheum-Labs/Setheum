@@ -1,6 +1,6 @@
 [package]
-name = "setheum-evm-rpc-runtime-api"
-version = "0.8.0"
+name = "module-evm-rpc-runtime-api"
+version = "1.2.2"
 authors = ["Setheum Labs"]
 edition = "2018"
 

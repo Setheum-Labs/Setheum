@@ -76,9 +76,9 @@ use sp_version::RuntimeVersion;
 
 use frame_system::{EnsureOneOf, EnsureRoot, RawOrigin};
 use setheum_currencies::{BasicCurrencyAdapter, Currency};
-use setheum_evm::{CallInfo, CreateInfo};
-use setheum_evm_accounts::EvmAddressMapping;
-use setheum_evm_manager::EvmCurrencyIdMapping;
+use module_evm::{CallInfo, CreateInfo};
+use module_evm_accounts::EvmAddressMapping;
+use module_evm_manager::EvmCurrencyIdMapping;
 use setheum_support::{, CashDropRate, CurrencyIdMapping, Rate, Ratio};
 use setheum_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use orml_tokens::CurrencyAdapter;
@@ -212,8 +212,8 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = (
-		setheum_evm::CallKillAccount<Runtime>,
-		setheum_evm_accounts::CallKillAccount<Runtime>,
+		module_evm::CallKillAccount<Runtime>,
+		module_evm_accounts::CallKillAccount<Runtime>,
 	);
 	type DbWeight = RocksDbWeight;
 	type BaseCallFilter = ();
@@ -1297,7 +1297,7 @@ where
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			setheum_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-			setheum_evm::SetEvmOrigin::<Runtime>::new(),
+			module_evm::SetEvmOrigin::<Runtime>::new(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
@@ -1469,16 +1469,16 @@ impl Handler<AccountId> for EvmAccountsOnClaimHandler {
 	}
 }
 
-impl setheum_evm_accounts::Config for Runtime {
+impl module_evm_accounts::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type TransferAll = Currencies;
 	type OnClaim = EvmAccountsOnClaimHandler;
-	type WeightInfo = weights::setheum_evm_accounts::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_evm_accounts::WeightInfo<Runtime>;
 }
 
-impl setheum_evm_manager::Config for Runtime {
+impl module_evm_manager::Config for Runtime {
 	type Currency = Balances;
 	type EVMBridge = EVMBridge;
 }
@@ -1610,7 +1610,7 @@ pub type DexPrecompile =
 	#[cfg(feature = "with-ethereum-compatibility")]
 static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
-impl setheum_evm::Config for Runtime {
+impl module_evm::Config for Runtime {
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type Currency = Balances;
 	type TransferAll = Currencies;
@@ -1636,7 +1636,7 @@ impl setheum_evm::Config for Runtime {
 	type DeploymentFee = DeploymentFee;
 	type TreasuryAccount = TreasuryAccount;
 	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
-	type WeightInfo = weights::setheum_evm::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_evm::WeightInfo<Runtime>;
 
 	#[cfg(feature = "with-ethereum-compatibility")]
 	fn config() -> &'static evm::Config {
@@ -1644,7 +1644,7 @@ impl setheum_evm::Config for Runtime {
 	}
 }
 
-impl setheum_evm_bridge::Config for Runtime {
+impl module_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
@@ -1779,10 +1779,10 @@ construct_runtime!(
 
 		// Smart contracts
 		// Setheum EVM (SEVM)
-		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 49,
-		EVMBridge: setheum_evm_bridge::{Pallet} = 50,
-		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 51,
-		EvmManager: setheum_evm_manager::{Pallet, Storage} = 52,
+		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 49,
+		EVMBridge: module_evm_bridge::{Pallet} = 50,
+		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 51,
+		EvmManager: module_evm_manager::{Pallet, Storage} = 52,
 
 		// Bridges
 		// RenVmBridge: setheum_renvm_bridge::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned} = 53,
@@ -1988,7 +1988,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl setheum_evm_rpc_runtime_api::EVMRuntimeRPCApi<Block, Balance> for Runtime {
+	impl module_evm_rpc_runtime_api::EVMRuntimeRPCApi<Block, Balance> for Runtime {
 		fn call(
 			from: H160,
 			to: H160,
@@ -1999,14 +1999,14 @@ impl_runtime_apis! {
 			estimate: bool,
 		) -> Result<CallInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
-				let mut config = <Runtime as setheum_evm::Config>::config().clone();
+				let mut config = <Runtime as module_evm::Config>::config().clone();
 				config.estimate = true;
 				Some(config)
 			} else {
 				None
 			};
 
-			setheum_evm::Runner::<Runtime>::call(
+			module_evm::Runner::<Runtime>::call(
 				from,
 				from,
 				to,
@@ -2014,7 +2014,7 @@ impl_runtime_apis! {
 				value,
 				gas_limit,
 				storage_limit,
-				config.as_ref().unwrap_or(<Runtime as setheum_evm::Config>::config()),
+				config.as_ref().unwrap_or(<Runtime as module_evm::Config>::config()),
 			)
 		}
 
@@ -2027,20 +2027,20 @@ impl_runtime_apis! {
 			estimate: bool,
 		) -> Result<CreateInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
-				let mut config = <Runtime as setheum_evm::Config>::config().clone();
+				let mut config = <Runtime as module_evm::Config>::config().clone();
 				config.estimate = true;
 				Some(config)
 			} else {
 				None
 			};
 
-			setheum_evm::Runner::<Runtime>::create(
+			module_evm::Runner::<Runtime>::create(
 				from,
 				data,
 				value,
 				gas_limit,
 				storage_limit,
-				config.as_ref().unwrap_or(<Runtime as setheum_evm::Config>::config()),
+				config.as_ref().unwrap_or(<Runtime as module_evm::Config>::config()),
 			)
 		}
 
@@ -2049,7 +2049,7 @@ impl_runtime_apis! {
 				.map_err(|_| sp_runtime::DispatchError::Other("Invalid parameter extrinsic, decode failed"))?;
 
 			let request = match utx.function {
-				Call::EVM(setheum_evm::Call::call(to, data, value, gas_limit, storage_limit)) => {
+				Call::EVM(module_evm::Call::call(to, data, value, gas_limit, storage_limit)) => {
 					Some(EstimateResourcesRequest {
 						from: None,
 						to: Some(to),
@@ -2059,7 +2059,7 @@ impl_runtime_apis! {
 						data: Some(data),
 					})
 				}
-				Call::EVM(setheum_evm::Call::create(data, value, gas_limit, storage_limit)) => {
+				Call::EVM(module_evm::Call::create(data, value, gas_limit, storage_limit)) => {
 					Some(EstimateResourcesRequest {
 						from: None,
 						to: None,
@@ -2121,8 +2121,8 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_currencies, benchmarking::currencies);
 			orml_add_benchmark!(params, batches, dex, benchmarking::dex);
-			orml_add_benchmark!(params, batches, setheum_evm_accounts, benchmarking::evm_accounts);
-			orml_add_benchmark!(params, batches, setheum_evm, benchmarking::evm);
+			orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
+			orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
 			orml_add_benchmark!(params, batches, prices, benchmarking::prices);
 			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);

@@ -380,7 +380,7 @@ fn setheum_genesis(
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),
 		},
-		setheum_evm: Default::default(),
+		module_evm: Default::default(),
 		setheum_renvm_bridge: RenVmBridgeConfig {
 			ren_vm_public_key: hex!["4b939fc8ade87cb50b78987b1dda927460dc456a"],
 		},

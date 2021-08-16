@@ -1,6 +1,6 @@
 [package]
-name = "setheum-evm"
-version = "0.8.0"
+name = "module-evm"
+version = "1.2.2"
 authors = ["Setheum Labs"]
 edition = "2018"
 
