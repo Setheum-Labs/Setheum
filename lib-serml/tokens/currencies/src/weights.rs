@@ -106,4 +106,3 @@ impl WeightInfo for () {
 		(13_000_000 as Weight)
 	}
 }
-

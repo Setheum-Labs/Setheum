@@ -863,4 +863,3 @@ fn reserve_address(address: EvmAddress) -> EvmAddress {
 	let payload = (b"erc20:", address);
 	EvmAddress::from_slice(&payload.using_encoded(blake2_256)[0..20])
 }
-
