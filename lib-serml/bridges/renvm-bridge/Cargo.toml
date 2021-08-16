@@ -28,7 +28,7 @@ primitives = { package = "setheum-primitives", path = "../../../primitives", def
 hex-literal = "0.3.1"
 orml-currencies = { path = "../../../lib-openrml/currencies" }
 orml-tokens = { path = "../../../lib-openrml/tokens" }
-pallet-balances = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 [features]
 default = ["std"]
