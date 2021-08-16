@@ -39,7 +39,6 @@ use orml_traits::{
 	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
 use primitives::{evm::EvmAddress, CurrencyId};
-use support::{AddressMapping, EVMBridge, InvokeContext, SerpTreasury};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, Saturating, StaticLookup, Zero},
@@ -50,6 +49,7 @@ use sp_std::{
 	fmt::Debug,
 	marker, result,
 };
+use support::{AddressMapping, EVMBridge, InvokeContext, SerpTreasury};
 
 mod mock;
 mod tests;
@@ -86,10 +86,14 @@ pub mod module {
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = BalanceOf<Self>, CurrencyId = CurrencyId>;
 
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
+
+		/// Mapping from address to account id.
+		type AddressMapping: AddressMapping<Self::AccountId>;
+		type EVMBridge: EVMBridge<Self::AccountId, BalanceOf<Self>>;
 	}
 
 	#[pallet::error]
@@ -106,14 +110,15 @@ pub mod module {
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
+	#[pallet::metadata(T::AccountId = "AccountId", BalanceOf<T> = "Balance", CurrencyIdOf<T> = "CurrencyId")]
 	pub enum Event<T: Config> {
-		/// Currency transfer success. [currency_id, from, to, amount]
+		/// Currency transfer success. \[currency_id, from, to, amount\]
 		Transferred(CurrencyIdOf<T>, T::AccountId, T::AccountId, BalanceOf<T>),
-		/// Update balance success. [currency_id, who, amount]
+		/// Update balance success. \[currency_id, who, amount\]
 		BalanceUpdated(CurrencyIdOf<T>, T::AccountId, AmountOf<T>),
-		/// Deposit success. [currency_id, who, amount]
+		/// Deposit success. \[currency_id, who, amount\]
 		Deposited(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
-		/// Withdraw success. [currency_id, who, amount]
+		/// Withdraw success. \[currency_id, who, amount\]
 		Withdrawn(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
 	}
 
@@ -141,9 +146,9 @@ pub mod module {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-			if claim = true {
-				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)
-			}
+			if claim {
+				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)?
+			};
 			Ok(().into())
 		}
 
@@ -162,9 +167,9 @@ pub mod module {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			T::NativeCurrency::transfer(&from, &to, amount)?;
-			if claim = true {
-				T::SerpTreasury::claim_cashdrop(T::GetNativeCurrencyId::get(), &from, amount)
-			}
+			if claim {
+				T::SerpTreasury::claim_cashdrop(T::GetNativeCurrencyId::get(), &from, amount)?
+			};
 
 			Self::deposit_event(Event::Transferred(T::GetNativeCurrencyId::get(), from, to, amount));
 			Ok(().into())

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the chainsafe module.
+//! Mocks for the chainbridge module.
 
 #![cfg(test)]
 
@@ -94,7 +94,7 @@ parameter_types! {
 	pub DNARResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"DNAR");
 	pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 	pub WETHResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(0, b"weth");
-	pub WETH: CurrencyId = CurrencyId::ChainBridge(WETHResourceId::get());
+	pub WETH: CurrencyId = CurrencyId::ChainSafe(WETHResourceId::get());
 }
 
 impl chainbridge::Config for Runtime {
@@ -135,13 +135,13 @@ construct_runtime!(
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![(ALICE, DNAR::get(), 1_000u128)],
+			balances: vec![(ALICE, DNAR::get(), 1_000u128)],
 		}
 	}
 }
@@ -153,7 +153,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

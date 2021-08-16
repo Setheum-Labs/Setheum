@@ -26,7 +26,7 @@ mod tests;
 
 use crate::is_setheum_precompile;
 use frame_support::log;
-use setheum_evm::{
+use module_evm::{
 	precompiles::{
 		ECRecover, ECRecoverPublicKey, EvmPrecompiles, Identity, Precompile, Precompiles, Ripemd160, Sha256,
 		Sha3FIPS256, Sha3FIPS512,

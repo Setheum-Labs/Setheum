@@ -376,7 +376,7 @@ fn testnet_genesis(
 				],
 			)],
 		},
-		setheum_evm: EVMConfig {
+		module_evm: EVMConfig {
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
 		},
@@ -524,7 +524,7 @@ fn newrome_genesis(
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		}),
-		setheum_evm: EVMConfig {
+		module_evm: EVMConfig {
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
 		},

@@ -147,7 +147,7 @@ fn native_currency_should_work() {
 			assert_eq!(NativeCurrency::free_balance(&alice()), 50);
 			assert_eq!(NativeCurrency::free_balance(&bob()), 150);
 
-			assert_ok!(NativeCurrency::transfer(&alice(), &bob(), 10, false));
+			assert_ok!(NativeCurrency::transfer(&alice(), &bob(), 10));
 			assert_eq!(NativeCurrency::free_balance(&alice()), 40);
 			assert_eq!(NativeCurrency::free_balance(&bob()), 160);
 
@@ -181,12 +181,12 @@ fn basic_currency_adapting_pallet_balances_transfer() {
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_ok!(AdaptedBasicCurrency::transfer(&alice(), &bob(), 50, false));
+			assert_ok!(AdaptedBasicCurrency::transfer(&alice(), &bob(), 50));
 			assert_eq!(PalletBalances::total_balance(&alice()), 50);
 			assert_eq!(PalletBalances::total_balance(&bob()), 150);
 
 			// creation fee
-			assert_ok!(AdaptedBasicCurrency::transfer(&alice(), &eva(), 10, false));
+			assert_ok!(AdaptedBasicCurrency::transfer(&alice(), &eva(), 10));
 			assert_eq!(PalletBalances::total_balance(&alice()), 40);
 			assert_eq!(PalletBalances::total_balance(&eva()), 10);
 		});
@@ -278,7 +278,7 @@ fn call_event_should_work() {
 			assert_ok!(Currencies::transfer(Some(alice()).into(), bob(), X_TOKEN_ID, 50, false));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 50);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 150);
-			System::assert_last_event(Event::currencies(crate::Event::Transferred(
+			System::assert_last_event( Event::Currencies(crate::Event::Transferred(
 				X_TOKEN_ID,
 				alice(),
 				bob(),
@@ -290,11 +290,10 @@ fn call_event_should_work() {
 				&alice(),
 				&bob(),
 				10,
-				false
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 40);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 160);
-			System::assert_last_event(Event::currencies(crate::Event::Transferred(
+			System::assert_last_event( Event::Currencies(crate::Event::Transferred(
 				X_TOKEN_ID,
 				alice(),
 				bob(),
@@ -307,7 +306,7 @@ fn call_event_should_work() {
 				100
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 140);
-			System::assert_last_event(Event::currencies(crate::Event::Deposited(X_TOKEN_ID, alice(), 100)));
+			System::assert_last_event( Event::Currencies(crate::Event::Deposited(X_TOKEN_ID, alice(), 100)));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::withdraw(
 				X_TOKEN_ID,
@@ -315,7 +314,7 @@ fn call_event_should_work() {
 				20
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 120);
-			System::assert_last_event(Event::currencies(crate::Event::Withdrawn(X_TOKEN_ID, alice(), 20)));
+			System::assert_last_event( Event::Currencies(crate::Event::Withdrawn(X_TOKEN_ID, alice(), 20)));
 		});
 }
 

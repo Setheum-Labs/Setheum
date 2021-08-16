@@ -1,6 +1,6 @@
 [package]
-name = "setheum-evm-accounts"
-version = "0.8.0"
+name = "module-evm-accounts"
+version = "1.2.2"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -22,7 +22,7 @@ primitives = { package = "setheum-primitives", path = "../../../primitives", def
 setheum-support = { package = "setheum-support", path = "../../support", default-features = false }
 
 [dev-dependencies]
-pallet-balances = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 orml-currencies = { path = "../../../lib-openrml/currencies" }
 orml-tokens = { path = "../../../lib-openrml/tokens" }
 

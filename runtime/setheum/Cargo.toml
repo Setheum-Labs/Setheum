@@ -77,13 +77,12 @@ setheum-renvm-bridge = { path = "../../lib-serml/bridges/renvm-bridge", default-
 # - dex
 setheum-dex = { path = "../../lib-serml/dex/dex", default-features = false }
 # - evm
-setheum-evm = { path = "../../lib-serml/evm/evm", default-features = false }
-setheum-evm-accounts = { path = "../../lib-serml/evm/evm-accounts", default-features = false }
-setheum-evm-bridge = { path = "../../lib-serml/evm/evm-bridge", default-features = false }
-setheum-evm-manager = { path = "../../lib-serml/evm/evm-manager", default-features = false }
-setheum-evm-rpc-runtime-api = { path = "../../lib-serml/evm/evm/rpc/runtime_api",  default-features = false }
+module-evm = { path = "../../lib-serml/evm/evm", default-features = false }
+module-evm-accounts = { path = "../../lib-serml/evm/evm-accounts", default-features = false }
+module-evm-bridge = { path = "../../lib-serml/evm/evm-bridge", default-features = false }
+module-evm-manager = { path = "../../lib-serml/evm/evm-manager", default-features = false }
+module-evm-rpc-runtime-api = { path = "../../lib-serml/evm/evm/rpc/runtime_api",  default-features = false }
 # - serp
-serp-settpay = { path = "../../lib-serml/serp/serp-settpay", default-features = false }
 serp-prices = { path = "../../lib-serml/serp/serp-prices", default-features = false }
 serp-staking = { path = "../../lib-serml/serp/serp-staking", default-features = false }
 serp-treasury = { path = "../../lib-serml/serp/serp-treasury", default-features = false }
@@ -167,12 +166,11 @@ std = [
 	"setheum-chainbridge/std",
 	"setheum-renvm-bridge/std",
 	"setheum-dex/std",
-	"setheum-evm/std",
-	"setheum-evm-accounts/std",
-	"setheum-evm-bridge/std",
-	"setheum-evm-manager/std",
+	"module-evm/std",
+	"module-evm-accounts/std",
+	"module-evm-bridge/std",
+	"module-evm-manager/std",
 	"serp-prices/std",
-	"serp-settpay/std",
 	"serp-staking/std",
 	"serp-treasury/std",
 	"settmint-engine/std",
@@ -251,10 +249,10 @@ try-runtime = [
 	"setheum-airdrop/try-runtime",
 	"setheum-renvm-bridge/try-runtime",
 	"setheum-dex/try-runtime",
-	"setheum-evm/try-runtime",
-	"setheum-evm-accounts/try-runtime",
-	"setheum-evm-bridge/try-runtime",
-	"setheum-evm-manager/try-runtime",
+	"module-evm/try-runtime",
+	"module-evm-accounts/try-runtime",
+	"module-evm-bridge/try-runtime",
+	"module-evm-manager/try-runtime",
 	"serp-prices/try-runtime",
 	"serp-treasury/try-runtime",
 	"settmint-engine/try-runtime",

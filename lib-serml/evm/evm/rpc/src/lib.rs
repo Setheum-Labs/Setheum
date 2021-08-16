@@ -38,8 +38,8 @@ use std::convert::{TryFrom, TryInto};
 use std::{marker::PhantomData, sync::Arc};
 
 use call_request::{CallRequest, EstimateResourcesResponse};
-pub use setheum_evm::{ExitError, ExitReason};
-pub use setheum_evm_rpc_runtime_api::EVMRuntimeRPCApi;
+pub use module_evm::{ExitError, ExitReason};
+pub use module_evm_rpc_runtime_api::EVMRuntimeRPCApi;
 
 pub use crate::evm_api::{EVMApi as EVMApiT, EVMApiServer};
 

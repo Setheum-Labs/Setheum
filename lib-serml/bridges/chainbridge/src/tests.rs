@@ -62,7 +62,7 @@ fn register_resource_id_work() {
 			DNAR::get()
 		));
 		let register_event =
-			Event::setheum_chainbridge(crate::Event::RegisterResourceId(DNARResourceId::get(), DNAR::get()));
+			Event::SetheumChainBridge(crate::Event::RegisterResourceId(DNARResourceId::get(), DNAR::get()));
 		assert!(System::events().iter().any(|record| record.event == register_event));
 
 		assert_eq!(SetheumChainBridge::resource_ids(DNAR::get()), Some(DNARResourceId::get()));
@@ -102,7 +102,7 @@ fn remove_resource_id_work() {
 			DNARResourceId::get()
 		));
 		let unregister_event =
-			Event::setheum_chainbridge(crate::Event::UnregisterResourceId(DNARResourceId::get(), DNAR::get()));
+			Event::SetheumChainBridge(crate::Event::UnregisterResourceId(DNARResourceId::get(), DNAR::get()));
 		assert!(System::events().iter().any(|record| record.event == unregister_event));
 	});
 }

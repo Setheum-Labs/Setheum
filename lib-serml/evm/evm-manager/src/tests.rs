@@ -65,7 +65,7 @@ fn set_erc20_mapping_works() {
 				with_transaction_result(|| -> DispatchResult {
 					EvmCurrencyIdMapping::<Runtime>::set_erc20_mapping(erc20_address_not_exists())
 				}),
-				setheum_evm_bridge::Error::<Runtime>::InvalidReturnValue,
+				module_evm_bridge::Error::<Runtime>::InvalidReturnValue,
 			);
 		});
 }
@@ -101,7 +101,7 @@ fn name_works() {
 			}));
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::Token(TokenSymbol::DNAR)),
-				Some(b"Setheum".to_vec())
+				Some(b"Setheum Dinar".to_vec())
 			);
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::Erc20(erc20_address())),
@@ -115,7 +115,7 @@ fn name_works() {
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::USDJ))),
-				Some(b"LP Setheum - Setheum US Dollar".to_vec())
+				Some(b"LP Setheum Dinar - Setheum US Dollar".to_vec())
 			);
 
 			assert_eq!(

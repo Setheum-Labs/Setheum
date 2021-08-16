@@ -44,7 +44,7 @@ pub fn bob_account_id() -> AccountId {
 }
 
 runtime_benchmarks! {
-	{ Runtime, setheum_evm_accounts }
+	{ Runtime, module_evm_accounts }
 
 	claim_account {
 		let caller: AccountId = whitelisted_caller();
