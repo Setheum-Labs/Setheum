@@ -59,7 +59,7 @@ runtime_benchmarks! {
 	transfer_other_chain_token_to_bridge {
 		let sender: AccountId = account("sender", 0, SEED);
 		let resource_id: chainbridge::ResourceId = chainbridge::derive_resource_id(0, b"weth");
-		let currency_id: CurrencyId = CurrencyId::ChainBridge(resource_id);
+		let currency_id: CurrencyId = CurrencyId::ChainSafe(resource_id);
 		let dest_chain_id: chainbridge::ChainId = 0;
 
 		ChainBridge::whitelist_chain(RawOrigin::Root.into(), dest_chain_id)?;
@@ -95,7 +95,7 @@ runtime_benchmarks! {
 		let sender: AccountId = account("sender", 0, SEED);
 		let receiver: AccountId = account("receiver", 0, SEED);
 		let resource_id: chainbridge::ResourceId = chainbridge::derive_resource_id(0, b"weth");
-		let currency_id: CurrencyId = CurrencyId::ChainBridge(resource_id);
+		let currency_id: CurrencyId = CurrencyId::ChainSafe(resource_id);
 		let dest_chain_id: chainbridge::ChainId = 0;
 
 		ChainBridge::whitelist_chain(RawOrigin::Root.into(), dest_chain_id)?;

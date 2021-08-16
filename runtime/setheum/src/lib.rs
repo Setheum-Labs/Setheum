@@ -1102,7 +1102,7 @@ parameter_type_with_key! {
 				}
 			},
 			CurrencyId::Erc20(_) => Balance::max_value(), // not handled by orml-tokens
-			CurrencyId::ChainBridge(_) => Balance::max_value(), // TODO: update this before we enable ChainBridge
+			CurrencyId::ChainSafe(_) => Balance::max_value(), // TODO: update this before we enable ChainBridge
 		}
 	};
 }
