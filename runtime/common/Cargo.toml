@@ -25,7 +25,7 @@ orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
 orml-traits = { path = "../../lib-openrml/traits", default-features = false }
 
 # local dependencies
-module-evm = { path = "../../lib-serml/evm/evm", default-features = false }
+setheum-evm = { path = "../../lib-serml/evm/evm", default-features = false }
 setheum-support = { path = "../../lib-serml/support", default-features = false }
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }

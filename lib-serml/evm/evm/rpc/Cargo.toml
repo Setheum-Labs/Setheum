@@ -22,8 +22,8 @@ sp-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sp-storage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
-module-evm-rpc-runtime-api = { path = "runtime_api" }
-module-evm = { path = ".." }
+setheum-evm-rpc-runtime-api = { path = "runtime_api" }
+setheum-evm = { path = ".." }
 
 [dev-dependencies]
 serde_json = "1.0.64"

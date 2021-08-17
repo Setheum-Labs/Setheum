@@ -27,7 +27,7 @@ use frame_support::{
 		Currency, IsType, OriginTrait,
 	},
 };
-use module_evm::{Context, ExitError, ExitSucceed, Precompile};
+use setheum_evm::{Context, ExitError, ExitSucceed, Precompile};
 use setheum_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, TransactionPayment};
 use primitives::{Balance, BlockNumber};
 use sp_core::{H160, U256};
@@ -94,9 +94,9 @@ pub enum Action {
 }
 
 type PalletBalanceOf<T> =
-	<<T as module_evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	<<T as setheum_evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 type NegativeImbalanceOf<T> =
-	<<T as module_evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance;
+	<<T as setheum_evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance;
 
 impl<
 		AccountId,
@@ -125,11 +125,11 @@ impl<
 	CurrencyIdMapping: CurrencyIdMappingT,
 	Scheduler: ScheduleNamed<BlockNumber, Call, PalletsOrigin, Address = TaskAddress<BlockNumber>>,
 	ChargeTransactionPayment: TransactionPayment<AccountId, PalletBalanceOf<Runtime>, NegativeImbalanceOf<Runtime>>,
-	Call: Dispatchable<Origin = Origin> + Debug + From<module_evm::Call<Runtime>>,
+	Call: Dispatchable<Origin = Origin> + Debug + From<setheum_evm::Call<Runtime>>,
 	Origin: IsType<<Runtime as frame_system::Config>::Origin>
 		+ OriginTrait<AccountId = AccountId, PalletsOrigin = PalletsOrigin>,
 	PalletsOrigin: Into<<Runtime as frame_system::Config>::Origin> + From<frame_system::RawOrigin<AccountId>> + Clone,
-	Runtime: module_evm::Config + frame_system::Config<AccountId = AccountId>,
+	Runtime: setheum_evm::Config + frame_system::Config<AccountId = AccountId>,
 	PalletBalanceOf<Runtime>: IsType<Balance>,
 {
 	fn execute(
@@ -175,14 +175,14 @@ impl<
 					// reserve the transaction fee for gas_limit
 					use sp_runtime::traits::Convert;
 					let from_account = AddressMapping::get_account_id(&from);
-					let weight = <Runtime as module_evm::Config>::GasToWeight::convert(gas_limit);
+					let weight = <Runtime as setheum_evm::Config>::GasToWeight::convert(gas_limit);
 					_fee = ChargeTransactionPayment::reserve_fee(&from_account, weight).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
 				}
 
-				let call = module_evm::Call::<Runtime>::scheduled_call(
+				let call = setheum_evm::Call::<Runtime>::scheduled_call(
 					from,
 					target,
 					input_data,

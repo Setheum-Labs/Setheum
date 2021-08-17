@@ -170,7 +170,7 @@ ord_parameter_types! {
 	pub const DeploymentFee: u64 = 200;
 }
 
-impl module_evm::Config for Runtime {
+impl setheum_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = PalletBalances;
 	type TransferAll = ();
@@ -194,7 +194,7 @@ impl module_evm::Config for Runtime {
 	type WeightInfo = ();
 }
 
-impl module_evm_bridge::Config for Runtime {
+impl setheum_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
@@ -412,7 +412,7 @@ impl Config for Runtime {
 pub type NativeCurrency = Currency<Runtime, GetNativeCurrencyId>;
 pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Runtime, PalletBalances, i64, u64>;
 
-pub type SignedExtra = module_evm::SetEvmOrigin<Runtime>;
+pub type SignedExtra = setheum_evm::SetEvmOrigin<Runtime>;
 
 pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
 pub type UncheckedExtrinsic = sp_runtime::generic::UncheckedExtrinsic<u32, Call, u32, SignedExtra>;
@@ -426,8 +426,8 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: module_evm_bridge::{Pallet},
+		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
+		EVMBridge: setheum_evm_bridge::{Pallet},
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
 		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 		OrmlCurrencies: orml_currencies::{Pallet, Call, Event<T>},
@@ -475,7 +475,7 @@ pub fn deploy_contracts() {
 		10000
 	));
 
-	let event = Event::EVM(module_evm::Event::Created(erc20_address()));
+	let event = Event::EVM(setheum_evm::Event::Created(erc20_address()));
 	assert_eq!(System::events().iter().last().unwrap().event, event);
 
 	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
@@ -533,7 +533,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		module_evm::GenesisConfig::<Runtime>::default()
+		setheum_evm::GenesisConfig::<Runtime>::default()
 			.assimilate_storage(&mut t)
 			.unwrap();
 

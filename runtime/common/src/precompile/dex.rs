@@ -18,7 +18,7 @@
 
 use super::input::{Input, InputT};
 use frame_support::log;
-use module_evm::{Context, ExitError, ExitSucceed, Precompile};
+use setheum_evm::{Context, ExitError, ExitSucceed, Precompile};
 use setheum_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, DEXManager};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use primitives::{Balance, CurrencyId};
