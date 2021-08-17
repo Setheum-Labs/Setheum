@@ -61,8 +61,8 @@ orml-oracle-rpc = { path = "../../lib-openrml/oracle/rpc" }
 
 # local dependencies
 setheum-renvm-bridge = { path = "../../lib-serml/bridges/renvm-bridge" }
-module-evm = { path = "../../lib-serml/evm/evm" }
-module-evm-rpc-runtime-api = { path = "../../lib-serml/evm/evm/rpc/runtime_api" }
+setheum-evm = { path = "../../lib-serml/evm/evm" }
+setheum-evm-rpc-runtime-api = { path = "../../lib-serml/evm/evm/rpc/runtime_api" }
 setheum-rpc = { path = "../../rpc" }
 setheum-nft = { path = "../../lib-serml/tokens/nft" }
 setheum-primitives = { path = "../../primitives" }

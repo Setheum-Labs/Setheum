@@ -25,7 +25,7 @@ use sp_std::{
 	vec::Vec,
 };
 
-use module_evm::ExitError;
+use setheum_evm::ExitError;
 use setheum_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_core::H160;

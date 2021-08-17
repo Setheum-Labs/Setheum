@@ -187,9 +187,9 @@ Test all native code:
 SKIP_WASM_BUILD= cargo test --features with-newrome-runtime --all
 ```
 
-### Test module-evm (SEVM Testnet)
+### Test setheum-evm (SEVM Testnet)
 ```bash
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility test_module_evm
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility test_setheum_evm
 SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility should_not_kill_contract_on_transfer_all
 SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_work
 SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_handle_invalid_input
@@ -208,7 +208,7 @@ cargo test --features runtime-benchmarks --features with-all-runtime --features 
 ### Test All - Runtimes, SEVM, Benchmarking (Testnet + Mainnet)
 ```bash
 SKIP_WASM_BUILD= cargo test --all --features with-all-runtime
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility test_module_evm
+SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility test_setheum_evm
 SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility should_not_kill_contract_on_transfer_all
 SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_work
 SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_handle_invalid_input

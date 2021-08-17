@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use frame_support::log;
-use module_evm::{Context, ExitError, ExitSucceed, Precompile};
+use setheum_evm::{Context, ExitError, ExitSucceed, Precompile};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use sp_core::U256;
 use sp_runtime::RuntimeDebug;

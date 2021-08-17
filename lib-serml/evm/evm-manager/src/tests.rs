@@ -65,7 +65,7 @@ fn set_erc20_mapping_works() {
 				with_transaction_result(|| -> DispatchResult {
 					EvmCurrencyIdMapping::<Runtime>::set_erc20_mapping(erc20_address_not_exists())
 				}),
-				module_evm_bridge::Error::<Runtime>::InvalidReturnValue,
+				setheum_evm_bridge::Error::<Runtime>::InvalidReturnValue,
 			);
 		});
 }

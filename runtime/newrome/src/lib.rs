@@ -76,9 +76,9 @@ use sp_version::RuntimeVersion;
 
 use frame_system::{EnsureOneOf, EnsureRoot, RawOrigin};
 use setheum_currencies::{BasicCurrencyAdapter, Currency};
-use module_evm::{CallInfo, CreateInfo};
-use module_evm_accounts::EvmAddressMapping;
-use module_evm_manager::EvmCurrencyIdMapping;
+use setheum_evm::{CallInfo, CreateInfo};
+use setheum_evm_accounts::EvmAddressMapping;
+use setheum_evm_manager::EvmCurrencyIdMapping;
 use setheum_support::{, CashDropRate, CurrencyIdMapping, Rate, Ratio};
 use setheum_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use orml_tokens::CurrencyAdapter;
@@ -149,7 +149,6 @@ parameter_types! {
 	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 
@@ -159,8 +158,9 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		SettmintManagerPalletId::get().into_account(),
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
-		SettPayTreasuryPalletId::get().into_account(),
 		ZeroAccountId::get(),
+		OneAccountId::get(),
+		TwoAccountId::get(),
 	]
 }
 
@@ -212,8 +212,8 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = (
-		module_evm::CallKillAccount<Runtime>,
-		module_evm_accounts::CallKillAccount<Runtime>,
+		setheum_evm::CallKillAccount<Runtime>,
+		setheum_evm_accounts::CallKillAccount<Runtime>,
 	);
 	type DbWeight = RocksDbWeight;
 	type BaseCallFilter = ();
@@ -1042,6 +1042,8 @@ parameter_types! {
 	pub const MinimumCount: u32 = 1;
 	pub const ExpiresIn: Moment = 1000 * 60 * 60 * 2; // 2 hours
 	pub ZeroAccountId: AccountId = AccountId::from([0u8; 32]);
+	pub OneAccountId: AccountId = AccountId::from([1u8; 32]);
+	pub TwoAccountId: AccountId = AccountId::from([2u8; 32]);
 }
 
 type SetheumDataProvider = orml_oracle::Instance1;
@@ -1297,7 +1299,7 @@ where
 			frame_system::CheckNonce::<Runtime>::from(nonce),
 			frame_system::CheckWeight::<Runtime>::new(),
 			setheum_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-			module_evm::SetEvmOrigin::<Runtime>::new(),
+			setheum_evm::SetEvmOrigin::<Runtime>::new(),
 		);
 		let raw_payload = SignedPayload::new(call, extra)
 			.map_err(|e| {
@@ -1332,16 +1334,11 @@ parameter_types! {
 
 impl settmint_engine::Config for Runtime {
 	type Event = Event;
-	type PriceSource = SerpPrices;
-	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
-	type SerpTreasury = SerpTreasury;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type Dex = Dex;
-	type UnsignedPriority = runtime_common::SettmintEngineUnsignedPriority;
-	type WeightInfo = weights::settmint_engine::WeightInfo<Runtime>;
+	type ReserveCurrencyId = GetReserveCurrencyId;
+	type PriceSource = SerpPrices;
 }
 
 parameter_types! {
@@ -1392,26 +1389,59 @@ parameter_types! {
 	// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
 	pub const CharityFundAccount: AccountId = hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into();
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
-	// TODO: Update SerpTesSchedule to an updatable param in the storage map, under financial council
 	pub SerpTesSchedule: BlockNumber = 12 * MINUTES; // Triggers SERP-TES for serping Every 12 minutes.
+	pub CashDropPeriod: BlockNumber = 24 * HOURS; // Accumulates CashDrop for claiming - Every 24 hours.
 }
 
+// TODO: Update the `GetStableCurrencyMinimumSupply` for each currency to 25.8% of its `initial_supply`.
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETT => 10_000,
-			&AUDJ => 10_000,
-			&CHFJ => 10_000,
-			&EURJ => 10_000,
-			&GBPJ => 10_000,
-			&JPYJ => 10_000,
 			&USDJ => 10_000,
+			&EURJ => 10_000,
+			&JPYJ => 10_000,
+			&GBPJ => 10_000,
+			&AUDJ => 10_000,
+			&CADJ => 10_000,
+			&CHFJ => 10_000,
+			&SEKJ => 10_000,
+			&SGDJ => 10_000,
+			&SARJ => 10_000,
 			_ => 0,
 		}
 	};
 }
 
-// TODO: Update!
+pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
+	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
+];
+pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
+pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
+	USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
+];
+
+parameter_type_with_key! {
+	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&DNAR => 1,
+			&DRAM => 1,
+			&SETT => 1,
+			&USDJ => 1,
+			&EURJ => 1,
+			&JPYJ => 100,
+			&GBPJ => 1,
+			&AUDJ => 1,
+			&CADJ => 1,
+			&CHFJ => 1,
+			&SEKJ => 1,
+			&SGDJ => 1,
+			&SARJ => 1,
+			_ => 0,
+		}
+	};
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -1422,11 +1452,17 @@ impl serp_treasury::Config for Runtime {
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type CharityFundAcc = CharityFundAccount;
+	type CashDropPeriod = CashDropPeriod;
+	type SettPayTreasuryAccountId = OneAccountId;
+	type CashDropVaultAccountId = TwoAccountId;
+	type CharityFundAccountId = CharityFundAccount;
 	type Dex = Dex;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type PriceSource = SerpPrices;
+	type RewardableCurrencyIds = RewardableCurrencyIds;
+	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
+	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
+	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
@@ -1469,16 +1505,16 @@ impl Handler<AccountId> for EvmAccountsOnClaimHandler {
 	}
 }
 
-impl module_evm_accounts::Config for Runtime {
+impl setheum_evm_accounts::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type TransferAll = Currencies;
 	type OnClaim = EvmAccountsOnClaimHandler;
-	type WeightInfo = weights::module_evm_accounts::WeightInfo<Runtime>;
+	type WeightInfo = weights::setheum_evm_accounts::WeightInfo<Runtime>;
 }
 
-impl module_evm_manager::Config for Runtime {
+impl setheum_evm_manager::Config for Runtime {
 	type Currency = Balances;
 	type EVMBridge = EVMBridge;
 }
@@ -1610,7 +1646,7 @@ pub type DexPrecompile =
 	#[cfg(feature = "with-ethereum-compatibility")]
 static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
-impl module_evm::Config for Runtime {
+impl setheum_evm::Config for Runtime {
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type Currency = Balances;
 	type TransferAll = Currencies;
@@ -1636,7 +1672,7 @@ impl module_evm::Config for Runtime {
 	type DeploymentFee = DeploymentFee;
 	type TreasuryAccount = TreasuryAccount;
 	type FreeDeploymentOrigin = EnsureRootOrHalfGeneralCouncil; // TODO: When root is removed, change to `EnsureHalfSetheumJuryOrHalfGeneralCouncil`.
-	type WeightInfo = weights::module_evm::WeightInfo<Runtime>;
+	type WeightInfo = weights::setheum_evm::WeightInfo<Runtime>;
 
 	#[cfg(feature = "with-ethereum-compatibility")]
 	fn config() -> &'static evm::Config {
@@ -1644,7 +1680,7 @@ impl module_evm::Config for Runtime {
 	}
 }
 
-impl module_evm_bridge::Config for Runtime {
+impl setheum_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
@@ -1779,10 +1815,10 @@ construct_runtime!(
 
 		// Smart contracts
 		// Setheum EVM (SEVM)
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 49,
-		EVMBridge: module_evm_bridge::{Pallet} = 50,
-		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 51,
-		EvmManager: module_evm_manager::{Pallet, Storage} = 52,
+		EVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 49,
+		EVMBridge: setheum_evm_bridge::{Pallet} = 50,
+		EvmAccounts: setheum_evm_accounts::{Pallet, Call, Storage, Event<T>} = 51,
+		EvmManager: setheum_evm_manager::{Pallet, Storage} = 52,
 
 		// Bridges
 		// RenVmBridge: setheum_renvm_bridge::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned} = 53,
@@ -1988,7 +2024,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl module_evm_rpc_runtime_api::EVMRuntimeRPCApi<Block, Balance> for Runtime {
+	impl setheum_evm_rpc_runtime_api::EVMRuntimeRPCApi<Block, Balance> for Runtime {
 		fn call(
 			from: H160,
 			to: H160,
@@ -1999,14 +2035,14 @@ impl_runtime_apis! {
 			estimate: bool,
 		) -> Result<CallInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
-				let mut config = <Runtime as module_evm::Config>::config().clone();
+				let mut config = <Runtime as setheum_evm::Config>::config().clone();
 				config.estimate = true;
 				Some(config)
 			} else {
 				None
 			};
 
-			module_evm::Runner::<Runtime>::call(
+			setheum_evm::Runner::<Runtime>::call(
 				from,
 				from,
 				to,
@@ -2014,7 +2050,7 @@ impl_runtime_apis! {
 				value,
 				gas_limit,
 				storage_limit,
-				config.as_ref().unwrap_or(<Runtime as module_evm::Config>::config()),
+				config.as_ref().unwrap_or(<Runtime as setheum_evm::Config>::config()),
 			)
 		}
 
@@ -2027,20 +2063,20 @@ impl_runtime_apis! {
 			estimate: bool,
 		) -> Result<CreateInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
-				let mut config = <Runtime as module_evm::Config>::config().clone();
+				let mut config = <Runtime as setheum_evm::Config>::config().clone();
 				config.estimate = true;
 				Some(config)
 			} else {
 				None
 			};
 
-			module_evm::Runner::<Runtime>::create(
+			setheum_evm::Runner::<Runtime>::create(
 				from,
 				data,
 				value,
 				gas_limit,
 				storage_limit,
-				config.as_ref().unwrap_or(<Runtime as module_evm::Config>::config()),
+				config.as_ref().unwrap_or(<Runtime as setheum_evm::Config>::config()),
 			)
 		}
 
@@ -2049,7 +2085,7 @@ impl_runtime_apis! {
 				.map_err(|_| sp_runtime::DispatchError::Other("Invalid parameter extrinsic, decode failed"))?;
 
 			let request = match utx.function {
-				Call::EVM(module_evm::Call::call(to, data, value, gas_limit, storage_limit)) => {
+				Call::EVM(setheum_evm::Call::call(to, data, value, gas_limit, storage_limit)) => {
 					Some(EstimateResourcesRequest {
 						from: None,
 						to: Some(to),
@@ -2059,7 +2095,7 @@ impl_runtime_apis! {
 						data: Some(data),
 					})
 				}
-				Call::EVM(module_evm::Call::create(data, value, gas_limit, storage_limit)) => {
+				Call::EVM(setheum_evm::Call::create(data, value, gas_limit, storage_limit)) => {
 					Some(EstimateResourcesRequest {
 						from: None,
 						to: None,
@@ -2121,11 +2157,10 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_currencies, benchmarking::currencies);
 			orml_add_benchmark!(params, batches, dex, benchmarking::dex);
-			orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
-			orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
+			orml_add_benchmark!(params, batches, setheum_evm_accounts, benchmarking::evm_accounts);
+			orml_add_benchmark!(params, batches, setheum_evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
 			orml_add_benchmark!(params, batches, prices, benchmarking::prices);
-			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
 			orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, transaction_payment, benchmarking::transaction_payment);

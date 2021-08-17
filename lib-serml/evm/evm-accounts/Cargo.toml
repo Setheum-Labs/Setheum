@@ -1,5 +1,5 @@
 [package]
-name = "module-evm-accounts"
+name = "setheum-evm-accounts"
 version = "1.2.2"
 authors = ["Setheum Labs"]
 edition = "2018"

@@ -24,7 +24,7 @@ use frame_support::{
 	dispatch::{DispatchError, DispatchResult},
 	pallet_prelude::*,
 };
-use module_evm::{ExitReason, ExitSucceed};
+use setheum_evm::{ExitReason, ExitSucceed};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use primitive_types::H256;
 use sp_core::{H160, U256};

@@ -125,10 +125,6 @@ pub mod module {
 		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
 		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
 
-		/// The origin which may update parameters and handle
-		/// serplus/standard/reserve. Root can always do this.
-		type UpdateOrigin: EnsureOrigin<Self::Origin>;
-
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
 		type PalletId: Get<PalletId>;

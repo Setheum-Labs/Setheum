@@ -200,11 +200,11 @@ impl setheum_currencies::Config for Test {
 	type EVMBridge = EVMBridge;
 }
 
-impl module_evm_bridge::Config for Test {
+impl setheum_evm_bridge::Config for Test {
 	type EVM = ModuleEVM;
 }
 
-impl module_evm_manager::Config for Test {
+impl setheum_evm_manager::Config for Test {
 	type Currency = Balances;
 	type EVMBridge = EVMBridge;
 }
@@ -355,7 +355,7 @@ impl setheum_dex::Config for Test {
 
 pub type AdaptedBasicCurrency = setheum_currencies::BasicCurrencyAdapter<Test, Balances, Amount, BlockNumber>;
 
-pub type EvmCurrencyIdMapping = module_evm_manager::EvmCurrencyIdMapping<Test>;
+pub type EvmCurrencyIdMapping = setheum_evm_manager::EvmCurrencyIdMapping<Test>;
 pub type MultiCurrencyPrecompile =
 	crate::MultiCurrencyPrecompile<AccountId, MockAddressMapping, EvmCurrencyIdMapping, Currencies>;
 
@@ -399,7 +399,7 @@ impl Convert<u64, Weight> for GasToWeight {
 	}
 }
 
-impl module_evm::Config for Test {
+impl setheum_evm::Config for Test {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
 	type TransferAll = Currencies;
@@ -514,7 +514,7 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const EVA: AccountId = AccountId::new([5u8; 32]);
 
 pub fn alice() -> AccountId {
-	<Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr())
+	<Test as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr())
 }
 
 pub fn alice_evm_addr() -> EvmAddress {
@@ -522,7 +522,7 @@ pub fn alice_evm_addr() -> EvmAddress {
 }
 
 pub fn bob() -> AccountId {
-	<Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr())
+	<Test as setheum_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr())
 }
 
 pub fn bob_evm_addr() -> EvmAddress {
@@ -566,8 +566,8 @@ frame_support::construct_runtime!(
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Currencies: setheum_currencies::{Pallet, Call, Event<T>},
-		EVMBridge: module_evm_bridge::{Pallet},
-		EVMManager: module_evm_manager::{Pallet, Storage},
+		EVMBridge: setheum_evm_bridge::{Pallet},
+		EVMManager: setheum_evm_manager::{Pallet, Storage},
 		NFTModule: setheum_nft::{Pallet, Call, Event<T>},
 		TransactionPayment: setheum_transaction_payment::{Pallet, Call, Storage},
 		Prices: setheum_prices::{Pallet, Storage, Call, Event<T>},
@@ -575,7 +575,7 @@ frame_support::construct_runtime!(
 		Utility: pallet_utility::{Pallet, Call, Event},
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
 		DexModule: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
-		ModuleEVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
+		ModuleEVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
 	}
 );
 
@@ -590,7 +590,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 	accounts.insert(
 		alice_evm_addr(),
-		module_evm::GenesisAccount {
+		setheum_evm::GenesisAccount {
 			nonce: 1,
 			balance: INITIAL_BALANCE,
 			storage: Default::default(),
@@ -599,7 +599,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	);
 	accounts.insert(
 		bob_evm_addr(),
-		module_evm::GenesisAccount {
+		setheum_evm::GenesisAccount {
 			nonce: 1,
 			balance: INITIAL_BALANCE,
 			storage: Default::default(),
@@ -610,7 +610,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<Test>::default()
 		.assimilate_storage(&mut storage)
 		.unwrap();
-	module_evm::GenesisConfig::<Test> {
+	setheum_evm::GenesisConfig::<Test> {
 		accounts,
 		treasury: Default::default(),
 	}
