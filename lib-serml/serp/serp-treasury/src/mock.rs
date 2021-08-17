@@ -292,7 +292,6 @@ parameter_type_with_key! {
 	};
 }
 
-
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
@@ -329,7 +328,6 @@ impl Config for Runtime {
 	type NonStableDropCurrencyIds = StableCurrencyIds;
 	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }

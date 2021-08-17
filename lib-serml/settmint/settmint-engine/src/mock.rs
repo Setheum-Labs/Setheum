@@ -204,11 +204,57 @@ parameter_types! {
 	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
-	pub CharutyFundAcc: AccountId = CHARITY_FUND;
+	pub CharityFundAccountId: AccountId = CHARITY_FUND;
+	pub const SettPayTreasuryAccountId: AccountId = SETTPAY;
+	pub const CashDropVaultAccountId: AccountId = VAULT;
 
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
+	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+
+	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
+		DNAR,
+		DRAM,
+		SETT,
+ 		AUDJ,
+		CADJ,
+		CHFJ,
+		EURJ,
+		GBPJ,
+		JPYJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		USDJ,
+	];
+	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
+	pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
+ 		AUDJ,
+		CADJ,
+		CHFJ,
+		EURJ,
+		GBPJ,
+		JPYJ,
+ 		SARJ,
+ 		SEKJ,
+ 		SGDJ,
+		USDJ,
+	];
+}
+
+parameter_type_with_key! {
+	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETT => 2,
+			&AUDJ => 2,
+			&CHFJ => 2,
+			&EURJ => 2,
+			&GBPJ => 2,
+			&JPYJ => 2,
+			&USDJ => 2,
+			_ => 0,
+		}
+	};
 }
 
 parameter_type_with_key! {
@@ -236,11 +282,16 @@ impl serp_treasury::Config for Runtime {
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type CharityFundAcc = CharutyFundAcc;
+	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
+	type CashDropVaultAccountId = CashDropVaultAccountId;
+	type CharityFundAccountId = CharityFundAccountId;
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type PriceSource = MockPriceSource;
+	type RewardableCurrencyIds = RewardableCurrencyIds;
+	type NonStableDropCurrencyIds = StableCurrencyIds;
+	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
+	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }

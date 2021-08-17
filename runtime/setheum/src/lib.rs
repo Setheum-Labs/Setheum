@@ -149,7 +149,6 @@ parameter_types! {
 	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const SettPayTreasuryPalletId: PalletId = PalletId(*b"set/stpy");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 
@@ -159,8 +158,9 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		SettmintManagerPalletId::get().into_account(),
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
-		SettPayTreasuryPalletId::get().into_account(),
 		ZeroAccountId::get(),
+		OneAccountId::get(),
+		TwoAccountId::get(),
 	]
 }
 
@@ -1331,16 +1331,11 @@ parameter_types! {
 
 impl settmint_engine::Config for Runtime {
 	type Event = Event;
-	type PriceSource = SerpPrices;
-	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
-	type SerpTreasury = SerpTreasury;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type Dex = Dex;
-	type UnsignedPriority = runtime_common::SettmintEngineUnsignedPriority;
-	type WeightInfo = weights::settmint_engine::WeightInfo<Runtime>;
+	type ReserveCurrencyId = GetReserveCurrencyId;
+	type PriceSource = SerpPrices;
 }
 
 parameter_types! {
@@ -1390,25 +1385,59 @@ parameter_types! {
 	// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
 	pub const CharityFundAccount: AccountId = hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into();
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
-	// TODO: Update SerpTesSchedule to an updatable param in the storage map, under financial council
 	pub SerpTesSchedule: BlockNumber = 12 * MINUTES; // Triggers SERP-TES for serping Every 12 minutes.
+	pub CashDropPeriod: BlockNumber = 24 * HOURS; // Accumulates CashDrop for claiming - Every 24 hours.
 }
 
+// TODO: Update the `GetStableCurrencyMinimumSupply` for each currency to 25.8% of its `initial_supply`.
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETT => 10_000,
-			&AUDJ => 10_000,
-			&CHFJ => 10_000,
-			&EURJ => 10_000,
-			&GBPJ => 10_000,
-			&JPYJ => 10_000,
 			&USDJ => 10_000,
+			&EURJ => 10_000,
+			&JPYJ => 10_000,
+			&GBPJ => 10_000,
+			&AUDJ => 10_000,
+			&CADJ => 10_000,
+			&CHFJ => 10_000,
+			&SEKJ => 10_000,
+			&SGDJ => 10_000,
+			&SARJ => 10_000,
 			_ => 0,
 		}
 	};
 }
-// TODO: Update!
+
+pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
+	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
+];
+pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
+pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
+	USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
+];
+
+parameter_type_with_key! {
+	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&DNAR => 1,
+			&DRAM => 1,
+			&SETT => 1,
+			&USDJ => 1,
+			&EURJ => 1,
+			&JPYJ => 100,
+			&GBPJ => 1,
+			&AUDJ => 1,
+			&CADJ => 1,
+			&CHFJ => 1,
+			&SEKJ => 1,
+			&SGDJ => 1,
+			&SARJ => 1,
+			_ => 0,
+		}
+	};
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -1419,11 +1448,17 @@ impl serp_treasury::Config for Runtime {
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
-	type SettPayTreasuryAcc = SettPayTreasuryPalletId;
-	type CharityFundAcc = CharityFundAccount;
+	type CashDropPeriod = CashDropPeriod;
+	type SettPayTreasuryAccountId = OneAccountId;
+	type CashDropVaultAccountId = TwoAccountId;
+	type CharityFundAccountId = CharityFundAccount;
 	type Dex = Dex;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type PriceSource = SerpPrices;
+	type RewardableCurrencyIds = RewardableCurrencyIds;
+	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
+	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
+	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
@@ -2075,7 +2110,6 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
 			orml_add_benchmark!(params, batches, prices, benchmarking::prices);
-			// orml_add_benchmark!(params, batches, settmint_engine, benchmarking::settmint_engine);
 			orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, transaction_payment, benchmarking::transaction_payment);
