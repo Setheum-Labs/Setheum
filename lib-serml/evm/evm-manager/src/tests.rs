@@ -114,8 +114,8 @@ fn name_works() {
 			);
 
 			assert_eq!(
-				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::USDJ))),
-				Some(b"LP Setheum Dinar - Setheum US Dollar".to_vec())
+				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETT))),
+				Some(b"LP Setheum Dinar - Setter".to_vec())
 			);
 
 			assert_eq!(
@@ -293,7 +293,7 @@ fn encode_evm_address_works() {
 					DexShare::Token(TokenSymbol::DNAR),
 					DexShare::Token(TokenSymbol::USDJ)
 				)),
-				H160::from_str("0x0000000000000000000000010000000000000001").ok()
+				H160::from_str("0x0000000000000000000000010000000000000003").ok()
 			);
 
 			assert_eq!(
@@ -301,7 +301,7 @@ fn encode_evm_address_works() {
 					DexShare::Erc20(erc20_address()),
 					DexShare::Token(TokenSymbol::USDJ)
 				)),
-				H160::from_str("0x0000000000000000000000010200000000000001").ok()
+				H160::from_str("0x0000000000000000000000010200000000000003").ok()
 			);
 
 			assert_eq!(
@@ -309,7 +309,7 @@ fn encode_evm_address_works() {
 					DexShare::Token(TokenSymbol::USDJ),
 					DexShare::Erc20(erc20_address())
 				)),
-				H160::from_str("0x0000000000000000000000010000000102000000").ok()
+				H160::from_str("0x0000000000000000000000010000000302000000").ok()
 			);
 
 			assert_eq!(
