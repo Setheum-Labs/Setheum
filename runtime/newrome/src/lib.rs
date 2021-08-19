@@ -1417,7 +1417,7 @@ pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
 	DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 ];
 pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
+pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
 	USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 ];
 
@@ -1461,7 +1461,7 @@ impl serp_treasury::Config for Runtime {
 	type PriceSource = SerpPrices;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
-	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
+	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;

@@ -225,7 +225,7 @@ pub trait SerpTreasury<AccountId> {
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
 	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
-	/// get the minimum supply of a settcurrency - by key
+	/// get the minimum supply of a setcurrency - by key
 	fn get_minimum_supply(currency_id: Self::CurrencyId) -> Self::Balance;
 
 	/// issue standard to `who`
@@ -254,8 +254,8 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		path: Option<&[Self::CurrencyId]>,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
-	/// When SettCurrency needs SerpDown
-	fn swap_setter_to_exact_settcurrency(
+	/// When SetCurrency needs SerpDown
+	fn swap_setter_to_exact_setcurrency(
 		currency_id: Self::CurrencyId,
 		target_amount: Self::Balance,
 		path: Option<&[Self::CurrencyId]>,
@@ -267,8 +267,8 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		maybe_path: Option<&[Self::CurrencyId]>,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
-	/// When SettCurrency gets SerpUp
-	fn swap_exact_settcurrency_to_dinar(
+	/// When SetCurrency gets SerpUp
+	fn swap_exact_setcurrency_to_dinar(
 		currency_id: Self::CurrencyId,
 		supply_amount: Self::Balance,
 		maybe_path: Option<&[Self::CurrencyId]>,

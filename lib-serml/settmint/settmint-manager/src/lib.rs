@@ -59,7 +59,7 @@ pub mod module {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// Convert standard amount under specific standard type to standard
-		/// value(SettCurrency)
+		/// value(SetCurrency)
 		type Convert: Convert<(CurrencyId, Balance), Balance>;
 
 		/// Currency type for deposit/withdraw reserve assets 
@@ -152,7 +152,7 @@ impl<T: Config> Pallet<T> {
 		let setheum_account = Self::account_id();
 		let reserve_currency = T::GetReserveCurrencyId::get();
 
-		// ensure the currency is a settcurrency standard
+		// ensure the currency is a setcurrency standard
 		ensure!(
 			T::StandardCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidStandardType,

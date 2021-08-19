@@ -123,7 +123,7 @@ fn swap_exact_setter_to_dinar_work() {
 	});
 }
 #[test]
-fn swap_exact_settcurrency_to_dinar_work() {
+fn swap_exact_setcurrency_to_dinar_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Currencies::deposit(USDJ, &BOB, 10000));
 		assert_ok!(Currencies::deposit(DNAR, &BOB, 10000));
@@ -136,13 +136,13 @@ fn swap_exact_settcurrency_to_dinar_work() {
 			0,
 		));
 		assert_ok!(Currencies::deposit(USDJ, &SerpTreasuryModule::account_id(), 10000));
-		assert_ok!(SerpTreasuryModule::swap_exact_settcurrency_to_dinar(
+		assert_ok!(SerpTreasuryModule::swap_exact_setcurrency_to_dinar(
 			USDJ, 100, None
 		));
 		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 100);
 
 		assert_noop!(
-			SerpTreasuryModule::swap_exact_settcurrency_to_dinar(USDJ, 100, Some(&vec![USDJ, DNAR])),
+			SerpTreasuryModule::swap_exact_setcurrency_to_dinar(USDJ, 100, Some(&vec![USDJ, DNAR])),
 			Error::<Runtime>::InvalidSwapPath
 		);
 	});

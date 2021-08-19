@@ -327,7 +327,7 @@ parameter_types! {
 		USDJ,
 	];
 	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
+	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
  		AUDJ,
 		CADJ,
 		CHFJ,
@@ -391,7 +391,7 @@ impl serp_treasury::Config for Runtime {
 	type PriceSource = MockPriceSource;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = StableCurrencyIds;
-	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
+	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
