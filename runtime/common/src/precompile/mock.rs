@@ -150,7 +150,7 @@ impl pallet_balances::Config for Test {
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
 pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
 pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
@@ -241,8 +241,8 @@ impl orml_nft::Config for Test {
 
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
-	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![CurrencyId::Token(TokenSymbol::SETT)];
+	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![CurrencyId::Token(TokenSymbol::SETR)];
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
@@ -436,7 +436,7 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 }
 
 parameter_types! {
-	pub const SetterCurrencyId: CurrencyId = SETT; // Setter currency ticker is SETT.
+	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
 	pub const GetFiatAUDCurrencyId: CurrencyId = AUD; // The AUD Fiat currency denomination.
 	pub const GetFiatCADCurrencyId: CurrencyId = CAD; // The CAD Fiat currency denomination.
@@ -450,19 +450,19 @@ parameter_types! {
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::saturating_from_rational(1, 1);
 	
-	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegFourCurrencyId: CurrencyId = JOD; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegFiveCurrencyId: CurrencyId = BHD; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegSixCurrencyId: CurrencyId = KYD; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegSevenCurrencyId: CurrencyId = OMR; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegEightCurrencyId: CurrencyId = CHF; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegFourCurrencyId: CurrencyId = JOD; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegFiveCurrencyId: CurrencyId = BHD; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegSixCurrencyId: CurrencyId = KYD; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegSevenCurrencyId: CurrencyId = OMR; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegEightCurrencyId: CurrencyId = CHF; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETR).
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
+		SETR, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
 		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![

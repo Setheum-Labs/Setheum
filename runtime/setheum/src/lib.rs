@@ -108,7 +108,7 @@ pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights,
 	ExchangeRate, GasToWeight, OffchainSolutionWeightLimit, Price, Rate, Ratio,
 	RuntimeBlockLength, RuntimeBlockWeights,SystemContractsFilter, TimeStampedPrice, 
-	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
+	DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
 	USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP
 };
 mod authority;
@@ -949,7 +949,7 @@ parameter_types! {
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
 	pub MinimumDeposit: Balance = 100 * dollar();
 	pub GoldenMinimumDepositMultiple: u32 = 1; // 1x of the `MinimumDeposit` is minimum deposit for DNAR (1).
-	pub SetterMinimumDepositMultiple: u32 = 2; // 2x of the `MinimumDeposit` is minimum deposit for SETT (2).
+	pub SetterMinimumDepositMultiple: u32 = 2; // 2x of the `MinimumDeposit` is minimum deposit for SETR (2).
 	pub SilverMinimumDepositMultiple: u32 = 3; // 3x of the `MinimumDeposit` is minimum deposit for DRAM (3).
 	pub const EnactmentPeriod: BlockNumber = 28 * DAYS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
@@ -957,12 +957,12 @@ parameter_types! {
 	pub const MaxProposals: u32 = 100;
 	pub PreimageByteDeposit: Balance = cent(DNAR);
 	pub const InstantAllowed: bool = true;
-	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETT, DRAM];
+	pub const GovernanceCurrencyIds: Vec<CurrencyId> = vec![DNAR, SETR, DRAM];
 }
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
-	pub const SetterCurrencyId: CurrencyId = SETT;
+	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const DirhamCurrencyId: CurrencyId = DRAM;
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;
 	pub const GetFiatAUDCurrencyId: CurrencyId = AUD;
@@ -1077,7 +1077,7 @@ parameter_type_with_key! {
 				TokenSymbol::DNAR => Balance::max_value(), // unsupported
 				TokenSymbol::DRAM => Balance::max_value(*currency_id), // unsupported
 				
-				TokenSymbol::SETT => cent(*currency_id),
+				TokenSymbol::SETR => cent(*currency_id),
 				TokenSymbol::USDJ => cent(*currency_id),
 				TokenSymbol::EURJ => cent(*currency_id),
 				TokenSymbol::JPYJ => cent(*currency_id),
@@ -1124,19 +1124,19 @@ impl orml_tokens::Config for Runtime {
 parameter_types! {
 	pub FiatUsdFixedPrice: Price = Price::saturating_from_rational(1, 1);
 
-	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegFourCurrencyId: CurrencyId = JOD; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegFiveCurrencyId: CurrencyId = BHD; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegSixCurrencyId: CurrencyId = KYD; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegSevenCurrencyId: CurrencyId = OMR; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegEightCurrencyId: CurrencyId = CHF; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETT).
-	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETT).
+	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegFourCurrencyId: CurrencyId = JOD; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegFiveCurrencyId: CurrencyId = BHD; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegSixCurrencyId: CurrencyId = KYD; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegSevenCurrencyId: CurrencyId = OMR; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegEightCurrencyId: CurrencyId = CHF; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETR).
+	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETR).
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
+		SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 	];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
 		USD, EUR, JPY, GBP, AUD, CAD, CHF, SEK, SGD, SAR, KWD, JOD, BHD, KYD, OMR, GIP
@@ -1252,7 +1252,7 @@ parameter_types! {
 	pub StandardCurrencyIds: Vec<CurrencyId> = vec![
 		USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 	];
-	pub const GetReserveCurrencyId: CurrencyId = SETT;
+	pub const GetReserveCurrencyId: CurrencyId = SETR;
 }
 impl settmint_manager::Config for Runtime {
 	type Event = Event;
@@ -1324,9 +1324,9 @@ where
 }
 
 parameter_types! {
-	pub GetReserveCurrencyId: CurrencyId = SETT;
+	pub GetReserveCurrencyId: CurrencyId = SETR;
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
-	pub MinimumStandardValue: Balance = dollar(SETT);
+	pub MinimumStandardValue: Balance = dollar(SETR);
 }
 
 impl settmint_engine::Config for Runtime {
@@ -1352,21 +1352,21 @@ impl settmint_gateway::Config for Runtime {
 parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::new(SETT, DNAR),
-		TradingPair::new(SETT, DRAM),
+		TradingPair::new(SETR, DNAR),
+		TradingPair::new(SETR, DRAM),
 
-		TradingPair::new(SETT, USDJ),
-		TradingPair::new(SETT, EURJ),
-		TradingPair::new(SETT, JPYJ),
-		TradingPair::new(SETT, GBPJ),
-		TradingPair::new(SETT, AUDJ),
-		TradingPair::new(SETT, CADJ),
-		TradingPair::new(SETT, CHFJ),
-		TradingPair::new(SETT, SEKJ),
-		TradingPair::new(SETT, SGDJ),
-		TradingPair::new(SETT, SARJ),
+		TradingPair::new(SETR, USDJ),
+		TradingPair::new(SETR, EURJ),
+		TradingPair::new(SETR, JPYJ),
+		TradingPair::new(SETR, GBPJ),
+		TradingPair::new(SETR, AUDJ),
+		TradingPair::new(SETR, CADJ),
+		TradingPair::new(SETR, CHFJ),
+		TradingPair::new(SETR, SEKJ),
+		TradingPair::new(SETR, SGDJ),
+		TradingPair::new(SETR, SARJ),
 		
-		TradingPair::new(SETT, RENBTC),
+		TradingPair::new(SETR, RENBTC),
 	];
 }
 
@@ -1393,7 +1393,7 @@ parameter_types! {
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&SETT => 10_000,
+			&SETR => 10_000,
 			&USDJ => 10_000,
 			&EURJ => 10_000,
 			&JPYJ => 10_000,
@@ -1410,7 +1410,7 @@ parameter_type_with_key! {
 }
 
 pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
-	DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
+	DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ
 ];
 pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
 pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
@@ -1422,7 +1422,7 @@ parameter_type_with_key! {
 		match currency_id {
 			&DNAR => 1,
 			&DRAM => 1,
-			&SETT => 1,
+			&SETR => 1,
 			&USDJ => 1,
 			&EURJ => 1,
 			&JPYJ => 100,
@@ -1466,7 +1466,7 @@ impl serp_treasury::Config for Runtime {
 parameter_types! {
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
-		DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ, RENBTC
+		DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ, RENBTC
 	];
 }
 

@@ -23,7 +23,7 @@ use crate::precompile::{
 		dnar_evm_address, alice, alice_evm_addr, usdj_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
 		get_task_id, lp_dnar_usdj_evm_address, new_test_ext, renbtc_evm_address, run_to_block, Balances, DexModule,
 		DexPrecompile, Event as TestEvent, MultiCurrencyPrecompile, Oracle, OraclePrecompile, Origin, Price,
-		ScheduleCallPrecompile, System, Test, ALICE, USDJ, SETT, INITIAL_BALANCE, RENBTC,
+		ScheduleCallPrecompile, System, Test, ALICE, USDJ, SETR, INITIAL_BALANCE, RENBTC,
 	},
 	schedule_call::TaskInfo,
 };

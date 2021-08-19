@@ -207,13 +207,13 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for SettPay Cashdrops
 	fn get_cashdrop_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
-	/// Reward SETT cashdrop to vault
+	/// Reward SETR cashdrop to vault
 	fn setter_cashdrop_to_vault() -> DispatchResult;
 
 	/// Reward USDJ cashdrop to vault
 	fn usdj_cashdrop_to_vault() -> DispatchResult;
 
-	/// Trigger SERP-TES when required for Setter (SETT) to serp_down or serp_up.
+	/// Trigger SERP-TES when required for Setter (SETR) to serp_down or serp_up.
 	fn setter_on_tes() -> DispatchResult;
 
 	/// Trigger SERP-TES when required for USDJ to serp_down or serp_up.
@@ -240,7 +240,7 @@ pub trait SerpTreasury<AccountId> {
 	/// burn setter of `who`
 	fn burn_setter(who: &AccountId, setter: Self::Balance) -> DispatchResult;
 
-	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
+	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`

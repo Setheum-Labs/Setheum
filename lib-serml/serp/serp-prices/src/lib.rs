@@ -22,7 +22,7 @@
 //!
 //! The data from Oracle cannot be used in production, prices module will 
 //! do some process and feed prices for setheum, this includes constructing 
-//! the Setter (SETT) currency basket price. 
+//! the Setter (SETR) currency basket price. 
 //! Process include:
 //!   - specify a fixed price for stable currencies
 //!   - specify the Setter basket currency price
@@ -68,7 +68,7 @@ pub mod module {
 		type Source: DataProvider<CurrencyId, Price> + DataFeeder<CurrencyId, Price, Self::AccountId>;
 
 		#[pallet::constant]
-		/// The Setter currency id, it should be SETT in Setheum.
+		/// The Setter currency id, it should be SETR in Setheum.
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -470,7 +470,7 @@ fn lp_token_fair_price(
 		.map(Price::from_inner)
 }
 
-/// Get the price of a Setter (SETT basket coin - basket of currencies) -
+/// Get the price of a Setter (SETR basket coin - basket of currencies) -
 /// aggregate the setter price.
 /// the final price = total_price_of_basket(all currencies prices combined) -
 /// divided by the amount of currencies in the basket.

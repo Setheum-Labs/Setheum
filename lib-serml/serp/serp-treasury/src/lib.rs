@@ -70,7 +70,7 @@ pub mod module {
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// Setter (SETT) currency Stablecoin currency id
+		/// Setter (SETR) currency Stablecoin currency id
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -293,7 +293,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// Reward SETT cashdrop to vault
+	/// Reward SETR cashdrop to vault
 	fn setter_cashdrop_to_vault() -> DispatchResult {
 		let free_balance = T::Currency::free_balance(T::SetterCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
 
@@ -449,12 +449,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// Burn Reserve asset (Setter (SETT))
+	/// Burn Reserve asset (Setter (SETR))
 	fn burn_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::SetterCurrencyId::get(), who, setter)
 	}
 
-	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
+	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
 	fn deposit_setter(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::SetterCurrencyId::get(), from, &Self::account_id(), amount)
 	}

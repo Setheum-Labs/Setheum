@@ -43,7 +43,7 @@ pub const BLOCK_TIME: u64 = 1000;
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 
 /// The AccountId alias in this test module.
 pub(crate) type AccountId = u64;
@@ -195,7 +195,7 @@ pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, P
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
-	pub const SetterCurrencyId: CurrencyId = SETT;
+	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const DirhamCurrencyId: CurrencyId = DRAM;
 }
 impl orml_currencies::Config for Runtime {
