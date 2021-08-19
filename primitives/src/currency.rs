@@ -129,56 +129,56 @@ macro_rules! create_currency_id {
 
 			let mut lp_tokens = vec![
 				Token {
-					symbol: "LP_DNAR_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_DNAR_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_DRAM_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DRAM), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_DRAM_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DRAM), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_USDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(USDJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_USDJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(USDJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_EURJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(EURJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_EURJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(EURJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_JPYJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JPYJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_JPYJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(JPYJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_GBPJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(GBPJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_GBPJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(GBPJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_AUDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(AUDJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_AUDJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(AUDJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_CADJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(CADJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_CADJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(CADJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_CHFJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(CHFJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_CHFJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(CHFJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SEKJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SEKJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_SEKJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SEKJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SGDJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SGDJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_SGDJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SGDJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SARJ_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SARJ), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_SARJ_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SARJ), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
-					symbol: "LP_RENBTC_SETT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETT))).unwrap(),
+					symbol: "LP_RENBTC_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETR))).unwrap(),
 				},
 			];
 			tokens.append(&mut lp_tokens);
@@ -200,7 +200,7 @@ create_currency_id! {
 		/// Setheum Network
 		DNAR("Setheum Dinar", 12) = 0,
 		DRAM("Setheum Dirham", 12) = 1,
-		SETT("Setter", 12) = 2,
+		SETR("Setter", 12) = 2,
 		// SettCurrencies
 		USDJ("Setheum US Dollar", 12) = 3,
 		EURJ("Setheum Euro", 12) = 4,

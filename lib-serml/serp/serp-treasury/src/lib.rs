@@ -70,7 +70,7 @@ pub mod module {
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// Setter (SETT) currency Stablecoin currency id
+		/// Setter (SETR) currency Stablecoin currency id
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -104,7 +104,7 @@ pub mod module {
 		/// CharityFund account.
 		type CharityFundAccountId: Get<Self::AccountId>;
 
-		/// Dex manager is used to swap reserve asset (Setter) for propper (SettCurrency).
+		/// Dex manager is used to swap reserve asset (Setter) for propper (SetCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// The max slippage allowed when swap fee with DEX
@@ -120,7 +120,7 @@ pub mod module {
 		type NonStableDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The cashdrop currency ids that receive SettCurrencies.
-		type SettCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
+		type SetCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
 		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
@@ -253,7 +253,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				None,
 			)?;
 		} else {
-			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_settcurrency_to_dinar(
+			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
 				currency_id,
 				serping_amount,
 				None,
@@ -293,7 +293,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// Reward SETT cashdrop to vault
+	/// Reward SETR cashdrop to vault
 	fn setter_cashdrop_to_vault() -> DispatchResult {
 		let free_balance = T::Currency::free_balance(T::SetterCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
 
@@ -377,7 +377,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
-		// ensure that the currency is a SettCurrency
+		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>:: InvalidCurrencyType,
@@ -395,7 +395,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	// get the minimum supply of a settcurrency - by key
+	// get the minimum supply of a setcurrency - by key
 	fn get_minimum_supply(currency_id: CurrencyId) -> Balance {
 		T::GetStableCurrencyMinimumSupply::get(&currency_id)
 	}
@@ -405,7 +405,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	// TODO: Update to add the burning of the stablecoins!
 	//
 	fn on_serpdown(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
-		// ensure that the currency is a SettCurrency
+		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>:: InvalidCurrencyType,
@@ -424,7 +424,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				None,
 			)?;
 		} else {
-			<Self as SerpTreasuryExtended<T::AccountId>>::swap_setter_to_exact_settcurrency(
+			<Self as SerpTreasuryExtended<T::AccountId>>::swap_setter_to_exact_setcurrency(
 				currency_id,
 				amount,
 				None,
@@ -449,12 +449,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// Burn Reserve asset (Setter (SETT))
+	/// Burn Reserve asset (Setter (SETR))
 	fn burn_setter(who: &T::AccountId, setter: Self::Balance) -> DispatchResult {
 		T::Currency::withdraw(T::SetterCurrencyId::get(), who, setter)
 	}
 
-	/// deposit reserve asset (Setter (SETT)) to serp treasury by `who`
+	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
 	fn deposit_setter(from: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		T::Currency::transfer(T::SetterCurrencyId::get(), from, &Self::account_id(), amount)
 	}
@@ -497,7 +497,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		
 			T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, relative_cashdrop)?;
 			Self::deposit_event(Event::CashDropClaim(T::SetterCurrencyId::get(), who.clone(), relative_cashdrop.clone()));
-		} else if T::SettCurrencyDropCurrencyIds::get().contains(&currency_id) {
+		} else if T::SetCurrencyDropCurrencyIds::get().contains(&currency_id) {
 			
 			let balance_cashdrop_amount = transfer_amount / 50; // 4%
 			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
@@ -555,12 +555,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		)
 	}
 
-	/// Swap exact amount of Setter to SettCurrency,
-	/// return actual target SettCurrency amount
+	/// Swap exact amount of Setter to SetCurrency,
+	/// return actual target SetCurrency amount
 	///
 	/// 
-	/// When SettCurrency needs SerpDown
-	fn swap_setter_to_exact_settcurrency(
+	/// When SetCurrency needs SerpDown
+	fn swap_setter_to_exact_setcurrency(
 		currency_id: CurrencyId,
 		target_amount: Balance,
 		maybe_path: Option<&[CurrencyId]>,
@@ -648,7 +648,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	///
 	/// 
 	/// When Setter gets SerpUp
-	fn swap_exact_settcurrency_to_dinar(
+	fn swap_exact_setcurrency_to_dinar(
 		currency_id: CurrencyId,
 		supply_amount: Balance,
 		maybe_path: Option<&[CurrencyId]>,

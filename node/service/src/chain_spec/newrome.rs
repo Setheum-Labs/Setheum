@@ -237,7 +237,7 @@ fn testnet_genesis(
 		NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OrmlNFTConfig,
 		RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
+		DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -336,7 +336,7 @@ fn testnet_genesis(
 			endowed_accounts: endowed_accounts
 				.iter()
 				.flat_map(|x| vec![
-					(x.clone(), SETT, initial_balance),
+					(x.clone(), SETR, initial_balance),
 					(x.clone(), USDJ, initial_balance),
 					(x.clone(), EURJ, initial_balance),
 					(x.clone(), JPYJ, initial_balance),
@@ -361,18 +361,18 @@ fn testnet_genesis(
 			initial_added_liquidity_pools: vec![(
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				vec![
-					(TradingPair::new(SETT, DNAR), (1_000_000u128, 2_000_000u128)),
-					(TradingPair::new(SETT, MENA), (1_000_000u128, 2_000_000u128)),
-					(TradingPair::new(SETT, USDJ), (1_000_000u128, 1_606_750u128)),
-					(TradingPair::new(SETT, EURJ), (1_000_000u128, 1_365_737u128)),
-					(TradingPair::new(SETT, JPYJ), (1_000_000u128, 1_767_103u128)),
-					(TradingPair::new(SETT, GBPJ), (1_000_000u128, 1_156_860u128)),
-					(TradingPair::new(SETT, AUDJ), (1_000_000u128, 2_153_045u128)),
-					(TradingPair::new(SETT, CADJ), (1_000_000u128, 2_008_437u128)),
-					(TradingPair::new(SETT, CHFJ), (1_000_000u128, 1_462_142u128)),
-					(TradingPair::new(SETT, SEKJ), (1_000_000u128, 13_850_185u128)),
-					(TradingPair::new(SETT, SGDJ), (1_000_000u128, 2_169_112u128)),
-					(TradingPair::new(SETT, SARJ), (1_000_000u128, 6_025_312u128)),
+					(TradingPair::new(SETR, DNAR), (1_000_000u128, 2_000_000u128)),
+					(TradingPair::new(SETR, MENA), (1_000_000u128, 2_000_000u128)),
+					(TradingPair::new(SETR, USDJ), (1_000_000u128, 1_606_750u128)),
+					(TradingPair::new(SETR, EURJ), (1_000_000u128, 1_365_737u128)),
+					(TradingPair::new(SETR, JPYJ), (1_000_000u128, 1_767_103u128)),
+					(TradingPair::new(SETR, GBPJ), (1_000_000u128, 1_156_860u128)),
+					(TradingPair::new(SETR, AUDJ), (1_000_000u128, 2_153_045u128)),
+					(TradingPair::new(SETR, CADJ), (1_000_000u128, 2_008_437u128)),
+					(TradingPair::new(SETR, CHFJ), (1_000_000u128, 1_462_142u128)),
+					(TradingPair::new(SETR, SEKJ), (1_000_000u128, 13_850_185u128)),
+					(TradingPair::new(SETR, SGDJ), (1_000_000u128, 2_169_112u128)),
+					(TradingPair::new(SETR, SARJ), (1_000_000u128, 6_025_312u128)),
 				],
 			)],
 		},
@@ -404,7 +404,7 @@ fn newrome_genesis(
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
 		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		DNAR, DRAM, SETT, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
+		DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -501,7 +501,7 @@ fn newrome_genesis(
 		pallet_treasury: Some(Default::default()),
 		orml_tokens: Some(TokensConfig {
 			endowed_accounts: vec![
-				(root_key.clone(), SETT, initial_balance),
+				(root_key.clone(), SETR, initial_balance),
 				(root_key.clone(), USDJ, initial_balance),
 				(root_key.clone(), EURJ, initial_balance),
 				(root_key.clone(), JPYJ, initial_balance),
@@ -536,7 +536,7 @@ fn newrome_genesis(
 				let dnar_airdrop_accounts_json = &include_bytes!("../../../../resources/newrome-airdrop-DNAR.json")[..];
 				let dnar_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(dnar_airdrop_accounts_json).unwrap();
-				let sett_airdrop_accounts_json = &include_bytes!("../../../../resources/newrome-airdrop-SETT.json")[..];
+				let sett_airdrop_accounts_json = &include_bytes!("../../../../resources/newrome-airdrop-SETR.json")[..];
 				let sett_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(sett_airdrop_accounts_json).unwrap();
 
@@ -546,7 +546,7 @@ fn newrome_genesis(
 					.chain(
 						sett_airdrop_accounts
 							.iter()
-							.map(|(account_id, sett_amount)| (account_id.clone(), AirDropCurrencyId::SETT, *sett_amount)),
+							.map(|(account_id, sett_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *sett_amount)),
 					)
 					.collect::<Vec<_>>()
 			},

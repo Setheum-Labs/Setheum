@@ -228,7 +228,7 @@ pub mod module {
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 
-		/// Setter currency id, should be SETT
+		/// Setter currency id, should be SETR
 		#[pallet::constant]
 		type SetterCurrencyId: Get<CurrencyId>;
 

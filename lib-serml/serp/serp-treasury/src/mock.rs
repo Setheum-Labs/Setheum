@@ -39,13 +39,13 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARITY_FUND: AccountId = 2;
-pub const SETTPAY: AccountId = 9;
+pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
 pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
 pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
@@ -144,17 +144,17 @@ parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(DNAR, SETT).unwrap(),
-		TradingPair::from_currency_ids(AUDJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(CADJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(CHFJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(EURJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(GBPJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(JPYJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(SARJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(SEKJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(SGDJ, SETT).unwrap(),
-		TradingPair::from_currency_ids(USDJ, SETT).unwrap(),
+		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
+		TradingPair::from_currency_ids(AUDJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(CADJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(CHFJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(EURJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(GBPJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(JPYJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(SARJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(SEKJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(SGDJ, SETR).unwrap(),
+		TradingPair::from_currency_ids(USDJ, SETR).unwrap(),
 		TradingPair::from_currency_ids(AUDJ, DNAR).unwrap(),
 		TradingPair::from_currency_ids(CADJ, DNAR).unwrap(),
 		TradingPair::from_currency_ids(CHFJ, DNAR).unwrap(),
@@ -222,7 +222,7 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETT,
+		SETR,
  		AUDJ,
 		CADJ,
 		CHFJ,
@@ -234,13 +234,13 @@ parameter_types! {
  		SGDJ,
 		USDJ,
 	];
-	pub const SetterCurrencyId: CurrencyId = SETT;  // Setter  currency ticker is SETT/
+	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
 	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;  // Setter  currency ticker is USDJ/
 	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
-	pub const SettPayTreasuryAccountId: AccountId = SETTPAY;
+	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
 	pub const CashDropVaultAccountId: AccountId = VAULT;
 
 	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
@@ -250,7 +250,7 @@ parameter_types! {
 	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
 		DNAR,
 		DRAM,
-		SETT,
+		SETR,
  		AUDJ,
 		CADJ,
 		CHFJ,
@@ -263,7 +263,7 @@ parameter_types! {
 		USDJ,
 	];
 	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SettCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
+	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
  		AUDJ,
 		CADJ,
 		CHFJ,
@@ -280,7 +280,7 @@ parameter_types! {
 parameter_type_with_key! {
 	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&SETT => 2,
+			&SETR => 2,
 			&AUDJ => 2,
 			&CHFJ => 2,
 			&EURJ => 2,
@@ -295,7 +295,7 @@ parameter_type_with_key! {
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&SETT => 10_000,
+			&SETR => 10_000,
 			&AUDJ => 10_000,
 			&CHFJ => 10_000,
 			&EURJ => 10_000,
@@ -326,7 +326,7 @@ impl Config for Runtime {
 	type PriceSource = MockPriceSource;
 	type RewardableCurrencyIds = RewardableCurrencyIds;
 	type NonStableDropCurrencyIds = StableCurrencyIds;
-	type SettCurrencyDropCurrencyIds = SettCurrencyDropCurrencyIds;
+	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -359,21 +359,21 @@ impl Default for ExtBuilder {
 		Self {
 			balances: vec![
 				(ALICE, USDJ, 1000),
-				(ALICE, SETT, 1000),
+				(ALICE, SETR, 1000),
 				(ALICE, DNAR, 1000),
 				(ALICE, DRAM, 1000),
 				(BOB, USDJ, 1000),
-				(BOB, SETT, 1000),
+				(BOB, SETR, 1000),
 				(BOB, DNAR, 1000),
 				(BOB, DRAM, 1000),
 				(CHARITY_FUND, USDJ, 1000),
-				(CHARITY_FUND, SETT, 1000),
+				(CHARITY_FUND, SETR, 1000),
 				(CHARITY_FUND, DNAR, 1000),
 				(CHARITY_FUND, DRAM, 1000),
-				(SETTPAY, USDJ, 1000),
-				(SETTPAY, SETT, 1000),
+				(SETRPAY, USDJ, 1000),
+				(SETRPAY, SETR, 1000),
 				(VAULT, USDJ, 1000),
-				(VAULT, SETT, 1000),
+				(VAULT, SETR, 1000),
 			],
 		}
 	}

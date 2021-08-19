@@ -22,7 +22,7 @@
 //!
 //! The data from Oracle cannot be used in production, prices module will 
 //! do some process and feed prices for setheum, this includes constructing 
-//! the Setter (SETT) currency basket price. 
+//! the Setter (SETR) currency basket price. 
 //! Process include:
 //!   - specify a fixed price for stable currencies
 //!   - specify the Setter basket currency price
@@ -68,7 +68,7 @@ pub mod module {
 		type Source: DataProvider<CurrencyId, Price> + DataFeeder<CurrencyId, Price, Self::AccountId>;
 
 		#[pallet::constant]
-		/// The Setter currency id, it should be SETT in Setheum.
+		/// The Setter currency id, it should be SETR in Setheum.
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -252,9 +252,9 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		}
 	}
 
-	/// get the exchange rate of a specific SettCurrency to USD
+	/// get the exchange rate of a specific SetCurrency to USD
 	/// Note: this returns the price for 1 basic unit
-	/// For the SERP TO USE WHEN STABILISING SettCurrency prices.
+	/// For the SERP TO USE WHEN STABILISING SetCurrency prices.
 	fn get_market_price(currency_id: CurrencyId) -> Option<Price>{
 		let maybe_feed_price = if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = match symbol_0 {
@@ -287,10 +287,10 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		}
 	}
 
-	/// get the exchange rate of a specific SettCurrency peg to USD
+	/// get the exchange rate of a specific SetCurrency peg to USD
 	/// Note: this returns the price for 1 basic unit
-	/// For the SERP TO USE WHEN STABILISING SettCurrency peg prices.
-	/// The settcurrency_id matching to its peg,
+	/// For the SERP TO USE WHEN STABILISING SetCurrency peg prices.
+	/// The setcurrency_id matching to its peg,
 	fn get_peg_price(currency_id: CurrencyId) -> Option<Price> {
 		let maybe_feed_price = if currency_id == T::SetterCurrencyId::get() {
 			Self::get_setter_price()
@@ -337,9 +337,9 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		}
 	}
 
-	/// get the exchange rate of a specific SettCurrency peg to USD
+	/// get the exchange rate of a specific SetCurrency peg to USD
 	/// Note: this returns the price for 1 basic unit
-	/// For the SERP TO USE WHEN STABILISING SettCurrency peg prices.
+	/// For the SERP TO USE WHEN STABILISING SetCurrency peg prices.
 	fn get_setter_price() -> Option<Price> {
 		if let (Some(price_a),
 			Some(price_b),
@@ -470,7 +470,7 @@ fn lp_token_fair_price(
 		.map(Price::from_inner)
 }
 
-/// Get the price of a Setter (SETT basket coin - basket of currencies) -
+/// Get the price of a Setter (SETR basket coin - basket of currencies) -
 /// aggregate the setter price.
 /// the final price = total_price_of_basket(all currencies prices combined) -
 /// divided by the amount of currencies in the basket.

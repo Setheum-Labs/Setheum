@@ -27,13 +27,13 @@ use frame_support::{
 };
 use mock::{
 	AccountId, BlockWeights, Call, Currencies, SetheumDEX, ExtBuilder, Origin, Runtime, TransactionPayment, DNAR, ALICE,
-	SETT, BOB, CHARLIE, DOT, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
+	SETR, BOB, CHARLIE, DOT, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
 };
 use orml_traits::MultiCurrency;
 use sp_runtime::{testing::TestXt, traits::One};
 
 const CALL: &<Runtime as frame_system::Config>::Call =
-	&Call::Currencies(setheum_currencies::Call::transfer(BOB, SETT, 12));
+	&Call::Currencies(setheum_currencies::Call::transfer(BOB, SETR, 12));
 
 const CALL2: &<Runtime as frame_system::Config>::Call =
 	&Call::Currencies(setheum_currencies::Call::transfer_native_currency(BOB, 12));
@@ -56,10 +56,10 @@ fn charges_fee_when_native_is_enough_but_cannot_keep_alive() {
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
 			ALICE,
-			SETT,
+			SETR,
 			fee.unique_saturated_into(),
 		));
-		assert_eq!(Currencies::free_balance(SETT, &ALICE), fee);
+		assert_eq!(Currencies::free_balance(SETR, &ALICE), fee);
 		assert_noop!(
 			ChargeTransactionPayment::<Runtime>::from(0).validate(&ALICE, CALL, &INFO, 23),
 			TransactionValidityError::Invalid(InvalidTransaction::Payment)
@@ -82,7 +82,7 @@ fn charges_fee_when_native_is_enough_but_cannot_keep_alive() {
 				.priority,
 			fee2.saturated_into::<u64>()
 		);
-		assert_eq!(Currencies::free_balance(SETT, &ALICE), Currencies::minimum_balance(DNAR));
+		assert_eq!(Currencies::free_balance(SETR, &ALICE), Currencies::minimum_balance(DNAR));
 	});
 }
 
@@ -198,21 +198,21 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 		.one_hundred_thousand_for_alice_n_charlie()
 		.build()
 		.execute_with(|| {
-			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(SETT, &ALICE, &BOB, 1000));
+			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(SETR, &ALICE, &BOB, 1000));
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 0);
-			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETT, &BOB), 1000);
+			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETR, &BOB), 1000);
 
 			// add liquidity to DEX
 			assert_ok!(SetheumDEX::add_liquidity(
 				Origin::signed(ALICE),
 				DNAR,
-				SETT,
+				SETR,
 				10000,
 				1000,
 				0,
 				false
 			));
-			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETT), (10000, 1000));
+			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETR), (10000, 1000));
 
 			let fee = 500 * 2 + 1000; // len * byte + weight
 			assert_eq!(
@@ -224,8 +224,8 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 			);
 
 			assert_eq!(Currencies::free_balance(DNAR, &BOB), Currencies::minimum_balance(DNAR));
-			assert_eq!(Currencies::free_balance(SETT, &BOB), 748);
-			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETT), (10000 - 2000 - 10, 1252));
+			assert_eq!(Currencies::free_balance(SETR, &BOB), 748);
+			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETR), (10000 - 2000 - 10, 1252));
 		});
 }
 
@@ -235,9 +235,9 @@ fn set_default_fee_token_work() {
 		assert_eq!(TransactionPayment::default_fee_currency_id(&ALICE), None);
 		assert_ok!(TransactionPayment::set_default_fee_token(
 			Origin::signed(ALICE),
-			Some(SETT)
+			Some(SETR)
 		));
-		assert_eq!(TransactionPayment::default_fee_currency_id(&ALICE), Some(SETT));
+		assert_eq!(TransactionPayment::default_fee_currency_id(&ALICE), Some(SETR));
 		assert_ok!(TransactionPayment::set_default_fee_token(Origin::signed(ALICE), None));
 		assert_eq!(TransactionPayment::default_fee_currency_id(&ALICE), None);
 	});
@@ -253,7 +253,7 @@ fn charge_fee_by_default_fee_token() {
 			assert_ok!(SetheumDEX::add_liquidity(
 				Origin::signed(ALICE),
 				DNAR,
-				SETT,
+				SETR,
 				10000,
 				1000,
 				0,
@@ -262,14 +262,14 @@ fn charge_fee_by_default_fee_token() {
 			assert_ok!(SetheumDEX::add_liquidity(
 				Origin::signed(ALICE),
 				DOT,
-				SETT,
+				SETR,
 				100,
 				1000,
 				0,
 				false
 			));
-			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETT), (10000, 1000));
-			assert_eq!(SetheumDEX::get_liquidity_pool(DOT, SETT), (100, 1000));
+			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETR), (10000, 1000));
+			assert_eq!(SetheumDEX::get_liquidity_pool(DOT, SETR), (100, 1000));
 			assert_ok!(TransactionPayment::set_default_fee_token(
 				Origin::signed(BOB),
 				Some(DOT)
@@ -277,7 +277,7 @@ fn charge_fee_by_default_fee_token() {
 			assert_eq!(TransactionPayment::default_fee_currency_id(&BOB), Some(DOT));
 			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(DOT, &ALICE, &BOB, 100));
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 0);
-			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETT, &BOB), 0);
+			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETR, &BOB), 0);
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DOT, &BOB), 100);
 
 			let fee = 500 * 2 + 1000; // len * byte + weight
@@ -290,10 +290,10 @@ fn charge_fee_by_default_fee_token() {
 			);
 
 			assert_eq!(Currencies::free_balance(DNAR, &BOB), Currencies::minimum_balance(DNAR));
-			assert_eq!(Currencies::free_balance(SETT, &BOB), 0);
+			assert_eq!(Currencies::free_balance(SETR, &BOB), 0);
 			assert_eq!(Currencies::free_balance(DOT, &BOB), 100 - 34);
-			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETT), (10000 - 2000 - 10, 1252));
-			assert_eq!(SetheumDEX::get_liquidity_pool(DOT, SETT), (100 + 34, 1000 - 252));
+			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETR), (10000 - 2000 - 10, 1252));
+			assert_eq!(SetheumDEX::get_liquidity_pool(DOT, SETR), (100 + 34, 1000 - 252));
 		});
 }
 

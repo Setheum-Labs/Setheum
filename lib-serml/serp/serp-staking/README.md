@@ -1,7 +1,7 @@
 # Staking Module
 
 Serp Staking supports multicurrency rewards, such that in Setheum, staking the 
-Dinar (DNAR) will reward the Dirham (DRAM) and the Setter (SETT).
+Dinar (DNAR) will reward the Dirham (DRAM) and the Setter (SETR).
 
 The Staking module is used to manage funds at stake by network maintainers.
 

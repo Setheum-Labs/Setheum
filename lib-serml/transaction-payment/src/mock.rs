@@ -44,7 +44,7 @@ pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SETT: CurrencyId = CurrencyId::Token(TokenSymbol::SETT);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
 
 parameter_types! {
@@ -152,8 +152,8 @@ parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETT, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETT, DOT).unwrap(),
+		TradingPair::from_currency_ids(SETR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETR, DOT).unwrap(),
 	];
 }
 
@@ -169,9 +169,9 @@ impl setheum_dex::Config for Runtime {
 }
 
 parameter_types! {
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![SETT, DOT];
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![SETR, DOT];
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
-	pub const SetterCurrencyId: CurrencyId = SETT;
+	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub static TransactionByteFee: u128 = 1;
 }
 
@@ -254,7 +254,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			balances: vec![(ALICE, SETT, 10000), (ALICE, DOT, 1000)],
+			balances: vec![(ALICE, SETR, 10000), (ALICE, DOT, 1000)],
 			base_weight: 0,
 			byte_fee: 2,
 			weight_to_fee: 1,

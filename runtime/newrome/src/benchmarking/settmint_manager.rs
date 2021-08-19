@@ -18,7 +18,7 @@
 
 use crate::{
 	dollar, SetheumOracle, AccountId, Amount, SettmintEngine, StandardCurrencyIds, CurrencyId, SettmintGateway, Indices, Price, Rate,
-	Ratio, Runtime, USDJ, SETT,
+	Ratio, Runtime, USDJ, SETR,
 };
 
 use super::utils::set_balance;
@@ -44,7 +44,7 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = Indices::unlookup(to);
-	}: _(RawOrigin::Signed(caller), SETT, to_lookup)
+	}: _(RawOrigin::Signed(caller), SETR, to_lookup)
 
 	unauthorize {
 		let caller: AccountId = account("caller", 0, SEED);
@@ -52,10 +52,10 @@ runtime_benchmarks! {
 		let to_lookup = Indices::unlookup(to);
 		SettmintGateway::authorize(
 			RawOrigin::Signed(caller.clone()).into(),
-			SETT,
+			SETR,
 			to_lookup.clone()
 		)?;
-	}: _(RawOrigin::Signed(caller), SETT, to_lookup)
+	}: _(RawOrigin::Signed(caller), SETR, to_lookup)
 
 	unauthorize_all {
 		let c in 0 .. StandardCurrencyIds::get().len().saturating_sub(1) as u32;

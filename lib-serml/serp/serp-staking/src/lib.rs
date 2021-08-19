@@ -842,8 +842,8 @@ pub mod pallet {
 		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
 		type MultiCurrency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		/// The Incentive reward type (SETT)
-		/// SETT in Setheum.
+		/// The Incentive reward type (SETR)
+		/// SETR in Setheum.
 		#[pallet::constant]
 		type SetterCurrencyId: Get<CurrencyId>;
 

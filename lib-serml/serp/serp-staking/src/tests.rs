@@ -2038,7 +2038,7 @@ fn reward_validator_slashing_validator_does_not_overflow() {
 		ErasValidatorReward::<Test>::insert(0, stake);
 		assert_ok!(Staking::payout_stakers(Origin::signed(1337), 11, 0));
 		assert_eq!(Tokens::total_balance(DRAM, &11), halved_stake * 2);
-		assert_eq!(Tokens::total_balance(SETT, &11), halved_stake * 2);
+		assert_eq!(Tokens::total_balance(SETR, &11), halved_stake * 2);
 
 		// Set staker
 		let _ = Balances::make_free_balance_be(&11, stake);
@@ -2949,8 +2949,8 @@ fn claim_reward_at_the_last_era_and_no_double_claim_and_invalid_claim() {
 
 		let init_balance_5 = Tokens::total_balance(DRAM, &5);
 		let init_balance_50 = Tokens::total_balance(DRAM, &50);
-		let init_balance_5 = Tokens::total_balance(SETT, &5);
-		let init_balance_50 = Tokens::total_balance(SETT, &50);
+		let init_balance_5 = Tokens::total_balance(SETR, &5);
+		let init_balance_50 = Tokens::total_balance(SETR, &50);
 
 		let part_for_10 = Perbill::from_rational::<u32>(1000, 1125);
 		let part_for_100 = Perbill::from_rational::<u32>(125, 1125);
@@ -2963,8 +2963,8 @@ fn claim_reward_at_the_last_era_and_no_double_claim_and_invalid_claim() {
 
 		MockPriceSource::set_relative_price(Some(Price::one()));
 		assert_eq!(
-			SerpPrices::get_relative_price(DRAM, SETT),
-			Some(Price::saturating_from_rational(1, 1)) // 1DRAM = 1SETT
+			SerpPrices::get_relative_price(DRAM, SETR),
+			Some(Price::saturating_from_rational(1, 1)) // 1DRAM = 1SETR
 		);
 
 		// Check state
@@ -3037,11 +3037,11 @@ fn claim_reward_at_the_last_era_and_no_double_claim_and_invalid_claim() {
 			init_balance_50 + part_for_50 * (halved_total_payout_1 + halved_total_payout_2),
 		);
 		assert_eq!(
-			Tokens::total_balance(SETT, &5),
+			Tokens::total_balance(SETR, &5),
 			init_balance_5 + part_for_5 * (halved_total_payout_1 + halved_total_payout_2),
 		);
 		assert_eq!(
-			Tokens::total_balance(SETT, &50),
+			Tokens::total_balance(SETR, &50),
 			init_balance_50 + part_for_50 * (halved_total_payout_1 + halved_total_payout_2),
 		);
 	});
@@ -3214,8 +3214,8 @@ fn test_payout_stakers() {
 
 		MockPriceSource::set_relative_price(Some(Price::one()));
 		assert_eq!(
-			PriceSource::get_relative_price(DRAM, SETT),
-			Some(Price::saturating_from_rational(1, 2)) // 1DRAM = 2SETT
+			PriceSource::get_relative_price(DRAM, SETR),
+			Some(Price::saturating_from_rational(1, 2)) // 1DRAM = 2SETR
 		);
 
 		// Create a validator:
@@ -3238,15 +3238,15 @@ fn test_payout_stakers() {
 		// Top 64 nominators of validator 11 automatically paid out, including the validator
 		// Validator payout goes to controller.
 		assert!(Tokens::free_balance(DRAM, &10) > balance);
-		assert!(Tokens::free_balance(SETT, &10) > balance);
+		assert!(Tokens::free_balance(SETR, &10) > balance);
 		for i in 36..100 {
 			assert!(Tokens::free_balance(DRAM, &(100 + i)) > balance + i as Balance);
-			assert!(Tokens::free_balance(SETT, &(100 + i)) > balance + i as Balance);
+			assert!(Tokens::free_balance(SETR, &(100 + i)) > balance + i as Balance);
 		}
 		// The bottom 36 do not
 		for i in 0..36 {
 			assert_eq!(Tokens::free_balance(DRAM, &(100 + i)), balance + i as Balance);
-			assert_eq!(Tokens::free_balance(SETT, &(100 + i)), balance + i as Balance);
+			assert_eq!(Tokens::free_balance(SETR, &(100 + i)), balance + i as Balance);
 		}
 
 		// We track rewards in `claimed_rewards` vec

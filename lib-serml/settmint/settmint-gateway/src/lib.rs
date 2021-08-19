@@ -120,7 +120,7 @@ pub mod module {
 		///   currency from Settmint.
 		/// - `standard_adjustment`: signed amount, positive means to issue some
 		///   amount of `currency_id` to caller according to the standard adjustment,
-		///   negative means caller will payback some amount of `currency_id` (standard settcurrency) to
+		///   negative means caller will payback some amount of `currency_id` (standard setcurrency) to
 		///   Settmint according to to the standard adjustment.
 		#[pallet::weight(<T as Config>::WeightInfo::adjust_position())]
 		#[transactional]

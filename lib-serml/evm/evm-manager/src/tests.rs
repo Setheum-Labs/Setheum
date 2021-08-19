@@ -114,7 +114,7 @@ fn name_works() {
 			);
 
 			assert_eq!(
-				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETT))),
+				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETR))),
 				Some(b"LP Setheum Dinar - Setter".to_vec())
 			);
 
