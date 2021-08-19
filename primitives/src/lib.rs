@@ -214,21 +214,3 @@ pub const H160_POSITION_DEXSHARE_RIGHT: Range<usize> = 16..20;
 pub const H160_POSITION_ERC20: Range<usize> = 0..20;
 pub const H160_PREFIX_TOKEN: [u8; 19] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
 pub const H160_PREFIX_DEXSHARE: [u8; 12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
-
-
-/// Combine data provided by operators
-pub trait CombineData<Key, TimestampedValue> {
-	/// Combine data provided by operators
-	fn combine_data(
-		key: &Key,
-		values: Vec<TimestampedValue>,
-		prev_value: TimestampedValue,
-	) -> TimestampedValue;
-}
-
-#[derive(Encode, Decode, RuntimeDebug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct TimestampedValue<Value: Ord + PartialOrd, Moment> {
-	pub value: Value,
-	pub timestamp: Moment,
-}
