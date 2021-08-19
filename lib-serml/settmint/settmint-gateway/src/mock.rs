@@ -339,7 +339,6 @@ impl settmint_engine::Config for Runtime {
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
 	type ReserveCurrencyId = GetReserveCurrencyId;
-	type PriceSource = MockPriceSource;
 }
 
 parameter_types! {

@@ -364,7 +364,6 @@ impl Config for Runtime {
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
 	type MinimumStandardValue = MinimumStandardValue;
 	type ReserveCurrencyId = GetReserveCurrencyId;
-	type PriceSource = MockPriceSource;
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;

@@ -72,9 +72,6 @@ pub mod module {
 		#[pallet::constant]
 		/// Setter (Valid Reserve) currency id
 		type ReserveCurrencyId: Get<CurrencyId>;
-
-		/// The price source of all types of currencies related to Settmint
-		type PriceSource: PriceProvider<CurrencyId>;
 	}
 
 	#[pallet::error]
