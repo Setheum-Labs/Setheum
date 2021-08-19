@@ -44,23 +44,19 @@ mod serp_prices {
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
-pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
-pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
-pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
-pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
-pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
-pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
-pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
+pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
+pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
+pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 
 // LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
-pub const LP_BTC_USDJ: CurrencyId =
-CurrencyId::DexShare(DexShare::Token(TokenSymbol::RENBTC), DexShare::Token(TokenSymbol::USDJ));
-pub const LP_USDJ_DRAM: CurrencyId =
-CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDJ), DexShare::Token(TokenSymbol::DRAM));
+pub const LP_BTC_SETUSD: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::RENBTC), DexShare::Token(TokenSymbol::SETUSD));
+pub const LP_SETUSD_DRAM: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DRAM));
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
 pub const AUD: CurrencyId = CurrencyId::Token(TokenSymbol::AUD);
@@ -114,7 +110,7 @@ pub struct MockDataProvider;
 impl DataProvider<CurrencyId, Price> for MockDataProvider {
 	fn get(currency_id: &CurrencyId) -> Option<Price> {
 		match *currency_id {
-			USDJ => Some(Price::saturating_from_rational(99, 100)),
+			SETUSD => Some(Price::saturating_from_rational(99, 100)),
 			BTC => Some(Price::saturating_from_integer(50000)),
 			DNAR => Some(Price::saturating_from_integer(100)),
 			DRAM => Some(Price::zero()),
@@ -133,7 +129,7 @@ pub struct MockDEX;
 impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
-			(USDJ, DNAR) => (10000, 200),
+			(SETUSD, DNAR) => (10000, 200),
 			_ => (0, 0),
 		}
 	}
@@ -224,7 +220,7 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
-	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
+	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD; // SettUSD currency ticker is SETUSD.
 	pub const GetFiatAUDCurrencyId: CurrencyId = AUD; // The AUD Fiat currency denomination.
 	pub const GetFiatCADCurrencyId: CurrencyId = CAD; // The CAD Fiat currency denomination.
 	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
@@ -249,14 +245,8 @@ parameter_types! {
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETR).
 	
 	
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR, AUDJ, CADJ, BTC, EURJ, GBPJ,
-		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
-	];
-	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
-		AUD, CAD, CHF, EUR, GBP, JPY, SAR, SEK,
-		SGD, USD, JOD, BHD, KYD, OMR, GIP
-	];
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SETUSD];
+	pub FiatCurrencyIds: Vec<CurrencyId> = vec![CHF, EUR, GBP, SAR, USD, JOD, BHD, KYD, OMR, GIP];
 }
 
 impl Config for Runtime {

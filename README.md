@@ -41,16 +41,11 @@ DRAM("Setheum Dirham", 12) = 1, // Staking Reward and Governance Token - System 
 
 #### The SettCurrencies - SERP Stablecoins
 ```
-		USDJ("Setheum US Dollar", 12) = 3,
-		EURJ("Setheum Euro", 12) = 4,
-		JPYJ("Setheum Japanese Yen", 12) = 5,
-		GBPJ("Setheum Pound Sterling", 12) = 6,
- 		AUDJ("Setheum Australian Dollar", 12) = 7,
-		CADJ("Setheum Canadian Dollar", 12) = 8,
-		CHFJ("Setheum Swiss Franc", 12) = 9,
-		SEKJ("Setheum Swedish Krona", 12) = 10,
- 		SGDJ("Setheum Singapore Dollar", 12) = 11,
- 		SARJ("Setheum Saudi Riyal", 12) = 12,
+		SETUSD("SetDollar", 12) = 3,
+		SETEUR("SetEuro", 12) = 4,
+		SETGBP("SetPound", 12) = 5,
+		SETCHF("SetFranc", 12) = 6,
+ 		SETSAR("SetRiyal", 12) = 7,
 ```
 
 1. The Setter - The Setter is a basket currency pegged to the Top 10 Strongest and most valuable currencies. It serves as the medium of Exchange and the Defacto stablecoin of the Setheum Ecosystem. All other Setheum system stablecoins orbit around the Setter (SETR) and the SettMint for minting Setheum Currencies (system stablecoins) accepts only the Setter as the Minting Reserve Asset. Only with the Setter (SETR) can a user participate in the DNAR Auctions to stabilize the price of the Setter, while the Setter is Auctioned to stabilize the price of all the other SettCurrencies (system stablecoins). It's the star that brightens many planets - 10 to be exact

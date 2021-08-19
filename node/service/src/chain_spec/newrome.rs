@@ -237,7 +237,7 @@ fn testnet_genesis(
 		NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OrmlNFTConfig,
 		RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
+		DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR RENBTC,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -337,16 +337,11 @@ fn testnet_genesis(
 				.iter()
 				.flat_map(|x| vec![
 					(x.clone(), SETR, initial_balance),
-					(x.clone(), USDJ, initial_balance),
-					(x.clone(), EURJ, initial_balance),
-					(x.clone(), JPYJ, initial_balance),
-					(x.clone(), GBPJ, initial_balance),
-					(x.clone(), AUDJ, initial_balance),
-					(x.clone(), CADJ, initial_balance),
-					(x.clone(), CHFJ, initial_balance),
-					(x.clone(), SEKJ, initial_balance),
-					(x.clone(), SGDJ, initial_balance),
-					(x.clone(), SARJ, initial_balance)
+					(x.clone(), SETUSD, initial_balance),
+					(x.clone(), SETEUR, initial_balance),
+					(x.clone(), SETGBP, initial_balance),
+					(x.clone(), SETCHF, initial_balance),
+					(x.clone(), SETSAR, initial_balance)
 				])
 				.collect(),
 		}),
@@ -363,16 +358,11 @@ fn testnet_genesis(
 				vec![
 					(TradingPair::new(SETR, DNAR), (1_000_000u128, 2_000_000u128)),
 					(TradingPair::new(SETR, MENA), (1_000_000u128, 2_000_000u128)),
-					(TradingPair::new(SETR, USDJ), (1_000_000u128, 1_606_750u128)),
-					(TradingPair::new(SETR, EURJ), (1_000_000u128, 1_365_737u128)),
-					(TradingPair::new(SETR, JPYJ), (1_000_000u128, 1_767_103u128)),
-					(TradingPair::new(SETR, GBPJ), (1_000_000u128, 1_156_860u128)),
-					(TradingPair::new(SETR, AUDJ), (1_000_000u128, 2_153_045u128)),
-					(TradingPair::new(SETR, CADJ), (1_000_000u128, 2_008_437u128)),
-					(TradingPair::new(SETR, CHFJ), (1_000_000u128, 1_462_142u128)),
-					(TradingPair::new(SETR, SEKJ), (1_000_000u128, 13_850_185u128)),
-					(TradingPair::new(SETR, SGDJ), (1_000_000u128, 2_169_112u128)),
-					(TradingPair::new(SETR, SARJ), (1_000_000u128, 6_025_312u128)),
+					(TradingPair::new(SETR, SETUSD), (1_000_000u128, 1_606_750u128)),
+					(TradingPair::new(SETR, SETEUR), (1_000_000u128, 1_365_737u128)),
+					(TradingPair::new(SETR, SETGBP), (1_000_000u128, 1_156_860u128)),
+					(TradingPair::new(SETR, SETCHF), (1_000_000u128, 1_462_142u128)),
+					(TradingPair::new(SETR, SETSAR), (1_000_000u128, 6_025_312u128)),
 				],
 			)],
 		},
@@ -404,7 +394,7 @@ fn newrome_genesis(
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
 		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
+		DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -502,16 +492,11 @@ fn newrome_genesis(
 		orml_tokens: Some(TokensConfig {
 			endowed_accounts: vec![
 				(root_key.clone(), SETR, initial_balance),
-				(root_key.clone(), USDJ, initial_balance),
-				(root_key.clone(), EURJ, initial_balance),
-				(root_key.clone(), JPYJ, initial_balance),
-				(root_key.clone(), GBPJ, initial_balance),
-				(root_key.clone(), AUDJ, initial_balance),
-				(root_key.clone(), CADJ, initial_balance),
-				(root_key.clone(), CHFJ, initial_balance),
-				(root_key.clone(), SEKJ, initial_balance),
-				(root_key.clone(), SGDJ, initial_balance),
-				(root_key.clone(), SARJ, initial_balance)
+				(root_key.clone(), SETUSD, initial_balance),
+				(root_key.clone(), SETEUR, initial_balance),
+				(root_key.clone(), SETGBP, initial_balance),
+				(root_key.clone(), SETCHF, initial_balance),
+				(root_key.clone(), SETSAR, initial_balance)
 			],
 		}),
 		orml_vesting: Some(VestingConfig { vesting: vec![] }),

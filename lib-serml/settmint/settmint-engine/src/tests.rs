@@ -49,19 +49,19 @@ fn calculate_reserve_ratio_work() {
 fn adjust_position_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 1000);
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 0);
-		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 0);
-		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).reserve, 0);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 100, 50));
+		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 0);
+		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).standard, 0);
+		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).reserve, 0);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETUSD, 100, 50));
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 900);
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 50);
-		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 50);
-		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).reserve, 100);
-		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 0, 20).is_ok(), true);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, USDJ, 0, -20));
+		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 50);
+		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).standard, 50);
+		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).reserve, 100);
+		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, SETUSD, 0, 20).is_ok(), true);
+		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETUSD, 0, -20));
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 900);
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 50);
-		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).standard, 50);
-		assert_eq!(SettmintManagerModule::positions(USDJ, ALICE).reserve, 100);
+		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 50);
+		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).standard, 50);
+		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).reserve, 100);
 	});
 }

@@ -120,11 +120,11 @@ fn lp_token_fair_price_works() {
 fn get_peg_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpPrices::get_peg_price(USDJ),
+			SerpPrices::get_peg_price(SETUSD),
 			Price::saturating_from_integer(1000000u128)
 		); // 1 USD, right shift the decimal point (18-12) places
 		assert_eq!(
-			SerpPrices::get_peg_price(EURJ),
+			SerpPrices::get_peg_price(SETEUR),
 			Price::saturating_from_integer(1000000u128)
 		);
 	});
@@ -148,7 +148,7 @@ fn get_price_from_oracle() {
 fn get_price_of_stable_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SerpPrices::get_price(USDJ),
+			SerpPrices::get_price(SETUSD),
 			Some(Price::saturating_from_integer(990000u128))
 		); // 1 USD, right shift the decimal point (18-12) places
 	});
@@ -157,27 +157,27 @@ fn get_price_of_stable_currency_id() {
 #[test]
 fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(MockDEX::get_liquidity_pool(USDJ, DRAM), (10000, 200));
-		assert_eq!(SerpPrices::get_price(LP_USDJ_DRAM), None);
-		assert_ok!(Tokens::deposit(LP_USDJ_DRAM, &1, 100));
-		assert_eq!(Tokens::total_issuance(LP_USDJ_DRAM), 100);
+		assert_eq!(MockDEX::get_liquidity_pool(SETUSD, DRAM), (10000, 200));
+		assert_eq!(SerpPrices::get_price(LP_SETUSD_DRAM), None);
+		assert_ok!(Tokens::deposit(LP_SETUSD_DRAM, &1, 100));
+		assert_eq!(Tokens::total_issuance(LP_SETUSD_DRAM), 100);
 		assert_eq!(
-			SerpPrices::get_price(USDJ),
+			SerpPrices::get_price(SETUSD),
 			Some(Price::saturating_from_rational(1000000u128, 1))
 		);
 		assert_eq!(
-			SerpPrices::get_price(LP_USDJ_DRAM),
+			SerpPrices::get_price(LP_SETUSD_DRAM),
 			lp_token_fair_price(
-				Tokens::total_issuance(LP_USDJ_DRAM),
-				MockDEX::get_liquidity_pool(USDJ, DRAM).0,
-				MockDEX::get_liquidity_pool(USDJ, DRAM).1,
-				SerpPrices::get_price(USDJ).unwrap(),
+				Tokens::total_issuance(LP_SETUSD_DRAM),
+				MockDEX::get_liquidity_pool(SETUSD, DRAM).0,
+				MockDEX::get_liquidity_pool(SETUSD, DRAM).1,
+				SerpPrices::get_price(SETUSD).unwrap(),
 				SerpPrices::get_price(DRAM).unwrap()
 			)
 		);
 
-		assert_eq!(MockDEX::get_liquidity_pool(BTC, USDJ), (0, 0));
-		assert_eq!(SerpPrices::get_price(LP_BTC_USDJ), None);
+		assert_eq!(MockDEX::get_liquidity_pool(BTC, SETUSD), (0, 0));
+		assert_eq!(SerpPrices::get_price(LP_BTC_SETUSD), None);
 	});
 }
 
@@ -186,7 +186,7 @@ fn get_relative_price_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			SerpPrices::get_relative_price(BTC, DNAR),
-			Some(Price::saturating_from_rational(5000000, 1)) /* 1DNAR = 100USDJ, right shift the decimal point (12-10)
+			Some(Price::saturating_from_rational(5000000, 1)) /* 1DNAR = 100SETUSD, right shift the decimal point (12-10)
 			                                                 * places */
 		);
 	});

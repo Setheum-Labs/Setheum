@@ -45,16 +45,12 @@ pub type BlockNumber = u64;
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
-pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
-pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
-pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
-pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
-pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
-pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
-pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
-pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
+pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
+pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
+pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
+pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 
 parameter_types! {
@@ -116,7 +112,7 @@ impl tokens::Config for Runtime {
 }
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
@@ -212,26 +208,16 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
-		TradingPair::from_currency_ids(AUDJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(CADJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(CHFJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(EURJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(GBPJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(JPYJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(SARJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(SEKJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(SGDJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(USDJ, SETR).unwrap(),
-		TradingPair::from_currency_ids(AUDJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(CADJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(CHFJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(EURJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(GBPJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(JPYJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SARJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SEKJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SGDJ, DNAR).unwrap(),
-		TradingPair::from_currency_ids(USDJ, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETCHF, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETEUR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETGBP, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETSAR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETCHF, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETGBP, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETSAR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
 	];
 }
 
@@ -290,19 +276,14 @@ ord_parameter_types! {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
- 		AUDJ,
-		CADJ,
-		CHFJ,
-		EURJ,
-		GBPJ,
-		JPYJ,
- 		SARJ,
- 		SEKJ,
- 		SGDJ,
-		USDJ,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
 	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSettUSDCurrencyId: CurrencyId = USDJ;  // Setter  currency ticker is USDJ/
+	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
@@ -315,29 +296,19 @@ parameter_types! {
 		DNAR,
 		DRAM,
 		SETR,
- 		AUDJ,
-		CADJ,
-		CHFJ,
-		EURJ,
-		GBPJ,
-		JPYJ,
- 		SARJ,
- 		SEKJ,
- 		SGDJ,
-		USDJ,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
 	];
 	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
 	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
- 		AUDJ,
-		CADJ,
-		CHFJ,
-		EURJ,
-		GBPJ,
-		JPYJ,
- 		SARJ,
- 		SEKJ,
- 		SGDJ,
-		USDJ,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
 	];
 }
 
@@ -345,12 +316,11 @@ parameter_type_with_key! {
 	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETR => 2,
-			&AUDJ => 2,
-			&CHFJ => 2,
-			&EURJ => 2,
-			&GBPJ => 2,
-			&JPYJ => 2,
-			&USDJ => 2,
+			&SETCHF => 2,
+			&SETEUR => 2,
+			&SETGBP => 2,
+			&SETUSD => 2,
+			&SETSAR => 2,
 			_ => 0,
 		}
 	};
@@ -361,12 +331,11 @@ parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETR => 10_000,
-			&AUDJ => 10_000,
-			&CHFJ => 10_000,
-			&EURJ => 10_000,
-			&GBPJ => 10_000,
-			&JPYJ => 10_000,
-			&USDJ => 10_000,
+			&SETCHF => 10_000,
+			&SETEUR => 10_000,
+			&SETGBP => 10_000,
+			&SETUSD => 10_000,
+			&SETSAR => 10_000,
 			_ => 0,
 		}
 	};

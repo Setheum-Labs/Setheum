@@ -27,22 +27,22 @@ use mock::*;
 #[test]
 fn issue_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
+		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 1000);
 
-		assert_ok!(SerpTreasuryModule::issue_standard(USDJ, &ALICE, 1000));
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 2000);
+		assert_ok!(SerpTreasuryModule::issue_standard(SETUSD, &ALICE, 1000));
+		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 2000);
 
-		assert_ok!(SerpTreasuryModule::issue_standard(USDJ, &ALICE, 1000));
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 3000);
+		assert_ok!(SerpTreasuryModule::issue_standard(SETUSD, &ALICE, 1000));
+		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 3000);
 	});
 }
 
 #[test]
 fn burn_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 1000);
-		assert_ok!(SerpTreasuryModule::burn_standard(USDJ, &ALICE, 300));
-		assert_eq!(Currencies::free_balance(USDJ, &ALICE), 700);
+		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 1000);
+		assert_ok!(SerpTreasuryModule::burn_standard(SETUSD, &ALICE, 300));
+		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 700);
 	});
 }
 
@@ -125,24 +125,24 @@ fn swap_exact_setter_to_dinar_work() {
 #[test]
 fn swap_exact_setcurrency_to_dinar_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Currencies::deposit(USDJ, &BOB, 10000));
+		assert_ok!(Currencies::deposit(SETUSD, &BOB, 10000));
 		assert_ok!(Currencies::deposit(DNAR, &BOB, 10000));
 		assert_ok!(SetheumDEX::add_liquidity(
 			Origin::signed(BOB),
-			USDJ,
+			SETUSD,
 			DNAR,
 			1000,
 			1000,
 			0,
 		));
-		assert_ok!(Currencies::deposit(USDJ, &SerpTreasuryModule::account_id(), 10000));
+		assert_ok!(Currencies::deposit(SETUSD, &SerpTreasuryModule::account_id(), 10000));
 		assert_ok!(SerpTreasuryModule::swap_exact_setcurrency_to_dinar(
-			USDJ, 100, None
+			SETUSD, 100, None
 		));
-		assert_eq!(Currencies::free_balance(USDJ, &SerpTreasuryModule::account_id()), 100);
+		assert_eq!(Currencies::free_balance(SETUSD, &SerpTreasuryModule::account_id()), 100);
 
 		assert_noop!(
-			SerpTreasuryModule::swap_exact_setcurrency_to_dinar(USDJ, 100, Some(&vec![USDJ, DNAR])),
+			SerpTreasuryModule::swap_exact_setcurrency_to_dinar(SETUSD, 100, Some(&vec![SETUSD, DNAR])),
 			Error::<Runtime>::InvalidSwapPath
 		);
 	});

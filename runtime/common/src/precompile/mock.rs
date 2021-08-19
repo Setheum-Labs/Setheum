@@ -151,32 +151,22 @@ impl pallet_balances::Config for Test {
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const AUDJ: CurrencyId = CurrencyId::Token(TokenSymbol::AUDJ);
-pub const CADJ: CurrencyId = CurrencyId::Token(TokenSymbol::CADJ);
-pub const CHFJ: CurrencyId = CurrencyId::Token(TokenSymbol::CHFJ);
-pub const EURJ: CurrencyId = CurrencyId::Token(TokenSymbol::EURJ);
-pub const GBPJ: CurrencyId = CurrencyId::Token(TokenSymbol::GBPJ);
-pub const JPYJ: CurrencyId = CurrencyId::Token(TokenSymbol::JPYJ);
-pub const SARJ: CurrencyId = CurrencyId::Token(TokenSymbol::SARJ);
-pub const SEKJ: CurrencyId = CurrencyId::Token(TokenSymbol::SEKJ);
-pub const SGDJ: CurrencyId = CurrencyId::Token(TokenSymbol::SGDJ);
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
+pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
+pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
+pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
+pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
-pub const LP_DNAR_USDJ: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::USDJ));
+pub const LP_DNAR_SETUSD: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETUSD));
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
-pub const BRL: CurrencyId = CurrencyId::Token(TokenSymbol::BRL);
-pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
 pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
 pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
 pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
-pub const JPY: CurrencyId = CurrencyId::Token(TokenSymbol::JPY);
-pub const QAR: CurrencyId = CurrencyId::Token(TokenSymbol::QAR);
 pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
-pub const SEK: CurrencyId = CurrencyId::Token(TokenSymbol::SEK);
-pub const SGD: CurrencyId = CurrencyId::Token(TokenSymbol::SGD);
 pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
 pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
 pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
@@ -437,7 +427,7 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
-	pub const GetSettUSDCurrencyId: CurrencyId = USDJ; // SettUSD currency ticker is USDJ.
+	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD; // SettUSD currency ticker is SETUSD.
 	pub const GetFiatAUDCurrencyId: CurrencyId = AUD; // The AUD Fiat currency denomination.
 	pub const GetFiatCADCurrencyId: CurrencyId = CAD; // The CAD Fiat currency denomination.
 	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
@@ -461,14 +451,8 @@ parameter_types! {
 	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETR).
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETR).
 	
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR, AUDJ, CADJ, CHFJ, EURJ, GBPJ,
-		JPYJ, SARJ, SEKJ, SGDJ, USDJ,
-	];
-	pub FiatCurrencyIds: Vec<CurrencyId> = vec![
-		AUD, CAD, CHF, EUR, GBP, JPY, QAR, SAR,
-		SEK, SGD, USD, JOD, BHD, KYD, OMR, GIP
-	];
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SETUSD];
+	pub FiatCurrencyIds: Vec<CurrencyId> = vec![CHF, EUR, GBP, JPY, QAR, SAR, USD, JOD, BHD, KYD, OMR, GIP];
 }
 
 ord_parameter_types! {
@@ -534,7 +518,7 @@ pub fn dnar_evm_address() -> EvmAddress {
 }
 
 pub fn usdj_evm_address() -> EvmAddress {
-	EvmAddress::try_from(USDJ).unwrap()
+	EvmAddress::try_from(SETUSD).unwrap()
 }
 
 pub fn renbtc_evm_address() -> EvmAddress {
@@ -542,7 +526,7 @@ pub fn renbtc_evm_address() -> EvmAddress {
 }
 
 pub fn lp_dnar_usdj_evm_address() -> EvmAddress {
-	EvmAddress::try_from(LP_DNAR_USDJ).unwrap()
+	EvmAddress::try_from(LP_DNAR_SETUSD).unwrap()
 }
 
 pub fn erc20_address_not_exists() -> EvmAddress {
@@ -628,7 +612,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 			RENBTC,
 			1_000_000_000_000
 		));
-		assert_ok!(Currencies::update_balance(Origin::root(), ALICE, USDJ, 1_000_000_000));
+		assert_ok!(Currencies::update_balance(Origin::root(), ALICE, SETUSD, 1_000_000_000));
 
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),

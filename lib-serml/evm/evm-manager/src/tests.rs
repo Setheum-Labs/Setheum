@@ -119,7 +119,7 @@ fn name_works() {
 			);
 
 			assert_eq!(
-				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Erc20(erc20_address()), DexShare::Token(TokenSymbol::USDJ))),
+				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Erc20(erc20_address()), DexShare::Token(TokenSymbol::SETUSD))),
 				Some(b"LP long string name, long string name, long string name, long string name, long string name - Setheum US Dollar"[..32].to_vec())
 			);
 
@@ -167,17 +167,17 @@ fn symbol_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::symbol(CurrencyId::DexShare(
 					DexShare::Token(TokenSymbol::DNAR),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::SETUSD)
 				)),
-				Some(b"LP_DNAR_USDJ".to_vec())
+				Some(b"LP_DNAR_SETUSD".to_vec())
 			);
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::symbol(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::SETUSD)
 				)),
-				Some(b"LP_TestToken_USDJ".to_vec())
+				Some(b"LP_TestToken_SETUSD".to_vec())
 			);
 
 			assert_eq!(
@@ -233,7 +233,7 @@ fn decimals_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decimals(CurrencyId::DexShare(
 					DexShare::Token(TokenSymbol::DNAR),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::SETUSD)
 				)),
 				Some(12)
 			);
@@ -241,7 +241,7 @@ fn decimals_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decimals(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::SETUSD)
 				)),
 				Some(17)
 			);
@@ -291,7 +291,7 @@ fn encode_evm_address_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 					DexShare::Token(TokenSymbol::DNAR),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::SETUSD)
 				)),
 				H160::from_str("0x0000000000000000000000010000000000000003").ok()
 			);
@@ -299,14 +299,14 @@ fn encode_evm_address_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::SETUSD)
 				)),
 				H160::from_str("0x0000000000000000000000010200000000000003").ok()
 			);
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
-					DexShare::Token(TokenSymbol::USDJ),
+					DexShare::Token(TokenSymbol::SETUSD),
 					DexShare::Erc20(erc20_address())
 				)),
 				H160::from_str("0x0000000000000000000000010000000302000000").ok()
@@ -373,13 +373,13 @@ fn decode_evm_address_works() {
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(
 					EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 						DexShare::Token(TokenSymbol::DNAR),
-						DexShare::Token(TokenSymbol::USDJ)
+						DexShare::Token(TokenSymbol::SETUSD)
 					))
 					.unwrap(),
 				),
 				Some(CurrencyId::DexShare(
 					DexShare::Token(TokenSymbol::DNAR),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::SETUSD)
 				))
 			);
 
@@ -387,13 +387,13 @@ fn decode_evm_address_works() {
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(
 					EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 						DexShare::Erc20(erc20_address()),
-						DexShare::Token(TokenSymbol::USDJ)
+						DexShare::Token(TokenSymbol::SETUSD)
 					))
 					.unwrap()
 				),
 				Some(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::USDJ)
+					DexShare::Token(TokenSymbol::SETUSD)
 				))
 			);
 

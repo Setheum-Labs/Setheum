@@ -274,7 +274,7 @@ mod tests {
 
 		raw_input[67] = 1;
 		let input = TestInput::new(&raw_input[..]);
-		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::USDJ));
+		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SETUSD));
 	}
 
 	#[test]

@@ -27,9 +27,9 @@ use std::{
 #[test]
 fn trading_pair_works() {
 	let dnar = CurrencyId::Token(TokenSymbol::DNAR);
-	let usdj = CurrencyId::Token(TokenSymbol::USDJ);
+	let usdj = CurrencyId::Token(TokenSymbol::SETUSD);
 	let erc20 = CurrencyId::Erc20(EvmAddress::from_str("0x0000000000000000000000000000000000000000").unwrap());
-	let dnar_usdj_lp = CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::USDJ));
+	let dnar_usdj_lp = CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETUSD));
 	let erc20_dnar_lp = CurrencyId::DexShare(
 		DexShare::Token(TokenSymbol::DNAR),
 		DexShare::Erc20(EvmAddress::from_str("0x0000000000000000000000000000000000000000").unwrap()),
@@ -76,7 +76,7 @@ fn currency_id_into_u32_works() {
 	let currency_id = DexShare::Token(TokenSymbol::DNAR);
 	assert_eq!(Into::<u32>::into(currency_id), 0x00);
 
-	let currency_id = DexShare::Token(TokenSymbol::USDJ);
+	let currency_id = DexShare::Token(TokenSymbol::SETUSD);
 	assert_eq!(Into::<u32>::into(currency_id), 0x01);
 
 	let currency_id = DexShare::Erc20(EvmAddress::from_str("0x2000000000000000000000000000000000000000").unwrap());
@@ -102,7 +102,7 @@ fn currency_id_try_into_evm_address_works() {
 	assert_eq!(
 		EvmAddress::try_from(CurrencyId::DexShare(
 			DexShare::Token(TokenSymbol::DNAR),
-			DexShare::Token(TokenSymbol::USDJ),
+			DexShare::Token(TokenSymbol::SETUSD),
 		)),
 		Ok(EvmAddress::from_str("0x0000000000000000000000010000000000000001").unwrap())
 	);
