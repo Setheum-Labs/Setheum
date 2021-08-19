@@ -23,7 +23,6 @@
 use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::*;
-use sp_runtime::traits::BadOrigin;
 
 #[test]
 fn issue_standard_works() {
