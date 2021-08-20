@@ -84,32 +84,12 @@ pub mod module {
 		type GetFiatEURCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The FiatJPY currency id, it should be JPY.
-		type GetFiatJPYCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
 		/// The FiatGBP currency id, it should be GBP.
 		type GetFiatGBPCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The FiatAUD currency id, it should be AUD.
-		type GetFiatAUDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatCAD currency id, it should be CAD.
-		type GetFiatCADCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
 		/// The FiatCHF currency id, it should be CHF.
 		type GetFiatCHFCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatSEK currency id, it should be SEK.
-		type GetFiatSEKCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatSGD currency id, it should be SGD.
-		type GetFiatSGDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
 		/// The FiatSAR currency id, it should be SAR.

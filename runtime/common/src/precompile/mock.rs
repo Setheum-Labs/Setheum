@@ -428,15 +428,10 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
 	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD; // SettUSD currency ticker is SETUSD.
-	pub const GetFiatAUDCurrencyId: CurrencyId = AUD; // The AUD Fiat currency denomination.
-	pub const GetFiatCADCurrencyId: CurrencyId = CAD; // The CAD Fiat currency denomination.
 	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
 	pub const GetFiatEURCurrencyId: CurrencyId = EUR; // The EUR Fiat currency denomination.
 	pub const GetFiatGBPCurrencyId: CurrencyId = GBP; // The GBP Fiat currency denomination.
-	pub const GetFiatJPYCurrencyId: CurrencyId = JPY; // The JPY Fiat currency denomination.
 	pub const GetFiatSARCurrencyId: CurrencyId = SAR; // The SAR Fiat currency denomination.
-	pub const GetFiatSEKCurrencyId: CurrencyId = SEK; // The SEK Fiat currency denomination.
-	pub const GetFiatSGDCurrencyId: CurrencyId = SGD; // The SGD Fiat currency denomination.
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::saturating_from_rational(1, 1);
 	
@@ -452,7 +447,7 @@ parameter_types! {
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETR).
 	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SETUSD];
-	pub FiatCurrencyIds: Vec<CurrencyId> = vec![CHF, EUR, GBP, JPY, QAR, SAR, USD, JOD, BHD, KYD, OMR, GIP];
+	pub FiatCurrencyIds: Vec<CurrencyId> = vec![CHF, EUR, GBP, QAR, SAR, USD, JOD, BHD, KYD, OMR, GIP];
 }
 
 ord_parameter_types! {
@@ -464,15 +459,10 @@ impl setheum_prices::Config for Test {
 	type Source = Oracle;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
-	type GetFiatAUDCurrencyId = GetFiatAUDCurrencyId;
-	type GetFiatCADCurrencyId = GetFiatCADCurrencyId;
 	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
 	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
 	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
-	type GetFiatJPYCurrencyId = GetFiatJPYCurrencyId;
 	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
-	type GetFiatSEKCurrencyId = GetFiatSEKCurrencyId;
-	type GetFiatSGDCurrencyId = GetFiatSGDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
