@@ -237,7 +237,7 @@ fn get_market_price_works() {
 			SerpPrices::get_price(DNAR),
 			Some(Price::saturating_from_integer(100000000u128))
 		); // 100 USD, right shift the decimal point (18-12) places
-		assert_eq!(SerpPrices::get_price(SEKJ), None);
+		assert_eq!(SerpPrices::get_price(SETSAR), None);
 	});
 }
 

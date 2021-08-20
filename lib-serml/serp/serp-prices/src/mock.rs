@@ -59,15 +59,10 @@ pub const LP_SETUSD_DRAM: CurrencyId =
 CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DRAM));
 
 // Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
-pub const AUD: CurrencyId = CurrencyId::Token(TokenSymbol::AUD);
-pub const CAD: CurrencyId = CurrencyId::Token(TokenSymbol::CAD);
 pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
 pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
 pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
-pub const JPY: CurrencyId = CurrencyId::Token(TokenSymbol::JPY);
 pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
-pub const SEK: CurrencyId = CurrencyId::Token(TokenSymbol::SEK);
-pub const SGD: CurrencyId = CurrencyId::Token(TokenSymbol::SGD);
 pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
 pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
 pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
@@ -221,15 +216,10 @@ ord_parameter_types! {
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
 	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD; // SettUSD currency ticker is SETUSD.
-	pub const GetFiatAUDCurrencyId: CurrencyId = AUD; // The AUD Fiat currency denomination.
-	pub const GetFiatCADCurrencyId: CurrencyId = CAD; // The CAD Fiat currency denomination.
 	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
 	pub const GetFiatEURCurrencyId: CurrencyId = EUR; // The EUR Fiat currency denomination.
 	pub const GetFiatGBPCurrencyId: CurrencyId = GBP; // The GBP Fiat currency denomination.
-	pub const GetFiatJPYCurrencyId: CurrencyId = JPY; // The JPY Fiat currency denomination.
 	pub const GetFiatSARCurrencyId: CurrencyId = SAR; // The SAR Fiat currency denomination.
-	pub const GetFiatSEKCurrencyId: CurrencyId = SEK; // The SEK Fiat currency denomination.
-	pub const GetFiatSGDCurrencyId: CurrencyId = SGD; // The SGD Fiat currency denomination.
 	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
 
@@ -244,7 +234,6 @@ parameter_types! {
 	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETR).
 	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETR).
 	
-	
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SETUSD];
 	pub FiatCurrencyIds: Vec<CurrencyId> = vec![CHF, EUR, GBP, SAR, USD, JOD, BHD, KYD, OMR, GIP];
 }
@@ -254,15 +243,10 @@ impl Config for Runtime {
 	type Source = MockDataProvider;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
-	type GetFiatAUDCurrencyId = GetFiatAUDCurrencyId;
-	type GetFiatCADCurrencyId = GetFiatCADCurrencyId;
 	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
 	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
 	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
-	type GetFiatJPYCurrencyId = GetFiatJPYCurrencyId;
 	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
-	type GetFiatSEKCurrencyId = GetFiatSEKCurrencyId;
-	type GetFiatSGDCurrencyId = GetFiatSGDCurrencyId;
 	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
