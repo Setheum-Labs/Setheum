@@ -33,14 +33,14 @@ pub type AccountId = u128;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
-pub const USDJ: CurrencyId = CurrencyId::Token(TokenSymbol::USDJ);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
 parameter_types! {
-	pub static USDJBTCPair: TradingPair = TradingPair::from_currency_ids(USDJ, BTC).unwrap();
-	pub static USDJDRAMPair: TradingPair = TradingPair::from_currency_ids(USDJ, DRAM).unwrap();
+	pub static SETUSDBTCPair: TradingPair = TradingPair::from_currency_ids(SETUSD, BTC).unwrap();
+	pub static SETUSDDRAMPair: TradingPair = TradingPair::from_currency_ids(SETUSD, DRAM).unwrap();
 	pub static DRAMBTCPair: TradingPair = TradingPair::from_currency_ids(DRAM, BTC).unwrap();
 }
 
@@ -142,8 +142,8 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, USDJ, 1_000_000_000_000_000_000u128),
-				(BOB, USDJ, 1_000_000_000_000_000_000u128),
+				(ALICE, SETUSD, 1_000_000_000_000_000_000u128),
+				(BOB, SETUSD, 1_000_000_000_000_000_000u128),
 				(ALICE, BTC, 1_000_000_000_000_000_000u128),
 				(BOB, BTC, 1_000_000_000_000_000_000u128),
 				(ALICE, DRAM, 1_000_000_000_000_000_000u128),
@@ -158,7 +158,7 @@ impl Default for ExtBuilder {
 
 impl ExtBuilder {
 	pub fn initialize_enabled_trading_pairs(mut self) -> Self {
-		self.initial_enabled_trading_pairs = vec![USDJDRAMPair::get(), USDJBTCPair::get(), DRAMBTCPair::get()];
+		self.initial_enabled_trading_pairs = vec![SETUSDDRAMPair::get(), SETUSDBTCPair::get(), DRAMBTCPair::get()];
 		self
 	}
 
@@ -166,8 +166,8 @@ impl ExtBuilder {
 		self.initial_added_liquidity_pools = vec![(
 			who,
 			vec![
-				(USDJDRAMPair::get(), (1_000_000u128, 2_000_000u128)),
-				(USDJBTCPair::get(), (1_000_000u128, 2_000_000u128)),
+				(SETUSDDRAMPair::get(), (1_000_000u128, 2_000_000u128)),
+				(SETUSDBTCPair::get(), (1_000_000u128, 2_000_000u128)),
 				(DRAMBTCPair::get(), (1_000_000u128, 2_000_000u128)),
 			],
 		)];

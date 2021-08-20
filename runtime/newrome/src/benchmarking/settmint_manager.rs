@@ -18,7 +18,7 @@
 
 use crate::{
 	dollar, SetheumOracle, AccountId, Amount, SettmintEngine, StandardCurrencyIds, CurrencyId, SettmintGateway, Indices, Price, Rate,
-	Ratio, Runtime, USDJ, SETR,
+	Ratio, Runtime, SETUSD, SETR,
 };
 
 use super::utils::set_balance;
@@ -80,12 +80,12 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let currency_id: CurrencyId = StandardCurrencyIds::get()[0];
 		let reserve_price = Price::one();		// 1 USD
-		let standard_value = 100 * dollar(USDJ);
+		let standard_value = 100 * dollar(SETUSD);
 		let standard_exchange_rate = SettmintEngine::get_standard_exchange_rate(currency_id);
 		let standard_amount = standard_exchange_rate.reciprocal().unwrap().saturating_mul_int(standard_value);
 		let standard_amount: Amount = standard_amount.unique_saturated_into();
 		let reserve_value = 10 * standard_value;
-		let reserve_amount = Price::saturating_from_rational(dollar(currency_id), dollar(USDJ)).saturating_mul_int(reserve_value);
+		let reserve_amount = Price::saturating_from_rational(dollar(currency_id), dollar(SETUSD)).saturating_mul_int(reserve_value);
 
 		// set balance
 		set_balance(currency_id, &caller, reserve_amount);
@@ -102,12 +102,12 @@ runtime_benchmarks! {
 		let receiver_lookup = Indices::unlookup(receiver.clone());
 
 
-		let standard_value = 100 * dollar(USDJ);
+		let standard_value = 100 * dollar(SETUSD);
 		let standard_exchange_rate = SettmintEngine::get_standard_exchange_rate(currency_id);
 		let standard_amount = standard_exchange_rate.reciprocal().unwrap().saturating_mul_int(standard_value);
 		let standard_amount: Amount = standard_amount.unique_saturated_into();
 		let reserve_value = 10 * standard_value;
-		let reserve_amount = Price::saturating_from_rational(dollar(currency_id), dollar(USDJ)).saturating_mul_int(reserve_value);
+		let reserve_amount = Price::saturating_from_rational(dollar(currency_id), dollar(SETUSD)).saturating_mul_int(reserve_value);
 
 		// set balance
 		set_balance(currency_id, &sender, reserve_amount);

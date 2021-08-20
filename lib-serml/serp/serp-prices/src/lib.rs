@@ -72,7 +72,7 @@ pub mod module {
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettUSD currency id, it should be USDJ in Setheum.
+		/// The SettUSD currency id, it should be SETUSD in Setheum.
 		type GetSettUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -122,15 +122,15 @@ pub mod module {
 		type FiatUsdFixedPrice: Get<Price>;
 
 		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be USDJ in Setheum.
+		/// The Setter Peg One currency id, it should be SETUSD in Setheum.
 		type GetSetterPegOneCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg Two currency id, it should be GBPJ in Setheum.
+		/// The Setter Peg Two currency id, it should be SETGBP in Setheum.
 		type GetSetterPegTwoCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg Three currency id, it should be EURJ in Setheum.
+		/// The Setter Peg Three currency id, it should be SETEUR in Setheum.
 		type GetSetterPegThreeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -154,7 +154,7 @@ pub mod module {
 		type GetSetterPegEightCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Setter Peg Nine currency id, it should be CHFJ in Setheum.
+		/// The Setter Peg Nine currency id, it should be SETCHF in Setheum.
 		type GetSetterPegNineCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -294,34 +294,19 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn get_peg_price(currency_id: CurrencyId) -> Option<Price> {
 		let maybe_feed_price = if currency_id == T::SetterCurrencyId::get() {
 			Self::get_setter_price()
-		} else if let CurrencyId::Token(TokenSymbol::USDJ) = currency_id {
+		} else if let CurrencyId::Token(TokenSymbol::SETUSD) = currency_id {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::USDJ) = currency_id {
+		} else if let CurrencyId::Token(TokenSymbol::SETEUR) = currency_id {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::EURJ) = currency_id {
+		} else if let CurrencyId::Token(TokenSymbol::SETGBP) = currency_id {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::JPYJ) = currency_id {
+		} else if let CurrencyId::Token(TokenSymbol::SETCHF) = currency_id {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::GBPJ) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::AUDJ) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::CADJ) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::CHFJ) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::SEKJ) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::SGDJ) = currency_id {
+		} else if let CurrencyId::Token(TokenSymbol::SETSAR) = currency_id {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
 		} else {

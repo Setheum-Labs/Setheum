@@ -210,13 +210,13 @@ pub trait SerpTreasury<AccountId> {
 	/// Reward SETR cashdrop to vault
 	fn setter_cashdrop_to_vault() -> DispatchResult;
 
-	/// Reward USDJ cashdrop to vault
+	/// Reward SETUSD cashdrop to vault
 	fn usdj_cashdrop_to_vault() -> DispatchResult;
 
 	/// Trigger SERP-TES when required for Setter (SETR) to serp_down or serp_up.
 	fn setter_on_tes() -> DispatchResult;
 
-	/// Trigger SERP-TES when required for USDJ to serp_down or serp_up.
+	/// Trigger SERP-TES when required for SETUSD to serp_down or serp_up.
 	fn usdj_on_tes() -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.

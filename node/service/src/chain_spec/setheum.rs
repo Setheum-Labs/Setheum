@@ -37,7 +37,7 @@ use setheum_runtime::{
 	NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OrmlNFTConfig,
 	RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 	SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-	DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
+	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 };
 use runtime_common::TokenInfo;
 
@@ -62,7 +62,7 @@ fn setheum_properties() -> Properties {
 	let mut token_symbol: Vec<String> = vec![];
 	let mut token_decimals: Vec<u32> = vec![];
 	[
-		DNAR, DRAM, SETR, USDJ, EURJ, JPYJ, GBPJ, AUDJ, CADJ, CHFJ, SEKJ, SGDJ, SARJ RENBTC,
+		DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 	].iter().for_each(|token| {
 		token_symbol.push(token.symbol().unwrap().to_string());
 		token_decimals.push(token.decimals().unwrap() as u32);

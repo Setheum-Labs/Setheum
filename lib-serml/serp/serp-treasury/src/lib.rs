@@ -74,7 +74,7 @@ pub mod module {
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettUSD currency id, it should be USDJ in Setheum.
+		/// The SettUSD currency id, it should be SETUSD in Setheum.
 		type GetSettUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]

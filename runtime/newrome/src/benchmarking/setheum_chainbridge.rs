@@ -18,7 +18,7 @@
 
 use crate::{
 	dollar, AccountId, ChainBridge, SetheumChainBridge, CurrencyId, GetNativeCurrencyId, LocalChainId, Runtime, DNAR,
-	USDJ,
+	SETUSD,
 };
 
 use super::utils::set_balance;
@@ -47,8 +47,8 @@ runtime_benchmarks! {
 
 	transfer_origin_chain_token_to_bridge {
 		let sender: AccountId = account("sender", 0, SEED);
-		let currency_id: CurrencyId = USDJ;
-		let resource_id: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"USDJ");
+		let currency_id: CurrencyId = SETUSD;
+		let resource_id: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"SETUSD");
 		let dest_chain_id: chainbridge::ChainId = 0;
 
 		ChainBridge::whitelist_chain(RawOrigin::Root.into(), dest_chain_id)?;
@@ -81,8 +81,8 @@ runtime_benchmarks! {
 	transfer_origin_chain_token_from_bridge {
 		let sender: AccountId = account("sender", 0, SEED);
 		let receiver: AccountId = account("receiver", 0, SEED);
-		let currency_id: CurrencyId = USDJ;
-		let resource_id: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"USDJ");
+		let currency_id: CurrencyId = SETUSD;
+		let resource_id: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"SETUSD");
 		let dest_chain_id: chainbridge::ChainId = 0;
 
 		ChainBridge::whitelist_chain(RawOrigin::Root.into(), dest_chain_id)?;
