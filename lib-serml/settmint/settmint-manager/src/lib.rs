@@ -21,7 +21,7 @@
 //! ## Overview
 //!
 //! SettmintManager module manages Settmint's reserve asset (Setter) 
-//! and the standards backed by the asset (SettCurrencies).
+//! and the standards backed by the asset (SetUurrencies).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]

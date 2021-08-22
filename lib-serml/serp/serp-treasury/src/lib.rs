@@ -21,13 +21,12 @@
 //! ## Overview
 //!
 //! SERP Treasury manages the Settmint, and handle excess serplus
-//! and stabilize SettCurrencies standards timely in order to keep the
+//! and stabilize SetUurrencies standards timely in order to keep the
 //! system healthy. It manages the TES (Token Elasticity of Supply).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-// use fixed::{types::extra::U128, FixedU128};
 use frame_support::{pallet_prelude::*, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
@@ -74,8 +73,8 @@ pub mod module {
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettUSD currency id, it should be SETUSD in Setheum.
-		type GetSettUSDCurrencyId: Get<CurrencyId>;
+		/// The SetUSD currency id, it should be SETUSD in Setheum.
+		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
 		/// SettinDes (DRAM) dexer currency id
@@ -119,7 +118,7 @@ pub mod module {
 		/// The cashdrop currency ids that receive Setter.
 		type NonStableDropCurrencyIds: Get<Vec<CurrencyId>>;
 
-		/// The cashdrop currency ids that receive SettCurrencies.
+		/// The cashdrop currency ids that receive SetUurrencies.
 		type SetCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
@@ -311,16 +310,16 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// SerpUp ratio for SettPay Cashdrops
 	fn usdj_cashdrop_to_vault() -> DispatchResult {
-		let free_balance = T::Currency::free_balance(T::GetSettUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
+		let free_balance = T::Currency::free_balance(T::GetSetUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
 
 		// Send 50% of funds to the CashDropVault
 		let five: Balance = 5;
 		let cashdrop_amount: Balance = five.saturating_mul(free_balance / 10);
 		
 		// Transfer the CashDrop propper Rewards to the CashDropVault	
-		T::Currency::transfer(T::GetSettUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get(), &T::CashDropVaultAccountId::get(), cashdrop_amount)?;
+		T::Currency::transfer(T::GetSetUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get(), &T::CashDropVaultAccountId::get(), cashdrop_amount)?;
 
-		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::GetSettUSDCurrencyId::get()));
+		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::GetSetUSDCurrencyId::get()));
 		Ok(())
 	}
 
@@ -351,7 +350,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	fn usdj_on_tes() -> DispatchResult {
-		let currency_id = T::GetSettUSDCurrencyId::get();
+		let currency_id = T::GetSetUSDCurrencyId::get();
 		let market_price = <T as Config>::PriceSource::get_market_price(currency_id);
 		let peg_price = <T as Config>::PriceSource::get_peg_price(currency_id);
 		let total_supply = T::Currency::total_issuance(currency_id);

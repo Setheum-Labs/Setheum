@@ -427,7 +427,7 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
-	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD; // SettUSD currency ticker is SETUSD.
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // SetUSD currency ticker is SETUSD.
 	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
 	pub const GetFiatEURCurrencyId: CurrencyId = EUR; // The EUR Fiat currency denomination.
 	pub const GetFiatGBPCurrencyId: CurrencyId = GBP; // The GBP Fiat currency denomination.
@@ -458,7 +458,7 @@ impl setheum_prices::Config for Test {
 	type Event = Event;
 	type Source = Oracle;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
 	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
 	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;

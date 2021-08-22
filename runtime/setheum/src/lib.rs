@@ -964,7 +964,7 @@ parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const DirhamCurrencyId: CurrencyId = DRAM;
-	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 	pub const GetFiatCHFCurrencyId: CurrencyId = CHF;
 	pub const GetFiatEURCurrencyId: CurrencyId = EUR;
 	pub const GetFiatGBPCurrencyId: CurrencyId = GBP;
@@ -1137,7 +1137,7 @@ impl serp_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
 	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
 	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
@@ -1415,7 +1415,7 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
 	type CashDropPeriod = CashDropPeriod;

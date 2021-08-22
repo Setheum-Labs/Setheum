@@ -58,19 +58,6 @@ CurrencyId::DexShare(DexShare::Token(TokenSymbol::RENBTC), DexShare::Token(Token
 pub const LP_SETUSD_DRAM: CurrencyId =
 CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DRAM));
 
-// Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
-pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
-pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
-pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
-pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
-pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
-pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
-pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
-pub const BHD: CurrencyId = CurrencyId::Token(TokenSymbol::BHD);
-pub const KYD: CurrencyId = CurrencyId::Token(TokenSymbol::KYD);
-pub const OMR: CurrencyId = CurrencyId::Token(TokenSymbol::OMR);
-pub const GIP: CurrencyId = CurrencyId::Token(TokenSymbol::GIP);
-
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 }
@@ -215,50 +202,51 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
-	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD; // SettUSD currency ticker is SETUSD.
-	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
-	pub const GetFiatEURCurrencyId: CurrencyId = EUR; // The EUR Fiat currency denomination.
-	pub const GetFiatGBPCurrencyId: CurrencyId = GBP; // The GBP Fiat currency denomination.
-	pub const GetFiatSARCurrencyId: CurrencyId = SAR; // The SAR Fiat currency denomination.
-	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // SetUSD currency ticker is SETUSD.
+	pub const GetSetEURCurrencyId: CurrencyId = SETEUR; // SetEUR currency ticker is SETEUR.
+	pub const GetSetGBPCurrencyId: CurrencyId = SETGBP; // SetGBP currency ticker is SETGBP.
+	pub const GetSetCHFCurrencyId: CurrencyId = SETCHF; // SetCHF currency ticker is SETCHF.
+	pub const GetSetSARCurrencyId: CurrencyId = SETSAR; // SetSAR currency ticker is SETSAR.
 	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
+}
 
-	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegFourCurrencyId: CurrencyId = JOD; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegFiveCurrencyId: CurrencyId = BHD; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegSixCurrencyId: CurrencyId = KYD; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegSevenCurrencyId: CurrencyId = OMR; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegEightCurrencyId: CurrencyId = CHF; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETR).
-	
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SETUSD];
-	pub FiatCurrencyIds: Vec<CurrencyId> = vec![CHF, EUR, GBP, SAR, USD, JOD, BHD, KYD, OMR, GIP];
+pub struct OffchainPriceMock;
+
+impl FetchPriceFor for OffchainPriceMock {
+	fn get_price_for(symbol: &[u8]) -> u64 {
+		match *symbol {
+			b"DNAR" => 100u64,
+			b"DRAM" => 0u64,
+			b"BTC" => 50000u64,
+			b"SETR" => 1u64,
+			b"SETUSD" => 1u64, // stable
+			b"SETEUR" => 2u64, // up 50%
+			b"SETGBP" => 1u64, // stable
+			b"SETCHF" => 1u64, // down 50%
+			b"SETSAR" => 2u64, // up 50%
+			b"USD" => 1u64,
+			b"EUR" => 1u64,
+			b"GBP" => 1u64,
+			b"CHF" => 2u64,
+			b"SAR" => 1u64,
+			_ => None,
+		}
+	}
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Source = MockDataProvider;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
-	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
-	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
-	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
-	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
-	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type GetSetEURCurrencyId = GetSetEURCurrencyId;
+	type GetSetGBPCurrencyId = GetSetGBPCurrencyId;
+	type GetSetCHFCurrencyId = GetSetCHFCurrencyId;
+	type GetSetSARCurrencyId = GetSetSARCurrencyId;
+	type SerpOcwOffchainPrice = OffchainPriceMock;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
-	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
-	type GetSetterPegTwoCurrencyId = GetSetterPegTwoCurrencyId;
-	type GetSetterPegThreeCurrencyId = GetSetterPegThreeCurrencyId;
-	type GetSetterPegFourCurrencyId = GetSetterPegFourCurrencyId;
-	type GetSetterPegFiveCurrencyId = GetSetterPegFiveCurrencyId;
-	type GetSetterPegSixCurrencyId = GetSetterPegSixCurrencyId;
-	type GetSetterPegSevenCurrencyId = GetSetterPegSevenCurrencyId;
-	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
-	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
-	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = MockDEX;
 	type Currency = Tokens;

@@ -155,11 +155,11 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
 ];
 
 pub trait FetchPriceFor {
-  fn get_price_for(symbol: &[u8]) -> Option<u64>;
+  fn get_price_for(symbol: &[u8]) -> u64;
 }
 
 impl<T: Trait> FetchPriceFor for Module<T> {
-  fn get_price_for(symbol: &[u8]) -> Option<u64> {
+  fn get_price_for(symbol: &[u8]) -> u64 {
     let (_, price) = <TokenAggPPMap<T>>::get(symbol);
     // if price == Default::default() {
     //   return None;
