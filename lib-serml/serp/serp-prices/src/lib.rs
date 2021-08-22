@@ -483,6 +483,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 
 	fn get_serp_ocw_price(currency_id: CurrencyId) -> u64 {
+		// TODO: Add these to Config Impls
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
 		let dirham_currency_id = T::DirhamCurrencyId::get();
 		let renbtc_currency_id = T::RenBtcCurrencyId::get();
@@ -533,6 +534,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 
 	fn get_serp_ocw_peg_price(currency_id: CurrencyId) -> u64 {
+		// TODO: Add these to Config Impls
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
 		let dirham_currency_id = T::DirhamCurrencyId::get();
 		let renbtc_currency_id = T::RenBtcCurrencyId::get();
@@ -584,6 +586,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 
 	fn get_setter_basket() -> u64 {
 		// BASKET_PEG_PRICES
+		// TODO: Add these to Config Impls
 		let price_1 = T::SerpTesOffchainPrice::get_price_for(b"USD");
 		let price_2 = T::SerpTesOffchainPrice::get_price_for(b"EUR");
 		let price_3 = T::SerpTesOffchainPrice::get_price_for(b"GBP");
