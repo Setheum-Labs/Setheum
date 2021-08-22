@@ -624,6 +624,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	// TODO: Add - `get_min_target_amount()` and `get_max_supply_amount()` - 
 	// for SerpTreasury DEX Swap functions
 	//
+	// And Update mock
 	//
 	//
 	///.
