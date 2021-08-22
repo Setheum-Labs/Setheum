@@ -289,6 +289,16 @@ pub trait PriceProvider<CurrencyId> {
 	fn get_serp_ocw_peg_price(currency_id: CurrencyId) -> u64;
 	fn get_setter_basket() -> u64;
 	fn get_supply_change(currency_id: CurrencyId) -> Balance;
+	fn get_min_target_amount(
+		target_currency_id: CurrencyId,
+		supply_currency_id: CurrencyId,
+		supply_amount: Balance
+	) -> Balance;
+	fn get_max_supply_amount(
+		target_currency_id: CurrencyId,
+		supply_currency_id: CurrencyId,
+		target_amount: Balance
+	) -> Balance;
 }
 
 pub trait ExchangeRateProvider {
