@@ -49,6 +49,7 @@ use sp_std::{
 };
 use support::{CurrencyIdMapping, DEXManager, Price, PriceProvider};
 
+// TODO: Import FixedU128 for supply change computation and others here
 mod mock;
 mod tests;
 pub mod weights;
@@ -378,6 +379,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	}
 
 	fn get_and_lock_offchain_prices() -> DispatchResult {
+		// TODO: Add these to Config Impls
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
 		let dirham_currency_id = T::DirhamCurrencyId::get();
 		let renbtc_currency_id = T::RenBtcCurrencyId::get();
@@ -621,10 +623,30 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		let supply_change = get_serp_tes(coin_price, peg_price, supply);
 		supply_change
 	}
-	// TODO: Add - `get_min_target_amount()` and `get_max_supply_amount()` - 
-	// for SerpTreasury DEX Swap functions
-	//
-	// And Update mock
+	
+	fn get_min_target_amount(target_currency_id: CurrencyId, supply_currency_id: CurrencyId, supply_amount: Balance) -> Balance {
+		price_0 = Self::get_serp_ocw_peg_price(target_currency_id);
+		price_1 = Self::get_serp_ocw_peg_price(supply_currency_id);
+
+		type Fix = FixedU128<U64>;
+		let relative_price = Fix::from_num(price_0) / Fix::from_num(price_1);
+		let min_target_amount_full = Fix::from_num(supply_amount) / Fix::from_num(relative_price);
+		let desired_min_target_amount = Fix::from_num(min_target_amount_full) / Fix::from_num(100);
+		desired_min_target_amount.saturating_mul_int(95 as u128).to_num::<u128>()
+	}
+
+	fn get_max_supply_amount(target_currency_id: CurrencyId, supply_currency_id: CurrencyId, target_amount: Balance) -> Balance {
+		price_0 = Self::get_serp_ocw_peg_price(target_currency_id);
+		price_1 = Self::get_serp_ocw_peg_price(supply_currency_id);
+
+		type Fix = FixedU128<U64>;
+		let relative_price = Fix::from_num(price_0) / Fix::from_num(price_1);
+		let max_supply_amount_full = Fix::from_num(target_amount) / Fix::from_num(relative_price);
+		let desired_max_supply_amount = Fix::from_num(min_target_amount_full) / Fix::from_num(100);
+		desired_max_supply_amount.saturating_mul_int(105 as u128).to_num::<u128>()
+	}
+	
+	// TODO: Update mock!
 	//
 	//
 	///.

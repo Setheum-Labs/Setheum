@@ -538,14 +538,10 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 
-		// get a min_target_amount of 105% of market value,
+		// get a max_supply_amount of 105% of market value,
 		// marking the 5% slippage of `price_impact_limit`.
-		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(setter_currency_id, dinar_currency_id);
-		let relative_price = pool_1 / pool_0;
-		let max_supply_amount_full = target_amount / relative_price;
-		let max_supply_amount_fives = max_supply_amount_full / 20;
-		let max_supply_amount = max_supply_amount_fives * 21;
-		
+		let max_supply_amount = <T as Config>::PriceSource::get_max_supply_amount(setter_currency_id, dinar_currency_id, target_amount);
+
 		T::Currency::deposit(dinar_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -582,13 +578,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 
-		// get a min_target_amount of 105% of market value,
+		// get a max_supply_amount of 105% of market value,
 		// marking the 5% slippage of `price_impact_limit`.
-		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(currency_id, setter_currency_id);
-		let relative_price = pool_1 / pool_0;
-		let max_supply_amount_full = target_amount / relative_price;
-		let max_supply_amount_fives = max_supply_amount_full / 20;
-		let max_supply_amount = max_supply_amount_fives * 21;
+		let max_supply_amount = <T as Config>::PriceSource::get_max_supply_amount(currency_id, setter_currency_id, target_amount);
 
 		T::Currency::deposit(setter_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
@@ -629,11 +621,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 
 		// get a min_target_amount of 95% of market value,
 		// marking the 5% slippage of `price_impact_limit`.
-		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(dinar_currency_id, currency_id);
-		let relative_price = pool_1 / pool_0;
-		let min_target_amount_full = supply_amount / relative_price;
-		let min_target_amount_fives = min_target_amount_full / 20;
-		let min_target_amount = min_target_amount_fives * 19;
+		let min_target_amount = <T as Config>::PriceSource::get_min_target_amount(dinar_currency_id, currency_id, supply_amount);
 
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
@@ -673,11 +661,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 
 		// get a min_target_amount of 95% of market value,
 		// marking the 5% slippage of `price_impact_limit`.
-		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(dinar_currency_id, currency_id);
-		let relative_price = pool_1 / pool_0;
-		let min_target_amount_full = supply_amount / relative_price;
-		let min_target_amount_fives = min_target_amount_full / 20;
-		let min_target_amount = min_target_amount_fives * 19;
+		let min_target_amount = <T as Config>::PriceSource::get_min_target_amount(dinar_currency_id, currency_id, supply_amount);
 
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
