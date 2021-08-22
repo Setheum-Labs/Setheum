@@ -148,6 +148,8 @@ impl Default for ExtBuilder {
 				(BOB, BTC, 1_000_000_000_000_000_000u128),
 				(ALICE, DRAM, 1_000_000_000_000_000_000u128),
 				(BOB, DRAM, 1_000_000_000_000_000_000u128),
+				(ALICE, DNAR, 1_000_000_000_000_000_000u128),
+				(BOB, DNAR, 1_000_000_000_000_000_000u128),
 			],
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: vec![],
