@@ -167,7 +167,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SEKJ, SGDJ, SETUSD];
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
@@ -234,7 +234,7 @@ impl serp_treasury::Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
 	type SerpTesSchedule = SerpTesSchedule;
 	type CashDropPeriod = CashDropPeriod;

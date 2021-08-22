@@ -277,17 +277,15 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 
 pub trait PriceProvider<CurrencyId> {
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
-	// fn get_market_price(currency_id: CurrencyId) -> Option<Price>;
-	// fn get_peg_price(currency_id: CurrencyId) -> Option<Price>;
-	// fn get_setter_price() -> Option<Price>;
-	// fn on_serp_tes(currency_id: CurrencyId) -> Balance;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
 	fn lock_price(currency_id: CurrencyId);
 	fn unlock_price(currency_id: CurrencyId);
 	fn get_and_lock_offchain_prices() -> DispatchResult;
 	fn get_serp_ocw_price(currency_id: CurrencyId) -> u64;
 	fn get_serp_ocw_peg_price(currency_id: CurrencyId) -> u64;
-	fn get_setter_basket() -> u64;
+	fn get_setter_price() -> Option<Price>;
+	fn get_setter_basket() -> Balance;
+	fn fetch_setter_basket() -> u64;
 	fn get_supply_change(currency_id: CurrencyId) -> Balance;
 	fn get_min_target_amount(
 		target_currency_id: CurrencyId,
