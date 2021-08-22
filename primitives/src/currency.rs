@@ -236,7 +236,7 @@ create_currency_id! {
 		DNAR("Setheum Dinar", 12) = 0,
 		DRAM("Setheum Dirham", 12) = 1,
 		SETR("Setter", 12) = 2,
-		// SetUurrencies
+		// SetCurrencies
 		SETUSD("SetDollar", 12) = 3,
 		SETEUR("SetEuro", 12) = 4,
 		SETGBP("SetPound", 12) = 5,

@@ -21,7 +21,7 @@
 //! ## Overview
 //!
 //! SERP Treasury manages the Settmint, and handle excess serplus
-//! and stabilize SetUurrencies standards timely in order to keep the
+//! and stabilize SetCurrencies standards timely in order to keep the
 //! system healthy. It manages the TES (Token Elasticity of Supply).
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -118,7 +118,7 @@ pub mod module {
 		/// The cashdrop currency ids that receive Setter.
 		type NonStableDropCurrencyIds: Get<Vec<CurrencyId>>;
 
-		/// The cashdrop currency ids that receive SetUurrencies.
+		/// The cashdrop currency ids that receive SetCurrencies.
 		type SetCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
