@@ -59,8 +59,11 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
   // feed as is to oracle.
   //
   // bitstamp feeds (crypto and fiat)
+  (b"DNAR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/btcusd"),
+  (b"DRAM", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/ethusd"),
   (b"BTC", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/btcusd"),
   (b"ETH", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/ethusd"),
+  (b"SETR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/usdtusd"),
   (b"SETUSD", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/usdtusd"),
   (b"SETEUR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/eurtusd"),
   (b"EUR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/eurusd"),
@@ -70,8 +73,11 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
   // (b"SETSAR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/setsarusd"),
   //
   // coinbase feeds (crypto only)
+  (b"DNAR", b"coinbase", b"https://api.pro.coinbase.com/products/BTC-USD/ticker"),
+  (b"DRAM", b"coinbase", b"https://api.pro.coinbase.com/products/ETH-USD/ticker"),
   (b"BTC", b"coinbase", b"https://api.pro.coinbase.com/products/BTC-USD/ticker"),
   (b"ETH", b"coinbase", b"https://api.pro.coinbase.com/products/ETH-USD/ticker"),
+  (b"SETR", b"coinbase", b"https://api.pro.coinbase.com/products/USDT-USD/ticker"),
   (b"SETUSD", b"coinbase", b"https://api.pro.coinbase.com/products/USDT-USD/ticker"),
   // (b"SETEUR", b"coinbase", b"https://min-api.cryptocompare.com/data/price?fsym=SETEUR&tsyms=USD"),
   // (b"SETGBP", b"coinbase", b"https://min-api.cryptocompare.com/data/price?fsym=SETGBP&tsyms=USDC"),
@@ -79,8 +85,11 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
   // (b"SETSAR", b"coinbase", b"https://min-api.cryptocompare.com/data/price?fsym=SETSAR&tsyms=USD"),
   //
   // coincap feeds (crypto only)
+  (b"DNAR", b"coincap", b"https://api.coincap.io/v2/assets/bitcoin"),
+  (b"DRAM", b"coincap", b"https://api.coincap.io/v2/assets/ethereum"),
   (b"BTC", b"coincap", b"https://api.coincap.io/v2/assets/bitcoin"),
   (b"ETH", b"coincap", b"https://api.coincap.io/v2/assets/ethereum"),
+  (b"SETR", b"coincap", b"https://api.coincap.io/v2/assets/stasis-euro"),
   (b"SETUSD", b"coincap", b"https://api.coincap.io/v2/assets/tether"),
   (b"SETEUR", b"coincap", b"https://api.coincap.io/v2/assets/stasis-euro"),
   // (b"SETGBP", b"coincap", b"https://api.coincap.io/v2/assets/setpound"),
@@ -88,8 +97,11 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
   // (b"SETSAR", b"coincap", b"https://api.coincap.io/v2/assets/setriyal"),
   //
   // coingecko feeds (crypto only)
+  (b"DNAR", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"),
+  (b"DRAM", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"),
   (b"BTC", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"),
   (b"ETH", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"),
+  (b"SETR", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=cryptofranc&vs_currencies=usd"),
   (b"SETUSD", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=busd&vs_currencies=usd"),
   (b"SETEUR", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=upper-euro&vs_currencies=usd"),
   (b"SETGBP", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=upper-pound&vs_currencies=usd"),
@@ -97,8 +109,11 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
   // (b"SETSAR", b"coingecko", b"https://min-api.cryptocompare.com/data/price?fsym=SETSAR&tsyms=USD"),
   //
   // coinpaprika feeds (crypto only)
+  (b"DNAR", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/btc-bitcoin"),
+  (b"DRAM", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/eth-ethereum"),
   (b"BTC", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/btc-bitcoin"),
   (b"ETH", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/eth-ethereum"),
+  (b"SETR", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/gbp-pound-sterling-token"),
   (b"SETUSD", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/usdt-tether"),
   (b"SETEUR", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/eurs-stasis-eurs"),
   (b"SETGBP", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/gbp-pound-sterling-token"),
@@ -106,8 +121,11 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
   // (b"SETSAR", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/setsar-setriyal"),
   //
   // cryptocompare feeds (crypto only)
+  (b"DNAR", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"),
+  (b"DRAM", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"),
   (b"BTC", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"),
   (b"ETH", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"),
+  (b"SETR", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD"),
   (b"SETUSD", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=USD"),
   (b"SETEUR", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD"),
   (b"SETGBP", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=BGBP&tsyms=USDC"),
@@ -115,8 +133,11 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
   (b"SETSAR", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=POLNX&tsyms=USD"),
   //
   // cryptowatftx feeds (crypto only)
+  (b"DNAR", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/btcusd/price"),
+  (b"DRAM", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/ethusd/price"),
   (b"BTC", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/btcusd/price"),
   (b"ETH", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/ethusd/price"),
+  (b"SETR", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/usdtusd/price"),
   (b"SETUSD", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/usdtusd/price"),
   //
   // exchangerate.host feeds (fiat only)
@@ -127,6 +148,8 @@ pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
   (b"SAR", b"exchangeratehost", b"https://api.exchangerate.host/convert?from=SAR&to=USD"),
   //
   // gemini feeds (crypto only)
+  (b"DNAR", b"gemini", b"https://api.gemini.com/v1/pricefeed/btcusd"),
+  (b"DRAM", b"gemini", b"https://api.gemini.com/v1/pricefeed/ethusd"),
   (b"BTC", b"gemini", b"https://api.gemini.com/v1/pricefeed/btcusd"),
   (b"ETH", b"gemini", b"https://api.gemini.com/v1/pricefeed/ethusd"),
 ];
@@ -138,9 +161,9 @@ pub trait FetchPriceFor {
 impl<T: Trait> FetchPriceFor for Module<T> {
   fn get_price_for(symbol: &[u8]) -> Option<u64> {
     let (_, price) = <TokenAggPPMap<T>>::get(symbol);
-    if price == Default::default() {
-      return None;
-    }
+    // if price == Default::default() {
+    //   return None;
+    // }
     price.into()
   }
 }
@@ -278,7 +301,6 @@ decl_module! {
           }
         });
     } // end of `fn offchain_worker()`
-
   }
 }
 

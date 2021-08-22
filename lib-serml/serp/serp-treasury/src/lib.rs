@@ -187,9 +187,7 @@ pub mod module {
 		/// NOTE: This function is called BEFORE ANY extrinsic in a block is applied,
 		/// including inherent extrinsics. Hence for instance, if you runtime includes
 		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
-		/// Handle excessive surplus or debits of system when block end
 		///
-		// TODO: Migrate `BlockNumber` to `Timestamp`
 		/// Triggers Serping for all system stablecoins at every block.
 		fn on_initialize(now: T::BlockNumber) -> Weight {
 			// SERP-TES Adjustment Frequency.
@@ -207,13 +205,16 @@ pub mod module {
 				}
 
 				T::WeightInfo::on_initialize(count)
-			} else if now % T::CashDropPeriod::get() == Zero::zero() {
+			} else {
+				0
+			};
+			
+			if now % T::CashDropPeriod::get() == Zero::zero() {
 				// CashDrop period for transferring cashdrop from 
 				// the `SettPayTreasuryAccountId`.
 				// The ideal period is after every `24 hours`.
 				//
 				// SERP TES (Token Elasticity of Supply).
-				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				let mut count: u32 = 0;
 				if Self::setter_cashdrop_to_vault().is_ok() {
 					count += 1;
