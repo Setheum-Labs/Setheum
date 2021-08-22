@@ -188,7 +188,6 @@ pub mod module {
 		/// including inherent extrinsics. Hence for instance, if you runtime includes
 		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
 		///
-		// TODO: Migrate `BlockNumber` to `Timestamp`
 		/// Triggers Serping for all system stablecoins at every block.
 		fn on_initialize(now: T::BlockNumber) -> Weight {
 			// SERP-TES Adjustment Frequency.
