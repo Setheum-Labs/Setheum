@@ -264,6 +264,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		SerpOcw: serp_ocw::{Pallet, Storage, Call, Event<T>},
 		SerpPrices: serp_prices::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 	}
