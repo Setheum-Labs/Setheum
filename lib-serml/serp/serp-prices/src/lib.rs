@@ -129,6 +129,7 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
+		// TODO: Update!
 		/// Invalid fiat currency id
 		InvalidFiatCurrencyType,
 		/// Invalid stable currency id
