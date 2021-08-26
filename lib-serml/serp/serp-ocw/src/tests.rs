@@ -113,19 +113,10 @@ where
 }
 
 parameter_types! {
-	pub const BlockFetchDur: u64 = 5;
+	pub const FetchPeriod: u64 = 5;
 	pub const GracePeriod: u64 = 5;
 	pub const UnsignedInterval: u64 = 128;
 	pub const UnsignedPriority: u64 = 1 << 20;
-
-    pub FetchStableCurrencyIds: Vec<CurrencyId> = vec![
-        SETR,
-        SETCHF,
-        SETEUR,
-        SETGBP,
-        SETSAR,
-        SETUSD,
-    ];
 
     pub FetchCurrencyIds: Vec<CurrencyId> = vec![
         SETR,
@@ -135,6 +126,12 @@ parameter_types! {
         SETSAR,
         SETUSD,
         BTC,
+        SETRPEG,
+        CHF,
+        EUR,
+        GBP,
+        SAR,
+        USD,
     ];
 }
 
@@ -142,11 +139,10 @@ impl Config for Test {
 	type Event = Event;
 	type AuthorityId = crypto::TestAuthId;
 	type Call = Call;
-    type FetchStableCurrencyIds = FetchStableCurrencyIds;
     type FetchCurrencyIds = FetchCurrencyIds;
     // Wait period between automated fetches. Set to 0 to disable this feature.
     // Then you need to manucally kickoff pricefetch
-    type BlockFetchDur = BlockFetchDur;
+    type FetchPeriod = FetchPeriod;
 	type GracePeriod = GracePeriod;
 	type UnsignedInterval = UnsignedInterval;
 	type UnsignedPriority = UnsignedPriority;

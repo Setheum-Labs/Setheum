@@ -94,15 +94,12 @@ pub mod pallet {
 		/// The overarching dispatch call type.
 		type Call: From<Call<Self>>;
 
-    /// All non-native currency ids in Setheum.
-		type FetchStableCurrencyIds: Get<Vec<CurrencyId>>;
-
-    /// All non-native currency ids in Setheum.
+    /// Currency IDs for OCW price fetch in Setheum.
 		type FetchCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// A fetch duration period after we fetch prices.
 		#[pallet::constant]
-		type BlockFetchDur: Get<Self::BlockNumber>;
+		type FetchPeriod: Get<Self::BlockNumber>;
 
 		/// A grace period after we send transaction.
 		#[pallet::constant]
@@ -147,11 +144,11 @@ pub mod pallet {
 		/// This function will be called when the node is fully synced and a new best block is
 		/// succesfuly imported.
 		fn offchain_worker(block_number: T::BlockNumber) {
-      let duration = T::BlockFetchDur::get();
+      let duration = T::FetchPeriod::get();
       
       // fetch prices if the price fetch duration is reached
       if duration > 0.into() && block_number % duration == 0.into() {
-        for (currency_id) in T::FetchStableCurrencyIds::get().iter() {
+        for (currency_id) in T::FetchCurrencyIds::get().iter() {
           // We are going to send both signed and unsigned transactions
           // depending on the block number.
           let should_send = Self::choose_transaction_type(block_number);
@@ -162,24 +159,6 @@ pub mod pallet {
             TransactionType::UnsignedForAll =>
               Self::fetch_price_and_send_unsigned_for_all_accounts(currency_id, block_number),
             TransactionType::Raw => Self::fetch_price_and_send_raw_unsigned(currency_id, block_number),
-            TransactionType::None => Ok(()),
-          };
-          if let Err(e) = res {
-            log::error!("Error: {}", e);
-          }
-        };
-
-        for (currency_id) in T::FetchCurrencyIds::get().iter() {
-          // We are going to send both signed and unsigned transactions
-          // depending on the block number.
-          let should_send = Self::choose_transaction_type(block_number);
-          let res = match should_send {
-            TransactionType::Signed => Self::fetch_peg_price_and_send_signed(currency_id),
-            TransactionType::UnsignedForAny =>
-              Self::fetch_peg_price_and_send_unsigned_for_any_account(currency_id, block_number),
-            TransactionType::UnsignedForAll =>
-              Self::fetch_peg_price_and_send_unsigned_for_all_accounts(currency_id, block_number),
-            TransactionType::Raw => Self::fetch_peg_price_and_send_raw_unsigned(currency_id, block_number),
             TransactionType::None => Ok(()),
           };
           if let Err(e) = res {
@@ -305,19 +284,10 @@ enum TransactionType {
 }
 
 pub trait FetchPriceFor {
-    fn get_peg_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error>;
     fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error>;
 }
 
 impl<T: Trait> FetchPriceFor for Pallet<T> {
-  
-	/// Fetch current price and return the result in cents.
-	fn get_peg_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error> {
-    let price = Self::fetch_peg_price(currency_id);
-
-		Ok(price)
-	}
-    
 	/// Fetch current price and return the result in cents.
 	fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error> {
     let price = Self::fetch_price(currency_id);
@@ -390,38 +360,7 @@ impl<T: Config> Pallet<T> {
 			// Received price is wrapped into a call to `submit_price` public function of this pallet.
 			// This means that the transaction, when executed, will simply call that function passing
 			// `price` as an argument.
-			Call::submit_price(price)
-		});
-
-		for (acc, res) in &results {
-			match res {
-				Ok(()) => log::info!("[{:?}] Submitted price of {} cents", acc.id, price),
-				Err(e) => log::error!("[{:?}] Failed to submit transaction: {:?}", acc.id, e),
-			}
-		}
-
-		Ok(())
-	}
-
-	/// A helper function to fetch the price and send signed transaction.
-	fn fetch_peg_price_and_send_signed(currency_id: CurrencyId) -> Result<(), &'static str> {
-		let signer = Signer::<T, T::AuthorityId>::all_accounts();
-		if !signer.can_sign() {
-			return Err(
-				"No local accounts available. Consider adding one via `author_insertKey` RPC.",
-			)?
-		}
-		// Make an external HTTP request to fetch the current price.
-		// Note this call will block until response is received.
-		let price = Self::fetch_peg_price(currency_id).map_err(|_| "Failed to fetch price")?;
-
-		// Submit signed will return a vector of results for all accounts that were found in the
-		// local keystore with expected `KEY_TYPE`.
-		let results = signer.send_signed_transaction(|_account| {
-			// Received price is wrapped into a call to `submit_price` public function of this pallet.
-			// This means that the transaction, when executed, will simply call that function passing
-			// `price` as an argument.
-			Call::submit_price(price)
+			Call::submit_price(currency_id, price)
 		});
 
 		for (acc, res) in &results {
@@ -453,25 +392,6 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	/// A helper function to fetch the price and send a raw unsigned transaction.
-	fn fetch_peg_price_and_send_raw_unsigned(currency_id: CurrencyId, block_number: T::BlockNumber) -> Result<(), &'static str> {
-		let next_unsigned_at = <NextUnsignedAt<T>>::get();
-		if next_unsigned_at > block_number {
-			return Err("Too early to send unsigned transaction")
-		}
-
-		let price = Self::fetch_peg_price(currency_id).map_err(|_| "Failed to fetch price")?;
-
-		let call = Call::submit_price_unsigned(currency_id, block_number, price);
-
-		// Now let's create a transaction out of this call and submit it to the pool.
-		// Here we showcase two ways to send an unsigned transaction / unsigned payload (raw)
-		SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into())
-			.map_err(|()| "Unable to submit unsigned transaction.")?;
-
-		Ok(())
-	}
-
 	/// A helper function to fetch the price, sign payload and send an unsigned transaction
 	fn fetch_price_and_send_unsigned_for_any_account(
     currency_id: CurrencyId,
@@ -487,36 +407,6 @@ impl<T: Config> Pallet<T> {
 		// Make an external HTTP request to fetch the current price.
 		// Note this call will block until response is received.
 		let price = Self::fetch_price(currency_id).map_err(|_| "Failed to fetch price")?;
-
-		// -- Sign using any account
-		let (_, result) = Signer::<T, T::AuthorityId>::any_account()
-			.send_unsigned_transaction(
-				|account| PricePayload { price, block_number, public: account.public.clone() },
-				|payload, signature| {
-					Call::submit_price_unsigned_with_signed_payload(currency_id, payload, signature)
-				},
-			)
-			.ok_or("No local accounts accounts available.")?;
-		result.map_err(|()| "Unable to submit transaction")?;
-
-		Ok(())
-	}
-
-	/// A helper function to fetch the price, sign payload and send an unsigned transaction
-	fn fetch_peg_price_and_send_unsigned_for_any_account(
-    currency_id: CurrencyId,
-		block_number: T::BlockNumber,
-	) -> Result<(), &'static str> {
-		// Make sure we don't fetch the price if unsigned transaction is going to be rejected
-		// anyway.
-		let next_unsigned_at = <NextUnsignedAt<T>>::get();
-		if next_unsigned_at > block_number {
-			return Err("Too early to send unsigned transaction")
-		}
-
-		// Make an external HTTP request to fetch the current price.
-		// Note this call will block until response is received.
-		let price = Self::fetch_peg_price(currency_id).map_err(|_| "Failed to fetch price")?;
 
 		// -- Sign using any account
 		let (_, result) = Signer::<T, T::AuthorityId>::any_account()
@@ -564,110 +454,51 @@ impl<T: Config> Pallet<T> {
 
 		Ok(())
 	}
-
-	/// A helper function to fetch the price, sign payload and send an unsigned transaction
-	fn fetch_peg_price_and_send_unsigned_for_all_accounts(
-    currency_id: CurrencyId,
-		block_number: T::BlockNumber,
-	) -> Result<(), &'static str> {
-		// Make sure we don't fetch the price if unsigned transaction is going to be rejected
-		// anyway.
-		let next_unsigned_at = <NextUnsignedAt<T>>::get();
-		if next_unsigned_at > block_number {
-			return Err("Too early to send unsigned transaction")
-		}
-
-		// Make an external HTTP request to fetch the current price.
-		// Note this call will block until response is received.
-		let price = Self::fetch_peg_price(currency_id).map_err(|_| "Failed to fetch price")?;
-
-		// -- Sign using all accounts
-		let transaction_results = Signer::<T, T::AuthorityId>::all_accounts()
-			.send_unsigned_transaction(
-				|account| PricePayload { price, block_number, public: account.public.clone() },
-				|payload, signature| {
-					Call::submit_price_unsigned_with_signed_payload(currency_id, payload, signature)
-				},
-			);
-		for (_account_id, result) in transaction_results.into_iter() {
-			if result.is_err() {
-				return Err("Unable to submit transaction")
-			}
-		}
-
-		Ok(())
-	}
-
-	/// Fetch current price and return the result in cents.
-	fn fetch_peg_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
-  if currency_id = T::SetterCurrencyId::get() {
-      let price = Self::fetch_setter_basket();
-  } else if currency_id = T::SetUSDCurrencyId::get() {
-      let price = Self::fetch_usd();
-  } else if currency_id = T::SetEURCurrencyId::get() {
-      let price = Self::fetch_eur();
-  } else if currency_id = T::SetGBPCurrencyId::get() {
-      let price = Self::fetch_gbp();
-  } else if currency_id = T::SetCHFCurrencyId::get() {
-      let price = Self::fetch_chf();
-  } else if currency_id = T::SetSARCurrencyId::get() {
-      let price = Self::fetch_sar();
-  };
-
-  Ok(price)
 }
   
 /// Fetch current price and return the result in cents.
 fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
-  if currency_id = T::SetterCurrencyId::get() {
-      let price = Self::fetch_setter();
-  } else if currency_id = T::SetUSDCurrencyId::get() {
-      let price = Self::fetch_setusd();
-  } else if currency_id = T::SetEURCurrencyId::get() {
-      let price = Self::fetch_seteur();
-  } else if currency_id = T::SetGBPCurrencyId::get() {
-      let price = Self::fetch_setgbp();
-  } else if currency_id = T::SetCHFCurrencyId::get() {
-      let price = Self::fetch_setchf();
-  } else if currency_id = T::SetSARCurrencyId::get() {
-      let price = Self::fetch_setsar();
-  } else if currency_id = T::RenBTCCurrencyId::get() {
-      let price = Self::fetch_btc();
-  };
-
-  Ok(price)
-}
-	/// Fetch current peg price and return the result in cents.
-	fn fetch_all_prices() -> Result<(u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32), http::Error> {
-    let setter_peg = Self::fetch_peg_price(T::SetterCurrencyId::get())?;
-    let setusd_peg = Self::fetch_peg_price(T::SetUSDCurrencyId::get())?;
-    let seteur_peg = Self::fetch_peg_price(T::SetEURCurrencyId::get())?;
-    let setgbp_peg = Self::fetch_peg_price(T::SetGBPCurrencyId::get())?;
-    let setchf_peg = Self::fetch_peg_price(T::SetCHFCurrencyId::get())?;
-    let setsar_peg = Self::fetch_peg_price(T::SetSARCurrencyId::get())?;
-    let setter = Self::fetch_price(T::SetterCurrencyId::get())?;
-    let setusd = Self::fetch_price(T::SetUSDCurrencyId::get())?;
-    let seteur = Self::fetch_price(T::SetEURCurrencyId::get())?;
-    let setgbp = Self::fetch_price(T::SetGBPCurrencyId::get())?;
-    let setchf = Self::fetch_price(T::SetCHFCurrencyId::get())?;
-    let setsar = Self::fetch_price(T::SetSARCurrencyId::get())?;
-    let btc = Self::fetch_price(T::RenBTCCurrencyId::get())?;
-    
-    Ok(
-      setter_peg,
-      setusd_peg,
-      seteur_peg,
-      setgbp_peg,
-      setchf_peg,
-      setsar_peg,
-      setter,
-      setusd,
-      seteur,
-      setgbp,
-      setchf,
-      setsar,
-      btc
-    )
+  match currency_id {
+    if currency_id = T::SetterCurrencyId::get() => {
+        let price = Self::fetch_setter();
+        Ok(price)
+    } else if currency_id = T::SetUSDCurrencyId::get() => {
+        let price = Self::fetch_setusd();
+        Ok(price)
+    } else if currency_id = T::SetEURCurrencyId::get() => {
+        let price = Self::fetch_seteur();
+        Ok(price)
+    } else if currency_id = T::SetGBPCurrencyId::get() => {
+        let price = Self::fetch_setgbp();
+        Ok(price)
+    } else if currency_id = T::SetCHFCurrencyId::get() => {
+        let price = Self::fetch_setchf();
+        Ok(price)
+    } else if currency_id = T::SetSARCurrencyId::get() => {
+        let price = Self::fetch_setsar();
+        Ok(price)
+    } else if currency_id = T::RenBTCCurrencyId::get() => {
+        let price = Self::fetch_btc();
+        Ok(price)
+    } else if currency_id = T::SetterPegCurrencyId::get() => {
+        let price = Self::fetch_setter_basket();
+        Ok(price)
+    } else if currency_id = T::GetPegUSDCurrencyId::get() => {
+        let price = Self::fetch_usd();
+        Ok(price)
+    } else if currency_id = T::GetPegEURCurrencyId::get() => {
+        let price = Self::fetch_eur();
+        Ok(price)
+    } else if currency_id = T::GetPegGBPCurrencyId::get() => {
+        let price = Self::fetch_gbp();
+        Ok(price)
+    } else if currency_id = T::GetPegCHFCurrencyId::get() => {
+        let price = Self::fetch_chf();
+        Ok(price)
+    } else if currency_id = T::GetPegSARCurrencyId::get() => {
+        let price = Self::fetch_sar();
+        Ok(price)
+    }
   }
 
   /// FETCH SETCURRENCIES COIN PRICES
