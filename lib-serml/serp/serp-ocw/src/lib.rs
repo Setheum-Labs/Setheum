@@ -1,630 +1,1430 @@
-// Ensure we're `no_std` when compiling for Wasm.
+// This file is part of Setheum.
+
+// Copyright (C) 2019-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// A runtime module template with necessary imports
+use codec::{Decode, Encode};
+use fixed::{types::extra::U32, FixedU128};
+use frame_support::traits::Get;
+use frame_system::{
+	self as system,
+	offchain::{
+		AppCrypto, CreateSignedTransaction, SendSignedTransaction, SendUnsignedTransaction,
+		SignedPayload, Signer, SigningTypes, SubmitTransaction,
+	},
+};
+use lite_json::json::JsonValue;
+use sp_core::crypto::KeyTypeId;
+use sp_runtime::{
+	offchain::{
+		http,
+		storage::{MutateStorageError, StorageRetrievalError, StorageValueRef},
+		Duration,
+	},
+	traits::Zero,
+	transaction_validity::{InvalidTransaction, TransactionValidity, ValidTransaction},
+	RuntimeDebug,
+};
+use sp_std::vec::Vec;
 
-/// Feel free to remove or edit this file as needed.
-/// If you change the name of this file, make sure to update its references in runtime/src/lib.rs
-/// If you remove this file, you can remove those references
-
-/// For more guidance on Substrate modules, see the example module
-/// https://github.com/paritytech/substrate/blob/master/srml/example/src/lib.rs
+use primitives::{
+	currency::DexShare,
+	Balance, CurrencyId, TokenSymbol,
+};
 
 #[cfg(test)]
 mod tests;
 
-// We have to import a few things
-use rstd::{prelude::*};
-use primitives::crypto::KeyTypeId;
-use support::{decl_module, decl_storage, decl_event, dispatch,
-  debug, storage::IterableStorageMap, traits::Get};
-use system::offchain::{SubmitTransaction};
-use system::{ensure_none};
-use simple_json::{self, json::JsonValue};
-use runtime_io::{self, misc::print_utf8 as print_bytes};
-#[cfg(not(feature = "std"))]
-use num_traits::float::FloatCore;
-use codec::Encode;
-use sp_runtime::{
-  offchain::http,
-  transaction_validity::{
-    TransactionValidity, TransactionLongevity, ValidTransaction, InvalidTransaction
-  }
-};
+pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"serpocw!");
 
-type Result<T> = core::result::Result<T, &'static str>;
-
-/// Our local KeyType.
-///
-/// For security reasons the offchain worker doesn't have direct access to the keys
-/// but only to app-specific subkeys, which are defined and grouped by their `KeyTypeId`.
-pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"ofpf");
-
-// REVIEW-CHECK: is it necessary to wrap-around storage vector at `MAX_VEC_LEN`?
-pub const MAX_VEC_LEN: usize = 1000;
-
+/// Based on the above `KeyTypeId` we need to generate a pallet-specific crypto type wrappers.
+/// We can use from supported crypto kinds (`sr25519`, `ed25519` and `ecdsa`) and augment
+/// the types with this pallet-specific identifier.
 pub mod crypto {
-  pub use super::KEY_TYPE;
-  use sp_runtime::app_crypto::{app_crypto, sr25519};
-  app_crypto!(sr25519, KEY_TYPE);
+	use super::KEY_TYPE;
+	use sp_core::sr25519::Signature as Sr25519Signature;
+	use sp_runtime::{
+		app_crypto::{app_crypto, sr25519},
+		traits::Verify,
+	};
+	app_crypto!(sr25519, KEY_TYPE);
+
+	pub struct TestAuthId;
+	impl frame_system::offchain::AppCrypto<<Sr25519Signature as Verify>::Signer, Sr25519Signature>
+		for TestAuthId
+	{
+		type RuntimeAppPublic = Public;
+		type GenericSignature = sp_core::sr25519::Signature;
+		type GenericPublic = sp_core::sr25519::Public;
+	}
 }
 
-// Update the feeds with SetCurrencies when they are listed -
-//
-// // TODO: update - listed SetCurrency!
-//
-// - we currently use other currency feed prices to satisfy the SetCurrency feeds.
-pub const FETCHED_CRYPTOS: [(&[u8], &[u8], &[u8]); 6] = [
-  // CRYPTO PRICES => USD
-  // feed as is to oracle.
-  //
-  // bitstamp feeds (crypto and fiat)
-  (b"DNAR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/btcusd"),
-  (b"DRAM", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/ethusd"),
-  (b"BTC", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/btcusd"),
-  (b"ETH", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/ethusd"),
-  (b"SETR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/usdtusd"),
-  (b"SETUSD", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/usdtusd"),
-  (b"SETEUR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/eurtusd"),
-  (b"EUR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/eurusd"),
-  (b"GBP", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/gbpusd"),
-  // (b"SETGBP", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/setgbpusd"),
-  // (b"SETCHF", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/setchfusd"),
-  // (b"SETSAR", b"bitstamp", b"https://www.bitstamp.net/api/v2/ticker/setsarusd"),
-  //
-  // coinbase feeds (crypto only)
-  (b"DNAR", b"coinbase", b"https://api.pro.coinbase.com/products/BTC-USD/ticker"),
-  (b"DRAM", b"coinbase", b"https://api.pro.coinbase.com/products/ETH-USD/ticker"),
-  (b"BTC", b"coinbase", b"https://api.pro.coinbase.com/products/BTC-USD/ticker"),
-  (b"ETH", b"coinbase", b"https://api.pro.coinbase.com/products/ETH-USD/ticker"),
-  (b"SETR", b"coinbase", b"https://api.pro.coinbase.com/products/USDT-USD/ticker"),
-  (b"SETUSD", b"coinbase", b"https://api.pro.coinbase.com/products/USDT-USD/ticker"),
-  // (b"SETEUR", b"coinbase", b"https://min-api.cryptocompare.com/data/price?fsym=SETEUR&tsyms=USD"),
-  // (b"SETGBP", b"coinbase", b"https://min-api.cryptocompare.com/data/price?fsym=SETGBP&tsyms=USDC"),
-  // (b"SETCHF", b"coinbase", b"https://min-api.cryptocompare.com/data/price?fsym=SETCHF&tsyms=USD"),
-  // (b"SETSAR", b"coinbase", b"https://min-api.cryptocompare.com/data/price?fsym=SETSAR&tsyms=USD"),
-  //
-  // coincap feeds (crypto only)
-  (b"DNAR", b"coincap", b"https://api.coincap.io/v2/assets/bitcoin"),
-  (b"DRAM", b"coincap", b"https://api.coincap.io/v2/assets/ethereum"),
-  (b"BTC", b"coincap", b"https://api.coincap.io/v2/assets/bitcoin"),
-  (b"ETH", b"coincap", b"https://api.coincap.io/v2/assets/ethereum"),
-  (b"SETR", b"coincap", b"https://api.coincap.io/v2/assets/stasis-euro"),
-  (b"SETUSD", b"coincap", b"https://api.coincap.io/v2/assets/tether"),
-  (b"SETEUR", b"coincap", b"https://api.coincap.io/v2/assets/stasis-euro"),
-  // (b"SETGBP", b"coincap", b"https://api.coincap.io/v2/assets/setpound"),
-  // (b"SETCHF", b"coincap", b"https://api.coincap.io/v2/assets/setfranc"),
-  // (b"SETSAR", b"coincap", b"https://api.coincap.io/v2/assets/setriyal"),
-  //
-  // coingecko feeds (crypto only)
-  (b"DNAR", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"),
-  (b"DRAM", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"),
-  (b"BTC", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"),
-  (b"ETH", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"),
-  (b"SETR", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=cryptofranc&vs_currencies=usd"),
-  (b"SETUSD", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=busd&vs_currencies=usd"),
-  (b"SETEUR", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=upper-euro&vs_currencies=usd"),
-  (b"SETGBP", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=upper-pound&vs_currencies=usd"),
-  (b"SETCHF", b"coingecko", b"https://api.coingecko.com/api/v3/simple/price?ids=cryptofranc&vs_currencies=usd"),
-  // (b"SETSAR", b"coingecko", b"https://min-api.cryptocompare.com/data/price?fsym=SETSAR&tsyms=USD"),
-  //
-  // coinpaprika feeds (crypto only)
-  (b"DNAR", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/btc-bitcoin"),
-  (b"DRAM", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/eth-ethereum"),
-  (b"BTC", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/btc-bitcoin"),
-  (b"ETH", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/eth-ethereum"),
-  (b"SETR", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/gbp-pound-sterling-token"),
-  (b"SETUSD", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/usdt-tether"),
-  (b"SETEUR", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/eurs-stasis-eurs"),
-  (b"SETGBP", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/gbp-pound-sterling-token"),
-  (b"SETCHF", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/chf-swiss-franc-token"),
-  // (b"SETSAR", b"coinpaprika", b"https://api.coinpaprika.com/v1/tickers/setsar-setriyal"),
-  //
-  // cryptocompare feeds (crypto only)
-  (b"DNAR", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"),
-  (b"DRAM", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"),
-  (b"BTC", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"),
-  (b"ETH", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD"),
-  (b"SETR", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD"),
-  (b"SETUSD", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=USD"),
-  (b"SETEUR", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD"),
-  (b"SETGBP", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=BGBP&tsyms=USDC"),
-  (b"SETCHF", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=XCHF&tsyms=USD"),
-  (b"SETSAR", b"cryptocompare", b"https://min-api.cryptocompare.com/data/price?fsym=POLNX&tsyms=USD"),
-  //
-  // cryptowatftx feeds (crypto only)
-  (b"DNAR", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/btcusd/price"),
-  (b"DRAM", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/ethusd/price"),
-  (b"BTC", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/btcusd/price"),
-  (b"ETH", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/ethusd/price"),
-  (b"SETR", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/usdtusd/price"),
-  (b"SETUSD", b"cryptowatftx", b"https://api.cryptowat.ch/markets/ftx/usdtusd/price"),
-  //
-  // exchangerate.host feeds (fiat only)
-  (b"USD", b"exchangeratehost", b"https://api.exchangerate.host/convert?from=USD&to=USD"),
-  (b"EUR", b"exchangeratehost", b"https://api.exchangerate.host/convert?from=EUR&to=USD"),
-  (b"GBP", b"exchangeratehost", b"https://api.exchangerate.host/convert?from=GBP&to=USD"),
-  (b"CHF", b"exchangeratehost", b"https://api.exchangerate.host/convert?from=CHF&to=USD"),
-  (b"SAR", b"exchangeratehost", b"https://api.exchangerate.host/convert?from=SAR&to=USD"),
-  //
-  // gemini feeds (crypto only)
-  (b"DNAR", b"gemini", b"https://api.gemini.com/v1/pricefeed/btcusd"),
-  (b"DRAM", b"gemini", b"https://api.gemini.com/v1/pricefeed/ethusd"),
-  (b"BTC", b"gemini", b"https://api.gemini.com/v1/pricefeed/btcusd"),
-  (b"ETH", b"gemini", b"https://api.gemini.com/v1/pricefeed/ethusd"),
-];
+pub use pallet::*;
 
-pub trait FetchPriceFor {
-  fn get_price_for(symbol: &[u8]) -> u64;
-}
+#[frame_support::pallet]
+pub mod pallet {
+	use super::*;
+	use frame_support::pallet_prelude::*;
+	use frame_system::pallet_prelude::*;
 
-impl<T: Trait> FetchPriceFor for Module<T> {
-  fn get_price_for(symbol: &[u8]) -> u64 {
-    let (_, price) = <TokenAggPPMap<T>>::get(symbol);
-    // if price == Default::default() {
-    //   return None;
-    // }
-    price.into()
-  }
-}
+	/// This pallet's configuration trait
+	#[pallet::config]
+	pub trait Config: CreateSignedTransaction<Call<Self>> + frame_system::Config {
+		/// The identifier type for an offchain worker.
+		type AuthorityId: AppCrypto<Self::Public, Self::Signature>;
 
-/// The module's configuration trait.
-pub trait Trait: timestamp::Trait + system::Trait {
-  /// The overarching event type.
-  type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
-  type Call: From<Call<Self>>;
-  // Wait period between automated fetches. Set to 0 disable this feature.
-  //   Then you need to manucally kickoff pricefetch
-  type BlockFetchDur: Get<Self::BlockNumber>;
-}
+		/// The overarching event type.
+		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-type StrVecBytes = Vec<u8>;
-// Q: Is it possible to do:
-// type PricePoint = (Moment, u64);
-//
-// So inside Event enum, I can do:
-// ```
-// pub enum Event<T> where Moment = <T as timestamp::Trait>::Moment {
-//   FetchedPrice(StrVecBytes, StrVecBytes, PricePoint),
-//   ...
+		/// The overarching dispatch call type.
+		type Call: From<Call<Self>>;
 
-decl_event!(
-  pub enum Event<T> where Moment = <T as timestamp::Trait>::Moment {
-    FetchedPrice(StrVecBytes, StrVecBytes, Moment, u64),
-    AggregatedPrice(StrVecBytes, Moment, u64),
-  }
-);
+    /// All non-native currency ids in Setheum.
+		type FetchStableCurrencyIds: Get<Vec<CurrencyId>>;
 
-// This module's storage items.
-decl_storage! {
-  trait Store for Module<T: Trait> as PriceFetch {
-    // mapping of token sym -> (timestamp, price)
-    //   price has been inflated by 10,000, and in USD.
-    //   When used, it should be divided by 10,000.
-    // Using linked map for easy traversal from offchain worker or UI
-    TokenSrcPPMap: map hasher(blake2_128_concat) StrVecBytes => Vec<(T::Moment, u64)>;
+    /// All non-native currency ids in Setheum.
+		type FetchCurrencyIds: Get<Vec<CurrencyId>>;
 
-    // storage about aggregated price points (calculated with our logic)
-    TokenAggPPMap: map hasher(blake2_128_concat) StrVecBytes => (T::Moment, u64);
-  }
-}
+		/// A fetch duration period after we fetch prices.
+		#[pallet::constant]
+		type BlockFetchDur: Get<Self::BlockNumber>;
 
-// The module's dispatchable functions.
-decl_module! {
-  /// The module declaration.
-  pub struct Module<T: Trait> for enum Call where origin: T::Origin {
-    // Initializing events
-    // this is needed only if you are using events in your module
-    fn deposit_event() = default;
+		/// A grace period after we send transaction.
+		#[pallet::constant]
+		type GracePeriod: Get<Self::BlockNumber>;
 
-    pub fn record_price(
-      origin,
-      _block: T::BlockNumber,
-      crypto_info: (StrVecBytes, StrVecBytes, StrVecBytes),
-      price: u64
-    ) -> dispatch::DispatchResult {
-      // Ensuring this is an unsigned tx
-      ensure_none(origin)?;
+		/// Number of blocks of cooldown after unsigned transaction is included.
+		#[pallet::constant]
+		type UnsignedInterval: Get<Self::BlockNumber>;
 
-      let (sym, remote_src) = (crypto_info.0, crypto_info.1);
-      let now = <timestamp::Module<T>>::get();
+		/// A configuration for base priority of unsigned transactions.
+		///
+		/// This is exposed so that it can be tuned for particular runtime, when
+		/// multiple pallets send unsigned transactions.
+		#[pallet::constant]
+		type UnsignedPriority: Get<TransactionPriority>;
+	}
 
-      // Debug printout
-      debug::info!("record_price: {:?}, {:?}, {:?}",
-        core::str::from_utf8(&sym).map_err(|_| "`sym` conversion error")?,
-        core::str::from_utf8(&remote_src).map_err(|_| "`remote_src` conversion error")?,
-        price
-      );
+	/// A vector of recently submitted prices.
+	///
+	/// This is used to calculate average price, should have bounded size.
+	#[pallet::storage]
+	#[pallet::getter(fn prices)]
+	pub(super) type Prices<T: Config> = StorageValue<_, CurrencyId, Vec<u32>, ValueQuery>;
 
-      <TokenSrcPPMap<T>>::mutate(&sym, |pp_vec| pp_vec.push((now, price)));
+	/// Defines the block when next unsigned transaction will be accepted.
+	///
+	/// To prevent spam of unsigned (and unpayed!) transactions on the network,
+	/// we only allow one transaction every `T::UnsignedInterval` blocks.
+	/// This storage entry defines when new transaction is going to be accepted.
+	#[pallet::storage]
+	#[pallet::getter(fn next_unsigned_at)]
+	pub(super) type NextUnsignedAt<T: Config> = StorageValue<_, T::BlockNumber, ValueQuery>;
+	#[pallet::pallet]
+	#[pallet::generate_store(pub(super) trait Store)]
+	pub struct Pallet<T>(_);
 
-      // Spit out an event and Add to storage
-      Self::deposit_event(RawEvent::FetchedPrice(sym, remote_src, now, price));
-
-      Ok(())
-    }
-
-    pub fn record_agg_pp(
-      origin,
-      _block: T::BlockNumber,
-      sym: StrVecBytes,
-      price: u64
-    ) -> dispatch::DispatchResult {
-      // Debug printout
-      debug::info!("record_agg_pp: {}: {:?}",
-        core::str::from_utf8(&sym).map_err(|_| "`sym` string conversion error")?,
-        price
-      );
-
-      // Ensuring this is an unsigned tx
-      ensure_none(origin)?;
-
-      let now = <timestamp::Module<T>>::get();
-
-      // Record in the storage
-      let price_pt = (now.clone(), price.clone());
-      <TokenAggPPMap<T>>::insert(&sym, price_pt);
-
-      // Remove relevant storage items
-      <TokenSrcPPMap<T>>::remove(&sym);
-
-      // Spit the event
-      Self::deposit_event(RawEvent::AggregatedPrice(
-        sym.clone(), now.clone(), price.clone()));
-
-      Ok(())
-    }
-
-    fn offchain_worker(block: T::BlockNumber) {
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		/// Offchain Worker entry point.
+		///
+		/// By implementing `fn offchain_worker` you declare a new offchain worker.
+		/// This function will be called when the node is fully synced and a new best block is
+		/// succesfuly imported.
+		fn offchain_worker(block_number: T::BlockNumber) {
       let duration = T::BlockFetchDur::get();
+      
+      // fetch prices if the price fetch duration is reached
+      if duration > 0.into() && block_number % duration == 0.into() {
+        for (currency_id) in T::FetchStableCurrencyIds::get().iter() {
+          // We are going to send both signed and unsigned transactions
+          // depending on the block number.
+          let should_send = Self::choose_transaction_type(block_number);
+          let res = match should_send {
+            TransactionType::Signed => Self::fetch_price_and_send_signed(currency_id),
+            TransactionType::UnsignedForAny =>
+              Self::fetch_price_and_send_unsigned_for_any_account(currency_id, block_number),
+            TransactionType::UnsignedForAll =>
+              Self::fetch_price_and_send_unsigned_for_all_accounts(currency_id, block_number),
+            TransactionType::Raw => Self::fetch_price_and_send_raw_unsigned(currency_id, block_number),
+            TransactionType::None => Ok(()),
+          };
+          if let Err(e) = res {
+            log::error!("Error: {}", e);
+          }
+        };
 
-      // Type I task: fetch price
-      if duration > 0.into() && block % duration == 0.into() {
-        for (sym, remote_src, remote_url) in FETCHED_CRYPTOS.iter() {
-          if let Err(e) = Self::fetch_price(block, *sym, *remote_src, *remote_url) {
-            debug::error!("Error fetching: {:?}, {:?}: {:?}",
-              core::str::from_utf8(sym).unwrap(),
-              core::str::from_utf8(remote_src).unwrap(),
-              e);
+        for (currency_id) in T::FetchCurrencyIds::get().iter() {
+          // We are going to send both signed and unsigned transactions
+          // depending on the block number.
+          let should_send = Self::choose_transaction_type(block_number);
+          let res = match should_send {
+            TransactionType::Signed => Self::fetch_peg_price_and_send_signed(currency_id),
+            TransactionType::UnsignedForAny =>
+              Self::fetch_peg_price_and_send_unsigned_for_any_account(currency_id, block_number),
+            TransactionType::UnsignedForAll =>
+              Self::fetch_peg_price_and_send_unsigned_for_all_accounts(currency_id, block_number),
+            TransactionType::Raw => Self::fetch_peg_price_and_send_raw_unsigned(currency_id, block_number),
+            TransactionType::None => Ok(()),
+          };
+          if let Err(e) = res {
+            log::error!("Error: {}", e);
           }
         }
       }
+		}
+	}
 
-      // Type II task: aggregate price
-      TokenSrcPPMap::<T>::iter()
-        // filter those to be updated
-        .filter(|(_, vec)| vec.len() > 0)
-        .for_each(|(sym, _)| {
-          if let Err(e) = Self::aggregate_pp(block, &sym) {
-            debug::error!("Error aggregating price of {:?}: {:?}",
-              core::str::from_utf8(&sym).unwrap(), e);
-          }
-        });
-    } // end of `fn offchain_worker()`
-  }
+	/// A public part of the pallet.
+	#[pallet::call]
+	impl<T: Config> Pallet<T> {
+		/// Submit new price to the list.
+		#[pallet::weight(0)]
+		pub fn submit_price(origin: OriginFor<T>, currency_id: CurrencyId price: u32) -> DispatchResultWithPostInfo {
+			// Retrieve sender of the transaction.
+			let who = ensure_signed(origin)?;
+			// Add the price to the on-chain list.
+			Self::add_price(who, currency_id, price);
+			Ok(().into())
+		}
+
+		/// Submit new price to the list via unsigned transaction.
+		///
+		/// It's important to specify `weight` for unsigned calls as well, because even though
+		/// they don't charge fees, we still don't want a single block to contain unlimited
+		/// number of such transactions.
+		#[pallet::weight(0)]
+		pub fn submit_price_unsigned(
+      currency_id: CurrencyId,
+			origin: OriginFor<T>,
+			_block_number: T::BlockNumber,
+			price: u32,
+		) -> DispatchResultWithPostInfo {
+			// This ensures that the function can only be called via unsigned transaction.
+			ensure_none(origin)?;
+			// Add the price to the on-chain list, but mark it as coming from an empty address.
+			Self::add_price(Default::default(), currency_id, price);
+			// now increment the block number at which we expect next unsigned transaction.
+			let current_block = <system::Pallet<T>>::block_number();
+			<NextUnsignedAt<T>>::put(current_block + T::UnsignedInterval::get());
+			Ok(().into())
+		}
+
+		#[pallet::weight(0)]
+		pub fn submit_price_unsigned_with_signed_payload(
+      currency_id: CurrencyId,
+			origin: OriginFor<T>,
+			price_payload: PricePayload<T::Public, T::BlockNumber>,
+			_signature: T::Signature,
+		) -> DispatchResultWithPostInfo {
+			// This ensures that the function can only be called via unsigned transaction.
+			ensure_none(origin)?;
+			// Add the price to the on-chain list, but mark it as coming from an empty address.
+			Self::add_price(Default::default(), currency_id, price_payload.price);
+			// now increment the block number at which we expect next unsigned transaction.
+			let current_block = <system::Pallet<T>>::block_number();
+			<NextUnsignedAt<T>>::put(current_block + T::UnsignedInterval::get());
+			Ok(().into())
+		}
+	}
+
+	/// Events for the pallet.
+	#[pallet::event]
+	#[pallet::generate_deposit(pub(super) fn deposit_event)]
+	pub enum Event<T: Config> {
+		/// Event generated when new price is accepted to contribute to the average.
+		/// \[currency_id, price, who\]
+		NewPrice(CurrencyId, u32, T::AccountId),
+	}
+
+	#[pallet::validate_unsigned]
+	impl<T: Config> ValidateUnsigned for Pallet<T> {
+		type Call = Call<T>;
+
+		/// Validate unsigned call to this module.
+		///
+		/// By default unsigned transactions are disallowed, but implementing the validator
+		/// here we make sure that some particular calls (the ones produced by offchain worker)
+		/// are being whitelisted and marked as valid.
+		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
+			// Firstly let's check that we call the right function.
+			if let Call::submit_price_unsigned_with_signed_payload(currency_id, ref payload, ref signature) =
+				call
+			{
+				let signature_valid =
+					SignedPayload::<T>::verify::<T::AuthorityId>(payload, signature.clone());
+				if !signature_valid {
+					return InvalidTransaction::BadProof.into()
+				}
+				Self::validate_transaction_parameters(currency_id, &payload.block_number)
+			} else if let Call::submit_price_unsigned(currency_id, block_number, new_price) = call {
+				Self::validate_transaction_parameters(currency_id, block_number)
+			} else {
+				InvalidTransaction::Call.into()
+			}
+		}
+	}
 }
 
-impl<T: Trait> Module<T> {
-  fn fetch_json<'a>(remote_url: &'a [u8]) -> Result<JsonValue> {
-    let remote_url_str = core::str::from_utf8(remote_url)
-      .map_err(|_| "Error in converting remote_url to string")?;
-
-    let pending = http::Request::get(remote_url_str).send()
-      .map_err(|_| "Error in sending http GET request")?;
-
-    let response = pending.wait()
-      .map_err(|_| "Error in waiting http response back")?;
-
-    if response.code != 200 {
-      debug::warn!("Unexpected status code: {}", response.code);
-      return Err("Non-200 status code returned from http request");
-    }
-
-    let json_result: Vec<u8> = response.body().collect::<Vec<u8>>();
-
-    // Print out the whole JSON blob
-    print_bytes(&json_result);
-
-    let json_val: JsonValue = simple_json::parse_json(
-      &core::str::from_utf8(&json_result).map_err(|_| "JSON result cannot convert to string")?)
-      .map_err(|_| "JSON parsing error")?;
-
-    Ok(json_val)
-  }
-
-  fn fetch_price<'a>(
-    block: T::BlockNumber,
-    sym: &'a [u8],
-    remote_src: &'a [u8],
-    remote_url: &'a [u8]
-  ) -> Result<()> {
-    debug::info!("fetch price: {:?}:{:?}",
-      core::str::from_utf8(sym).unwrap(),
-      core::str::from_utf8(remote_src).unwrap()
-    );
-
-    let json = Self::fetch_json(remote_url)?;
-
-    let price = match remote_src {
-      src if src == b"coincap" => Self::fetch_price_from_bitstamp(json)
-        .map_err(|_| "fetch_price_from_bitstamp error"),
-      src if src == b"coincap" => Self::fetch_price_from_coinbase(json)
-        .map_err(|_| "fetch_price_from_coinbase error"),
-      src if src == b"coincap" => Self::fetch_price_from_coincap(json)
-        .map_err(|_| "fetch_price_from_coincap error"),
-      src if src == b"coincap" => Self::fetch_price_from_coingecko(json)
-        .map_err(|_| "fetch_price_from_coingecko error"),
-      src if src == b"coincap" => Self::fetch_price_from_coinpaprika(json)
-        .map_err(|_| "fetch_price_from_coinpaprika error"),
-      src if src == b"coincap" => Self::fetch_price_from_cryptocompare(json)
-        .map_err(|_| "fetch_price_from_cryptocompare error"),
-      src if src == b"coincap" => Self::fetch_price_from_cryptowatftx(json)
-        .map_err(|_| "fetch_price_from_cryptowatftx error"),
-      src if src == b"coincap" => Self::fetch_price_from_exchangeratehost(json)
-        .map_err(|_| "fetch_price_from_exchangeratehost error"),
-      src if src == b"coincap" => Self::fetch_price_from_gemini(json)
-        .map_err(|_| "fetch_price_from_gemini error"),
-      _ => Err("Unknown remote source"),
-    }?;
-
-    let call = Call::record_price(
-      block,
-      (sym.to_vec(), remote_src.to_vec(), remote_url.to_vec()),
-      price
-    );
-
-    // Unsigned tx
-    T::SubmitTransaction::submit_unsigned_transaction(call.into())
-      .map_err(|_| "fetch_price: submit_unsigned(call) error")
-
-    // Signed tx
-    // let local_accts = T::SubmitTransaction::find_local_keys(None);
-    // let (local_acct, local_key) = local_accts[0];
-    // debug::info!("acct: {:?}", local_acct);
-    // T::SignAndSubmitTransaction::sign_and_submit(call, local_key);
-
-    // T::SubmitSignedTransaction::submit_signed(call);
-  }
-
-  fn vecchars_to_vecbytes<I: IntoIterator<Item = char> + Clone>(it: &I) -> Vec<u8> {
-    it.clone().into_iter().map(|c| c as u8).collect::<_>()
-  }
-
-  fn fetch_price_from_bitstamp(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"data":{"last":"8172.2628346190447316"}}"#;
-
-    const PRICE_KEY: &[u8] = b"last";
-    let data = json_val.get_object()[0].1.get_object();
-
-    let (_, v) = data.iter()
-      .filter(|(k, _)| PRICE_KEY.to_vec() == Self::vecchars_to_vecbytes(k))
-      .nth(0)
-      .ok_or("fetch_price_from_bitstamp: JSON does not conform to expectation")?;
-
-    // `val` contains the price, such as "222.333" in bytes form
-    let val_u8: Vec<u8> = v.get_bytes();
-
-    // Convert to number
-    let val_f64: f64 = core::str::from_utf8(&val_u8)
-      .map_err(|_| "fetch_price_from_bitstamp: val_f64 convert to string error")?
-      .parse::<f64>()
-      .map_err(|_| "fetch_price_from_bitstamp: val_u8 parsing to f64 error")?;
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn fetch_price_from_coinbase(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"data":{"price":"8172.2628346190447316"}}"#;
-
-    const PRICE_KEY: &[u8] = b"price";
-    let data = json_val.get_object()[0].1.get_object();
-
-    let (_, v) = data.iter()
-      .filter(|(k, _)| PRICE_KEY.to_vec() == Self::vecchars_to_vecbytes(k))
-      .nth(0)
-      .ok_or("fetch_price_from_coinbase: JSON does not conform to expectation")?;
-
-    // `val` contains the price, such as "222.333" in bytes form
-    let val_u8: Vec<u8> = v.get_bytes();
-
-    // Convert to number
-    let val_f64: f64 = core::str::from_utf8(&val_u8)
-      .map_err(|_| "fetch_price_from_coinbase: val_f64 convert to string error")?
-      .parse::<f64>()
-      .map_err(|_| "fetch_price_from_coinbase: val_u8 parsing to f64 error")?;
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn fetch_price_from_coincap(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"data":{"priceUsd":"8172.2628346190447316"}}"#;
-
-    const PRICE_KEY: &[u8] = b"priceUsd";
-    let data = json_val.get_object()[0].1.get_object();
-
-    let (_, v) = data.iter()
-      .filter(|(k, _)| PRICE_KEY.to_vec() == Self::vecchars_to_vecbytes(k))
-      .nth(0)
-      .ok_or("fetch_price_from_coincap: JSON does not conform to expectation")?;
-
-    // `val` contains the price, such as "222.333" in bytes form
-    let val_u8: Vec<u8> = v.get_bytes();
-
-    // Convert to number
-    let val_f64: f64 = core::str::from_utf8(&val_u8)
-      .map_err(|_| "fetch_price_from_coincap: val_f64 convert to string error")?
-      .parse::<f64>()
-      .map_err(|_| "fetch_price_from_coincap: val_u8 parsing to f64 error")?;
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn fetch_price_from_coingecko(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"data":{"usd":"8172.2628346190447316"}}"#;
-
-    const PRICE_KEY: &[u8] = b"usd";
-    let data = json_val.get_object()[0].1.get_object();
-
-    let (_, v) = data.iter()
-      .filter(|(k, _)| PRICE_KEY.to_vec() == Self::vecchars_to_vecbytes(k))
-      .nth(0)
-      .ok_or("fetch_price_from_coingecko: JSON does not conform to expectation")?;
-
-    // `val` contains the price, such as "222.333" in bytes form
-    let val_u8: Vec<u8> = v.get_bytes();
-
-    // Convert to number
-    let val_f64: f64 = core::str::from_utf8(&val_u8)
-      .map_err(|_| "fetch_price_from_coingecko: val_f64 convert to string error")?
-      .parse::<f64>()
-      .map_err(|_| "fetch_price_from_coingecko: val_u8 parsing to f64 error")?;
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn fetch_price_from_coinpaprika(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"data":{"price":"8172.2628346190447316"}}"#;
-
-    const PRICE_KEY: &[u8] = b"price";
-    let data = json_val.get_object()[0].1.get_object();
-
-    let (_, v) = data.iter()
-      .filter(|(k, _)| PRICE_KEY.to_vec() == Self::vecchars_to_vecbytes(k))
-      .nth(0)
-      .ok_or("fetch_price_from_coinpaprika: JSON does not conform to expectation")?;
-
-    // `val` contains the price, such as "222.333" in bytes form
-    let val_u8: Vec<u8> = v.get_bytes();
-
-    // Convert to number
-    let val_f64: f64 = core::str::from_utf8(&val_u8)
-      .map_err(|_| "fetch_price_from_coinpaprika: val_f64 convert to string error")?
-      .parse::<f64>()
-      .map_err(|_| "fetch_price_from_coinpaprika: val_u8 parsing to f64 error")?;
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn fetch_price_from_cryptocompare(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"USD": 7064.16}"#;
-    let val_f64: f64 = json_val.get_object()[0].1.get_number_f64();
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn fetch_price_from_cryptowatftx(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"result":{"price":"8172.2628346190447316"}}"#;
-
-    const PRICE_KEY: &[u8] = b"price";
-    let result = json_val.get_object()[0].1.get_object();
-
-    let (_, v) = result.iter()
-      .filter(|(k, _)| PRICE_KEY.to_vec() == Self::vecchars_to_vecbytes(k))
-      .nth(0)
-      .ok_or("fetch_price_from_cryptowatftx: JSON does not conform to expectation")?;
-
-    // `val` contains the price, such as "222.333" in bytes form
-    let val_u8: Vec<u8> = v.get_bytes();
-
-    // Convert to number
-    let val_f64: f64 = core::str::from_utf8(&val_u8)
-      .map_err(|_| "fetch_price_from_cryptowatftx: val_f64 convert to string error")?
-      .parse::<f64>()
-      .map_err(|_| "fetch_price_from_cryptowatftx: val_u8 parsing to f64 error")?;
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn fetch_price_from_exchangeratehost(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"data":{"result":"8172.2628346190447316"}}"#;
-
-    const PRICE_KEY: &[u8] = b"result";
-    let data = json_val.get_object()[0].1.get_object();
-
-    let (_, v) = data.iter()
-      .filter(|(k, _)| PRICE_KEY.to_vec() == Self::vecchars_to_vecbytes(k))
-      .nth(0)
-      .ok_or("fetch_price_from_exchangeratehost: JSON does not conform to expectation")?;
-
-    // `val` contains the price, such as "222.333" in bytes form
-    let val_u8: Vec<u8> = v.get_bytes();
-
-    // Convert to number
-    let val_f64: f64 = core::str::from_utf8(&val_u8)
-      .map_err(|_| "fetch_price_from_exchangeratehost: val_f64 convert to string error")?
-      .parse::<f64>()
-      .map_err(|_| "fetch_price_from_exchangeratehost: val_u8 parsing to f64 error")?;
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn fetch_price_from_gemini(json_val: JsonValue) -> Result<u64> {
-    // Expected JSON shape:
-    //   r#"{"data":{"price":"8172.2628346190447316"}}"#;
-
-    const PRICE_KEY: &[u8] = b"price";
-    let data = json_val.get_object()[0].1.get_object();
-
-    let (_, v) = data.iter()
-      .filter(|(k, _)| PRICE_KEY.to_vec() == Self::vecchars_to_vecbytes(k))
-      .nth(0)
-      .ok_or("fetch_price_from_gemini: JSON does not conform to expectation")?;
-
-    // `val` contains the price, such as "222.333" in bytes form
-    let val_u8: Vec<u8> = v.get_bytes();
-
-    // Convert to number
-    let val_f64: f64 = core::str::from_utf8(&val_u8)
-      .map_err(|_| "fetch_price_from_gemini: val_f64 convert to string error")?
-      .parse::<f64>()
-      .map_err(|_| "fetch_price_from_gemini: val_u8 parsing to f64 error")?;
-    Ok((val_f64 * 10000.).round() as u64)
-  }
-
-  fn aggregate_pp<'a>(block: T::BlockNumber, sym: &'a [u8])
-    -> Result<()> {
-    let ts_pp_vec = <TokenSrcPPMap<T>>::get(sym);
-    let price_sum: u64 = ts_pp_vec.iter().fold(0, |mem, pp| mem + pp.1);
-
-    // Avoiding floating-point arithmetic & do integer division
-    let price_avg: u64 = price_sum / (ts_pp_vec.len() as u64);
-
-    // submit onchain call for aggregating the price
-    let call = Call::record_agg_pp(block, sym.to_vec(), price_avg);
-
-    // Unsigned tx
-    SubmitTransaction::submit_unsigned_transaction(call.into())
-      .map_err(|_| "aggregate_pp: submit_unsigned(call) error")
-
-    // Signed tx
-    // T::SubmitSignedTransaction::submit_signed(call);
-    // Ok(())
-  }
+/// Payload used by this example crate to hold price
+/// data required to submit a transaction.
+#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
+pub struct PricePayload<Public, BlockNumber> {
+	block_number: BlockNumber,
+	price: u32,
+	public: Public,
 }
 
-#[allow(deprecated)]
-impl<T: Trait> support::unsigned::ValidateUnsigned for Module<T> {
-  type Call = Call<T>;
+impl<T: SigningTypes> SignedPayload<T> for PricePayload<T::Public, T::BlockNumber> {
+	fn public(&self) -> T::Public {
+		self.public.clone()
+	}
+}
 
-  #[allow(deprecated)]
-  fn validate_unsigned(call: &Self::Call) -> TransactionValidity {
+enum TransactionType {
+	Signed,
+	UnsignedForAny,
+	UnsignedForAll,
+	Raw,
+	None,
+}
 
-    match call {
-      Call::record_price(block, (sym, remote_src, ..), price) => Ok(ValidTransaction {
-        priority: 0,
-        requires: vec![],
-        provides: vec![(block, sym, remote_src, price).encode()],
-        longevity: TransactionLongevity::max_value(),
-        propagate: true,
-      }),
-      Call::record_agg_pp(block, sym, price) => Ok(ValidTransaction {
-        priority: 0,
-        requires: vec![],
-        provides: vec![(block, sym, price).encode()],
-        longevity: TransactionLongevity::max_value(),
-        propagate: true,
-      }),
-      _ => InvalidTransaction::Call.into()
-    }
+pub trait FetchPriceFor {
+    fn get_peg_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error>;
+    fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error>;
+}
+
+impl<T: Trait> FetchPriceFor for Pallet<T> {
+  
+	/// Fetch current price and return the result in cents.
+	fn get_peg_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error> {
+    let price = Self::fetch_peg_price(currency_id);
+
+		Ok(price)
+	}
+    
+	/// Fetch current price and return the result in cents.
+	fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error> {
+    let price = Self::fetch_price(currency_id);
+
+		Ok(price)
+	}
+}
+
+impl<T: Config> Pallet<T> {
+	/// Chooses which transaction type to send.
+	///
+	/// This function serves mostly to showcase `StorageValue` helper
+	/// and local storage usage.
+	///
+	/// Returns a type of transaction that should be produced in current run.
+	fn choose_transaction_type(block_number: T::BlockNumber) -> TransactionType {
+		/// A friendlier name for the error that is going to be returned in case we are in the grace
+		/// period.
+		const RECENTLY_SENT: () = ();
+
+		// Start off by creating a reference to Local Storage value.
+		// Since the local storage is common for all offchain workers, it's a good practice
+		// to prepend your entry with the module name.
+		let val = StorageValueRef::persistent(b"example_ocw::last_send");
+		let res = val.mutate(|last_send: Result<Option<T::BlockNumber>, StorageRetrievalError>| {
+			match last_send {
+				// If we already have a value in storage and the block number is recent enough
+				// we avoid sending another transaction at this time.
+				Ok(Some(block)) if block_number < block + T::GracePeriod::get() =>
+					Err(RECENTLY_SENT),
+				// In every other case we attempt to acquire the lock and send a transaction.
+				_ => Ok(block_number),
+			}
+		});
+
+		// The result of `mutate` call will give us a nested `Result` type.
+		match res {
+			Ok(block_number) => {
+				let transaction_type = block_number % 3u32.into();
+				if transaction_type == Zero::zero() {
+					TransactionType::Signed
+				} else if transaction_type == T::BlockNumber::from(1u32) {
+					TransactionType::UnsignedForAny
+				} else if transaction_type == T::BlockNumber::from(2u32) {
+					TransactionType::UnsignedForAll
+				} else {
+					TransactionType::Raw
+				}
+			},
+			Err(MutateStorageError::ValueFunctionFailed(RECENTLY_SENT)) => TransactionType::None,
+			Err(MutateStorageError::ConcurrentModification(_)) => TransactionType::None,
+		}
+	}
+
+	/// A helper function to fetch the price and send signed transaction.
+	fn fetch_price_and_send_signed(currency_id: CurrencyId) -> Result<(), &'static str> {
+		let signer = Signer::<T, T::AuthorityId>::all_accounts();
+		if !signer.can_sign() {
+			return Err(
+				"No local accounts available. Consider adding one via `author_insertKey` RPC.",
+			)?
+		}
+		// Make an external HTTP request to fetch the current price.
+		// Note this call will block until response is received.
+		let price = Self::fetch_price(currency_id).map_err(|_| "Failed to fetch price")?;
+
+		// Submit signed will return a vector of results for all accounts that were found in the
+		// local keystore with expected `KEY_TYPE`.
+		let results = signer.send_signed_transaction(|_account| {
+			// Received price is wrapped into a call to `submit_price` public function of this pallet.
+			// This means that the transaction, when executed, will simply call that function passing
+			// `price` as an argument.
+			Call::submit_price(price)
+		});
+
+		for (acc, res) in &results {
+			match res {
+				Ok(()) => log::info!("[{:?}] Submitted price of {} cents", acc.id, price),
+				Err(e) => log::error!("[{:?}] Failed to submit transaction: {:?}", acc.id, e),
+			}
+		}
+
+		Ok(())
+	}
+
+	/// A helper function to fetch the price and send signed transaction.
+	fn fetch_peg_price_and_send_signed(currency_id: CurrencyId) -> Result<(), &'static str> {
+		let signer = Signer::<T, T::AuthorityId>::all_accounts();
+		if !signer.can_sign() {
+			return Err(
+				"No local accounts available. Consider adding one via `author_insertKey` RPC.",
+			)?
+		}
+		// Make an external HTTP request to fetch the current price.
+		// Note this call will block until response is received.
+		let price = Self::fetch_peg_price(currency_id).map_err(|_| "Failed to fetch price")?;
+
+		// Submit signed will return a vector of results for all accounts that were found in the
+		// local keystore with expected `KEY_TYPE`.
+		let results = signer.send_signed_transaction(|_account| {
+			// Received price is wrapped into a call to `submit_price` public function of this pallet.
+			// This means that the transaction, when executed, will simply call that function passing
+			// `price` as an argument.
+			Call::submit_price(price)
+		});
+
+		for (acc, res) in &results {
+			match res {
+				Ok(()) => log::info!("[{:?}] Submitted price of {} cents", acc.id, price),
+				Err(e) => log::error!("[{:?}] Failed to submit transaction: {:?}", acc.id, e),
+			}
+		}
+
+		Ok(())
+	}
+
+	/// A helper function to fetch the price and send a raw unsigned transaction.
+	fn fetch_price_and_send_raw_unsigned(currency_id: CurrencyId, block_number: T::BlockNumber) -> Result<(), &'static str> {
+		let next_unsigned_at = <NextUnsignedAt<T>>::get();
+		if next_unsigned_at > block_number {
+			return Err("Too early to send unsigned transaction")
+		}
+
+		let price = Self::fetch_price(currency_id).map_err(|_| "Failed to fetch price")?;
+
+		let call = Call::submit_price_unsigned(currency_id, block_number, price);
+
+		// Now let's create a transaction out of this call and submit it to the pool.
+		// Here we showcase two ways to send an unsigned transaction / unsigned payload (raw)
+		SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into())
+			.map_err(|()| "Unable to submit unsigned transaction.")?;
+
+		Ok(())
+	}
+
+	/// A helper function to fetch the price and send a raw unsigned transaction.
+	fn fetch_peg_price_and_send_raw_unsigned(currency_id: CurrencyId, block_number: T::BlockNumber) -> Result<(), &'static str> {
+		let next_unsigned_at = <NextUnsignedAt<T>>::get();
+		if next_unsigned_at > block_number {
+			return Err("Too early to send unsigned transaction")
+		}
+
+		let price = Self::fetch_peg_price(currency_id).map_err(|_| "Failed to fetch price")?;
+
+		let call = Call::submit_price_unsigned(currency_id, block_number, price);
+
+		// Now let's create a transaction out of this call and submit it to the pool.
+		// Here we showcase two ways to send an unsigned transaction / unsigned payload (raw)
+		SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into())
+			.map_err(|()| "Unable to submit unsigned transaction.")?;
+
+		Ok(())
+	}
+
+	/// A helper function to fetch the price, sign payload and send an unsigned transaction
+	fn fetch_price_and_send_unsigned_for_any_account(
+    currency_id: CurrencyId,
+		block_number: T::BlockNumber,
+	) -> Result<(), &'static str> {
+		// Make sure we don't fetch the price if unsigned transaction is going to be rejected
+		// anyway.
+		let next_unsigned_at = <NextUnsignedAt<T>>::get();
+		if next_unsigned_at > block_number {
+			return Err("Too early to send unsigned transaction")
+		}
+
+		// Make an external HTTP request to fetch the current price.
+		// Note this call will block until response is received.
+		let price = Self::fetch_price(currency_id).map_err(|_| "Failed to fetch price")?;
+
+		// -- Sign using any account
+		let (_, result) = Signer::<T, T::AuthorityId>::any_account()
+			.send_unsigned_transaction(
+				|account| PricePayload { price, block_number, public: account.public.clone() },
+				|payload, signature| {
+					Call::submit_price_unsigned_with_signed_payload(currency_id, payload, signature)
+				},
+			)
+			.ok_or("No local accounts accounts available.")?;
+		result.map_err(|()| "Unable to submit transaction")?;
+
+		Ok(())
+	}
+
+	/// A helper function to fetch the price, sign payload and send an unsigned transaction
+	fn fetch_peg_price_and_send_unsigned_for_any_account(
+    currency_id: CurrencyId,
+		block_number: T::BlockNumber,
+	) -> Result<(), &'static str> {
+		// Make sure we don't fetch the price if unsigned transaction is going to be rejected
+		// anyway.
+		let next_unsigned_at = <NextUnsignedAt<T>>::get();
+		if next_unsigned_at > block_number {
+			return Err("Too early to send unsigned transaction")
+		}
+
+		// Make an external HTTP request to fetch the current price.
+		// Note this call will block until response is received.
+		let price = Self::fetch_peg_price(currency_id).map_err(|_| "Failed to fetch price")?;
+
+		// -- Sign using any account
+		let (_, result) = Signer::<T, T::AuthorityId>::any_account()
+			.send_unsigned_transaction(
+				|account| PricePayload { price, block_number, public: account.public.clone() },
+				|payload, signature| {
+					Call::submit_price_unsigned_with_signed_payload(currency_id, payload, signature)
+				},
+			)
+			.ok_or("No local accounts accounts available.")?;
+		result.map_err(|()| "Unable to submit transaction")?;
+
+		Ok(())
+	}
+
+	/// A helper function to fetch the price, sign payload and send an unsigned transaction
+	fn fetch_price_and_send_unsigned_for_all_accounts(
+    currency_id: CurrencyId,
+		block_number: T::BlockNumber,
+	) -> Result<(), &'static str> {
+		// Make sure we don't fetch the price if unsigned transaction is going to be rejected
+		// anyway.
+		let next_unsigned_at = <NextUnsignedAt<T>>::get();
+		if next_unsigned_at > block_number {
+			return Err("Too early to send unsigned transaction")
+		}
+
+		// Make an external HTTP request to fetch the current price.
+		// Note this call will block until response is received.
+		let price = Self::fetch_price(currency_id).map_err(|_| "Failed to fetch price")?;
+
+		// -- Sign using all accounts
+		let transaction_results = Signer::<T, T::AuthorityId>::all_accounts()
+			.send_unsigned_transaction(
+				|account| PricePayload { price, block_number, public: account.public.clone() },
+				|payload, signature| {
+					Call::submit_price_unsigned_with_signed_payload(currency_id, payload, signature)
+				},
+			);
+		for (_account_id, result) in transaction_results.into_iter() {
+			if result.is_err() {
+				return Err("Unable to submit transaction")
+			}
+		}
+
+		Ok(())
+	}
+
+	/// A helper function to fetch the price, sign payload and send an unsigned transaction
+	fn fetch_peg_price_and_send_unsigned_for_all_accounts(
+    currency_id: CurrencyId,
+		block_number: T::BlockNumber,
+	) -> Result<(), &'static str> {
+		// Make sure we don't fetch the price if unsigned transaction is going to be rejected
+		// anyway.
+		let next_unsigned_at = <NextUnsignedAt<T>>::get();
+		if next_unsigned_at > block_number {
+			return Err("Too early to send unsigned transaction")
+		}
+
+		// Make an external HTTP request to fetch the current price.
+		// Note this call will block until response is received.
+		let price = Self::fetch_peg_price(currency_id).map_err(|_| "Failed to fetch price")?;
+
+		// -- Sign using all accounts
+		let transaction_results = Signer::<T, T::AuthorityId>::all_accounts()
+			.send_unsigned_transaction(
+				|account| PricePayload { price, block_number, public: account.public.clone() },
+				|payload, signature| {
+					Call::submit_price_unsigned_with_signed_payload(currency_id, payload, signature)
+				},
+			);
+		for (_account_id, result) in transaction_results.into_iter() {
+			if result.is_err() {
+				return Err("Unable to submit transaction")
+			}
+		}
+
+		Ok(())
+	}
+
+	/// Fetch current price and return the result in cents.
+	fn fetch_peg_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
+  if currency_id = T::SetterCurrencyId::get() {
+      let price = Self::fetch_setter_basket();
+  } else if currency_id = T::SetUSDCurrencyId::get() {
+      let price = Self::fetch_usd();
+  } else if currency_id = T::SetEURCurrencyId::get() {
+      let price = Self::fetch_eur();
+  } else if currency_id = T::SetGBPCurrencyId::get() {
+      let price = Self::fetch_gbp();
+  } else if currency_id = T::SetCHFCurrencyId::get() {
+      let price = Self::fetch_chf();
+  } else if currency_id = T::SetSARCurrencyId::get() {
+      let price = Self::fetch_sar();
+  };
+
+  Ok(price)
+}
+  
+/// Fetch current price and return the result in cents.
+fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
+  if currency_id = T::SetterCurrencyId::get() {
+      let price = Self::fetch_setter();
+  } else if currency_id = T::SetUSDCurrencyId::get() {
+      let price = Self::fetch_setusd();
+  } else if currency_id = T::SetEURCurrencyId::get() {
+      let price = Self::fetch_seteur();
+  } else if currency_id = T::SetGBPCurrencyId::get() {
+      let price = Self::fetch_setgbp();
+  } else if currency_id = T::SetCHFCurrencyId::get() {
+      let price = Self::fetch_setchf();
+  } else if currency_id = T::SetSARCurrencyId::get() {
+      let price = Self::fetch_setsar();
+  } else if currency_id = T::RenBTCCurrencyId::get() {
+      let price = Self::fetch_btc();
+  };
+
+  Ok(price)
+}
+	/// Fetch current peg price and return the result in cents.
+	fn fetch_all_prices() -> Result<(u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32, u32), http::Error> {
+    let setter_peg = Self::fetch_peg_price(T::SetterCurrencyId::get())?;
+    let setusd_peg = Self::fetch_peg_price(T::SetUSDCurrencyId::get())?;
+    let seteur_peg = Self::fetch_peg_price(T::SetEURCurrencyId::get())?;
+    let setgbp_peg = Self::fetch_peg_price(T::SetGBPCurrencyId::get())?;
+    let setchf_peg = Self::fetch_peg_price(T::SetCHFCurrencyId::get())?;
+    let setsar_peg = Self::fetch_peg_price(T::SetSARCurrencyId::get())?;
+    let setter = Self::fetch_price(T::SetterCurrencyId::get())?;
+    let setusd = Self::fetch_price(T::SetUSDCurrencyId::get())?;
+    let seteur = Self::fetch_price(T::SetEURCurrencyId::get())?;
+    let setgbp = Self::fetch_price(T::SetGBPCurrencyId::get())?;
+    let setchf = Self::fetch_price(T::SetCHFCurrencyId::get())?;
+    let setsar = Self::fetch_price(T::SetSARCurrencyId::get())?;
+    let btc = Self::fetch_price(T::RenBTCCurrencyId::get())?;
+    
+    Ok(
+      setter_peg,
+      setusd_peg,
+      seteur_peg,
+      setgbp_peg,
+      setchf_peg,
+      setsar_peg,
+      setter,
+      setusd,
+      seteur,
+      setgbp,
+      setchf,
+      setsar,
+      btc
+    )
   }
+
+  /// FETCH SETCURRENCIES COIN PRICES
+  ///
+  /// 
+	/// Fetch current SETR price and return the result in cents.
+	fn fetch_setter() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETUSD price and return the result in cents.
+	fn fetch_setusd() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETEUR price and return the result in cents.
+	fn fetch_seteur() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETGBP price and return the result in cents.
+	fn fetch_setgbp() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BGBP&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETCHF price and return the result in cents.
+	fn fetch_setchf() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=XCHF&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETSAR price and return the result in cents.
+	fn fetch_setsar() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=POLNX&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+  /// FETCH SETCURRENCIES COIN PEG PRICES
+  ///
+  /// 
+	/// Fetch current SETR price and return the result in cents.
+	fn fetch_setter_basket() -> Result<(u32), http::Error> {
+    type Fix = FixedU128<U32>;
+
+		let price1 = Self::fetch_usd();
+		let price2 = Self::fetch_eur();
+		let price3 = Self::fetch_gbp();
+		let price4 = Self::fetch_chf();
+		let price5 = Self::fetch_sar();
+		let price6 = Self::fetch_eth();
+		let price7 = Self::fetch_btc();
+    
+    let weight_to_price1 = Fix::from_num(price1) / Fix::from_num(100) * Fix::from_num(25);
+    let peg_rate1 = weight_to_price1.to_num::<u32>()
+
+    let weight_to_price2 = Fix::from_num(price2) / Fix::from_num(4) - Fix::from_num(1);
+    let peg_rate2 = weight_to_price2.to_num::<u32>()
+
+    let weight_to_price3 = Fix::from_num(price3) / Fix::from_num(100) * Fix::from_num(25);
+    let peg_rate3 = weight_to_price3.to_num::<u32>()
+
+    let weight_to_price4 = Fix::from_num(price4) / Fix::from_num(4) - Fix::from_num(1);
+    let peg_rate4 = weight_to_price4.to_num::<u32>()
+
+    let weight_to_price5 = Fix::from_num(price5) / Fix::from_num(100) * Fix::from_num(25);
+    let peg_rate5 = weight_to_price5.to_num::<u32>()
+
+    let weight_to_price6 = Fix::from_num(price6) / Fix::from_num(4) - Fix::from_num(1);
+    let peg_rate6 = weight_to_price6.to_num::<u32>()
+
+    let weight_to_price7 = Fix::from_num(price7) / Fix::from_num(100) * Fix::from_num(25);
+    let peg_rate7 = weight_to_price7.to_num::<u32>()
+
+    let price_fraction = Fix::from_num(peg_rate1)
+      + Fix::from_num(peg_rate2)
+      + Fix::from_num(peg_rate3)
+      + Fix::from_num(peg_rate4) 
+      + Fix::from_num(peg_rate5)
+      + Fix::from_num(peg_rate6)
+      + Fix::from_num(peg_rate7);
+
+    let price = price_fraction.to_num::<u32>()
+
+		Ok(price)
+	}
+
+	/// Fetch current SETUSD price and return the result in cents.
+	fn fetch_setusd() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETEUR price and return the result in cents.
+	fn fetch_seteur() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETGBP price and return the result in cents.
+	fn fetch_setgbp() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BGBP&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETCHF price and return the result in cents.
+	fn fetch_setchf() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=XCHF&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETSAR price and return the result in cents.
+	fn fetch_setsar() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=POLNX&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+  /// FETCH FIAT CURRENCIES PRICES
+  ///
+  /// 
+	/// Fetch current SETUSD price and return the result in cents.
+	fn fetch_usd() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // exchangehost fetch - price
+		let request =
+			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_exchangehost_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETEUR price and return the result in cents.
+	fn fetch_eur() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // exchangehost fetch - price
+		let request =
+			http::Request::get("https://api.exchangerate.host/convert?from=EUR&to=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_exchangehost_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETGBP price and return the result in cents.
+	fn fetch_gbp() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // exchangehost fetch - price
+		let request =
+			http::Request::get("https://api.exchangerate.host/convert?from=GBP&to=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_exchangehost_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETCHF price and return the result in cents.
+	fn fetch_chf() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // exchangehost fetch - price
+		let request =
+			http::Request::get("https://api.exchangerate.host/convert?from=CHF&to=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_exchangehost_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current SETSAR price and return the result in cents.
+	fn fetch_sar() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // exchangehost fetch - price
+		let request =
+			http::Request::get("https://api.exchangerate.host/convert?from=SAR&to=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_exchangehost_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current BTC price and return the result in cents.
+	fn fetch_btc() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current BTC price and return the result in cents.
+	fn fetch_eth() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			Some(price) => Ok(price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Parse the price from the given JSON string using `lite-json`.
+	///
+	/// Returns `0` when parsing failed or `price in cents` when parsing is successful.
+	fn parse_cryptocompare_price(price_str: &str) -> u32 {
+		let val = lite_json::parse_json(price_str);
+		let price = match val.ok()? {
+			JsonValue::Object(obj) => {
+				let (_, v) = obj.into_iter().find(|(k, _)| k.iter().copied().eq("USD".chars()))?;
+				match v {
+					JsonValue::Number(number) => number,
+					_ => return 0,
+				}
+			},
+			_ => return 0,
+		};
+
+		let exp = price.fraction_length.checked_sub(2).unwrap_or(0);
+		price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32
+	}
+
+	/// Parse the price from the given JSON string using `lite-json`.
+	///
+	/// Returns `0` when parsing failed or `price in cents` when parsing is successful.
+	fn parse_exchangehost_price(price_str: &str) -> u32 {
+		let val = lite_json::parse_json(price_str);
+		let price = match val.ok()? {
+			JsonValue::Object(obj) => {
+				let (_, v) = obj.into_iter().find(|(k, _)| k.iter().copied().eq("result".chars()))?;
+				match v {
+					JsonValue::Number(number) => number,
+					_ => return 0,
+				}
+			},
+			_ => return 0,
+		};
+
+		let exp = price.fraction_length.checked_sub(2).unwrap_or(0);
+		price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32
+	}
+
+	/// Add new price to the list.
+	fn add_price(who: T::AccountId, currency_id: CurrencyId,  price: u32) {
+		log::info!("Adding to the average: {}", price);
+		let prices = <Prices<T>>::get(currency_id);
+        const MAX_LEN: usize = 64;
+        if prices.len() < MAX_LEN {
+            prices.push(currency_id, price);
+        } else {
+            prices[currency_id, price as usize % MAX_LEN] = price;
+        }
+
+		let average = Self::average_price(currency_id);
+		log::info!("Current average price is: {}", average);
+		// here we are raising the NewPrice event
+		Self::deposit_event(Event::NewPrice(currency_id, price, who));
+	}
+
+	/// Calculate current average price.
+	fn average_price(currency_id) -> u32 {
+		let prices = <Prices<T>>::get(currency_id);
+		prices.iter().fold(0_u32, |a, b| a.saturating_add(*b)) / prices.len() as u32
+	}
+
+	fn validate_transaction_parameters(
+    currency_id: CurrencyId,
+		block_number: &T::BlockNumber,
+	) -> TransactionValidity {
+		// Now let's check if the transaction has any chance to succeed.
+		let next_unsigned_at = <NextUnsignedAt<T>>::get();
+		if &next_unsigned_at > block_number {
+			return InvalidTransaction::Stale.into()
+		}
+		// Let's make sure to reject transactions from the future.
+		let current_block = <system::Pallet<T>>::block_number();
+		if &current_block < block_number {
+			return InvalidTransaction::Future.into()
+		}
+
+		let avg_price = Self::average_price(currency_id);
+
+		ValidTransaction::with_tag_prefix("serpocw")
+			.priority(T::UnsignedPriority::get().saturating_add(avg_price as _))
+			// T
+			.and_provides(next_unsigned_at)
+			// The transaction is only valid for next 5 blocks. After that it's
+			// going to be revalidated by the pool.
+			.longevity(5)
+			.propagate(true)
+			.build()
+	}
 }
