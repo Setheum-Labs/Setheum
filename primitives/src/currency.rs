@@ -244,20 +244,13 @@ create_currency_id! {
  		SETSAR("SetRiyal", 12) = 7,
 		// Foreign Currencies
 		RENBTC("Ren Bitcoin", 8) = 8,
-
-		// TODO: Remove these fiat references once the `serp-ocw` module has been implemented
-		/// Fiat Currencies as Pegs - only for price feed
-		// USD("Fiat US Dollar", 12) = 181,
-		// EUR("Fiat Euro", 12) =182,
-		// GBP("Fiat Pound Sterling", 12) = 184,
-		// CHF("Fiat Swiss Franc", 12) = 187,
- 		// SAR("Fiat Saudi Riyal", 12) = 190,
-		// KWD("Fiat Kuwaiti Dinar", 12) = 191,		
-		// JOD("Fiat Jordanian Dinar", 12) = 192,		
-		// BHD("Fiat Bahraini Dirham", 12) = 193,		
-		// KYD("Fiat Cayman Islands Dollar", 12) = 194,
-		// OMR("Fiat Omani Riyal", 12) = 195,			
-		// GIP("Fiat Gibraltar Pound", 12) = 196,		
+		// PegCurrencies
+		SETRPEG("SetterPeg", 12) = 9,
+		USD("Fiat US Dollar", 12) = 10,
+		EUR("Fiat Euro", 12) = 11,
+		GBP("Fiat Pound Sterling", 12) = 12,
+		CHF("Fiat Swiss Franc", 12) = 13,
+ 		SAR("Fiat Saudi Riyal", 12) = 14,
 	}
 }
 
