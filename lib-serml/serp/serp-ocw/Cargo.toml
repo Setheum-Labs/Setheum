@@ -10,17 +10,15 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 lite-json = { version = "0.1", default-features = false }
-num-traits = { version = "0.2.8", default-features = false }
-serde = { version = "1.0.101", optional = true }
+log = { version = "0.4.14", default-features = false }
 
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sc-keystore = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", optional = true }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+frame-support = { version = "4.0.0-dev", default-features = false, path = "../support" }
+frame-system = { version = "4.0.0-dev", default-features = false, path = "../system" }
+sp-core = { version = "4.0.0-dev", default-features = false, path = "../../primitives/core" }
+sp-keystore = { version = "0.10.0-dev", path = "../../primitives/keystore", optional = true }
+sp-io = { version = "4.0.0-dev", default-features = false, path = "../../primitives/io" }
+sp-runtime = { version = "4.0.0-dev", default-features = false, path = "../../primitives/runtime" }
+sp-std = { version = "4.0.0-dev", default-features = false, path = "../../primitives/std" }
 
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 setheum-support = { package = "setheum-support", path = "../../support", default-features = false }
@@ -29,11 +27,11 @@ setheum-support = { package = "setheum-support", path = "../../support", default
 default = ["std"]
 std = [
 	"codec/std",
+	"lite-json/std",
+	"log/std",
 	"frame-support/std",
 	"frame-system/std",
-	"lite-json/std",
 	"pallet-timestamp/std",
-	"serde",
 	"sp-core/std",
 	"sp-io/std",
 	"sc-keystore",
