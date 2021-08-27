@@ -78,7 +78,7 @@ pub mod module {
 		/// Setter (Valid Reserve) currency id
 		type GetReserveCurrencyId: Get<CurrencyId>;
 
-		/// SERP Treasury for issuing/burning stable currency adjust standard value
+		/// SERP Treasury for issuing/burning stable currency to adjust standard value
 		/// adjustment
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
