@@ -42,10 +42,7 @@ use sp_runtime::{
 };
 use sp_std::vec::Vec;
 
-use primitives::{
-	currency::DexShare,
-	Balance, CurrencyId, TokenSymbol,
-};
+use primitives::CurrencyId;
 
 #[cfg(test)]
 mod tests;
@@ -96,6 +93,66 @@ pub mod pallet {
 
     /// Currency IDs for OCW price fetch in Setheum.
 		type FetchCurrencyIds: Get<Vec<CurrencyId>>;
+
+		#[pallet::constant]
+		/// Native (DNAR) currency Stablecoin currency id
+		type GetNativeCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettinDes (DRAM) dexer currency id
+		type DirhamCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Setter currency id, it should be SETR in Setheum.
+		type SetterCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SetUSD currency id, it should be SETUSD in Setheum.
+		type GetSetUSDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SETEUR currency id, it should be SETEUR in Setheum.
+		type GetSetEURCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SETGBP currency id, it should be SETGBP in Setheum.
+		type GetSetGBPCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SETCHF currency id, it should be SETCHF in Setheum.
+		type GetSetCHFCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SETSAR currency id, it should be SETSAR in Setheum.
+		type GetSetSARCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// SettinDes (DRAM) dexer currency id
+		type RenBTCCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Setter Peg Basket currency id, it should be SETRPEG in Setheum.
+		type SetterPegCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Peg Fiat USD currency id, it should be USD in Setheum.
+		type GetPegUSDCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Peg Fiat EUR currency id, it should be EUR in Setheum.
+		type GetPegEURCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Peg Fiat GBP currency id, it should be GBP in Setheum.
+		type GetPegGBPCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Peg Fiat CHF currency id, it should be CHF in Setheum.
+		type GetPegCHFCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Peg Fiat SAR currency id, it should be SAR in Setheum.
+		type GetPegSARCurrencyId: Get<CurrencyId>;
 
 		/// A fetch duration period after we fetch prices.
 		#[pallet::constant]
@@ -174,7 +231,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Submit new price to the list.
 		#[pallet::weight(0)]
-		pub fn submit_price(origin: OriginFor<T>, currency_id: CurrencyId price: u32) -> DispatchResultWithPostInfo {
+		pub fn submit_price(origin: OriginFor<T>, currency_id: CurrencyId, price: u32) -> DispatchResultWithPostInfo {
 			// Retrieve sender of the transaction.
 			let who = ensure_signed(origin)?;
 			// Add the price to the on-chain list.
@@ -287,7 +344,7 @@ pub trait FetchPriceFor {
     fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error>;
 }
 
-impl<T: Trait> FetchPriceFor for Pallet<T> {
+impl<T: Config> FetchPriceFor for Pallet<T> {
 	/// Fetch current price and return the result in cents.
 	fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error> {
     let price = Self::fetch_price(currency_id);
@@ -462,19 +519,25 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
     if currency_id = T::SetterCurrencyId::get() => {
         let price = Self::fetch_setter();
         Ok(price)
-    } else if currency_id = T::SetUSDCurrencyId::get() => {
+    } else if currency_id = T::GetNativeCurrencyId::get() => {
+        let price = Self::fetch_dinar();
+        Ok(price)
+    } else if currency_id = T::DirhamCurrencyId::get() => {
+        let price = Self::fetch_dirham();
+        Ok(price)
+    } else if currency_id = T::GetSetUSDCurrencyId::get() => {
         let price = Self::fetch_setusd();
         Ok(price)
-    } else if currency_id = T::SetEURCurrencyId::get() => {
+    } else if currency_id = T::GetSetEURCurrencyId::get() => {
         let price = Self::fetch_seteur();
         Ok(price)
-    } else if currency_id = T::SetGBPCurrencyId::get() => {
+    } else if currency_id = T::GetSetGBPCurrencyId::get() => {
         let price = Self::fetch_setgbp();
         Ok(price)
-    } else if currency_id = T::SetCHFCurrencyId::get() => {
+    } else if currency_id = T::GetSetCHFCurrencyId::get() => {
         let price = Self::fetch_setchf();
         Ok(price)
-    } else if currency_id = T::SetSARCurrencyId::get() => {
+    } else if currency_id = T::GetSetSARCurrencyId::get() => {
         let price = Self::fetch_setsar();
         Ok(price)
     } else if currency_id = T::RenBTCCurrencyId::get() => {
@@ -528,8 +591,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -562,8 +625,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -596,8 +659,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -630,8 +693,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -664,8 +727,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -698,8 +761,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -724,25 +787,25 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 		let price7 = Self::fetch_btc();
     
     let weight_to_price1 = Fix::from_num(price1) / Fix::from_num(100) * Fix::from_num(25);
-    let peg_rate1 = weight_to_price1.to_num::<u32>()
+    let peg_rate1 = weight_to_price1.to_num::<u32>();
 
     let weight_to_price2 = Fix::from_num(price2) / Fix::from_num(4) - Fix::from_num(1);
-    let peg_rate2 = weight_to_price2.to_num::<u32>()
+    let peg_rate2 = weight_to_price2.to_num::<u32>();
 
     let weight_to_price3 = Fix::from_num(price3) / Fix::from_num(100) * Fix::from_num(25);
-    let peg_rate3 = weight_to_price3.to_num::<u32>()
+    let peg_rate3 = weight_to_price3.to_num::<u32>();
 
     let weight_to_price4 = Fix::from_num(price4) / Fix::from_num(4) - Fix::from_num(1);
-    let peg_rate4 = weight_to_price4.to_num::<u32>()
+    let peg_rate4 = weight_to_price4.to_num::<u32>();
 
     let weight_to_price5 = Fix::from_num(price5) / Fix::from_num(100) * Fix::from_num(25);
-    let peg_rate5 = weight_to_price5.to_num::<u32>()
+    let peg_rate5 = weight_to_price5.to_num::<u32>();
 
     let weight_to_price6 = Fix::from_num(price6) / Fix::from_num(4) - Fix::from_num(1);
-    let peg_rate6 = weight_to_price6.to_num::<u32>()
+    let peg_rate6 = weight_to_price6.to_num::<u32>();
 
     let weight_to_price7 = Fix::from_num(price7) / Fix::from_num(100) * Fix::from_num(25);
-    let peg_rate7 = weight_to_price7.to_num::<u32>()
+    let peg_rate7 = weight_to_price7.to_num::<u32>();
 
     let price_fraction = Fix::from_num(peg_rate1)
       + Fix::from_num(peg_rate2)
@@ -752,177 +815,7 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
       + Fix::from_num(peg_rate6)
       + Fix::from_num(peg_rate7);
 
-    let price = price_fraction.to_num::<u32>()
-
-		Ok(price)
-	}
-
-	/// Fetch current SETUSD price and return the result in cents.
-	fn fetch_setusd() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		Ok(price)
-	}
-
-	/// Fetch current SETEUR price and return the result in cents.
-	fn fetch_seteur() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		Ok(price)
-	}
-
-	/// Fetch current SETGBP price and return the result in cents.
-	fn fetch_setgbp() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BGBP&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		Ok(price)
-	}
-
-	/// Fetch current SETCHF price and return the result in cents.
-	fn fetch_setchf() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=XCHF&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		Ok(price)
-	}
-
-	/// Fetch current SETSAR price and return the result in cents.
-	fn fetch_setsar() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=POLNX&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
+    let price = price_fraction.to_num::<u32>();
 
 		Ok(price)
 	}
@@ -954,8 +847,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -988,8 +881,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -1022,8 +915,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -1056,8 +949,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -1090,8 +983,76 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current DNAR price and return the result in cents.
+	fn fetch_dinar() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			price => Ok(price),
+			0 => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		Ok(price)
+	}
+
+	/// Fetch current DRAM price and return the result in cents.
+	fn fetch_dirham() -> Result<(u32), http::Error> {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    // cryptocompare fetch - price
+		let request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
+		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response.code != 200 {
+			log::warn!("Unexpected status code: {}", response.code);
+			return Err(http::Error::Unknown)
+		}
+		let body = response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price = match Self::parse_cryptocompare_price(body_str) {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -1124,8 +1085,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
@@ -1158,8 +1119,8 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
+			price => Ok(price),
+			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
