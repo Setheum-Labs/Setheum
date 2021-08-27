@@ -11,14 +11,15 @@ targets = ["x86_64-unknown-linux-gnu"]
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 lite-json = { version = "0.1", default-features = false }
 log = { version = "0.4.14", default-features = false }
+fixed = { default-features = false, git = "https://github.com/encointer/substrate-fixed", package = "substrate-fixed" }
 
-frame-support = { version = "4.0.0-dev", default-features = false, path = "../support" }
-frame-system = { version = "4.0.0-dev", default-features = false, path = "../system" }
-sp-core = { version = "4.0.0-dev", default-features = false, path = "../../primitives/core" }
-sp-keystore = { version = "0.10.0-dev", path = "../../primitives/keystore", optional = true }
-sp-io = { version = "4.0.0-dev", default-features = false, path = "../../primitives/io" }
-sp-runtime = { version = "4.0.0-dev", default-features = false, path = "../../primitives/runtime" }
-sp-std = { version = "4.0.0-dev", default-features = false, path = "../../primitives/std" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-keystore = { git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.8", optional = true }
+sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 setheum-support = { package = "setheum-support", path = "../../support", default-features = false }
@@ -31,10 +32,9 @@ std = [
 	"log/std",
 	"frame-support/std",
 	"frame-system/std",
-	"pallet-timestamp/std",
 	"sp-core/std",
 	"sp-io/std",
-	"sc-keystore",
+	"sp-keystore",
 	"sp-runtime/std",
 	"sp-std/std",
 	"primitives/std",
