@@ -338,6 +338,7 @@ impl Config for Test {
 	type Event = Event;
 	type AuthorityId = crypto::TestAuthId;
 	type Call = Call;
+    type SerpTreasury = SerpTreasuryModule;
     type SetterCurrencyId = SetterCurrencyId;
     type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
     type GetSetEURCurrencyId = GetSetEURCurrencyId;

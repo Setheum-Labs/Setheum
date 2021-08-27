@@ -19,7 +19,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode};
-use fixed::{types::extra::U32, FixedU128};
+use fixed::{types::extra::U128, FixedU128};
 use frame_support::traits::Get;
 use frame_system::{
 	self as system,
@@ -29,7 +29,7 @@ use frame_system::{
 	},
 };
 use lite_json::json::JsonValue;
-use sp_core::{crypto::KeyTypeId, U256};
+use sp_core::crypto::KeyTypeId;
 use sp_runtime::{
 	offchain::{
 		http,
@@ -38,11 +38,14 @@ use sp_runtime::{
 	},
 	traits::Zero,
 	transaction_validity::{InvalidTransaction, TransactionValidity, ValidTransaction},
-	DispatchError, DispatchResult, RuntimeDebug,
+	DispatchResult, RuntimeDebug, FixedPointNumber,
 };
 use sp_std::vec::Vec;
+use sp_std::prelude::*;
 
+use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
+use support::SerpTreasury;
 
 #[cfg(test)]
 mod tests;
@@ -90,6 +93,9 @@ pub mod pallet {
 
 		/// The overarching dispatch call type.
 		type Call: From<Call<Self>>;
+
+		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
+		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// SERP Treasury for serping stable currencies
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
@@ -153,15 +159,15 @@ pub mod pallet {
       		let duration = T::FetchPeriod::get();
       
 			// fetch prices if the price fetch duration is reached
-			if duration > 0.into() && block_number % duration == 0.into() {
+			if block_number % duration == Zero::zero() {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
-				Self::setter_on_tes()?;
-				Self::setusd_on_tes()?;
-				Self::seteur_on_tes()?;
-				Self::setgbp_on_tes()?;
-				Self::setchf_on_tes()?;
-				Self::setsar_on_tes()?;
+				Self::setter_on_tes();
+				Self::setusd_on_tes();
+				Self::seteur_on_tes();
+				Self::setgbp_on_tes();
+				Self::setchf_on_tes();
+				Self::setsar_on_tes();
 			}
 		}
 	}
@@ -171,7 +177,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Submit new price to the list.
 		#[pallet::weight(0)]
-		pub fn submit_price(origin: OriginFor<T>, price: u32) -> DispatchResultWithPostInfo {
+		pub fn submit_price(origin: OriginFor<T>, price: u64) -> DispatchResultWithPostInfo {
 			// Retrieve sender of the transaction.
 			let who = ensure_signed(origin)?;
 			// Add the price to the on-chain list.
@@ -184,7 +190,7 @@ pub mod pallet {
 		pub fn submit_price_unsigned(
 			origin: OriginFor<T>,
 			_block_number: T::BlockNumber,
-			price: u32,
+			price: u64,
 		) -> DispatchResultWithPostInfo {
 			// This ensures that the function can only be called via unsigned transaction.
 			ensure_none(origin)?;
@@ -213,13 +219,25 @@ pub mod pallet {
 		}
 	}
 
+	/// Error handling for the pallet.
+	#[pallet::error]
+	pub enum Error<T> {
+		// TODO: Update!
+		/// Invalid peg pair (peg-to-currency-by-key-pair)
+		UnexpectedStatusCode,
+		/// No OffChain Price available
+		NoOffchainPrice,
+	}
+
 	/// Events for the pallet.
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Event generated when new price is accepted to contribute to the average.
 		/// \[currency_id, price, who\]
-		NewPrice(u32, T::AccountId),
+		NewPrice(u64, T::AccountId),
+		/// SerpTes triggered successfully
+		SerpTes(CurrencyId),
 	}
 
   #[pallet::validate_unsigned]
@@ -255,7 +273,7 @@ pub mod pallet {
   /// This is used to calculate average price, should have bounded size.
   #[pallet::storage]
   #[pallet::getter(fn prices)]
-  pub(super) type Prices<T: Config> = StorageValue<_, Vec<u32>, ValueQuery>;
+  pub(super) type Prices<T: Config> = StorageValue<_, Vec<u64>, ValueQuery>;
 
   /// Defines the block when next unsigned transaction will be accepted.
   ///
@@ -272,7 +290,7 @@ pub mod pallet {
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug)]
 pub struct PricePayload<Public, BlockNumber> {
 block_number: BlockNumber,
-price: u32,
+price: u64,
 public: Public,
 }
 
@@ -288,19 +306,6 @@ UnsignedForAny,
 UnsignedForAll,
 Raw,
 None,
-}
-
-pub trait FetchPriceFor {
-    fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error>;
-}
-
-impl<T: Config> FetchPriceFor for Pallet<T> {
-	/// Fetch current price and return the result in cents.
-	fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error> {
-    let price = Self::fetch_usd();
-
-		return price
-	}
 }
 
 impl<T: Config> Pallet<T> {
@@ -502,7 +507,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current price and return the result in cents.
-	fn fetch_price() -> Result<u32, http::Error> {
+	fn fetch_price() -> Result<u64, http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
@@ -560,7 +565,7 @@ impl<T: Config> Pallet<T> {
 	/// Parse the price from the given JSON string using `lite-json`.
 	///
 	/// Returns `None` when parsing failed or `Some(price in cents)` when parsing is successful.
-	fn parse_price(price_str: &str) -> Option<u32> {
+	fn parse_price(price_str: &str) -> Option<u64> {
 		let val = lite_json::parse_json(price_str);
 		let price = match val.ok()? {
 			JsonValue::Object(obj) => {
@@ -574,11 +579,11 @@ impl<T: Config> Pallet<T> {
 		};
 
 		let exp = price.fraction_length.checked_sub(2).unwrap_or(0);
-		Some(price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32)
+		Some(price.integer as u64 * 100 + (price.fraction / 10_u64.pow(exp)) as u64)
 	}
 
 	/// Add new price to the list.
-	fn add_price(who: T::AccountId, price: u32) {
+	fn add_price(who: T::AccountId, price: u64) {
 		log::info!("Adding to the average: {}", price);
 		<Prices<T>>::mutate(|prices| {
 			const MAX_LEN: usize = 64;
@@ -598,18 +603,18 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Calculate current average price.
-	fn average_price() -> Option<u32> {
+	fn average_price() -> Option<u64> {
 		let prices = <Prices<T>>::get();
 		if prices.is_empty() {
 			None
 		} else {
-			Some(prices.iter().fold(0_u32, |a, b| a.saturating_add(*b)) / prices.len() as u32)
+			Some(prices.iter().fold(0_u64, |a, b| a.saturating_add(*b)) / prices.len() as u64)
 		}
 	}
 
 	fn validate_transaction_parameters(
 		block_number: &T::BlockNumber,
-		new_price: &u32,
+		new_price: &u64,
 	) -> TransactionValidity {
 		// Now let's check if the transaction has any chance to succeed.
 		let next_unsigned_at = <NextUnsignedAt<T>>::get();
@@ -660,17 +665,17 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Calculate the amount of supply change from a fraction given as `numerator` and `denominator`.
-	fn calculate_supply_change(numerator: u32, denominator: u32, supply: Balance) -> Balance {
-		let fraction = numerator / denominator - 1u32;
-		let supply_change = fraction.saturating_mul_int(supply as u128);
-		supply_change
+	fn calculate_supply_change(numerator: u64, denominator: u64, supply: Balance) -> Balance {
+		type Fix = FixedU128<U128>;
+		let fraction = Fix::from_num(numerator) / Fix::from_num(denominator) - Fix::from_num(1);
+		fraction.saturating_mul_int(supply as u128).to_num::<u128>()
 	}
 
 	/// FETCH SETCURRENCIES COIN PRICES
 	///
 	///
 	/// Fetch current SETR price and return the result in cents.
-	fn setter_on_tes() -> DispatchResult {
+	fn setter_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
@@ -700,7 +705,7 @@ impl<T: Config> Pallet<T> {
 			},
 		}?;
 
-		/// Basket Peg Price
+		// Basket Peg Price
 		
     	// exchangehost fetch - price1
 		let request1 =
@@ -864,19 +869,19 @@ impl<T: Config> Pallet<T> {
 		}?;
 
 		
-		let weight_to_price1 = price1 / 100u32 * 25u32;
+		let weight_to_price1 = price1 / 100u64 * 25u64;
 		
-		let weight_to_price2 = price2 / 100u32 * 21u32;
+		let weight_to_price2 = price2 / 100u64 * 21u64;
 		
-		let weight_to_price3 = price3 / 100u32 * 15u32;
+		let weight_to_price3 = price3 / 100u64 * 15u64;
 		
-		let weight_to_price4 = price4 / 1000u32 * 92u32;
+		let weight_to_price4 = price4 / 1000u64 * 92u64;
 		
-		let weight_to_price5 = price5 / 100u32 * 38u32;
+		let weight_to_price5 = price5 / 100u64 * 38u64;
 		
-		let weight_to_price6 = price6 / 100000000u32 * 1543u32;
+		let weight_to_price6 = price6 / 100000000u64 * 1543u64;
 		
-		let weight_to_price7 = price7 / 100000000u32 * 105u32;
+		let weight_to_price7 = price7 / 100000000u64 * 105u64;
 		
 		let peg_price =
 		weight_to_price1
@@ -946,7 +951,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETUSD price and return the result in cents.
-	fn setusd_on_tes() -> DispatchResult {
+	fn setusd_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
@@ -1058,7 +1063,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETEUR price and return the result in cents.
-	fn seteur_on_tes() -> DispatchResult {
+	fn seteur_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
@@ -1170,7 +1175,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETGBP price and return the result in cents.
-	fn setgbp_on_tes() -> DispatchResult {
+	fn setgbp_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
@@ -1282,7 +1287,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETCHF price and return the result in cents.
-	fn setchf_on_tes() -> DispatchResult {
+	fn setchf_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
@@ -1394,7 +1399,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETSAR price and return the result in cents.
-	fn setsar_on_tes() -> DispatchResult {
+	fn setsar_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
@@ -1508,7 +1513,7 @@ impl<T: Config> Pallet<T> {
 	/// Parse the price from the given JSON string using `lite-json`.
 	///
 	/// Returns `0` when parsing failed or `price in cents` when parsing is successful.
-	fn parse_cryptocompare_price(price_str: &str) -> Option<u32> {
+	fn parse_cryptocompare_price(price_str: &str) -> Option<u64> {
 		let val = lite_json::parse_json(price_str);
 		let price = match val.ok()? {
 			JsonValue::Object(obj) => {
@@ -1522,13 +1527,13 @@ impl<T: Config> Pallet<T> {
 		};
 
 		let exp = price.fraction_length.checked_sub(2).unwrap_or(0);
-		Some(price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32)
+		Some(price.integer as u64 * 100 + (price.fraction / 10_u64.pow(exp)) as u64)
 	}
 
 	/// Parse the price from the given JSON string using `lite-json`.
 	///
 	/// Returns `0` when parsing failed or `price in cents` when parsing is successful.
-	fn parse_exchangehost_price(price_str: &str) -> Option<u32> {
+	fn parse_exchangehost_price(price_str: &str) -> Option<u64> {
 		let val = lite_json::parse_json(price_str);
 		let price = match val.ok()? {
 			JsonValue::Object(obj) => {
@@ -1542,6 +1547,6 @@ impl<T: Config> Pallet<T> {
 		};
 
 		let exp = price.fraction_length.checked_sub(2).unwrap_or(0);
-		Some(price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32)
+		Some(price.integer as u64 * 100 + (price.fraction / 10_u64.pow(exp)) as u64)
 	}
 }
