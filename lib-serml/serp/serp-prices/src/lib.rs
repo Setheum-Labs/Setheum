@@ -96,15 +96,10 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		// TODO: Update!
-		/// Invalid fiat currency id
-		InvalidFiatCurrencyType,
-		/// Invalid stable currency id
-		InvalidCurrencyType,
-		/// Invalid peg pair (peg-to-currency-by-key-pair)
-		InvalidPegPair,
-		/// No OffChain Price available
-		NoOffchainPrice,
+		/// Failed to access price
+		AccessPriceFailed,
+		/// There's no locked price
+		NoLockedPrice,
 	}
 
 	#[pallet::event]
@@ -114,8 +109,6 @@ pub mod module {
 		LockPrice(CurrencyId, Price),
 		/// Unlock price. \[currency_id\]
 		UnlockPrice(CurrencyId),
-		/// Offchain price. \[currency_id]
-		OffChainPrice(CurrencyId, u64)
 	}
 
 	/// Mapping from currency id to it's locked price
