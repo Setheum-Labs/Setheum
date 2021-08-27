@@ -156,7 +156,7 @@ fn it_aggregates_the_price() {
 		assert_ok!(Example::submit_price(Origin::signed(Default::default()), SETR, 27));
 		assert_eq!(Example::average_price(), Some(27));
 
-		assert_ok!(Example::submit_price(Origin::signed(Default::default()), 43));
+		assert_ok!(Example::submit_price(Origin::signed(Default::default()), SETR, 43));
 		assert_eq!(Example::average_price(), Some(35));
 	});
 }
@@ -171,7 +171,7 @@ fn should_make_http_call_and_parse_result() {
 
 	t.execute_with(|| {
 		// when
-		let price = Example::fetch_price().unwrap();
+		let price = Example::fetch_price(SETR).unwrap();
 		// then
 		assert_eq!(price, 15523);
 	});
@@ -211,9 +211,9 @@ fn knows_how_to_mock_several_http_calls() {
 	}
 
 	t.execute_with(|| {
-		let price1 = Example::fetch_price().unwrap();
-		let price2 = Example::fetch_price().unwrap();
-		let price3 = Example::fetch_price().unwrap();
+		let price1 = Example::fetch_price(BTC).unwrap();
+		let price2 = Example::fetch_price(BTC).unwrap();
+		let price3 = Example::fetch_price(BTC).unwrap();
 
 		assert_eq!(price1, 100);
 		assert_eq!(price2, 200);
@@ -245,13 +245,13 @@ fn should_submit_signed_transaction_on_chain() {
 
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_signed().unwrap();
+		Example::fetch_price_and_send_signed(BTC).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		assert!(pool_state.read().transactions.is_empty());
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature.unwrap().0, 0);
-		assert_eq!(tx.call, Call::Example(crate::Call::submit_price(15523)));
+		assert_eq!(tx.call, Call::Example(crate::Call::submit_price(BTC, 15523)));
 	});
 }
 
@@ -292,17 +292,18 @@ fn should_submit_unsigned_transaction_on_chain_for_any_account() {
 	// let signature = price_payload.sign::<crypto::TestAuthId>().unwrap();
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_unsigned_for_any_account(1).unwrap();
+		Example::fetch_price_and_send_unsigned_for_any_account(BTC, 1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
 		if let Call::Example(crate::Call::submit_price_unsigned_with_signed_payload(
+			BTC
 			body,
 			signature,
 		)) = tx.call
 		{
-			assert_eq!(body, price_payload);
+			assert_eq!(BTC, body, price_payload);
 
 			let signature_valid =
 				<PricePayload<
@@ -352,17 +353,18 @@ fn should_submit_unsigned_transaction_on_chain_for_all_accounts() {
 	// let signature = price_payload.sign::<crypto::TestAuthId>().unwrap();
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_unsigned_for_all_accounts(1).unwrap();
+		Example::fetch_price_and_send_unsigned_for_all_accounts(BTC, 1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
 		if let Call::Example(crate::Call::submit_price_unsigned_with_signed_payload(
+			BTC, 
 			body,
 			signature,
 		)) = tx.call
 		{
-			assert_eq!(body, price_payload);
+			assert_eq!(BTC, body, price_payload);
 
 			let signature_valid =
 				<PricePayload<
@@ -376,7 +378,7 @@ fn should_submit_unsigned_transaction_on_chain_for_all_accounts() {
 }
 
 #[test]
-fn should_submit_raw_unsigned_transaction_on_chain() {
+fn for_cryptocompare_should_submit_raw_unsigned_transaction_on_chain() {
 	let (offchain, offchain_state) = testing::TestOffchainExt::new();
 	let (pool, pool_state) = testing::TestTransactionPoolExt::new();
 
@@ -391,13 +393,13 @@ fn should_submit_raw_unsigned_transaction_on_chain() {
 
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_raw_unsigned(1).unwrap();
+		Example::fetch_price_and_send_raw_unsigned(BTC, 1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		assert!(pool_state.read().transactions.is_empty());
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
-		assert_eq!(tx.call, Call::Example(crate::Call::submit_price_unsigned(1, 15523)));
+		assert_eq!(tx.call, Call::Example(crate::Call::submit_price_unsigned(BTC, 1, 15523)));
 	});
 }
 
@@ -406,6 +408,42 @@ fn price_oracle_response(state: &mut testing::OffchainState) {
 		method: "GET".into(),
 		uri: "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD".into(),
 		response: Some(br#"{"USD": 155.23}"#.to_vec()),
+		sent: true,
+		..Default::default()
+	});
+}
+
+#[test]
+fn for_exchangehost_should_submit_raw_unsigned_transaction_on_chain() {
+	let (offchain, offchain_state) = testing::TestOffchainExt::new();
+	let (pool, pool_state) = testing::TestTransactionPoolExt::new();
+
+	let keystore = KeyStore::new();
+
+	let mut t = sp_io::TestExternalities::default();
+	t.register_extension(OffchainWorkerExt::new(offchain));
+	t.register_extension(TransactionPoolExt::new(pool));
+	t.register_extension(KeystoreExt(Arc::new(keystore)));
+
+	price_oracle_response(&mut offchain_state.write());
+
+	t.execute_with(|| {
+		// when
+		Example::fetch_price_and_send_raw_unsigned(BTC, 1).unwrap();
+		// then
+		let tx = pool_state.write().transactions.pop().unwrap();
+		assert!(pool_state.read().transactions.is_empty());
+		let tx = Extrinsic::decode(&mut &*tx).unwrap();
+		assert_eq!(tx.signature, None);
+		assert_eq!(tx.call, Call::Example(crate::Call::submit_price_unsigned(BTC, 1, 15523)));
+	});
+}
+
+fn price_oracle_response(state: &mut testing::OffchainState) {
+	state.expect_request(testing::PendingRequest {
+		method: "GET".into(),
+		uri: "https://api.exchangerate.host/convert?from=EUR&to=USD".into(),
+		response: Some(br#"{"result": 155.23}"#.to_vec()),
 		sent: true,
 		..Default::default()
 	});
