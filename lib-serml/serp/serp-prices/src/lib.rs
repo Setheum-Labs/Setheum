@@ -37,11 +37,11 @@ use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
 use primitives::{
 	currency::DexShare,
-	Balance, CurrencyId, TokenSymbol,
+	Balance, CurrencyId,
 };
 use sp_core::U256;
 use sp_runtime::{
-	traits::{CheckedDiv, Zero},
+	traits::CheckedDiv,
 	FixedPointNumber
 };
 use sp_std::{
