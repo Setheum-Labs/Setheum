@@ -1147,91 +1147,40 @@ impl<T: Config> Pallet<T> {
 	/// Parse the price from the given JSON string using `lite-json`.
 	///
 	/// Returns `0` when parsing failed or `price in cents` when parsing is successful.
-	fn parse_cryptocompare_price(price_str: &str) -> u32 {
+	fn parse_cryptocompare_price(price_str: &str) -> Option<u32> {
 		let val = lite_json::parse_json(price_str);
 		let price = match val.ok()? {
 			JsonValue::Object(obj) => {
 				let (_, v) = obj.into_iter().find(|(k, _)| k.iter().copied().eq("USD".chars()))?;
 				match v {
 					JsonValue::Number(number) => number,
-					_ => return 0,
+					_ => return None,
 				}
 			},
-			_ => return 0,
+			_ => return None,
 		};
 
 		let exp = price.fraction_length.checked_sub(2).unwrap_or(0);
-		price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32
+		Some(price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32)
 	}
 
 	/// Parse the price from the given JSON string using `lite-json`.
 	///
 	/// Returns `0` when parsing failed or `price in cents` when parsing is successful.
-	fn parse_exchangehost_price(price_str: &str) -> u32 {
+	fn parse_exchangehost_price(price_str: &str) -> Option<u32> {
 		let val = lite_json::parse_json(price_str);
 		let price = match val.ok()? {
 			JsonValue::Object(obj) => {
 				let (_, v) = obj.into_iter().find(|(k, _)| k.iter().copied().eq("result".chars()))?;
 				match v {
 					JsonValue::Number(number) => number,
-					_ => return 0,
+					_ => return None,
 				}
 			},
-			_ => return 0,
+			_ => return None,
 		};
 
 		let exp = price.fraction_length.checked_sub(2).unwrap_or(0);
-		price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32
-	}
-
-	/// Add new price to the list.
-	fn add_price(who: T::AccountId, currency_id: CurrencyId,  price: u32) {
-		log::info!("Adding to the average: {}", price);
-		let prices = <Prices<T>>::get(currency_id);
-        const MAX_LEN: usize = 64;
-        if prices.len() < MAX_LEN {
-            prices.push(currency_id, price);
-        } else {
-            prices[currency_id, price as usize % MAX_LEN] = price;
-        }
-
-		let average = Self::average_price(currency_id);
-		log::info!("Current average price is: {}", average);
-		// here we are raising the NewPrice event
-		Self::deposit_event(Event::NewPrice(currency_id, price, who));
-	}
-
-	/// Calculate current average price.
-	fn average_price(currency_id) -> u32 {
-		let prices = <Prices<T>>::get(currency_id);
-		prices.iter().fold(0_u32, |a, b| a.saturating_add(*b)) / prices.len() as u32
-	}
-
-	fn validate_transaction_parameters(
-    currency_id: CurrencyId,
-		block_number: &T::BlockNumber,
-	) -> TransactionValidity {
-		// Now let's check if the transaction has any chance to succeed.
-		let next_unsigned_at = <NextUnsignedAt<T>>::get();
-		if &next_unsigned_at > block_number {
-			return InvalidTransaction::Stale.into()
-		}
-		// Let's make sure to reject transactions from the future.
-		let current_block = <system::Pallet<T>>::block_number();
-		if &current_block < block_number {
-			return InvalidTransaction::Future.into()
-		}
-
-		let avg_price = Self::average_price(currency_id);
-
-		ValidTransaction::with_tag_prefix("serpocw")
-			.priority(T::UnsignedPriority::get().saturating_add(avg_price as _))
-			// T
-			.and_provides(next_unsigned_at)
-			// The transaction is only valid for next 5 blocks. After that it's
-			// going to be revalidated by the pool.
-			.longevity(5)
-			.propagate(true)
-			.build()
+		Some(price.integer as u32 * 100 + (price.fraction / 10_u64.pow(exp)) as u32)
 	}
 }
