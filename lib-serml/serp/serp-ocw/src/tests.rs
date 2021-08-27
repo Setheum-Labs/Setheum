@@ -29,6 +29,8 @@ use sp_core::{
 };
 use std::sync::Arc;
 
+use primitives::{Amount, TokenSymbol};
+
 use sp_keystore::{testing::KeyStore, KeystoreExt, SyncCryptoStore};
 use sp_runtime::{
 	testing::{Header, TestXt},
@@ -50,6 +52,23 @@ frame_support::construct_runtime!(
 		Example: example_offchain_worker::{Pallet, Call, Storage, Event<T>, ValidateUnsigned},
 	}
 );
+
+// Currencies constants - CurrencyId/TokenSymbol
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
+pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
+pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
+pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
+pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
+pub const SETRPEG: CurrencyId = CurrencyId::Token(TokenSymbol::SETRPEG);
+pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
+pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
+pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
+pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
+pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -117,6 +136,22 @@ parameter_types! {
 	pub const GracePeriod: u64 = 5;
 	pub const UnsignedInterval: u64 = 128;
 	pub const UnsignedPriority: u64 = 1 << 20;
+	
+	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+	pub const DirhamCurrencyId: CurrencyId = DRAM;
+	pub const SetterCurrencyId: CurrencyId = SETR;
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetEURCurrencyId: CurrencyId = SETEUR;
+	pub const GetSetGBPCurrencyId: CurrencyId = SETGBP;
+	pub const GetSetCHFCurrencyId: CurrencyId = SETCHF;
+	pub const GetSetSARCurrencyId: CurrencyId = SETSAR;
+	pub const RenBTCCurrencyId: CurrencyId = RENBTC;
+	pub const SetterPegCurrencyId: CurrencyId = SETRPEG;
+	pub const GetPegUSDCurrencyId: CurrencyId = USD;
+	pub const GetPegEURCurrencyId: CurrencyId = EUR;
+	pub const GetPegGBPCurrencyId: CurrencyId = GBP;
+	pub const GetPegCHFCurrencyId: CurrencyId = CHF;
+	pub const GetPegSARCurrencyId: CurrencyId = SAR;
 
     pub FetchCurrencyIds: Vec<CurrencyId> = vec![
         SETR,
@@ -125,7 +160,7 @@ parameter_types! {
         SETGBP,
         SETSAR,
         SETUSD,
-        BTC,
+        RENBTC,
         SETRPEG,
         CHF,
         EUR,
@@ -140,6 +175,21 @@ impl Config for Test {
 	type AuthorityId = crypto::TestAuthId;
 	type Call = Call;
     type FetchCurrencyIds = FetchCurrencyIds;
+    type GetNativeCurrencyId = GetNativeCurrencyId;
+    type DirhamCurrencyId = DirhamCurrencyId;
+    type SetterCurrencyId = SetterCurrencyId;
+    type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+    type GetSetEURCurrencyId = GetSetEURCurrencyId;
+    type GetSetGBPCurrencyId = GetSetGBPCurrencyId;
+    type GetSetCHFCurrencyId = GetSetCHFCurrencyId;
+    type GetSetSARCurrencyId = GetSetSARCurrencyId;
+    type RenBTCCurrencyId = RenBTCCurrencyId;
+    type SetterPegCurrencyId = SetterPegCurrencyId;
+    type GetPegUSDCurrencyId = GetPegUSDCurrencyId;
+    type GetPegEURCurrencyId = GetPegEURCurrencyId;
+    type GetPegGBPCurrencyId = GetPegGBPCurrencyId;
+    type GetPegCHFCurrencyId = GetPegCHFCurrencyId;
+    type GetPegSARCurrencyId = GetPegSARCurrencyId;
     // Wait period between automated fetches. Set to 0 to disable this feature.
     // Then you need to manucally kickoff pricefetch
     type FetchPeriod = FetchPeriod;
@@ -153,10 +203,10 @@ fn it_aggregates_the_price() {
 	sp_io::TestExternalities::default().execute_with(|| {
 		assert_eq!(Example::average_price(), None);
 
-		assert_ok!(Example::submit_price(Origin::signed(Default::default()), SETR, 27));
+		assert_ok!(Example::submit_price(Origin::signed(Default::default()), 27));
 		assert_eq!(Example::average_price(), Some(27));
 
-		assert_ok!(Example::submit_price(Origin::signed(Default::default()), SETR, 43));
+		assert_ok!(Example::submit_price(Origin::signed(Default::default()), 43));
 		assert_eq!(Example::average_price(), Some(35));
 	});
 }
@@ -171,7 +221,7 @@ fn should_make_http_call_and_parse_result() {
 
 	t.execute_with(|| {
 		// when
-		let price = Example::fetch_price(SETR).unwrap();
+		let price = Example::fetch_price().unwrap();
 		// then
 		assert_eq!(price, 15523);
 	});
@@ -211,9 +261,9 @@ fn knows_how_to_mock_several_http_calls() {
 	}
 
 	t.execute_with(|| {
-		let price1 = Example::fetch_price(BTC).unwrap();
-		let price2 = Example::fetch_price(BTC).unwrap();
-		let price3 = Example::fetch_price(BTC).unwrap();
+		let price1 = Example::fetch_price().unwrap();
+		let price2 = Example::fetch_price().unwrap();
+		let price3 = Example::fetch_price().unwrap();
 
 		assert_eq!(price1, 100);
 		assert_eq!(price2, 200);
@@ -245,13 +295,13 @@ fn should_submit_signed_transaction_on_chain() {
 
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_signed(BTC).unwrap();
+		Example::fetch_price_and_send_signed().unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		assert!(pool_state.read().transactions.is_empty());
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature.unwrap().0, 0);
-		assert_eq!(tx.call, Call::Example(crate::Call::submit_price(BTC, 15523)));
+		assert_eq!(tx.call, Call::Example(crate::Call::submit_price(15523)));
 	});
 }
 
@@ -292,18 +342,17 @@ fn should_submit_unsigned_transaction_on_chain_for_any_account() {
 	// let signature = price_payload.sign::<crypto::TestAuthId>().unwrap();
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_unsigned_for_any_account(BTC, 1).unwrap();
+		Example::fetch_price_and_send_unsigned_for_any_account(1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
 		if let Call::Example(crate::Call::submit_price_unsigned_with_signed_payload(
-			BTC
 			body,
 			signature,
 		)) = tx.call
 		{
-			assert_eq!(BTC, body, price_payload);
+			assert_eq!(body, price_payload);
 
 			let signature_valid =
 				<PricePayload<
@@ -353,18 +402,17 @@ fn should_submit_unsigned_transaction_on_chain_for_all_accounts() {
 	// let signature = price_payload.sign::<crypto::TestAuthId>().unwrap();
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_unsigned_for_all_accounts(BTC, 1).unwrap();
+		Example::fetch_price_and_send_unsigned_for_all_accounts(1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
 		if let Call::Example(crate::Call::submit_price_unsigned_with_signed_payload(
-			BTC, 
 			body,
 			signature,
 		)) = tx.call
 		{
-			assert_eq!(BTC, body, price_payload);
+			assert_eq!(body, price_payload);
 
 			let signature_valid =
 				<PricePayload<
@@ -378,7 +426,7 @@ fn should_submit_unsigned_transaction_on_chain_for_all_accounts() {
 }
 
 #[test]
-fn for_cryptocompare_should_submit_raw_unsigned_transaction_on_chain() {
+fn should_submit_raw_unsigned_transaction_on_chain() {
 	let (offchain, offchain_state) = testing::TestOffchainExt::new();
 	let (pool, pool_state) = testing::TestTransactionPoolExt::new();
 
@@ -393,13 +441,13 @@ fn for_cryptocompare_should_submit_raw_unsigned_transaction_on_chain() {
 
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_raw_unsigned(BTC, 1).unwrap();
+		Example::fetch_price_and_send_raw_unsigned(1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		assert!(pool_state.read().transactions.is_empty());
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
-		assert_eq!(tx.call, Call::Example(crate::Call::submit_price_unsigned(BTC, 1, 15523)));
+		assert_eq!(tx.call, Call::Example(crate::Call::submit_price_unsigned(1, 15523)));
 	});
 }
 
@@ -414,39 +462,19 @@ fn price_oracle_response(state: &mut testing::OffchainState) {
 }
 
 #[test]
-fn for_exchangehost_should_submit_raw_unsigned_transaction_on_chain() {
-	let (offchain, offchain_state) = testing::TestOffchainExt::new();
-	let (pool, pool_state) = testing::TestTransactionPoolExt::new();
+fn parse_price_works() {
+	let test_data = vec![
+		("{\"USD\":6536.92}", Some(653692)),
+		("{\"USD\":65.92}", Some(6592)),
+		("{\"USD\":6536.924565}", Some(653692)),
+		("{\"USD\":6536}", Some(653600)),
+		("{\"USD2\":6536}", None),
+		("{\"USD\":\"6432\"}", None),
+	];
 
-	let keystore = KeyStore::new();
-
-	let mut t = sp_io::TestExternalities::default();
-	t.register_extension(OffchainWorkerExt::new(offchain));
-	t.register_extension(TransactionPoolExt::new(pool));
-	t.register_extension(KeystoreExt(Arc::new(keystore)));
-
-	price_oracle_response(&mut offchain_state.write());
-
-	t.execute_with(|| {
-		// when
-		Example::fetch_price_and_send_raw_unsigned(BTC, 1).unwrap();
-		// then
-		let tx = pool_state.write().transactions.pop().unwrap();
-		assert!(pool_state.read().transactions.is_empty());
-		let tx = Extrinsic::decode(&mut &*tx).unwrap();
-		assert_eq!(tx.signature, None);
-		assert_eq!(tx.call, Call::Example(crate::Call::submit_price_unsigned(BTC, 1, 15523)));
-	});
-}
-
-fn price_oracle_response(state: &mut testing::OffchainState) {
-	state.expect_request(testing::PendingRequest {
-		method: "GET".into(),
-		uri: "https://api.exchangerate.host/convert?from=EUR&to=USD".into(),
-		response: Some(br#"{"result": 155.23}"#.to_vec()),
-		sent: true,
-		..Default::default()
-	});
+	for (json, expected) in test_data {
+		assert_eq!(expected, Example::parse_price(json));
+	}
 }
 
 #[test]
