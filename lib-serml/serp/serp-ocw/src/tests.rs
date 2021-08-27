@@ -21,7 +21,7 @@
 use crate as example_offchain_worker;
 use crate::*;
 use codec::Decode;
-use frame_support::{assert_ok, parameter_types};
+use frame_support::{ord_parameter_types, parameter_types, PalletId};
 use sp_core::{
 	offchain::{testing, OffchainWorkerExt, TransactionPoolExt},
 	sr25519::Signature,
@@ -29,7 +29,9 @@ use sp_core::{
 };
 use std::sync::Arc;
 
-use primitives::{Amount, TokenSymbol};
+use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
+use support::{Price, PriceProvider, Ratio};
+use sp_std::cell::RefCell;
 
 use sp_keystore::{testing::KeyStore, KeystoreExt, SyncCryptoStore};
 use sp_runtime::{
@@ -49,6 +51,11 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
+		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
+		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		OrmlCurrencies: orml_currencies::{Pallet, Call, Event<T>},
 		Example: example_offchain_worker::{Pallet, Call, Storage, Event<T>, ValidateUnsigned},
 	}
 );
@@ -63,12 +70,6 @@ pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
 pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
 pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
-pub const SETRPEG: CurrencyId = CurrencyId::Token(TokenSymbol::SETRPEG);
-pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
-pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
-pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
-pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
-pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -76,7 +77,7 @@ parameter_types! {
 		frame_system::limits::BlockWeights::simple_max(1024);
 }
 impl frame_system::Config for Test {
-	type BaseCallFilter = frame_support::traits::AllowAll;
+	type BaseCallFilter = ();
 	type BlockWeights = ();
 	type BlockLength = ();
 	type DbWeight = ();
@@ -86,7 +87,7 @@ impl frame_system::Config for Test {
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = sp_core::sr25519::Public;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = Event;
@@ -131,6 +132,192 @@ where
 	}
 }
 
+parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+
+impl orml_tokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = ();
+	type MaxLocks = ();
+}
+
+parameter_types! {
+	pub const ExistentialDeposit: Balance = 1;
+	pub const MaxReserves: u32 = 50;
+}
+
+impl pallet_balances::Config for Runtime {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type Event = Event;
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = frame_system::Pallet<Runtime>;
+	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+}
+
+impl orml_currencies::Config for Runtime {
+	type Event = Event;
+	type MultiCurrency = Tokens;
+	type NativeCurrency = AdaptedBasicCurrency;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type WeightInfo = ();
+}
+pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
+
+parameter_types! {
+	pub const GetExchangeFee: (u32, u32) = (1, 100);
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const TradingPathLimit: u32 = 3;
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![
+		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETCHF, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETEUR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETGBP, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETSAR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETCHF, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETGBP, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETSAR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
+	];
+}
+
+impl setheum_dex::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type GetExchangeFee = GetExchangeFee;
+	type TradingPathLimit = TradingPathLimit;
+	type PalletId = DexPalletId;
+	type CurrencyIdMapping = ();
+	type WeightInfo = ();
+	type ListingOrigin = EnsureSignedBy<One, AccountId>;
+}
+
+thread_local! {
+	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+}
+
+pub struct MockPriceSource;
+impl MockPriceSource {
+	pub fn set_relative_price(price: Option<Price>) {
+		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
+	}
+}
+impl PriceProvider<CurrencyId> for MockPriceSource {
+
+	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
+		RELATIVE_PRICE.with(|v| *v.borrow_mut())
+	}
+
+	fn get_market_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_setter_price() -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
+		None
+	}
+
+	fn lock_price(_currency_id: CurrencyId) {}
+
+	fn unlock_price(_currency_id: CurrencyId) {}
+}
+
+ord_parameter_types! {
+	pub const One: AccountId = 1;
+}
+
+parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
+	];
+	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
+	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
+	pub const CashDropVaultAccountId: AccountId = VAULT;
+	
+	pub CashDropPeriod: BlockNumber = 120;
+	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+}
+
+parameter_type_with_key! {
+	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETR => 2,
+			&SETCHF => 2,
+			&SETEUR => 2,
+			&SETGBP => 2,
+			&SETUSD => 2,
+			&SETSAR => 2,
+			_ => 0,
+		}
+	};
+}
+
+parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETR => 10_000,
+			&SETCHF => 10_000,
+			&SETEUR => 10_000,
+			&SETGBP => 10_000,
+			&SETUSD => 10_000,
+			&SETSAR => 10_000,
+			_ => 0,
+		}
+	};
+}
+
+impl serp_treasury::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type DirhamCurrencyId = DirhamCurrencyId;
+	type CashDropPeriod = CashDropPeriod;
+	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
+	type CashDropVaultAccountId = CashDropVaultAccountId;
+	type CharityFundAccountId = CharityFundAccountId;
+	type Dex = SetheumDEX;
+	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
+	type PalletId = SerpTreasuryPalletId;
+	type WeightInfo = ();
+}
+
 parameter_types! {
 	pub const FetchPeriod: u64 = 5;
 	pub const GracePeriod: u64 = 5;
@@ -145,53 +332,18 @@ parameter_types! {
 	pub const GetSetGBPCurrencyId: CurrencyId = SETGBP;
 	pub const GetSetCHFCurrencyId: CurrencyId = SETCHF;
 	pub const GetSetSARCurrencyId: CurrencyId = SETSAR;
-	pub const RenBTCCurrencyId: CurrencyId = RENBTC;
-	pub const SetterPegCurrencyId: CurrencyId = SETRPEG;
-	pub const GetPegUSDCurrencyId: CurrencyId = USD;
-	pub const GetPegEURCurrencyId: CurrencyId = EUR;
-	pub const GetPegGBPCurrencyId: CurrencyId = GBP;
-	pub const GetPegCHFCurrencyId: CurrencyId = CHF;
-	pub const GetPegSARCurrencyId: CurrencyId = SAR;
-
-    pub FetchCurrencyIds: Vec<CurrencyId> = vec![
-        SETR,
-        SETCHF,
-        SETEUR,
-        SETGBP,
-        SETSAR,
-        SETUSD,
-        RENBTC,
-        SETRPEG,
-        CHF,
-        EUR,
-        GBP,
-        SAR,
-        USD,
-    ];
 }
 
 impl Config for Test {
 	type Event = Event;
 	type AuthorityId = crypto::TestAuthId;
 	type Call = Call;
-    type FetchCurrencyIds = FetchCurrencyIds;
-    type GetNativeCurrencyId = GetNativeCurrencyId;
-    type DirhamCurrencyId = DirhamCurrencyId;
     type SetterCurrencyId = SetterCurrencyId;
     type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
     type GetSetEURCurrencyId = GetSetEURCurrencyId;
     type GetSetGBPCurrencyId = GetSetGBPCurrencyId;
     type GetSetCHFCurrencyId = GetSetCHFCurrencyId;
     type GetSetSARCurrencyId = GetSetSARCurrencyId;
-    type RenBTCCurrencyId = RenBTCCurrencyId;
-    type SetterPegCurrencyId = SetterPegCurrencyId;
-    type GetPegUSDCurrencyId = GetPegUSDCurrencyId;
-    type GetPegEURCurrencyId = GetPegEURCurrencyId;
-    type GetPegGBPCurrencyId = GetPegGBPCurrencyId;
-    type GetPegCHFCurrencyId = GetPegCHFCurrencyId;
-    type GetPegSARCurrencyId = GetPegSARCurrencyId;
-    // Wait period between automated fetches. Set to 0 to disable this feature.
-    // Then you need to manucally kickoff pricefetch
     type FetchPeriod = FetchPeriod;
 	type GracePeriod = GracePeriod;
 	type UnsignedInterval = UnsignedInterval;

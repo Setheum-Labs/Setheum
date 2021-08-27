@@ -29,7 +29,7 @@ use frame_system::{
 	},
 };
 use lite_json::json::JsonValue;
-use sp_core::crypto::KeyTypeId;
+use sp_core::{crypto::KeyTypeId, U256};
 use sp_runtime::{
 	offchain::{
 		http,
@@ -38,11 +38,11 @@ use sp_runtime::{
 	},
 	traits::Zero,
 	transaction_validity::{InvalidTransaction, TransactionValidity, ValidTransaction},
-	RuntimeDebug,
+	DispatchError, DispatchResult, RuntimeDebug,
 };
 use sp_std::vec::Vec;
 
-use primitives::CurrencyId;
+use primitives::{Balance, CurrencyId};
 
 #[cfg(test)]
 mod tests;
@@ -91,23 +91,15 @@ pub mod pallet {
 		/// The overarching dispatch call type.
 		type Call: From<Call<Self>>;
 
-    /// Currency IDs for OCW price fetch in Setheum.
-		type FetchCurrencyIds: Get<Vec<CurrencyId>>;
-
-		#[pallet::constant]
-		/// Native (DNAR) currency Stablecoin currency id
-		type GetNativeCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettinDes (DRAM) dexer currency id
-		type DirhamCurrencyId: Get<CurrencyId>;
+		/// SERP Treasury for serping stable currencies
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		#[pallet::constant]
 		/// The Setter currency id, it should be SETR in Setheum.
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SetUSD currency id, it should be SETUSD in Setheum.
+		/// The SETUSD currency id, it should be SETUSD in Setheum.
 		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -125,34 +117,6 @@ pub mod pallet {
 		#[pallet::constant]
 		/// The SETSAR currency id, it should be SETSAR in Setheum.
 		type GetSetSARCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettinDes (DRAM) dexer currency id
-		type RenBTCCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Basket currency id, it should be SETRPEG in Setheum.
-		type SetterPegCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Peg Fiat USD currency id, it should be USD in Setheum.
-		type GetPegUSDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Peg Fiat EUR currency id, it should be EUR in Setheum.
-		type GetPegEURCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Peg Fiat GBP currency id, it should be GBP in Setheum.
-		type GetPegGBPCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Peg Fiat CHF currency id, it should be CHF in Setheum.
-		type GetPegCHFCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Peg Fiat SAR currency id, it should be SAR in Setheum.
-		type GetPegSARCurrencyId: Get<CurrencyId>;
 
 		/// A fetch duration period after we fetch prices.
 		#[pallet::constant]
@@ -186,28 +150,19 @@ pub mod pallet {
 		/// This function will be called when the node is fully synced and a new best block is
 		/// succesfuly imported.
 		fn offchain_worker(block_number: T::BlockNumber) {
-      let duration = T::FetchPeriod::get();
+      		let duration = T::FetchPeriod::get();
       
-      // fetch prices if the price fetch duration is reached
-      if duration > 0.into() && block_number % duration == 0.into() {
-        for (currency_id) in T::FetchCurrencyIds::get().iter() {
-          // We are going to send both signed and unsigned transactions
-          // depending on the block number.
-          let should_send = Self::choose_transaction_type(block_number);
-          let res = match should_send {
-            TransactionType::Signed => Self::fetch_price_and_send_signed(currency_id),
-            TransactionType::UnsignedForAny =>
-              Self::fetch_price_and_send_unsigned_for_any_account(currency_id, block_number),
-            TransactionType::UnsignedForAll =>
-              Self::fetch_price_and_send_unsigned_for_all_accounts(currency_id, block_number),
-            TransactionType::Raw => Self::fetch_price_and_send_raw_unsigned(currency_id, block_number),
-            TransactionType::None => Ok(()),
-          };
-          if let Err(e) = res {
-            log::error!("Error: {}", e);
-          }
-        }
-      }
+			// fetch prices if the price fetch duration is reached
+			if duration > 0.into() && block_number % duration == 0.into() {
+				// SERP TES (Token Elasticity of Supply).
+				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
+				Self::setter_on_tes()?;
+				Self::setusd_on_tes()?;
+				Self::seteur_on_tes()?;
+				Self::setgbp_on_tes()?;
+				Self::setchf_on_tes()?;
+				Self::setsar_on_tes()?;
+			}
 		}
 	}
 
@@ -704,599 +659,850 @@ impl<T: Config> Pallet<T> {
 			.build()
 	}
 
-  /// FETCH SETCURRENCIES COIN PRICES
-  ///
-  /// 
+	/// Calculate the amount of supply change from a fraction given as `numerator` and `denominator`.
+	fn calculate_supply_change(numerator: u32, denominator: u32, supply: Balance) -> Balance {
+		let fraction = numerator / denominator - 1u32;
+		let supply_change = fraction.saturating_mul_int(supply as u128);
+		supply_change
+	}
+
+	/// FETCH SETCURRENCIES COIN PRICES
+	///
+	///
 	/// Fetch current SETR price and return the result in cents.
-	fn fetch_setter() -> Result<(u32), http::Error> {
+	fn setter_on_tes() -> DispatchResult {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
 		// coming from the host machine.
 		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
 
-    // cryptocompare fetch - price
-		let request =
+    	// cryptocompare fetch - market_price
+		let market_request =
 			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
+		let market_pending = market_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let market_response = market_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if market_response.code != 200 {
+			log::warn!("Unexpected status code: {}", market_response.code);
 			return Err(http::Error::Unknown)
 		}
-		let body = response.body().collect::<Vec<u8>>();
+		let market_body = market_response.body().collect::<Vec<u8>>();
 		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+		let market_body_str = sp_std::str::from_utf8(&market_body).map_err(|_| {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
+		let market_price = match Self::parse_cryptocompare_price(market_body_str) {
+			Some(market_price) => Ok(market_price),
 			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				log::warn!("Unable to extract price from the response: {:?}", market_body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-	/// Fetch current SETUSD price and return the result in cents.
-	fn fetch_setusd() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-	/// Fetch current SETEUR price and return the result in cents.
-	fn fetch_seteur() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-	/// Fetch current SETGBP price and return the result in cents.
-	fn fetch_setgbp() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BGBP&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-	/// Fetch current SETCHF price and return the result in cents.
-	fn fetch_setchf() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=XCHF&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-	/// Fetch current SETSAR price and return the result in cents.
-	fn fetch_setsar() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=POLNX&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-  /// FETCH SETCURRENCIES COIN PEG PRICES
-  ///
-  /// 
-	/// Fetch current SETR price and return the result in cents.
-	fn fetch_setter_basket() -> Result<(u32), http::Error> {
-    type Fix = FixedU128<U32>;
-
-		let price1 = Self::fetch_usd();
-		let price2 = Self::fetch_eur();
-		let price3 = Self::fetch_gbp();
-		let price4 = Self::fetch_chf();
-		let price5 = Self::fetch_sar();
-		let price6 = Self::fetch_eth();
-		let price7 = Self::fetch_btc();
-    
-    let weight_to_price1 = Fix::from_num(price1) / Fix::from_num(100) * Fix::from_num(25);
-    let peg_rate1 = weight_to_price1.to_num::<u32>();
-
-    let weight_to_price2 = Fix::from_num(price2) / Fix::from_num(4) - Fix::from_num(1);
-    let peg_rate2 = weight_to_price2.to_num::<u32>();
-
-    let weight_to_price3 = Fix::from_num(price3) / Fix::from_num(100) * Fix::from_num(25);
-    let peg_rate3 = weight_to_price3.to_num::<u32>();
-
-    let weight_to_price4 = Fix::from_num(price4) / Fix::from_num(4) - Fix::from_num(1);
-    let peg_rate4 = weight_to_price4.to_num::<u32>();
-
-    let weight_to_price5 = Fix::from_num(price5) / Fix::from_num(100) * Fix::from_num(25);
-    let peg_rate5 = weight_to_price5.to_num::<u32>();
-
-    let weight_to_price6 = Fix::from_num(price6) / Fix::from_num(4) - Fix::from_num(1);
-    let peg_rate6 = weight_to_price6.to_num::<u32>();
-
-    let weight_to_price7 = Fix::from_num(price7) / Fix::from_num(100) * Fix::from_num(25);
-    let peg_rate7 = weight_to_price7.to_num::<u32>();
-
-    let price_fraction = Fix::from_num(peg_rate1)
-      + Fix::from_num(peg_rate2)
-      + Fix::from_num(peg_rate3)
-      + Fix::from_num(peg_rate4) 
-      + Fix::from_num(peg_rate5)
-      + Fix::from_num(peg_rate6)
-      + Fix::from_num(peg_rate7);
-
-    let price = price_fraction.to_num::<u32>();
-
-		return price
-	}
-
-  /// FETCH FIAT CURRENCIES PRICES
-  ///
-  /// 
-	/// Fetch current SETUSD price and return the result in cents.
-	fn fetch_usd() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // exchangehost fetch - price
-		let request =
+		/// Basket Peg Price
+		
+    	// exchangehost fetch - price1
+		let request1 =
 			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
+		let pending1 = request1.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response1 = pending1.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response1.code != 200 {
+			log::warn!("Unexpected status code: {}", response1.code);
 			return Err(http::Error::Unknown)
 		}
-		let body = response.body().collect::<Vec<u8>>();
+		let body1 = response1.body().collect::<Vec<u8>>();
 		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+		let body_str1 = sp_std::str::from_utf8(&body1).map_err(|_| {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
+		let price1 = match Self::parse_exchangehost_price(body_str1) {
+			Some(price1) => Ok(price1),
 			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				log::warn!("Unable to extract price from the response: {:?}", body_str1);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		log::warn!("Got price: {} cents", price);
+    	// exchangehost fetch - price2
+		let request2 =
+			http::Request::get("https://api.exchangerate.host/convert?from=EUR&to=USD");
+		let pending2 = request2.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response2 = pending2.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response2.code != 200 {
+			log::warn!("Unexpected status code: {}", response2.code);
+			return Err(http::Error::Unknown)
+		}
+		let body2 = response2.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str2 = sp_std::str::from_utf8(&body2).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price2 = match Self::parse_exchangehost_price(body_str2) {
+			Some(price2) => Ok(price2),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str2);
+				Err(http::Error::Unknown)
+			},
+		}?;
 
-		Ok(price)
+    	// exchangehost fetch - price3
+		let request3 =
+			http::Request::get("https://api.exchangerate.host/convert?from=GBP&to=USD");
+		let pending3 = request3.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response3 = pending3.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response3.code != 200 {
+			log::warn!("Unexpected status code: {}", response3.code);
+			return Err(http::Error::Unknown)
+		}
+		let body3 = response3.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str3 = sp_std::str::from_utf8(&body3).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price3 = match Self::parse_exchangehost_price(body_str3) {
+			Some(price3) => Ok(price3),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str3);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+    	// exchangehost fetch - price4
+		let request4 =
+			http::Request::get("https://api.exchangerate.host/convert?from=CHF&to=USD");
+		let pending4 = request4.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response4 = pending4.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response4.code != 200 {
+			log::warn!("Unexpected status code: {}", response4.code);
+			return Err(http::Error::Unknown)
+		}
+		let body4 = response4.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str4 = sp_std::str::from_utf8(&body4).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price4 = match Self::parse_exchangehost_price(body_str4) {
+			Some(price4) => Ok(price4),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str4);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+    	// exchangehost fetch - price5
+		let request5 =
+			http::Request::get("https://api.exchangerate.host/convert?from=SAR&to=USD");
+		let pending5 = request5.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response5 = pending5.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response5.code != 200 {
+			log::warn!("Unexpected status code: {}", response5.code);
+			return Err(http::Error::Unknown)
+		}
+		let body5 = response5.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str5 = sp_std::str::from_utf8(&body5).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price5 = match Self::parse_exchangehost_price(body_str5) {
+			Some(price5) => Ok(price5),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str5);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+    	// cryptocompare fetch - price6
+		let request6 =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
+		let pending6 = request6.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response6 = pending6.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response6.code != 200 {
+			log::warn!("Unexpected status code: {}", response6.code);
+			return Err(http::Error::Unknown)
+		}
+		let body6 = response6.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str6 = sp_std::str::from_utf8(&body6).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price6 = match Self::parse_cryptocompare_price(body_str6) {
+			Some(price6) => Ok(price6),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str6);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+    	// cryptocompare fetch - price7
+		let request7 =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD");
+		let pending7 = request7.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let response7 = pending7.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if response7.code != 200 {
+			log::warn!("Unexpected status code: {}", response7.code);
+			return Err(http::Error::Unknown)
+		}
+		let body7 = response7.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let body_str7 = sp_std::str::from_utf8(&body7).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let price7 = match Self::parse_cryptocompare_price(body_str7) {
+			Some(price7) => Ok(price7),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", body_str7);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		
+		let weight_to_price1 = price1 / 100u32 * 25u32;
+		
+		let weight_to_price2 = price2 / 100u32 * 21u32;
+		
+		let weight_to_price3 = price3 / 100u32 * 15u32;
+		
+		let weight_to_price4 = price4 / 1000u32 * 92u32;
+		
+		let weight_to_price5 = price5 / 100u32 * 38u32;
+		
+		let weight_to_price6 = price6 / 100000000u32 * 1543u32;
+		
+		let weight_to_price7 = price7 / 100000000u32 * 105u32;
+		
+		let peg_price =
+		weight_to_price1
+		.saturating_add(weight_to_price2)
+		.saturating_add(weight_to_price3)
+		.saturating_add(weight_to_price4) 
+		.saturating_add(weight_to_price5)
+		.saturating_add(weight_to_price6)
+		.saturating_add(weight_to_price7);
+
+    	// cryptocompare fetch - dinar_price
+		let dinar_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let dinar_pending = dinar_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let dinar_response = dinar_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if dinar_response.code != 200 {
+			log::warn!("Unexpected status code: {}", dinar_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let dinar_body = dinar_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let dinar_body_str = sp_std::str::from_utf8(&dinar_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let dinar_price = match Self::parse_cryptocompare_price(dinar_body_str) {
+			Some(dinar_price) => Ok(dinar_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", dinar_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		// Total Issuance of the currency
+		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+
+		match market_price {
+			market_price if market_price > peg_price => {
+	
+				// safe from underflow because `peg_price` is checked to be less than `market_price`
+				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
+
+				// `min_target_amount` for `SerpUp` operation
+				let relative_price = market_price / dinar_price;
+				let min_target_amount_full = expand_by / relative_price;
+				let min_target_fraction = min_target_amount_full / 100;
+				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
+		
+				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+			}
+			market_price if market_price < peg_price => {
+				// safe from underflow because `peg_price` is checked to be greater than `market_price`
+				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
+
+				// `max_supply_amount` for `SerpDown` operation
+				let relative_price = market_price / dinar_price;
+				let max_supply_amount_full = contract_by / relative_price;
+				let max_supply_fraction = max_supply_amount_full / 100;
+				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
+		
+				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+			}
+			_ => {}
+		}
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		Ok(())
+	}
+
+	/// Fetch current SETUSD price and return the result in cents.
+	fn setusd_on_tes() -> DispatchResult {
+		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
+		// deadline to 2s to complete the external call.
+		// You can also wait idefinitely for the response, however you may still get a timeout
+		// coming from the host machine.
+		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+
+    	// cryptocompare fetch - market_price
+		let market_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=USD");
+		let market_pending = market_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let market_response = market_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if market_response.code != 200 {
+			log::warn!("Unexpected status code: {}", market_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let market_body = market_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let market_body_str = sp_std::str::from_utf8(&market_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let market_price = match Self::parse_cryptocompare_price(market_body_str) {
+			Some(market_price) => Ok(market_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", market_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+    	// exchangehost fetch - peg_price
+		let peg_request =
+			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
+		let peg_pending = peg_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let peg_response = peg_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if peg_response.code != 200 {
+			log::warn!("Unexpected status code: {}", peg_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let peg_body = peg_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let peg_body_str = sp_std::str::from_utf8(&peg_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let peg_price = match Self::parse_exchangehost_price(peg_body_str) {
+			Some(peg_price) => Ok(peg_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", peg_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+    	// cryptocompare fetch - dinar_price
+		let dinar_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let dinar_pending = dinar_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let dinar_response = dinar_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if dinar_response.code != 200 {
+			log::warn!("Unexpected status code: {}", dinar_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let dinar_body = dinar_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let dinar_body_str = sp_std::str::from_utf8(&dinar_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let dinar_price = match Self::parse_cryptocompare_price(dinar_body_str) {
+			Some(dinar_price) => Ok(dinar_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", dinar_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		// Total Issuance of the currency
+		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+
+		match market_price {
+			market_price if market_price > peg_price => {
+	
+				// safe from underflow because `peg_price` is checked to be less than `market_price`
+				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
+
+				// `min_target_amount` for `SerpUp` operation
+				let relative_price = market_price / dinar_price;
+				let min_target_amount_full = expand_by / relative_price;
+				let min_target_fraction = min_target_amount_full / 100;
+				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
+		
+				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+			}
+			market_price if market_price < peg_price => {
+				// safe from underflow because `peg_price` is checked to be greater than `market_price`
+				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
+
+				// `max_supply_amount` for `SerpDown` operation
+				let relative_price = market_price / dinar_price;
+				let max_supply_amount_full = contract_by / relative_price;
+				let max_supply_fraction = max_supply_amount_full / 100;
+				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
+		
+				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+			}
+			_ => {}
+		}
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		Ok(())
 	}
 
 	/// Fetch current SETEUR price and return the result in cents.
-	fn fetch_eur() -> Result<(u32), http::Error> {
+	fn seteur_on_tes() -> DispatchResult {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
 		// coming from the host machine.
 		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
 
-    // exchangehost fetch - price
-		let request =
-			http::Request::get("https://api.exchangerate.host/convert?from=EUR&to=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
+    	// cryptocompare fetch - market_price
+		let market_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let market_pending = market_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let market_response = market_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if market_response.code != 200 {
+			log::warn!("Unexpected status code: {}", market_response.code);
 			return Err(http::Error::Unknown)
 		}
-		let body = response.body().collect::<Vec<u8>>();
+		let market_body = market_response.body().collect::<Vec<u8>>();
 		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+		let market_body_str = sp_std::str::from_utf8(&market_body).map_err(|_| {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
+		let market_price = match Self::parse_cryptocompare_price(market_body_str) {
+			Some(market_price) => Ok(market_price),
 			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				log::warn!("Unable to extract price from the response: {:?}", market_body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		log::warn!("Got price: {} cents", price);
+    	// exchangehost fetch - peg_price
+		let peg_request =
+			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
+		let peg_pending = peg_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let peg_response = peg_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if peg_response.code != 200 {
+			log::warn!("Unexpected status code: {}", peg_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let peg_body = peg_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let peg_body_str = sp_std::str::from_utf8(&peg_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let peg_price = match Self::parse_exchangehost_price(peg_body_str) {
+			Some(peg_price) => Ok(peg_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", peg_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
 
-		Ok(price)
+    	// cryptocompare fetch - dinar_price
+		let dinar_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let dinar_pending = dinar_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let dinar_response = dinar_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if dinar_response.code != 200 {
+			log::warn!("Unexpected status code: {}", dinar_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let dinar_body = dinar_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let dinar_body_str = sp_std::str::from_utf8(&dinar_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let dinar_price = match Self::parse_cryptocompare_price(dinar_body_str) {
+			Some(dinar_price) => Ok(dinar_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", dinar_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		// Total Issuance of the currency
+		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+
+		match market_price {
+			market_price if market_price > peg_price => {
+	
+				// safe from underflow because `peg_price` is checked to be less than `market_price`
+				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
+
+				// `min_target_amount` for `SerpUp` operation
+				let relative_price = market_price / dinar_price;
+				let min_target_amount_full = expand_by / relative_price;
+				let min_target_fraction = min_target_amount_full / 100;
+				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
+		
+				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+			}
+			market_price if market_price < peg_price => {
+				// safe from underflow because `peg_price` is checked to be greater than `market_price`
+				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
+
+				// `max_supply_amount` for `SerpDown` operation
+				let relative_price = market_price / dinar_price;
+				let max_supply_amount_full = contract_by / relative_price;
+				let max_supply_fraction = max_supply_amount_full / 100;
+				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
+		
+				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+			}
+			_ => {}
+		}
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		Ok(())
 	}
 
 	/// Fetch current SETGBP price and return the result in cents.
-	fn fetch_gbp() -> Result<(u32), http::Error> {
+	fn setgbp_on_tes() -> DispatchResult {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
 		// coming from the host machine.
 		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
 
-    // exchangehost fetch - price
-		let request =
-			http::Request::get("https://api.exchangerate.host/convert?from=GBP&to=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
+    	// cryptocompare fetch - market_price
+		let market_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let market_pending = market_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let market_response = market_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if market_response.code != 200 {
+			log::warn!("Unexpected status code: {}", market_response.code);
 			return Err(http::Error::Unknown)
 		}
-		let body = response.body().collect::<Vec<u8>>();
+		let market_body = market_response.body().collect::<Vec<u8>>();
 		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+		let market_body_str = sp_std::str::from_utf8(&market_body).map_err(|_| {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
+		let market_price = match Self::parse_cryptocompare_price(market_body_str) {
+			Some(market_price) => Ok(market_price),
 			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				log::warn!("Unable to extract price from the response: {:?}", market_body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		log::warn!("Got price: {} cents", price);
+    	// exchangehost fetch - peg_price
+		let peg_request =
+			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
+		let peg_pending = peg_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let peg_response = peg_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if peg_response.code != 200 {
+			log::warn!("Unexpected status code: {}", peg_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let peg_body = peg_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let peg_body_str = sp_std::str::from_utf8(&peg_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let peg_price = match Self::parse_exchangehost_price(peg_body_str) {
+			Some(peg_price) => Ok(peg_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", peg_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
 
-		Ok(price)
+    	// cryptocompare fetch - dinar_price
+		let dinar_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let dinar_pending = dinar_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let dinar_response = dinar_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if dinar_response.code != 200 {
+			log::warn!("Unexpected status code: {}", dinar_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let dinar_body = dinar_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let dinar_body_str = sp_std::str::from_utf8(&dinar_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let dinar_price = match Self::parse_cryptocompare_price(dinar_body_str) {
+			Some(dinar_price) => Ok(dinar_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", dinar_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		// Total Issuance of the currency
+		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+
+		match market_price {
+			market_price if market_price > peg_price => {
+	
+				// safe from underflow because `peg_price` is checked to be less than `market_price`
+				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
+
+				// `min_target_amount` for `SerpUp` operation
+				let relative_price = market_price / dinar_price;
+				let min_target_amount_full = expand_by / relative_price;
+				let min_target_fraction = min_target_amount_full / 100;
+				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
+		
+				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+			}
+			market_price if market_price < peg_price => {
+				// safe from underflow because `peg_price` is checked to be greater than `market_price`
+				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
+
+				// `max_supply_amount` for `SerpDown` operation
+				let relative_price = market_price / dinar_price;
+				let max_supply_amount_full = contract_by / relative_price;
+				let max_supply_fraction = max_supply_amount_full / 100;
+				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
+		
+				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+			}
+			_ => {}
+		}
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		Ok(())
 	}
 
 	/// Fetch current SETCHF price and return the result in cents.
-	fn fetch_chf() -> Result<(u32), http::Error> {
+	fn setchf_on_tes() -> DispatchResult {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
 		// coming from the host machine.
 		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
 
-    // exchangehost fetch - price
-		let request =
-			http::Request::get("https://api.exchangerate.host/convert?from=CHF&to=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
+    	// cryptocompare fetch - market_price
+		let market_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let market_pending = market_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let market_response = market_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if market_response.code != 200 {
+			log::warn!("Unexpected status code: {}", market_response.code);
 			return Err(http::Error::Unknown)
 		}
-		let body = response.body().collect::<Vec<u8>>();
+		let market_body = market_response.body().collect::<Vec<u8>>();
 		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+		let market_body_str = sp_std::str::from_utf8(&market_body).map_err(|_| {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
+		let market_price = match Self::parse_cryptocompare_price(market_body_str) {
+			Some(market_price) => Ok(market_price),
 			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				log::warn!("Unable to extract price from the response: {:?}", market_body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		log::warn!("Got price: {} cents", price);
+    	// exchangehost fetch - peg_price
+		let peg_request =
+			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
+		let peg_pending = peg_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let peg_response = peg_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if peg_response.code != 200 {
+			log::warn!("Unexpected status code: {}", peg_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let peg_body = peg_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let peg_body_str = sp_std::str::from_utf8(&peg_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let peg_price = match Self::parse_exchangehost_price(peg_body_str) {
+			Some(peg_price) => Ok(peg_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", peg_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
 
-		Ok(price)
+    	// exchangehost fetch - dinar_price
+		let dinar_request =
+			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
+		let dinar_pending = dinar_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let dinar_response = dinar_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if dinar_response.code != 200 {
+			log::warn!("Unexpected status code: {}", dinar_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let dinar_body = dinar_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let dinar_body_str = sp_std::str::from_utf8(&dinar_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let dinar_price = match Self::parse_exchangehost_price(dinar_body_str) {
+			Some(dinar_price) => Ok(dinar_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", dinar_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+		// Total Issuance of the currency
+		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+
+		match market_price {
+			market_price if market_price > peg_price => {
+	
+				// safe from underflow because `peg_price` is checked to be less than `market_price`
+				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
+
+				// `min_target_amount` for `SerpUp` operation
+				let relative_price = market_price / dinar_price;
+				let min_target_amount_full = expand_by / relative_price;
+				let min_target_fraction = min_target_amount_full / 100;
+				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
+		
+				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+			}
+			market_price if market_price < peg_price => {
+				// safe from underflow because `peg_price` is checked to be greater than `market_price`
+				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
+
+				// `max_supply_amount` for `SerpDown` operation
+				let relative_price = market_price / dinar_price;
+				let max_supply_amount_full = contract_by / relative_price;
+				let max_supply_fraction = max_supply_amount_full / 100;
+				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
+		
+				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+			}
+			_ => {}
+		}
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		Ok(())
 	}
 
 	/// Fetch current SETSAR price and return the result in cents.
-	fn fetch_sar() -> Result<(u32), http::Error> {
+	fn setsar_on_tes() -> DispatchResult {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
 		// You can also wait idefinitely for the response, however you may still get a timeout
 		// coming from the host machine.
 		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
 
-    // exchangehost fetch - price
-		let request =
-			http::Request::get("https://api.exchangerate.host/convert?from=SAR&to=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
+    	// exchangehost fetch - market_price
+		let market_request =
+			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
+		let market_pending = market_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let market_response = market_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if market_response.code != 200 {
+			log::warn!("Unexpected status code: {}", market_response.code);
 			return Err(http::Error::Unknown)
 		}
-		let body = response.body().collect::<Vec<u8>>();
+		let market_body = market_response.body().collect::<Vec<u8>>();
 		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+		let market_body_str = sp_std::str::from_utf8(&market_body).map_err(|_| {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let price = match Self::parse_exchangehost_price(body_str) {
-			Some(price) => Ok(price),
+		let market_price = match Self::parse_exchangehost_price(market_body_str) {
+			Some(market_price) => Ok(market_price),
 			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				log::warn!("Unable to extract price from the response: {:?}", market_body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-	/// Fetch current DNAR price and return the result in cents.
-	fn fetch_dinar() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
+    	// cryptocompare fetch - peg_price
+		let peg_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let peg_pending = peg_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let peg_response = peg_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if peg_response.code != 200 {
+			log::warn!("Unexpected status code: {}", peg_response.code);
 			return Err(http::Error::Unknown)
 		}
-		let body = response.body().collect::<Vec<u8>>();
+		let peg_body = peg_response.body().collect::<Vec<u8>>();
 		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+		let peg_body_str = sp_std::str::from_utf8(&peg_body).map_err(|_| {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
+		let peg_price = match Self::parse_cryptocompare_price(peg_body_str) {
+			Some(peg_price) => Ok(peg_price),
 			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				log::warn!("Unable to extract price from the response: {:?}", peg_body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-	/// Fetch current DRAM price and return the result in cents.
-	fn fetch_dirham() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
+    	// cryptocompare fetch - dinar_price
+		let dinar_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let dinar_pending = dinar_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let dinar_response = dinar_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if dinar_response.code != 200 {
+			log::warn!("Unexpected status code: {}", dinar_response.code);
 			return Err(http::Error::Unknown)
 		}
-		let body = response.body().collect::<Vec<u8>>();
+		let dinar_body = dinar_response.body().collect::<Vec<u8>>();
 		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
+		let dinar_body_str = sp_std::str::from_utf8(&dinar_body).map_err(|_| {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
+		let dinar_price = match Self::parse_cryptocompare_price(dinar_body_str) {
+			Some(dinar_price) => Ok(dinar_price),
 			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
+				log::warn!("Unable to extract price from the response: {:?}", dinar_body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		log::warn!("Got price: {} cents", price);
+		// Total Issuance of the currency
+		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
 
-		Ok(price)
-	}
+		match market_price {
+			market_price if market_price > peg_price => {
+	
+				// safe from underflow because `peg_price` is checked to be less than `market_price`
+				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
-	/// Fetch current BTC price and return the result in cents.
-	fn fetch_btc() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
+				// `min_target_amount` for `SerpUp` operation
+				let relative_price = market_price / dinar_price;
+				let min_target_amount_full = expand_by / relative_price;
+				let min_target_fraction = min_target_amount_full / 100;
+				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
+		
+				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+			}
+			market_price if market_price < peg_price => {
+				// safe from underflow because `peg_price` is checked to be greater than `market_price`
+				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
+				// `max_supply_amount` for `SerpDown` operation
+				let relative_price = market_price / dinar_price;
+				let max_supply_amount_full = contract_by / relative_price;
+				let max_supply_fraction = max_supply_amount_full / 100;
+				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
+		
+				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+			}
+			_ => {}
 		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
-	}
-
-	/// Fetch current BTC price and return the result in cents.
-	fn fetch_eth() -> Result<(u32), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    // cryptocompare fetch - price
-		let request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
-		let pending = request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let response = pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if response.code != 200 {
-			log::warn!("Unexpected status code: {}", response.code);
-			return Err(http::Error::Unknown)
-		}
-		let body = response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let body_str = sp_std::str::from_utf8(&body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let price = match Self::parse_cryptocompare_price(body_str) {
-			Some(price) => Ok(price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		log::warn!("Got price: {} cents", price);
-
-		Ok(price)
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		Ok(())
 	}
 
 	/// Parse the price from the given JSON string using `lite-json`.

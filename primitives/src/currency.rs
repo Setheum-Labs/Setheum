@@ -244,13 +244,6 @@ create_currency_id! {
  		SETSAR("SetRiyal", 12) = 7,
 		// Foreign Currencies
 		RENBTC("Ren Bitcoin", 8) = 8,
-		// PegCurrencies
-		SETRPEG("SetterPeg", 12) = 9,
-		USD("Fiat US Dollar", 12) = 10,
-		EUR("Fiat Euro", 12) = 11,
-		GBP("Fiat Pound Sterling", 12) = 12,
-		CHF("Fiat Swiss Franc", 12) = 13,
- 		SAR("Fiat Saudi Riyal", 12) = 14,
 	}
 }
 

@@ -22,7 +22,6 @@ sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "pol
 orml-traits = { package = "orml-traits", path = "../../../lib-openrml/traits", default-features = false }
 
 # local dependencies
-serp-ocw = { package = "serp-ocw", path = "../serp-ocw", default-features = false }
 support = { package = "setheum-support", path = "../../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
@@ -42,7 +41,6 @@ std = [
 	"sp-std/std",
 	"sp-arithmetic/std",
 	"orml-traits/std",
-	"serp-ocw/std",
 	"support/std",
 	"primitives/std",
 ]

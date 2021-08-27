@@ -194,6 +194,7 @@ impl orml_tokens::Config for Runtime {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
 	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 ord_parameter_types! {
@@ -201,51 +202,14 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // SetUSD currency ticker is SETUSD.
-	pub const GetSetEURCurrencyId: CurrencyId = SETEUR; // SetEUR currency ticker is SETEUR.
-	pub const GetSetGBPCurrencyId: CurrencyId = SETGBP; // SetGBP currency ticker is SETGBP.
-	pub const GetSetCHFCurrencyId: CurrencyId = SETCHF; // SetCHF currency ticker is SETCHF.
-	pub const GetSetSARCurrencyId: CurrencyId = SETSAR; // SetSAR currency ticker is SETSAR.
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // Setter currency ticker is SETR.
 	pub FiatUsdFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
-}
-
-pub struct OffchainPriceMock;
-
-impl FetchPriceFor for OffchainPriceMock {
-	fn get_price_for(symbol: &[u8]) -> u64 {
-		match *symbol {
-			b"DNAR" => 100u64,
-			b"DRAM" => 0u64,
-			b"BTC" => 50000u64,
-			b"SETR" => 1u64,
-			b"SETUSD" => 1u64, // stable
-			b"SETEUR" => 2u64, // up 50%
-			b"SETGBP" => 1u64, // stable
-			b"SETCHF" => 1u64, // down 50%
-			b"SETSAR" => 2u64, // up 50%
-			b"USD" => 1u64,
-			b"EUR" => 1u64,
-			b"GBP" => 1u64,
-			b"CHF" => 2u64,
-			b"SAR" => 1u64,
-			_ => None,
-		}
-	}
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Source = MockDataProvider;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type DirhamCurrencyId = DirhamCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type GetSetEURCurrencyId = GetSetEURCurrencyId;
-	type GetSetGBPCurrencyId = GetSetGBPCurrencyId;
-	type GetSetCHFCurrencyId = GetSetCHFCurrencyId;
-	type GetSetSARCurrencyId = GetSetSARCurrencyId;
-	type SerpOcwOffchainPrice = OffchainPriceMock;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = MockDEX;
@@ -264,7 +228,6 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		SerpOcw: serp_ocw::{Pallet, Storage, Call, Event<T>},
 		SerpPrices: serp_prices::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 	}
