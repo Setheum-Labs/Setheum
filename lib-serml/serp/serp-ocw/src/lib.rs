@@ -179,7 +179,7 @@ pub mod pallet {
 	/// This is used to calculate average price, should have bounded size.
 	#[pallet::storage]
 	#[pallet::getter(fn prices)]
-	pub(super) type Prices<T: Config> = StorageValue<_, CurrencyId, Vec<u32>, ValueQuery>;
+	pub(super) type Prices<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Vec<u32>, ValueQuery>;
 
 	/// Defines the block when next unsigned transaction will be accepted.
 	///
@@ -246,8 +246,8 @@ pub mod pallet {
 		/// number of such transactions.
 		#[pallet::weight(0)]
 		pub fn submit_price_unsigned(
-      currency_id: CurrencyId,
 			origin: OriginFor<T>,
+      currency_id: CurrencyId,
 			_block_number: T::BlockNumber,
 			price: u32,
 		) -> DispatchResultWithPostInfo {
@@ -263,8 +263,8 @@ pub mod pallet {
 
 		#[pallet::weight(0)]
 		pub fn submit_price_unsigned_with_signed_payload(
-      currency_id: CurrencyId,
 			origin: OriginFor<T>,
+      currency_id: CurrencyId,
 			price_payload: PricePayload<T::Public, T::BlockNumber>,
 			_signature: T::Signature,
 		) -> DispatchResultWithPostInfo {
@@ -349,7 +349,7 @@ impl<T: Config> FetchPriceFor for Pallet<T> {
 	fn get_price_fetch(currency_id: CurrencyId) -> Result<u32, http::Error> {
     let price = Self::fetch_price(currency_id);
 
-		Ok(price)
+		return price
 	}
 }
 
@@ -511,56 +511,71 @@ impl<T: Config> Pallet<T> {
 
 		Ok(())
 	}
-}
-  
-/// Fetch current price and return the result in cents.
-fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
-  match currency_id {
-    if currency_id = T::SetterCurrencyId::get() => {
-        let price = Self::fetch_setter();
-        Ok(price)
-    } else if currency_id = T::GetNativeCurrencyId::get() => {
-        let price = Self::fetch_dinar();
-        Ok(price)
-    } else if currency_id = T::DirhamCurrencyId::get() => {
-        let price = Self::fetch_dirham();
-        Ok(price)
-    } else if currency_id = T::GetSetUSDCurrencyId::get() => {
-        let price = Self::fetch_setusd();
-        Ok(price)
-    } else if currency_id = T::GetSetEURCurrencyId::get() => {
-        let price = Self::fetch_seteur();
-        Ok(price)
-    } else if currency_id = T::GetSetGBPCurrencyId::get() => {
-        let price = Self::fetch_setgbp();
-        Ok(price)
-    } else if currency_id = T::GetSetCHFCurrencyId::get() => {
-        let price = Self::fetch_setchf();
-        Ok(price)
-    } else if currency_id = T::GetSetSARCurrencyId::get() => {
-        let price = Self::fetch_setsar();
-        Ok(price)
-    } else if currency_id = T::RenBTCCurrencyId::get() => {
-        let price = Self::fetch_btc();
-        Ok(price)
-    } else if currency_id = T::SetterPegCurrencyId::get() => {
-        let price = Self::fetch_setter_basket();
-        Ok(price)
-    } else if currency_id = T::GetPegUSDCurrencyId::get() => {
-        let price = Self::fetch_usd();
-        Ok(price)
-    } else if currency_id = T::GetPegEURCurrencyId::get() => {
-        let price = Self::fetch_eur();
-        Ok(price)
-    } else if currency_id = T::GetPegGBPCurrencyId::get() => {
-        let price = Self::fetch_gbp();
-        Ok(price)
-    } else if currency_id = T::GetPegCHFCurrencyId::get() => {
-        let price = Self::fetch_chf();
-        Ok(price)
-    } else if currency_id = T::GetPegSARCurrencyId::get() => {
-        let price = Self::fetch_sar();
-        Ok(price)
+    
+  /// Fetch current price and return the result in cents.
+  fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
+    match currency_id {
+      currency_id if currency_id == T::SetterCurrencyId::get() => {
+          let price = Self::fetch_setter();
+          return price
+      }
+      currency_id if currency_id == T::GetNativeCurrencyId::get() => {
+          let price = Self::fetch_dinar();
+          return price
+      }
+      currency_id if currency_id == T::DirhamCurrencyId::get() => {
+          let price = Self::fetch_dirham();
+          return price
+      }
+      currency_id if currency_id == T::GetSetUSDCurrencyId::get() => {
+          let price = Self::fetch_setusd();
+          return price
+      }
+      currency_id if currency_id == T::GetSetEURCurrencyId::get() => {
+          let price = Self::fetch_seteur();
+          return price
+      }
+      currency_id if currency_id == T::GetSetGBPCurrencyId::get() => {
+          let price = Self::fetch_setgbp();
+          return price
+      }
+      currency_id if currency_id == T::GetSetCHFCurrencyId::get() => {
+          let price = Self::fetch_setchf();
+          return price
+      }
+      currency_id if currency_id == T::GetSetSARCurrencyId::get() => {
+          let price = Self::fetch_setsar();
+          return price
+      }
+      currency_id if currency_id == T::RenBTCCurrencyId::get() => {
+          let price = Self::fetch_btc();
+          return price
+      }
+      currency_id if currency_id == T::SetterPegCurrencyId::get() => {
+          let price = Self::fetch_setter_basket();
+          return price
+      }
+      currency_id if currency_id == T::GetPegUSDCurrencyId::get() => {
+          let price = Self::fetch_usd();
+          return price
+      }
+      currency_id if currency_id == T::GetPegEURCurrencyId::get() => {
+          let price = Self::fetch_eur();
+          return price
+      }
+      currency_id if currency_id == T::GetPegGBPCurrencyId::get() => {
+          let price = Self::fetch_gbp();
+          return price
+      }
+      currency_id if currency_id == T::GetPegCHFCurrencyId::get() => {
+          let price = Self::fetch_chf();
+          return price
+      }
+      currency_id if currency_id == T::GetPegSARCurrencyId::get() => {
+          let price = Self::fetch_sar();
+          return price
+      }
+      _ => {}
     }
   }
 
@@ -591,14 +606,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETUSD price and return the result in cents.
@@ -625,14 +640,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETEUR price and return the result in cents.
@@ -659,14 +674,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETGBP price and return the result in cents.
@@ -693,14 +708,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETCHF price and return the result in cents.
@@ -727,14 +742,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETSAR price and return the result in cents.
@@ -761,14 +776,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
   /// FETCH SETCURRENCIES COIN PEG PRICES
@@ -817,7 +832,7 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 
     let price = price_fraction.to_num::<u32>();
 
-		Ok(price)
+		return price
 	}
 
   /// FETCH FIAT CURRENCIES PRICES
@@ -847,14 +862,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETEUR price and return the result in cents.
@@ -881,14 +896,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETGBP price and return the result in cents.
@@ -915,14 +930,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETCHF price and return the result in cents.
@@ -949,14 +964,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current SETSAR price and return the result in cents.
@@ -983,14 +998,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_exchangehost_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current DNAR price and return the result in cents.
@@ -1017,14 +1032,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current DRAM price and return the result in cents.
@@ -1051,14 +1066,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current BTC price and return the result in cents.
@@ -1085,14 +1100,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Fetch current BTC price and return the result in cents.
@@ -1119,14 +1134,14 @@ fn fetch_price(currency_id: CurrencyId) -> Result<u32, http::Error> {
 			http::Error::Unknown
 		})?;
 		let price = match Self::parse_cryptocompare_price(body_str) {
-			price => Ok(price),
+			price => return price,
 			0 => {
 				log::warn!("Unable to extract price from the response: {:?}", body_str);
 				Err(http::Error::Unknown)
 			},
 		}?;
 
-		Ok(price)
+		return price
 	}
 
 	/// Parse the price from the given JSON string using `lite-json`.
