@@ -32,7 +32,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use fixed::{types::extra::U64, FixedU128};
 use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
@@ -50,7 +49,6 @@ use sp_std::{
 };
 use support::{CurrencyIdMapping, DEXManager, Price, PriceProvider};
 
-use serp_ocw::FetchPriceFor;
 
 mod mock;
 mod tests;
@@ -71,39 +69,8 @@ pub mod module {
 		type Source: DataProvider<CurrencyId, Price> + DataFeeder<CurrencyId, Price, Self::AccountId>;
 
 		#[pallet::constant]
-		/// Native (DNAR) currency Stablecoin currency id
-		type GetNativeCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// SettinDes (DRAM) dexer currency id
-		type DirhamCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
 		/// The Setter currency id, it should be SETR in Setheum.
-		type SetterCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The SetUSD currency id, it should be SETUSD in Setheum.
 		type GetSetUSDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The SETEUR currency id, it should be SETEUR in Setheum.
-		type GetSetEURCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The SETGBP currency id, it should be SETGBP in Setheum.
-		type GetSetGBPCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The SETCHF currency id, it should be SETCHF in Setheum.
-		type GetSetCHFCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The SETSAR currency id, it should be SETSAR in Setheum.
-		type GetSetSARCurrencyId: Get<CurrencyId>;
-
-		// The Offchain Worker => `serp_ocw`.
-		type SerpOcwOffchainPrice: FetchPriceFor;
 
 		/// The fixed price of SetUsd, it should be 1 USD in Setheum.
 		/// This represents the value of the US dollar which is used -
@@ -162,31 +129,7 @@ pub mod module {
 	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		///
-		/// NOTE: This function is called BEFORE ANY extrinsic in a block is applied,
-		/// including inherent extrinsics. Hence for instance, if you runtime includes
-		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
-		///
-		/// Triggers Serping for all system stablecoins at every block.
-		fn on_initialize(now: T::BlockNumber) -> Weight {
-			// SERP-TES Adjustment Frequency.
-			// Schedule for when to trigger SERP-TES
-			// (Blocktime/BlockNumber - every blabla block)
-			if now % T::SerpTesSchedule::get() == Zero::zero() {
-				// SERP TES (Token Elasticity of Supply).
-				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
-				let mut count: u32 = 0;
-				if Self::get_and_lock_offchain_prices().is_ok() {
-					count += 1;
-				}
-
-				T::WeightInfo::on_initialize(count)
-			} else {
-				0
-			}
-		}
-	}
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -234,38 +177,8 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if currency_id == T::SetterCurrencyId::get() {
-			Self::get_setter_price()
-		} else if currency_id == T::GetSetUSDCurrencyId::get() {
-			T::FiatUsdFixedPrice::get()
-		} else if currency_id == T::GetSetEURCurrencyId::get() {
-			if let Some(val) = Self::get_serp_ocw_price(T::GetSetEURCurrencyId::get()) {
-				let val_price: U256 = U256::from(val)
-					.and_then(|r| TryInto::<u128>::try_into(r).ok())
-					.map(Price::from_inner);
-				val_price
-			};
-		} else if currency_id == T::GetSetGBPCurrencyId::get() {
-			if let Some(val) = Self::get_serp_ocw_price(T::GetSetGBPCurrencyId::get()) {
-				let val_price: U256 = U256::from(val)
-					.and_then(|r| TryInto::<u128>::try_into(r).ok())
-					.map(Price::from_inner);
-				val_price
-			};
-		} else if currency_id == T::GetSetCHFCurrencyId::get() {
-			if let Some(val) = Self::get_serp_ocw_price(T::GetSetCHFCurrencyId::get()) {
-				let val_price: U256 = U256::from(val)
-					.and_then(|r| TryInto::<u128>::try_into(r).ok())
-					.map(Price::from_inner);
-				val_price
-			};
-		} else if currency_id == T::GetSetSARCurrencyId::get() {
-			if let Some(val) = Self::get_serp_ocw_price(T::GetSetSARCurrencyId::get()) {
-				let val_price: U256 = U256::from(val)
-					.and_then(|r| TryInto::<u128>::try_into(r).ok())
-					.map(Price::from_inner);
-				val_price
-			};
+		let maybe_feed_price = if currency_id == T::GetSetUSDCurrencyId::get() {
+			Some(T::FiatUsdFixedPrice::get())
 		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = match symbol_0 {
 				DexShare::Token(token) => CurrencyId::Token(token),
@@ -275,6 +188,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 				DexShare::Token(token) => CurrencyId::Token(token),
 				DexShare::Erc20(address) => CurrencyId::Erc20(address),
 			};
+
 			return {
 				if let (Some(price_0), Some(price_1)) = (Self::get_price(token_0), Self::get_price(token_1)) {
 					let (pool_0, pool_1) = T::DEX::get_liquidity_pool(token_0, token_1);
@@ -288,6 +202,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(currency_id).or_else(|| T::Source::get(&currency_id))
 		};
+
 		let maybe_adjustment_multiplier = 10u128.checked_pow(T::CurrencyIdMapping::decimals(currency_id)?.into());
 
 		if let (Some(feed_price), Some(adjustment_multiplier)) = (maybe_feed_price, maybe_adjustment_multiplier) {
@@ -308,291 +223,6 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	fn unlock_price(currency_id: CurrencyId) {
 		LockedPrice::<T>::remove(currency_id);
 		<Pallet<T>>::deposit_event(Event::UnlockPrice(currency_id));
-	}
-
-	fn get_and_lock_offchain_prices() -> DispatchResult {
-		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		let dirham_currency_id = T::DirhamCurrencyId::get();
-		let renbtc_currency_id = T::RenBtcCurrencyId::get();
-		let setter_currency_id = T::SetterCurrencyId::get();
-		let setusd_currency_id = T::GetSetUSDCurrencyId::get();
-		let seteur_currency_id = T::GetSetEURCurrencyId::get();
-		let setgbp_currency_id = T::GetSetGBPCurrencyId::get();
-		let setchf_currency_id = T::GetSetCHFCurrencyId::get();
-		let setsar_currency_id = T::GetSetSARCurrencyId::get();
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&dinar_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(dinar_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(dinar_currency_id, val));
-			<Pallet<T>>::deposit_event(Event::OffChainPrice(dinar_currency_id, val));
-		}
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&dirham_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(dirham_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(dirham_currency_id, val));
-		<Pallet<T>>::deposit_event(Event::OffChainPrice(dirham_currency_id, val));
-		}
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&renbtc_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(renbtc_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(renbtc_currency_id, val));
-		<Pallet<T>>::deposit_event(Event::OffChainPrice(renbtc_currency_id, val));
-		}
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&setter_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(setter_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(setter_currency_id, val));
-		<Pallet<T>>::deposit_event(Event::OffChainPrice(setter_currency_id, val));
-		}
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&setusd_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(setusd_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(setusd_currency_id, val));
-		<Pallet<T>>::deposit_event(Event::OffChainPrice(setusd_currency_id, val));
-		}
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&seteur_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(seteur_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(seteur_currency_id, val));
-		<Pallet<T>>::deposit_event(Event::OffChainPrice(seteur_currency_id, val));
-		}
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&setgbp_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(setgbp_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(setgbp_currency_id, val));
-		<Pallet<T>>::deposit_event(Event::OffChainPrice(setgbp_currency_id, val));
-		}
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&setchf_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(setchf_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(setchf_currency_id, val));
-		<Pallet<T>>::deposit_event(Event::OffChainPrice(setchf_currency_id, val));
-		}
-
-		// lock price got from `serp-ocw`
-		if let Some(val) = Self::get_serp_ocw_price(&setsar_currency_id) {
-			let val_price: U256 = U256::from(val)
-				.and_then(|r| TryInto::<u128>::try_into(r).ok())
-				.map(Price::from_inner);
-			LockedPrice::<T>::insert(setsar_currency_id, val_price);
-			<Pallet<T>>::deposit_event(Event::LockPrice(setsar_currency_id, val));
-			<Pallet<T>>::deposit_event(Event::OffChainPrice(setsar_currency_id, val));
-		}
-		Ok(())
-	}
-
-	fn get_serp_ocw_price(currency_id: CurrencyId) -> u64 {
-		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		let dirham_currency_id = T::DirhamCurrencyId::get();
-		let renbtc_currency_id = T::RenBtcCurrencyId::get();
-		let setter_currency_id = T::SetterCurrencyId::get();
-		let setusd_currency_id = T::GetSetUSDCurrencyId::get();
-		let seteur_currency_id = T::GetSetEURCurrencyId::get();
-		let setgbp_currency_id = T::GetSetGBPCurrencyId::get();
-		let setchf_currency_id = T::GetSetCHFCurrencyId::get();
-		let setsar_currency_id = T::GetSetSARCurrencyId::get();
-		match currency_id {
-			currency_id if currency_id = dinar_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"DNAR");
-				return price
-			}
-			currency_id if currency_id = dirham_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"DRAM");
-				return price
-			}
-			currency_id if currency_id = renbtc_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"BTC");
-				return price
-			}
-			currency_id if currency_id = setter_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"SETR");
-				return price
-			}
-			currency_id if currency_id = setusd_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"SETUSD");
-				return price
-			}
-			currency_id if currency_id = seteur_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"SETEUR");
-				return price
-			}
-			currency_id if currency_id = setgbp_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"SETGBP");
-				return price
-			}
-			currency_id if currency_id = setchf_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"SETCHF");
-				return price
-			}
-			currency_id if currency_id = setsar_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"SETSAR");
-				return price
-			}
-		}
-	}
-
-	fn get_serp_ocw_peg_price(currency_id: CurrencyId) -> u64 {
-		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		let dirham_currency_id = T::DirhamCurrencyId::get();
-		let renbtc_currency_id = T::RenBtcCurrencyId::get();
-		let setter_currency_id = T::SetterCurrencyId::get();
-		let setusd_currency_id = T::GetSetUSDCurrencyId::get();
-		let seteur_currency_id = T::GetSetEURCurrencyId::get();
-		let setgbp_currency_id = T::GetSetGBPCurrencyId::get();
-		let setchf_currency_id = T::GetSetCHFCurrencyId::get();
-		let setsar_currency_id = T::GetSetSARCurrencyId::get();
-		match currency_id {
-			currency_id if currency_id = renbtc_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"DNAR");
-				return price
-			}
-			currency_id if currency_id = dirham_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"DRAM");
-				return price
-			}
-			currency_id if currency_id = renbtc_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"BTC");
-				return price
-			}
-			currency_id if currency_id = setter_currency_id => {
-				let price = Self::fetch_setter_basket();
-				return price
-			}
-			currency_id if currency_id = setusd_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"USD");
-				return price
-			}
-			currency_id if currency_id = seteur_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"EUR");
-				return price
-			}
-			currency_id if currency_id = setgbp_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"GBP");
-				return price
-			}
-			currency_id if currency_id = setchf_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"CHF");
-				return price
-			}
-			currency_id if currency_id = setsar_currency_id => {
-				let price = T::SerpOcwOffchainPrice::get_price_for(b"SAR");
-				return price
-			}
-		}
-	}
-
-	fn get_setter_price() -> Option<Price> {
-		// get setter basket into Option<Price>
-		let setter_basket_value: Balance = Self::get_setter_basket();
-		let from_setter_price: U256 = U256::from(setter_basket_value)
-		.and_then(|r| TryInto::<u128>::try_into(r).ok())
-		.map(Price::from_inner);
-	}
-
-	fn get_setter_basket() -> Balance {
-		// Fetch Setter Basket
-		let setter_basket: u64 = Self::fetch_setter_basket();
-
-		// SETTER_BASKET_VALUE
-		type Fix = FixedU128<U64>;
-		let value = Fix::from_num(setter_basket)
-			.saturating_mul_int(1 as u128).to_num::<u128>();
-	}
-
-	fn fetch_setter_basket() -> u64 {
-		// BASKET_PEG_PRICES
-		let price_1 = T::SerpOcwOffchainPrice::get_price_for(b"USD");
-		let price_2 = T::SerpOcwOffchainPrice::get_price_for(b"EUR");
-		let price_3 = T::SerpOcwOffchainPrice::get_price_for(b"GBP");
-		let price_4 = T::SerpOcwOffchainPrice::get_price_for(b"CHF");
-		let price_5 = T::SerpOcwOffchainPrice::get_price_for(b"SAR");
-		let price_6 = T::SerpOcwOffchainPrice::get_price_for(b"ETH");
-		let price_7 = T::SerpOcwOffchainPrice::get_price_for(b"BTC");
-
-		// BASKET_PEG_WEIGHTS - approx. $1 in total weight, making 1 SETR = $1 approx as of impl time (now).
-		let weight_1: u64 = 0.25;
-		let weight_2: u64 = 0.21;
-		let weight_3: u64 = 0.15;
-		let weight_4: u64 = 0.092;
-		let weight_5: u64 = 0.38;
-		let weight_6: u64 = 0.00001543;
-		let weight_7: u64 = 0.00000105;
-
-		// BASKET_PEG_SLOTS
-		let slot_1 = get_basket_slot_value(price_1, weight_1);
-		let slot_2 = get_basket_slot_value(price_2, weight_2);
-		let slot_3 = get_basket_slot_value(price_3, weight_3);
-		let slot_4 = get_basket_slot_value(price_4, weight_4);
-		let slot_5 = get_basket_slot_value(price_5, weight_5);
-		let slot_6 = get_basket_slot_value(price_6, weight_6);
-		let slot_7 = get_basket_slot_value(price_7, weight_7);
-
-		// SETTER_BASKET_VALUE
-		let value = slot_1 + slot_2 + slot_3 + slot_4 + slot_5 + slot_6 + slot_7;
-		value
-	}
-
-	fn get_supply_change(currency_id: CurrencyId) -> Balance {
-		let coin_price = Self::get_serp_ocw_price(&currency_id);
-		let peg_price = Self::get_serp_ocw_peg_price(&currency_id);
-		let supply = T::Currency::total_issuance(currency_id);
-
-		let supply_change = get_serp_tes(coin_price, peg_price, supply);
-		supply_change
-	}
-	
-	fn get_min_target_amount(target_currency_id: CurrencyId, supply_currency_id: CurrencyId, supply_amount: Balance) -> Balance {
-		let price_0 = Self::get_serp_ocw_price(target_currency_id);
-		let price_1 = Self::get_serp_ocw_price(supply_currency_id);
-
-		type Fix = FixedU128<U64>;
-		let relative_price = Fix::from_num(price_0) / Fix::from_num(price_1);
-		let min_target_amount_full = Fix::from_num(supply_amount) / Fix::from_num(relative_price);
-		let desired_min_target_amount = Fix::from_num(min_target_amount_full) / Fix::from_num(100);
-		desired_min_target_amount.saturating_mul_int(95 as u128).to_num::<u128>()
-	}
-
-	fn get_max_supply_amount(target_currency_id: CurrencyId, supply_currency_id: CurrencyId, target_amount: Balance) -> Balance {
-		let price_0 = Self::get_serp_ocw_price(target_currency_id);
-		let price_1 = Self::get_serp_ocw_price(supply_currency_id);
-
-		type Fix = FixedU128<U64>;
-		let relative_price = Fix::from_num(price_0) / Fix::from_num(price_1);
-		let max_supply_amount_full = Fix::from_num(target_amount) / Fix::from_num(relative_price);
-		let desired_max_supply_amount = Fix::from_num(max_supply_amount_full) / Fix::from_num(100);
-		desired_max_supply_amount.saturating_mul_int(105 as u128).to_num::<u128>()
 	}
 }
 
@@ -618,21 +248,4 @@ fn lp_token_fair_price(
 		.and_then(|n| n.checked_mul(U256::from(2)))
 		.and_then(|r| TryInto::<u128>::try_into(r).ok())
 		.map(Price::from_inner)
-}
-
-// Calculate the amount of supply change from a fraction given as `coin_price`, `peg_price` and  `supply`.
-fn get_serp_tes(coin_price: u64, peg_price: u64, supply: Balance) -> Balance {
-	type Fix = FixedU128<U64>;
-	let fraction = Fix::from_num(coin_price) / Fix::from_num(peg_price) - Fix::from_num(1);
-	fraction.saturating_mul_int(supply as u128).to_num::<u128>()
-}
-
-// Calculate the value of a slot in the Setter Basket
-fn get_basket_slot_value(
-	price: u64,
-	weight: u64
-) -> u64 {
-	type Fix = FixedU128<U64>;
-	let slot = Fix::from_num(price) * Fix::from_num(weight);
-	slot.to_num::<u64>()
 }
