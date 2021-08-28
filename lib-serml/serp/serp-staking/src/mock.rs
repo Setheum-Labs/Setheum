@@ -179,6 +179,7 @@ impl orml_tokens::Config for Runtime {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
 	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 impl pallet_balances::Config for Test {
 	type MaxLocks = MaxLocks;
