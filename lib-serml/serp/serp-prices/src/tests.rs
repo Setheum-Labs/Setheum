@@ -135,7 +135,7 @@ fn get_price_of_stable_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			SerpPrices::get_price(SETUSD),
-			Some(Price::saturating_from_integer(990000u128))
+			Some(Price::saturating_from_integer(1000000u128))
 		); // 1 USD, right shift the decimal point (18-12) places
 	});
 }
@@ -143,7 +143,7 @@ fn get_price_of_stable_currency_id() {
 #[test]
 fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(MockDEX::get_liquidity_pool(SETUSD, DRAM), (10000, 200));
+		assert_eq!(MockDEX::get_liquidity_pool(SETUSD, DRAM), (0, 0));
 		assert_eq!(SerpPrices::get_price(LP_SETUSD_DRAM), None);
 		assert_ok!(Tokens::deposit(LP_SETUSD_DRAM, &1, 100));
 		assert_eq!(Tokens::total_issuance(LP_SETUSD_DRAM), 100);
