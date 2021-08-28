@@ -1,6 +1,6 @@
 [submodule "lib-openrml"]
 	path = lib-openrml
-	url = https://github.com/open-web3-stack/open-runtime-module-library/tree/cae9290ad75463bb5a4a9599401bb8f3952b19b4
+	url = https://github.com/open-web3-stack/open-runtime-module-library/tree/650ef607d023e4537d3f2932baa5e50bc3a349cb
 [submodule "predeploy-contracts"]
 	path = predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts
