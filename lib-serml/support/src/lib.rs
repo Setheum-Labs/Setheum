@@ -199,7 +199,7 @@ pub trait SerpTreasury<AccountId> {
 	type CurrencyId;
 
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId, min_target_amount: Self::Balance) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
