@@ -10,15 +10,15 @@ static_assertions = "1.1.0"
 num_enum = { version = "0.5.1", default-features = false }
 serde = { version = "1.0.101", optional = true, default-features = false }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-max-encoded-len = { git = "https://github.com/paritytech/substrate", version = "3.0.0", default-features = false }
+max-encoded-len = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 # Substrate dependencies
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/substrate", version = "3.0.0" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
 orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
@@ -34,11 +34,11 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 serde_json = "1.0.41"
 sha3 = { version = "0.9.1" }
 hex-literal = "0.3.1"
-sp-io = { git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-pallet-balances = { git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-pallet-proxy = { git = "https://github.com/paritytech/substrate", version = "3.0.0" }
-pallet-utility = { git = "https://github.com/paritytech/substrate", version = "3.0.0" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 setheum-service = {  path = "../../node/service" }
 orml-tokens = { path = "../../lib-openrml/tokens" }
 orml-nft = { path = "../../lib-openrml/nft" }

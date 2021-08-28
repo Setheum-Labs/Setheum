@@ -9,7 +9,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 [lib]
 
 [dependencies]
-sp-arithmetic = { default-features = false, version = "3.0.0", git = "https://github.com/paritytech/substrate", version = "3.0.0"}
+sp-arithmetic = { default-features = false, branch = "polkadot-v0.9.8", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8"}
 log = { version = "0.4.14", default-features = false }
 
 [features]
