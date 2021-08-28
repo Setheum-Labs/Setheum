@@ -38,12 +38,12 @@ use sp_runtime::{
 	},
 	traits::Zero,
 	transaction_validity::{InvalidTransaction, TransactionValidity, ValidTransaction},
-	DispatchResult, RuntimeDebug, FixedPointNumber,
+	RuntimeDebug,
 };
 use sp_std::vec::Vec;
 use sp_std::prelude::*;
 
-use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
+use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use support::SerpTreasury;
 
@@ -162,12 +162,12 @@ pub mod pallet {
 			if block_number % duration == Zero::zero() {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
-				Self::setter_on_tes();
-				Self::setusd_on_tes();
-				Self::seteur_on_tes();
-				Self::setgbp_on_tes();
-				Self::setchf_on_tes();
-				Self::setsar_on_tes();
+				Self::setter_on_tes().unwrap();
+				Self::setusd_on_tes().unwrap();
+				Self::seteur_on_tes().unwrap();
+				Self::setgbp_on_tes().unwrap();
+				Self::setchf_on_tes().unwrap();
+				Self::setsar_on_tes().unwrap();
 			}
 		}
 	}
@@ -671,6 +671,26 @@ impl<T: Config> Pallet<T> {
 		fraction.saturating_mul_int(supply as u128).to_num::<u128>()
 	}
 
+	/// Calculate the `min_target_amount` for `SerpUp` operation.
+	fn calculate_min_target_amount(market_price: u64, dinar_price: u64, expand_by: Balance) -> Balance {
+		type Fix = FixedU128<U128>;
+		let expand_by_amount = Fix::from_num(1).saturating_mul_int(expand_by as u128);
+		let relative_price = Fix::from_num(market_price) / Fix::from_num(dinar_price);
+		let min_target_amount_full = Fix::from_num(expand_by_amount) / Fix::from_num(relative_price);
+		let min_target_fraction = Fix::from_num(min_target_amount_full) / Fix::from_num(100);
+		min_target_fraction.saturating_mul_int(94 as u128).to_num::<u128>()
+	}
+
+	/// Calculate the `max_supply_amount` for `SerpUp` operation.
+	fn calculate_max_supply_amount(market_price: u64, dinar_price: u64, contract_by: Balance) -> Balance {
+		type Fix = FixedU128<U128>;
+		let contract_by_amount = Fix::from_num(1).saturating_mul_int(contract_by as u128);
+		let relative_price = Fix::from_num(market_price) / Fix::from_num(dinar_price);
+		let max_supply_amount_full = Fix::from_num(contract_by_amount) / Fix::from_num(relative_price);
+		let max_supply_fraction = Fix::from_num(max_supply_amount_full) / Fix::from_num(100);
+		max_supply_fraction.saturating_mul_int(106 as u128).to_num::<u128>()
+	}
+
 	/// FETCH SETCURRENCIES COIN PRICES
 	///
 	///
@@ -925,24 +945,18 @@ impl<T: Config> Pallet<T> {
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
 				// `min_target_amount` for `SerpUp` operation
-				let relative_price = market_price / dinar_price;
-				let min_target_amount_full = expand_by / relative_price;
-				let min_target_fraction = min_target_amount_full / 100;
-				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
-		
-				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
+
+				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
 				// `max_supply_amount` for `SerpDown` operation
-				let relative_price = market_price / dinar_price;
-				let max_supply_amount_full = contract_by / relative_price;
-				let max_supply_fraction = max_supply_amount_full / 100;
-				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
-		
-				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+				let max_supply_amount = Self::calculate_max_supply_amount(market_price, dinar_price, contract_by);
+
+				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount).unwrap();
 			}
 			_ => {}
 		}
@@ -1004,6 +1018,29 @@ impl<T: Config> Pallet<T> {
 			},
 		}?;
 
+    	// cryptocompare fetch - setter_price
+		let setter_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let setter_pending = setter_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let setter_response = setter_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if setter_response.code != 200 {
+			log::warn!("Unexpected status code: {}", setter_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let setter_body = setter_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let setter_body_str = sp_std::str::from_utf8(&setter_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let setter_price = match Self::parse_cryptocompare_price(setter_body_str) {
+			Some(setter_price) => Ok(setter_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", setter_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
     	// cryptocompare fetch - dinar_price
 		let dinar_request =
 			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
@@ -1028,7 +1065,7 @@ impl<T: Config> Pallet<T> {
 		}?;
 
 		// Total Issuance of the currency
-		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+		let total_supply = T::Currency::total_issuance(T::GetSetUSDCurrencyId::get());
 
 		match market_price {
 			market_price if market_price > peg_price => {
@@ -1037,28 +1074,22 @@ impl<T: Config> Pallet<T> {
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
 				// `min_target_amount` for `SerpUp` operation
-				let relative_price = market_price / dinar_price;
-				let min_target_amount_full = expand_by / relative_price;
-				let min_target_fraction = min_target_amount_full / 100;
-				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
-		
-				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
+
+				T::SerpTreasury::on_serpup(T::GetSetUSDCurrencyId::get(), expand_by, min_target_amount).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
 				// `max_supply_amount` for `SerpDown` operation
-				let relative_price = market_price / dinar_price;
-				let max_supply_amount_full = contract_by / relative_price;
-				let max_supply_fraction = max_supply_amount_full / 100;
-				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
-		
-				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
+
+				T::SerpTreasury::on_serpdown(T::GetSetUSDCurrencyId::get(), contract_by, max_supply_amount).unwrap();
 			}
 			_ => {}
 		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::GetSetUSDCurrencyId::get()));
 		Ok(())
 	}
 
@@ -1116,6 +1147,29 @@ impl<T: Config> Pallet<T> {
 			},
 		}?;
 
+    	// cryptocompare fetch - setter_price
+		let setter_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let setter_pending = setter_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let setter_response = setter_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if setter_response.code != 200 {
+			log::warn!("Unexpected status code: {}", setter_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let setter_body = setter_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let setter_body_str = sp_std::str::from_utf8(&setter_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let setter_price = match Self::parse_cryptocompare_price(setter_body_str) {
+			Some(setter_price) => Ok(setter_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", setter_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
     	// cryptocompare fetch - dinar_price
 		let dinar_request =
 			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
@@ -1140,7 +1194,7 @@ impl<T: Config> Pallet<T> {
 		}?;
 
 		// Total Issuance of the currency
-		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+		let total_supply = T::Currency::total_issuance(T::GetSetEURCurrencyId::get());
 
 		match market_price {
 			market_price if market_price > peg_price => {
@@ -1149,28 +1203,22 @@ impl<T: Config> Pallet<T> {
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
 				// `min_target_amount` for `SerpUp` operation
-				let relative_price = market_price / dinar_price;
-				let min_target_amount_full = expand_by / relative_price;
-				let min_target_fraction = min_target_amount_full / 100;
-				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
-		
-				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
+
+				T::SerpTreasury::on_serpup(T::GetSetEURCurrencyId::get(), expand_by, min_target_amount).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
 				// `max_supply_amount` for `SerpDown` operation
-				let relative_price = market_price / dinar_price;
-				let max_supply_amount_full = contract_by / relative_price;
-				let max_supply_fraction = max_supply_amount_full / 100;
-				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
-		
-				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
+
+				T::SerpTreasury::on_serpdown(T::GetSetEURCurrencyId::get(), contract_by, max_supply_amount).unwrap();
 			}
 			_ => {}
 		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::GetSetEURCurrencyId::get()));
 		Ok(())
 	}
 
@@ -1228,6 +1276,29 @@ impl<T: Config> Pallet<T> {
 			},
 		}?;
 
+    	// cryptocompare fetch - setter_price
+		let setter_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let setter_pending = setter_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let setter_response = setter_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if setter_response.code != 200 {
+			log::warn!("Unexpected status code: {}", setter_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let setter_body = setter_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let setter_body_str = sp_std::str::from_utf8(&setter_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let setter_price = match Self::parse_cryptocompare_price(setter_body_str) {
+			Some(setter_price) => Ok(setter_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", setter_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
     	// cryptocompare fetch - dinar_price
 		let dinar_request =
 			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
@@ -1252,7 +1323,7 @@ impl<T: Config> Pallet<T> {
 		}?;
 
 		// Total Issuance of the currency
-		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+		let total_supply = T::Currency::total_issuance(T::GetSetGBPCurrencyId::get());
 
 		match market_price {
 			market_price if market_price > peg_price => {
@@ -1261,28 +1332,22 @@ impl<T: Config> Pallet<T> {
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
 				// `min_target_amount` for `SerpUp` operation
-				let relative_price = market_price / dinar_price;
-				let min_target_amount_full = expand_by / relative_price;
-				let min_target_fraction = min_target_amount_full / 100;
-				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
-		
-				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
+
+				T::SerpTreasury::on_serpup(T::GetSetGBPCurrencyId::get(), expand_by, min_target_amount).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
 				// `max_supply_amount` for `SerpDown` operation
-				let relative_price = market_price / dinar_price;
-				let max_supply_amount_full = contract_by / relative_price;
-				let max_supply_fraction = max_supply_amount_full / 100;
-				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
-		
-				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
+
+				T::SerpTreasury::on_serpdown(T::GetSetGBPCurrencyId::get(), contract_by, max_supply_amount).unwrap();
 			}
 			_ => {}
 		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::GetSetGBPCurrencyId::get()));
 		Ok(())
 	}
 
@@ -1340,9 +1405,32 @@ impl<T: Config> Pallet<T> {
 			},
 		}?;
 
-    	// exchangehost fetch - dinar_price
+    	// cryptocompare fetch - setter_price
+		let setter_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let setter_pending = setter_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let setter_response = setter_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if setter_response.code != 200 {
+			log::warn!("Unexpected status code: {}", setter_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let setter_body = setter_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let setter_body_str = sp_std::str::from_utf8(&setter_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let setter_price = match Self::parse_cryptocompare_price(setter_body_str) {
+			Some(setter_price) => Ok(setter_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", setter_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
+    	// cryptocompare fetch - dinar_price
 		let dinar_request =
-			http::Request::get("https://api.exchangerate.host/convert?from=USD&to=USD");
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
 		let dinar_pending = dinar_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
 		let dinar_response = dinar_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
 		if dinar_response.code != 200 {
@@ -1355,7 +1443,7 @@ impl<T: Config> Pallet<T> {
 			log::warn!("No UTF8 body");
 			http::Error::Unknown
 		})?;
-		let dinar_price = match Self::parse_exchangehost_price(dinar_body_str) {
+		let dinar_price = match Self::parse_cryptocompare_price(dinar_body_str) {
 			Some(dinar_price) => Ok(dinar_price),
 			None => {
 				log::warn!("Unable to extract price from the response: {:?}", dinar_body_str);
@@ -1364,7 +1452,7 @@ impl<T: Config> Pallet<T> {
 		}?;
 
 		// Total Issuance of the currency
-		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+		let total_supply = T::Currency::total_issuance(T::GetSetCHFCurrencyId::get());
 
 		match market_price {
 			market_price if market_price > peg_price => {
@@ -1373,28 +1461,22 @@ impl<T: Config> Pallet<T> {
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
 				// `min_target_amount` for `SerpUp` operation
-				let relative_price = market_price / dinar_price;
-				let min_target_amount_full = expand_by / relative_price;
-				let min_target_fraction = min_target_amount_full / 100;
-				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
-		
-				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
+
+				T::SerpTreasury::on_serpup(T::GetSetCHFCurrencyId::get(), expand_by, min_target_amount).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
 				// `max_supply_amount` for `SerpDown` operation
-				let relative_price = market_price / dinar_price;
-				let max_supply_amount_full = contract_by / relative_price;
-				let max_supply_fraction = max_supply_amount_full / 100;
-				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
-		
-				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
+
+				T::SerpTreasury::on_serpdown(T::GetSetCHFCurrencyId::get(), contract_by, max_supply_amount).unwrap();
 			}
 			_ => {}
 		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::GetSetCHFCurrencyId::get()));
 		Ok(())
 	}
 
@@ -1452,6 +1534,29 @@ impl<T: Config> Pallet<T> {
 			},
 		}?;
 
+    	// cryptocompare fetch - setter_price
+		let setter_request =
+			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
+		let setter_pending = setter_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
+		let setter_response = setter_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
+		if setter_response.code != 200 {
+			log::warn!("Unexpected status code: {}", setter_response.code);
+			return Err(http::Error::Unknown)
+		}
+		let setter_body = setter_response.body().collect::<Vec<u8>>();
+		// Create a str slice from the body.
+		let setter_body_str = sp_std::str::from_utf8(&setter_body).map_err(|_| {
+			log::warn!("No UTF8 body");
+			http::Error::Unknown
+		})?;
+		let setter_price = match Self::parse_cryptocompare_price(setter_body_str) {
+			Some(setter_price) => Ok(setter_price),
+			None => {
+				log::warn!("Unable to extract price from the response: {:?}", setter_body_str);
+				Err(http::Error::Unknown)
+			},
+		}?;
+
     	// cryptocompare fetch - dinar_price
 		let dinar_request =
 			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
@@ -1476,7 +1581,7 @@ impl<T: Config> Pallet<T> {
 		}?;
 
 		// Total Issuance of the currency
-		let total_supply = T::Currency::total_issuance(T::SetterCurrencyId::get());
+		let total_supply = T::Currency::total_issuance(T::GetSetSARCurrencyId::get());
 
 		match market_price {
 			market_price if market_price > peg_price => {
@@ -1485,28 +1590,22 @@ impl<T: Config> Pallet<T> {
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
 				// `min_target_amount` for `SerpUp` operation
-				let relative_price = market_price / dinar_price;
-				let min_target_amount_full = expand_by / relative_price;
-				let min_target_fraction = min_target_amount_full / 100;
-				let min_target_amount = min_target_fraction.saturating_mul_int(94 as u128);
-		
-				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount)?;
+				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
+
+				T::SerpTreasury::on_serpup(T::GetSetSARCurrencyId::get(), expand_by, min_target_amount).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
 				// `max_supply_amount` for `SerpDown` operation
-				let relative_price = market_price / dinar_price;
-				let max_supply_amount_full = contract_by / relative_price;
-				let max_supply_fraction = max_supply_amount_full / 100;
-				let max_supply_amount = max_supply_fraction.saturating_mul_int(106 as u128);
-		
-				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount)?;
+				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
+
+				T::SerpTreasury::on_serpdown(T::GetSetSARCurrencyId::get(), contract_by, max_supply_amount).unwrap();
 			}
 			_ => {}
 		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		<Pallet<T>>::deposit_event(Event::SerpTes(T::GetSetSARCurrencyId::get()));
 		Ok(())
 	}
 
