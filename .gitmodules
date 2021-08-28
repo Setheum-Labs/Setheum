@@ -1,6 +1,6 @@
 [submodule "lib-openrml"]
 	path = lib-openrml
-	url = https://github.com/Setheum-Labs/open-runtime-module-library/tree/lib-openrml-submodule
+	url = https://github.com/Setheum-Labs/open-runtime-module-library/tree/lib-openrml-submodule.git
 [submodule "predeploy-contracts"]
 	path = predeploy-contracts
-	url = https://github.com/Setheum-Labs/predeploy-contracts
+	url = https://github.com/Setheum-Labs/predeploy-contracts.git
