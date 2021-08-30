@@ -52,56 +52,63 @@ pub trait WeightInfo {
 	fn burn() -> Weight;
 	fn burn_with_remark(b: u32, ) -> Weight;
 	fn destroy_class() -> Weight;
+	fn update_class_properties() -> Weight;
 }
 
 /// Weights for setheum_nft using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn create_class() -> Weight {
-		(200_357_000 as Weight)
+		(177_661_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
 	fn mint(i: u32, ) -> Weight {
-		(0 as Weight)
-			// Standard Error: 5_000
+		(44_387_000 as Weight)
+			// Standard Error: 46_000
 			.saturating_add((17_893_000 as Weight).saturating_mul(i as Weight))
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes((2 as Weight).saturating_mul(i as Weight)))
 	}
 	fn transfer() -> Weight {
-		(54_749_000 as Weight)
+		(266_936_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
 	fn burn() -> Weight {
-		(154_177_000 as Weight)
+		(189_094_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 	}
 	fn burn_with_remark(b: u32, ) -> Weight {
-		(154_177_000 as Weight)
+		(196_036_000 as Weight)
+		// Standard Error: 0
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
 			.saturating_add(T::DbWeight::get().writes(5 as Weight))
 			.saturating_add((1_000 as Weight).saturating_mul(b as Weight))
 	}
 	fn destroy_class() -> Weight {
-		(137_255_000 as Weight)
+		(217_091_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
+	}
+	fn update_class_properties() -> Weight {
+		(52_914_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(1 as Weight))
+			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 }
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
 	fn create_class() -> Weight {
-		(200_357_000 as Weight)
+		(177_661_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
 	}
 	fn mint(i: u32, ) -> Weight {
-		(0 as Weight)
+		(44_387_000 as Weight)
 			// Standard Error: 5_000
 			.saturating_add((17_893_000 as Weight).saturating_mul(i as Weight))
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
@@ -109,24 +116,29 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().writes((2 as Weight).saturating_mul(i as Weight)))
 	}
 	fn transfer() -> Weight {
-		(54_749_000 as Weight)
+		(266_936_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
 	}
 	fn burn() -> Weight {
-		(154_177_000 as Weight)
+		(189_094_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
 	}
 	fn burn_with_remark(b: u32, ) -> Weight {
-		(154_177_000 as Weight)
+		(196_036_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
 			.saturating_add((1_000 as Weight).saturating_mul(b as Weight))
 	}
 	fn destroy_class() -> Weight {
-		(137_255_000 as Weight)
+		(217_091_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
+	}
+	fn update_class_properties() -> Weight {
+		(52_914_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}
 }

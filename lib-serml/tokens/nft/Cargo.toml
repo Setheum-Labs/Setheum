@@ -11,31 +11,29 @@ serde = { version = "1.0.124", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 enumflags2 = { version = "0.6.3" }
 
-# Substrate dependencies
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false, optional = true }
-pallet-proxy = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-pallet-timestamp = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+max-encoded-len = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false, optional = true}
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 # orml dependencies
-orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
 orml-nft = { path = "../../../lib-openrml/nft", default-features = false }
+orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
 
 # local dependencies
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
-setheum-currencies = { path = "../../tokens/currencies", default-features = false }
 
 [dev-dependencies]
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-setheum-currencies = { path = "../../../lib-serml/tokens/currencies", default-features = false }
-orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
+orml-tokens = { path = "../../../lib-openrml/tokens" }
 support = { package = "setheum-support", path = "../../support" }
+setheum-currencies = { path = "../../tokens/currencies", default-features = false }
 
 [features]
 default = ["std"]
@@ -51,12 +49,12 @@ std = [
 	"primitives/std",
 	"orml-traits/std",
 	"orml-nft/std",
-	"pallet-timestamp/std",
 	"setheum-currencies/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"primitives/runtime-benchmarks"
 ]
 try-runtime = ["frame-support/try-runtime"]
