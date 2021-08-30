@@ -7897,7 +7897,7 @@ dependencies = [
 
 [[package]]
 name = "serp-treasury"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",

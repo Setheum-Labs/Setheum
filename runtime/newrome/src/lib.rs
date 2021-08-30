@@ -1100,6 +1100,13 @@ parameter_type_with_key! {
 	};
 }
 
+pub struct DustRemovalWhitelist;
+impl Contains<AccountId> for DustRemovalWhitelist {
+	fn contains(a: &AccountId) -> bool {
+		get_all_module_accounts().contains(a)
+	}
+}
+
 parameter_types! {
 	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
 }
@@ -1112,6 +1119,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = weights::orml_tokens::WeightInfo<Runtime>;
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = orml_tokens::TransferDust<Runtime, TreasuryAccount>;
+	type MaxLocks = MaxLocks;
+	type DustRemovalWhitelist = DustRemovalWhitelist;
 }
 
 parameter_types! {
