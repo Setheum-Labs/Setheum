@@ -34,7 +34,10 @@ use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
-use support::{mocks::MockAddressMapping, SerpTreasury};
+use support::{
+	mocks::MockAddressMapping,
+	SerpTreasury
+};
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;

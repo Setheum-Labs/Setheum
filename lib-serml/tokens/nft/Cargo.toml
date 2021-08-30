@@ -31,7 +31,7 @@ sp-core = { default-features = false, git = "https://github.com/paritytech/subst
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
+orml-tokens = { path = "../../../lib-openrml/tokens" }
 support = { package = "setheum-support", path = "../../support" }
 setheum-currencies = { path = "../../tokens/currencies", default-features = false }
 
@@ -49,7 +49,6 @@ std = [
 	"primitives/std",
 	"orml-traits/std",
 	"orml-nft/std",
-	"pallet-timestamp/std",
 	"setheum-currencies/std",
 ]
 runtime-benchmarks = [
