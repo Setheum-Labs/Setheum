@@ -181,18 +181,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 		RELATIVE_PRICE.with(|v| *v.borrow_mut())
 	}
 
-	fn get_market_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_peg_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
-	}
-
-	fn get_setter_price() -> Option<Price> {
-		Some(Price::one())
-	}
-
 	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
 		None
 	}
@@ -216,7 +204,7 @@ parameter_types! {
 		SETUSD,
 	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSettUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
@@ -224,35 +212,13 @@ parameter_types! {
 	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
 	pub const CashDropVaultAccountId: AccountId = VAULT;
 
-	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
+	pub CashDropPeriod: BlockNumber = 120;
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
-
-	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
-		DNAR,
-		DRAM,
-		SETR,
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
-	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
 }
 
 parameter_type_with_key! {
 	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&DNAR => 2,
-			&DRAM => 2,
 			&SETR => 2,
 			&SETCHF => 2,
 			&SETEUR => 2,
@@ -285,19 +251,14 @@ impl Config for Runtime {
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetSettUSDCurrencyId = GetSettUSDCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type SerpTesSchedule = SerpTesSchedule;
 	type CashDropPeriod = CashDropPeriod;
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type PriceSource = MockPriceSource;
-	type RewardableCurrencyIds = RewardableCurrencyIds;
-	type NonStableDropCurrencyIds = StableCurrencyIds;
-	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();

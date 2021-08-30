@@ -1,55 +1,59 @@
 [package]
-name = "settmint-engine"
+name = "serp-ocw"
 version = "0.9.0"
 authors = ["Setheum Labs"]
 edition = "2018"
 
-[dependencies]
-# external dependencies
-serde = { version = "1.0.101", optional = true }
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
 
-# Substrate dependencies
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["max-encoded-len"] }
+lite-json = { version = "0.1", default-features = false }
+log = { version = "0.4.14", default-features = false }
+fixed = { default-features = false, git = "https://github.com/encointer/substrate-fixed", package = "substrate-fixed" }
+
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-application-crypto = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-keystore = { git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.8", optional = true }
 sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
-orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
 orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
-orml-utilities = { path = "../../../lib-openrml/utilities", default-features = false }
+orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
 
 # local dependencies
-support = { package = "setheum-support", path = "../../support", default-features = false }
-settmint = { package = "settmint-manager", path = "../settmint-manager", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
+support = { package = "setheum-support", path = "../../support", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 orml-currencies = { path = "../../../lib-openrml/currencies" }
-setheum-dex = { path = "../../dex/dex" }
 serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
+setheum-dex = { path = "../..//dex/dex" }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 [features]
 default = ["std"]
 std = [
-	"serde",
 	"codec/std",
+	"lite-json/std",
+	"log/std",
 	"frame-support/std",
 	"frame-system/std",
-	"orml-tokens/std",
-	"orml-traits/std",
-	"sp-application-crypto/std",
+	"sp-core/std",
 	"sp-io/std",
+	"sp-keystore",
 	"sp-runtime/std",
 	"sp-std/std",
-	"support/std",
-	"settmint/std",
+	"orml-traits/std",
+	"orml-tokens/std",
 	"primitives/std",
-	"orml-utilities/std",
+	"support/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

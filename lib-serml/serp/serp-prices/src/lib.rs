@@ -37,7 +37,7 @@ use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
 use primitives::{
 	currency::DexShare,
-	Balance, CurrencyId, TokenSymbol,
+	Balance, CurrencyId,
 };
 use sp_core::U256;
 use sp_runtime::{
@@ -48,6 +48,7 @@ use sp_std::{
 	convert::TryInto,
 };
 use support::{CurrencyIdMapping, DEXManager, Price, PriceProvider};
+
 
 mod mock;
 mod tests;
@@ -69,77 +70,13 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The Setter currency id, it should be SETR in Setheum.
-		type SetterCurrencyId: Get<CurrencyId>;
+		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
-		#[pallet::constant]
-		/// The SettUSD currency id, it should be SETUSD in Setheum.
-		type GetSettUSDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatUSD currency id, it should be USD.
-		type GetFiatUSDCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatEUR currency id, it should be EUR.
-		type GetFiatEURCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatGBP currency id, it should be GBP.
-		type GetFiatGBPCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatCHF currency id, it should be CHF.
-		type GetFiatCHFCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The FiatSAR currency id, it should be SAR.
-		type GetFiatSARCurrencyId: Get<CurrencyId>;
-
-		/// The fixed price of SettUsd, it should be 1 USD in Setheum.
+		/// The fixed price of SetUsd, it should be 1 USD in Setheum.
 		/// This represents the value of the US dollar which is used -
 		/// for price feed provided in USD by the oracles in Setheum.
 		#[pallet::constant]
 		type FiatUsdFixedPrice: Get<Price>;
-
-		#[pallet::constant]
-		/// The Setter Peg One currency id, it should be SETUSD in Setheum.
-		type GetSetterPegOneCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Two currency id, it should be SETGBP in Setheum.
-		type GetSetterPegTwoCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Three currency id, it should be SETEUR in Setheum.
-		type GetSetterPegThreeCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Four currency id, it should be KWDJ in Setheum.
-		type GetSetterPegFourCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Five currency id, it should be JODJ in Setheum.
-		type GetSetterPegFiveCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Six currency id, it should be BHDJ in Setheum.
-		type GetSetterPegSixCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Seven currency id, it should be KYDJ in Setheum.
-		type GetSetterPegSevenCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Eight currency id, it should be OMRJ in Setheum.
-		type GetSetterPegEightCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Nine currency id, it should be SETCHF in Setheum.
-		type GetSetterPegNineCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The Setter Peg Ten currency id, it should be GIPJ in Setheum.
-		type GetSetterPegTenCurrencyId: Get<CurrencyId>;
 
 		/// The origin which may lock and unlock prices feed to system.
 		type LockOrigin: EnsureOrigin<Self::Origin>;
@@ -159,12 +96,10 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Invalid fiat currency id
-		InvalidFiatCurrencyType,
-		/// Invalid stable currency id
-		InvalidCurrencyType,
-		/// Invalid peg pair (peg-to-currency-by-key-pair)
-		InvalidPegPair,
+		/// Failed to access price
+		AccessPriceFailed,
+		/// There's no locked price
+		NoLockedPrice,
 	}
 
 	#[pallet::event]
@@ -232,140 +167,11 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 		}
 	}
 
-	/// get the exchange rate of a specific SetCurrency to USD
-	/// Note: this returns the price for 1 basic unit
-	/// For the SERP TO USE WHEN STABILISING SetCurrency prices.
-	fn get_market_price(currency_id: CurrencyId) -> Option<Price>{
-		let maybe_feed_price = if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
-			let token_0 = match symbol_0 {
-				DexShare::Token(token) => CurrencyId::Token(token),
-				DexShare::Erc20(address) => CurrencyId::Erc20(address),
-			};
-			let token_1 = match symbol_1 {
-				DexShare::Token(token) => CurrencyId::Token(token),
-				DexShare::Erc20(address) => CurrencyId::Erc20(address),
-			};
-			return {
-				if let (Some(price_0), Some(price_1)) = (Self::get_price(token_0), Self::get_price(token_1)) {
-					let (pool_0, pool_1) = T::DEX::get_liquidity_pool(token_0, token_1);
-					let total_shares = T::Currency::total_issuance(currency_id);
-					lp_token_fair_price(total_shares, pool_0, pool_1, price_0, price_1)
-				} else {
-					None
-				}
-			};
-		} else {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(currency_id).or_else(|| T::Source::get(&currency_id))
-		};
-		let maybe_adjustment_multiplier = 10u128.checked_pow(T::CurrencyIdMapping::decimals(currency_id)?.into());
-
-		if let (Some(feed_price), Some(adjustment_multiplier)) = (maybe_feed_price, maybe_adjustment_multiplier) {
-			Price::checked_from_rational(feed_price.into_inner(), adjustment_multiplier)
-		} else {
-			None
-		}
-	}
-
-	/// get the exchange rate of a specific SetCurrency peg to USD
-	/// Note: this returns the price for 1 basic unit
-	/// For the SERP TO USE WHEN STABILISING SetCurrency peg prices.
-	/// The setcurrency_id matching to its peg,
-	fn get_peg_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if currency_id == T::SetterCurrencyId::get() {
-			Self::get_setter_price()
-		} else if let CurrencyId::Token(TokenSymbol::SETUSD) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::SETEUR) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::SETGBP) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::SETCHF) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else if let CurrencyId::Token(TokenSymbol::SETSAR) = currency_id {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(T::GetFiatUSDCurrencyId::get()).or_else(|| T::Source::get(&T::GetFiatUSDCurrencyId::get()))
-		} else {
-			// if locked price exists, return it, otherwise return latest price from oracle.
-			Self::locked_price(currency_id).or_else(|| T::Source::get(&currency_id))
-		};
-		let maybe_adjustment_multiplier = 10u128.checked_pow(T::CurrencyIdMapping::decimals(currency_id)?.into());
-
-		if let (Some(feed_price), Some(adjustment_multiplier)) = (maybe_feed_price, maybe_adjustment_multiplier) {
-			Price::checked_from_rational(feed_price.into_inner(), adjustment_multiplier)
-		} else {
-			None
-		}
-	}
-
-	/// get the exchange rate of a specific SetCurrency peg to USD
-	/// Note: this returns the price for 1 basic unit
-	/// For the SERP TO USE WHEN STABILISING SetCurrency peg prices.
-	fn get_setter_price() -> Option<Price> {
-		if let (Some(price_a),
-			Some(price_b),
-			Some(price_c),
-			Some(price_d),
-			Some(price_e),
-			Some(price_f),
-			Some(price_g),
-			Some(price_h),
-			Some(price_i),
-			Some(price_j)
-		) = (
-			Self::get_price(T::GetSetterPegOneCurrencyId::get()),
-			Self::get_price(T::GetSetterPegTwoCurrencyId::get()),
-			Self::get_price(T::GetSetterPegThreeCurrencyId::get()),
-			Self::get_price(T::GetSetterPegFourCurrencyId::get()),
-			Self::get_price(T::GetSetterPegFiveCurrencyId::get()),
-			Self::get_price(T::GetSetterPegSixCurrencyId::get()),
-			Self::get_price(T::GetSetterPegSevenCurrencyId::get()),
-			Self::get_price(T::GetSetterPegEightCurrencyId::get()),
-			Self::get_price(T::GetSetterPegNineCurrencyId::get()),
-			Self::get_price(T::GetSetterPegTenCurrencyId::get()))
-		{
-			setter_price(
-				price_a,
-				price_b,
-				price_c,
-				price_d,
-				price_e,
-				price_f,
-				price_g,
-				price_h,
-				price_i,
-				price_j,
-			)
-		} else {
-			None
-		}
-	}
-
-	// /// Get the SERP-TES supply needed to be serped
-	// fn on_serp_tes(
-	// 	currency_id: CurrencyId
-	// ) -> Balance {
-	// 	let (Some(peg_price), Some(market_price)) = (
-	// 		Self::get_peg_price(currency_id), Self::get_market_price(currency_id)
-	// 	);
-	// 		
-	// 	let total_supply = T::Currency::total_issuance(currency_id);
-	// 	get_supply_change(
-	// 		market_price,
-	// 		peg_price,
-	// 		total_supply
-	// 	)
-	// }
-
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if currency_id == T::SetterCurrencyId::get() {
-			Self::get_setter_price()
+		let maybe_feed_price = if currency_id == T::GetSetUSDCurrencyId::get() {
+			Some(T::FiatUsdFixedPrice::get())
 		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0 = match symbol_0 {
 				DexShare::Token(token) => CurrencyId::Token(token),
@@ -375,6 +181,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 				DexShare::Token(token) => CurrencyId::Token(token),
 				DexShare::Erc20(address) => CurrencyId::Erc20(address),
 			};
+
 			return {
 				if let (Some(price_0), Some(price_1)) = (Self::get_price(token_0), Self::get_price(token_1)) {
 					let (pool_0, pool_1) = T::DEX::get_liquidity_pool(token_0, token_1);
@@ -388,6 +195,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 			// if locked price exists, return it, otherwise return latest price from oracle.
 			Self::locked_price(currency_id).or_else(|| T::Source::get(&currency_id))
 		};
+
 		let maybe_adjustment_multiplier = 10u128.checked_pow(T::CurrencyIdMapping::decimals(currency_id)?.into());
 
 		if let (Some(feed_price), Some(adjustment_multiplier)) = (maybe_feed_price, maybe_adjustment_multiplier) {
@@ -434,68 +242,3 @@ fn lp_token_fair_price(
 		.and_then(|r| TryInto::<u128>::try_into(r).ok())
 		.map(Price::from_inner)
 }
-
-/// Get the price of a Setter (SETR basket coin - basket of currencies) -
-/// aggregate the setter price.
-/// the final price = total_price_of_basket(all currencies prices combined) -
-/// divided by the amount of currencies in the basket.
-/// setter_basket_peg_price = 1 * (peg_one_price * ... * peg_three_price) / 10 * 1
-fn setter_price(
-	price_a: Price,
-	price_b: Price,
-	price_c: Price,
-	price_d: Price,
-	price_e: Price,
-	price_f: Price,
-	price_g: Price,
-	price_h: Price,
-	price_i: Price,
-	price_j: Price,
-) -> Option<Price> {
-	let one: Balance = 1;
-	let total_shares: Balance = 10;
-	U256::from(one)
-		.saturating_mul(
-			U256::from(price_a.into_inner())
-				.saturating_add(U256::from(price_b.into_inner()))
-				.saturating_add(U256::from(price_c.into_inner()))
-				.saturating_add(U256::from(price_d.into_inner()))
-				.saturating_add(U256::from(price_e.into_inner()))
-				.saturating_add(U256::from(price_f.into_inner()))
-				.saturating_add(U256::from(price_g.into_inner()))
-				.saturating_add(U256::from(price_h.into_inner()))
-				.saturating_add(U256::from(price_i.into_inner()))
-				.saturating_add(U256::from(price_j.into_inner()))
-		)
-		.checked_div(U256::from(total_shares))
-		.and_then(|n| n.checked_mul(U256::from(1)))
-		.and_then(|r| TryInto::<u128>::try_into(r).ok())
-		.map(Price::from_inner)
-}
-
-// Get the SERP-TES supply needed to be serped
-// fn serp_tes_fn<T: UniqueSaturatedInto<Balance>>(
-// 	currency_id: CurrencyId,
-// 	total_supply: Balance,
-// 	peg_price: Price,
-// 	market_price: Price,
-// ) -> Balance {
-// 	let peg_to_supply = total_supply
-// 		.saturating_mul(peg_price.try_into(u128));
-// 	let market_to_supply = total_supply.try_into(u128)
-// 		.saturating_mul(market_price.try_into(u128));
-// 	let relative_supply_change = total_supply
-// 		.saturating_mul(market_to_supply.checked_div(peg_to_supply));
-// 
-// 	relative_supply_change
-// 		.and_then(|n| TryInto::<Balance>::try_into(n).ok())
-// 		.unwrap_or_else(Zero::zero)
-// }
-
-
-// Calculate the amount of supply change from a fraction given as `coin_price`, `peg_price` and  `supply`.
-// fn get_supply_change(coin_price: SubFixedU128<U128>, peg_price: SubFixedU128<U128>, supply: Balance) -> Balance {
-// 	type Fix = SubFixedU128<U128>;
-// 	let fraction = Fix::from_num(coin_price) / Fix::from_num(peg_price) - Fix::from_num(1);
-// 	fraction.saturating_mul_int(supply as u128).to_num::<u128>()
-// }

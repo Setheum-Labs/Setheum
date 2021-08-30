@@ -117,20 +117,6 @@ fn lp_token_fair_price_works() {
 }
 
 #[test]
-fn get_peg_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_peg_price(SETUSD),
-			Price::saturating_from_integer(1000000u128)
-		); // 1 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_peg_price(SETEUR),
-			Price::saturating_from_integer(1000000u128)
-		);
-	});
-}
-
-#[test]
 fn get_price_from_oracle() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
@@ -149,7 +135,7 @@ fn get_price_of_stable_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			SerpPrices::get_price(SETUSD),
-			Some(Price::saturating_from_integer(990000u128))
+			Some(Price::saturating_from_integer(1000000u128))
 		); // 1 USD, right shift the decimal point (18-12) places
 	});
 }
@@ -157,7 +143,7 @@ fn get_price_of_stable_currency_id() {
 #[test]
 fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(MockDEX::get_liquidity_pool(SETUSD, DRAM), (10000, 200));
+		assert_eq!(MockDEX::get_liquidity_pool(SETUSD, DRAM), (0, 0));
 		assert_eq!(SerpPrices::get_price(LP_SETUSD_DRAM), None);
 		assert_ok!(Tokens::deposit(LP_SETUSD_DRAM, &1, 100));
 		assert_eq!(Tokens::total_issuance(LP_SETUSD_DRAM), 100);
@@ -189,55 +175,6 @@ fn get_relative_price_works() {
 			Some(Price::saturating_from_rational(5000000, 1)) /* 1DNAR = 100SETUSD, right shift the decimal point (12-10)
 			                                                 * places */
 		);
-	});
-}
-
-#[test]
-fn get_setter_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_price(KWD),
-			Some(Price::saturating_from_integer(2000000u128)),
-		);
-		assert_eq!(
-			SerpPrices::get_price(JOD),
-			Some(Price::saturating_from_integer(2000000u128)),
-		);
-		assert_eq!(
-			SerpPrices::get_price(BHD),
-			Some(Price::saturating_from_integer(2000000u128)),
-		);
-		assert_eq!(
-			SerpPrices::get_price(KYD),
-			Some(Price::saturating_from_integer(2000000u128)),
-		);
-		assert_eq!(
-			SerpPrices::get_price(OMR),
-			Some(Price::saturating_from_integer(2000000u128)),
-		);
-		assert_eq!(
-			SerpPrices::get_price(GIP),
-			Some(Price::saturating_from_integer(2000000u128)),
-		);
-		assert_eq!(
-			SerpPrices::get_setter_price(),
-			Some(Price::saturating_from_integer(2000000u128))
-		); // 1.600000 USD, right shift the decimal point (18-12) places
-	});
-}
-
-#[test]
-fn get_market_price_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			SerpPrices::get_price(BTC),
-			Some(Price::saturating_from_integer(500000000000000u128))
-		); // 50000 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			SerpPrices::get_price(DNAR),
-			Some(Price::saturating_from_integer(100000000u128))
-		); // 100 USD, right shift the decimal point (18-12) places
-		assert_eq!(SerpPrices::get_price(SETSAR), None);
 	});
 }
 

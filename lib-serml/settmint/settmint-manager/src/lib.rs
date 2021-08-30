@@ -21,7 +21,7 @@
 //! ## Overview
 //!
 //! SettmintManager module manages Settmint's reserve asset (Setter) 
-//! and the standards backed by the asset (SettCurrencies).
+//! and the standards backed by the asset (SetCurrencies).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -78,7 +78,7 @@ pub mod module {
 		/// Setter (Valid Reserve) currency id
 		type GetReserveCurrencyId: Get<CurrencyId>;
 
-		/// SERP Treasury for issuing/burning stable currency adjust standard value
+		/// SERP Treasury for issuing/burning stable currency to adjust standard value
 		/// adjustment
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 

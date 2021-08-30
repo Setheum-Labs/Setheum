@@ -21,13 +21,12 @@
 //! ## Overview
 //!
 //! SERP Treasury manages the Settmint, and handle excess serplus
-//! and stabilize SettCurrencies standards timely in order to keep the
+//! and stabilize SetCurrencies standards timely in order to keep the
 //! system healthy. It manages the TES (Token Elasticity of Supply).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-// use fixed::{types::extra::U128, FixedU128};
 use frame_support::{pallet_prelude::*, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
@@ -74,17 +73,12 @@ pub mod module {
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SettUSD currency id, it should be SETUSD in Setheum.
-		type GetSettUSDCurrencyId: Get<CurrencyId>;
+		/// The SetUSD currency id, it should be SETUSD in Setheum.
+		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
 		/// SettinDes (DRAM) dexer currency id
 		type DirhamCurrencyId: Get<CurrencyId>;
-
-		/// SERP-TES Adjustment Frequency.
-		/// Schedule for when to trigger SERP-TES
-		/// (Blocktime/BlockNumber - every blabla block)
-		type SerpTesSchedule: Get<Self::BlockNumber>;
 
 		// CashDrop period for transferring cashdrop from 
 		// the `SettPayTreasuryAccountId`.
@@ -109,18 +103,6 @@ pub mod module {
 
 		/// The max slippage allowed when swap fee with DEX
 		type MaxSlippageSwapWithDEX: Get<Ratio>;
-
-		/// The price source of currencies
-		type PriceSource: PriceProvider<CurrencyId>;
-
-		/// The cashdrop currency ids that can be rewarded with CashDrop.
-		type RewardableCurrencyIds: Get<Vec<CurrencyId>>;
-
-		/// The cashdrop currency ids that receive Setter.
-		type NonStableDropCurrencyIds: Get<Vec<CurrencyId>>;
-
-		/// The cashdrop currency ids that receive SettCurrencies.
-		type SetCurrencyDropCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
 		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
@@ -187,33 +169,15 @@ pub mod module {
 		/// NOTE: This function is called BEFORE ANY extrinsic in a block is applied,
 		/// including inherent extrinsics. Hence for instance, if you runtime includes
 		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
-		/// Handle excessive surplus or debits of system when block end
 		///
-		// TODO: Migrate `BlockNumber` to `Timestamp`
 		/// Triggers Serping for all system stablecoins at every block.
 		fn on_initialize(now: T::BlockNumber) -> Weight {
-			// SERP-TES Adjustment Frequency.
-			// Schedule for when to trigger SERP-TES
-			// (Blocktime/BlockNumber - every blabla block)
-			if now % T::SerpTesSchedule::get() == Zero::zero() {
-				// SERP TES (Token Elasticity of Supply).
-				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
-				let mut count: u32 = 0;
-				if Self::setter_on_tes().is_ok() {
-					count += 1;
-				};
-				if Self::usdj_on_tes().is_ok() {
-					count += 1;
-				}
-
-				T::WeightInfo::on_initialize(count)
-			} else if now % T::CashDropPeriod::get() == Zero::zero() {
-				// CashDrop period for transferring cashdrop from 
-				// the `SettPayTreasuryAccountId`.
-				// The ideal period is after every `24 hours`.
-				//
-				// SERP TES (Token Elasticity of Supply).
-				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
+			// CashDrop period for transferring cashdrop from 
+			// the `SettPayTreasuryAccountId`.
+			// The ideal period is after every `24 hours`.
+			//
+			if now % T::CashDropPeriod::get() == Zero::zero() {
+				// Release CashDrop to vault.
 				let mut count: u32 = 0;
 				if Self::setter_cashdrop_to_vault().is_ok() {
 					count += 1;
@@ -242,7 +206,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	type CurrencyId = CurrencyId;
 
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+	fn get_buyback_serpup(amount: Balance, currency_id: Self::CurrencyId, min_target_amount: Balance) -> DispatchResult {
 		// Setheum Treasury SerpUp Pool - 30%
 		let three: Balance = 3;
 		let serping_amount: Balance = three.saturating_mul(amount / 10);
@@ -250,12 +214,14 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		if currency_id == T::SetterCurrencyId::get() {
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setter_to_dinar(
 				serping_amount,
+				min_target_amount,
 				None,
 			)?;
 		} else {
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
 				currency_id,
 				serping_amount,
+				min_target_amount,
 				None,
 			)?;
 		} 
@@ -292,7 +258,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
-
+	// TODO: Update to 1% per day not 50% per day.
 	/// Reward SETR cashdrop to vault
 	fn setter_cashdrop_to_vault() -> DispatchResult {
 		let free_balance = T::Currency::free_balance(T::SetterCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
@@ -307,76 +273,24 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::SetterCurrencyId::get()));
 		Ok(())
 	}
-
+	// TODO: Update to 1% per day not 50% per day. and rename `usdj` to `setusd`
 	/// SerpUp ratio for SettPay Cashdrops
 	fn usdj_cashdrop_to_vault() -> DispatchResult {
-		let free_balance = T::Currency::free_balance(T::GetSettUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
+		let free_balance = T::Currency::free_balance(T::GetSetUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
 
 		// Send 50% of funds to the CashDropVault
 		let five: Balance = 5;
 		let cashdrop_amount: Balance = five.saturating_mul(free_balance / 10);
 		
 		// Transfer the CashDrop propper Rewards to the CashDropVault	
-		T::Currency::transfer(T::GetSettUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get(), &T::CashDropVaultAccountId::get(), cashdrop_amount)?;
+		T::Currency::transfer(T::GetSetUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get(), &T::CashDropVaultAccountId::get(), cashdrop_amount)?;
 
-		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::GetSettUSDCurrencyId::get()));
-		Ok(())
-	}
-
-	fn setter_on_tes() -> DispatchResult {
-		let currency_id = T::SetterCurrencyId::get();
-		let market_price = <T as Config>::PriceSource::get_market_price(currency_id);
-		let peg_price = <T as Config>::PriceSource::get_peg_price(currency_id);
-		let total_supply = T::Currency::total_issuance(currency_id);
-		
-		match market_price {
-			market_price if market_price > peg_price => {
-	
-				// safe from underflow because `peg_price` is checked to be less than `market_price`
-				// expand_by = 0.2% of total_supply;
-				let expand_by = total_supply / 500;
-				Self::on_serpup(currency_id, expand_by)?;
-			}
-			market_price if market_price < peg_price => {
-				// safe from underflow because `peg_price` is checked to be greater than `market_price`
-				// expand_by = 0.2% of total_supply;
-				let contract_by = total_supply / 500;
-				Self::on_serpdown(currency_id, contract_by)?;
-			}
-			_ => {}
-		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(currency_id));
-		Ok(())
-	}
-
-	fn usdj_on_tes() -> DispatchResult {
-		let currency_id = T::GetSettUSDCurrencyId::get();
-		let market_price = <T as Config>::PriceSource::get_market_price(currency_id);
-		let peg_price = <T as Config>::PriceSource::get_peg_price(currency_id);
-		let total_supply = T::Currency::total_issuance(currency_id);
-
-		match market_price {
-			market_price if market_price > peg_price => {
-	
-				// safe from underflow because `peg_price` is checked to be less than `market_price`
-				// expand_by = 0.2% of total_supply;
-				let expand_by = total_supply / 500;
-				Self::on_serpup(currency_id, expand_by)?;
-			}
-			market_price if market_price < peg_price => {
-				// safe from underflow because `peg_price` is checked to be greater than `market_price`
-				// expand_by = 0.2% of total_supply;
-				let contract_by = total_supply / 500;
-				Self::on_serpdown(currency_id, contract_by)?;
-			}
-			_ => {}
-		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(currency_id));
+		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::GetSetUSDCurrencyId::get()));
 		Ok(())
 	}
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serpup(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
+	fn on_serpup(currency_id: CurrencyId, amount: Balance, min_target_amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -387,7 +301,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			!amount.is_zero(),
 			Error::<T>::InvalidAmount,
 		);
-		Self::get_buyback_serpup(amount, currency_id)?;
+		Self::get_buyback_serpup(amount, currency_id, min_target_amount)?;
 		Self::get_cashdrop_serpup(amount, currency_id)?;
 		Self::get_charity_fund_serpup(amount, currency_id)?;
 
@@ -395,16 +309,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	// get the minimum supply of a setcurrency - by key
-	fn get_minimum_supply(currency_id: CurrencyId) -> Balance {
-		T::GetStableCurrencyMinimumSupply::get(&currency_id)
-	}
 	// buy back and burn surplus(stable currencies) with swap on DEX
 	// Create the necessary serp down parameters and swap currencies then burn swapped currencies.
 	//
 	// TODO: Update to add the burning of the stablecoins!
 	//
-	fn on_serpdown(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
+	fn on_serpdown(currency_id: CurrencyId, amount: Balance, max_supply_amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -421,12 +331,14 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		if currency_id == T::SetterCurrencyId::get() {
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_dinar_to_exact_setter(
 				amount,
+				max_supply_amount,
 				None,
 			)?;
 		} else {
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_setter_to_exact_setcurrency(
 				currency_id,
 				amount,
+				max_supply_amount,
 				None,
 			)?;
 		} 
@@ -435,6 +347,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	// get the minimum supply of a setcurrency - by key
+	fn get_minimum_supply(currency_id: CurrencyId) -> Balance {
+		T::GetStableCurrencyMinimumSupply::get(&currency_id)
+	}
+	
 	fn issue_standard(currency_id: CurrencyId, who: &T::AccountId, standard: Self::Balance) -> DispatchResult {
 		T::Currency::deposit(currency_id, who, standard)?;
 		Ok(())
@@ -462,7 +379,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
 	fn claim_cashdrop(currency_id: CurrencyId, who: &T::AccountId, transfer_amount: Balance) -> DispatchResult {
 		ensure!(
-			T::RewardableCurrencyIds::get().contains(&currency_id),
+			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
 		let minimum_claimable_transfer = T::MinimumClaimableTransferAmounts::get(&currency_id);
@@ -472,7 +389,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		);
 
 		if currency_id == T::SetterCurrencyId::get() {
-			let balance_cashdrop_amount = transfer_amount / 50; // 2%
+			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
 			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
@@ -481,25 +398,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 			T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, balance_cashdrop_amount)?;
 			Self::deposit_event(Event::CashDropClaim(T::SetterCurrencyId::get(), who.clone(), balance_cashdrop_amount.clone()));
-		} else if T::NonStableDropCurrencyIds::get().contains(&currency_id) {
-			
-			let balance_cashdrop_amount = transfer_amount / 100; // 1%
-			let serp_balance = T::Currency::free_balance(T::SetterCurrencyId::get(), &Self::account_id());
-			ensure!(
-				balance_cashdrop_amount <= serp_balance,
-				Error::<T>::CashdropNotAvailable,
-			);
-
-			// get a price relativity using the DEX pools and use it to provide Setter Cashdrops.
-			let (pool_0, pool_1) = T::Dex::get_liquidity_pool(currency_id, T::SetterCurrencyId::get());
-			let relative_price = pool_1 / pool_0;
-			let relative_cashdrop = balance_cashdrop_amount / relative_price;
-		
-			T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, relative_cashdrop)?;
-			Self::deposit_event(Event::CashDropClaim(T::SetterCurrencyId::get(), who.clone(), relative_cashdrop.clone()));
-		} else if T::SetCurrencyDropCurrencyIds::get().contains(&currency_id) {
-			
-			let balance_cashdrop_amount = transfer_amount / 50; // 4%
+		} else {
+			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
 			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
@@ -518,6 +418,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	/// return actual supply Dinar amount
 	fn swap_dinar_to_exact_setter(
 		target_amount: Balance,
+		max_supply_amount: Balance,
 		maybe_path: Option<&[CurrencyId]>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
@@ -537,14 +438,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 
-		// get a min_target_amount of 105% of market value,
-		// marking the 5% slippage of `price_impact_limit`.
-		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(setter_currency_id, dinar_currency_id);
-		let relative_price = pool_1 / pool_0;
-		let max_supply_amount_full = target_amount / relative_price;
-		let max_supply_amount_fives = max_supply_amount_full / 20;
-		let max_supply_amount = max_supply_amount_fives * 21;
-		
 		T::Currency::deposit(dinar_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -563,6 +456,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	fn swap_setter_to_exact_setcurrency(
 		currency_id: CurrencyId,
 		target_amount: Balance,
+		max_supply_amount: Balance,
 		maybe_path: Option<&[CurrencyId]>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let setter_currency_id = T::SetterCurrencyId::get();
@@ -581,14 +475,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 
-		// get a min_target_amount of 105% of market value,
-		// marking the 5% slippage of `price_impact_limit`.
-		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(currency_id, setter_currency_id);
-		let relative_price = pool_1 / pool_0;
-		let max_supply_amount_full = target_amount / relative_price;
-		let max_supply_amount_fives = max_supply_amount_full / 20;
-		let max_supply_amount = max_supply_amount_fives * 21;
-
 		T::Currency::deposit(setter_currency_id, &Self::account_id(), max_supply_amount)?;
 		T::Dex::swap_with_exact_target(
 			&Self::account_id(),
@@ -606,6 +492,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	/// When Setter gets SerpUp
 	fn swap_exact_setter_to_dinar(
 		supply_amount: Balance,
+		min_target_amount: Balance,
 		maybe_path: Option<&[CurrencyId]>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let currency_id = T::SetterCurrencyId::get();
@@ -626,14 +513,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
 
-		// get a min_target_amount of 95% of market value,
-		// marking the 5% slippage of `price_impact_limit`.
-		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(dinar_currency_id, currency_id);
-		let relative_price = pool_1 / pool_0;
-		let min_target_amount_full = supply_amount / relative_price;
-		let min_target_amount_fives = min_target_amount_full / 20;
-		let min_target_amount = min_target_amount_fives * 19;
-
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
 			swap_path,
@@ -651,6 +530,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	fn swap_exact_setcurrency_to_dinar(
 		currency_id: CurrencyId,
 		supply_amount: Balance,
+		min_target_amount: Balance,
 		maybe_path: Option<&[CurrencyId]>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
@@ -669,14 +549,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			}
 		};
 		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-
-		// get a min_target_amount of 95% of market value,
-		// marking the 5% slippage of `price_impact_limit`.
-		let (pool_0, pool_1) = T::Dex::get_liquidity_pool(dinar_currency_id, currency_id);
-		let relative_price = pool_1 / pool_0;
-		let min_target_amount_full = supply_amount / relative_price;
-		let min_target_amount_fives = min_target_amount_full / 20;
-		let min_target_amount = min_target_amount_fives * 19;
 
 		T::Dex::swap_with_exact_supply(
 			&Self::account_id(),
