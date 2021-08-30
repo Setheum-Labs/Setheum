@@ -21,12 +21,11 @@ pallet-proxy = { default-features = false, git = "https://github.com/paritytech/
 pallet-timestamp = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
-orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
 orml-nft = { path = "../../../lib-openrml/nft", default-features = false }
+orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
 
 # local dependencies
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
-setheum-currencies = { path = "../../tokens/currencies", default-features = false }
 
 [dev-dependencies]
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
@@ -36,6 +35,7 @@ pallet-utility = { default-features = false, git = "https://github.com/paritytec
 setheum-currencies = { path = "../../../lib-serml/tokens/currencies", default-features = false }
 orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
 support = { package = "setheum-support", path = "../../support" }
+setheum-currencies = { path = "../../tokens/currencies", default-features = false }
 
 [features]
 default = ["std"]
@@ -58,5 +58,6 @@ runtime-benchmarks = [
 	"frame-benchmarking",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"primitives/runtime-benchmarks"
 ]
 try-runtime = ["frame-support/try-runtime"]
