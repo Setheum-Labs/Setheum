@@ -39,7 +39,7 @@ DRAM("Setheum Dirham", 12) = 1, // Staking Reward and Governance Token - System 
 		SETR("Setter", 12) = 2,
 ```
 
-#### The SettCurrencies - SERP Stablecoins
+#### The SetCurrencies - SERP Stablecoins
 ```
 		SETUSD("SetDollar", 12) = 3,
 		SETEUR("SetEuro", 12) = 4,
@@ -48,7 +48,7 @@ DRAM("Setheum Dirham", 12) = 1, // Staking Reward and Governance Token - System 
  		SETSAR("SetRiyal", 12) = 7,
 ```
 
-1. The Setter - The Setter is a basket currency pegged to the Top 10 Strongest and most valuable currencies. It serves as the medium of Exchange and the Defacto stablecoin of the Setheum Ecosystem. All other Setheum system stablecoins orbit around the Setter (SETR) and the SettMint for minting Setheum Currencies (system stablecoins) accepts only the Setter as the Minting Reserve Asset. Only with the Setter (SETR) can a user participate in the DNAR Auctions to stabilize the price of the Setter, while the Setter is Auctioned to stabilize the price of all the other SettCurrencies (system stablecoins). It's the star that brightens many planets - 10 to be exact
+1. The Setter - The Setter is a basket currency pegged to the Top 10 Strongest and most valuable currencies. It serves as the medium of Exchange and the Defacto stablecoin of the Setheum Ecosystem. All other Setheum system stablecoins orbit around the Setter (SETR) and the SettMint for minting Setheum Currencies (system stablecoins) accepts only the Setter as the Minting Reserve Asset. Only with the Setter (SETR) can a user participate in the DNAR Auctions to stabilize the price of the Setter, while the Setter is Auctioned to stabilize the price of all the other SetCurrencies (system stablecoins). It's the star that brightens many planets - 10 to be exact
 
 2. [The SERP](./lib-serp) - The SERP (Setheum Elastic Reserve Protocol) is algorithmically responsible for stabilizing the prices of the Setheum Stable Currencies. No human interferrance is needed for this, it's all algorithmically handled by the SERP. The SERP is the backbone of Setheum, it is based on my TES (Token Elasticity of Supply) algorithm based on PES (Price Elasticity of Supply) such that the demand curve or price of a currency determines the supply serping point, meaning the supply curve of a SetCurrency will be adjusted according to the demand curve of that specific SetCurrency. The result will be burning or minting an amount equivalent to the serping point produced by the SERP-TES, the burning amount will be bought back by the SERP automatically through the built-in-DEX and the bought amount will be burnt to meet the satisfaction of the demand curve to prop the price back up to its peg, the opposite is done to lower the price of an under-supplied currency that is on demand and above its peg on the demand curve, for this the mint amount is divided into receipients including the SettPayTreasury where CashDrops are deposited for users to claim, the System Treasury under Governance, the Charity Fund stewarded by the Setheum Foundation, and the WelfareTreasury, more on the Welfare Treasury below.
 
