@@ -75,24 +75,15 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 
 	fn get_liquidity_token_address(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<H160>;
 
-	fn get_swap_target_amount(
-		path: &[CurrencyId],
-		supply_amount: Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> Option<Balance>;
+	fn get_swap_target_amount(path: &[CurrencyId], supply_amount: Balance) -> Option<Balance>;
 
-	fn get_swap_supply_amount(
-		path: &[CurrencyId],
-		target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> Option<Balance>;
+	fn get_swap_supply_amount(path: &[CurrencyId], target_amount: Balance) -> Option<Balance>;
 
 	fn swap_with_exact_supply(
 		who: &AccountId,
 		path: &[CurrencyId],
 		supply_amount: Balance,
 		min_target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError>;
 
 	fn swap_with_exact_target(
@@ -100,7 +91,6 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		path: &[CurrencyId],
 		target_amount: Balance,
 		max_supply_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError>;
 
 	fn add_liquidity(
@@ -134,19 +124,11 @@ where
 		Some(Default::default())
 	}
 
-	fn get_swap_target_amount(
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
-	) -> Option<Balance> {
+	fn get_swap_target_amount(_path: &[CurrencyId], _supply_amount: Balance) -> Option<Balance> {
 		Some(Default::default())
 	}
 
-	fn get_swap_supply_amount(
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
-	) -> Option<Balance> {
+	fn get_swap_supply_amount(_path: &[CurrencyId], _target_amount: Balance) -> Option<Balance> {
 		Some(Default::default())
 	}
 
@@ -155,7 +137,6 @@ where
 		_path: &[CurrencyId],
 		_supply_amount: Balance,
 		_min_target_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Ok(Default::default())
 	}
@@ -165,7 +146,6 @@ where
 		_path: &[CurrencyId],
 		_target_amount: Balance,
 		_max_supply_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Ok(Default::default())
 	}
