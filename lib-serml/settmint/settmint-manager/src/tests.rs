@@ -84,7 +84,7 @@ fn adjust_position_should_work() {
 		assert_eq!(System::account_exists(&SettmintManagerModule::account_id()), true);
 		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, SETEUR, -500, 0));
 		assert_eq!(Currencies::free_balance(SETEUR, &SettmintManagerModule::account_id()), 0);
-		assert_eq!(System::account_exists(&SettmintManagerModule::account_id()), false);
+		assert_eq!(System::account_exists(&SettmintManagerModule::account_id()), true);
 	});
 }
 
