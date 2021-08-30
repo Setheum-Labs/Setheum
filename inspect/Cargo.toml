@@ -13,8 +13,8 @@ structopt = "0.3.8"
 
 # Substrate dependencies
 sc-cli = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sc-client-api = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sc-client-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sc-service = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-blockchain = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-runtime = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
