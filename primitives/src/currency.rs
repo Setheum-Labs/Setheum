@@ -243,7 +243,7 @@ create_currency_id! {
 		SETCHF("SetFranc", 12) = 6,
  		SETSAR("SetRiyal", 12) = 7,
 		// Foreign Currencies
-		RENBTC("Ren Bitcoin", 8) = 8,
+		RENBTC("RenBTC", 8) = 8,
 	}
 }
 
