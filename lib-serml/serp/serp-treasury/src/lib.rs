@@ -37,7 +37,7 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
+	DEXManager, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
 mod mock;
