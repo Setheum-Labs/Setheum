@@ -49,8 +49,7 @@ pub use precompile::{
 };
 pub use primitives::currency::{
 	TokenInfo, 
-	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SEKJ, SGDJ, SETSAR, RENBTC,
-	USD, EUR, GBP, CHF, SAR, KWD, JOD, BHD, KYD, OMR, GIP,
+	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
