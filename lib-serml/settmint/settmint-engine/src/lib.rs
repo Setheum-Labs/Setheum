@@ -39,7 +39,7 @@ use sp_runtime::{
 	DispatchResult, FixedPointNumber,
 };
 use sp_std::prelude::*;
-use support::{ExchangeRate, Price, PriceProvider, Ratio};
+use support::{ExchangeRate, Price, Ratio};
 
 mod standard_exchange_rate_convertor;
 mod mock;

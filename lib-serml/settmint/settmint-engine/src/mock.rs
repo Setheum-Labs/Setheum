@@ -30,7 +30,7 @@ use sp_runtime::{
 	testing::{Header, TestXt},
 	traits::{IdentityLookup, One as OneT},
 };
-use support::{Price, Ratio};
+use support::{Price, PriceProvider, Ratio};
 use sp_std::cell::RefCell;
 
 pub type AccountId = u128;
@@ -40,6 +40,8 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const CHARITY_FUND: AccountId = 4;
+pub const SETRPAY: AccountId = 9;
+pub const VAULT: AccountId = 10;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -50,7 +52,6 @@ pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
 pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 
 mod settmint_engine {
@@ -102,6 +103,7 @@ impl orml_tokens::Config for Runtime {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
 	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
@@ -154,7 +156,7 @@ thread_local! {
 
 pub struct MockPriceSource;
 impl MockPriceSource {
-	pub fn set_relative_price(price: Option<Price>) {
+	pub fn _set_relative_price(price: Option<Price>) {
 		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
 	}
 }
@@ -178,24 +180,7 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SETUSD];
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
-	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
-
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub CharityFundAccountId: AccountId = CHARITY_FUND;
-	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
-	pub const CashDropVaultAccountId: AccountId = VAULT;
-
-	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
-
-	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
-		DNAR,
-		DRAM,
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETCHF,
 		SETEUR,
@@ -203,14 +188,17 @@ parameter_types! {
  		SETSAR,
 		SETUSD,
 	];
-	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
+	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
+	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
+	pub const CashDropVaultAccountId: AccountId = VAULT;
+
+	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
+	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
 parameter_type_with_key! {
@@ -250,16 +238,12 @@ impl serp_treasury::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type SerpTesSchedule = SerpTesSchedule;
+	type CashDropPeriod = CashDropPeriod;
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type PriceSource = MockPriceSource;
-	type RewardableCurrencyIds = RewardableCurrencyIds;
-	type NonStableDropCurrencyIds = StableCurrencyIds;
-	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
