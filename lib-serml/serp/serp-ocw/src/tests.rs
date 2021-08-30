@@ -18,47 +18,31 @@
 
 //! Unit tests for the prices module.
 
-use crate as example_offchain_worker;
+use crate as serp_ocw;
 use crate::*;
 use codec::Decode;
-use frame_support::{ord_parameter_types, parameter_types, PalletId};
+use frame_support::{assert_ok, construct_runtime, parameter_types};
 use sp_core::{
 	offchain::{testing, OffchainWorkerExt, TransactionPoolExt},
 	sr25519::Signature,
-	H256,
+	H256, H160,
 };
 use std::sync::Arc;
 
-use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
-use support::{Price, PriceProvider, Ratio};
-use sp_std::cell::RefCell;
+use orml_traits::parameter_type_with_key;
+use primitives::{Amount, TokenSymbol};
+use support::{DEXManager, Ratio, SerpTreasury};
 
 use sp_keystore::{testing::KeyStore, KeystoreExt, SyncCryptoStore};
 use sp_runtime::{
 	testing::{Header, TestXt},
 	traits::{BlakeTwo256, Extrinsic as ExtrinsicT, IdentifyAccount, IdentityLookup, Verify},
-	RuntimeAppPublic,
+	RuntimeAppPublic, DispatchError, DispatchResult,
 };
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
-
-// For testing the module, we construct a mock runtime.
-frame_support::construct_runtime!(
-	pub enum Test where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
-		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
-		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
-		OrmlCurrencies: orml_currencies::{Pallet, Call, Event<T>},
-		Example: example_offchain_worker::{Pallet, Call, Storage, Event<T>, ValidateUnsigned},
-	}
-);
+pub type BlockNumber = u64;
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
+type Block = frame_system::mocking::MockBlock<Runtime>;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -69,14 +53,13 @@ pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
 pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
-pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub BlockWeights: frame_system::limits::BlockWeights =
 		frame_system::limits::BlockWeights::simple_max(1024);
 }
-impl frame_system::Config for Test {
+impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type BlockWeights = ();
 	type BlockLength = ();
@@ -84,7 +67,7 @@ impl frame_system::Config for Test {
 	type Origin = Origin;
 	type Call = Call;
 	type Index = u64;
-	type BlockNumber = u64;
+	type BlockNumber = BlockNumber;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type AccountId = AccountId;
@@ -105,12 +88,12 @@ impl frame_system::Config for Test {
 type Extrinsic = TestXt<Call, ()>;
 type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
-impl frame_system::offchain::SigningTypes for Test {
+impl frame_system::offchain::SigningTypes for Runtime {
 	type Public = <Signature as Verify>::Signer;
 	type Signature = Signature;
 }
 
-impl<LocalCall> frame_system::offchain::SendTransactionTypes<LocalCall> for Test
+impl<LocalCall> frame_system::offchain::SendTransactionTypes<LocalCall> for Runtime
 where
 	Call: From<LocalCall>,
 {
@@ -118,7 +101,7 @@ where
 	type Extrinsic = Extrinsic;
 }
 
-impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Test
+impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
 where
 	Call: From<LocalCall>,
 {
@@ -155,156 +138,198 @@ parameter_types! {
 	pub const MaxReserves: u32 = 50;
 }
 
-impl pallet_balances::Config for Runtime {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Runtime>;
-	type MaxLocks = ();
-	type MaxReserves = MaxReserves;
-	type ReserveIdentifier = ReserveIdentifier;
-	type WeightInfo = ();
-}
-
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 }
 
-impl orml_currencies::Config for Runtime {
-	type Event = Event;
-	type MultiCurrency = Tokens;
-	type NativeCurrency = AdaptedBasicCurrency;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type WeightInfo = ();
-}
-pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
-
-parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 100);
-	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
-	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETCHF, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETEUR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETGBP, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETSAR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETCHF, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETGBP, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETSAR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-	];
-}
-
-impl setheum_dex::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type GetExchangeFee = GetExchangeFee;
-	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DexPalletId;
-	type CurrencyIdMapping = ();
-	type WeightInfo = ();
-	type ListingOrigin = EnsureSignedBy<One, AccountId>;
-}
-
-thread_local! {
-	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-}
-
-pub struct MockPriceSource;
-impl MockPriceSource {
-	pub fn set_relative_price(price: Option<Price>) {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
-	}
-}
-impl PriceProvider<CurrencyId> for MockPriceSource {
-
-	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut())
-	}
- 
-	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
-		None
+pub struct MockDEX;
+impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
+	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
+		match (currency_id_a, currency_id_b) {
+			(SETUSD, DNAR) => (10000, 200),
+			_ => (0, 0),
+		}
 	}
 
-	fn lock_price(_currency_id: CurrencyId) {}
+	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
+		unimplemented!()
+	}
 
-	fn unlock_price(_currency_id: CurrencyId) {}
+	fn get_swap_target_amount(
+		_path: &[CurrencyId],
+		_supply_amount: Balance,
+		_price_impact_limit: Option<Ratio>,
+	) -> Option<Balance> {
+		unimplemented!()
+	}
+
+	fn get_swap_supply_amount(
+		_path: &[CurrencyId],
+		_target_amount: Balance,
+		_price_impact_limit: Option<Ratio>,
+	) -> Option<Balance> {
+		unimplemented!()
+	}
+
+	fn swap_with_exact_supply(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_supply_amount: Balance,
+		_min_target_amount: Balance,
+		_price_impact_limit: Option<Ratio>,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		unimplemented!()
+	}
+
+	fn swap_with_exact_target(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_target_amount: Balance,
+		_max_supply_amount: Balance,
+		_price_impact_limit: Option<Ratio>,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		unimplemented!()
+	}
+
+	fn add_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_max_amount_a: Balance,
+		_max_amount_b: Balance,
+		_min_share_increment: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn remove_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_remove_share: Balance,
+		_min_withdrawn_a: Balance,
+		_min_withdrawn_b: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
 }
 
-ord_parameter_types! {
-	pub const One: AccountId = 1;
-}
 
-parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
+pub struct MockSerpTreasury;
+impl SerpTreasury<AccountId> for MockSerpTreasury {
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
 
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
-	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
-	pub const CashDropVaultAccountId: AccountId = VAULT;
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+		_min_target_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
 	
-	pub CashDropPeriod: BlockNumber = 120;
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
-}
+	/// SerpUp ratio for SettPay Cashdrops
+	fn get_cashdrop_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
 
-parameter_type_with_key! {
-	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 2,
-			&SETCHF => 2,
-			&SETEUR => 2,
-			&SETGBP => 2,
-			&SETUSD => 2,
-			&SETSAR => 2,
-			_ => 0,
-		}
-	};
-}
+	/// Reward SETR cashdrop to vault
+	fn setter_cashdrop_to_vault() -> DispatchResult {
+		unimplemented!()
+	}
 
-parameter_type_with_key! {
-	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 10_000,
-			&SETCHF => 10_000,
-			&SETEUR => 10_000,
-			&SETGBP => 10_000,
-			&SETUSD => 10_000,
-			&SETSAR => 10_000,
-			_ => 0,
-		}
-	};
-}
+	/// Reward SETUSD cashdrop to vault
+	fn usdj_cashdrop_to_vault() -> DispatchResult {
+		unimplemented!()
+	}
 
-impl serp_treasury::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type DirhamCurrencyId = DirhamCurrencyId;
-	type CashDropPeriod = CashDropPeriod;
-	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
-	type CashDropVaultAccountId = CashDropVaultAccountId;
-	type CharityFundAccountId = CharityFundAccountId;
-	type Dex = SetheumDEX;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
-	type PalletId = SerpTreasuryPalletId;
-	type WeightInfo = ();
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serpup(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+		_min_target_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// buy back and burn surplus(stable currencies) with swap by DEX.
+	fn on_serpdown(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+		_max_supply_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// get the minimum supply of a setcurrency - by key
+	fn get_minimum_supply(
+		_currency_id: CurrencyId
+	) -> Balance {
+		unimplemented!()
+	}
+
+	/// issue standard to `who`
+	fn issue_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn standard(stable currency) of `who`
+	fn burn_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue setter of amount setter to `who`
+	fn issue_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn setter of `who`
+	fn burn_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
+	fn deposit_setter(
+		_from: &AccountId,
+		_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
+	fn claim_cashdrop(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_transfer_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
 }
 
 parameter_types! {
@@ -313,7 +338,6 @@ parameter_types! {
 	pub const UnsignedInterval: u64 = 128;
 	pub const UnsignedPriority: u64 = 1 << 20;
 	
-	pub const GetNativeCurrencyId: CurrencyId = DNAR;
 	pub const DirhamCurrencyId: CurrencyId = DRAM;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
@@ -323,11 +347,12 @@ parameter_types! {
 	pub const GetSetSARCurrencyId: CurrencyId = SETSAR;
 }
 
-impl Config for Test {
+impl Config for Runtime {
 	type Event = Event;
 	type AuthorityId = crypto::TestAuthId;
 	type Call = Call;
-    type SerpTreasury = SerpTreasuryModule;
+	type Currency = Tokens;
+    type SerpTreasury = MockSerpTreasury;
     type SetterCurrencyId = SetterCurrencyId;
     type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
     type GetSetEURCurrencyId = GetSetEURCurrencyId;
@@ -340,16 +365,47 @@ impl Config for Test {
 	type UnsignedPriority = UnsignedPriority;
 }
 
+// For testing the module, we construct a mock runtime.
+construct_runtime!(
+	pub enum Runtime where
+		Block = Block,
+		NodeBlock = Block,
+		UncheckedExtrinsic = UncheckedExtrinsic,
+	{
+		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		SerpOcw: serp_ocw::{Pallet, Call, Storage, Event<T>, ValidateUnsigned},
+	}
+);
+
+pub struct ExtBuilder;
+
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		ExtBuilder
+	}
+}
+
+impl ExtBuilder {
+	pub fn _build(self) -> sp_io::TestExternalities {
+		let t = frame_system::GenesisConfig::default()
+			.build_storage::<Runtime>()
+			.unwrap();
+
+		t.into()
+	}
+}
+
 #[test]
 fn it_aggregates_the_price() {
 	sp_io::TestExternalities::default().execute_with(|| {
-		assert_eq!(Example::average_price(), None);
+		assert_eq!(SerpOcw::average_price(), None);
 
-		assert_ok!(Example::submit_price(Origin::signed(Default::default()), 27));
-		assert_eq!(Example::average_price(), Some(27));
+		assert_ok!(SerpOcw::submit_price(Origin::signed(Default::default()), 27));
+		assert_eq!(SerpOcw::average_price(), Some(27));
 
-		assert_ok!(Example::submit_price(Origin::signed(Default::default()), 43));
-		assert_eq!(Example::average_price(), Some(35));
+		assert_ok!(SerpOcw::submit_price(Origin::signed(Default::default()), 43));
+		assert_eq!(SerpOcw::average_price(), Some(35));
 	});
 }
 
@@ -363,7 +419,7 @@ fn should_make_http_call_and_parse_result() {
 
 	t.execute_with(|| {
 		// when
-		let price = Example::fetch_price().unwrap();
+		let price = SerpOcw::fetch_price().unwrap();
 		// then
 		assert_eq!(price, 15523);
 	});
@@ -403,9 +459,9 @@ fn knows_how_to_mock_several_http_calls() {
 	}
 
 	t.execute_with(|| {
-		let price1 = Example::fetch_price().unwrap();
-		let price2 = Example::fetch_price().unwrap();
-		let price3 = Example::fetch_price().unwrap();
+		let price1 = SerpOcw::fetch_price().unwrap();
+		let price2 = SerpOcw::fetch_price().unwrap();
+		let price3 = SerpOcw::fetch_price().unwrap();
 
 		assert_eq!(price1, 100);
 		assert_eq!(price2, 200);
@@ -437,13 +493,13 @@ fn should_submit_signed_transaction_on_chain() {
 
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_signed().unwrap();
+		SerpOcw::fetch_price_and_send_signed().unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		assert!(pool_state.read().transactions.is_empty());
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature.unwrap().0, 0);
-		assert_eq!(tx.call, Call::Example(crate::Call::submit_price(15523)));
+		assert_eq!(tx.call, Call::SerpOcw(crate::Call::submit_price(15523)));
 	});
 }
 
@@ -478,18 +534,18 @@ fn should_submit_unsigned_transaction_on_chain_for_any_account() {
 	let price_payload = PricePayload {
 		block_number: 1,
 		price: 15523,
-		public: <Test as SigningTypes>::Public::from(public_key),
+		public: <Runtime as SigningTypes>::Public::from(public_key),
 	};
 
 	// let signature = price_payload.sign::<crypto::TestAuthId>().unwrap();
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_unsigned_for_any_account(1).unwrap();
+		SerpOcw::fetch_price_and_send_unsigned_for_any_account(1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
-		if let Call::Example(crate::Call::submit_price_unsigned_with_signed_payload(
+		if let Call::SerpOcw(crate::Call::submit_price_unsigned_with_signed_payload(
 			body,
 			signature,
 		)) = tx.call
@@ -498,9 +554,9 @@ fn should_submit_unsigned_transaction_on_chain_for_any_account() {
 
 			let signature_valid =
 				<PricePayload<
-					<Test as SigningTypes>::Public,
-					<Test as frame_system::Config>::BlockNumber,
-				> as SignedPayload<Test>>::verify::<crypto::TestAuthId>(&price_payload, signature);
+					<Runtime as SigningTypes>::Public,
+					<Runtime as frame_system::Config>::BlockNumber,
+				> as SignedPayload<Runtime>>::verify::<crypto::TestAuthId>(&price_payload, signature);
 
 			assert!(signature_valid);
 		}
@@ -538,18 +594,18 @@ fn should_submit_unsigned_transaction_on_chain_for_all_accounts() {
 	let price_payload = PricePayload {
 		block_number: 1,
 		price: 15523,
-		public: <Test as SigningTypes>::Public::from(public_key),
+		public: <Runtime as SigningTypes>::Public::from(public_key),
 	};
 
 	// let signature = price_payload.sign::<crypto::TestAuthId>().unwrap();
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_unsigned_for_all_accounts(1).unwrap();
+		SerpOcw::fetch_price_and_send_unsigned_for_all_accounts(1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
-		if let Call::Example(crate::Call::submit_price_unsigned_with_signed_payload(
+		if let Call::SerpOcw(crate::Call::submit_price_unsigned_with_signed_payload(
 			body,
 			signature,
 		)) = tx.call
@@ -558,9 +614,9 @@ fn should_submit_unsigned_transaction_on_chain_for_all_accounts() {
 
 			let signature_valid =
 				<PricePayload<
-					<Test as SigningTypes>::Public,
-					<Test as frame_system::Config>::BlockNumber,
-				> as SignedPayload<Test>>::verify::<crypto::TestAuthId>(&price_payload, signature);
+					<Runtime as SigningTypes>::Public,
+					<Runtime as frame_system::Config>::BlockNumber,
+				> as SignedPayload<Runtime>>::verify::<crypto::TestAuthId>(&price_payload, signature);
 
 			assert!(signature_valid);
 		}
@@ -583,13 +639,13 @@ fn should_submit_raw_unsigned_transaction_on_chain() {
 
 	t.execute_with(|| {
 		// when
-		Example::fetch_price_and_send_raw_unsigned(1).unwrap();
+		SerpOcw::fetch_price_and_send_raw_unsigned(1).unwrap();
 		// then
 		let tx = pool_state.write().transactions.pop().unwrap();
 		assert!(pool_state.read().transactions.is_empty());
 		let tx = Extrinsic::decode(&mut &*tx).unwrap();
 		assert_eq!(tx.signature, None);
-		assert_eq!(tx.call, Call::Example(crate::Call::submit_price_unsigned(1, 15523)));
+		assert_eq!(tx.call, Call::SerpOcw(crate::Call::submit_price_unsigned(1, 15523)));
 	});
 }
 
@@ -615,7 +671,7 @@ fn parse_price_works() {
 	];
 
 	for (json, expected) in test_data {
-		assert_eq!(expected, Example::parse_price(json));
+		assert_eq!(expected, SerpOcw::parse_price(json));
 	}
 }
 
@@ -631,7 +687,7 @@ fn parse_cryptocompare_price_works() {
 	];
 
 	for (json, expected) in test_data {
-		assert_eq!(expected, Example::parse_cryptocompare_price(json));
+		assert_eq!(expected, SerpOcw::parse_cryptocompare_price(json));
 	}
 }
 
@@ -647,6 +703,6 @@ fn parse_price_exchangehost_works() {
 	];
 
 	for (json, expected) in test_data {
-		assert_eq!(expected, Example::parse_exchangehost_price(json));
+		assert_eq!(expected, SerpOcw::parse_exchangehost_price(json));
 	}
 }

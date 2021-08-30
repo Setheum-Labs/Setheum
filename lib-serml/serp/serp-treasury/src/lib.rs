@@ -37,7 +37,7 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended
+	DEXManager, Ratio, SerpTreasury, SerpTreasuryExtended
 };
 
 mod mock;
@@ -258,7 +258,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
-
+  
 	// TODO: Update to 1% per day not 50% per day.
 	/// Reward SETR cashdrop to vault
 	fn setter_cashdrop_to_vault() -> DispatchResult {
@@ -274,8 +274,8 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::SetterCurrencyId::get()));
 		Ok(())
 	}
-
-	// TODO: Update to 1% per day not 50% per day.
+  
+	// TODO: Update to 1% per day not 50% per day. and rename `usdj` to `setusd`
 	/// SerpUp ratio for SettPay Cashdrops
 	fn usdj_cashdrop_to_vault() -> DispatchResult {
 		let free_balance = T::Currency::free_balance(T::GetSetUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get());

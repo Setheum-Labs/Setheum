@@ -43,6 +43,8 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const CHARITY_FUND: AccountId = 4;
+pub const SETRPAY: AccountId = 9;
+pub const VAULT: AccountId = 10;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -53,7 +55,6 @@ pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
 pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 
 parameter_types! {
@@ -139,7 +140,7 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn get_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
 		Some(Price::one())
 	}
- 
+
 	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
 		None
 	}
@@ -154,7 +155,14 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SEKJ, SGDJ, SETUSD];
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
+	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
@@ -164,28 +172,8 @@ parameter_types! {
 	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
 	pub const CashDropVaultAccountId: AccountId = VAULT;
 
-	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
-
-	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
-		DNAR,
-		DRAM,
-		SETR,
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
-	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
 }
 
 parameter_type_with_key! {
@@ -225,17 +213,12 @@ impl serp_treasury::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type SerpTesSchedule = SerpTesSchedule;
 	type CashDropPeriod = CashDropPeriod;
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type PriceSource = MockPriceSource;
-	type RewardableCurrencyIds = RewardableCurrencyIds;
-	type NonStableDropCurrencyIds = StableCurrencyIds;
-	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();

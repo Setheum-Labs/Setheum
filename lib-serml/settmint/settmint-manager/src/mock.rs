@@ -39,6 +39,8 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CHARITY_FUND: AccountId = 3;
+pub const SETRPAY: AccountId = 9;
+pub const VAULT: AccountId = 10;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -49,7 +51,6 @@ pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
 pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 
 mod settmint_manager {
@@ -170,7 +171,7 @@ thread_local! {
 
 pub struct MockPriceSource;
 impl MockPriceSource {
-	pub fn set_relative_price(price: Option<Price>) {
+	pub fn _set_relative_price(price: Option<Price>) {
 		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
 	}
 }
@@ -179,7 +180,7 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
 		RELATIVE_PRICE.with(|v| *v.borrow_mut())
 	}
- 
+
 	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
 		None
 	}
@@ -211,28 +212,8 @@ parameter_types! {
 	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
 	pub const CashDropVaultAccountId: AccountId = VAULT;
 
-	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
 	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
-
-	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
-		DNAR,
-		DRAM,
-		SETR,
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
-	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
 }
 
 parameter_type_with_key! {
@@ -272,17 +253,12 @@ impl serp_treasury::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type SerpTesSchedule = SerpTesSchedule;
 	type CashDropPeriod = CashDropPeriod;
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
 	type Dex = SetheumDEX;
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
-	type PriceSource = MockPriceSource;
-	type RewardableCurrencyIds = RewardableCurrencyIds;
-	type NonStableDropCurrencyIds = StableCurrencyIds;
-	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
@@ -354,6 +330,10 @@ impl Default for ExtBuilder {
 				(BOB, SETUSD, 1000),
 				(BOB, SETEUR, 1000),
 				(BOB, SETCHF, 1000),
+				(SETRPAY, SETR, 1000),
+				(SETRPAY, SETUSD, 1000),
+				(SETRPAY, SETEUR, 1000),
+				(SETRPAY, SETCHF, 1000),
 			],
 		}
 	}
