@@ -82,6 +82,7 @@ impl orml_tokens::Config for Runtime {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
 	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 ord_parameter_types! {
@@ -91,7 +92,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub const LocalChainId: chainbridge::ChainId = 2;
 	pub const ProposalLifetime: BlockNumber = 10;
-	pub DNARResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"DNAR");
+	pub DNARResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"set");
 	pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 	pub WETHResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(0, b"weth");
 	pub WETH: CurrencyId = CurrencyId::ChainSafe(WETHResourceId::get());

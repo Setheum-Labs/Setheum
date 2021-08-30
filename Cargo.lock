@@ -808,22 +808,6 @@ dependencies = [
 [[package]]
 name = "chainbridge"
 version = "0.0.2"
-source = "git+https://github.com/Setheum-Labs/chainbridge-substrate?branch=master#c536e17c5d4c0f661059a5e13c1ae41d03b21f0d"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
- "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
- "pallet-balances 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
- "parity-scale-codec",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
- "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
- "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
-]
-
-[[package]]
-name = "chainbridge"
-version = "0.0.2"
 source = "git+https://github.com/Slixon-Technologies/chainbridge-substrate#c536e17c5d4c0f661059a5e13c1ae41d03b21f0d"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.4)",
@@ -7961,7 +7945,7 @@ dependencies = [
 name = "setheum-chainbridge"
 version = "1.0.0"
 dependencies = [
- "chainbridge 0.0.2 (git+https://github.com/Setheum-Labs/chainbridge-substrate?branch=master)",
+ "chainbridge",
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "orml-tokens",
@@ -8242,7 +8226,7 @@ name = "setheum-primitives"
 version = "0.9.0"
 dependencies = [
  "bstringify",
- "chainbridge 0.0.2 (git+https://github.com/Slixon-Technologies/chainbridge-substrate)",
+ "chainbridge",
  "evm",
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "max-encoded-len 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",

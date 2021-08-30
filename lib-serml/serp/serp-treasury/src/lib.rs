@@ -258,6 +258,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
+  
 	// TODO: Update to 1% per day not 50% per day.
 	/// Reward SETR cashdrop to vault
 	fn setter_cashdrop_to_vault() -> DispatchResult {
@@ -273,6 +274,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::SetterCurrencyId::get()));
 		Ok(())
 	}
+  
 	// TODO: Update to 1% per day not 50% per day. and rename `usdj` to `setusd`
 	/// SerpUp ratio for SettPay Cashdrops
 	fn usdj_cashdrop_to_vault() -> DispatchResult {
