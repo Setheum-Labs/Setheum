@@ -133,15 +133,6 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = ();
 }
 
-parameter_types! {
-	pub const ExistentialDeposit: Balance = 1;
-	pub const MaxReserves: u32 = 50;
-}
-
-parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = DNAR;
-}
-
 pub struct MockDEX;
 impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {

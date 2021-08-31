@@ -65,7 +65,7 @@ fn self_delegation_not_allowed() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
 			Democracy::delegate(Origin::signed(1), 1, Conviction::None, 10),
-			Error::<Test>::Nonsense,
+			Error::<Runtime>::Nonsense,
 		);
 	});
 }
