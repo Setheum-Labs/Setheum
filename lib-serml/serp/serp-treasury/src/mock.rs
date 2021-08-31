@@ -31,7 +31,7 @@ use sp_runtime::{
 	traits::{IdentityLookup, One as OneT},
 };
 use sp_std::cell::RefCell;
-use support::{Price, PriceProvider, Ratio};
+use support::{Price, PriceProvider};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -41,6 +41,7 @@ pub const BOB: AccountId = 1;
 pub const CHARITY_FUND: AccountId = 2;
 pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
+pub const ROOT: AccountId = 11;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -213,7 +214,6 @@ parameter_types! {
 	pub const CashDropVaultAccountId: AccountId = VAULT;
 
 	pub CashDropPeriod: BlockNumber = 120;
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
 parameter_type_with_key! {
@@ -244,6 +244,15 @@ parameter_type_with_key! {
 	};
 }
 
+parameter_types! {
+	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
+}
+
+ord_parameter_types! {
+	pub const Root: AccountId = ROOT;
+}
+
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -257,9 +266,13 @@ impl Config for Runtime {
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
+	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
 	type Dex = SetheumDEX;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type TradingPathLimit = TradingPathLimit;
+	type PriceSource = MockPriceSource;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
+	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
@@ -274,7 +287,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
+		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},

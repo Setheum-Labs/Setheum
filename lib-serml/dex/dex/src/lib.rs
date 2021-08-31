@@ -36,7 +36,7 @@ use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{AccountIdConversion, Bounded, One, Zero},
+	traits::{AccountIdConversion, One, Zero},
 	ArithmeticError, DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
@@ -144,8 +144,6 @@ pub mod module {
 		InsufficientTargetAmount,
 		/// Supply amount is more than max_supply_amount
 		ExcessiveSupplyAmount,
-		/// The swap will cause unacceptable price impact
-		ExceedPriceImpactLimit,
 		/// Liquidity is not enough
 		InsufficientLiquidity,
 		/// The supply amount is zero
@@ -307,10 +305,10 @@ pub mod module {
 			path: Vec<CurrencyId>,
 			#[pallet::compact] supply_amount: Balance,
 			#[pallet::compact] min_target_amount: Balance,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			Self::do_swap_with_exact_supply(&who, &path, supply_amount, min_target_amount, None)?;
-			Ok(().into())
+			Self::do_swap_with_exact_supply(&who, &path, supply_amount, min_target_amount)?;
+			Ok(())
 		}
 
 		/// Trading with DEX, swap with exact target amount
@@ -325,10 +323,10 @@ pub mod module {
 			path: Vec<CurrencyId>,
 			#[pallet::compact] target_amount: Balance,
 			#[pallet::compact] max_supply_amount: Balance,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			Self::do_swap_with_exact_target(&who, &path, target_amount, max_supply_amount, None)?;
-			Ok(().into())
+			Self::do_swap_with_exact_target(&who, &path, target_amount, max_supply_amount)?;
+			Ok(())
 		}
 
 		/// Add liquidity to Enabled trading pair.
@@ -351,7 +349,7 @@ pub mod module {
 			#[pallet::compact] max_amount_a: Balance,
 			#[pallet::compact] max_amount_b: Balance,
 			#[pallet::compact] min_share_increment: Balance,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			Self::do_add_liquidity(
 				&who,
@@ -361,7 +359,7 @@ pub mod module {
 				max_amount_b,
 				min_share_increment,
 			)?;
-			Ok(().into())
+			Ok(())
 		}
 
 		/// Add provision to Provisioning trading pair.
@@ -380,10 +378,10 @@ pub mod module {
 			currency_id_b: CurrencyId,
 			#[pallet::compact] amount_a: Balance,
 			#[pallet::compact] amount_b: Balance,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			Self::do_add_provision(&who, currency_id_a, currency_id_b, amount_a, amount_b)?;
-			Ok(().into())
+			Ok(())
 		}
 
 		/// Claim dex share for founders who have participated in trading pair provision.
@@ -398,10 +396,10 @@ pub mod module {
 			owner: T::AccountId,
 			currency_id_a: CurrencyId,
 			currency_id_b: CurrencyId,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let _ = ensure_signed(origin)?;
 			Self::do_claim_dex_share(&owner, currency_id_a, currency_id_b)?;
-			Ok(().into())
+			Ok(())
 		}
 
 		/// Remove liquidity from specific liquidity pool in the form of burning
@@ -422,7 +420,7 @@ pub mod module {
 			#[pallet::compact] remove_share: Balance,
 			#[pallet::compact] min_withdrawn_a: Balance,
 			#[pallet::compact] min_withdrawn_b: Balance,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			Self::do_remove_liquidity(
 				&who,
@@ -432,7 +430,7 @@ pub mod module {
 				min_withdrawn_a,
 				min_withdrawn_b,
 			)?;
-			Ok(().into())
+			Ok(())
 		}
 
 		/// List a new provisioning trading pair.
@@ -447,7 +445,7 @@ pub mod module {
 			target_provision_a: Balance,
 			target_provision_b: Balance,
 			not_before: T::BlockNumber,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			T::ListingOrigin::ensure_origin(origin)?;
 
 			let trading_pair =
@@ -494,7 +492,7 @@ pub mod module {
 				}),
 			);
 			Self::deposit_event(Event::ListProvisioning(trading_pair));
-			Ok(().into())
+			Ok(())
 		}
 
 		/// List a new trading pair, trading pair will become Enabled status
@@ -510,7 +508,7 @@ pub mod module {
 			target_provision_a: Balance,
 			target_provision_b: Balance,
 			not_before: T::BlockNumber,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			T::ListingOrigin::ensure_origin(origin)?;
 			let trading_pair =
 				TradingPair::from_currency_ids(currency_id_a, currency_id_b).ok_or(Error::<T>::InvalidCurrencyId)?;
@@ -541,7 +539,7 @@ pub mod module {
 				_ => return Err(Error::<T>::MustBeProvisioning.into()),
 			}
 
-			Ok(().into())
+			Ok(())
 		}
 
 		/// Enable a Provisioning trading pair if meet the condition.
@@ -551,7 +549,7 @@ pub mod module {
 			origin: OriginFor<T>,
 			currency_id_a: CurrencyId,
 			currency_id_b: CurrencyId,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let _ = ensure_signed(origin)?;
 
 			let trading_pair =
@@ -618,7 +616,7 @@ pub mod module {
 				_ => return Err(Error::<T>::MustBeProvisioning.into()),
 			}
 
-			Ok(().into())
+			Ok(())
 		}
 
 		/// Enable a trading pair
@@ -630,7 +628,7 @@ pub mod module {
 			origin: OriginFor<T>,
 			currency_id_a: CurrencyId,
 			currency_id_b: CurrencyId,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			T::ListingOrigin::ensure_origin(origin)?;
 			let trading_pair =
 				TradingPair::from_currency_ids(currency_id_a, currency_id_b).ok_or(Error::<T>::InvalidCurrencyId)?;
@@ -648,7 +646,7 @@ pub mod module {
 
 			TradingPairStatuses::<T>::insert(trading_pair, TradingPairStatus::Enabled);
 			Self::deposit_event(Event::EnableTradingPair(trading_pair));
-			Ok(().into())
+			Ok(())
 		}
 
 		/// Disable a `Enabled` trading pair.
@@ -658,7 +656,7 @@ pub mod module {
 			origin: OriginFor<T>,
 			currency_id_a: CurrencyId,
 			currency_id_b: CurrencyId,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			T::ListingOrigin::ensure_origin(origin)?;
 			let trading_pair =
 				TradingPair::from_currency_ids(currency_id_a, currency_id_b).ok_or(Error::<T>::InvalidCurrencyId)?;
@@ -672,7 +670,7 @@ pub mod module {
 
 			TradingPairStatuses::<T>::insert(trading_pair, TradingPairStatus::Disabled);
 			Self::deposit_event(Event::DisableTradingPair(trading_pair));
-			Ok(().into())
+			Ok(())
 		}
 	}
 }
@@ -1022,7 +1020,6 @@ impl<T: Config> Pallet<T> {
 	fn get_target_amounts(
 		path: &[CurrencyId],
 		supply_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Vec<Balance>, DispatchError> {
 		let path_length = path.len();
 		ensure!(
@@ -1051,13 +1048,6 @@ impl<T: Config> Pallet<T> {
 			let target_amount = Self::get_target_amount(supply_pool, target_pool, target_amounts[i]);
 			ensure!(!target_amount.is_zero(), Error::<T>::ZeroTargetAmount);
 
-			// check price impact if limit exists
-			if let Some(limit) = price_impact_limit {
-				let price_impact =
-					Ratio::checked_from_rational(target_amount, target_pool).unwrap_or_else(Ratio::max_value);
-				ensure!(price_impact <= limit, Error::<T>::ExceedPriceImpactLimit);
-			}
-
 			target_amounts[i + 1] = target_amount;
 			i += 1;
 		}
@@ -1068,7 +1058,6 @@ impl<T: Config> Pallet<T> {
 	fn get_supply_amounts(
 		path: &[CurrencyId],
 		target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Vec<Balance>, DispatchError> {
 		let path_length = path.len();
 		ensure!(
@@ -1096,13 +1085,6 @@ impl<T: Config> Pallet<T> {
 			);
 			let supply_amount = Self::get_supply_amount(supply_pool, target_pool, supply_amounts[i]);
 			ensure!(!supply_amount.is_zero(), Error::<T>::ZeroSupplyAmount);
-
-			// check price impact if limit exists
-			if let Some(limit) = price_impact_limit {
-				let price_impact =
-					Ratio::checked_from_rational(supply_amounts[i], target_pool).unwrap_or_else(Ratio::max_value);
-				ensure!(price_impact <= limit, Error::<T>::ExceedPriceImpactLimit);
-			};
 
 			supply_amounts[i - 1] = supply_amount;
 			i -= 1;
@@ -1164,9 +1146,8 @@ impl<T: Config> Pallet<T> {
 		path: &[CurrencyId],
 		supply_amount: Balance,
 		min_target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
-		let amounts = Self::get_target_amounts(&path, supply_amount, price_impact_limit)?;
+		let amounts = Self::get_target_amounts(&path, supply_amount)?;
 		ensure!(
 			amounts[amounts.len() - 1] >= min_target_amount,
 			Error::<T>::InsufficientTargetAmount
@@ -1194,9 +1175,8 @@ impl<T: Config> Pallet<T> {
 		path: &[CurrencyId],
 		target_amount: Balance,
 		max_supply_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
-		let amounts = Self::get_supply_amounts(&path, target_amount, price_impact_limit)?;
+		let amounts = Self::get_supply_amounts(&path, target_amount)?;
 		ensure!(amounts[0] <= max_supply_amount, Error::<T>::ExcessiveSupplyAmount);
 		let module_account_id = Self::account_id();
 		let actual_supply_amount = amounts[0];
@@ -1225,22 +1205,14 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 		T::CurrencyIdMapping::encode_evm_address(trading_pair.dex_share_currency_id())
 	}
 
-	fn get_swap_target_amount(
-		path: &[CurrencyId],
-		supply_amount: Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> Option<Balance> {
-		Self::get_target_amounts(&path, supply_amount, price_impact_limit)
+	fn get_swap_target_amount(path: &[CurrencyId], supply_amount: Balance) -> Option<Balance> {
+		Self::get_target_amounts(&path, supply_amount)
 			.ok()
 			.map(|amounts| amounts[amounts.len() - 1])
 	}
 
-	fn get_swap_supply_amount(
-		path: &[CurrencyId],
-		target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> Option<Balance> {
-		Self::get_supply_amounts(&path, target_amount, price_impact_limit)
+	fn get_swap_supply_amount(path: &[CurrencyId], target_amount: Balance) -> Option<Balance> {
+		Self::get_supply_amounts(&path, target_amount)
 			.ok()
 			.map(|amounts| amounts[0])
 	}
@@ -1250,9 +1222,8 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 		path: &[CurrencyId],
 		supply_amount: Balance,
 		min_target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
-		Self::do_swap_with_exact_supply(who, path, supply_amount, min_target_amount, price_impact_limit)
+		Self::do_swap_with_exact_supply(who, path, supply_amount, min_target_amount)
 	}
 
 	fn swap_with_exact_target(
@@ -1260,9 +1231,8 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 		path: &[CurrencyId],
 		target_amount: Balance,
 		max_supply_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
-		Self::do_swap_with_exact_target(who, path, target_amount, max_supply_amount, price_impact_limit)
+		Self::do_swap_with_exact_target(who, path, target_amount, max_supply_amount)
 	}
 
 	// `do_add_liquidity` is used in genesis_build,

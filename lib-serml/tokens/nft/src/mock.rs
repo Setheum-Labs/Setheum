@@ -182,7 +182,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	fn get_buyback_serpup(
 		_amount: Balance,
 		_currency_id: CurrencyId,
-		_min_target_amount: Balance
 	) -> DispatchResult {
 		unimplemented!()
 	}
@@ -217,7 +216,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	fn on_serpup(
 		_currency_id: CurrencyId,
 		_amount: Balance,
-		_min_target_amount: Balance
 	) -> DispatchResult {
 		unimplemented!()
 	}
@@ -226,7 +224,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	fn on_serpdown(
 		_currency_id: CurrencyId,
 		_amount: Balance,
-		_max_supply_amount: Balance
 	) -> DispatchResult {
 		unimplemented!()
 	}

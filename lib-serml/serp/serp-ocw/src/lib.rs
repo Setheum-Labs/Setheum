@@ -672,24 +672,24 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Calculate the `min_target_amount` for `SerpUp` operation.
-	fn calculate_min_target_amount(market_price: u64, dinar_price: u64, expand_by: Balance) -> Balance {
-		type Fix = FixedU128<U128>;
-		let expand_by_amount = Fix::from_num(1).saturating_mul_int(expand_by as u128);
-		let relative_price = Fix::from_num(market_price) / Fix::from_num(dinar_price);
-		let min_target_amount_full = Fix::from_num(expand_by_amount) / Fix::from_num(relative_price);
-		let min_target_fraction = Fix::from_num(min_target_amount_full) / Fix::from_num(100);
-		min_target_fraction.saturating_mul_int(94 as u128).to_num::<u128>()
-	}
+	// fn calculate_min_target_amount(market_price: u64, dinar_price: u64, expand_by: Balance) -> Balance {
+	// 	type Fix = FixedU128<U128>;
+	// 	let expand_by_amount = Fix::from_num(1).saturating_mul_int(expand_by as u128);
+	// 	let relative_price = Fix::from_num(market_price) / Fix::from_num(dinar_price);
+	// 	let min_target_amount_full = Fix::from_num(expand_by_amount) / Fix::from_num(relative_price);
+	// 	let min_target_fraction = Fix::from_num(min_target_amount_full) / Fix::from_num(100);
+	// 	min_target_fraction.saturating_mul_int(94 as u128).to_num::<u128>()
+	// }
 
 	/// Calculate the `max_supply_amount` for `SerpUp` operation.
-	fn calculate_max_supply_amount(market_price: u64, dinar_price: u64, contract_by: Balance) -> Balance {
-		type Fix = FixedU128<U128>;
-		let contract_by_amount = Fix::from_num(1).saturating_mul_int(contract_by as u128);
-		let relative_price = Fix::from_num(market_price) / Fix::from_num(dinar_price);
-		let max_supply_amount_full = Fix::from_num(contract_by_amount) / Fix::from_num(relative_price);
-		let max_supply_fraction = Fix::from_num(max_supply_amount_full) / Fix::from_num(100);
-		max_supply_fraction.saturating_mul_int(106 as u128).to_num::<u128>()
-	}
+	// fn calculate_max_supply_amount(market_price: u64, dinar_price: u64, contract_by: Balance) -> Balance {
+	// 	type Fix = FixedU128<U128>;
+	// 	let contract_by_amount = Fix::from_num(1).saturating_mul_int(contract_by as u128);
+	// 	let relative_price = Fix::from_num(market_price) / Fix::from_num(dinar_price);
+	// 	let max_supply_amount_full = Fix::from_num(contract_by_amount) / Fix::from_num(relative_price);
+	// 	let max_supply_fraction = Fix::from_num(max_supply_amount_full) / Fix::from_num(100);
+	// 	max_supply_fraction.saturating_mul_int(106 as u128).to_num::<u128>()
+	// }
 
 	/// FETCH SETCURRENCIES COIN PRICES
 	///
@@ -944,19 +944,13 @@ impl<T: Config> Pallet<T> {
 				// safe from underflow because `peg_price` is checked to be less than `market_price`
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
-				// `min_target_amount` for `SerpUp` operation
-				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
-
-				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by, min_target_amount).unwrap();
+				T::SerpTreasury::on_serpup(T::SetterCurrencyId::get(), expand_by).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
-				// `max_supply_amount` for `SerpDown` operation
-				let max_supply_amount = Self::calculate_max_supply_amount(market_price, dinar_price, contract_by);
-
-				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by, max_supply_amount).unwrap();
+				T::SerpTreasury::on_serpdown(T::SetterCurrencyId::get(), contract_by).unwrap();
 			}
 			_ => {}
 		}
@@ -1073,19 +1067,13 @@ impl<T: Config> Pallet<T> {
 				// safe from underflow because `peg_price` is checked to be less than `market_price`
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
-				// `min_target_amount` for `SerpUp` operation
-				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
-
-				T::SerpTreasury::on_serpup(T::GetSetUSDCurrencyId::get(), expand_by, min_target_amount).unwrap();
+				T::SerpTreasury::on_serpup(T::GetSetUSDCurrencyId::get(), expand_by).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
-				// `max_supply_amount` for `SerpDown` operation
-				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
-
-				T::SerpTreasury::on_serpdown(T::GetSetUSDCurrencyId::get(), contract_by, max_supply_amount).unwrap();
+				T::SerpTreasury::on_serpdown(T::GetSetUSDCurrencyId::get(), contract_by).unwrap();
 			}
 			_ => {}
 		}
@@ -1202,19 +1190,13 @@ impl<T: Config> Pallet<T> {
 				// safe from underflow because `peg_price` is checked to be less than `market_price`
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
-				// `min_target_amount` for `SerpUp` operation
-				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
-
-				T::SerpTreasury::on_serpup(T::GetSetEURCurrencyId::get(), expand_by, min_target_amount).unwrap();
+				T::SerpTreasury::on_serpup(T::GetSetEURCurrencyId::get(), expand_by).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
-				// `max_supply_amount` for `SerpDown` operation
-				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
-
-				T::SerpTreasury::on_serpdown(T::GetSetEURCurrencyId::get(), contract_by, max_supply_amount).unwrap();
+				T::SerpTreasury::on_serpdown(T::GetSetEURCurrencyId::get(), contract_by).unwrap();
 			}
 			_ => {}
 		}
@@ -1331,19 +1313,13 @@ impl<T: Config> Pallet<T> {
 				// safe from underflow because `peg_price` is checked to be less than `market_price`
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
-				// `min_target_amount` for `SerpUp` operation
-				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
-
-				T::SerpTreasury::on_serpup(T::GetSetGBPCurrencyId::get(), expand_by, min_target_amount).unwrap();
+				T::SerpTreasury::on_serpup(T::GetSetGBPCurrencyId::get(), expand_by).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
-				// `max_supply_amount` for `SerpDown` operation
-				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
-
-				T::SerpTreasury::on_serpdown(T::GetSetGBPCurrencyId::get(), contract_by, max_supply_amount).unwrap();
+				T::SerpTreasury::on_serpdown(T::GetSetGBPCurrencyId::get(), contract_by).unwrap();
 			}
 			_ => {}
 		}
@@ -1460,19 +1436,13 @@ impl<T: Config> Pallet<T> {
 				// safe from underflow because `peg_price` is checked to be less than `market_price`
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
-				// `min_target_amount` for `SerpUp` operation
-				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
-
-				T::SerpTreasury::on_serpup(T::GetSetCHFCurrencyId::get(), expand_by, min_target_amount).unwrap();
+				T::SerpTreasury::on_serpup(T::GetSetCHFCurrencyId::get(), expand_by).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
-				// `max_supply_amount` for `SerpDown` operation
-				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
-
-				T::SerpTreasury::on_serpdown(T::GetSetCHFCurrencyId::get(), contract_by, max_supply_amount).unwrap();
+				T::SerpTreasury::on_serpdown(T::GetSetCHFCurrencyId::get(), contract_by).unwrap();
 			}
 			_ => {}
 		}
@@ -1589,19 +1559,13 @@ impl<T: Config> Pallet<T> {
 				// safe from underflow because `peg_price` is checked to be less than `market_price`
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
-				// `min_target_amount` for `SerpUp` operation
-				let min_target_amount = Self::calculate_min_target_amount(market_price, dinar_price, expand_by);
-
-				T::SerpTreasury::on_serpup(T::GetSetSARCurrencyId::get(), expand_by, min_target_amount).unwrap();
+				T::SerpTreasury::on_serpup(T::GetSetSARCurrencyId::get(), expand_by).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
-				// `max_supply_amount` for `SerpDown` operation
-				let max_supply_amount = Self::calculate_max_supply_amount(market_price, setter_price, contract_by);
-
-				T::SerpTreasury::on_serpdown(T::GetSetSARCurrencyId::get(), contract_by, max_supply_amount).unwrap();
+				T::SerpTreasury::on_serpdown(T::GetSetSARCurrencyId::get(), contract_by).unwrap();
 			}
 			_ => {}
 		}

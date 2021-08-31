@@ -294,7 +294,7 @@ impl pallet_authorship::Config for Runtime {
 }
 
 parameter_types! {
-	pub const NativeTokenExistentialDeposit: Balance = 0;
+	pub NativeTokenExistentialDeposit: Balance = 10 * cent(DNAR);	// 0.1 DNAR
 	// For weight estimation, we assume that the most locks on an individual account will be 50.
 	// This number may need to be adjusted in the future if this assumption no longer holds true.
 	pub const MaxLocks: u32 = 50;
@@ -324,8 +324,11 @@ parameter_types! {
 	/// Minimum amount of the multiplier. This value cannot be too low. A test case should ensure
 	/// that combined with `AdjustmentVariable`, we can recover from the minimum.
 	/// See `multiplier_can_grow_from_zero`.
-	pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
+	pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000u128);
 }
+
+pub type SlowAdjustingFeeUpdate<R> =
+	TargetedFeeAdjustment<R, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
 
 impl pallet_sudo::Config for Runtime {
 	type Event = Event;
@@ -562,8 +565,8 @@ type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
 
 parameter_types! {
 	pub const GeneralCouncilMotionDuration: BlockNumber = 3 * DAYS;
-	pub const GeneralCouncilMaxProposals: u32 = 50;
-	pub const GeneralCouncilMaxMembers: u32 = 50;
+	pub const GeneralCouncilMaxProposals: u32 = 20;
+	pub const GeneralCouncilMaxMembers: u32 = 30;
 }
 
 type GeneralCouncilInstance = pallet_collective::Instance1;
@@ -1371,10 +1374,10 @@ impl dex::Config for Runtime {
 }
 
 parameter_types! {
+	// TODO: Update!
 	// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
 	pub const CharityFundAccount: AccountId = hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into();
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
-	pub SerpTesSchedule: BlockNumber = 12 * MINUTES; // Triggers SERP-TES for serping Every 12 minutes.
 	pub CashDropPeriod: BlockNumber = 24 * HOURS; // Accumulates CashDrop for claiming - Every 24 hours.
 }
 
@@ -1393,14 +1396,6 @@ parameter_type_with_key! {
 	};
 }
 
-pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
-	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR
-];
-pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
-	SETUSD, SETEUR, SETGBP, SETCHF, SETSAR
-];
-
 parameter_type_with_key! {
 	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
@@ -1417,6 +1412,11 @@ parameter_type_with_key! {
 	};
 }
 
+parameter_types! {
+	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -1426,18 +1426,17 @@ impl serp_treasury::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DirhamCurrencyId = DirhamCurrencyId;
-	type SerpTesSchedule = SerpTesSchedule;
 	type CashDropPeriod = CashDropPeriod;
 	type SettPayTreasuryAccountId = OneAccountId;
 	type CashDropVaultAccountId = TwoAccountId;
 	type CharityFundAccountId = CharityFundAccount;
+	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
 	type Dex = Dex;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = SerpPrices;
-	type RewardableCurrencyIds = RewardableCurrencyIds;
-	type NonStableDropCurrencyIds = NonStableDropCurrencyIds;
-	type SetCurrencyDropCurrencyIds = SetCurrencyDropCurrencyIds;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
+	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
@@ -1458,7 +1457,7 @@ impl setheum_transaction_payment::Config for Runtime {
 	type OnTransactionPayment = Treasury;
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
-	type FeeMultiplierUpdate = TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
+	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
 	type Dex = Dex;
 	type MaxSlippageSwapWithDex = MaxSlippageSwapWithDex;
 	type WeightInfo = weights::setheum_transaction_payment::WeightInfo<Runtime>;

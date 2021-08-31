@@ -664,31 +664,31 @@ fn get_target_amounts_work() {
 			LiquidityPool::<Runtime>::insert(SETUSDDRAMPair::get(), (50000, 10000));
 			LiquidityPool::<Runtime>::insert(SETUSDBTCPair::get(), (100000, 10));
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DRAM], 10000, None),
+				DexModule::get_target_amounts(&vec![DRAM], 10000),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DRAM, SETUSD, BTC, DRAM], 10000, None),
+				DexModule::get_target_amounts(&vec![DRAM, SETUSD, BTC, DRAM], 10000),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DRAM, SETUSD, DNAR], 10000, None),
+				DexModule::get_target_amounts(&vec![DRAM, SETUSD, DNAR], 10000),
 				Error::<Runtime>::MustBeEnabled,
 			);
 			assert_eq!(
-				DexModule::get_target_amounts(&vec![DRAM, SETUSD], 10000, None),
+				DexModule::get_target_amounts(&vec![DRAM, SETUSD], 10000),
 				Ok(vec![10000, 1652])
 			);
 			assert_eq!(
-				DexModule::get_target_amounts(&vec![DRAM, SETUSD], 10000, Ratio::checked_from_rational(50, 100)),
+				DexModule::get_target_amounts(&vec![DRAM, SETUSD], 10000),
 				Ok(vec![10000, 1652])
 			);
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DRAM, SETUSD, BTC], 100, None),
+				DexModule::get_target_amounts(&vec![DRAM, SETUSD, BTC], 100),
 				Error::<Runtime>::ZeroTargetAmount,
 			);
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DRAM, BTC], 100, None),
+				DexModule::get_target_amounts(&vec![DRAM, BTC], 100),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 		});
@@ -729,23 +729,23 @@ fn get_supply_amounts_work() {
 			LiquidityPool::<Runtime>::insert(SETUSDDRAMPair::get(), (50000, 10000));
 			LiquidityPool::<Runtime>::insert(SETUSDBTCPair::get(), (100000, 10));
 			assert_noop!(
-				DexModule::get_supply_amounts(&vec![DRAM], 10000, None),
+				DexModule::get_supply_amounts(&vec![DRAM], 10000),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				DexModule::get_supply_amounts(&vec![DRAM, SETUSD, BTC, DRAM], 10000, None),
+				DexModule::get_supply_amounts(&vec![DRAM, SETUSD, BTC, DRAM], 10000),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				DexModule::get_supply_amounts(&vec![DRAM, SETUSD, DNAR], 10000, None),
+				DexModule::get_supply_amounts(&vec![DRAM, SETUSD, DNAR], 10000),
 				Error::<Runtime>::MustBeEnabled,
 			);
 			assert_noop!(
-				DexModule::get_supply_amounts(&vec![DRAM, SETUSD, BTC], 10000, None),
+				DexModule::get_supply_amounts(&vec![DRAM, SETUSD, BTC], 10000),
 				Error::<Runtime>::ZeroSupplyAmount,
 			);
 			assert_noop!(
-				DexModule::get_supply_amounts(&vec![DRAM, BTC], 10000, None),
+				DexModule::get_supply_amounts(&vec![DRAM, BTC], 10000),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 		});
@@ -1075,26 +1075,15 @@ fn do_swap_with_exact_supply_work() {
 					&[DRAM, SETUSD],
 					100_000_000_000_000,
 					250_000_000_000_000,
-					None
 				),
 				Error::<Runtime>::InsufficientTargetAmount
 			);
 			assert_noop!(
-				DexModule::do_swap_with_exact_supply(
-					&BOB,
-					&[DRAM, SETUSD],
-					100_000_000_000_000,
-					0,
-					Ratio::checked_from_rational(10, 100)
-				),
-				Error::<Runtime>::ExceedPriceImpactLimit,
-			);
-			assert_noop!(
-				DexModule::do_swap_with_exact_supply(&BOB, &[DRAM, SETUSD, BTC, DRAM], 100_000_000_000_000, 0, None),
+				DexModule::do_swap_with_exact_supply(&BOB, &[DRAM, SETUSD, BTC, DRAM], 100_000_000_000_000, 0),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				DexModule::do_swap_with_exact_supply(&BOB, &[DRAM, DNAR], 100_000_000_000_000, 0, None),
+				DexModule::do_swap_with_exact_supply(&BOB, &[DRAM, DNAR], 100_000_000_000_000, 0),
 				Error::<Runtime>::MustBeEnabled,
 			);
 
@@ -1103,7 +1092,6 @@ fn do_swap_with_exact_supply_work() {
 				&[DRAM, SETUSD],
 				100_000_000_000_000,
 				200_000_000_000_000,
-				None
 			));
 			System::assert_last_event(Event::DexModule(crate::Event::Swap(
 				BOB,
@@ -1134,7 +1122,6 @@ fn do_swap_with_exact_supply_work() {
 				&[DRAM, SETUSD, BTC],
 				200_000_000_000_000,
 				1,
-				None
 			));
 			System::assert_last_event(Event::DexModule(crate::Event::Swap(
 				BOB,
@@ -1211,19 +1198,8 @@ fn do_swap_with_exact_target_work() {
 					&[DRAM, SETUSD],
 					250_000_000_000_000,
 					100_000_000_000_000,
-					None
 				),
 				Error::<Runtime>::ExcessiveSupplyAmount
-			);
-			assert_noop!(
-				DexModule::do_swap_with_exact_target(
-					&BOB,
-					&[DRAM, SETUSD],
-					250_000_000_000_000,
-					200_000_000_000_000,
-					Ratio::checked_from_rational(10, 100)
-				),
-				Error::<Runtime>::ExceedPriceImpactLimit,
 			);
 			assert_noop!(
 				DexModule::do_swap_with_exact_target(
@@ -1231,12 +1207,11 @@ fn do_swap_with_exact_target_work() {
 					&[DRAM, SETUSD, BTC, DRAM],
 					250_000_000_000_000,
 					200_000_000_000_000,
-					None
 				),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				DexModule::do_swap_with_exact_target(&BOB, &[DRAM, DNAR], 250_000_000_000_000, 200_000_000_000_000, None),
+				DexModule::do_swap_with_exact_target(&BOB, &[DRAM, DNAR], 250_000_000_000_000, 200_000_000_000_000),
 				Error::<Runtime>::MustBeEnabled,
 			);
 
@@ -1245,7 +1220,6 @@ fn do_swap_with_exact_target_work() {
 				&[DRAM, SETUSD],
 				250_000_000_000_000,
 				200_000_000_000_000,
-				None
 			));
 			System::assert_last_event(Event::DexModule(crate::Event::Swap(
 				BOB,
@@ -1276,7 +1250,6 @@ fn do_swap_with_exact_target_work() {
 				&[DRAM, SETUSD, BTC],
 				5_000_000_000,
 				2_000_000_000_000_000,
-				None
 			));
 			System::assert_last_event(Event::DexModule(crate::Event::Swap(
 				BOB,

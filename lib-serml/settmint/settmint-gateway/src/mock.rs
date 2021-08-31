@@ -27,7 +27,7 @@ use orml_traits::parameter_type_with_key;
 use primitives::{Balance, Moment, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
-	testing::{Header, TestXt},
+	testing::{Header, TestXt}, FixedPointNumber,
 	traits::{IdentityLookup, One as OneT},
 };
 use support::{ExchangeRate, Price, PriceProvider, Ratio};
@@ -45,6 +45,7 @@ pub const CAROL: AccountId = 3;
 pub const CHARITY_FUND: AccountId = 4;
 pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
+pub const ROOT: AccountId = 11;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -155,6 +156,36 @@ ord_parameter_types! {
 }
 
 parameter_types! {
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
+	pub const TradingPathLimit: u32 = 3;
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![
+		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETCHF, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETEUR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETGBP, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETSAR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETCHF, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETGBP, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETSAR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
+	];
+}
+
+impl setheum_dex::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type GetExchangeFee = GetExchangeFee;
+	type TradingPathLimit = TradingPathLimit;
+	type PalletId = DexPalletId;
+	type CurrencyIdMapping = ();
+	type WeightInfo = ();
+	type ListingOrigin = EnsureSignedBy<One, AccountId>;
+}
+
+parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETCHF,
@@ -204,6 +235,15 @@ parameter_type_with_key! {
 	};
 }
 
+parameter_types! {
+	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
+}
+
+ord_parameter_types! {
+	pub const Root: AccountId = ROOT;
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -217,41 +257,15 @@ impl serp_treasury::Config for Runtime {
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
+	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
 	type Dex = SetheumDEX;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type TradingPathLimit = TradingPathLimit;
+	type PriceSource = MockPriceSource;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
+	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
-}
-
-parameter_types! {
-	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
-	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
-	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETCHF, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETEUR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETGBP, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETSAR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETCHF, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETGBP, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETSAR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-	];
-}
-
-impl setheum_dex::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type GetExchangeFee = GetExchangeFee;
-	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DexPalletId;
-	type CurrencyIdMapping = ();
-	type WeightInfo = ();
-	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
 
 parameter_types! {

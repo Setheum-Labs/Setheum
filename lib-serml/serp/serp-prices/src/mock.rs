@@ -118,7 +118,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_swap_target_amount(
 		_path: &[CurrencyId],
 		_supply_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
 	) -> Option<Balance> {
 		unimplemented!()
 	}
@@ -126,7 +125,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_swap_supply_amount(
 		_path: &[CurrencyId],
 		_target_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
 	) -> Option<Balance> {
 		unimplemented!()
 	}
@@ -136,7 +134,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_path: &[CurrencyId],
 		_supply_amount: Balance,
 		_min_target_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		unimplemented!()
 	}
@@ -146,7 +143,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_path: &[CurrencyId],
 		_target_amount: Balance,
 		_max_supply_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		unimplemented!()
 	}

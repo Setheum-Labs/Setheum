@@ -75,24 +75,15 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 
 	fn get_liquidity_token_address(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<H160>;
 
-	fn get_swap_target_amount(
-		path: &[CurrencyId],
-		supply_amount: Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> Option<Balance>;
+	fn get_swap_target_amount(path: &[CurrencyId], supply_amount: Balance) -> Option<Balance>;
 
-	fn get_swap_supply_amount(
-		path: &[CurrencyId],
-		target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
-	) -> Option<Balance>;
+	fn get_swap_supply_amount(path: &[CurrencyId], target_amount: Balance) -> Option<Balance>;
 
 	fn swap_with_exact_supply(
 		who: &AccountId,
 		path: &[CurrencyId],
 		supply_amount: Balance,
 		min_target_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError>;
 
 	fn swap_with_exact_target(
@@ -100,7 +91,6 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		path: &[CurrencyId],
 		target_amount: Balance,
 		max_supply_amount: Balance,
-		price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError>;
 
 	fn add_liquidity(
@@ -134,19 +124,11 @@ where
 		Some(Default::default())
 	}
 
-	fn get_swap_target_amount(
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
-	) -> Option<Balance> {
+	fn get_swap_target_amount(_path: &[CurrencyId], _supply_amount: Balance) -> Option<Balance> {
 		Some(Default::default())
 	}
 
-	fn get_swap_supply_amount(
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
-	) -> Option<Balance> {
+	fn get_swap_supply_amount(_path: &[CurrencyId], _target_amount: Balance) -> Option<Balance> {
 		Some(Default::default())
 	}
 
@@ -155,7 +137,6 @@ where
 		_path: &[CurrencyId],
 		_supply_amount: Balance,
 		_min_target_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Ok(Default::default())
 	}
@@ -165,7 +146,6 @@ where
 		_path: &[CurrencyId],
 		_target_amount: Balance,
 		_max_supply_amount: Balance,
-		_price_impact_limit: Option<Ratio>,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Ok(Default::default())
 	}
@@ -199,7 +179,7 @@ pub trait SerpTreasury<AccountId> {
 	type CurrencyId;
 
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId, min_target_amount: Self::Balance) -> DispatchResult;
+	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
@@ -214,10 +194,10 @@ pub trait SerpTreasury<AccountId> {
 	fn usdj_cashdrop_to_vault() -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance, min_target_amount: Self::Balance) -> DispatchResult;
+	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance, max_supply_amount: Self::Balance) -> DispatchResult;
+	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// get the minimum supply of a setcurrency - by key
 	fn get_minimum_supply(currency_id: Self::CurrencyId) -> Self::Balance;
@@ -245,32 +225,24 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 	// when setter needs serpdown
 	fn swap_dinar_to_exact_setter(
 		target_amount: Self::Balance,
-		max_supply_amount: Self::Balance,
-		path: Option<&[Self::CurrencyId]>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+	);
 
 	/// When SetCurrency needs SerpDown
 	fn swap_setter_to_exact_setcurrency(
 		currency_id: Self::CurrencyId,
 		target_amount: Self::Balance,
-		max_supply_amount: Self::Balance,
-		path: Option<&[Self::CurrencyId]>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+	);
 
 	/// When Setter gets SerpUp
 	fn swap_exact_setter_to_dinar(
 		supply_amount: Self::Balance,
-		min_target_amount: Self::Balance,
-		maybe_path: Option<&[Self::CurrencyId]>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+	);
 
 	/// When SetCurrency gets SerpUp
 	fn swap_exact_setcurrency_to_dinar(
 		currency_id: Self::CurrencyId,
 		supply_amount: Self::Balance,
-		min_target_amount: Self::Balance,
-		maybe_path: Option<&[Self::CurrencyId]>,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+	);
 }
 
 pub trait PriceProvider<CurrencyId> {
