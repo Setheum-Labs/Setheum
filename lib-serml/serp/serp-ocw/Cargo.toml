@@ -13,13 +13,14 @@ lite-json = { version = "0.1", default-features = false }
 log = { version = "0.4.14", default-features = false }
 fixed = { default-features = false, git = "https://github.com/encointer/substrate-fixed", package = "substrate-fixed" }
 
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+# Substrate dependencies
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sp-keystore = { git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.8", optional = true }
 sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
 orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
