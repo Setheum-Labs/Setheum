@@ -8014,6 +8014,7 @@ dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "frame-system 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "hex-literal 0.3.3",
+ "orml-currencies",
  "orml-tokens",
  "orml-traits",
  "orml-utilities",

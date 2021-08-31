@@ -26,7 +26,7 @@ fn fast_track_referendum_works() {
 		let h = set_balance_proposal_hash_and_note(2);
 		assert_noop!(
 			Democracy::fast_track(Origin::signed(5), h, 3, 2),
-			Error::<Test>::ProposalMissing
+			Error::<Runtime>::ProposalMissing
 		);
 		assert_ok!(Democracy::external_propose_majority(
 			Origin::signed(3),
@@ -54,7 +54,7 @@ fn instant_referendum_works() {
 		let h = set_balance_proposal_hash_and_note(2);
 		assert_noop!(
 			Democracy::fast_track(Origin::signed(5), h, 3, 2),
-			Error::<Test>::ProposalMissing
+			Error::<Runtime>::ProposalMissing
 		);
 		assert_ok!(Democracy::external_propose_majority(
 			Origin::signed(3),
@@ -64,7 +64,7 @@ fn instant_referendum_works() {
 		assert_noop!(Democracy::fast_track(Origin::signed(5), h, 1, 0), BadOrigin);
 		assert_noop!(
 			Democracy::fast_track(Origin::signed(6), h, 1, 0),
-			Error::<Test>::InstantNotAllowed
+			Error::<Runtime>::InstantNotAllowed
 		);
 		INSTANT_ALLOWED.with(|v| *v.borrow_mut() = true);
 		assert_ok!(Democracy::fast_track(Origin::signed(6), h, 1, 0));
@@ -92,7 +92,7 @@ fn fast_track_referendum_fails_when_no_simple_majority() {
 		));
 		assert_noop!(
 			Democracy::fast_track(Origin::signed(5), h, 3, 2),
-			Error::<Test>::NotSimpleMajority
+			Error::<Runtime>::NotSimpleMajority
 		);
 	});
 }

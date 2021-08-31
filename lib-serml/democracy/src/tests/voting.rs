@@ -25,7 +25,7 @@ fn overvoting_should_fail() {
 		let r = begin_referendum();
 		assert_noop!(
 			Democracy::vote(Origin::signed(1), r, aye(2)),
-			Error::<Test>::InsufficientFunds
+			Error::<Runtime>::InsufficientFunds
 		);
 	});
 }
@@ -35,7 +35,7 @@ fn split_voting_should_work() {
 	new_test_ext().execute_with(|| {
 		let r = begin_referendum();
 		let v = AccountVote::Split { aye: 40, nay: 20 };
-		assert_noop!(Democracy::vote(Origin::signed(5), r, v), Error::<Test>::InsufficientFunds);
+		assert_noop!(Democracy::vote(Origin::signed(5), r, v), Error::<Runtime>::InsufficientFunds);
 		let v = AccountVote::Split { aye: 30, nay: 20 };
 		assert_ok!(Democracy::vote(Origin::signed(5), r, v));
 
@@ -88,8 +88,8 @@ fn single_proposal_should_work() {
 		// referendum runs during 2 and 3, ends @ start of 4.
 		fast_forward_to(4);
 
-		assert_noop!(Democracy::referendum_status(0), Error::<Test>::ReferendumInvalid);
-		assert!(pallet_scheduler::Agenda::<Test>::get(6)[0].is_some());
+		assert_noop!(Democracy::referendum_status(0), Error::<Runtime>::ReferendumInvalid);
+		assert!(pallet_scheduler::Agenda::<Runtime>::get(6)[0].is_some());
 
 		// referendum passes and wait another two blocks for enactment.
 		fast_forward_to(6);
