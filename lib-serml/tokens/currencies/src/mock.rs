@@ -25,7 +25,7 @@ use orml_traits::parameter_type_with_key;
 use primitives::{CurrencyId, ReserveIdentifier, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
-	testing::Header,
+	testing::Header, FixedPointNumber,
 	traits::{AccountIdConversion, IdentityLookup, One as OneT},
 	AccountId32, Perbill,
 };
@@ -50,7 +50,6 @@ pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
 pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 
 parameter_types! {
@@ -109,6 +108,7 @@ impl tokens::Config for Runtime {
 	type OnDust = tokens::TransferDust<Runtime, DustAccount>;
 	type WeightInfo = ();
 	type MaxLocks = MaxLocks;
+	type DustRemovalWhitelist = ();
 }
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -156,6 +156,7 @@ ord_parameter_types! {
 	pub const CharityFundAccountId:  AccountId32 = AccountId32::from([5u8; 32]);
 	pub const SettPayTreasuryAccountId:  AccountId32 = AccountId32::from([6u8; 32]);
 	pub const CashDropVaultAccountId:  AccountId32 = AccountId32::from([10u8; 32]);
+	pub const Root:  AccountId32 = AccountId32::from([11u8; 32]);
 	
 	pub const CouncilAccount: AccountId32 = AccountId32::from([1u8; 32]);
 	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
@@ -238,7 +239,7 @@ thread_local! {
 
 pub struct MockPriceSource;
 impl MockPriceSource {
-	pub fn set_relative_price(price: Option<Price>) {
+	pub fn _set_relative_price(price: Option<Price>) {
 		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
 	}
 }
@@ -329,6 +330,11 @@ parameter_type_with_key! {
 	};
 }
 
+parameter_types! {
+	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = OrmlCurrencies;
@@ -342,9 +348,13 @@ impl serp_treasury::Config for Runtime {
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
+	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
 	type Dex = SetheumDEX;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type TradingPathLimit = TradingPathLimit;
+	type PriceSource = MockPriceSource;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
+	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }

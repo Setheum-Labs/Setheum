@@ -27,7 +27,7 @@ use orml_traits::parameter_type_with_key;
 use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
-	testing::Header,
+	testing::Header, FixedPointNumber,
 	traits::{IdentityLookup, One as OneT},
 };
 use support::{Price, PriceProvider, Ratio};
@@ -41,6 +41,7 @@ pub const BOB: AccountId = 2;
 pub const CHARITY_FUND: AccountId = 3;
 pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
+pub const ROOT: AccountId = 11;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -244,6 +245,15 @@ parameter_type_with_key! {
 	};
 }
 
+parameter_types! {
+	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
+}
+
+ord_parameter_types! {
+	pub const Root: AccountId = ROOT;
+}
+
 impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -257,9 +267,13 @@ impl serp_treasury::Config for Runtime {
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
+	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
 	type Dex = SetheumDEX;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type TradingPathLimit = TradingPathLimit;
+	type PriceSource = MockPriceSource;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
+	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
