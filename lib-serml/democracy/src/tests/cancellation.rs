@@ -51,11 +51,11 @@ fn cancel_queued_should_work() {
 
 		fast_forward_to(4);
 
-		assert!(pallet_scheduler::Agenda::<Test>::get(6)[0].is_some());
+		assert!(pallet_scheduler::Agenda::<Runtime>::get(6)[0].is_some());
 
-		assert_noop!(Democracy::cancel_queued(Origin::root(), 1), Error::<Test>::ProposalMissing);
+		assert_noop!(Democracy::cancel_queued(Origin::root(), 1), Error::<Runtime>::ProposalMissing);
 		assert_ok!(Democracy::cancel_queued(Origin::root(), 0));
-		assert!(pallet_scheduler::Agenda::<Test>::get(6)[0].is_none());
+		assert!(pallet_scheduler::Agenda::<Runtime>::get(6)[0].is_none());
 	});
 }
 
@@ -86,7 +86,7 @@ fn emergency_cancel_should_work() {
 		assert!(Democracy::referendum_status(r).is_ok());
 		assert_noop!(
 			Democracy::emergency_cancel(Origin::signed(4), r),
-			Error::<Test>::AlreadyCanceled,
+			Error::<Runtime>::AlreadyCanceled,
 		);
 	});
 }

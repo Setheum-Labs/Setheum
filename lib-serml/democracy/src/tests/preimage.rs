@@ -48,7 +48,7 @@ fn preimage_deposit_should_be_required_and_returned() {
 			} else {
 				Democracy::note_preimage(Origin::signed(6), vec![0; 500])
 			},
-			BalancesError::<Test, _>::InsufficientBalance,
+			BalancesError::<Runtime, _>::InsufficientBalance,
 		);
 		// fee of 1 is reasonable.
 		PREIMAGE_BYTE_DEPOSIT.with(|v| *v.borrow_mut() = 1);
@@ -86,7 +86,7 @@ fn preimage_deposit_should_be_reapable_earlier_by_owner() {
 		next_block();
 		assert_noop!(
 			Democracy::reap_preimage(Origin::signed(6), set_balance_proposal_hash(2), u32::MAX),
-			Error::<Test>::TooEarly
+			Error::<Runtime>::TooEarly
 		);
 		next_block();
 		assert_ok!(Democracy::reap_preimage(
@@ -105,7 +105,7 @@ fn preimage_deposit_should_be_reapable() {
 	new_test_ext_execute_with_cond(|operational| {
 		assert_noop!(
 			Democracy::reap_preimage(Origin::signed(5), set_balance_proposal_hash(2), u32::MAX),
-			Error::<Test>::PreimageMissing
+			Error::<Runtime>::PreimageMissing
 		);
 
 		PREIMAGE_BYTE_DEPOSIT.with(|v| *v.borrow_mut() = 1);
@@ -121,7 +121,7 @@ fn preimage_deposit_should_be_reapable() {
 		next_block();
 		assert_noop!(
 			Democracy::reap_preimage(Origin::signed(5), set_balance_proposal_hash(2), u32::MAX),
-			Error::<Test>::TooEarly
+			Error::<Runtime>::TooEarly
 		);
 
 		next_block();
@@ -158,7 +158,7 @@ fn noting_imminent_preimage_for_free_should_work() {
 			} else {
 				Democracy::note_imminent_preimage(Origin::signed(6), set_balance_proposal(2))
 			},
-			Error::<Test>::NotImminent
+			Error::<Runtime>::NotImminent
 		);
 
 		next_block();
@@ -182,7 +182,7 @@ fn reaping_imminent_preimage_should_fail() {
 		next_block();
 		assert_noop!(
 			Democracy::reap_preimage(Origin::signed(6), h, u32::MAX),
-			Error::<Test>::Imminent
+			Error::<Runtime>::Imminent
 		);
 	});
 }
@@ -207,13 +207,13 @@ fn note_imminent_preimage_can_only_be_successful_once() {
 		// Second time fails
 		assert_noop!(
 			Democracy::note_imminent_preimage(Origin::signed(6), set_balance_proposal(2)),
-			Error::<Test>::DuplicatePreimage
+			Error::<Runtime>::DuplicatePreimage
 		);
 
 		// Fails from any user
 		assert_noop!(
 			Democracy::note_imminent_preimage(Origin::signed(5), set_balance_proposal(2)),
-			Error::<Test>::DuplicatePreimage
+			Error::<Runtime>::DuplicatePreimage
 		);
 	});
 }

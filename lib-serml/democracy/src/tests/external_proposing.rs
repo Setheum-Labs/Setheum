@@ -27,23 +27,23 @@ fn veto_external_works() {
 			Origin::signed(2),
 			set_balance_proposal_hash_and_note(2),
 		));
-		assert!(<NextExternal<Test>>::exists());
+		assert!(<NextExternal<Runtime>>::exists());
 
 		let h = set_balance_proposal_hash_and_note(2);
 		assert_ok!(Democracy::veto_external(Origin::signed(3), h.clone()));
 		// cancelled.
-		assert!(!<NextExternal<Test>>::exists());
+		assert!(!<NextExternal<Runtime>>::exists());
 		// fails - same proposal can't be resubmitted.
 		assert_noop!(
 			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash(2),),
-			Error::<Test>::ProposalBlacklisted
+			Error::<Runtime>::ProposalBlacklisted
 		);
 
 		fast_forward_to(1);
 		// fails as we're still in cooloff period.
 		assert_noop!(
 			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash(2),),
-			Error::<Test>::ProposalBlacklisted
+			Error::<Runtime>::ProposalBlacklisted
 		);
 
 		fast_forward_to(2);
@@ -52,24 +52,24 @@ fn veto_external_works() {
 			Origin::signed(2),
 			set_balance_proposal_hash_and_note(2),
 		));
-		assert!(<NextExternal<Test>>::exists());
+		assert!(<NextExternal<Runtime>>::exists());
 
 		// 3 can't veto the same thing twice.
 		assert_noop!(
 			Democracy::veto_external(Origin::signed(3), h.clone()),
-			Error::<Test>::AlreadyVetoed
+			Error::<Runtime>::AlreadyVetoed
 		);
 
 		// 4 vetoes.
 		assert_ok!(Democracy::veto_external(Origin::signed(4), h.clone()));
 		// cancelled again.
-		assert!(!<NextExternal<Test>>::exists());
+		assert!(!<NextExternal<Runtime>>::exists());
 
 		fast_forward_to(3);
 		// same proposal fails as we're still in cooloff
 		assert_noop!(
 			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash(2),),
-			Error::<Test>::ProposalBlacklisted
+			Error::<Runtime>::ProposalBlacklisted
 		);
 		// different proposal works fine.
 		assert_ok!(Democracy::external_propose(
@@ -93,11 +93,11 @@ fn external_blacklisting_should_work() {
 		assert_ok!(Democracy::blacklist(Origin::root(), hash, None));
 
 		fast_forward_to(2);
-		assert_noop!(Democracy::referendum_status(0), Error::<Test>::ReferendumInvalid);
+		assert_noop!(Democracy::referendum_status(0), Error::<Runtime>::ReferendumInvalid);
 
 		assert_noop!(
 			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash_and_note(2),),
-			Error::<Test>::ProposalBlacklisted,
+			Error::<Runtime>::ProposalBlacklisted,
 		);
 	});
 }
@@ -116,7 +116,7 @@ fn external_referendum_works() {
 		));
 		assert_noop!(
 			Democracy::external_propose(Origin::signed(2), set_balance_proposal_hash(1),),
-			Error::<Test>::DuplicateProposal
+			Error::<Runtime>::DuplicateProposal
 		);
 		fast_forward_to(2);
 		assert_eq!(

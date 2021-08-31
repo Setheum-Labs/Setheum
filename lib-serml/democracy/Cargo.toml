@@ -1,6 +1,6 @@
 [package]
 name = "setheum-democracy"
-version = "0.9.0"
+version = "0.8.0"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -30,6 +30,7 @@ support = { package = "setheum-support", path = "../support", default-features =
 
 [dev-dependencies]
 orml-tokens = { path = "../../lib-openrml/tokens" }
+orml-currencies = { path = "../../lib-openrml/currencies" }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
