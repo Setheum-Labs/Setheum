@@ -7,12 +7,10 @@ members = [
 
 	"lib-serml/airdrop",
 	"lib-serml/bridges/*",
-	"lib-serml/democracy",
 	"lib-serml/dex/*",
 	"lib-serml/evm/*",
 	"lib-serml/example",
 	"lib-serml/serp/serp-prices",
-	"lib-serml/serp/serp-staking",
 	"lib-serml/serp/serp-treasury",
 	"lib-serml/settmint/*",
 	"lib-serml/support",
