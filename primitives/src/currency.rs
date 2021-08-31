@@ -128,43 +128,14 @@ macro_rules! create_currency_id {
 			];
 
 			let mut lp_tokens = vec![
-				// DNAR paired LPs
-				Token {
-					symbol: "LP_DRAM_DNAR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DRAM), DexShare::Token(DNAR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETUSD_DNAR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETUSD), DexShare::Token(DNAR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETEUR_DNAR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETEUR), DexShare::Token(DNAR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETGBP_DNAR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETGBP), DexShare::Token(DNAR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETCHF_DNAR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETCHF), DexShare::Token(DNAR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETSAR_DNAR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETSAR), DexShare::Token(DNAR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_RENBTC_DNAR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(DNAR))).unwrap(),
-				},
 				// SETR paired LPs
-				Token {
-					symbol: "LP_DNAR_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETR))).unwrap(),
-				},
 				Token {
 					symbol: "LP_DRAM_SETR".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DRAM), DexShare::Token(SETR))).unwrap(),
+				},
+				Token {
+					symbol: "LP_DNAR_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETR))).unwrap(),
 				},
 				Token {
 					symbol: "LP_SETUSD_SETR".to_string(),
@@ -190,31 +161,6 @@ macro_rules! create_currency_id {
 					symbol: "LP_RENBTC_SETR".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETR))).unwrap(),
 				},
-				// SETUSD paired LPs
-				Token {
-					symbol: "LP_DRAM_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DRAM), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETEUR_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETEUR), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETGBP_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETGBP), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETCHF_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETCHF), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETSAR_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETSAR), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
-					symbol: "LP_RENBTC_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETUSD))).unwrap(),
-				},
 			];
 			tokens.append(&mut lp_tokens);
 
@@ -233,8 +179,8 @@ create_currency_id! {
 	#[repr(u8)]
 	pub enum TokenSymbol {
 		/// Setheum Network
-		DNAR("Setheum Dinar", 12) = 0,
-		DRAM("Setheum Dirham", 12) = 1,
+		DRAM("Setheum Dirham", 12) = 0,
+		DNAR("Setheum Dinar", 12) = 1,
 		SETR("Setter", 12) = 2,
 		// SetCurrencies
 		SETUSD("SetDollar", 12) = 3,
