@@ -256,7 +256,6 @@ ord_parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type MultiCurrency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;

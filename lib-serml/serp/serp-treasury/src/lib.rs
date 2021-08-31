@@ -70,9 +70,6 @@ pub mod module {
 		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		/// Currency to swap on DEX
-		type MultiCurrency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
-
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
