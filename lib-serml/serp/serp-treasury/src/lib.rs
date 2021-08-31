@@ -27,17 +27,27 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, PalletId};
+use frame_support::{
+	pallet_prelude::*,
+	PalletId,
+};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::{
-	traits::{AccountIdConversion, Zero},
 	DispatchError, DispatchResult, 
+	traits::{
+		AccountIdConversion, Bounded, CheckedSub, Convert, DispatchInfoOf, One, PostDispatchInfoOf, SaturatedConversion, Saturating,
+		SignedExtension, UniqueSaturatedInto, Zero,
+	},
+	transaction_validity::{
+		InvalidTransaction, TransactionPriority, TransactionValidity, TransactionValidityError, ValidTransaction,
+	},
+	FixedPointNumber, FixedPointOperand, FixedU128, Perquintill,
 };
-use sp_std::prelude::*;
+use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{
-	DEXManager, Ratio, SerpTreasury, SerpTreasuryExtended
+	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended,
 };
 
 mod mock;
@@ -46,6 +56,8 @@ pub mod weights;
 
 pub use module::*;
 pub use weights::WeightInfo;
+
+type CurrencyBalanceOf<T> = <<T as Config>::Currency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[frame_support::pallet]
 pub mod module {
@@ -57,6 +69,9 @@ pub mod module {
 
 		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
+
+		/// Currency to swap on DEX
+		type MultiCurrency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
@@ -98,14 +113,29 @@ pub mod module {
 		/// CharityFund account.
 		type CharityFundAccountId: Get<Self::AccountId>;
 
+		/// Default fee swap path list
+		#[pallet::constant]
+		type DefaultFeeSwapPathList: Get<Vec<Vec<CurrencyId>>>;
+
+		/// When swap with DEX, the acceptable max slippage for the price from oracle.
+		#[pallet::constant]
+		type MaxSwapSlippageCompareToOracle: Get<Ratio>;
+
+		/// The limit for length of trading path
+		#[pallet::constant]
+		type TradingPathLimit: Get<u32>;
+
+		/// The price source to provider external market price.
+		type PriceSource: PriceProvider<CurrencyId>;
+
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SetCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// The max slippage allowed when swap fee with DEX
-		type MaxSlippageSwapWithDEX: Get<Ratio>;
-
 		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
 		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
+
+		/// The origin which may update incentive related params
+		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
@@ -160,6 +190,12 @@ pub mod module {
 	#[pallet::getter(fn minimum_claimable_transfer)]
 	pub type MinimumClaimableTransfer<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, OptionQuery>;
 
+	/// The alternative fee swap path of accounts.
+	#[pallet::storage]
+	#[pallet::getter(fn alternative_fee_swap_path)]
+	pub type AlternativeFeeSwapPath<T: Config> =
+		StorageMap<_, Twox64Concat, T::AccountId, BoundedVec<CurrencyId, T::TradingPathLimit>, OptionQuery>;
+
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
@@ -192,6 +228,33 @@ pub mod module {
 			}
 		}
 	}
+	/// set alternative swap path for SERP.
+	#[pallet::call]
+	impl<T: Config> Pallet<T> {
+		/// Set fee swap path
+		#[pallet::weight(<T as Config>::WeightInfo::set_alternative_swap_path())]
+		pub fn set_alternative_swap_path(
+			origin: OriginFor<T>,
+			fee_swap_path: Option<Vec<CurrencyId>>,
+		) -> DispatchResult {
+			T::UpdateOrigin::ensure_origin(origin)?;
+
+			if let Some(path) = fee_swap_path {
+				let path: BoundedVec<CurrencyId, T::TradingPathLimit> =
+					path.try_into().map_err(|_| Error::<T>::InvalidSwapPath)?;
+				ensure!(
+					path.len() > 1
+						&& path[0] != T::GetNativeCurrencyId::get()
+						&& path[path.len() - 1] == T::GetNativeCurrencyId::get(),
+					Error::<T>::InvalidSwapPath
+				);
+				AlternativeFeeSwapPath::<T>::insert(&Self::account_id(), &path);
+			} else {
+				AlternativeFeeSwapPath::<T>::remove(&Self::account_id());
+			}
+			Ok(())
+		}
+	}
 }
 
 impl<T: Config> Pallet<T> {
@@ -206,28 +269,26 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	type CurrencyId = CurrencyId;
 
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serpup(amount: Balance, currency_id: Self::CurrencyId, min_target_amount: Balance) -> DispatchResult {
-		// Setheum Treasury SerpUp Pool - 30%
-		let three: Balance = 3;
-		let serping_amount: Balance = three.saturating_mul(amount / 10);
+	fn get_buyback_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		// Setheum Treasury SerpUp Pool - 40%
+		let four: Balance = 4;
+		let serping_amount: Balance = four.saturating_mul(amount / 10);
 		
 		if currency_id == T::SetterCurrencyId::get() {
+			// Mint stable currency for buyback swap.
+			T::Currency::deposit(currency_id, &Self::account_id(), serping_amount)?;
+	
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setter_to_dinar(
 				serping_amount,
-				min_target_amount,
-				None,
-			)?;
+			);
 		} else {
+			// Mint stable currency for buyback swap.
+			T::Currency::deposit(currency_id, &Self::account_id(), serping_amount)?;
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
 				currency_id,
 				serping_amount,
-				min_target_amount,
-				None,
-			)?;
+			);
 		} 
-
-		// Burn Native Reserve asset (Dinar (DNAR))
-		T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -249,16 +310,15 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_cashdrop_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		let settpay_account = &T::SettPayTreasuryAccountId::get();
 
-		// SettPay SerpUp Pool - 60%
-		let six: Balance = 6;
-		let serping_amount: Balance = six.saturating_mul(amount / 10);
+		// SettPay SerpUp Pool - 50%
+		let five: Balance = 5;
+		let serping_amount: Balance = five.saturating_mul(amount / 10);
 		// Issue the SerpUp propper to the SettPayVault
 		Self::issue_standard(currency_id, &settpay_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
-  
 	// TODO: Update to 1% per day not 50% per day.
 	/// Reward SETR cashdrop to vault
 	fn setter_cashdrop_to_vault() -> DispatchResult {
@@ -274,7 +334,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::SetterCurrencyId::get()));
 		Ok(())
 	}
-  
 	// TODO: Update to 1% per day not 50% per day. and rename `usdj` to `setusd`
 	/// SerpUp ratio for SettPay Cashdrops
 	fn usdj_cashdrop_to_vault() -> DispatchResult {
@@ -292,7 +351,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serpup(currency_id: CurrencyId, amount: Balance, min_target_amount: Balance) -> DispatchResult {
+	fn on_serpup(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -303,7 +362,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			!amount.is_zero(),
 			Error::<T>::InvalidAmount,
 		);
-		Self::get_buyback_serpup(amount, currency_id, min_target_amount)?;
+		Self::get_buyback_serpup(amount, currency_id)?;
 		Self::get_cashdrop_serpup(amount, currency_id)?;
 		Self::get_charity_fund_serpup(amount, currency_id)?;
 
@@ -316,7 +375,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	//
 	// TODO: Update to add the burning of the stablecoins!
 	//
-	fn on_serpdown(currency_id: CurrencyId, amount: Balance, max_supply_amount: Balance) -> DispatchResult {
+	fn on_serpdown(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -333,16 +392,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		if currency_id == T::SetterCurrencyId::get() {
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_dinar_to_exact_setter(
 				amount,
-				max_supply_amount,
-				None,
-			)?;
+			);
 		} else {
 			<Self as SerpTreasuryExtended<T::AccountId>>::swap_setter_to_exact_setcurrency(
 				currency_id,
 				amount,
-				max_supply_amount,
-				None,
-			)?;
+			);
 		} 
 
 		<Pallet<T>>::deposit_event(Event::SerpDown(amount, currency_id));
@@ -420,34 +475,59 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	/// return actual supply Dinar amount
 	fn swap_dinar_to_exact_setter(
 		target_amount: Balance,
-		max_supply_amount: Balance,
-		maybe_path: Option<&[CurrencyId]>,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	) {
+		let native_currency_id = T::GetNativeCurrencyId::get();
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
-
 		let setter_currency_id = T::SetterCurrencyId::get();
-		let default_swap_path = &[dinar_currency_id, setter_currency_id];
-		let swap_path = match maybe_path {
-			None => default_swap_path,
-			Some(path) => {
-				let path_length = path.len();
-				ensure!(
-					path_length >= 2 && path[0] == dinar_currency_id && path[path_length - 1] == setter_currency_id,
-					Error::<T>::InvalidSwapPath
-				);
-				path
-			}
-		};
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
+		
+		let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+		let swap_path: Vec<Vec<CurrencyId>> = 
+			if let Some(path) = AlternativeFeeSwapPath::<T>::get(&Self::account_id()) {
+				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
+			} else {
+				default_fee_swap_path_list
+			};
 
-		T::Currency::deposit(dinar_currency_id, &Self::account_id(), max_supply_amount)?;
-		T::Dex::swap_with_exact_target(
-			&Self::account_id(),
-			swap_path,
-			target_amount,
-			max_supply_amount,
-			price_impact_limit,
-		)
+		for path in swap_path {
+			match path.last() {
+				Some(setter_currency_id) if *setter_currency_id == native_currency_id => {
+					let dinar_currency_id = *path.first().expect("these's first guaranteed by match");
+					// calculate the supply limit according to oracle price and the slippage limit,
+					// if oracle price is not avalible, do not limit
+					let max_supply_limit = if let Some(target_price) =
+						T::PriceSource::get_relative_price(*setter_currency_id, dinar_currency_id)
+					{
+						Ratio::one()
+							.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+							.reciprocal()
+							.unwrap_or_else(Ratio::max_value)
+							.saturating_mul_int(target_price.saturating_mul_int(target_amount))
+					} else {
+						CurrencyBalanceOf::<T>::max_value()
+					};
+
+					T::Currency::deposit(
+						dinar_currency_id,
+						&Self::account_id(),
+						max_supply_limit.unique_saturated_into()
+					);
+
+					if T::Dex::swap_with_exact_target(
+						&Self::account_id(),
+						&path,
+						target_amount.unique_saturated_into(),
+						<T as Config>::Currency::free_balance(dinar_currency_id, &Self::account_id())
+							.min(max_supply_limit.unique_saturated_into()),
+					)
+					.is_ok()
+					{
+						// successfully swap, break iteration
+						break;
+					}
+				}
+				_ => {}
+			}
+		}
 	}
 
 	/// Swap exact amount of Setter to SetCurrency,
@@ -458,33 +538,58 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	fn swap_setter_to_exact_setcurrency(
 		currency_id: CurrencyId,
 		target_amount: Balance,
-		max_supply_amount: Balance,
-		maybe_path: Option<&[CurrencyId]>,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	) {
+		let native_currency_id = T::GetNativeCurrencyId::get();
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_swap_path = &[setter_currency_id, currency_id];
-		let swap_path = match maybe_path {
-			None => default_swap_path,
-			Some(path) => {
-				let path_length = path.len();
-				ensure!(
-					path_length >= 2 && path[0] == setter_currency_id && path[path_length - 1] == currency_id,
-					Error::<T>::InvalidSwapPath
-				);
-				path
-			}
-		};
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
+		let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+		let swap_path: Vec<Vec<CurrencyId>> = 
+			if let Some(path) = AlternativeFeeSwapPath::<T>::get(&Self::account_id()) {
+				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
+			} else {
+				default_fee_swap_path_list
+			};
 
-		T::Currency::deposit(setter_currency_id, &Self::account_id(), max_supply_amount)?;
-		T::Dex::swap_with_exact_target(
-			&Self::account_id(),
-			swap_path,
-			target_amount,
-			max_supply_amount,
-			price_impact_limit,
-		)
+		for path in swap_path {
+			match path.last() {
+				Some(currency_id) if *currency_id == native_currency_id => {
+					let setter_currency_id = *path.first().expect("these's first guaranteed by match");
+					// calculate the supply limit according to oracle price and the slippage limit,
+					// if oracle price is not avalible, do not limit
+					let max_supply_limit = if let Some(target_price) =
+						T::PriceSource::get_relative_price(*currency_id, setter_currency_id)
+					{
+						Ratio::one()
+							.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+							.reciprocal()
+							.unwrap_or_else(Ratio::max_value)
+							.saturating_mul_int(target_price.saturating_mul_int(target_amount))
+					} else {
+						CurrencyBalanceOf::<T>::max_value()
+					};
+
+					T::Currency::deposit(
+						setter_currency_id,
+						&Self::account_id(),
+						max_supply_limit.unique_saturated_into()
+					);
+
+					if T::Dex::swap_with_exact_target(
+						&Self::account_id(),
+						&path,
+						target_amount.unique_saturated_into(),
+						<T as Config>::Currency::free_balance(setter_currency_id, &Self::account_id())
+							.min(max_supply_limit.unique_saturated_into()),
+					)
+					.is_ok()
+					{
+						// successfully swap, break iteration
+						break;
+					}
+				}
+				_ => {}
+			}
+		}
 	}
 
 	/// Swap exact amount of Setter to Dinar,
@@ -494,34 +599,54 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	/// When Setter gets SerpUp
 	fn swap_exact_setter_to_dinar(
 		supply_amount: Balance,
-		min_target_amount: Balance,
-		maybe_path: Option<&[CurrencyId]>,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		let currency_id = T::SetterCurrencyId::get();
+	) {
+		let native_currency_id = T::GetNativeCurrencyId::get();
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		T::Currency::deposit(currency_id, &Self::account_id(), supply_amount)?;
+		let currency_id = T::SetterCurrencyId::get();
 
-		let default_swap_path = &[currency_id, dinar_currency_id];
-		let swap_path = match maybe_path {
-			None => default_swap_path,
-			Some(path) => {
-				let path_length = path.len();
-				ensure!(
-					path_length >= 2 && path[0] == currency_id && path[path_length - 1] == dinar_currency_id,
-					Error::<T>::InvalidSwapPath
-				);
-				path
+		let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+		let swap_path: Vec<Vec<CurrencyId>> = 
+			if let Some(path) = AlternativeFeeSwapPath::<T>::get(&Self::account_id()) {
+				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
+			} else {
+				default_fee_swap_path_list
+			};
+
+		for path in swap_path {
+			match path.last() {
+				Some(dinar_currency_id) if *dinar_currency_id == native_currency_id => {
+					let currency_id = *path.first().expect("these's first guaranteed by match");
+					// calculate the supply limit according to oracle price and the slippage limit,
+					// if oracle price is not avalible, do not limit
+					let min_target_limit = if let Some(target_price) =
+						T::PriceSource::get_relative_price(*dinar_currency_id, currency_id)
+					{
+						Ratio::one()
+							.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+							.reciprocal()
+							.unwrap_or_else(Ratio::max_value)
+							.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
+					} else {
+						CurrencyBalanceOf::<T>::max_value()
+					};
+
+					if T::Dex::swap_with_exact_supply(
+						&Self::account_id(),
+						&path,
+						supply_amount.unique_saturated_into(),
+						min_target_limit.unique_saturated_into(),
+					)
+					.is_ok()
+					{
+						// Burn Native Reserve asset (Dinar (DNAR))
+						T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), min_target_limit);
+						// successfully swap, break iteration.
+						break;
+					}
+				}
+				_ => {}
 			}
-		};
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-
-		T::Dex::swap_with_exact_supply(
-			&Self::account_id(),
-			swap_path,
-			supply_amount,
-			min_target_amount,
-			price_impact_limit,
-		)
+		}
 	}
 
 	/// Swap exact amount of Setter to Dinar,
@@ -532,32 +657,52 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	fn swap_exact_setcurrency_to_dinar(
 		currency_id: CurrencyId,
 		supply_amount: Balance,
-		min_target_amount: Balance,
-		maybe_path: Option<&[CurrencyId]>,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	) {
+		let native_currency_id = T::GetNativeCurrencyId::get();
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
-		T::Currency::deposit(currency_id, &Self::account_id(), supply_amount)?;
 
-		let default_swap_path = &[currency_id, dinar_currency_id];
-		let swap_path = match maybe_path {
-			None => default_swap_path,
-			Some(path) => {
-				let path_length = path.len();
-				ensure!(
-					path_length >= 2 && path[0] == currency_id && path[path_length - 1] == dinar_currency_id,
-					Error::<T>::InvalidSwapPath
-				);
-				path
+		let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+		let swap_path: Vec<Vec<CurrencyId>> = 
+			if let Some(path) = AlternativeFeeSwapPath::<T>::get(&Self::account_id()) {
+				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
+			} else {
+				default_fee_swap_path_list
+			};
+
+		for path in swap_path {
+			match path.last() {
+				Some(dinar_currency_id) if *dinar_currency_id == native_currency_id => {
+					let currency_id = *path.first().expect("these's first guaranteed by match");
+					// calculate the supply limit according to oracle price and the slippage limit,
+					// if oracle price is not avalible, do not limit
+					let min_target_limit = if let Some(target_price) =
+						T::PriceSource::get_relative_price(*dinar_currency_id, currency_id)
+					{
+						Ratio::one()
+							.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+							.reciprocal()
+							.unwrap_or_else(Ratio::max_value)
+							.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
+					} else {
+						CurrencyBalanceOf::<T>::max_value()
+					};
+
+					if T::Dex::swap_with_exact_supply(
+						&Self::account_id(),
+						&path,
+						supply_amount.unique_saturated_into(),
+						min_target_limit.unique_saturated_into(),
+					)
+					.is_ok()
+					{
+						// Burn Native Reserve asset (Dinar (DNAR))
+						T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), min_target_limit);
+						// successfully swap, break iteration
+						break;
+					}
+				}
+				_ => {}
 			}
-		};
-		let price_impact_limit = Some(T::MaxSlippageSwapWithDEX::get());
-
-		T::Dex::swap_with_exact_supply(
-			&Self::account_id(),
-			swap_path,
-			supply_amount,
-			min_target_amount,
-			price_impact_limit,
-		)
+		}
 	}
 }

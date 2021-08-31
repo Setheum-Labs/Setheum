@@ -81,7 +81,7 @@ fn deposit_setter_works() {
 }
 
 #[test]
-fn swap_dinar_to_exact_setter_works() {
+fn on_serpdown_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(Currencies::deposit(SETR, &ALICE, 10000));
 		assert_ok!(Currencies::deposit(DNAR, &ALICE, 10000));
@@ -95,51 +95,31 @@ fn swap_dinar_to_exact_setter_works() {
 		));
 		assert_ok!(Currencies::deposit(DNAR, &SerpTreasuryModule::account_id(), 10000));
 		assert_ok!(Currencies::deposit(SETR, &SerpTreasuryModule::account_id(), 10000));
-		assert_ok!(SerpTreasuryModule::swap_dinar_to_exact_setter(
-			10, 100, None
-		));
-		assert_eq!(Currencies::free_balance(SETR, &SerpTreasuryModule::account_id()), 10010);
+		assert_ok!(SerpTreasuryModule::on_serpdown(SETR, 10));
+		assert_eq!(Currencies::free_balance(SETR, &SerpTreasuryModule::account_id()), 10020);
+		assert_eq!(Currencies::free_balance(DNAR, &SerpTreasuryModule::account_id()), 10000);
 	});
 }
 
 #[test]
-fn swap_exact_setter_to_dinar_work() {
+fn on_serpup_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Currencies::deposit(SETR, &BOB, 10000));
-		assert_ok!(Currencies::deposit(DNAR, &BOB, 10000));
+		assert_ok!(Currencies::deposit(SETR, &ALICE, 10000));
+		assert_ok!(Currencies::deposit(DNAR, &ALICE, 10000));
 		assert_ok!(SetheumDEX::add_liquidity(
-			Origin::signed(BOB),
+			Origin::signed(ALICE),
 			SETR,
 			DNAR,
 			1000,
-			1000,
+			100,
 			0,
 		));
+		assert_ok!(Currencies::deposit(DNAR, &SerpTreasuryModule::account_id(), 10000));
 		assert_ok!(Currencies::deposit(SETR, &SerpTreasuryModule::account_id(), 10000));
-		assert_ok!(SerpTreasuryModule::swap_exact_setter_to_dinar(
-			100, 20, None
-		));
-		assert_eq!(Currencies::free_balance(SETR, &SerpTreasuryModule::account_id()), 10000);
-	});
-}
-
-#[test]
-fn swap_exact_setcurrency_to_dinar_work() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Currencies::deposit(SETUSD, &BOB, 10000));
-		assert_ok!(Currencies::deposit(DNAR, &BOB, 10000));
-		assert_ok!(SetheumDEX::add_liquidity(
-			Origin::signed(BOB),
-			SETUSD,
-			DNAR,
-			1000,
-			1000,
-			0,
-		));
-		assert_ok!(Currencies::deposit(SETUSD, &SerpTreasuryModule::account_id(), 10000));
-		assert_ok!(SerpTreasuryModule::swap_exact_setcurrency_to_dinar(
-			SETUSD, 100, 20, None
-		));
-		assert_eq!(Currencies::free_balance(SETUSD, &SerpTreasuryModule::account_id()), 10000);
+		assert_ok!(SerpTreasuryModule::on_serpup(SETR, 10));
+		assert_eq!(Currencies::free_balance(SETR, &SerpTreasuryModule::account_id()), 10004);
+		assert_eq!(Currencies::free_balance(SETR, &VAULT), 1000);
+		assert_eq!(Currencies::free_balance(SETR, &CHARITY_FUND), 1001);
+		assert_eq!(Currencies::free_balance(DNAR, &SerpTreasuryModule::account_id()), 10000);
 	});
 }
