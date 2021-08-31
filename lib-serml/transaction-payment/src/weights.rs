@@ -47,14 +47,14 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions needed for setheum_transaction_payment.
 pub trait WeightInfo {
-	fn set_default_fee_token() -> Weight;
+	fn set_alternative_fee_swap_path() -> Weight;
 	fn on_finalize() -> Weight;
 }
 
 /// Weights for setheum_transaction_payment using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
-	fn set_default_fee_token() -> Weight {
+	fn set_alternative_fee_swap_path() -> Weight {
 		(3_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
@@ -67,7 +67,7 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
-	fn set_default_fee_token() -> Weight {
+	fn set_alternative_fee_swap_path() -> Weight {
 		(3_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}
