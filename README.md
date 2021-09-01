@@ -106,6 +106,7 @@ Install required tools and install git hooks:
 
 ```bash
 ./scripts/init.sh submodule build-full
+git submodule update --init --recursive
 
 ```
 
