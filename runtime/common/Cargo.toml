@@ -23,8 +23,8 @@ pallet-collective = { git = "https://github.com/paritytech/substrate", branch = 
 pallet-membership = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 # orml dependencies
-orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
-orml-traits = { path = "../../lib-openrml/traits", default-features = false }
+orml-oracle = { path = "../../lib-open/oracle", default-features = false }
+orml-traits = { path = "../../lib-open/traits", default-features = false }
 
 # local dependencies
 setheum-evm = { path = "../../lib-serml/evm/evm", default-features = false }
@@ -43,8 +43,8 @@ pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "p
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 setheum-service = {  path = "../../node/service" }
-orml-tokens = { path = "../../lib-openrml/tokens" }
-orml-nft = { path = "../../lib-openrml/nft" }
+orml-tokens = { path = "../../lib-open/tokens" }
+orml-nft = { path = "../../lib-open/nft" }
 setheum-currencies = { path = "../../lib-serml/tokens/currencies" }
 setheum-nft = { path = "../../lib-serml/tokens/nft" }
 setheum-dex = { path = "../../lib-serml/dex/dex" }

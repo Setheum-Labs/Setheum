@@ -57,15 +57,15 @@ sp-transaction-pool = { default-features = false, git = "https://github.com/pari
 sp-version = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
-orml-authority = { path = "../../lib-openrml/authority", default-features = false }
-orml-benchmarking = { path = "../../lib-openrml/benchmarking", default-features = false, optional = true }
-orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
-orml-oracle-rpc-runtime-api = { path = "../../lib-openrml/oracle/rpc/runtime-api", default-features = false }
-orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }
-orml-traits = { path = "../../lib-openrml/traits", default-features = false }
-orml-vesting = { path = "../../lib-openrml/vesting", default-features = false }
-orml-rewards = { path = "../../lib-openrml/rewards", default-features = false }
-orml-nft= { path = "../../lib-openrml/nft", default-features = false }
+orml-authority = { path = "../../lib-open/authority", default-features = false }
+orml-benchmarking = { path = "../../lib-open/benchmarking", default-features = false, optional = true }
+orml-oracle = { path = "../../lib-open/oracle", default-features = false }
+orml-oracle-rpc-runtime-api = { path = "../../lib-open/oracle/rpc/runtime-api", default-features = false }
+orml-tokens = { path = "../../lib-open/tokens", default-features = false }
+orml-traits = { path = "../../lib-open/traits", default-features = false }
+orml-vesting = { path = "../../lib-open/vesting", default-features = false }
+orml-rewards = { path = "../../lib-open/rewards", default-features = false }
+orml-nft= { path = "../../lib-open/nft", default-features = false }
 
 # local dependencies
 # - airdrop

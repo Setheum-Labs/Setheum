@@ -16,7 +16,7 @@ frame-system = { default-features = false, git = "https://github.com/paritytech/
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
-orml-tokens = { path = "../../../lib-openrml/tokens", default-features = false }
+orml-tokens = { path = "../../../lib-open/tokens", default-features = false }
 
 # local dependencies
 setmint-engine = { package = "setmint-engine", path = "../setmint-engine", default-features = false }
@@ -28,8 +28,8 @@ primitives = { package = "setheum-primitives", path = "../../../primitives", def
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-orml-currencies = { path = "../../../lib-openrml/currencies" }
-orml-traits = { path = "../../../lib-openrml/traits" }
+orml-currencies = { path = "../../../lib-open/currencies" }
+orml-traits = { path = "../../../lib-open/traits" }
 setheum-dex = { path = "../../dex/dex" }
 serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
 

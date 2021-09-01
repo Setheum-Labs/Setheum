@@ -16,8 +16,8 @@ frame-support = { git = "https://github.com/paritytech/substrate", branch = "pol
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 # orml dependencies
-orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
-orml-utilities = { path = "../../../lib-openrml/utilities", default-features = false }
+orml-traits = { path = "../../../lib-open/traits", default-features = false }
+orml-utilities = { path = "../../../lib-open/utilities", default-features = false }
 
 # local dependencies
 serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury", default-features = false }
@@ -28,8 +28,8 @@ support = { package = "setheum-support", path = "../../support", default-feature
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-tokens = { package = "orml-tokens", path = "../../../lib-openrml/tokens" }
-orml-currencies = { path = "../../../lib-openrml/currencies" }
+tokens = { package = "orml-tokens", path = "../../../lib-open/tokens" }
+orml-currencies = { path = "../../../lib-open/currencies" }
 
 setheum-evm = { path = "../../evm/evm" }
 setheum-evm-bridge = { path = "../../evm/evm-bridge" }

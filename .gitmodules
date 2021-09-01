@@ -1,3 +1,6 @@
 [submodule "predeploy-contracts"]
 	path = predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts.git
+[submodule "lib-open"]
+	path = lib-open
+	url = https://github.com/Setheum-Foundation/open-runtime-module-library.git

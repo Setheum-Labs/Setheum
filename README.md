@@ -219,8 +219,8 @@ cargo update
 
 ### Update ORML
 ```bash
-cd lib-openrml && git checkout master && git pull
-git add lib-openrml
+cd lib-open && git checkout master && git pull
+git add lib-open
 cargo-update check-all
 ```
 

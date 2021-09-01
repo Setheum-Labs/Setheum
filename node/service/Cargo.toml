@@ -57,7 +57,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 sp-keystore = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
-orml-oracle-rpc = { path = "../../lib-openrml/oracle/rpc" }
+orml-oracle-rpc = { path = "../../lib-open/oracle/rpc" }
 
 # local dependencies
 setheum-renvm-bridge = { path = "../../lib-serml/bridges/renvm-bridge" }
