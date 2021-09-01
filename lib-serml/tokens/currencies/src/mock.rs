@@ -348,7 +348,7 @@ impl serp_treasury::Config for Runtime {
 	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
 	type CashDropVaultAccountId = CashDropVaultAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
-	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
+	type DefaultSwapPathList = DefaultFeeSwapPathList;
 	type Dex = SetheumDEX;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
