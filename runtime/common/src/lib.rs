@@ -51,9 +51,11 @@ pub use precompile::{
 	AllPrecompiles, DexPrecompile, MultiCurrencyPrecompile, NFTPrecompile, OraclePrecompile, ScheduleCallPrecompile,
 	StateRentPrecompile,
 };
-pub use primitives::currency::{
+pub use primitives::{
+	currency::{
 	TokenInfo, 
 	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
+	},
 	AccountId,
 };
 
