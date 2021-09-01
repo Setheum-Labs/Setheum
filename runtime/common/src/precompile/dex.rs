@@ -234,7 +234,6 @@ where
 					max_amount_a,
 					max_amount_b,
 					min_share_increment,
-					false,
 				)
 				.map_err(|e| {
 					let err_msg: &str = e.into();
@@ -264,7 +263,6 @@ where
 					remove_share,
 					min_withdrawn_a,
 					min_withdrawn_b,
-					false,
 				)
 				.map_err(|e| {
 					let err_msg: &str = e.into();
