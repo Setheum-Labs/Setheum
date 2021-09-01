@@ -4413,9 +4413,9 @@ dependencies = [
  "setheum-renvm-bridge",
  "setheum-support",
  "setheum-transaction-payment",
- "settmint-engine",
- "settmint-gateway",
- "settmint-manager",
+ "setmint-engine",
+ "setmint-gateway",
+ "setmint-manager",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8134,9 +8134,9 @@ dependencies = [
  "setheum-renvm-bridge",
  "setheum-support",
  "setheum-transaction-payment",
- "settmint-engine",
- "settmint-gateway",
- "settmint-manager",
+ "setmint-engine",
+ "setmint-gateway",
+ "setmint-manager",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8256,7 +8256,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "settmint-engine"
+name = "setmint-engine"
 version = "0.9.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8272,7 +8272,7 @@ dependencies = [
  "setheum-dex",
  "setheum-primitives",
  "setheum-support",
- "settmint-manager",
+ "setmint-manager",
  "sp-application-crypto 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8281,7 +8281,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "settmint-gateway"
+name = "setmint-gateway"
 version = "0.9.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8296,8 +8296,8 @@ dependencies = [
  "setheum-dex",
  "setheum-primitives",
  "setheum-support",
- "settmint-engine",
- "settmint-manager",
+ "setmint-engine",
+ "setmint-manager",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-io 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
  "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",
@@ -8305,7 +8305,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "settmint-manager"
+name = "setmint-manager"
 version = "0.9.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8)",

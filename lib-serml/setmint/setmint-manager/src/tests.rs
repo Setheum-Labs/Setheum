@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Unit tests for the settmint-manager module.
+//! Unit tests for the setmint-manager module.
 
 #![cfg(test)]
 

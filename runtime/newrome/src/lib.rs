@@ -958,9 +958,9 @@ parameter_types! {
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETR;
 }
-impl settmint_manager::Config for Runtime {
+impl setmint_manager::Config for Runtime {
 	type Event = Event;
-	type Convert = settmint_engine::StandardExchangeRateConvertor<Runtime>;
+	type Convert = setmint_engine::StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
@@ -1033,7 +1033,7 @@ parameter_types! {
 	pub MinimumStandardValue: Balance = dollar(SETR);
 }
 
-impl settmint_engine::Config for Runtime {
+impl setmint_engine::Config for Runtime {
 	type Event = Event;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
@@ -1045,11 +1045,11 @@ parameter_types! {
 	pub DepositPerAuthorization: Balance = deposit(1, 64);
 }
 
-impl settmint_gateway::Config for Runtime {
+impl setmint_gateway::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type DepositPerAuthorization = DepositPerAuthorization;
-	type WeightInfo = weights::settmint_gateway::WeightInfo<Runtime>;
+	type WeightInfo = weights::setmint_gateway::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -1547,9 +1547,9 @@ construct_runtime!(
 		Dex: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 40,
 
 		// Settmint
-		SettmintEngine: settmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 41,
-		SettmintGateway: settmint_gateway::{Pallet, Storage, Call, Event<T>} = 42,
-		SettmintManager: settmint_manager::{Pallet, Storage, Call, Event<T>} = 43,
+		SettmintEngine: setmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 41,
+		SettmintGateway: setmint_gateway::{Pallet, Storage, Call, Event<T>} = 42,
+		SettmintManager: setmint_manager::{Pallet, Storage, Call, Event<T>} = 43,
 
 		// Smart contracts
 		// Setheum EVM (SEVM)
@@ -1899,7 +1899,7 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, setheum_evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);
 			orml_add_benchmark!(params, batches, prices, benchmarking::prices);
-			orml_add_benchmark!(params, batches, settmint_gateway, benchmarking::settmint_gateway);
+			orml_add_benchmark!(params, batches, setmint_gateway, benchmarking::setmint_gateway);
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, transaction_payment, benchmarking::transaction_payment);
 			orml_add_benchmark!(params, batches, orml_vesting, benchmarking::vesting);

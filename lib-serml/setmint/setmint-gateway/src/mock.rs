@@ -16,29 +16,33 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the settmint-manager module.
+//! Mocks for the setmint_gateway module.
 
 #![cfg(test)]
 
 use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
-use frame_system::EnsureSignedBy;
+use frame_system::{offchain::SendTransactionTypes, EnsureSignedBy};
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
+use primitives::{Balance, Moment, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
-	testing::Header, FixedPointNumber,
+	testing::{Header, TestXt}, FixedPointNumber,
 	traits::{IdentityLookup, One as OneT},
 };
-use support::{Price, PriceProvider, Ratio};
-use sp_std::cell::RefCell;
+use support::{ExchangeRate, Price, PriceProvider, Ratio};
+
+mod setmint_gateway {
+	pub use super::super::*;
+}
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
-pub const CHARITY_FUND: AccountId = 3;
+pub const CAROL: AccountId = 3;
+pub const CHARITY_FUND: AccountId = 4;
 pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
 pub const ROOT: AccountId = 11;
@@ -53,10 +57,6 @@ pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
 pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
 
-
-mod settmint_manager {
-	pub use super::super::*;
-}
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -122,6 +122,7 @@ impl pallet_balances::Config for Runtime {
 	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
 }
+pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
@@ -134,11 +135,29 @@ impl orml_currencies::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
 }
-pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
+
+pub struct MockPriceSource;
+impl PriceProvider<CurrencyId> for MockPriceSource {
+	fn get_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
+		Some(Price::one())
+	}
+
+	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
+		None
+	}
+
+	fn lock_price(_currency_id: CurrencyId) {}
+
+	fn unlock_price(_currency_id: CurrencyId) {}
+}
+
+ord_parameter_types! {
+	pub const One: AccountId = 1;
+}
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
@@ -164,35 +183,6 @@ impl setheum_dex::Config for Runtime {
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
-}
-
-thread_local! {
-	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-}
-
-pub struct MockPriceSource;
-impl MockPriceSource {
-	pub fn _set_relative_price(price: Option<Price>) {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
-	}
-}
-impl PriceProvider<CurrencyId> for MockPriceSource {
-
-	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut())
-	}
-
-	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
-		None
-	}
-
-	fn lock_price(_currency_id: CurrencyId) {}
-
-	fn unlock_price(_currency_id: CurrencyId) {}
-}
-
-ord_parameter_types! {
-	pub const One: AccountId = 1;
 }
 
 parameter_types! {
@@ -278,12 +268,8 @@ impl serp_treasury::Config for Runtime {
 	type WeightInfo = ();
 }
 
-// mock convert
-pub struct MockConvert;
-impl Convert<(CurrencyId, Balance), Balance> for MockConvert {
-	fn convert(a: (CurrencyId, Balance)) -> Balance {
-		(a.1 / Balance::from(2u64)).into()
-	}
+parameter_types! {
+	pub const MinimumPeriod: Moment = 1000;
 }
 
 parameter_types! {
@@ -295,14 +281,26 @@ parameter_types! {
 		SETUSD,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETR;
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
-
+	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::one();
+	pub const MinimumStandardValue: Balance = 2;
 }
 
-impl Config for Runtime {
+impl setmint_engine::Config for Runtime {
 	type Event = Event;
-	type Convert = MockConvert;
-	type Currency = Currencies;
+	type StandardCurrencies = StandardCurrencyIds;
+	type DefaultStandardExchangeRate = DefaultStandardExchangeRate;
+	type MinimumStandardValue = MinimumStandardValue;
+	type ReserveCurrencyId = GetReserveCurrencyId;
+}
+
+parameter_types! {
+	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
+}
+
+impl setmint_manager::Config for Runtime {
+	type Event = Event;
+	type Convert = setmint_engine::StandardExchangeRateConvertor<Runtime>;
+	type Currency = Tokens;
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
@@ -312,6 +310,17 @@ impl Config for Runtime {
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
+parameter_types! {
+	pub const DepositPerAuthorization: Balance = 100;
+}
+
+impl Config for Runtime {
+	type Event = Event;
+	type Currency = PalletBalances;
+	type DepositPerAuthorization = DepositPerAuthorization;
+	type WeightInfo = ();
+}
+
 construct_runtime!(
 	pub enum Runtime where
 		Block = Block,
@@ -319,35 +328,46 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SettmintManagerModule: settmint_manager::{Pallet, Storage, Call, Event<T>},
+		SettmintGateway: setmint_gateway::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		SettmintManagerModule: setmint_manager::{Pallet, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
+		SettmintEngineModule: setmint_engine::{Pallet, Storage, Call, Event<T>},
 		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
+/// An extrinsic type used for tests.
+pub type Extrinsic = TestXt<Call, ()>;
+
+impl<LocalCall> SendTransactionTypes<LocalCall> for Runtime
+where
+	Call: From<LocalCall>,
+{
+	type OverarchingCall = Call;
+	type Extrinsic = Extrinsic;
+}
+
 pub struct ExtBuilder {
+	endowed_native: Vec<(AccountId, Balance)>,
 	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
+			endowed_native: vec![(ALICE, 1000)],
 			balances: vec![
+				(ALICE, DNAR, 1000),
+				(BOB, DNAR, 1000),
+				(ALICE, DRAM, 1000),
+				(BOB, DRAM, 1000),
 				(ALICE, SETR, 1000),
-				(ALICE, SETUSD, 1000),
-				(ALICE, SETEUR, 1000),
-				(ALICE, SETCHF, 1000),
 				(BOB, SETR, 1000),
+				(ALICE, SETUSD, 1000),
 				(BOB, SETUSD, 1000),
-				(BOB, SETEUR, 1000),
-				(BOB, SETCHF, 1000),
-				(SETRPAY, SETR, 1000),
-				(SETRPAY, SETUSD, 1000),
-				(SETRPAY, SETEUR, 1000),
-				(SETRPAY, SETCHF, 1000),
 			],
 		}
 	}
@@ -358,11 +378,19 @@ impl ExtBuilder {
 		let mut t = frame_system::GenesisConfig::default()
 			.build_storage::<Runtime>()
 			.unwrap();
+
+		pallet_balances::GenesisConfig::<Runtime> {
+			balances: self.endowed_native,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
 		orml_tokens::GenesisConfig::<Runtime> {
 			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
+
 		t.into()
 	}
 }

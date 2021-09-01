@@ -48,14 +48,14 @@ mod tests;
 pub use standard_exchange_rate_convertor::StandardExchangeRateConvertor;
 pub use module::*;
 
-pub type SettmintOf<T> = settmint::Pallet<T>;
+pub type SettmintOf<T> = setmint::Pallet<T>;
 
 #[frame_support::pallet]
 pub mod module {
 	use super::*;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + settmint::Config + SendTransactionTypes<Call<Self>> {
+	pub trait Config: frame_system::Config + setmint::Config + SendTransactionTypes<Call<Self>> {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// The list of valid standard currency types

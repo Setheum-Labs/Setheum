@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the settmint engine module.
+//! Mocks for the setmint engine module.
 
 #![cfg(test)]
 
@@ -55,7 +55,7 @@ pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
 pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
 
 
-mod settmint_engine {
+mod setmint_engine {
 	pub use super::super::*;
 }
 
@@ -141,7 +141,7 @@ parameter_types! {
 	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 }
 
-impl settmint::Config for Runtime {
+impl setmint::Config for Runtime {
 	type Event = Event;
 	type Convert = StandardExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
@@ -328,11 +328,11 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SettmintEngineModule: settmint_engine::{Pallet, Storage, Call, Event<T>},
+		SettmintEngineModule: setmint_engine::{Pallet, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		SettmintManagerModule: settmint::{Pallet, Storage, Call, Event<T>},
+		SettmintManagerModule: setmint::{Pallet, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}

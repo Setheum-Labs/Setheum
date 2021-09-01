@@ -36,7 +36,7 @@ use sp_std::prelude::*;
 const SEED: u32 = 0;
 
 runtime_benchmarks! {
-	{ Runtime, settmint_gateway }
+	{ Runtime, setmint_gateway }
 
 	_ {}
 

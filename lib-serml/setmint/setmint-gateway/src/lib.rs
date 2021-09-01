@@ -46,10 +46,10 @@ pub use weights::WeightInfo;
 pub mod module {
 	use super::*;
 
-	pub const RESERVE_ID: ReserveIdentifier = ReserveIdentifier::SettMint;
+	pub const RESERVE_ID: ReserveIdentifier = ReserveIdentifier::SetMint;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + settmint_engine::Config {
+	pub trait Config: frame_system::Config + setmint_engine::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// Currency for authorization reserved.
@@ -131,7 +131,7 @@ pub mod module {
 			standard_adjustment: Amount,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			<settmint_engine::Pallet<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
+			<setmint_engine::Pallet<T>>::adjust_position(&who, currency_id, reserve_adjustment, standard_adjustment)?;
 			Ok(().into())
 		}
 
@@ -151,7 +151,7 @@ pub mod module {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			Self::check_authorization(&from, &to, currency_id)?;
-			<settmint_manager::Pallet<T>>::transfer_position(&from, &to, currency_id)?;
+			<setmint_manager::Pallet<T>>::transfer_position(&from, &to, currency_id)?;
 			Ok(().into())
 		}
 
@@ -205,7 +205,7 @@ pub mod module {
 		}
 
 		/// Cancel all authorization of caller
-		#[pallet::weight(<T as Config>::WeightInfo::unauthorize_all(<T as settmint_engine::Config>::StandardCurrencies::get().len() as u32))]
+		#[pallet::weight(<T as Config>::WeightInfo::unauthorize_all(<T as setmint_engine::Config>::StandardCurrencies::get().len() as u32))]
 		#[transactional]
 		pub fn unauthorize_all(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;

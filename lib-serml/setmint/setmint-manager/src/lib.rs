@@ -41,7 +41,7 @@ mod tests;
 
 pub use module::*;
 
-/// A settmint standard position.
+/// A setmint standard position.
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default, MaxEncodedLen)]
 pub struct Position {
 	/// The amount of reserve.
@@ -63,7 +63,7 @@ pub mod module {
 		type Convert: Convert<(CurrencyId, Balance), Balance>;
 
 		/// Currency type for deposit/withdraw reserve assets 
-		/// to/from settmint-manager module
+		/// to/from setmint-manager module
 		type Currency: MultiCurrencyExtended<
 			Self::AccountId,
 			CurrencyId = CurrencyId,
