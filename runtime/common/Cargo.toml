@@ -19,6 +19,8 @@ sp-runtime = { default-features = false, git = "https://github.com/paritytech/su
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+pallet-membership = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 # orml dependencies
 orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
@@ -29,6 +31,7 @@ setheum-evm = { path = "../../lib-serml/evm/evm", default-features = false }
 setheum-support = { path = "../../lib-serml/support", default-features = false }
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+primitives-proc-macro = { path = "../../primitives/proc-macro" }
 
 [dev-dependencies]
 serde_json = "1.0.41"
@@ -59,6 +62,8 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-scheduler/std",
+	"pallet-collective/std",
+	"pallet-membership/std",
 	"orml-oracle/std",
 	"orml-traits/std",
 	"setheum-support/std",

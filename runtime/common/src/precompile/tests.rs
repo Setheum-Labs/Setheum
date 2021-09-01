@@ -16,12 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#![allow(clippy::erasing_op)]
 #![cfg(test)]
 use super::*;
 use crate::precompile::{
 	mock::{
-		dnar_evm_address, alice, alice_evm_addr, usdj_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
-		get_task_id, lp_dnar_usdj_evm_address, new_test_ext, renbtc_evm_address, run_to_block, Balances, DexModule,
+		dnar_evm_address, alice, alice_evm_addr, setusd_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
+		get_task_id, lp_dnar_setusd_evm_address, new_test_ext, renbtc_evm_address, run_to_block, Balances, DexModule,
 		DexPrecompile, Event as TestEvent, MultiCurrencyPrecompile, Oracle, OraclePrecompile, Origin, Price,
 		ScheduleCallPrecompile, System, Test, ALICE, SETUSD, SETR, INITIAL_BALANCE, RENBTC,
 	},
@@ -145,7 +146,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_usdj_evm_address();
+		context.caller = lp_dnar_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -168,7 +169,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_usdj_evm_address();
+		context.caller = lp_dnar_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -192,7 +193,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_usdj_evm_address();
+		context.caller = lp_dnar_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -216,7 +217,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_usdj_evm_address();
+		context.caller = lp_dnar_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let expected_output = [0u8; 32];
@@ -241,7 +242,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_usdj_evm_address();
+		context.caller = lp_dnar_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let expected_output = [0u8; 32];
@@ -272,7 +273,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(Balances::free_balance(bob()), to_balance + 1);
 
 		// DexShare
-		context.caller = lp_dnar_usdj_evm_address();
+		context.caller = lp_dnar_setusd_evm_address();
 		assert_noop!(
 			MultiCurrencyPrecompile::execute(&input, None, &context),
 			ExitError::Other("BalanceTooLow".into())
@@ -296,7 +297,7 @@ fn oracle_precompile_should_work() {
 		// action
 		input[1 * 32..4 + 1 * 32].copy_from_slice(&Into::<u32>::into(oracle::Action::GetPrice).to_be_bytes());
 		// RENBTC
-		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 
 		// no price yet
 		let (reason, output, used_gas) = OraclePrecompile::execute(&input, None, &context).unwrap();
@@ -618,9 +619,9 @@ fn dex_precompile_get_liquidity_should_work() {
 		// action
 		input[1 * 32..4 + 1 * 32].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityPool).to_be_bytes());
 		// RENBTC
-		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// SETUSD
-		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 
 		let mut expected_output = [0u8; 64];
 		U256::from(1_000).to_big_endian(&mut expected_output[..32]);
@@ -663,9 +664,9 @@ fn dex_precompile_get_liquidity_token_address_should_work() {
 		input[1 * 32..4 + 1 * 32]
 			.copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityTokenAddress).to_be_bytes());
 		// RENBTC
-		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// SETUSD
-		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		let address = H160::from_str("0x0000000000000000000000010000000100000004").unwrap();
@@ -722,9 +723,9 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// RENBTC
-		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 		// SETUSD
-		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(989).to_big_endian(&mut expected_output[..32]);
@@ -771,9 +772,9 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// RENBTC
-		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 		// SETUSD
-		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(1).to_big_endian(&mut expected_output[..32]);
@@ -824,9 +825,9 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 		// RENBTC
-		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
+		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 		// SETUSD
-		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
+		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(989).to_big_endian(&mut expected_output[..32]);
@@ -877,9 +878,9 @@ fn dex_precompile_swap_with_exact_target_should_work() {
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 		// RENBTC
-		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
+		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 		// SETUSD
-		U256::from_big_endian(&usdj_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
+		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(1).to_big_endian(&mut expected_output[..32]);

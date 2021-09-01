@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use super::utils::{lookup_of_account, set_usdj_balance};
+use super::utils::{lookup_of_account, set_setusd_balance};
 use crate::{dollar, AccountId, Balance, Runtime, Tokens, SETUSD};
 
 use sp_std::prelude::*;
@@ -40,7 +40,7 @@ runtime_benchmarks! {
 		let amount: Balance = d * dollar(SETUSD);
 
 		let from = account("from", 0, SEED);
-		set_usdj_balance(&from, amount);
+		set_setusd_balance(&from, amount);
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to.clone());
@@ -53,7 +53,7 @@ runtime_benchmarks! {
 		let amount: Balance = d * dollar(SETUSD);
 
 		let from = account("from", 0, SEED);
-		set_usdj_balance(&from, amount);
+		set_setusd_balance(&from, amount);
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to);

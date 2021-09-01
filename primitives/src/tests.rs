@@ -27,21 +27,21 @@ use std::{
 #[test]
 fn trading_pair_works() {
 	let dnar = CurrencyId::Token(TokenSymbol::DNAR);
-	let usdj = CurrencyId::Token(TokenSymbol::SETUSD);
+	let setusd = CurrencyId::Token(TokenSymbol::SETUSD);
 	let erc20 = CurrencyId::Erc20(EvmAddress::from_str("0x0000000000000000000000000000000000000000").unwrap());
-	let dnar_usdj_lp = CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETUSD));
+	let dnar_setusd_lp = CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETUSD));
 	let erc20_dnar_lp = CurrencyId::DexShare(
 		DexShare::Token(TokenSymbol::DNAR),
 		DexShare::Erc20(EvmAddress::from_str("0x0000000000000000000000000000000000000000").unwrap()),
 	);
 
 	assert_eq!(
-		TradingPair::from_currency_ids(usdj, dnar).unwrap(),
-		TradingPair(dnar, usdj)
+		TradingPair::from_currency_ids(setusd, dnar).unwrap(),
+		TradingPair(dnar, setusd)
 	);
 	assert_eq!(
-		TradingPair::from_currency_ids(dnar, usdj).unwrap(),
-		TradingPair(dnar, usdj)
+		TradingPair::from_currency_ids(dnar, setusd).unwrap(),
+		TradingPair(dnar, setusd)
 	);
 	assert_eq!(
 		TradingPair::from_currency_ids(erc20, dnar).unwrap(),
@@ -50,10 +50,10 @@ fn trading_pair_works() {
 	assert_eq!(TradingPair::from_currency_ids(dnar, dnar), None);
 
 	assert_eq!(
-		TradingPair::from_currency_ids(usdj, dnar)
+		TradingPair::from_currency_ids(setusd, dnar)
 			.unwrap()
 			.dex_share_currency_id(),
-		dnar_usdj_lp
+		dnar_setusd_lp
 	);
 	assert_eq!(
 		TradingPair::from_currency_ids(dnar, erc20)

@@ -29,7 +29,7 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureSignedBy};
 use setheum_support::{
-	mocks::MockAddressMapping, AddressMapping as AddressMappingT, ExchangeRate, ExchangeRateProvider,
+	mocks::MockAddressMapping, AddressMapping as AddressMappingT, ExchangeRate, ExchangeRateProvider, SerpTreasury,
 };
 use orml_traits::{parameter_type_with_key, MultiReservableCurrency};
 pub use primitives::{
@@ -149,8 +149,8 @@ impl pallet_balances::Config for Test {
 }
 
 // Currencies constants - CurrencyId/TokenSymbol
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
@@ -163,26 +163,128 @@ pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const LP_DNAR_SETUSD: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETUSD));
 
-// Currencies constants - FiatCurrencyIds (CurrencyId/TokenSymbol)
-pub const CHF: CurrencyId = CurrencyId::Token(TokenSymbol::CHF);
-pub const EUR: CurrencyId = CurrencyId::Token(TokenSymbol::EUR);
-pub const GBP: CurrencyId = CurrencyId::Token(TokenSymbol::GBP);
-pub const SAR: CurrencyId = CurrencyId::Token(TokenSymbol::SAR);
-pub const USD: CurrencyId = CurrencyId::Token(TokenSymbol::USD);
-pub const KWD: CurrencyId = CurrencyId::Token(TokenSymbol::KWD);
-pub const JOD: CurrencyId = CurrencyId::Token(TokenSymbol::JOD);
-pub const BHD: CurrencyId = CurrencyId::Token(TokenSymbol::BHD);
-pub const KYD: CurrencyId = CurrencyId::Token(TokenSymbol::KYD);
-pub const OMR: CurrencyId = CurrencyId::Token(TokenSymbol::OMR);
-pub const GIP: CurrencyId = CurrencyId::Token(TokenSymbol::GIP);
-
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+}
+
+pub struct MockSerpTreasury;
+impl SerpTreasury<AccountId> for MockSerpTreasury {
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	/// SerpUp ratio for SettPay Cashdrops
+	fn get_cashdrop_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// Reward SETR cashdrop to vault
+	fn setter_cashdrop_to_vault() -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// Reward SETUSD cashdrop to vault
+	fn setusd_cashdrop_to_vault() -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serpup(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// buy back and burn surplus(stable currencies) with swap by DEX.
+	fn on_serpdown(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// get the minimum supply of a setcurrency - by key
+	fn get_minimum_supply(
+		_currency_id: CurrencyId
+	) -> Balance {
+		unimplemented!()
+	}
+
+	/// issue standard to `who`
+	fn issue_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn standard(stable currency) of `who`
+	fn burn_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue setter of amount setter to `who`
+	fn issue_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn setter of `who`
+	fn burn_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
+	fn deposit_setter(
+		_from: &AccountId,
+		_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
+	fn claim_cashdrop(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_transfer_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
 }
 
 // TODO: Update!
 impl setheum_currencies::Config for Test {
 	type Event = Event;
+    type SerpTreasury = MockSerpTreasury;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
@@ -205,6 +307,7 @@ parameter_types! {
 	pub const CreateTokenDeposit: Balance = 100;
 	pub const DataDepositPerByte: Balance = 10;
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
+	pub MaxAttributesBytes: u32 = 2048;
 }
 impl setheum_nft::Config for Test {
 	type Event = Event;
@@ -213,6 +316,7 @@ impl setheum_nft::Config for Test {
 	type CreateTokenDeposit = CreateTokenDeposit;
 	type DataDepositPerByte = DataDepositPerByte;
 	type PalletId = NftPalletId;
+	type MaxAttributesBytes = MaxAttributesBytes;
 	type WeightInfo = ();
 }
 
@@ -233,14 +337,13 @@ impl orml_nft::Config for Test {
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
 	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![CurrencyId::Token(TokenSymbol::SETR)];
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![CurrencyId::Token(TokenSymbol::SETUSD), CurrencyId::Token(TokenSymbol::DNAR)]];
+	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
 }
 
 impl setheum_transaction_payment::Config for Test {
-	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
+	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
 	type Currency = Balances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = ();
@@ -248,7 +351,9 @@ impl setheum_transaction_payment::Config for Test {
 	type WeightToFee = IdentityFee<Balance>;
 	type FeeMultiplierUpdate = ();
 	type DEX = ();
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
+	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type TradingPathLimit = TradingPathLimit;
+	type PriceSource = serp_prices::RealTimePriceProvider<Test>;
 	type WeightInfo = ();
 }
 pub type ChargeTransactionPayment = setheum_transaction_payment::ChargeTransactionPayment<Test>;
@@ -419,36 +524,9 @@ impl setheum_evm::Config for Test {
 	type WeightInfo = ();
 }
 
-pub struct MockLiquidStakingExchangeProvider;
-impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
-	fn get_exchange_rate() -> ExchangeRate {
-		ExchangeRate::saturating_from_rational(1, 2)
-	}
-}
-
 parameter_types! {
-	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // SetUSD currency ticker is SETUSD.
-	pub const GetFiatCHFCurrencyId: CurrencyId = CHF; // The CHF Fiat currency denomination.
-	pub const GetFiatEURCurrencyId: CurrencyId = EUR; // The EUR Fiat currency denomination.
-	pub const GetFiatGBPCurrencyId: CurrencyId = GBP; // The GBP Fiat currency denomination.
-	pub const GetFiatSARCurrencyId: CurrencyId = SAR; // The SAR Fiat currency denomination.
-	pub const GetFiatUSDCurrencyId: CurrencyId = USD; // The USD Fiat currency denomination.
 	pub FiatUsdFixedPrice: Price = Price::saturating_from_rational(1, 1);
-	
-	pub const GetSetterPegOneCurrencyId: CurrencyId = GBP; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegTwoCurrencyId: CurrencyId = EUR; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegThreeCurrencyId: CurrencyId = KWD; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegFourCurrencyId: CurrencyId = JOD; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegFiveCurrencyId: CurrencyId = BHD; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegSixCurrencyId: CurrencyId = KYD; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegSevenCurrencyId: CurrencyId = OMR; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegEightCurrencyId: CurrencyId = CHF; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegNineCurrencyId: CurrencyId = GIP; // Fiat pegs of the Setter (SETR).
-	pub const GetSetterPegTenCurrencyId: CurrencyId = USD; // Fiat pegs of the Setter (SETR).
-	
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETCHF, SETEUR, SETGBP, SETSAR, SETUSD];
-	pub FiatCurrencyIds: Vec<CurrencyId> = vec![CHF, EUR, GBP, QAR, SAR, USD, JOD, BHD, KYD, OMR, GIP];
 }
 
 ord_parameter_types! {
@@ -458,26 +536,9 @@ ord_parameter_types! {
 impl setheum_prices::Config for Test {
 	type Event = Event;
 	type Source = Oracle;
-	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type GetFiatCHFCurrencyId = GetFiatCHFCurrencyId;
-	type GetFiatEURCurrencyId = GetFiatEURCurrencyId;
-	type GetFiatGBPCurrencyId = GetFiatGBPCurrencyId;
-	type GetFiatSARCurrencyId = GetFiatSARCurrencyId;
-	type GetFiatUSDCurrencyId = GetFiatUSDCurrencyId;
 	type FiatUsdFixedPrice = FiatUsdFixedPrice;
-	type GetSetterPegOneCurrencyId = GetSetterPegOneCurrencyId;
-	type GetSetterPegTwoCurrencyId = GetSetterPegTwoCurrencyId;
-	type GetSetterPegThreeCurrencyId = GetSetterPegThreeCurrencyId;
-	type GetSetterPegFourCurrencyId = GetSetterPegFourCurrencyId;
-	type GetSetterPegFiveCurrencyId = GetSetterPegFiveCurrencyId;
-	type GetSetterPegSixCurrencyId = GetSetterPegSixCurrencyId;
-	type GetSetterPegSevenCurrencyId = GetSetterPegSevenCurrencyId;
-	type GetSetterPegEightCurrencyId = GetSetterPegEightCurrencyId;
-	type GetSetterPegNineCurrencyId = GetSetterPegNineCurrencyId;
-	type GetSetterPegTenCurrencyId = GetSetterPegTenCurrencyId;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type LiquidStakingExchangeRateProvider = MockLiquidStakingExchangeProvider;
 	type DEX = DexModule;
 	type Currency = Currencies;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
@@ -508,7 +569,7 @@ pub fn dnar_evm_address() -> EvmAddress {
 	EvmAddress::try_from(DNAR).unwrap()
 }
 
-pub fn usdj_evm_address() -> EvmAddress {
+pub fn setusd_evm_address() -> EvmAddress {
 	EvmAddress::try_from(SETUSD).unwrap()
 }
 
@@ -516,7 +577,7 @@ pub fn renbtc_evm_address() -> EvmAddress {
 	EvmAddress::try_from(RENBTC).unwrap()
 }
 
-pub fn lp_dnar_usdj_evm_address() -> EvmAddress {
+pub fn lp_dnar_setusd_evm_address() -> EvmAddress {
 	EvmAddress::try_from(LP_DNAR_SETUSD).unwrap()
 }
 

@@ -20,19 +20,23 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use codec::{Decode, Encode};
 use frame_support::{
 	parameter_types,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS, WEIGHT_PER_SECOND},
 		DispatchClass, Weight,
 	},
 };
-use frame_system::limits;
+use frame_system::{limits, EnsureOneOf, EnsureRoot};
 pub use setheum_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{
 	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
-use sp_core::H160;
+use sp_core::{
+	u32_trait::{_1, _2, _3, _4},
+	H160,
+};
 use sp_runtime::{
 	// TODO: move after https://github.com/paritytech/substrate/pull/9209
 	offchain::storage_lock::BlockNumberProvider,
@@ -50,14 +54,17 @@ pub use precompile::{
 pub use primitives::currency::{
 	TokenInfo, 
 	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
+	AccountId,
 };
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
 
 // Priority of unsigned transactions
 parameter_types! {
-	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
-	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+	// Operational is 3/4 of TransactionPriority::max_value().
+	// Ensure Inherent -> Operational tx -> Unsigned tx -> Signed normal tx
+	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;		// 50%
+	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 4;	// 25%
 }
 
 /// Check if the given `address` is a system contract.

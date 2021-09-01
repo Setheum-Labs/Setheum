@@ -246,7 +246,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// Reward SETUSD cashdrop to vault
-	fn usdj_cashdrop_to_vault() -> DispatchResult {
+	fn setusd_cashdrop_to_vault() -> DispatchResult {
 		unimplemented!()
 	}
 
