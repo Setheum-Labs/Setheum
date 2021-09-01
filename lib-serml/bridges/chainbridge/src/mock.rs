@@ -33,7 +33,7 @@ pub type AccountId = u128;
 
 pub const ALICE: AccountId = 1;
 
-mod ecosystem_chainsafe {
+mod setheum_chainbridge {
 	pub use super::super::*;
 }
 
@@ -131,7 +131,7 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>},
-		ChainSafeTransfer: ecosystem_chainsafe::{Pallet, Call, Storage, Event<T>},
+		ChainSafeTransfer: setheum_chainbridge::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
