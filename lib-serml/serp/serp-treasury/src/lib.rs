@@ -112,7 +112,7 @@ pub mod module {
 
 		/// Default fee swap path list
 		#[pallet::constant]
-		type DefaultFeeSwapPathList: Get<Vec<Vec<CurrencyId>>>;
+		type DefaultSwapPathList: Get<Vec<Vec<CurrencyId>>>;
 
 		/// When swap with DEX, the acceptable max slippage for the price from oracle.
 		#[pallet::constant]
@@ -215,7 +215,7 @@ pub mod module {
 				if Self::setter_cashdrop_to_vault().is_ok() {
 					count += 1;
 				};
-				if Self::usdj_cashdrop_to_vault().is_ok() {
+				if Self::setusd_cashdrop_to_vault().is_ok() {
 					count += 1;
 				};
 
@@ -331,9 +331,9 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::SetterCurrencyId::get()));
 		Ok(())
 	}
-	// TODO: Update to 1% per day not 50% per day. and rename `usdj` to `setusd`
+	// TODO: Update to 1% per day not 50% per day. and rename `setusd` to `setusd`
 	/// SerpUp ratio for SettPay Cashdrops
-	fn usdj_cashdrop_to_vault() -> DispatchResult {
+	fn setusd_cashdrop_to_vault() -> DispatchResult {
 		let free_balance = T::Currency::free_balance(T::GetSetUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
 
 		// Send 50% of funds to the CashDropVault
@@ -477,7 +477,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
 		let setter_currency_id = T::SetterCurrencyId::get();
 		
-		let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
 		let swap_path: Vec<Vec<CurrencyId>> = 
 			if let Some(path) = AlternativeFeeSwapPath::<T>::get(&Self::account_id()) {
 				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
@@ -539,7 +539,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let native_currency_id = T::GetNativeCurrencyId::get();
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
 		let swap_path: Vec<Vec<CurrencyId>> = 
 			if let Some(path) = AlternativeFeeSwapPath::<T>::get(&Self::account_id()) {
 				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
@@ -601,7 +601,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
 		let currency_id = T::SetterCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
 		let swap_path: Vec<Vec<CurrencyId>> = 
 			if let Some(path) = AlternativeFeeSwapPath::<T>::get(&Self::account_id()) {
 				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
@@ -658,7 +658,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let native_currency_id = T::GetNativeCurrencyId::get();
 		let dinar_currency_id = T::GetNativeCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
 		let swap_path: Vec<Vec<CurrencyId>> = 
 			if let Some(path) = AlternativeFeeSwapPath::<T>::get(&Self::account_id()) {
 				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()

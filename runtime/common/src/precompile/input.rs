@@ -197,7 +197,7 @@ mod tests {
 	use sp_core::H160;
 	use sp_runtime::RuntimeDebug;
 
-	use setheum_support::mocks::{MockAddressMapping, MockCurrencyIdMapping};
+	use module_support::mocks::{MockAddressMapping, MockCurrencyIdMapping};
 	use primitives::{AccountId, CurrencyId, TokenSymbol};
 
 	#[derive(RuntimeDebug, PartialEq, Eq, TryFromPrimitive)]
@@ -274,7 +274,7 @@ mod tests {
 
 		raw_input[67] = 1;
 		let input = TestInput::new(&raw_input[..]);
-		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SETUSD));
+		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SETR));
 	}
 
 	#[test]

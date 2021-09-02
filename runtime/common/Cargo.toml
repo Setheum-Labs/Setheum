@@ -19,16 +19,19 @@ sp-runtime = { default-features = false, git = "https://github.com/paritytech/su
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+pallet-membership = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 # orml dependencies
-orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
-orml-traits = { path = "../../lib-openrml/traits", default-features = false }
+orml-oracle = { path = "../../lib-open/oracle", default-features = false }
+orml-traits = { path = "../../lib-open/traits", default-features = false }
 
 # local dependencies
 setheum-evm = { path = "../../lib-serml/evm/evm", default-features = false }
 setheum-support = { path = "../../lib-serml/support", default-features = false }
 setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+primitives-proc-macro = { path = "../../primitives/proc-macro" }
 
 [dev-dependencies]
 serde_json = "1.0.41"
@@ -40,8 +43,8 @@ pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "p
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 setheum-service = {  path = "../../node/service" }
-orml-tokens = { path = "../../lib-openrml/tokens" }
-orml-nft = { path = "../../lib-openrml/nft" }
+orml-tokens = { path = "../../lib-open/tokens" }
+orml-nft = { path = "../../lib-open/nft" }
 setheum-currencies = { path = "../../lib-serml/tokens/currencies" }
 setheum-nft = { path = "../../lib-serml/tokens/nft" }
 setheum-dex = { path = "../../lib-serml/dex/dex" }
@@ -59,6 +62,8 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-scheduler/std",
+	"pallet-collective/std",
+	"pallet-membership/std",
 	"orml-oracle/std",
 	"orml-traits/std",
 	"setheum-support/std",

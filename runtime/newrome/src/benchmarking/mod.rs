@@ -20,7 +20,7 @@
 
 // module benchmarking (SERML)
 pub mod dex;
-pub mod settmint_gateway;
+pub mod setmint_gateway;
 pub mod prices;
 pub mod transaction_payment;
 

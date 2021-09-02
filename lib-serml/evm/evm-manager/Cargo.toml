@@ -21,10 +21,10 @@ setheum-support = { package = "setheum-support", path = "../../support", default
 [dev-dependencies]
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-orml-currencies = { path = "../../../lib-openrml/currencies" }
-orml-tokens = { path = "../../../lib-openrml/tokens" }
-orml-traits = { path = "../../../lib-openrml/traits" }
-orml-utilities = { path = "../../../lib-openrml/utilities" }
+orml-currencies = { path = "../../../lib-open/currencies" }
+orml-tokens = { path = "../../../lib-open/tokens" }
+orml-traits = { path = "../../../lib-open/traits" }
+orml-utilities = { path = "../../../lib-open/utilities" }
 setheum-evm = { path = "../evm" }
 setheum-evm-bridge = { path = "../evm-bridge" }
 

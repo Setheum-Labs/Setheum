@@ -191,7 +191,7 @@ pub trait SerpTreasury<AccountId> {
 	fn setter_cashdrop_to_vault() -> DispatchResult;
 
 	/// Reward SETUSD cashdrop to vault
-	fn usdj_cashdrop_to_vault() -> DispatchResult;
+	fn setusd_cashdrop_to_vault() -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;

@@ -22,7 +22,8 @@
 pub mod time {
 	use primitives::{BlockNumber, Moment};
 
-	pub const SECS_PER_BLOCK: Moment = 4;
+	// 3 seconds average blocktime
+	pub const SECS_PER_BLOCK: Moment = 3;
 	pub const MILLISECS_PER_BLOCK: Moment = SECS_PER_BLOCK * 1000;
 
 	// These time units are defined in number of blocks.
@@ -50,7 +51,7 @@ pub mod fee {
 		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	};
 	use primitives::Balance;
-	use runtime_common::{cent, DNAR};
+	use runtime_common::{cent, DRAM};
 	use smallvec::smallvec;
 	use sp_runtime::Perbill;
 
@@ -75,7 +76,7 @@ pub mod fee {
 		fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
 			// in Setheum, extrinsic base weight (smallest non-zero weight) is mapped to 1/10
 			// CENT:
-			let p = cent(DNAR) / 10; // 10_000_000_000;
+			let p = cent(DRAM) / 10; // 10_000_000_000;
 			let q = Balance::from(ExtrinsicBaseWeight::get()); // 125_000_000
 			smallvec![WeightToFeeCoefficient {
 				degree: 1,

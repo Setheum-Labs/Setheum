@@ -1,6 +1,6 @@
-// This file is part of Setheum.
+// This file is part of DRAMla.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 DRAMla Foundation.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the chainbridge module.
+//! Mocks for the chainsafe module.
 
 #![cfg(test)]
 
@@ -92,8 +92,8 @@ ord_parameter_types! {
 parameter_types! {
 	pub const LocalChainId: chainbridge::ChainId = 2;
 	pub const ProposalLifetime: BlockNumber = 10;
-	pub DNARResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"set");
-	pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+	pub DRAMResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"DRAM");
+	pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 	pub WETHResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(0, b"weth");
 	pub WETH: CurrencyId = CurrencyId::ChainSafe(WETHResourceId::get());
 }
@@ -113,7 +113,7 @@ ord_parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type NativeCurrencyId = DNAR;
+	type NativeCurrencyId = DRAM;
 	type RegistorOrigin = EnsureSignedBy<RegistorOrigin, AccountId>;
 	type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
 	type WeightInfo = ();
@@ -131,7 +131,7 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>},
-		SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>},
+		ChainSafeTransfer: setheum_chainbridge::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
@@ -142,7 +142,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			balances: vec![(ALICE, DNAR::get(), 1_000u128)],
+			balances: vec![(ALICE, DRAM::get(), 1_000u128)],
 		}
 	}
 }

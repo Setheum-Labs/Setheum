@@ -25,7 +25,7 @@ inspect = { package = "setheum-inspect", path = "../../inspect" }
 service = { package = "setheum-service", path = "../service", default-features = false, optional = true }
 
 [build-dependencies]
-orml-build-script-utils = { path = "../../lib-openrml/build-script-utils"}
+orml-build-script-utils = { path = "../../lib-open/build-script-utils"}
 
 [features]
 default = [ "wasmtime", "cli" ]

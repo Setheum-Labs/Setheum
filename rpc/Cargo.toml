@@ -30,7 +30,7 @@ substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate", 
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
-orml-oracle-rpc = { path = "../lib-openrml/oracle/rpc" }
+orml-oracle-rpc = { path = "../lib-open/oracle/rpc" }
 
 # local dependencies
 evm-rpc = { path = "../lib-serml/evm/evm/rpc" }

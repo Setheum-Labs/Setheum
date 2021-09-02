@@ -165,7 +165,7 @@ impl Decode for TradingPair {
 pub enum ReserveIdentifier {
 	EvmStorageDeposit,
 	EvmDeveloperDeposit,
-	SettMint,
+	SetMint,
 	Nft,
 	TransactionPayment,
 	

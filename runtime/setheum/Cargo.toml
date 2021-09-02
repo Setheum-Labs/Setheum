@@ -57,15 +57,15 @@ sp-transaction-pool = { default-features = false, git = "https://github.com/pari
 sp-version = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
 
 # orml dependencies
-orml-authority = { path = "../../lib-openrml/authority", default-features = false }
-orml-benchmarking = { path = "../../lib-openrml/benchmarking", default-features = false, optional = true }
-orml-oracle = { path = "../../lib-openrml/oracle", default-features = false }
-orml-oracle-rpc-runtime-api = { path = "../../lib-openrml/oracle/rpc/runtime-api", default-features = false }
-orml-tokens = { path = "../../lib-openrml/tokens", default-features = false }
-orml-traits = { path = "../../lib-openrml/traits", default-features = false }
-orml-vesting = { path = "../../lib-openrml/vesting", default-features = false }
-orml-rewards = { path = "../../lib-openrml/rewards", default-features = false }
-orml-nft= { path = "../../lib-openrml/nft", default-features = false }
+orml-authority = { path = "../../lib-open/authority", default-features = false }
+orml-benchmarking = { path = "../../lib-open/benchmarking", default-features = false, optional = true }
+orml-oracle = { path = "../../lib-open/oracle", default-features = false }
+orml-oracle-rpc-runtime-api = { path = "../../lib-open/oracle/rpc/runtime-api", default-features = false }
+orml-tokens = { path = "../../lib-open/tokens", default-features = false }
+orml-traits = { path = "../../lib-open/traits", default-features = false }
+orml-vesting = { path = "../../lib-open/vesting", default-features = false }
+orml-rewards = { path = "../../lib-open/rewards", default-features = false }
+orml-nft= { path = "../../lib-open/nft", default-features = false }
 
 # local dependencies
 # - airdrop
@@ -84,12 +84,11 @@ setheum-evm-manager = { path = "../../lib-serml/evm/evm-manager", default-featur
 setheum-evm-rpc-runtime-api = { path = "../../lib-serml/evm/evm/rpc/runtime_api",  default-features = false }
 # - serp
 serp-prices = { path = "../../lib-serml/serp/serp-prices", default-features = false }
-serp-staking = { path = "../../lib-serml/serp/serp-staking", default-features = false }
 serp-treasury = { path = "../../lib-serml/serp/serp-treasury", default-features = false }
-# - settmint
-settmint-engine = { path = "../../lib-serml/settmint/settmint-engine", default-features = false }
-settmint-gateway = { path = "../../lib-serml/settmint/settmint-gateway", default-features = false }
-settmint-manager = { path = "../../lib-serml/settmint/settmint-manager", default-features = false }
+# - setmint
+setmint-engine = { path = "../../lib-serml/setmint/setmint-engine", default-features = false }
+setmint-gateway = { path = "../../lib-serml/setmint/setmint-gateway", default-features = false }
+setmint-manager = { path = "../../lib-serml/setmint/setmint-manager", default-features = false }
 # - support
 setheum-support = { path = "../../lib-serml/support", default-features = false }
 # - tokens
@@ -171,11 +170,10 @@ std = [
 	"setheum-evm-bridge/std",
 	"setheum-evm-manager/std",
 	"serp-prices/std",
-	"serp-staking/std",
 	"serp-treasury/std",
-	"settmint-engine/std",
-	"settmint-gateway/std",
-	"settmint-manager/std",
+	"setmint-engine/std",
+	"setmint-gateway/std",
+	"setmint-manager/std",
 	"setheum-support/std",
 	"setheum-currencies/std",
 	"setheum-nft/std",
@@ -232,7 +230,6 @@ try-runtime = [
 	"pallet-recovery/try-runtime",
 	"pallet-scheduler/try-runtime",
 	"pallet-session/try-runtime",
-	"serp-staking/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-tips/try-runtime",
@@ -255,9 +252,9 @@ try-runtime = [
 	"setheum-evm-manager/try-runtime",
 	"serp-prices/try-runtime",
 	"serp-treasury/try-runtime",
-	"settmint-engine/try-runtime",
-	"settmint-gateway/try-runtime",
-	"settmint-manager/try-runtime",
+	"setmint-engine/try-runtime",
+	"setmint-gateway/try-runtime",
+	"setmint-manager/try-runtime",
 	"setheum-currencies/try-runtime",
 	"setheum-nft/try-runtime",
 	"setheum-transaction-payment/try-runtime",

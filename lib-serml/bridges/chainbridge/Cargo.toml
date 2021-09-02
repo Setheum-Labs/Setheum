@@ -15,7 +15,7 @@ sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 # orml dependencies
-orml-traits = { path = "../../../lib-openrml/traits", default-features = false }
+orml-traits = { path = "../../../lib-open/traits", default-features = false }
 
 # special dependencies
 chainbridge = { git = "https://github.com/Slixon-Technologies/chainbridge-substrate", default-features = false }
@@ -25,7 +25,7 @@ support = { package = "setheum-support", path = "../../support", default-feature
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
-orml-tokens = { path = "../../../lib-openrml/tokens" }
+orml-tokens = { path = "../../../lib-open/tokens" }
 
 [features]
 default = ["std"]
