@@ -1254,7 +1254,7 @@ fn do_swap_with_exact_target_work() {
 			System::assert_last_event(Event::DexModule(crate::Event::Swap(
 				BOB,
 				vec![DRAM, SETUSD, BTC],
-				137_654_580_386_993,
+				137_306_976_588_131,
 				5_000_000_000,
 			)));
 			assert_eq!(
