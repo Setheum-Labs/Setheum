@@ -1143,7 +1143,7 @@ fn do_swap_with_exact_supply_work() {
 			);
 			assert_eq!(Tokens::free_balance(DRAM, &DexModule::account_id()), 400_000_000_000_000);
 			assert_eq!(Tokens::free_balance(BTC, &DexModule::account_id()), 4_469_336_163);
-			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_248_743_718_592_964);
+			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_249_373_433_583_959);
 			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_700_000_000_000_000);
 			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_005_530_663_837);
 		});
@@ -1229,7 +1229,7 @@ fn do_swap_with_exact_target_work() {
 			)));
 			assert_eq!(
 				DexModule::get_liquidity(SETUSD, DRAM),
-				(250_000_000_000_000, 200_502_512_562_815)
+				(250_000_000_000_001, 200_502_512_562_815)
 			);
 			assert_eq!(
 				DexModule::get_liquidity(SETUSD, BTC),
