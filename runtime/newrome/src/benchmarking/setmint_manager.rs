@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, SetheumOracle, AccountId, Amount, SettmintEngine, StandardCurrencyIds, CurrencyId, SettmintGateway, Indices, Price, Rate,
+	dollar, SetheumOracle, AccountId, Amount, SetmintEngine, StandardCurrencyIds, CurrencyId, SetmintGateway, Indices, Price, Rate,
 	Ratio, Runtime, SETUSD, SETR,
 };
 
@@ -50,7 +50,7 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = Indices::unlookup(to);
-		SettmintGateway::authorize(
+		SetmintGateway::authorize(
 			RawOrigin::Signed(caller.clone()).into(),
 			SETR,
 			to_lookup.clone()
@@ -66,7 +66,7 @@ runtime_benchmarks! {
 		let to_lookup = Indices::unlookup(to);
 
 		for i in 0 .. c {
-			SettmintGateway::authorize(
+			SetmintGateway::authorize(
 				RawOrigin::Signed(caller.clone()).into(),
 				currency_ids[i as usize],
 				to_lookup.clone(),
@@ -81,7 +81,7 @@ runtime_benchmarks! {
 		let currency_id: CurrencyId = StandardCurrencyIds::get()[0];
 		let reserve_price = Price::one();		// 1 USD
 		let standard_value = 100 * dollar(SETUSD);
-		let standard_exchange_rate = SettmintEngine::get_standard_exchange_rate(currency_id);
+		let standard_exchange_rate = SetmintEngine::get_standard_exchange_rate(currency_id);
 		let standard_amount = standard_exchange_rate.reciprocal().unwrap().saturating_mul_int(standard_value);
 		let standard_amount: Amount = standard_amount.unique_saturated_into();
 		let reserve_value = 10 * standard_value;
@@ -103,7 +103,7 @@ runtime_benchmarks! {
 
 
 		let standard_value = 100 * dollar(SETUSD);
-		let standard_exchange_rate = SettmintEngine::get_standard_exchange_rate(currency_id);
+		let standard_exchange_rate = SetmintEngine::get_standard_exchange_rate(currency_id);
 		let standard_amount = standard_exchange_rate.reciprocal().unwrap().saturating_mul_int(standard_value);
 		let standard_amount: Amount = standard_amount.unique_saturated_into();
 		let reserve_value = 10 * standard_value;
@@ -116,7 +116,7 @@ runtime_benchmarks! {
 		SetheumOracle::feed_values(RawOrigin::Root.into(), vec![(currency_id, Price::one())])?;
 
 		// initialize sender's setter
-		SettmintGateway::adjust_position(
+		SetmintGateway::adjust_position(
 			RawOrigin::Signed(sender.clone()).into(),
 			currency_id,
 			reserve_amount.try_into().unwrap(),
@@ -124,7 +124,7 @@ runtime_benchmarks! {
 		)?;
 
 		// authorize receiver
-		SettmintGateway::authorize(
+		SetmintGateway::authorize(
 			RawOrigin::Signed(sender.clone()).into(),
 			currency_id,
 			receiver_lookup,

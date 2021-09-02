@@ -138,7 +138,7 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
+	pub const SetmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 }
 
 impl setmint::Config for Runtime {
@@ -148,7 +148,7 @@ impl setmint::Config for Runtime {
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
-	type PalletId = SettmintManagerPalletId;
+	type PalletId = SetmintManagerPalletId;
 }
 
 thread_local! {
@@ -181,36 +181,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
-	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
-	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETCHF, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETEUR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETGBP, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETSAR, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETCHF, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETGBP, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETSAR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-	];
-}
-
-impl setheum_dex::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type GetExchangeFee = GetExchangeFee;
-	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DexPalletId;
-	type CurrencyIdMapping = ();
-	type WeightInfo = ();
-	type ListingOrigin = EnsureSignedBy<One, AccountId>;
-}
-
-parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETCHF,
@@ -230,6 +200,39 @@ parameter_types! {
 
 	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
+}
+
+parameter_types! {
+	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 2000); // 0.05%
+	pub const TradingPathLimit: u32 = 3;
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![
+		TradingPair::from_currency_ids(DNAR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETCHF, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETEUR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETGBP, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETSAR, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETCHF, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETGBP, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETSAR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
+	];
+}
+
+impl setheum_dex::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
+	type TradingPathLimit = TradingPathLimit;
+	type PalletId = DexPalletId;
+	type CurrencyIdMapping = ();
+	type WeightInfo = ();
+	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
 
 parameter_type_with_key! {
@@ -328,11 +331,11 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SettmintEngineModule: setmint_engine::{Pallet, Storage, Call, Event<T>},
+		SetmintEngineModule: setmint_engine::{Pallet, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		SettmintManagerModule: setmint::{Pallet, Storage, Call, Event<T>},
+		SetmintManagerModule: setmint::{Pallet, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}

@@ -27,12 +27,12 @@ use mock::{Event, *};
 #[test]
 fn standards_key() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
-		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, SETEUR, 200, 200));
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 200);
-		assert_eq!(Currencies::free_balance(SETR, &SettmintManagerModule::account_id()), 100);
-		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, SETEUR, -100, -100));
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 100);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
+		assert_ok!(SetmintManagerModule::adjust_position(&ALICE, SETEUR, 200, 200));
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 200);
+		assert_eq!(Currencies::free_balance(SETR, &SetmintManagerModule::account_id()), 100);
+		assert_ok!(SetmintManagerModule::adjust_position(&ALICE, SETEUR, -100, -100));
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 100);
 	});
 }
 
@@ -41,13 +41,13 @@ fn check_update_position_underflow_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		// reserve underflow
 		assert_noop!(
-			SettmintManagerModule::update_position(&ALICE, SETEUR, -100, 0),
+			SetmintManagerModule::update_position(&ALICE, SETEUR, -100, 0),
 			ArithmeticError::Underflow,
 		);
 
 		// standard underflow
 		assert_noop!(
-			SettmintManagerModule::update_position(&ALICE, SETEUR, 0, -100),
+			SetmintManagerModule::update_position(&ALICE, SETEUR, 0, -100),
 			ArithmeticError::Underflow,
 		);
 	});
@@ -60,31 +60,31 @@ fn adjust_position_should_work() {
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 1000);
 
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 1000);
-		assert_eq!(Currencies::free_balance(SETEUR, &SettmintManagerModule::account_id()), 0);
-		assert_eq!(SettmintManagerModule::total_positions(SETEUR).standard, 0);
-		assert_eq!(SettmintManagerModule::total_positions(SETEUR).reserve, 0);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).reserve, 0);
+		assert_eq!(Currencies::free_balance(SETEUR, &SetmintManagerModule::account_id()), 0);
+		assert_eq!(SetmintManagerModule::total_positions(SETEUR).standard, 0);
+		assert_eq!(SetmintManagerModule::total_positions(SETEUR).reserve, 0);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).reserve, 0);
 		assert_eq!(Currencies::free_balance(SETEUR, &ALICE), 1000);
 
 		// success
-		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, SETEUR, 500, 300));
+		assert_ok!(SetmintManagerModule::adjust_position(&ALICE, SETEUR, 500, 300));
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 750);
-		assert_eq!(Currencies::free_balance(SETR, &SettmintManagerModule::account_id()), 250);
-		assert_eq!(SettmintManagerModule::total_positions(SETEUR).standard, 300);
-		assert_eq!(SettmintManagerModule::total_positions(SETEUR).reserve, 500);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 300);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).reserve, 500);
+		assert_eq!(Currencies::free_balance(SETR, &SetmintManagerModule::account_id()), 250);
+		assert_eq!(SetmintManagerModule::total_positions(SETEUR).standard, 300);
+		assert_eq!(SetmintManagerModule::total_positions(SETEUR).reserve, 500);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 300);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).reserve, 500);
 		assert_eq!(Currencies::free_balance(SETEUR, &ALICE), 1150);
-		System::assert_last_event(Event::SettmintManagerModule(crate::Event::PositionUpdated(ALICE, SETEUR, 500, 300)));
+		System::assert_last_event(Event::SetmintManagerModule(crate::Event::PositionUpdated(ALICE, SETEUR, 500, 300)));
 
 		// reserve_adjustment is negatives
 		// remove module account.
-		assert_eq!(Currencies::total_balance(SETEUR, &SettmintManagerModule::account_id()), 0);
-		assert_eq!(System::account_exists(&SettmintManagerModule::account_id()), true);
-		assert_ok!(SettmintManagerModule::adjust_position(&ALICE, SETEUR, -500, 0));
-		assert_eq!(Currencies::free_balance(SETEUR, &SettmintManagerModule::account_id()), 0);
-		assert_eq!(System::account_exists(&SettmintManagerModule::account_id()), true);
+		assert_eq!(Currencies::total_balance(SETEUR, &SetmintManagerModule::account_id()), 0);
+		assert_eq!(System::account_exists(&SetmintManagerModule::account_id()), true);
+		assert_ok!(SetmintManagerModule::adjust_position(&ALICE, SETEUR, -500, 0));
+		assert_eq!(Currencies::free_balance(SETEUR, &SetmintManagerModule::account_id()), 0);
+		assert_eq!(System::account_exists(&SetmintManagerModule::account_id()), true);
 	});
 }
 
@@ -92,57 +92,57 @@ fn adjust_position_should_work() {
 fn transfer_position_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SettmintManagerModule::update_position(&ALICE, SETEUR, 400, 500));
-		assert_ok!(SettmintManagerModule::update_position(&BOB, SETEUR, 100, 600));
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 500);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).reserve, 400);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &BOB).standard, 600);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &BOB).reserve, 100);
+		assert_ok!(SetmintManagerModule::update_position(&ALICE, SETEUR, 400, 500));
+		assert_ok!(SetmintManagerModule::update_position(&BOB, SETEUR, 100, 600));
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 500);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).reserve, 400);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &BOB).standard, 600);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &BOB).reserve, 100);
 
-		assert_ok!(SettmintManagerModule::transfer_position(&ALICE, &BOB, SETEUR));
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).reserve, 0);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &BOB).standard, 1100);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &BOB).reserve, 500);
+		assert_ok!(SetmintManagerModule::transfer_position(&ALICE, &BOB, SETEUR));
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).reserve, 0);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &BOB).standard, 1100);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &BOB).reserve, 500);
 
-		System::assert_last_event(Event::SettmintManagerModule(crate::Event::TransferPosition(ALICE, BOB, SETEUR)));
+		System::assert_last_event(Event::SetmintManagerModule(crate::Event::TransferPosition(ALICE, BOB, SETEUR)));
 	});
 }
 
 #[test]
 fn update_position_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Currencies::free_balance(SETR, &SettmintManagerModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(SETR, &SetmintManagerModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 1000);
-		assert_eq!(SettmintManagerModule::total_positions(SETEUR).standard, 0);
-		assert_eq!(SettmintManagerModule::total_positions(SETEUR).reserve, 0);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).reserve, 0);
+		assert_eq!(SetmintManagerModule::total_positions(SETEUR).standard, 0);
+		assert_eq!(SetmintManagerModule::total_positions(SETEUR).reserve, 0);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).reserve, 0);
 		assert_eq!(<Positions<Runtime>>::contains_key(SETEUR, &ALICE), false);
 
 		let alice_ref_count_0 = System::consumers(&ALICE);
 
-		assert_ok!(SettmintManagerModule::update_position(&ALICE, SETEUR, 3000, 2000));
+		assert_ok!(SetmintManagerModule::update_position(&ALICE, SETEUR, 3000, 2000));
 
 		// just update records
-		assert_eq!(SettmintManagerModule::total_positions(SETEUR).standard, 2000);
-		assert_eq!(SettmintManagerModule::total_positions(SETEUR).reserve, 3000);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 2000);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).reserve, 3000);
+		assert_eq!(SetmintManagerModule::total_positions(SETEUR).standard, 2000);
+		assert_eq!(SetmintManagerModule::total_positions(SETEUR).reserve, 3000);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 2000);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).reserve, 3000);
 
 		// increase ref count when open new position
 		let alice_ref_count_1 = System::consumers(&ALICE);
 		assert_eq!(alice_ref_count_1, alice_ref_count_0 + 1);
 
 		// dot not manipulate balance
-		assert_eq!(Currencies::free_balance(SETR, &SettmintManagerModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(SETR, &SetmintManagerModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 1000);
 
 		// should remove position storage if zero
 		assert_eq!(<Positions<Runtime>>::contains_key(SETEUR, &ALICE), true);
-		assert_ok!(SettmintManagerModule::update_position(&ALICE, SETEUR, -3000, -2000));
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
-		assert_eq!(SettmintManagerModule::positions(SETEUR, &ALICE).reserve, 0);
+		assert_ok!(SetmintManagerModule::update_position(&ALICE, SETEUR, -3000, -2000));
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).standard, 0);
+		assert_eq!(SetmintManagerModule::positions(SETEUR, &ALICE).reserve, 0);
 		assert_eq!(<Positions<Runtime>>::contains_key(SETEUR, &ALICE), false);
 
 		// decrease ref count after remove position
@@ -154,7 +154,7 @@ fn update_position_should_work() {
 #[test]
 fn total_reserve_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Currencies::deposit(SETR, &SettmintManagerModule::account_id(), 10));
-		assert_eq!(SettmintManagerModule::total_reserve(), 10);
+		assert_ok!(Currencies::deposit(SETR, &SetmintManagerModule::account_id(), 10));
+		assert_eq!(SetmintManagerModule::total_reserve(), 10);
 	});
 }

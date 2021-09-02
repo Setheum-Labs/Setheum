@@ -155,7 +155,7 @@ impl_opaque_keys! {
 // Module accounts of runtime
 parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
+	pub const SetmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
@@ -164,7 +164,7 @@ parameter_types! {
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
 		TreasuryPalletId::get().into_account(),
-		SettmintManagerPalletId::get().into_account(),
+		SetmintManagerPalletId::get().into_account(),
 		DexPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
 		ZeroAccountId::get(),
@@ -213,7 +213,7 @@ impl Filter<Call> for BaseCallFilter {
 			// Serp
 			Call::Prices(_) | Call::SerpTreasury(_) |
 			// Serttmint
-			Call::SettmintGateway(_)| Call::SettmintEngine(_)
+			Call::SetmintGateway(_)| Call::SetmintEngine(_)
 		)
 	}
 }
@@ -965,7 +965,7 @@ impl setmint_manager::Config for Runtime {
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type SerpTreasury = SerpTreasury;
-	type PalletId = SettmintManagerPalletId;
+	type PalletId = SetmintManagerPalletId;
 }
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
@@ -1053,7 +1053,8 @@ impl setmint_gateway::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
+	pub const GetExchangeFee: (u32, u32) = (3, 1000); 					// 0.3%
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000); 	// 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(SETR, DNAR),
@@ -1065,12 +1066,15 @@ parameter_types! {
 		TradingPair::new(SETR, SETSAR),
 		TradingPair::new(SETR, RENBTC),
 	];
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR];
 }
 
 impl setheum_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
@@ -1119,7 +1123,6 @@ parameter_type_with_key! {
 
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR];
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETR, DNAR],
 		vec![SETUSD, SETR, DRAM]
@@ -1546,10 +1549,10 @@ construct_runtime!(
 		// Dex
 		Dex: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 40,
 
-		// Settmint
-		SettmintEngine: setmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 41,
-		SettmintGateway: setmint_gateway::{Pallet, Storage, Call, Event<T>} = 42,
-		SettmintManager: setmint_manager::{Pallet, Storage, Call, Event<T>} = 43,
+		// Setmint
+		SetmintEngine: setmint_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 41,
+		SetmintGateway: setmint_gateway::{Pallet, Storage, Call, Event<T>} = 42,
+		SetmintManager: setmint_manager::{Pallet, Storage, Call, Event<T>} = 43,
 
 		// Smart contracts
 		// Setheum EVM (SEVM)
