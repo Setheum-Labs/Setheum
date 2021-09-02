@@ -33,10 +33,15 @@ pub type AccountId = u128;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
+pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
+pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
+pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
+pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 parameter_types! {
 	pub static SETUSDBTCPair: TradingPair = TradingPair::from_currency_ids(SETUSD, BTC).unwrap();
@@ -101,7 +106,16 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 100);
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
+	];
+	pub const GetExchangeFee: (u32, u32) = (1, 100); // 1%
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const TradingPathLimit: u32 = 3;
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
@@ -109,7 +123,9 @@ parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
