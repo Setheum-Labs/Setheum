@@ -434,14 +434,25 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200);
 	pub const TradingPathLimit: u32 = 3;
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
+	];
 }
 
 impl setheum_dex::Config for Test {
 	type Event = Event;
 	type Currency = Tokens;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;

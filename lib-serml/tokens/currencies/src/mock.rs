@@ -204,7 +204,26 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
+	];
+	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+
+	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
+}
+
+parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200);
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
@@ -225,7 +244,9 @@ parameter_types! {
 impl setheum_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = OrmlCurrencies;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type CurrencyIdMapping = ();
@@ -260,45 +281,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 
 ord_parameter_types! {
 	pub const One: AccountId32 = AccountId32::from([11u8; 32]);
-}
-
-parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
-	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
-
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-
-	pub SerpTesSchedule: BlockNumber = 60; // Triggers SERP-TES for serping after Every 60 blocks
-	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
-
-	pub RewardableCurrencyIds: Vec<CurrencyId> = vec![
-		DNAR,
-		DRAM,
-		SETR,
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
-	pub NonStableDropCurrencyIds: Vec<CurrencyId> = vec![DNAR, DRAM];
-	pub SetCurrencyDropCurrencyIds: Vec<CurrencyId> = vec![
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
 }
 
 parameter_type_with_key! {

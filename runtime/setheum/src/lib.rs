@@ -1069,7 +1069,8 @@ impl setmint_gateway::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 1000); // 0.1%
+	pub const GetExchangeFee: (u32, u32) = (3, 1000); 					// 0.3%
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000); 	// 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(SETR, DNAR),
@@ -1081,12 +1082,15 @@ parameter_types! {
 		TradingPair::new(SETR, SETSAR),
 		TradingPair::new(SETR, RENBTC),
 	];
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR];
 }
 
 impl setheum_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
@@ -1134,7 +1138,6 @@ parameter_type_with_key! {
 
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR];
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETR, DNAR],
 		vec![SETUSD, SETR, DRAM]

@@ -137,7 +137,29 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETCHF,
+		SETEUR,
+		SETGBP,
+ 		SETSAR,
+		SETUSD,
+	];
+	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
+
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
+	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
+	pub const CashDropVaultAccountId: AccountId = VAULT;
+
+	pub CashDropPeriod: BlockNumber = 120;
+}
+
+parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const DexPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
@@ -158,7 +180,9 @@ parameter_types! {
 impl setheum_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DexPalletId;
 	type CurrencyIdMapping = ();
@@ -193,27 +217,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 
 ord_parameter_types! {
 	pub const One: AccountId = 1;
-}
-
-parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
-		SETUSD,
-	];
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
-	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
-
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
-	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
-	pub const CashDropVaultAccountId: AccountId = VAULT;
-
-	pub CashDropPeriod: BlockNumber = 120;
 }
 
 parameter_type_with_key! {
