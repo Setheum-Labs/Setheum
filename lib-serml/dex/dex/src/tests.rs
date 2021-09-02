@@ -1272,7 +1272,7 @@ fn do_swap_with_exact_target_work() {
 			assert_eq!(Tokens::free_balance(DRAM, &DexModule::account_id()), 337_809_489_150_946);
 			assert_eq!(Tokens::free_balance(BTC, &DexModule::account_id()), 5_000_000_000);
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_250_000_000_000_000);
-			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_761_335_318_602_905);
+			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_762_190_510_849_054);
 			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_005_000_000_000);
 		});
 }
