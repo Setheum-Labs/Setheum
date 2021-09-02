@@ -1259,7 +1259,7 @@ fn do_swap_with_exact_target_work() {
 			)));
 			assert_eq!(
 				DexModule::get_liquidity(SETUSD, DRAM),
-				(148_989_898_989_898, 338_664_681_397_095)
+				(148_989_898_989_899, 337_809_489_150_946)
 			);
 			assert_eq!(
 				DexModule::get_liquidity(SETUSD, BTC),
