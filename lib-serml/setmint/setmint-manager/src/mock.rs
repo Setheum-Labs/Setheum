@@ -298,7 +298,7 @@ parameter_types! {
 		SETUSD,
 	];
 	pub const GetReserveCurrencyId: CurrencyId = SETR;
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
+	pub const SetmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 
 }
 
@@ -309,7 +309,7 @@ impl Config for Runtime {
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
-	type PalletId = SettmintManagerPalletId;
+	type PalletId = SetmintManagerPalletId;
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
@@ -322,7 +322,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SettmintManagerModule: setmint_manager::{Pallet, Storage, Call, Event<T>},
+		SetmintManagerModule: setmint_manager::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},

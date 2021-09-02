@@ -16,13 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # Settmint Engine Module
+//! # Setmint Engine Module
 //!
 //! ## Overview
 //!
-//! The core module of the Settmint protocol.
-//! The Settmint engine is responsible for handling
-//! internal processes of Settmint.
+//! The core module of the Setmint protocol.
+//! The Setmint engine is responsible for handling
+//! internal processes of Setmint.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -48,7 +48,7 @@ mod tests;
 pub use standard_exchange_rate_convertor::StandardExchangeRateConvertor;
 pub use module::*;
 
-pub type SettmintOf<T> = setmint::Pallet<T>;
+pub type SetmintOf<T> = setmint::Pallet<T>;
 
 #[frame_support::pallet]
 pub mod module {
@@ -78,7 +78,7 @@ pub mod module {
 	pub enum Error<T> {
 		/// Invalid reserve type.
 		InvalidStandardType,
-		/// Remaining standard value in Settmint below the dust amount
+		/// Remaining standard value in Setmint below the dust amount
 		RemainStandardValueTooSmall,
 		/// Feed price is invalid
 		InvalidFeedPrice,
@@ -131,7 +131,7 @@ impl<T: Config> Pallet<T> {
 		reserve_adjustment: Amount,
 		standard_adjustment: Amount,
 	) -> DispatchResult {
-		<SettmintOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
+		<SetmintOf<T>>::adjust_position(who, currency_id, reserve_adjustment, standard_adjustment)?;
 		Ok(())
 	}
 }

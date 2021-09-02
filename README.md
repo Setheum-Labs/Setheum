@@ -57,7 +57,7 @@ In The SERP and Setheum lingua, I coined these terms:
 * serpup: to increase the supply of a Setheum stablecurrency at its serping point.
 * serpdown: to decrease the supply of a Setheum stablecurrency at its serping point.
 
-3. [The SetMint](./lib-serml/setmint) - The Settmint is partly inspired by the Maker Protocol (MakerDAO), except that SetMint is on a very different principle of Setheum that ought not to be violated.
+3. [The SetMint](./lib-serml/setmint) - The Setmint is partly inspired by the Maker Protocol (MakerDAO), except that SetMint is on a very different principle of Setheum that ought not to be violated.
 SetMint is not a CDP but quite similar, as users can hold, authorize & transfer positions, users can reserve the Setter (SETR) to mint any SetCurrency of their choice without the need for over-collateralization, debt, interest rates, liquidation, or even stability fees. The stability of the Currencies is handles by the SERP, and the the Setter used as the reserve currency is also a SetCurrency (Setheum System Stablecoin) therefore eliminating position volatility and the risk of liquidation as all risk parameters have been eliminated with the Setter and Setheum's strong principle on the matters of the SetMint and Setheum's Monetary Policy.
 This is one of the reasons I see Setheum as one of the most Sophisticated Advanced Economic Systems yet so simple, easy to use and understand, and even easier to get started.
 

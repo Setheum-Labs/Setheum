@@ -16,13 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # SettmintGateway Module
+//! # SetmintGateway Module
 //!
 //! ## Overview
 //!
-//! The entry of the Settmint protocol for users, user can manipulate their Settmint
+//! The entry of the Setmint protocol for users, user can manipulate their Setmint
 //! position to setter/payback, and can also authorize others to manage the their
-//! Settmint under specific reserve type.
+//! Setmint under specific reserve type.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -116,12 +116,12 @@ pub mod module {
 		///
 		/// - `currency_id`: standard currency id.
 		/// - `reserve_adjustment`: signed amount, positive means to deposit
-		///   reserve currency into Settmint, negative means withdraw reserve
-		///   currency from Settmint.
+		///   reserve currency into Setmint, negative means withdraw reserve
+		///   currency from Setmint.
 		/// - `standard_adjustment`: signed amount, positive means to issue some
 		///   amount of `currency_id` to caller according to the standard adjustment,
 		///   negative means caller will payback some amount of `currency_id` (standard setcurrency) to
-		///   Settmint according to to the standard adjustment.
+		///   Setmint according to to the standard adjustment.
 		#[pallet::weight(<T as Config>::WeightInfo::adjust_position())]
 		#[transactional]
 		pub fn adjust_position(
@@ -135,7 +135,7 @@ pub mod module {
 			Ok(().into())
 		}
 
-		/// Transfer the whole Settmint of `from` under `currency_id` to caller's Settmint
+		/// Transfer the whole Setmint of `from` under `currency_id` to caller's Setmint
 		/// under the same `currency_id`, caller must have the authorization of
 		/// `from` for the specific STANDARD type
 		///

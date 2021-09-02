@@ -388,7 +388,7 @@ fn newrome_genesis(
 ) -> newrome_runtime::GenesisConfig {
 	use newrome_runtime::{
 		cent, dollar, get_all_module_accounts, SetheumOracleConfig, BabeConfig, Balance,
-		BalancesConfig, SettmintEngineConfig, SerpTreasuryConfig, DexConfig,
+		BalancesConfig, SetmintEngineConfig, SerpTreasuryConfig, DexConfig,
 		EnabledTradingPairs, GeneralCouncilMembershipConfig, SetheumJuryMembershipConfig,
 		GrandpaConfig, FinancialCouncilMembershipConfig, ExchangeCouncilMembershipConfig,
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,

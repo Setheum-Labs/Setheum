@@ -29,7 +29,7 @@ use orml_traits::MultiCurrency;
 fn get_standard_exchange_rate_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SettmintEngineModule::get_standard_exchange_rate(SETR),
+			SetmintEngineModule::get_standard_exchange_rate(SETR),
 			DefaultStandardExchangeRate::get()
 		);
 	});
@@ -39,7 +39,7 @@ fn get_standard_exchange_rate_work() {
 fn calculate_reserve_ratio_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			SettmintEngineModule::calculate_reserve_ratio(SETR, 100, 50, Price::saturating_from_rational(1, 1)),
+			SetmintEngineModule::calculate_reserve_ratio(SETR, 100, 50, Price::saturating_from_rational(1, 1)),
 			Ratio::saturating_from_rational(100, 50)
 		);
 	});
@@ -50,18 +50,18 @@ fn adjust_position_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 0);
-		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).standard, 0);
-		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).reserve, 0);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETUSD, 100, 50));
+		assert_eq!(SetmintManagerModule::positions(SETUSD, ALICE).standard, 0);
+		assert_eq!(SetmintManagerModule::positions(SETUSD, ALICE).reserve, 0);
+		assert_ok!(SetmintEngineModule::adjust_position(&ALICE, SETUSD, 100, 50));
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 50);
-		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).standard, 50);
-		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).reserve, 100);
-		assert_eq!(SettmintEngineModule::adjust_position(&ALICE, SETUSD, 0, 20).is_ok(), true);
-		assert_ok!(SettmintEngineModule::adjust_position(&ALICE, SETUSD, 0, -20));
+		assert_eq!(SetmintManagerModule::positions(SETUSD, ALICE).standard, 50);
+		assert_eq!(SetmintManagerModule::positions(SETUSD, ALICE).reserve, 100);
+		assert_eq!(SetmintEngineModule::adjust_position(&ALICE, SETUSD, 0, 20).is_ok(), true);
+		assert_ok!(SetmintEngineModule::adjust_position(&ALICE, SETUSD, 0, -20));
 		assert_eq!(Currencies::free_balance(SETR, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 50);
-		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).standard, 50);
-		assert_eq!(SettmintManagerModule::positions(SETUSD, ALICE).reserve, 100);
+		assert_eq!(SetmintManagerModule::positions(SETUSD, ALICE).standard, 50);
+		assert_eq!(SetmintManagerModule::positions(SETUSD, ALICE).reserve, 100);
 	});
 }

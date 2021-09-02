@@ -138,7 +138,7 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const SettmintManagerPalletId: PalletId = PalletId(*b"set/mint");
+	pub const SetmintManagerPalletId: PalletId = PalletId(*b"set/mint");
 }
 
 impl setmint::Config for Runtime {
@@ -148,7 +148,7 @@ impl setmint::Config for Runtime {
 	type StandardCurrencyIds = StandardCurrencyIds;
 	type GetReserveCurrencyId = GetReserveCurrencyId;
 	type SerpTreasury = SerpTreasuryModule;
-	type PalletId = SettmintManagerPalletId;
+	type PalletId = SetmintManagerPalletId;
 }
 
 thread_local! {
@@ -331,11 +331,11 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SettmintEngineModule: setmint_engine::{Pallet, Storage, Call, Event<T>},
+		SetmintEngineModule: setmint_engine::{Pallet, Storage, Call, Event<T>},
 		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		SettmintManagerModule: setmint::{Pallet, Storage, Call, Event<T>},
+		SetmintManagerModule: setmint::{Pallet, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}

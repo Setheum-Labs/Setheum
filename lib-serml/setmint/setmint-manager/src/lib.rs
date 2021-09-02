@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # SettmintManager Module
+//! # SetmintManager Module
 //!
 //! ## Overview
 //!
-//! SettmintManager module manages Settmint's reserve asset (Setter) 
+//! SetmintManager module manages Setmint's reserve asset (Setter) 
 //! and the standards backed by the asset (SetCurrencies).
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -82,7 +82,7 @@ pub mod module {
 		/// adjustment
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
-		/// The setter's module id, keep all reserves of Settmint.
+		/// The setter's module id, keep all reserves of Setmint.
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 	}
