@@ -642,6 +642,18 @@ fn get_target_amount_work() {
 }
 
 #[test]
+fn get_efe_target_amount_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(DexModule::get_efe_target_amount(10000, 0, 1000), 0);
+		assert_eq!(DexModule::get_efe_target_amount(0, 20000, 1000), 0);
+		assert_eq!(DexModule::get_efe_target_amount(10000, 20000, 0), 0);
+		assert_eq!(DexModule::get_efe_target_amount(10000, 1, 1000000), 0);
+		assert_eq!(DexModule::get_efe_target_amount(10000, 20000, 10000), 9974);
+		assert_eq!(DexModule::get_efe_target_amount(10000, 20000, 1000), 1809);
+	});
+}
+
+#[test]
 fn get_supply_amount_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(DexModule::get_supply_amount(10000, 0, 1000), 0);
@@ -651,6 +663,22 @@ fn get_supply_amount_work() {
 		assert_eq!(DexModule::get_supply_amount(10000, 20000, 9949), 9999);
 		assert_eq!(DexModule::get_target_amount(10000, 20000, 9999), 9949);
 		assert_eq!(DexModule::get_supply_amount(10000, 20000, 1801), 1000);
+		assert_eq!(DexModule::get_target_amount(10000, 20000, 1000), 1801);
+	});
+}
+
+#[test]
+fn get_efe_supply_amount_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_eq!(DexModule::get_efe_supply_amount(10000, 0, 1000), 0);
+		assert_eq!(DexModule::get_efe_supply_amount(0, 20000, 1000), 0);
+		assert_eq!(DexModule::get_efe_supply_amount(10000, 20000, 0), 0);
+		assert_eq!(DexModule::get_efe_supply_amount(10000, 1, 1), 0);
+		assert_eq!(DexModule::get_efe_supply_amount(10000, 20000, 9949), 9949);
+		assert_eq!(DexModule::get_efe_target_amount(10000, 20000, 9999), 9974);
+		assert_eq!(DexModule::get_target_amount(10000, 20000, 9999), 9949);
+		assert_eq!(DexModule::get_efe_supply_amount(10000, 20000, 1801), 995);
+		assert_eq!(DexModule::get_efe_target_amount(10000, 20000, 1000), 1809);
 		assert_eq!(DexModule::get_target_amount(10000, 20000, 1000), 1801);
 	});
 }
@@ -766,6 +794,20 @@ fn _swap_work() {
 }
 
 #[test]
+fn _efe_swap_work() {
+	ExtBuilder::default()
+		.initialize_enabled_trading_pairs()
+		.build()
+		.execute_with(|| {
+			LiquidityPool::<Runtime>::insert(SETUSDDRAMPair::get(), (50000, 10000));
+
+			assert_eq!(DexModule::get_liquidity(SETUSD, DRAM), (10000, 50000));
+			assert_ok!(DexModule::_efe_swap(SETUSD, DRAM, 50000, 5000, 100, 0));
+			assert_eq!(DexModule::get_liquidity(SETUSD, DRAM), (60100, 45000));
+		});
+}
+
+#[test]
 fn _swap_by_path_work() {
 	ExtBuilder::default()
 		.initialize_enabled_trading_pairs()
@@ -778,6 +820,23 @@ fn _swap_by_path_work() {
 			assert_eq!(DexModule::get_liquidity(SETUSD, BTC), (100000, 10));
 			assert_ok!(DexModule::_swap_by_path(&vec![DRAM, SETUSD], &vec![10000, 1000]));
 			assert_eq!(DexModule::get_liquidity(SETUSD, DRAM), (9000, 60000));
+			assert_eq!(DexModule::get_liquidity(SETUSD, BTC), (100000, 10));
+		});
+}
+
+#[test]
+fn _efe_swap_by_path_work() {
+	ExtBuilder::default()
+		.initialize_enabled_trading_pairs()
+		.build()
+		.execute_with(|| {
+			LiquidityPool::<Runtime>::insert(SETUSDDRAMPair::get(), (50000, 10000));
+			LiquidityPool::<Runtime>::insert(SETUSDBTCPair::get(), (100000, 10));
+
+			assert_eq!(DexModule::get_liquidity(SETUSD, DRAM), (10000, 50000));
+			assert_eq!(DexModule::get_liquidity(SETUSD, BTC), (100000, 10));
+			assert_ok!(DexModule::_efe_swap_by_path(&vec![DRAM, SETUSD], &vec![10000, 1000], 0, 200));
+			assert_eq!(DexModule::get_liquidity(SETUSD, DRAM), (9200, 60000));
 			assert_eq!(DexModule::get_liquidity(SETUSD, BTC), (100000, 10));
 		});
 }
@@ -1127,7 +1186,7 @@ fn do_swap_with_exact_supply_work() {
 				BOB,
 				vec![DRAM, SETUSD, BTC],
 				200_000_000_000_000,
-				5_530_663_837,
+				5530663837,
 			)));
 			assert_eq!(
 				DexModule::get_liquidity(SETUSD, DRAM),
@@ -1146,6 +1205,129 @@ fn do_swap_with_exact_supply_work() {
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_249_373_433_583_959);
 			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_700_000_000_000_000);
 			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_005_530_663_837);
+		});
+}
+
+#[test]
+fn do_efe_swap_with_exact_supply_work() {
+	ExtBuilder::default()
+		.initialize_enabled_trading_pairs()
+		.build()
+		.execute_with(|| {
+			System::set_block_number(1);
+
+			assert_ok!(DexModule::add_liquidity(
+				Origin::signed(ALICE),
+				SETUSD,
+				DRAM,
+				500_000_000_000_000,
+				100_000_000_000_000,
+				0,
+			));
+			assert_ok!(DexModule::add_liquidity(
+				Origin::signed(ALICE),
+				SETUSD,
+				BTC,
+				100_000_000_000_000,
+				10_000_000_000,
+				0,
+			));
+
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, DRAM),
+				(500_000_000_000_000, 100_000_000_000_000)
+			);
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, BTC),
+				(100_000_000_000_000, 10_000_000_000)
+			);
+			assert_eq!(
+				Tokens::free_balance(SETUSD, &DexModule::account_id()),
+				600_000_000_000_000
+			);
+			assert_eq!(Tokens::free_balance(DRAM, &DexModule::account_id()), 100_000_000_000_000);
+			assert_eq!(Tokens::free_balance(BTC, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_000_000_000_000_000);
+			assert_eq!(Tokens::free_balance(DRAM, &BOB), 1_000_000_000_000_000_000);
+			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_000_000_000_000);
+
+			assert_noop!(
+				DexModule::do_efe_swap_with_exact_supply(
+					&BOB,
+					&[DRAM, SETUSD],
+					100_000_000_000_000,
+					250_000_000_000_000,
+				),
+				Error::<Runtime>::InsufficientTargetAmount
+			);
+			assert_noop!(
+				DexModule::do_efe_swap_with_exact_supply(&BOB, &[DRAM, SETUSD, BTC, DRAM], 100_000_000_000_000, 0),
+				Error::<Runtime>::InvalidTradingPathLength,
+			);
+			assert_noop!(
+				DexModule::do_efe_swap_with_exact_supply(&BOB, &[DRAM, DNAR], 100_000_000_000_000, 0),
+				Error::<Runtime>::MustBeEnabled,
+			);
+
+			assert_ok!(DexModule::do_efe_swap_with_exact_supply(
+				&BOB,
+				&[DRAM, SETUSD],
+				100_000_000_000_000,
+				200_000_000_000_000,
+			));
+			System::assert_last_event(Event::DexModule(crate::Event::Swap(
+				BOB,
+				vec![DRAM, SETUSD],
+				100_000_000_000_000,
+				249_373_433_583_959,
+			)));
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, DRAM),
+				(251_256_281_407_036, 200_000_000_000_000)
+			);
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, BTC),
+				(100_000_000_000_000, 10_000_000_000)
+			);
+			assert_eq!(
+				Tokens::free_balance(SETUSD, &DexModule::account_id()),
+				351_256_281_407_036
+			);
+			assert_eq!(Tokens::free_balance(DRAM, &DexModule::account_id()), 200_000_000_000_000);
+			assert_eq!(Tokens::free_balance(BTC, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_249_373_433_583_959);
+			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_900_000_000_000_000);
+			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_000_000_000_000);
+
+			assert_ok!(DexModule::do_efe_swap_with_exact_supply(
+				&BOB,
+				&[DRAM, SETUSD, BTC],
+				200_000_000_000_000,
+				1,
+			));
+			System::assert_last_event(Event::DexModule(crate::Event::Swap(
+				BOB,
+				vec![DRAM, SETUSD],
+				100_000_000_000_000,
+				249_373_433_583_959,
+			)));
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, DRAM),
+				(251_256_281_407_036, 200_000_000_000_000)
+			);
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, BTC),
+				(100_000_000_000_000, 10_000_000_000)
+			);
+			assert_eq!(
+				Tokens::free_balance(SETUSD, &DexModule::account_id()),
+				351_256_281_407_036
+			);
+			assert_eq!(Tokens::free_balance(DRAM, &DexModule::account_id()), 200_000_000_000_000);
+			assert_eq!(Tokens::free_balance(BTC, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_249_373_433_583_959);
+			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_900_000_000_000_000);
+			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_000_000_000_000);
 		});
 }
 
@@ -1274,6 +1456,134 @@ fn do_swap_with_exact_target_work() {
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_250_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_762_190_510_849_054);
 			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_005_000_000_000);
+		});
+}
+
+#[test]
+fn do_efe_swap_with_exact_target_work() {
+	ExtBuilder::default()
+		.initialize_enabled_trading_pairs()
+		.build()
+		.execute_with(|| {
+			System::set_block_number(1);
+
+			assert_ok!(DexModule::add_liquidity(
+				Origin::signed(ALICE),
+				SETUSD,
+				DRAM,
+				500_000_000_000_000,
+				100_000_000_000_000,
+				0,
+			));
+			assert_ok!(DexModule::add_liquidity(
+				Origin::signed(ALICE),
+				SETUSD,
+				BTC,
+				100_000_000_000_000,
+				10_000_000_000,
+				0,
+			));
+
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, DRAM),
+				(500_000_000_000_000, 100_000_000_000_000)
+			);
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, BTC),
+				(100_000_000_000_000, 10_000_000_000)
+			);
+			assert_eq!(
+				Tokens::free_balance(SETUSD, &DexModule::account_id()),
+				600_000_000_000_000
+			);
+			assert_eq!(Tokens::free_balance(DRAM, &DexModule::account_id()), 100_000_000_000_000);
+			assert_eq!(Tokens::free_balance(BTC, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_000_000_000_000_000);
+			assert_eq!(Tokens::free_balance(DRAM, &BOB), 1_000_000_000_000_000_000);
+			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_000_000_000_000);
+
+			assert_noop!(
+				DexModule::do_efe_swap_with_exact_target(
+					&BOB,
+					&[DRAM, SETUSD],
+					250_000_000_000_000,
+					100_000_000_000_000,
+				),
+				Error::<Runtime>::ExcessiveSupplyAmount
+			);
+			assert_noop!(
+				DexModule::do_efe_swap_with_exact_target(
+					&BOB,
+					&[DRAM, SETUSD, BTC, DRAM],
+					250_000_000_000_000,
+					200_000_000_000_000,
+				),
+				Error::<Runtime>::InvalidTradingPathLength,
+			);
+			assert_noop!(
+				DexModule::do_efe_swap_with_exact_target(&BOB, &[DRAM, DNAR], 250_000_000_000_000, 200_000_000_000_000),
+				Error::<Runtime>::MustBeEnabled,
+			);
+
+			assert_ok!(DexModule::do_efe_swap_with_exact_target(
+				&BOB,
+				&[DRAM, SETUSD],
+				250_000_000_000_000,
+				200_000_000_000_000,
+			));
+			System::assert_last_event(Event::DexModule(crate::Event::Swap(
+				BOB,
+				vec![DRAM, SETUSD],
+				100_502_512_562_815,
+				250_000_000_000_000,
+			)));
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, DRAM),
+				(250_000_000_000_001, 200_502_512_562_815)
+			);
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, BTC),
+				(100_000_000_000_000, 10_000_000_000)
+			);
+			assert_eq!(
+				Tokens::free_balance(SETUSD, &DexModule::account_id()),
+				350_000_000_000_001
+			);
+			assert_eq!(Tokens::free_balance(DRAM, &DexModule::account_id()), 200_502_512_562_815);
+			assert_eq!(Tokens::free_balance(BTC, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_250_000_000_000_000);
+			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_899_497_487_437_185);
+			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_000_000_000_000);
+
+			assert_ok!(DexModule::do_efe_swap_with_exact_target(
+				&BOB,
+				&[DRAM, SETUSD, BTC],
+				5_000_000_000,
+				2_000_000_000_000_000,
+			));
+			System::assert_last_event(Event::DexModule(crate::Event::Swap(
+				BOB,
+				vec![DRAM, SETUSD],
+				100_502_512_562_815,
+				250_000_000_000_000,
+			)));
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, DRAM),
+				(250_000_000_000_001, 200_502_512_562_815)
+			);
+			assert_eq!(
+				DexModule::get_liquidity(SETUSD, BTC),
+				(100_000_000_000_000, 10_000_000_000)
+			);
+			assert_eq!(
+				Tokens::free_balance(SETUSD, &DexModule::account_id()),
+				350_000_000_000_001
+			);
+			assert_eq!(Tokens::free_balance(DRAM, &DexModule::account_id()), 200_502_512_562_815);
+			assert_eq!(Tokens::free_balance(BTC, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_250_000_000_000_000);
+			assert_eq!(Tokens::free_balance(DRAM, &BOB), 999_899_497_487_437_185);
+			assert_eq!(Tokens::free_balance(BTC, &BOB), 1_000_000_000_000_000_000);
 		});
 }
 
