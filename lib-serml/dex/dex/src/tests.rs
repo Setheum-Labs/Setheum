@@ -1097,7 +1097,7 @@ fn do_swap_with_exact_supply_work() {
 				BOB,
 				vec![DRAM, SETUSD],
 				100_000_000_000_000,
-				248_743_718_592_964,
+				249_373_433_583_959,
 			)));
 			assert_eq!(
 				DexModule::get_liquidity(SETUSD, DRAM),
@@ -1224,7 +1224,7 @@ fn do_swap_with_exact_target_work() {
 			System::assert_last_event(Event::DexModule(crate::Event::Swap(
 				BOB,
 				vec![DRAM, SETUSD],
-				101_010_101_010_102,
+				100_502_512_562_815,
 				250_000_000_000_000,
 			)));
 			assert_eq!(

@@ -1450,15 +1450,6 @@ impl<T: Config> Pallet<T> {
 			let supply_amounts = Self::get_supply_amounts(&path, actual_target_amount)?;
 			let actual_supply_amount = supply_amounts[supply_amounts.len() - 1];
 			
-			if actual_supply_amount >= supply_amount {
-                Self::do_swap_with_exact_supply(
-                    who,
-                    path,
-                    supply_amount,
-                    min_target_amount,
-                )?;
-			};
-
             // get the difference, this is the EFFECT.
 			let supply_effects_amount = actual_supply_amount.checked_sub(supply_amount)
                 .ok_or(ArithmeticError::Overflow)?;
@@ -1563,15 +1554,6 @@ impl<T: Config> Pallet<T> {
             let target_amounts = Self::get_target_amounts(&path, actual_supply_amount)?;
             let actual_target_amount = target_amounts[target_amounts.len() - 1];
             
-			if actual_target_amount >= target_amount {
-                Self::do_swap_with_exact_target(
-                    who,
-                    path,
-                    target_amount,
-                    max_supply_amount,
-                )?;
-            };
-
             // get the difference, this is the EFFECT.
             let target_effect_amount = actual_target_amount.checked_sub(target_amount)
                 .ok_or(ArithmeticError::Overflow)?;
