@@ -17,7 +17,6 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 # Introduction
 Setheum is founded and initiated and fascilitated by Muhammad-Jibril B.A. who founded Setheum Labs, Setheum Foundation to steward and support the development and advancement of the Network, its ecosystem and its community to foster the development and adoption of decentralised finance by building and supporting cross-chain open finance infrastructure such as the SERP (Setheum Elastic Reserve Protocol) stablecoin system, the SetMint stablecoin minting system and Setheum's built-in payment system SettPay that lets traders and transactors claim cashback (what we call CashDrop) on their transactions to speak of a few. 
 Setheum also deploys Advanced Incentivization mechanisms and economic models modeled under the Jurisdiction of Islamic Finance.
-Setheum deploys a Multi-Cameral DECENTRALISED GOVERNANCE SYSTEM.
 
 ### Founding Members:
 * [Setheum Labs](https://github.com/Setheum-Labs)
