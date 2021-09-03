@@ -1154,7 +1154,6 @@ impl serp_treasury::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type DirhamCurrencyId = GetNativeCurrencyId;
 	type CashDropPeriod = CashDropPeriod;
 	type SettPayTreasuryAccountId = OneAccountId;
 	type CashDropVaultAccountId = TwoAccountId;

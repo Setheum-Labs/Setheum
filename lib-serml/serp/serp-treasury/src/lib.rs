@@ -84,10 +84,6 @@ pub mod module {
 		/// The SetUSD currency id, it should be SETUSD in Setheum.
 		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
-		#[pallet::constant]
-		/// SettinDes (SETHEUM) dexer currency id
-		type DirhamCurrencyId: Get<CurrencyId>;
-
 		// CashDrop period for transferring cashdrop from 
 		// the `SettPayTreasuryAccountId`.
 		// The ideal period is after every `24 hours`.
