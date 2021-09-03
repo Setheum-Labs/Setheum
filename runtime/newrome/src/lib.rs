@@ -1427,27 +1427,27 @@ impl setheum_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
-parameter_types! {
-	pub const LocalChainId: chainbridge::ChainId = 2;
-	pub const ProposalLifetime: BlockNumber = 15 * MINUTES;
-}
+// parameter_types! {
+// 	pub const LocalChainId: chainbridge::ChainId = 2;
+// 	pub const ProposalLifetime: BlockNumber = 15 * MINUTES;
+// }
 
-impl chainbridge::Config for Runtime {
-	type Event = Event;
-	type AdminOrigin = EnsureRoot<AccountId>;
-	type Proposal = Call;
-	type ChainId = LocalChainId;
-	type ProposalLifetime = ProposalLifetime;
-}
+// impl chainbridge::Config for Runtime {
+// 	type Event = Event;
+// 	type AdminOrigin = EnsureRoot<AccountId>;
+// 	type Proposal = Call;
+// 	type ChainId = LocalChainId;
+// 	type ProposalLifetime = ProposalLifetime;
+// }
 
-impl setheum_chainbridge::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type NativeCurrencyId = GetNativeCurrencyId;
-	type RegistorOrigin = EnsureRootOrHalfGeneralCouncil;
-	type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
-	type WeightInfo = weights::setheum_chainbridge::WeightInfo<Runtime>;
-}
+// impl setheum_chainbridge::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Currencies;
+// 	type NativeCurrencyId = GetNativeCurrencyId;
+// 	type RegistorOrigin = EnsureRootOrHalfGeneralCouncil;
+// 	type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
+// 	type WeightInfo = weights::setheum_chainbridge::WeightInfo<Runtime>;
+// }
 
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
@@ -1564,7 +1564,7 @@ construct_runtime!(
 		// Bridges
 		RenVmBridge: setheum_renvm_bridge::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned} = 48,
 		ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 49,
-		SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>} = 50,
+		// SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>} = 50,
 
 		// Dev
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 255,
@@ -1909,7 +1909,7 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
 
-			orml_add_benchmark!(params, batches, setheum_chainbridge, benchmarking::setheum_chainbridge);
+			// orml_add_benchmark!(params, batches, setheum_chainbridge, benchmarking::setheum_chainbridge);
 
 			if batches.is_empty() { return Err("Benchmark not found for this module.".into()) }
 			Ok(batches)
