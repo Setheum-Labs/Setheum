@@ -89,7 +89,7 @@ pub mod module {
 		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// SettinDes (DRAM) dexer currency id
+		/// SettinDes (SETHEUM) dexer currency id
 		type DirhamCurrencyId: Get<CurrencyId>;
 
 		// CashDrop period for transferring cashdrop from 

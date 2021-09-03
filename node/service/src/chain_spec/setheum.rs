@@ -37,7 +37,7 @@ use setheum_runtime::{
 	NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OrmlNFTConfig,
 	RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 	SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
+	DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 };
 use runtime_common::TokenInfo;
 
@@ -62,7 +62,7 @@ fn setheum_properties() -> Properties {
 	let mut token_symbol: Vec<String> = vec![];
 	let mut token_decimals: Vec<u32> = vec![];
 	[
-		DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
+		DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 	].iter().for_each(|token| {
 		token_symbol.push(token.symbol().unwrap().to_string());
 		token_decimals.push(token.decimals().unwrap() as u32);
@@ -100,7 +100,7 @@ pub fn latest_setheum_config() -> Result<ChainSpec, String> {
 			let airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(airdrop_accounts_json).unwrap();
 			let other_allocation_json = &include_bytes!("../../../../resources/setheum-allocation-DNAR.json")[..];
 			let other_allocation: Vec<(AccountId, Balance)> = serde_json::from_slice(other_allocation_json).unwrap();
-			// TODO: Update to add `setheum-allocation-SETR.json` and `setheum-allocation-DRAM.json` too.
+			// TODO: Update to add `setheum-allocation-SETR.json` and `setheum-allocation-SETHEUM.json` too.
 
 			// TODO: Update!
 			// Initial PoA authorities
@@ -220,7 +220,7 @@ pub fn latest_setheum_config() -> Result<ChainSpec, String> {
 				"total allocation must be equal to 258 million DNAR"
 			);
 
-			// TODO: Update to add `setheum-vesting-SETR.json` and `setheum-vesting-DRAM.json` too.
+			// TODO: Update to add `setheum-vesting-SETR.json` and `setheum-vesting-SETHEUM.json` too.
 			let vesting_list_json = &include_bytes!("../../../../resources/setheum-vesting-DNAR.json")[..];
 			let vesting_list: Vec<(AccountId, BlockNumber, BlockNumber, u32, Balance)> =
 				serde_json::from_slice(vesting_list_json).unwrap();

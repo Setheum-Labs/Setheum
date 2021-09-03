@@ -54,7 +54,7 @@ pub use precompile::{
 pub use primitives::{
 	currency::{
 	TokenInfo, 
-	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
+	DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 	},
 	AccountId,
 };

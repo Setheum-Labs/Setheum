@@ -32,7 +32,7 @@ pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARLIE: AccountId = 2;
 pub const DNAR: AirDropCurrencyId = AirDropCurrencyId::DNAR;
-pub const DRAM: AirDropCurrencyId = AirDropCurrencyId::DRAM;
+pub const SETHEUM: AirDropCurrencyId = AirDropCurrencyId::SETHEUM;
 
 mod airdrop {
 	pub use super::super::*;
@@ -103,7 +103,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		airdrop::GenesisConfig::<Runtime> {
-			airdrop_accounts: vec![(CHARLIE, DRAM, 50), (CHARLIE, DNAR, 80)],
+			airdrop_accounts: vec![(CHARLIE, SETHEUM, 50), (CHARLIE, DNAR, 80)],
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

@@ -46,7 +46,7 @@ type Block = frame_system::mocking::MockBlock<Runtime>;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
@@ -322,7 +322,7 @@ parameter_types! {
 	pub const UnsignedInterval: u64 = 128;
 	pub const UnsignedPriority: u64 = 1 << 20;
 	
-	pub const DirhamCurrencyId: CurrencyId = DRAM;
+	pub const DirhamCurrencyId: CurrencyId = SETHEUM;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 	pub const GetSetEURCurrencyId: CurrencyId = SETEUR;

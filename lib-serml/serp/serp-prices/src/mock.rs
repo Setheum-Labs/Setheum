@@ -42,7 +42,7 @@ mod serp_prices {
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
@@ -50,8 +50,8 @@ pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 // LP tokens constants - CurrencyId/TokenSymbol : Dex Shares
 pub const LP_BTC_SETUSD: CurrencyId =
 CurrencyId::DexShare(DexShare::Token(TokenSymbol::RENBTC), DexShare::Token(TokenSymbol::SETUSD));
-pub const LP_SETUSD_DRAM: CurrencyId =
-CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DRAM));
+pub const LP_SETUSD_SETHEUM: CurrencyId =
+CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::SETHEUM));
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -90,7 +90,7 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 			SETUSD => Some(Price::saturating_from_rational(99, 100)),
 			BTC => Some(Price::saturating_from_integer(50000)),
 			DNAR => Some(Price::saturating_from_integer(100)),
-			DRAM => Some(Price::zero()),
+			SETHEUM => Some(Price::zero()),
 			_ => None,
 		}
 	}

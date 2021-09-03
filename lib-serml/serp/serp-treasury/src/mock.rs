@@ -45,7 +45,7 @@ pub const ROOT: AccountId = 11;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
@@ -147,7 +147,7 @@ parameter_types! {
 	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
-	pub const DirhamCurrencyId: CurrencyId = DRAM; // SettinDEX currency ticker is DRAM/
+	pub const DirhamCurrencyId: CurrencyId = SETHEUM; // SettinDEX currency ticker is SETHEUM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
@@ -309,15 +309,15 @@ impl Default for ExtBuilder {
 				(ALICE, SETUSD, 1000),
 				(ALICE, SETR, 1000),
 				(ALICE, DNAR, 1000),
-				(ALICE, DRAM, 1000),
+				(ALICE, SETHEUM, 1000),
 				(BOB, SETUSD, 1000),
 				(BOB, SETR, 1000),
 				(BOB, DNAR, 1000),
-				(BOB, DRAM, 1000),
+				(BOB, SETHEUM, 1000),
 				(CHARITY_FUND, SETUSD, 1000),
 				(CHARITY_FUND, SETR, 1000),
 				(CHARITY_FUND, DNAR, 1000),
-				(CHARITY_FUND, DRAM, 1000),
+				(CHARITY_FUND, SETHEUM, 1000),
 				(SETRPAY, SETUSD, 1000),
 				(SETRPAY, SETR, 1000),
 				(VAULT, SETUSD, 1000),

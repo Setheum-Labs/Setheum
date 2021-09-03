@@ -31,7 +31,7 @@ Setheum deploys a Multi-Cameral DECENTRALISED GOVERNANCE SYSTEM.
 #### The Main Coins - Tokens
 ```
 DNAR("Setheum Dinar", 12) = 0, // Staking and Utility Token - NativeCurrency & Reserve Asset - System GoldenCurrency
-DRAM("Setheum Dirham", 12) = 1, // Staking Reward and Governance Token - System SilverCurrency
+SETHEUM("Setheum Dirham", 12) = 1, // Staking Reward and Governance Token - System SilverCurrency
 ```
 
 #### The Setter - SERP Basket Stablecoin

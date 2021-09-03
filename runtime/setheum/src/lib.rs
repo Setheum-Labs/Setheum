@@ -118,7 +118,7 @@ pub use runtime_common::{
 	EnsureRootOrHalfShuraCouncil, EnsureRootOrThreeFourthsShuraCouncil,
 	EnsureRootOrTwoThirdsShuraCouncil, ShuraCouncilInstance,
 	ShuraCouncilMembershipInstance, TimeStampedPrice, 
-	DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
+	DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 };
 mod authority;
 mod benchmarking;
@@ -284,7 +284,7 @@ impl pallet_grandpa::Config for Runtime {
 }
 
 parameter_types! {
-	pub IndexDeposit: Balance = dollar(DRAM);
+	pub IndexDeposit: Balance = dollar(SETHEUM);
 }
 
 impl pallet_indices::Config for Runtime {
@@ -319,7 +319,7 @@ impl pallet_authorship::Config for Runtime {
 }
 
 parameter_types! {
-	pub NativeTokenExistentialDeposit: Balance = 10 * cent(DRAM);	// 0.1 DRAM
+	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETHEUM);	// 0.1 SETHEUM
 	// For weight estimation, we assume that the most locks on an individual account will be 50.
 	// This number may need to be adjusted in the future if this assumption no longer holds true.
 	pub const MaxLocks: u32 = 50;
@@ -339,7 +339,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 parameter_types! {
-	pub TransactionByteFee: Balance = millicent(DRAM);
+	pub TransactionByteFee: Balance = millicent(SETHEUM);
 	/// The portion of the `NORMAL_DISPATCH_RATIO` that we adjust the fees with. Blocks filled less
 	/// than this will decrease the weight and more will increase.
 	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
@@ -574,7 +574,7 @@ impl ContainsLengthBound for GeneralCouncilProvider {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub ProposalBondMinimum: Balance = 2 * dollar(DRAM);
+	pub ProposalBondMinimum: Balance = 2 * dollar(SETHEUM);
 	pub const SpendPeriod: BlockNumber = 7 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(0);
 
@@ -585,7 +585,7 @@ parameter_types! {
 	pub const BountyDepositPayoutDelay: BlockNumber = 3 * DAYS;
 	pub const BountyUpdatePeriod: BlockNumber = 30 * DAYS;
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub BountyValueMinimum: Balance = 5 * dollar(DRAM);
+	pub BountyValueMinimum: Balance = 5 * dollar(SETHEUM);
 	pub DataDepositPerByte: Balance = deposit(0, 1);
 	pub const MaximumReasonLength: u32 = 16384;
 	pub const MaxApprovals: u32 = 100;
@@ -703,10 +703,10 @@ impl pallet_staking::Config for Runtime {
 }
 
 parameter_types! {
-	pub ConfigDepositBase: Balance = 10 * cent(DRAM);
-	pub FriendDepositFactor: Balance = cent(DRAM);
+	pub ConfigDepositBase: Balance = 10 * cent(SETHEUM);
+	pub FriendDepositFactor: Balance = cent(SETHEUM);
 	pub const MaxFriends: u16 = 9;
-	pub RecoveryDeposit: Balance = 10 * cent(DRAM);
+	pub RecoveryDeposit: Balance = 10 * cent(SETHEUM);
 }
 
 impl pallet_recovery::Config for Runtime {
@@ -726,7 +726,7 @@ parameter_types! {
 	pub MinimumDeposit: Balance = 100 * dollar();
 	pub const EnactmentPeriod: BlockNumber = 28 * DAYS;
 	pub const CooloffPeriod: BlockNumber = 7 * DAYS;
-	pub PreimageByteDeposit: Balance = cent(DRAM);
+	pub PreimageByteDeposit: Balance = cent(SETHEUM);
 	pub const InstantAllowed: bool = true;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
@@ -819,7 +819,7 @@ impl DataFeeder<CurrencyId, Price, AccountId> for AggregatedDataProvider {
 }
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = DRAM;
+	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 }
@@ -836,7 +836,7 @@ parameter_type_with_key! {
 				TokenSymbol::SETSAR => cent(*currency_id)
 
 				TokenSymbol::DNAR |
-				TokenSymbol::DRAM |
+				TokenSymbol::SETHEUM |
 				TokenSymbol::RENBTC |
 			},
 			CurrencyId::DexShare(dex_share_0, _) => {
@@ -1074,7 +1074,7 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::new(SETR, DNAR),
-		TradingPair::new(SETR, DRAM),
+		TradingPair::new(SETR, SETHEUM),
 		TradingPair::new(SETR, SETUSD),
 		TradingPair::new(SETR, SETEUR),
 		TradingPair::new(SETR, SETGBP),
@@ -1124,7 +1124,7 @@ parameter_type_with_key! {
 	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&DNAR => 1,
-			&DRAM => 1,
+			&SETHEUM => 1,
 			&SETR => 1,
 			&SETUSD => 1,
 			&SETEUR => 1,
@@ -1140,11 +1140,11 @@ parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETR, DNAR],
-		vec![SETUSD, SETR, DRAM]
-		vec![SETEUR, SETR, DRAM]
-		vec![SETGBP, SETR, DRAM]
-		vec![SETCHF, SETR, DRAM]
-		vec![SETSAR, SETR, DRAM]
+		vec![SETUSD, SETR, SETHEUM]
+		vec![SETEUR, SETR, SETHEUM]
+		vec![SETGBP, SETR, SETHEUM]
+		vec![SETCHF, SETR, SETHEUM]
+		vec![SETSAR, SETR, SETHEUM]
 	];
 	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETR, DNAR],
@@ -1232,8 +1232,8 @@ impl setheum_evm_manager::Config for Runtime {
 }
 
 parameter_types! {
-	pub CreateClassDeposit: Balance = 20 * millicent(DRAM);
-	pub CreateTokenDeposit: Balance = 2 * millicent(DRAM);
+	pub CreateClassDeposit: Balance = 20 * millicent(SETHEUM);
+	pub CreateTokenDeposit: Balance = 2 * millicent(SETHEUM);
 	pub MaxAttributesBytes: u32 = 2048;
 }
 

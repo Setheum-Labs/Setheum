@@ -33,7 +33,7 @@ pub type AccountId = u128;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
@@ -45,8 +45,8 @@ pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 parameter_types! {
 	pub static SETUSDBTCPair: TradingPair = TradingPair::from_currency_ids(SETUSD, BTC).unwrap();
-	pub static SETUSDDRAMPair: TradingPair = TradingPair::from_currency_ids(SETUSD, DRAM).unwrap();
-	pub static DRAMBTCPair: TradingPair = TradingPair::from_currency_ids(DRAM, BTC).unwrap();
+	pub static SETUSDSETHEUMPair: TradingPair = TradingPair::from_currency_ids(SETUSD, SETHEUM).unwrap();
+	pub static SETHEUMBTCPair: TradingPair = TradingPair::from_currency_ids(SETHEUM, BTC).unwrap();
 }
 
 mod dex {
@@ -163,8 +163,8 @@ impl Default for ExtBuilder {
 				(BOB, SETUSD, 1_000_000_000_000_000_000u128),
 				(ALICE, BTC, 1_000_000_000_000_000_000u128),
 				(BOB, BTC, 1_000_000_000_000_000_000u128),
-				(ALICE, DRAM, 1_000_000_000_000_000_000u128),
-				(BOB, DRAM, 1_000_000_000_000_000_000u128),
+				(ALICE, SETHEUM, 1_000_000_000_000_000_000u128),
+				(BOB, SETHEUM, 1_000_000_000_000_000_000u128),
 				(ALICE, DNAR, 1_000_000_000_000_000_000u128),
 				(BOB, DNAR, 1_000_000_000_000_000_000u128),
 			],
@@ -177,7 +177,7 @@ impl Default for ExtBuilder {
 
 impl ExtBuilder {
 	pub fn initialize_enabled_trading_pairs(mut self) -> Self {
-		self.initial_enabled_trading_pairs = vec![SETUSDDRAMPair::get(), SETUSDBTCPair::get(), DRAMBTCPair::get()];
+		self.initial_enabled_trading_pairs = vec![SETUSDSETHEUMPair::get(), SETUSDBTCPair::get(), SETHEUMBTCPair::get()];
 		self
 	}
 
@@ -185,9 +185,9 @@ impl ExtBuilder {
 		self.initial_added_liquidity_pools = vec![(
 			who,
 			vec![
-				(SETUSDDRAMPair::get(), (1_000_000u128, 2_000_000u128)),
+				(SETUSDSETHEUMPair::get(), (1_000_000u128, 2_000_000u128)),
 				(SETUSDBTCPair::get(), (1_000_000u128, 2_000_000u128)),
-				(DRAMBTCPair::get(), (1_000_000u128, 2_000_000u128)),
+				(SETHEUMBTCPair::get(), (1_000_000u128, 2_000_000u128)),
 			],
 		)];
 		self
