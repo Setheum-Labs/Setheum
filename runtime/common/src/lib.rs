@@ -22,6 +22,7 @@
 
 use codec::{Decode, Encode};
 use frame_support::{
+	traits::MaxEncodedLen,
 	parameter_types,
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS, WEIGHT_PER_SECOND},
@@ -42,7 +43,7 @@ use sp_runtime::{
 	offchain::storage_lock::BlockNumberProvider,
 	traits::Convert,
 	transaction_validity::TransactionPriority,
-	Perbill,
+	Perbill, RuntimeDebug,
 };
 use static_assertions::const_assert;
 
