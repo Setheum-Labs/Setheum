@@ -281,22 +281,22 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let charity_fund_account = T::CharityFundAccountId::get();
 		// Charity Fund SerpUp Pool - 10%
 		let serping_amount: Balance = amount / 10;
-		// Issue the SerpUp propper to the SettPayVault
+		// Issue the SerpUp propper to the SetPayVault
 		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
 
-	/// SerpUp ratio for SettPay Cashdrops
+	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let settpay_account = &T::CashDropPoolAccountId::get();
+		let setpay_account = &T::CashDropPoolAccountId::get();
 
-		// SettPay SerpUp Pool - 50%
+		// SetPay SerpUp Pool - 50%
 		let five: Balance = 5;
 		let serping_amount: Balance = five.saturating_mul(amount / 10);
-		// Issue the SerpUp propper to the SettPayVault
-		Self::issue_standard(currency_id, &settpay_account, serping_amount)?;
+		// Issue the SerpUp propper to the SetPayVault
+		Self::issue_standard(currency_id, &setpay_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())

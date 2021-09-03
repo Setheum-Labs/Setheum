@@ -184,7 +184,7 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 	
-	/// SerpUp ratio for SettPay Cashdrops
+	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
