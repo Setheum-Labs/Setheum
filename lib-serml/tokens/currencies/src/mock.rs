@@ -154,8 +154,7 @@ parameter_types! {
 
 ord_parameter_types! {
 	pub const CharityFundAccountId:  AccountId32 = AccountId32::from([5u8; 32]);
-	pub const SettPayTreasuryAccountId:  AccountId32 = AccountId32::from([6u8; 32]);
-	pub const CashDropVaultAccountId:  AccountId32 = AccountId32::from([10u8; 32]);
+	pub const CashDropPoolAccountId:  AccountId32 = AccountId32::from([10u8; 32]);
 	pub const Root:  AccountId32 = AccountId32::from([11u8; 32]);
 	
 	pub const CouncilAccount: AccountId32 = AccountId32::from([1u8; 32]);
@@ -214,11 +213,7 @@ parameter_types! {
 	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
-	pub const DirhamCurrencyId: CurrencyId = SETHEUM; // SettinDEX currency ticker is SETHEUM/
-
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-
-	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
 }
 
 parameter_types! {
@@ -325,10 +320,7 @@ impl serp_treasury::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type DirhamCurrencyId = DirhamCurrencyId;
-	type CashDropPeriod = CashDropPeriod;
-	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
-	type CashDropVaultAccountId = CashDropVaultAccountId;
+	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
 	type DefaultSwapPathList = DefaultFeeSwapPathList;
 	type Dex = SetheumDEX;

@@ -84,23 +84,13 @@ pub mod module {
 		/// The SetUSD currency id, it should be SETUSD in Setheum.
 		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
-		#[pallet::constant]
-		/// SettinDes (SETHEUM) dexer currency id
-		type DirhamCurrencyId: Get<CurrencyId>;
-
-		// CashDrop period for transferring cashdrop from 
-		// the `SettPayTreasuryAccountId`.
+		// CashDrop period for transferring cashdrop.
 		// The ideal period is after every `24 hours`.
-		type CashDropPeriod: Get<Self::BlockNumber>;
+		// type CashDropPeriod: Get<Self::BlockNumber>;
 
-		/// SerpUp pool/account for receiving funds SettPay Cashdrops
-		/// SettPayTreasury account.
+		/// The vault account to keep the Cashdrops for claiming.
 		#[pallet::constant]
-		type SettPayTreasuryAccountId: Get<Self::AccountId>;
-
-		/// The vault account to keep the accumulated Cashdrop doses from the `SettPayTreasuryAccountId`.
-		#[pallet::constant]
-		type CashDropVaultAccountId: Get<Self::AccountId>;
+		type CashDropPoolAccountId: Get<Self::AccountId>;
 
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
@@ -194,32 +184,31 @@ pub mod module {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		///
-		/// NOTE: This function is called BEFORE ANY extrinsic in a block is applied,
-		/// including inherent extrinsics. Hence for instance, if you runtime includes
-		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
-		///
-		/// Triggers Serping for all system stablecoins at every block.
-		fn on_initialize(now: T::BlockNumber) -> Weight {
-			// CashDrop period for transferring cashdrop from 
-			// the `SettPayTreasuryAccountId`.
-			// The ideal period is after every `24 hours`.
-			//
-			if now % T::CashDropPeriod::get() == Zero::zero() {
-				// Release CashDrop to vault.
-				let mut count: u32 = 0;
-				if Self::setter_cashdrop_to_vault().is_ok() {
-					count += 1;
-				};
-				if Self::setusd_cashdrop_to_vault().is_ok() {
-					count += 1;
-				};
-
-				T::WeightInfo::on_initialize(count)
-			} else {
-				0
-			}
-		}
+		//
+		// NOTE: This function is called BEFORE ANY extrinsic in a block is applied,
+		// including inherent extrinsics. Hence for instance, if you runtime includes
+		// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
+		//
+		// Triggers Serping for all system stablecoins at every block.
+		// fn on_initialize(now: T::BlockNumber) -> Weight {
+		//	CashDrop period for transferring cashdrop.
+		//	The ideal period is after every `24 hours`.
+			
+			// if now % T::CashDropPeriod::get() == Zero::zero() {
+		//		Release CashDrop to vault.
+				// let mut count: u32 = 0;
+				// if Self::setter_cashdrop_to_vault().is_ok() {
+					// count += 1;
+				// };
+				// if Self::setusd_cashdrop_to_vault().is_ok() {
+					// count += 1;
+				// };
+				
+				// T::WeightInfo::on_initialize(count)
+			// } else {
+				// 0
+			// }
+		// }
 	}
 	/// set alternative swap path for SERP.
 	#[pallet::call]
@@ -301,7 +290,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// SerpUp ratio for SettPay Cashdrops
 	fn get_cashdrop_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let settpay_account = &T::SettPayTreasuryAccountId::get();
+		let settpay_account = &T::CashDropPoolAccountId::get();
 
 		// SettPay SerpUp Pool - 50%
 		let five: Balance = 5;
@@ -310,36 +299,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::issue_standard(currency_id, &settpay_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
-		Ok(())
-	}
-	// TODO: Update to 1% per day not 50% per day.
-	/// Reward SETR cashdrop to vault
-	fn setter_cashdrop_to_vault() -> DispatchResult {
-		let free_balance = T::Currency::free_balance(T::SetterCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
-
-		// Send 50% of funds to the CashDropVault
-		let five: Balance = 5;
-		let cashdrop_amount: Balance = five.saturating_mul(free_balance / 10);
-		
-		// Transfer the CashDrop propper Rewards to the CashDropVault	
-		T::Currency::transfer(T::SetterCurrencyId::get(), &T::SettPayTreasuryAccountId::get(), &T::CashDropVaultAccountId::get(), cashdrop_amount)?;
-
-		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::SetterCurrencyId::get()));
-		Ok(())
-	}
-	// TODO: Update to 1% per day not 50% per day. and rename `setusd` to `setusd`
-	/// SerpUp ratio for SettPay Cashdrops
-	fn setusd_cashdrop_to_vault() -> DispatchResult {
-		let free_balance = T::Currency::free_balance(T::GetSetUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get());
-
-		// Send 50% of funds to the CashDropVault
-		let five: Balance = 5;
-		let cashdrop_amount: Balance = five.saturating_mul(free_balance / 10);
-		
-		// Transfer the CashDrop propper Rewards to the CashDropVault	
-		T::Currency::transfer(T::GetSetUSDCurrencyId::get(), &T::SettPayTreasuryAccountId::get(), &T::CashDropVaultAccountId::get(), cashdrop_amount)?;
-
-		<Pallet<T>>::deposit_event(Event::CashDropToVault(cashdrop_amount, T::GetSetUSDCurrencyId::get()));
 		Ok(())
 	}
 
@@ -438,27 +397,16 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::TransferTooLowForCashDrop,
 		);
 
-		if currency_id == T::SetterCurrencyId::get() {
-			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
-			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
-			ensure!(
-				balance_cashdrop_amount <= serp_balance,
-				Error::<T>::CashdropNotAvailable,
-			);
+		let balance_cashdrop_amount = transfer_amount / 100; // 1% cashdrop
+		let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
+		ensure!(
+			balance_cashdrop_amount <= serp_balance,
+			Error::<T>::CashdropNotAvailable,
+		);
 
-			T::Currency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), who, balance_cashdrop_amount)?;
-			Self::deposit_event(Event::CashDropClaim(T::SetterCurrencyId::get(), who.clone(), balance_cashdrop_amount.clone()));
-		} else {
-			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
-			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
-			ensure!(
-				balance_cashdrop_amount <= serp_balance,
-				Error::<T>::CashdropNotAvailable,
-			);
+		T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
 
-			T::Currency::transfer(currency_id, &Self::account_id(), who, balance_cashdrop_amount)?;
-			Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
-		}
+		Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 		Ok(())
 	}
 }

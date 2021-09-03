@@ -147,14 +147,10 @@ parameter_types! {
 	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
-	pub const DirhamCurrencyId: CurrencyId = SETHEUM; // SettinDEX currency ticker is SETHEUM/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
-	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
-	pub const CashDropVaultAccountId: AccountId = VAULT;
-
-	pub CashDropPeriod: BlockNumber = 120;
+	pub const CashDropPoolAccountId: AccountId = VAULT;
 }
 
 parameter_types! {
@@ -264,10 +260,7 @@ impl Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type DirhamCurrencyId = DirhamCurrencyId;
-	type CashDropPeriod = CashDropPeriod;
-	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
-	type CashDropVaultAccountId = CashDropVaultAccountId;
+	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
 	type DefaultSwapPathList = DefaultSwapPathList;
 	type Dex = SetheumDEX;

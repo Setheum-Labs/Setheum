@@ -322,7 +322,6 @@ parameter_types! {
 	pub const UnsignedInterval: u64 = 128;
 	pub const UnsignedPriority: u64 = 1 << 20;
 	
-	pub const DirhamCurrencyId: CurrencyId = SETHEUM;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 	pub const GetSetEURCurrencyId: CurrencyId = SETEUR;
