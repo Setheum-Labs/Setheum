@@ -44,14 +44,11 @@ DNAR("Serp Dinar", 12) = 1, // SERP Reserve Asset
 SETR("Setter", 12) = 2, // SetMint Reserve Asset, stablecoin basket currency.
 ```
 
-#### The SettCurrencies - SERP Stablecoins
+#### The SetCurrencies - SERP Stablecoins
 
 ```bash
 SETUSD("SetDollar", 12) = 3,
 SETEUR("SetEuro", 12) = 4,
-SETGBP("SetPound", 12) = 5,
-SETCHF("SetFranc", 12) = 6,
-SETSAR("SetRiyal", 12) = 7,
 ```
 
 1. The Setter - The Setter is a basket currency pegged to the Top 10 Strongest and most valuable currencies. It serves as the medium of Exchange and the Defacto stablecoin of the Setheum Ecosystem. All other Setheum system stablecoins orbit around the Setter (SETR) and the SetMint for minting Setheum Currencies (system stablecoins) accepts only the Setter as the Minting Reserve Asset. Only with the Setter (SETR) can a user participate in the DNAR Auctions to stabilize the price of the Setter, while the Setter is Auctioned to stabilize the price of all the other SettCurrencies (system stablecoins). It's the star that brightens many planets - 10 to be exact
