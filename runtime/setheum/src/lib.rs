@@ -1102,7 +1102,6 @@ parameter_types! {
 	// Charity Fund Account : "5DhvNsZdYTtWUYdHvREWhsHWt1StP9bA21vsC1Wp6UksjNAh"
 	pub const CharityFundAccount: AccountId = hex!["0x489e7647f3a94725e0178fc1da16ef671175837089ebe83e6d1f0a5c8b682e56"].into();
 	pub MaxSlippageSwapWithDex: Ratio = Ratio::saturating_from_rational(5, 100);
-	pub CashDropPeriod: BlockNumber = 24 * HOURS; // Accumulates CashDrop for claiming - Every 24 hours.
 }
 
 // TODO: Update the `GetStableCurrencyMinimumSupply` for each currency to 25.8% of its `initial_supply`.
@@ -1169,9 +1168,7 @@ impl serp_treasury::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type CashDropPeriod = CashDropPeriod;
-	type SettPayTreasuryAccountId = OneAccountId;
-	type CashDropVaultAccountId = TwoAccountId;
+	type CashDropPoolAccountId = TwoAccountId;
 	type CharityFundAccountId = CharityFundAccount;
 	type DefaultSwapPathList = DefaultSwapPathList;
 	type Dex = Dex;

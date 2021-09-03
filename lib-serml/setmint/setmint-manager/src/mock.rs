@@ -150,10 +150,8 @@ parameter_types! {
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
-	pub const SettPayTreasuryAccountId: AccountId = SETRPAY;
-	pub const CashDropVaultAccountId: AccountId = VAULT;
+	pub const CashDropPoolAccountId: AccountId = VAULT;
 
-	pub CashDropPeriod: BlockNumber = 120; // Triggers SERP-TES for serping after Every 60 blocks
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::one();
 }
 
@@ -264,9 +262,7 @@ impl serp_treasury::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type CashDropPeriod = CashDropPeriod;
-	type SettPayTreasuryAccountId = SettPayTreasuryAccountId;
-	type CashDropVaultAccountId = CashDropVaultAccountId;
+	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
 	type DefaultSwapPathList = DefaultFeeSwapPathList;
 	type Dex = SetheumDEX;
