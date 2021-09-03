@@ -196,16 +196,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	/// Reward SETR cashdrop to vault
-	fn setter_cashdrop_to_vault() -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// Reward SETUSD cashdrop to vault
-	fn setusd_cashdrop_to_vault() -> DispatchResult {
-		unimplemented!()
-	}
-
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(
 		_currency_id: CurrencyId,

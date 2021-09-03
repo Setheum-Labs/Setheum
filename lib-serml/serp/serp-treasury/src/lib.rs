@@ -183,33 +183,8 @@ pub mod module {
 	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		//
-		// NOTE: This function is called BEFORE ANY extrinsic in a block is applied,
-		// including inherent extrinsics. Hence for instance, if you runtime includes
-		// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
-		//
-		// Triggers Serping for all system stablecoins at every block.
-		// fn on_initialize(now: T::BlockNumber) -> Weight {
-		//	CashDrop period for transferring cashdrop.
-		//	The ideal period is after every `24 hours`.
-			
-			// if now % T::CashDropPeriod::get() == Zero::zero() {
-		//		Release CashDrop to vault.
-				// let mut count: u32 = 0;
-				// if Self::setter_cashdrop_to_vault().is_ok() {
-					// count += 1;
-				// };
-				// if Self::setusd_cashdrop_to_vault().is_ok() {
-					// count += 1;
-				// };
-				
-				// T::WeightInfo::on_initialize(count)
-			// } else {
-				// 0
-			// }
-		// }
-	}
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
+	
 	/// set alternative swap path for SERP.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
