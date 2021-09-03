@@ -1,6 +1,6 @@
-// This file is part of DRAMla.
+// This file is part of SETHEUMla.
 
-// Copyright (C) 2020-2021 DRAMla Foundation.
+// Copyright (C) 2020-2021 SETHEUMla Foundation.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -92,8 +92,8 @@ ord_parameter_types! {
 parameter_types! {
 	pub const LocalChainId: chainbridge::ChainId = 2;
 	pub const ProposalLifetime: BlockNumber = 10;
-	pub DRAMResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"DRAM");
-	pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+	pub SETHEUMResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(LocalChainId::get(), b"SETHEUM");
+	pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 	pub WETHResourceId: chainbridge::ResourceId = chainbridge::derive_resource_id(0, b"weth");
 	pub WETH: CurrencyId = CurrencyId::ChainSafe(WETHResourceId::get());
 }
@@ -113,7 +113,7 @@ ord_parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type NativeCurrencyId = DRAM;
+	type NativeCurrencyId = SETHEUM;
 	type RegistorOrigin = EnsureSignedBy<RegistorOrigin, AccountId>;
 	type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
 	type WeightInfo = ();
@@ -142,7 +142,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			balances: vec![(ALICE, DRAM::get(), 1_000u128)],
+			balances: vec![(ALICE, SETHEUM::get(), 1_000u128)],
 		}
 	}
 }

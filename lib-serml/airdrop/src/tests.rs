@@ -22,17 +22,17 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Airdrop, Event, ExtBuilder, Origin, System, DNAR, ALICE, BOB, CHARLIE, DRAM};
+use mock::{Airdrop, Event, ExtBuilder, Origin, System, DNAR, ALICE, BOB, CHARLIE, SETHEUM};
 use sp_runtime::traits::BadOrigin;
 
 #[test]
 fn airdrop_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_noop!(Airdrop::airdrop(Origin::signed(BOB), ALICE, DRAM, 10000), BadOrigin,);
-		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, DRAM, 10000));
-		System::assert_last_event(Event::AirDrop(RawEvent::Airdrop(ALICE, DRAM, 10000)));
-		assert_eq!(Airdrop::airdrops(ALICE, DRAM), 10000);
+		assert_noop!(Airdrop::airdrop(Origin::signed(BOB), ALICE, SETHEUM, 10000), BadOrigin,);
+		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETHEUM, 10000));
+		System::assert_last_event(Event::AirDrop(RawEvent::Airdrop(ALICE, SETHEUM, 10000)));
+		assert_eq!(Airdrop::airdrops(ALICE, SETHEUM), 10000);
 	});
 }
 
@@ -53,7 +53,7 @@ fn update_airdrop_work() {
 #[test]
 fn genesis_config_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Airdrop::airdrops(CHARLIE, DRAM), 150);
+		assert_eq!(Airdrop::airdrops(CHARLIE, SETHEUM), 150);
 		assert_eq!(Airdrop::airdrops(CHARLIE, DNAR), 80);
 	});
 }

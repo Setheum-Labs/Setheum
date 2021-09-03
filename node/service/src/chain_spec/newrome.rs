@@ -237,7 +237,7 @@ fn testnet_genesis(
 		NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OrmlNFTConfig,
 		RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR RENBTC,
+		DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR RENBTC,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;
@@ -394,7 +394,7 @@ fn newrome_genesis(
 		IndicesConfig, NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig,
 		OrmlNFTConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
 		SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
-		DNAR, DRAM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
+		DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 	};
 	#[cfg(feature = "std")]
 	use sp_std::collections::btree_map::BTreeMap;

@@ -103,7 +103,7 @@ pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 pub enum AirDropCurrencyId {
 	SETR = 0,
 	DNAR = 1,
-	DRAM = 2,
+	SETHEUM = 2,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]

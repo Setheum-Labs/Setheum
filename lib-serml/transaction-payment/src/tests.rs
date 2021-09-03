@@ -27,7 +27,7 @@ use frame_support::{
 };
 use mock::{
 	AccountId, BlockWeights, Call, Currencies, SetheumDEX, ExtBuilder, MockPriceSource, Origin, Runtime,
-	TransactionPayment, DNAR, ALICE, SETR, BOB, CHARLIE, DRAM, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
+	TransactionPayment, DNAR, ALICE, SETR, BOB, CHARLIE, SETHEUM, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
 };
 use orml_traits::MultiCurrency;
 use sp_runtime::{testing::TestXt, traits::One};
@@ -308,7 +308,7 @@ fn set_alternative_fee_swap_path_work() {
 		);
 
 		assert_noop!(
-			TransactionPayment::set_alternative_fee_swap_path(Origin::signed(ALICE), Some(vec![SETR, DRAM])),
+			TransactionPayment::set_alternative_fee_swap_path(Origin::signed(ALICE), Some(vec![SETR, SETHEUM])),
 			Error::<Runtime>::InvalidSwapPath
 		);
 
@@ -336,26 +336,26 @@ fn charge_fee_by_default_swap_path() {
 			));
 			assert_ok!(SetheumDEX::add_liquidity(
 				Origin::signed(ALICE),
-				DRAM,
+				SETHEUM,
 				SETR,
 				100,
 				1000,
 				0,
 			));
 			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETR), (10000, 1000));
-			assert_eq!(SetheumDEX::get_liquidity_pool(DRAM, SETR), (100, 1000));
+			assert_eq!(SetheumDEX::get_liquidity_pool(SETHEUM, SETR), (100, 1000));
 			assert_ok!(TransactionPayment::set_alternative_fee_swap_path(
 				Origin::signed(BOB),
-				Some(vec![DRAM, DNAR])
+				Some(vec![SETHEUM, DNAR])
 			));
 			assert_eq!(
 				TransactionPayment::alternative_fee_swap_path(&BOB).unwrap(),
-				vec![DRAM, DNAR]
+				vec![SETHEUM, DNAR]
 			);
-			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(DRAM, &ALICE, &BOB, 100));
+			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(SETHEUM, &ALICE, &BOB, 100));
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 0);
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETR, &BOB), 0);
-			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DRAM, &BOB), 100);
+			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETHEUM, &BOB), 100);
 
 			let fee = 500 * 2 + 1000; // len * byte + weight
 			assert_eq!(
@@ -368,9 +368,9 @@ fn charge_fee_by_default_swap_path() {
 
 			assert_eq!(Currencies::free_balance(DNAR, &BOB), Currencies::minimum_balance(DNAR));
 			assert_eq!(Currencies::free_balance(SETR, &BOB), 0);
-			assert_eq!(Currencies::free_balance(DRAM, &BOB), 100 - 34);
+			assert_eq!(Currencies::free_balance(SETHEUM, &BOB), 100 - 34);
 			assert_eq!(SetheumDEX::get_liquidity_pool(DNAR, SETR), (10000 - 2000 - 10, 1252));
-			assert_eq!(SetheumDEX::get_liquidity_pool(DRAM, SETR), (100 + 34, 1000 - 252));
+			assert_eq!(SetheumDEX::get_liquidity_pool(SETHEUM, SETR), (100 + 34, 1000 - 252));
 		});
 }
 

@@ -41,7 +41,7 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const DRAM: CurrencyId = CurrencyId::Token(TokenSymbol::DRAM);
+pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -266,7 +266,7 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(SETR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETR, DRAM).unwrap(),
+		TradingPair::from_currency_ids(SETR, SETHEUM).unwrap(),
 	];
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
@@ -289,7 +289,7 @@ impl setheum_dex::Config for Runtime {
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
 	pub static TransactionByteFee: u128 = 1;
-	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![DRAM, SETR, DNAR]];
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETHEUM, SETR, DNAR]];
 }
 
 thread_local! {
@@ -396,7 +396,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			balances: vec![(ALICE, SETR, 10000), (ALICE, DRAM, 1000)],
+			balances: vec![(ALICE, SETR, 10000), (ALICE, SETHEUM, 1000)],
 			base_weight: 0,
 			byte_fee: 2,
 			weight_to_fee: 1,

@@ -51,7 +51,7 @@ pub mod fee {
 		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	};
 	use primitives::Balance;
-	use runtime_common::{cent, DRAM};
+	use runtime_common::{cent, SETHEUM};
 	use smallvec::smallvec;
 	use sp_runtime::Perbill;
 
@@ -76,7 +76,7 @@ pub mod fee {
 		fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
 			// in Setheum, extrinsic base weight (smallest non-zero weight) is mapped to 1/10
 			// CENT:
-			let p = cent(DRAM) / 10; // 10_000_000_000
+			let p = cent(SETHEUM) / 10; // 10_000_000_000
 			let q = Balance::from(ExtrinsicBaseWeight::get()); // 125_000_000
 			smallvec![WeightToFeeCoefficient {
 				degree: 1,
