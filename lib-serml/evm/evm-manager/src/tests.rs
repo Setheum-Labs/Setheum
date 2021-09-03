@@ -101,7 +101,7 @@ fn name_works() {
 			}));
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::Token(TokenSymbol::DNAR)),
-				Some(b"Setheum Dinar".to_vec())
+				Some(b"Serp Dinar".to_vec())
 			);
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::Erc20(erc20_address())),
@@ -115,7 +115,7 @@ fn name_works() {
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETR))),
-				Some(b"LP Setheum Dinar - Setter".to_vec())
+				Some(b"LP Serp Dinar - Setter".to_vec())
 			);
 
 			assert_eq!(

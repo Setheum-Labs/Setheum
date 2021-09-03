@@ -141,7 +141,7 @@ fn multicurrency_precompile_should_work() {
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
-		expected_output[27..32].copy_from_slice(&b"Setheum Dinar"[..]);
+		expected_output[27..32].copy_from_slice(&b"Serp Dinar"[..]);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
 
