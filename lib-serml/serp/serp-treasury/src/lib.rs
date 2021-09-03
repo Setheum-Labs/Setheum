@@ -183,33 +183,8 @@ pub mod module {
 	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		//
-		// NOTE: This function is called BEFORE ANY extrinsic in a block is applied,
-		// including inherent extrinsics. Hence for instance, if you runtime includes
-		// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
-		//
-		// Triggers Serping for all system stablecoins at every block.
-		// fn on_initialize(now: T::BlockNumber) -> Weight {
-		//	CashDrop period for transferring cashdrop.
-		//	The ideal period is after every `24 hours`.
-			
-			// if now % T::CashDropPeriod::get() == Zero::zero() {
-		//		Release CashDrop to vault.
-				// let mut count: u32 = 0;
-				// if Self::setter_cashdrop_to_vault().is_ok() {
-					// count += 1;
-				// };
-				// if Self::setusd_cashdrop_to_vault().is_ok() {
-					// count += 1;
-				// };
-				
-				// T::WeightInfo::on_initialize(count)
-			// } else {
-				// 0
-			// }
-		// }
-	}
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
+	
 	/// set alternative swap path for SERP.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -281,22 +256,22 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let charity_fund_account = T::CharityFundAccountId::get();
 		// Charity Fund SerpUp Pool - 10%
 		let serping_amount: Balance = amount / 10;
-		// Issue the SerpUp propper to the SettPayVault
+		// Issue the SerpUp propper to the SetPayVault
 		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
 
-	/// SerpUp ratio for SettPay Cashdrops
+	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let settpay_account = &T::CashDropPoolAccountId::get();
+		let setpay_account = &T::CashDropPoolAccountId::get();
 
-		// SettPay SerpUp Pool - 50%
+		// SetPay SerpUp Pool - 50%
 		let five: Balance = 5;
 		let serping_amount: Balance = five.saturating_mul(amount / 10);
-		// Issue the SerpUp propper to the SettPayVault
-		Self::issue_standard(currency_id, &settpay_account, serping_amount)?;
+		// Issue the SerpUp propper to the SetPayVault
+		Self::issue_standard(currency_id, &setpay_account, serping_amount)?;
 
 		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())

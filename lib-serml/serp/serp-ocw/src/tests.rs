@@ -223,21 +223,11 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 	
-	/// SerpUp ratio for SettPay Cashdrops
+	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(
 		_amount: Balance,
 		_currency_id: CurrencyId
 	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// Reward SETR cashdrop to vault
-	fn setter_cashdrop_to_vault() -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// Reward SETUSD cashdrop to vault
-	fn setusd_cashdrop_to_vault() -> DispatchResult {
 		unimplemented!()
 	}
 
