@@ -180,7 +180,7 @@ create_currency_id! {
 	pub enum TokenSymbol {
 		/// Setheum Network
 		SETHEUM("Setheum", 12) = 0,
-		DNAR("Setheum Dinar", 12) = 1,
+		DNAR("Serp Dinar", 12) = 1,
 		SETR("Setter", 12) = 2,
 		// SetCurrencies
 		SETUSD("SetDollar", 12) = 3,
