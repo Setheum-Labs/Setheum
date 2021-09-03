@@ -1893,7 +1893,7 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
 
-			orml_add_benchmark!(params, batches, setheum_chainbridge, benchmarking::setheum_chainbridge);
+			// orml_add_benchmark!(params, batches, setheum_chainbridge, benchmarking::setheum_chainbridge);
 
 			if batches.is_empty() { return Err("Benchmark not found for this module.".into()) }
 			Ok(batches)
