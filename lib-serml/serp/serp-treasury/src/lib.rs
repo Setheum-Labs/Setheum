@@ -35,15 +35,11 @@ use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::{
-	DispatchError, DispatchResult, 
+	DispatchResult, 
 	traits::{
-		AccountIdConversion, Bounded, CheckedSub, Convert, DispatchInfoOf, One, PostDispatchInfoOf, SaturatedConversion, Saturating,
-		SignedExtension, UniqueSaturatedInto, Zero,
+		AccountIdConversion, Bounded, One, Saturating, UniqueSaturatedInto, Zero,
 	},
-	transaction_validity::{
-		InvalidTransaction, TransactionPriority, TransactionValidity, TransactionValidityError, ValidTransaction,
-	},
-	FixedPointNumber, FixedPointOperand, FixedU128, Perquintill,
+	FixedPointNumber
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{
@@ -162,7 +158,7 @@ pub mod module {
 		/// CashDrop is not available.
 		CashdropNotAvailable,
 		/// Transfer is too low for CashDrop.
-		TransferTooLowForCashDrop
+		TransferTooLowForCashDrop,
 	}
 
 	#[pallet::event]
@@ -470,6 +466,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	/// swap Dinar to get exact Setter,
 	/// return actual supply Dinar amount
+	#[allow(unused_variables)]
 	fn swap_dinar_to_exact_setter(
 		target_amount: Balance,
 	) {
@@ -503,23 +500,23 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						CurrencyBalanceOf::<T>::max_value()
 					};
 
-					T::Currency::deposit(
+					if T::Currency::deposit(
 						dinar_currency_id,
 						&Self::account_id(),
 						max_supply_limit.unique_saturated_into()
-					);
-
-					if T::Dex::swap_with_exact_target(
-						&Self::account_id(),
-						&path,
-						target_amount.unique_saturated_into(),
-						<T as Config>::Currency::free_balance(dinar_currency_id, &Self::account_id())
-							.min(max_supply_limit.unique_saturated_into()),
-					)
-					.is_ok()
-					{
-						// successfully swap, break iteration
-						break;
+					).is_ok() {
+						if T::Dex::swap_with_exact_target(
+							&Self::account_id(),
+							&path,
+							target_amount.unique_saturated_into(),
+							<T as Config>::Currency::free_balance(dinar_currency_id, &Self::account_id())
+								.min(max_supply_limit.unique_saturated_into()),
+						)
+						.is_ok()
+						{
+							// successfully swap, break iteration
+							break;
+						}
 					}
 				}
 				_ => {}
@@ -532,6 +529,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	///
 	/// 
 	/// When SetCurrency needs SerpDown
+	/// 
+	#[allow(unused_variables)]
 	fn swap_setter_to_exact_setcurrency(
 		currency_id: CurrencyId,
 		target_amount: Balance,
@@ -565,23 +564,23 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						CurrencyBalanceOf::<T>::max_value()
 					};
 
-					T::Currency::deposit(
+					if T::Currency::deposit(
 						setter_currency_id,
 						&Self::account_id(),
 						max_supply_limit.unique_saturated_into()
-					);
-
-					if T::Dex::swap_with_exact_target(
-						&Self::account_id(),
-						&path,
-						target_amount.unique_saturated_into(),
-						<T as Config>::Currency::free_balance(setter_currency_id, &Self::account_id())
-							.min(max_supply_limit.unique_saturated_into()),
-					)
-					.is_ok()
-					{
-						// successfully swap, break iteration
-						break;
+					).is_ok() {
+						if T::Dex::swap_with_exact_target(
+							&Self::account_id(),
+							&path,
+							target_amount.unique_saturated_into(),
+							<T as Config>::Currency::free_balance(setter_currency_id, &Self::account_id())
+								.min(max_supply_limit.unique_saturated_into()),
+						)
+						.is_ok()
+						{
+							// successfully swap, break iteration
+							break;
+						}
 					}
 				}
 				_ => {}
@@ -594,6 +593,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	///
 	/// 
 	/// When Setter gets SerpUp
+	#[allow(unused_variables)]
 	fn swap_exact_setter_to_dinar(
 		supply_amount: Balance,
 	) {
@@ -627,6 +627,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						CurrencyBalanceOf::<T>::max_value()
 					};
 
+					// Swap and burn Native Reserve asset (Dinar (DNAR))
 					if T::Dex::swap_with_exact_supply(
 						&Self::account_id(),
 						&path,
@@ -634,9 +635,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						min_target_limit.unique_saturated_into(),
 					)
 					.is_ok()
+					&& T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), min_target_limit)
+					.is_ok()
 					{
-						// Burn Native Reserve asset (Dinar (DNAR))
-						T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), min_target_limit);
 						// successfully swap, break iteration.
 						break;
 					}
@@ -651,6 +652,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	///
 	/// 
 	/// When Setter gets SerpUp
+	#[allow(unused_variables)]
 	fn swap_exact_setcurrency_to_dinar(
 		currency_id: CurrencyId,
 		supply_amount: Balance,
@@ -691,9 +693,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						min_target_limit.unique_saturated_into(),
 					)
 					.is_ok()
+					&& T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), min_target_limit)
+					.is_ok()
 					{
-						// Burn Native Reserve asset (Dinar (DNAR))
-						T::Currency::withdraw( T::GetNativeCurrencyId::get(), &Self::account_id(), min_target_limit);
 						// successfully swap, break iteration
 						break;
 					}

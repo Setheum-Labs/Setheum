@@ -31,7 +31,7 @@ use sp_runtime::{
 	traits::{IdentityLookup, One as OneT, Zero},
 	DispatchError, FixedPointNumber,
 };
-use support::{mocks::MockCurrencyIdMapping, Ratio};
+use support::mocks::MockCurrencyIdMapping;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;

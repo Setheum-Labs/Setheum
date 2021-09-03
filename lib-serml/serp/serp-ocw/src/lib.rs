@@ -300,6 +300,7 @@ fn public(&self) -> T::Public {
 }
 }
 
+#[allow(unused)]
 enum TransactionType {
 Signed,
 UnsignedForAny,
@@ -315,6 +316,8 @@ impl<T: Config> Pallet<T> {
 	/// and local storage usage.
 	///
 	/// Returns a type of transaction that should be produced in current run.
+	/// 
+	#[allow(unused)]
 	fn choose_transaction_type(block_number: T::BlockNumber) -> TransactionType {
 		/// A friendlier name for the error that is going to be returned in case we are in the grace
 		/// period.
@@ -381,6 +384,9 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// A helper function to fetch the price and send signed transaction.
+	/// 
+	/// 
+	#[allow(unused)]
 	fn fetch_price_and_send_signed() -> Result<(), &'static str> {
 		let signer = Signer::<T, T::AuthorityId>::all_accounts();
 		if !signer.can_sign() {
@@ -414,6 +420,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// A helper function to fetch the price and send a raw unsigned transaction.
+	#[allow(unused)]
 	fn fetch_price_and_send_raw_unsigned(block_number: T::BlockNumber) -> Result<(), &'static str> {
 		// Make sure we don't fetch the price if unsigned transaction is going to be rejected
 		// anyway.
@@ -446,6 +453,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// A helper function to fetch the price, sign payload and send an unsigned transaction
+	#[allow(unused)]
 	fn fetch_price_and_send_unsigned_for_any_account(
 		block_number: T::BlockNumber,
 	) -> Result<(), &'static str> {
@@ -475,6 +483,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// A helper function to fetch the price, sign payload and send an unsigned transaction
+	#[allow(unused)]
 	fn fetch_price_and_send_unsigned_for_all_accounts(
 		block_number: T::BlockNumber,
 	) -> Result<(), &'static str> {
@@ -695,6 +704,8 @@ impl<T: Config> Pallet<T> {
 	///
 	///
 	/// Fetch current SETR price and return the result in cents.
+	/// 
+	#[allow(unused_variables)]
 	fn setter_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
@@ -959,6 +970,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETUSD price and return the result in cents.
+	#[allow(unused_variables)]
 	fn setusd_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
@@ -1082,6 +1094,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETEUR price and return the result in cents.
+	#[allow(unused_variables)]
 	fn seteur_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
@@ -1205,6 +1218,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETGBP price and return the result in cents.
+	#[allow(unused_variables)]
 	fn setgbp_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
@@ -1328,6 +1342,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETCHF price and return the result in cents.
+	#[allow(unused_variables)]
 	fn setchf_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
@@ -1451,6 +1466,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Fetch current SETSAR price and return the result in cents.
+	#[allow(unused_variables)]
 	fn setsar_on_tes() -> Result<(), http::Error> {
 		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
 		// deadline to 2s to complete the external call.
