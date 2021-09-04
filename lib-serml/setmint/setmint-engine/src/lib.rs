@@ -31,7 +31,6 @@
 use frame_support::pallet_prelude::*;
 use frame_system::{
 	offchain::SendTransactionTypes,
-	pallet_prelude::*,
 };
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{

@@ -45,7 +45,6 @@ pub const ROOT: AccountId = 11;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
