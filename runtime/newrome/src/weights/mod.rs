@@ -19,14 +19,13 @@
 //! A list of the different weight modules for our runtime.
 #![allow(clippy::unnecessary_cast)]
 
-pub mod setmint_engine;
+pub mod serp_prices;
 pub mod serp_treasury;
 pub mod setheum_currencies;
-pub mod dex;
-pub mod setmint_gateway;
+pub mod setheum_dex;
 pub mod setheum_nft;
-pub mod serp_prices;
 pub mod setheum_transaction_payment;
+pub mod setmint_manager;
 
 pub mod orml_authority;
 pub mod orml_oracle;

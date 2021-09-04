@@ -21,6 +21,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode};
+#![allow(unused)]
 use frame_support::{
 	traits::MaxEncodedLen,
 	parameter_types,
@@ -39,6 +40,7 @@ use sp_core::{
 	H160,
 };
 use sp_runtime::{
+	#![allow(unused)]
 	// TODO: move after https://github.com/paritytech/substrate/pull/9209
 	offchain::storage_lock::BlockNumberProvider,
 	traits::Convert,

@@ -44,8 +44,9 @@ use sp_std::marker::PhantomData;
 /// Weight functions for setheum_transaction_payment.
 pub struct WeightInfo<T>(_);
 impl<T: frame_system::Config> setheum_transaction_payment::WeightInfo for WeightInfo<T> {
-	fn set_default_fee_token() -> Weight {
-		(3_000_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
+	fn set_alternative_fee_swap_path() -> Weight {
+		(5_590_000 as Weight)
+			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 	fn on_finalize() -> Weight {
 		(8_000_000 as Weight)

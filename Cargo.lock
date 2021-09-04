@@ -1864,6 +1864,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "frame-election-provider-support"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8#74101dc21cfffb4c2d014fcc28edc166d5ca1b16"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "sp-arithmetic",
+ "sp-npos-elections",
+ "sp-std",
+]
+
+[[package]]
 name = "frame-executive"
 version = "3.0.0"
 source = "git+https://github.com/paritytech//substrate?rev=74101dc21cfffb4c2d014fcc28edc166d5ca1b16#74101dc21cfffb4c2d014fcc28edc166d5ca1b16"
@@ -4117,6 +4130,7 @@ dependencies = [
  "pallet-balances",
  "pallet-bounties",
  "pallet-collective",
+ "pallet-democracy",
  "pallet-grandpa",
  "pallet-indices",
  "pallet-membership",
@@ -4127,6 +4141,7 @@ dependencies = [
  "pallet-recovery",
  "pallet-scheduler",
  "pallet-session",
+ "pallet-staking",
  "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
@@ -4676,6 +4691,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-democracy"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8#74101dc21cfffb4c2d014fcc28edc166d5ca1b16"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-elections-phragmen"
 version = "4.0.0"
 source = "git+https://github.com/paritytech//substrate?rev=74101dc21cfffb4c2d014fcc28edc166d5ca1b16#74101dc21cfffb4c2d014fcc28edc166d5ca1b16"
@@ -4847,6 +4877,28 @@ dependencies = [
  "sp-staking",
  "sp-std",
  "sp-trie",
+]
+
+[[package]]
+name = "pallet-staking"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.8#74101dc21cfffb4c2d014fcc28edc166d5ca1b16"
+dependencies = [
+ "frame-election-provider-support",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-authorship",
+ "pallet-session",
+ "parity-scale-codec",
+ "paste",
+ "serde",
+ "sp-application-crypto",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+ "static_assertions",
 ]
 
 [[package]]
@@ -7823,6 +7875,7 @@ dependencies = [
  "pallet-balances",
  "pallet-bounties",
  "pallet-collective",
+ "pallet-democracy",
  "pallet-grandpa",
  "pallet-indices",
  "pallet-membership",
@@ -7833,6 +7886,7 @@ dependencies = [
  "pallet-recovery",
  "pallet-scheduler",
  "pallet-session",
+ "pallet-staking",
  "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
