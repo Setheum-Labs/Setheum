@@ -25,7 +25,7 @@ use frame_support::{
 	traits::MaxEncodedLen,
 	parameter_types,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
 		DispatchClass, Weight,
 	},
 };
@@ -40,7 +40,7 @@ use sp_core::{
 };
 use sp_runtime::{
 	// TODO: move after https://github.com/paritytech/substrate/pull/9209
-	offchain::storage_lock::BlockNumberProvider,
+	// offchain::storage_lock::BlockNumberProvider,
 	traits::Convert,
 	transaction_validity::TransactionPriority,
 	Perbill, RuntimeDebug,

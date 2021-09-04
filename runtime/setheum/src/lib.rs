@@ -73,7 +73,7 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-s
+
 use frame_system::{EnsureOneOf, EnsureRoot, RawOrigin};
 use setheum_currencies::{BasicCurrencyAdapter, Currency};
 use setheum_evm::{CallInfo, CreateInfo};
@@ -196,7 +196,7 @@ impl Filter<Call> for BaseCallFilter {
 			Call::FinancialCouncil(_) | Call::FinancialCouncilMembership(_) |
 			Call::TechnicalCommittee(_) | Call::TechnicalCommitteeMembership(_) |
 			// Oracle
-			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_)
+			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_) |
 			// Treasury
 			Call::Treasury(_) | Call::Bounties(_) | Call::Tips(_) |
 			// Vesting

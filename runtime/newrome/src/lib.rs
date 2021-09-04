@@ -79,7 +79,7 @@ use setheum_currencies::{BasicCurrencyAdapter, Currency};
 use setheum_evm::{CallInfo, CreateInfo};
 use setheum_evm_accounts::EvmAddressMapping;
 use setheum_evm_manager::EvmCurrencyIdMapping;
-use setheum_support::{CurrencyIdMapping, Rate, Ratio};
+use setheum_support::CurrencyIdMapping;
 use setheum_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use orml_tokens::CurrencyAdapter;
 use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
@@ -196,7 +196,7 @@ impl Filter<Call> for BaseCallFilter {
 			Call::FinancialCouncil(_) | Call::FinancialCouncilMembership(_) |
 			Call::TechnicalCommittee(_) | Call::TechnicalCommitteeMembership(_) |
 			// Oracle
-			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_)
+			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_) |
 			// Treasury
 			Call::Treasury(_) | Call::Bounties(_) | Call::Tips(_) |
 			// Vesting
@@ -364,7 +364,6 @@ parameter_types! {
 	pub const ShuraCouncilMaxMembers: u32 = 30;
 }
 
-type ShuraCouncilInstance = pallet_collective::Instance2;
 impl pallet_collective::Config<ShuraCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -376,7 +375,6 @@ impl pallet_collective::Config<ShuraCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type ShuraCouncilMembershipInstance = pallet_membership::Instance2;
 impl pallet_membership::Config<ShuraCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrThreeFourthsShuraCouncil;
@@ -396,7 +394,6 @@ parameter_types! {
 	pub const GeneralCouncilMaxMembers: u32 = 30;
 }
 
-type GeneralCouncilInstance = pallet_collective::Instance1;
 impl pallet_collective::Config<GeneralCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -408,7 +405,6 @@ impl pallet_collective::Config<GeneralCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type GeneralCouncilMembershipInstance = pallet_membership::Instance1;
 impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsShuraCouncil;
@@ -428,7 +424,6 @@ parameter_types! {
 	pub const FinancialCouncilMaxMembers: u32 = 30;
 }
 
-type FinancialCouncilInstance = pallet_collective::Instance3;
 impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -440,7 +435,6 @@ impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type FinancialCouncilMembershipInstance = pallet_membership::Instance3;
 impl pallet_membership::Config<FinancialCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsShuraCouncil;
@@ -460,7 +454,6 @@ parameter_types! {
 	pub const TechnicalCouncilMaxMembers: u32 = 50;
 }
 
-type TechnicalCommitteeInstance = pallet_collective::Instance4;
 impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -471,8 +464,6 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = ();
 }
-
-type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
 
 impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime {
 	type Event = Event;
@@ -491,7 +482,6 @@ parameter_types! {
 	pub const OracleMaxMembers: u32 = 50;
 }
 
-type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
 impl pallet_membership::Config<OperatorMembershipInstanceSetheum> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsFinancialCouncil;
