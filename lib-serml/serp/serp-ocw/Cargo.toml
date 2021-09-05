@@ -14,13 +14,13 @@ log = { version = "0.4.14", default-features = false }
 fixed = { default-features = false, git = "https://github.com/encointer/substrate-fixed", package = "substrate-fixed" }
 
 # Substrate dependencies
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-keystore = { git = 'https://github.com/paritytech/substrate.git', branch = "polkadot-v0.9.8", optional = true }
-sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+sp-keystore = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", optional = true }
+sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
 
 # orml dependencies
 orml-traits = { path = "../../../lib-open/traits", default-features = false }
@@ -31,13 +31,13 @@ primitives = { package = "setheum-primitives", path = "../../../primitives", def
 support = { package = "setheum-support", path = "../../support", default-features = false }
 
 [dev-dependencies]
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+sp-io = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
 orml-currencies = { path = "../../../lib-open/currencies" }
 serp-treasury = { package = "serp-treasury", path = "../../serp/serp-treasury" }
 setheum-dex = { path = "../..//dex/dex" }
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+frame-support = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
 
 [features]
 default = ["std"]

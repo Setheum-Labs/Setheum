@@ -11,15 +11,15 @@ structopt = "0.3.8"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 
 # Substrate dependencies
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", optional = true }
-sc-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", optional = true }
-sc-service = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", optional = true }
-sc-tracing = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sc-telemetry = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", optional = true }
-try-runtime-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", optional = true }
-
+sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
+sc-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
+sc-service = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
+sc-tracing = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+sc-telemetry = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
+try-runtime-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
+  
 # local dependencies
 inspect = { package = "setheum-inspect", path = "../../inspect" }
 service = { package = "setheum-service", path = "../service", default-features = false, optional = true }
