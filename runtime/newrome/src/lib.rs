@@ -1533,7 +1533,7 @@ construct_runtime!(
 
 		// Bridges
 		RenVmBridge: setheum_renvm_bridge::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned} = 48,
-		ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 49,
+		// ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 49,
 		// SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>} = 50,
 
 		// Dev

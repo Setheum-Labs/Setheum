@@ -72,7 +72,7 @@ orml-nft= { path = "../../lib-open/nft", default-features = false }
 setheum-airdrop = { path = "../../lib-serml/airdrop", default-features = false }
 
 # - bridges
-setheum-chainbridge = { path = "../../lib-serml/bridges/chainbridge", default-features = false }
+# setheum-chainbridge = { path = "../../lib-serml/bridges/chainbridge", default-features = false }
 setheum-renvm-bridge = { path = "../../lib-serml/bridges/renvm-bridge", default-features = false }
 # - dex
 setheum-dex = { path = "../../lib-serml/dex/dex", default-features = false }
@@ -163,7 +163,7 @@ std = [
 	"orml-nft/std",
 
 	"setheum-airdrop/std",
-	"setheum-chainbridge/std",
+	# "setheum-chainbridge/std",
 	"setheum-renvm-bridge/std",
 	"setheum-dex/std",
 	"setheum-evm/std",
