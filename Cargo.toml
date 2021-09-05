@@ -37,7 +37,6 @@ members = [
 	"lib-open/tokens",
 	"lib-open/traits",
 	"lib-open/utilities",
-	"lib-open/vesting",
 	"lib-open/weight-gen",
 	"lib-open/weight-meter",
 ]

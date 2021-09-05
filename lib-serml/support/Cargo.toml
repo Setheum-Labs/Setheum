@@ -1,6 +1,6 @@
 [package]
 name = "setheum-support"
-version = "0.9.0"
+version = "0.9.1"
 authors = ["Setheum Labs"]
 edition = "2018"
 
