@@ -10,24 +10,24 @@ jsonrpc-core = "15.0.0"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 
 # Substrate dependencies
-sp-api = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sp-blockchain = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sp-block-builder = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sp-consensus = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08" }
-sp-consensus-babe = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08" }
-sp-transaction-pool = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sc-client-api = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sc-consensus-babe = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08" }
-sc-consensus-babe-rpc = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08" }
-sc-consensus-epochs = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08" }
-sc-finality-grandpa = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08" }
-sc-finality-grandpa-rpc = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08" }
-sc-keystore = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sp-keystore = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08" }
-sc-rpc = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+sp-api = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sp-block-builder = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sp-consensus = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", version = '0.10.0-dev' }
+sp-consensus-babe = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", version = '0.10.0-dev' }
+sp-transaction-pool = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sc-client-api = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sc-consensus-babe = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", version = '0.10.0-dev' }
+sc-consensus-babe-rpc = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", version = '0.10.0-dev' }
+sc-consensus-epochs = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", version = '0.10.0-dev' }
+sc-finality-grandpa = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", version = '0.10.0-dev' }
+sc-finality-grandpa-rpc = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", version = '0.10.0-dev' }
+sc-keystore = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sp-keystore = { git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2021-08", version = '0.10.0-dev' }
+sc-rpc = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+substrate-frame-rpc-system = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
 
 # orml dependencies
 orml-oracle-rpc = { path = "../lib-open/oracle/rpc" }

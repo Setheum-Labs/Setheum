@@ -26,7 +26,7 @@ use crate::runner::{
 	handler::{Handler, StorageMeterHandlerImpl},
 	storage_meter::{StorageMeter, StorageMeterHandler},
 };
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 use evm::Config as EvmConfig;
 use frame_support::{
 	dispatch::{DispatchError, DispatchResult, DispatchResultWithPostInfo},
@@ -34,7 +34,7 @@ use frame_support::{
 	error::BadOrigin,
 	pallet_prelude::*,
 	traits::{
-		BalanceStatus, Currency, EnsureOrigin, ExistenceRequirement, Get, MaxEncodedLen, NamedReservableCurrency,
+		BalanceStatus, Currency, EnsureOrigin, ExistenceRequirement, Get, NamedReservableCurrency,
 		OnKilledAccount,
 	},
 	transactional,

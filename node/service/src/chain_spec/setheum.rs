@@ -36,7 +36,7 @@ use setheum_runtime::{
 	FinancialCouncilMembershipConfig, ExchangeCouncilMembershipConfig, IndicesConfig,
 	NativeTokenExistentialDeposit, OperatorMembershipSetheumConfig, OrmlNFTConfig,
 	RenVmBridgeConfig, SessionConfig, StakerStatus, StakingConfig, SudoConfig,
-	SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig, VestingConfig,
+	SystemConfig, TechnicalCommitteeMembershipConfig, TokensConfig,
 	DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 };
 use runtime_common::TokenInfo;
@@ -181,6 +181,7 @@ pub fn latest_setheum_config() -> Result<ChainSpec, String> {
 			// sWcq8FAQXPdXGSaxSTBKS614hCB8YutkVWWacBKG1GbGS23
 			let root_key: AccountId = hex!["ba5a672d05b5db2ff433ee3dc24cf021e301bc9d44232046ce7bd45a9360fa50"].into();
 
+			// TODO: Update to allocation plans with beneficiaries and all tokens.
 			let initial_allocation = initial_authorities
 				.iter()
 				.map(|x| (x.0.clone(), existential_deposit))
@@ -213,27 +214,11 @@ pub fn latest_setheum_config() -> Result<ChainSpec, String> {
 				.collect::<Vec<(AccountId, Balance)>>();
 
 			// TODO: Update!
-			// check total allocated
+			// check total allocated, add the other tokens.
 			assert_eq!(
 				total_allocated,
 				258_000_000 * dollar(DNAR), // 258 million DNAR
 				"total allocation must be equal to 258 million DNAR"
-			);
-
-			// TODO: Update to add `setheum-vesting-SETR.json` and `setheum-vesting-SETHEUM.json` too.
-			let vesting_list_json = &include_bytes!("../../../../resources/setheum-vesting-DNAR.json")[..];
-			let vesting_list: Vec<(AccountId, BlockNumber, BlockNumber, u32, Balance)> =
-				serde_json::from_slice(vesting_list_json).unwrap();
-
-			// ensure no duplicates exist.
-			let unique_vesting_accounts = vesting_list
-				.iter()
-				.map(|(x, _, _, _, _)| x)
-				.cloned()
-				.collect::<std::collections::BTreeSet<_>>();
-			assert!(
-				unique_vesting_accounts.len() == vesting_list.len(),
-				"duplicate vesting accounts in genesis."
 			);
 
 			setheum_genesis(
@@ -241,7 +226,6 @@ pub fn latest_setheum_config() -> Result<ChainSpec, String> {
 				initial_authorities,
 				root_key,
 				initial_allocation,
-				vesting_list,
 				general_councils,
 				setheum_jury,
 			)
@@ -308,7 +292,6 @@ fn setheum_genesis(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId)>,
 	root_key: AccountId,
 	initial_allocation: Vec<(AccountId, Balance)>,
-	vesting_list: Vec<(AccountId, BlockNumber, BlockNumber, u32, Balance)>,
 	general_councils: Vec<AccountId>,
 	setheum_jury: Vec<AccountId>,
 ) -> setheum_runtime::GenesisConfig {
@@ -375,7 +358,6 @@ fn setheum_genesis(
 		orml_tokens: TokensConfig {
 			endowed_accounts: vec![],
 		},
-		orml_vesting: VestingConfig { vesting: vesting_list },
 		orml_oracle_Instance1: SetheumOracleConfig {
 			members: Default::default(), // initialized by OperatorMembership
 			phantom: Default::default(),

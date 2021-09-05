@@ -11,14 +11,14 @@ structopt = "0.3.8"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 
 # Substrate dependencies
-sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
-sc-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
-sc-service = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
-sc-tracing = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sc-telemetry = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
-try-runtime-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", optional = true }
+sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', optional = true }
+sc-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '0.10.0-dev', optional = true }
+sc-service = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '0.10.0-dev', optional = true }
+sc-tracing = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sc-telemetry = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', optional = true }
+try-runtime-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '0.10.0-dev', optional = true }
   
 # local dependencies
 inspect = { package = "setheum-inspect", path = "../../inspect" }

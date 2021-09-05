@@ -8,16 +8,15 @@ edition = "2018"
 [dependencies]
 # external dependencies
 serde = { version = "1.0.124", optional = true }
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["derive", "max-encoded-len"] }
 enumflags2 = { version = "0.6.3" }
 
-max-encoded-len = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
-frame-benchmarking = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false, optional = true}
-frame-support = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
-pallet-proxy = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false, optional = true}
+frame-support = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+pallet-proxy = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
 
 # orml dependencies
 orml-nft = { path = "../../../lib-open/nft", default-features = false }
@@ -27,10 +26,10 @@ orml-traits = { path = "../../../lib-open/traits", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 
 [dev-dependencies]
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-sp-io = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-pallet-balances = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
-pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sp-io = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+pallet-balances = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
 orml-tokens = { path = "../../../lib-open/tokens" }
 support = { package = "setheum-support", path = "../../support" }
 setheum-currencies = { path = "../../tokens/currencies", default-features = false }

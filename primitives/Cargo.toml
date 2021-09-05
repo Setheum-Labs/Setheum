@@ -8,19 +8,18 @@ edition = "2018"
 bstringify = "0.1.2"
 serde = { version = "1.0.124", optional = true }
 num-traits = { version = "0.2.14", default-features = false }
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["derive", "max-encoded-len"] }
 num_enum = { version = "0.5.1", default-features = false }
-max-encoded-len = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
 evm = { version = "0.26.0", default-features = false, features = ["with-codec"] }
 chainbridge = { git = "https://github.com/Slixon-Technologies/chainbridge-substrate", default-features = false }
 
 [dev-dependencies]
 serde_json = { version = "1.0.64" }
 primitives-proc-macro = { version = "0.9.0", path = "./proc-macro" }
-frame-support = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08" }
+frame-support = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
 
 [features]
 default = ["std"]
@@ -34,7 +33,6 @@ std = [
 	"evm/std",
 	"evm/with-serde",
 	"chainbridge/std",
-	"max-encoded-len/std",
 ]
 runtime-benchmarks = [
 	"chainbridge/runtime-benchmarks",

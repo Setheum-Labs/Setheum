@@ -30,4 +30,3 @@ pub mod currencies;
 pub mod oracle;
 pub mod tokens;
 pub mod utils;
-pub mod vesting;

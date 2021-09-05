@@ -117,6 +117,7 @@ pub use runtime_common::{
 	EnsureRootOrHalfShuraCouncil, EnsureRootOrThreeFourthsShuraCouncil,
 	EnsureRootOrTwoThirdsShuraCouncil, ShuraCouncilInstance,
 	ShuraCouncilMembershipInstance, TimeStampedPrice, 
+	MuhammadJibrilBlockNumberProvider,
 	DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 };
 mod authority;
@@ -199,8 +200,6 @@ impl Filter<Call> for BaseCallFilter {
 			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_) |
 			// Treasury
 			Call::Treasury(_) | Call::Bounties(_) | Call::Tips(_) |
-			// Vesting
-			Call::Vesting(_) |
 			// TransactionPayment
 			Call::TransactionPayment(_) |
 			// Tokens
@@ -913,21 +912,6 @@ impl EnsureOrigin<Origin> for EnsureSetheumFoundation {
 }
 
 parameter_types! {
-	pub MinVestedTransfer: Balance = 0;
-	pub const MaxVestingSchedules: u32 = 258;
-}
-
-impl orml_vesting::Config for Runtime {
-	type Event = Event;
-	type Currency = pallet_balances::Pallet<Runtime>;
-	type MinVestedTransfer = MinVestedTransfer;
-	type VestedTransferOrigin = EnsureSetheumFoundation;
-	type WeightInfo = weights::orml_vesting::WeightInfo<Runtime>;
-	type MaxVestingSchedules = MaxVestingSchedules;
-	type BlockNumberProvider = RelaychainBlockNumberProvider<Runtime>;
-}
-
-parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * BlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 30;
 }
@@ -1403,7 +1387,6 @@ construct_runtime!(
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 5,
 		Currencies: setheum_currencies::{Pallet, Call, Event<T>} = 6,
 		NFT: setheum_nft::{Pallet, Call, Event<T>} = 7,
-		Vesting: orml_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 8,
 		TransactionPayment: setheum_transaction_payment::{Pallet, Call, Storage} = 9,
 		// AirDrop: setheum_airdrop::{Pallet, Call, Storage, Event<T>, Config<T>} = 10,
 
@@ -1856,7 +1839,6 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, setmint_gateway, benchmarking::setmint_gateway);
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, transaction_payment, benchmarking::transaction_payment);
-			orml_add_benchmark!(params, batches, orml_vesting, benchmarking::vesting);
 
 			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
 

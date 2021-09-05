@@ -20,6 +20,7 @@
 
 #![cfg(feature = "runtime-benchmarks")]
 
+use codec::{Decode, Encode, MaxEncodedLen};
 use sp_std::prelude::*;
 use sp_std::vec;
 
