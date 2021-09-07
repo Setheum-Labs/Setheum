@@ -34,7 +34,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::Encode;
 pub use frame_support::{
-	construct_runtime, debug, parameter_types,
+	construct_runtime, debug, log, parameter_types,
 	traits::{
 		Contains, ContainsLengthBound, EnsureOrigin, Filter, Get, IsType, KeyOwnerProofSystem, LockIdentifier,
 		Randomness, SortedMembers, U128CurrencyToVote, WithdrawReasons,
@@ -59,7 +59,7 @@ use sp_core::{
 	OpaqueMetadata, H160,
 };
 use sp_runtime::traits::{
-	BadOrigin, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup, Zero,
+	BadOrigin, BlakeTwo256, Block as BlockT, NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup,
 };
 use sp_runtime::{
 	create_runtime_str,
@@ -79,7 +79,7 @@ use setheum_currencies::{BasicCurrencyAdapter, Currency};
 use setheum_evm::{CallInfo, CreateInfo};
 use setheum_evm_accounts::EvmAddressMapping;
 use setheum_evm_manager::EvmCurrencyIdMapping;
-use setheum_support::{, CashDropRate, CurrencyIdMapping, Rate, Ratio};
+use setheum_support::CurrencyIdMapping;
 use setheum_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use orml_tokens::CurrencyAdapter;
 use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
@@ -90,7 +90,7 @@ use pallet_session::historical as pallet_session_historical;
 /// Weights for pallets used in the runtime.
 mod weights;
 
-pub use serp_staking::StakerStatus;
+pub use pallet_staking::StakerStatus;
 pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -100,7 +100,7 @@ pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
 pub use primitives::{
 	evm::EstimateResourcesRequest, AccountId, AccountIndex, AirDropCurrencyId,
-	Amount, AuthoritysOriginId, Balance, BlockNumber, Count, CurrencyId,
+	Amount, AuthoritysOriginId, Balance, BlockNumber, CurrencyId,
 	DataProviderId, EraIndex, Hash, Moment, Nonce, ReserveIdentifier, Share, Signature,
 	TokenSymbol, TradingPair,
 };
@@ -108,16 +108,16 @@ pub use runtime_common::{
 	cent, deposit, dollar, microcent, millicent, BlockLength, BlockWeights,
 	EnsureRootOrAllGeneralCouncil, EnsureRootOrAllTechnicalCommittee,
 	EnsureRootOrHalfFinancialCouncil, EnsureRootOrHalfGeneralCouncil,
-	EnsureRootOrHalfHomaCouncil, EnsureRootOrOneThirdsTechnicalCommittee,
-	EnsureRootOrThreeFourthsGeneralCouncil, EnsureRootOrTwoThirdsGeneralCouncil,
-	EnsureRootOrTwoThirdsTechnicalCommittee, ExchangeRate, FinancialCouncilInstance,
-	FinancialCouncilMembershipInstance, GasToWeight, GeneralCouncilInstance,
-	GeneralCouncilMembershipInstance, OperatorMembershipInstanceSetheum, 
-	OffchainSolutionWeightLimit, Price, ProxyType, Rate, Ratio, RuntimeBlockLength,
-	RuntimeBlockWeights, SystemContractsFilter, EnsureRootOrAllShuraCouncil,
+	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsGeneralCouncil,
+	EnsureRootOrTwoThirdsGeneralCouncil, EnsureRootOrTwoThirdsTechnicalCommittee,
+	ExchangeRate, FinancialCouncilInstance, FinancialCouncilMembershipInstance,
+	GasToWeight, GeneralCouncilInstance, GeneralCouncilMembershipInstance,
+	OperatorMembershipInstanceSetheum, OffchainSolutionWeightLimit,
+	Price, ProxyType, Rate, Ratio, SystemContractsFilter, EnsureRootOrAllShuraCouncil,
 	EnsureRootOrHalfShuraCouncil, EnsureRootOrThreeFourthsShuraCouncil,
 	EnsureRootOrTwoThirdsShuraCouncil, ShuraCouncilInstance,
-	ShuraCouncilMembershipInstance, TimeStampedPrice, 
+	ShuraCouncilMembershipInstance, TimeStampedPrice,
+	MuhammadJibrilBlockNumberProvider,
 	DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
 };
 mod authority;
@@ -197,11 +197,9 @@ impl Filter<Call> for BaseCallFilter {
 			Call::FinancialCouncil(_) | Call::FinancialCouncilMembership(_) |
 			Call::TechnicalCommittee(_) | Call::TechnicalCommitteeMembership(_) |
 			// Oracle
-			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_)
-			// Democracy
-			Call::Democracy(_) | Call::Treasury(_) | Call::Bounties(_) | Call::Tips(_) |
-			// Vesting
-			Call::Vesting(_) |
+			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_) |
+			// Treasury
+			Call::Treasury(_) | Call::Bounties(_) | Call::Tips(_) |
 			// TransactionPayment
 			Call::TransactionPayment(_) |
 			// Tokens
@@ -319,7 +317,6 @@ impl pallet_authorship::Config for Runtime {
 }
 
 parameter_types! {
-	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETHEUM);	// 0.1 SETHEUM
 	// For weight estimation, we assume that the most locks on an individual account will be 50.
 	// This number may need to be adjusted in the future if this assumption no longer holds true.
 	pub const MaxLocks: u32 = 50;
@@ -366,7 +363,6 @@ parameter_types! {
 	pub const ShuraCouncilMaxMembers: u32 = 30;
 }
 
-type ShuraCouncilInstance = pallet_collective::Instance2;
 impl pallet_collective::Config<ShuraCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -378,7 +374,6 @@ impl pallet_collective::Config<ShuraCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type ShuraCouncilMembershipInstance = pallet_membership::Instance2;
 impl pallet_membership::Config<ShuraCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrThreeFourthsShuraCouncil;
@@ -398,7 +393,6 @@ parameter_types! {
 	pub const GeneralCouncilMaxMembers: u32 = 30;
 }
 
-type GeneralCouncilInstance = pallet_collective::Instance1;
 impl pallet_collective::Config<GeneralCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -410,7 +404,6 @@ impl pallet_collective::Config<GeneralCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type GeneralCouncilMembershipInstance = pallet_membership::Instance1;
 impl pallet_membership::Config<GeneralCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsShuraCouncil;
@@ -430,7 +423,6 @@ parameter_types! {
 	pub const FinancialCouncilMaxMembers: u32 = 30;
 }
 
-type FinancialCouncilInstance = pallet_collective::Instance3;
 impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -442,7 +434,6 @@ impl pallet_collective::Config<FinancialCouncilInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type FinancialCouncilMembershipInstance = pallet_membership::Instance3;
 impl pallet_membership::Config<FinancialCouncilMembershipInstance> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsShuraCouncil;
@@ -462,7 +453,6 @@ parameter_types! {
 	pub const TechnicalCouncilMaxMembers: u32 = 50;
 }
 
-type TechnicalCommitteeInstance = pallet_collective::Instance4;
 impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -473,8 +463,6 @@ impl pallet_collective::Config<TechnicalCommitteeInstance> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = ();
 }
-
-type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
 
 impl pallet_membership::Config<TechnicalCommitteeMembershipInstance> for Runtime {
 	type Event = Event;
@@ -493,7 +481,6 @@ parameter_types! {
 	pub const OracleMaxMembers: u32 = 50;
 }
 
-type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
 impl pallet_membership::Config<OperatorMembershipInstanceSetheum> for Runtime {
 	type Event = Event;
 	type AddOrigin = EnsureRootOrTwoThirdsFinancialCouncil;
@@ -559,10 +546,12 @@ parameter_types! {
 	pub ProposalBondMinimum: Balance = 2 * dollar(SETHEUM);
 	pub const SpendPeriod: BlockNumber = 7 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(0);
-
 	pub const TipCountdown: BlockNumber = DAYS;
 	pub const TipFindersFee: Percent = Percent::from_percent(10);
 	pub TipReportDepositBase: Balance = deposit(1, 0);
+	pub const SevenDays: BlockNumber = 7 * DAYS;
+	pub const ZeroDay: BlockNumber = 0;
+	pub const OneDay: BlockNumber = DAYS;
 	pub BountyDepositBase: Balance = deposit(1, 0);
 	pub const BountyDepositPayoutDelay: BlockNumber = DAYS;
 	pub const BountyUpdatePeriod: BlockNumber = 7 * DAYS;
@@ -620,7 +609,7 @@ parameter_types! {
 impl pallet_session::Config for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = serp_staking::StashOf<Self>;
+	type ValidatorIdOf = pallet_staking::StashOf<Self>;
 	type ShouldEndSession = Babe;
 	type NextSessionRotation = Babe;
 	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
@@ -631,8 +620,8 @@ impl pallet_session::Config for Runtime {
 }
 
 impl pallet_session::historical::Config for Runtime {
-	type FullIdentification = serp_staking::Exposure<AccountId, Balance>;
-	type FullIdentificationOf = serp_staking::ExposureOf<Runtime>;
+	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
 }
 
 pallet_staking_reward_curve::build! {
@@ -817,7 +806,7 @@ parameter_type_with_key! {
 				TokenSymbol::SETEUR => cent(*currency_id),
 				TokenSymbol::SETGBP => cent(*currency_id),
 				TokenSymbol::SETCHF => cent(*currency_id),
-				TokenSymbol::SETSAR => cent(*currency_id)
+				TokenSymbol::SETSAR => cent(*currency_id),
 
 				TokenSymbol::DNAR |
 				TokenSymbol::SETHEUM |
@@ -922,21 +911,6 @@ impl EnsureOrigin<Origin> for EnsureSetheumFoundation {
 }
 
 parameter_types! {
-	pub MinVestedTransfer: Balance = 0;
-	pub const MaxVestingSchedules: u32 = 258;
-}
-
-impl orml_vesting::Config for Runtime {
-	type Event = Event;
-	type Currency = pallet_balances::Pallet<Runtime>;
-	type MinVestedTransfer = MinVestedTransfer;
-	type VestedTransferOrigin = EnsureSetheumFoundation;
-	type WeightInfo = weights::orml_vesting::WeightInfo<Runtime>;
-	type MaxVestingSchedules = MaxVestingSchedules;
-	type BlockNumberProvider = RelaychainBlockNumberProvider<Runtime>;
-}
-
-parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * BlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 30;
 }
@@ -1028,7 +1002,6 @@ where
 }
 
 parameter_types! {
-	pub GetReserveCurrencyId: CurrencyId = SETR;
 	pub DefaultStandardExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub MinimumStandardValue: Balance = dollar(SETR);
 }
@@ -1123,20 +1096,22 @@ parameter_type_with_key! {
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETR, DNAR],
-		vec![SETUSD, SETR, SETHEUM]
-		vec![SETEUR, SETR, SETHEUM]
-		vec![SETGBP, SETR, SETHEUM]
-		vec![SETCHF, SETR, SETHEUM]
-		vec![SETSAR, SETR, SETHEUM]
+		vec![DNAR, SETHEUM],
+		// vec![SIPTIP, SETHEUM],
+		vec![SETR, SETHEUM],
+		vec![SETUSD, SETR, SETHEUM],
+		vec![SETEUR, SETR, SETHEUM],
+		vec![SETGBP, SETR, SETHEUM],
+		vec![SETCHF, SETR, SETHEUM],
+		vec![SETSAR, SETR, SETHEUM],
 	];
 	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETR, DNAR],
-		vec![SETUSD, SETR, DNAR]
-		vec![SETEUR, SETR, DNAR]
-		vec![SETGBP, SETR, DNAR]
-		vec![SETCHF, SETR, DNAR]
-		vec![SETSAR, SETR, DNAR]
+		vec![SETUSD, SETR, DNAR],
+		vec![SETEUR, SETR, DNAR],
+		vec![SETGBP, SETR, DNAR],
+		vec![SETCHF, SETR, DNAR],
+		vec![SETSAR, SETR, DNAR],
 	];
 }
 
@@ -1493,7 +1468,6 @@ construct_runtime!(
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 5,
 		Currencies: setheum_currencies::{Pallet, Call, Event<T>} = 6,
 		NFT: setheum_nft::{Pallet, Call, Event<T>} = 7,
-		Vesting: orml_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 8,
 		TransactionPayment: setheum_transaction_payment::{Pallet, Call, Storage} = 9,
 		AirDrop: setheum_airdrop::{Pallet, Call, Storage, Event<T>, Config<T>} = 10,
 
@@ -1513,9 +1487,9 @@ construct_runtime!(
 		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 19,
 		Babe: pallet_babe::{Pallet, Call, Storage, Config, Inherent, ValidateUnsigned} = 20,
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 21,
-		Staking: pallet_staking::{Module, Call, Config<T>, Storage, Event<T>}, = 22
+		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>}, = 22
 		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 23,
-		Historical: pallet_session_historical::{Module} = 24,
+		Historical: pallet_session_historical::{Pallet} = 24,
 
 		// Governance
 		ShuraCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 25,
@@ -1559,7 +1533,7 @@ construct_runtime!(
 
 		// Bridges
 		RenVmBridge: setheum_renvm_bridge::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned} = 48,
-		ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 49,
+		// ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 49,
 		// SetheumChainBridge: setheum_chainbridge::{Pallet, Call, Storage, Event<T>} = 50,
 
 		// Dev
@@ -1853,7 +1827,7 @@ impl_runtime_apis! {
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade() -> Result<(Weight, Weight), sp_runtime::RuntimeString> {
 			let weight = Executive::try_runtime_upgrade()?;
-			Ok((weight, RuntimeBlockWeights::get().max_block))
+			Ok((weight, BlockWeights::get().max_block))
 		}
 	}
 
@@ -1901,7 +1875,6 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, setmint_gateway, benchmarking::setmint_gateway);
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, transaction_payment, benchmarking::transaction_payment);
-			orml_add_benchmark!(params, batches, orml_vesting, benchmarking::vesting);
 
 			add_benchmark!(params, batches, nft, NftBench::<Runtime>);
 

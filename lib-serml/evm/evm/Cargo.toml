@@ -8,7 +8,7 @@ edition = "2018"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["derive", "max-encoded-len"] }
 impl-trait-for-tuples = "0.1"
 primitive-types = { version = "0.9.0", default-features = false, features = ["rlp", "byteorder"] }
 ripemd160 = { version = "0.9", default-features = false }
@@ -21,15 +21,14 @@ evm = { version = "0.26.0", default-features = false, features = ["with-codec"] 
 evm-gasometer = { version = "0.26.0", default-features = false }
 evm-runtime = { version = "0.26.0", default-features = false }
 
-max-encoded-len = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
 
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+sp-io = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
 orml-traits = { path = "../../../lib-open/traits", default-features = false }
 
 support = { package = "setheum-support", path = "../../support", default-features = false }
@@ -37,7 +36,7 @@ primitives = { package = "setheum-primitives", path = "../../../primitives", def
 
 [dev-dependencies]
 env_logger = "0.7"
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
 orml-currencies = { path = "../../../lib-open/currencies" }
 orml-tokens = { path = "../../../lib-open/tokens" }
 

@@ -1,6 +1,6 @@
 [package]
 name = "setheum-inspect"
-version = "0.9.0"
+version = "0.9.1"
 authors = ["Setheum Labs"]
 edition = "2018"
 
@@ -12,9 +12,9 @@ log = "0.4.8"
 structopt = "0.3.8"
 
 # Substrate dependencies
-sc-cli = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sc-client-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sc-service = { version = "0.9.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8" }
+sc-cli = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '0.10.0-dev' }
+sc-client-api = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sc-service = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '0.10.0-dev' }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
+sp-core = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }

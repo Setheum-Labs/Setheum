@@ -20,12 +20,11 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
-	traits::MaxEncodedLen,
 	parameter_types,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
 		DispatchClass, Weight,
 	},
 };
@@ -40,7 +39,6 @@ use sp_core::{
 };
 use sp_runtime::{
 	// TODO: move after https://github.com/paritytech/substrate/pull/9209
-	offchain::storage_lock::BlockNumberProvider,
 	traits::Convert,
 	transaction_validity::TransactionPriority,
 	Perbill, RuntimeDebug,
@@ -165,6 +163,47 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 
 pub fn deposit(items: u32, bytes: u32, currency_id: CurrencyId) -> Balance {
 	items as Balance * 15 * cent(currency_id) + (bytes as Balance) * 6 * cent(currency_id)
+}
+
+// /// Get current block number
+// pub trait BlockNumberProvider {
+// 	/// Type of `BlockNumber` to provide.
+// 	type BlockNumber: Codec + Clone + Ord + Eq + AtLeast32BitUnsigned;
+// 
+// 	/// Returns the current block number.
+// 	///
+// 	/// Provides an abstraction over an arbitrary way of providing the
+// 	/// current block number.
+// 	///
+// 	/// In case of using crate `sp_runtime` with the crate `frame-system`,
+// 	/// it is already implemented for
+// 	/// `frame_system::Pallet<T: Config>` as:
+// 	///
+// 	/// ```ignore
+// 	/// fn current_block_number() -> Self {
+// 	///     frame_system::Pallet<Config>::block_number()
+// 	/// }
+// 	/// ```
+// 	/// .
+// 	fn current_block_number() -> Self::BlockNumber;
+// }
+// 
+// impl<T: Config> BlockNumberProvider for Pallet<T> {
+// 	type BlockNumber = <T as Config>::BlockNumber;
+// 
+// 	fn current_block_number() -> Self::BlockNumber {
+// 		Pallet::<T>::block_number()
+// 	}
+// }
+
+pub struct MuhammadJibrilBlockNumberProvider<T>(sp_std::marker::PhantomData<T>);
+
+impl<T: frame_system::Config> BlockNumberProvider for MuhammadJibrilBlockNumberProvider<T> {
+	type BlockNumber = BlockNumber;
+
+	fn current_block_number() -> Self::BlockNumber {
+		frame_system::Pallet::<T>::block_number()
+	}
 }
 
 pub type GeneralCouncilInstance = pallet_collective::Instance1;

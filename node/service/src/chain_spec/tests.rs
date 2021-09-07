@@ -36,21 +36,6 @@ fn setheum_foundation_accounts_config_is_correct() {
 }
 
 #[test]
-fn check_setheum_vesting() {
-	let vesting_json = &include_bytes!("../../../../resources/setheum-vesting-DNAR.json")[..];
-	let vesting: Vec<(AccountId, BlockNumber, BlockNumber, u32, Balance)> =
-		serde_json::from_slice(vesting_json).unwrap();
-
-	// ensure no duplicates exist.
-	let unique_vesting_accounts = vesting
-		.iter()
-		.map(|(x, _, _, _, _)| x)
-		.cloned()
-		.collect::<std::collections::BTreeSet<_>>();
-	assert_eq!(unique_vesting_accounts.len(), vesting.len());
-}
-
-#[test]
 fn check_setheum_allocation() {
 	let allocation_json = &include_bytes!("../../../../resources/setheum-allocation-DNAR.json")[..];
 	let _: Vec<(AccountId, Balance)> = serde_json::from_slice(allocation_json).unwrap();
