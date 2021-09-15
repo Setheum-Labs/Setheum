@@ -23,24 +23,50 @@
 pub mod currency;
 pub mod evm;
 
-use codec::{Decode, Encode, MaxEncodedLen};
+use codec::{Decode, Encode};
 use core::ops::Range;
 use sp_runtime::{
 	generic,
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
 	MultiSignature, RuntimeDebug,
 };
-pub use num_traits::{
-	Bounded, CheckedAdd, CheckedDiv, CheckedMul, CheckedShl, CheckedShr, CheckedSub, One, Signed, Zero,
-};
 use sp_std::{convert::Into, prelude::*};
 
 pub use currency::{CurrencyId, DexShare, TokenSymbol};
+
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 mod tests;
+
+
+/// Time and blocks.
+pub mod time {
+	use super::{BlockNumber, Moment};
+
+	// 3 seconds average blocktime
+	pub const SECS_PER_BLOCK: Moment = 3;
+	pub const MILLISECS_PER_BLOCK: Moment = SECS_PER_BLOCK * 1000;
+
+	// These time units are defined in number of blocks.
+	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
+	pub const HOURS: BlockNumber = MINUTES * 60;
+	pub const DAYS: BlockNumber = HOURS * 24;
+
+	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
+
+	// 1 in 4 blocks (on average, not counting collisions) will be primary BABE
+	// blocks.
+	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
+
+	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = HOURS;
+	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
+		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
+
+		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
+	};
+}
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -80,9 +106,6 @@ pub type Balance = u128;
 /// Signed version of Balance
 pub type Amount = i128;
 
-/// Share type
-pub type Share = u128;
-
 /// Header type.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 
@@ -92,24 +115,23 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// Block ID.
 pub type BlockId = generic::BlockId<Block>;
 
-pub type NFTBalance = u128;
-
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum AirDropCurrencyId {
-	SETR = 0,
+	SETHEUM = 0,
 	DNAR = 1,
-	SETHEUM = 2,
+	SETR = 2,
+	SETUSD = 3,
+	SETEUR = 4,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum AuthoritysOriginId {
 	Root,
-	SetheumTreasury,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
@@ -121,7 +143,7 @@ pub enum DataProviderId {
 
 #[derive(Encode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct TradingPair(CurrencyId, CurrencyId);
+pub struct TradingPair(pub CurrencyId, pub CurrencyId);
 
 impl TradingPair {
 	pub fn from_currency_ids(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<Self> {
@@ -147,9 +169,29 @@ impl TradingPair {
 		self.1
 	}
 
+	pub fn new(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Self {
+		if currency_id_a > currency_id_b {
+			TradingPair(currency_id_b, currency_id_a)
+		} else {
+			TradingPair(currency_id_a, currency_id_b)
+		}
+	}
+
+	pub fn from_token_currency_ids(currency_id_0: CurrencyId, currency_id_1: CurrencyId) -> Option<Self> {
+		match currency_id_0.is_token_currency_id() && currency_id_1.is_token_currency_id() {
+			true if currency_id_0 > currency_id_1 => Some(TradingPair(currency_id_1, currency_id_0)),
+			true if currency_id_0 < currency_id_1 => Some(TradingPair(currency_id_0, currency_id_1)),
+			_ => None,
+		}
+	}
+
 	pub fn dex_share_currency_id(&self) -> CurrencyId {
 		CurrencyId::join_dex_share_currency_id(self.first(), self.second())
 			.expect("shouldn't be invalid! guaranteed by construction")
+	}
+
+	pub fn get_dex_share_currency_id(&self) -> Option<CurrencyId> {
+		CurrencyId::join_dex_share_currency_id(self.0, self.1)
 	}
 }
 
@@ -158,18 +200,6 @@ impl Decode for TradingPair {
 		let (first, second): (CurrencyId, CurrencyId) = Decode::decode(input)?;
 		TradingPair::from_currency_ids(first, second).ok_or_else(|| codec::Error::from("invalid currency id"))
 	}
-}
-
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, MaxEncodedLen)]
-pub enum ReserveIdentifier {
-	EvmStorageDeposit,
-	EvmDeveloperDeposit,
-	SetMint,
-	Nft,
-	TransactionPayment,
-	
-	// always the last, indicate number of variants
-	Count,
 }
 
 /// Ethereum precompiles
@@ -213,3 +243,5 @@ pub const H160_POSITION_DEXSHARE_RIGHT: Range<usize> = 16..20;
 pub const H160_POSITION_ERC20: Range<usize> = 0..20;
 pub const H160_PREFIX_TOKEN: [u8; 19] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
 pub const H160_PREFIX_DEXSHARE: [u8; 12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+
+pub type NFTBalance = u128;

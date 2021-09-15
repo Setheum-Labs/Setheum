@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -31,8 +31,8 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARLIE: AccountId = 2;
-pub const DNAR: AirDropCurrencyId = AirDropCurrencyId::DNAR;
 pub const SETHEUM: AirDropCurrencyId = AirDropCurrencyId::SETHEUM;
+pub const DNAR: AirDropCurrencyId = AirDropCurrencyId::DNAR;
 
 mod airdrop {
 	pub use super::super::*;
@@ -103,7 +103,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		airdrop::GenesisConfig::<Runtime> {
-			airdrop_accounts: vec![(CHARLIE, SETHEUM, 50), (CHARLIE, DNAR, 80)],
+			airdrop_accounts: vec![(CHARLIE, DNAR, 100), (CHARLIE, DNAR, 50), (CHARLIE, SETHEUM, 80)],
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -17,15 +17,14 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use frame_support::{log, sp_runtime::FixedPointNumber};
-use setheum_evm::{Context, ExitError, ExitSucceed, Precompile};
+use module_evm::{Context, ExitError, ExitSucceed, Precompile};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use primitives::CurrencyId;
 use sp_core::U256;
-use sp_runtime::RuntimeDebug;
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*, result};
 
 use super::input::{Input, InputT};
-use setheum_support::{
+use module_support::{
 	AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, Price, PriceProvider as PriceProviderT,
 };
 
@@ -110,4 +109,18 @@ fn vec_u8_from_price(price: Price, adjustment_multiplier: u128) -> Vec<u8> {
 	let mut be_bytes = [0u8; 32];
 	U256::from(price.into_inner().wrapping_div(adjustment_multiplier)).to_big_endian(&mut be_bytes[..32]);
 	be_bytes.to_vec()
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::precompile::mock::get_function_selector;
+
+	#[test]
+	fn function_selector_match() {
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("getPrice(address)")),
+			Into::<u32>::into(Action::GetPrice)
+		);
+	}
 }

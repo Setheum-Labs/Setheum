@@ -114,208 +114,130 @@ Install required tools and install git hooks:
 git submodule update --init --recursive
 ```
 
-## Build
-
-Build all native code:
-
-### Build NewRome (Testnet) - `SKIP_WASM_BUILD`
-
+### Clone
+To clone the repo with its submodules run:
 ```bash
-SKIP_WASM_BUILD= cargo build --features with-newrome-runtime
+git clone --recursive https://github.com/Setheum-Labs/Setheum
 ```
 
-### Build Full NewRome (Testnet)
+### Rust Setup
 
+If you don’t have Rust already, you can install it with:
 ```bash
-cargo build --features with-newrome-runtime
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-### Build All Runtimes (Testnet + Mainnet)
-
+You can install developer tools on Ubuntu 20.04 with:
 ```bash
-cargo build --locked --features with-all-runtime
+sudo apt install make clang pkg-config libssl-dev build-essential
 ```
 
-## Check
-
-Check all native code:
-
-### Check NewRome (Testnet)
-
+You can install the latest Rust toolchain with:
 ```bash
-SKIP_WASM_BUILD= cargo check --features with-newrome-runtime
+make init
 ```
 
-### Check Setheum (Mainnet)
+### Start a development node
 
+The `make run` command will launch a temporary node and its state will be discarded after you terminate the process.
 ```bash
-SKIP_WASM_BUILD= cargo check --features with-setheum-runtime
+make run
 ```
 
-### Check All Tests (Testnet + Mainnet)
+### Run a persistent single-node chain
+
+Use the following command to build the node without launching it:
 
 ```bash
-SKIP_WASM_BUILD= cargo check --features with-all-runtime --tests --all
+make build
 ```
 
-### Check All Runtimes (Testnet + Mainnet)
+This command will start the single-node development chain with persistent state:
 
 ```bash
-SKIP_WASM_BUILD= cargo check --features with-all-runtime --tests --all
+./target/release/setheum-node --dev
 ```
 
-### Check All Benchmarks (Testnet + Mainnet)
+Purge the development chain's state:
 
 ```bash
-SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p newrome-runtime
-SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p setheum-runtime
+./target/release/setheum-node purge-chain --dev
 ```
 
-### Check All Runtimes & Benchmarks (Testnet + Mainnet)
+Start the development chain with detailed logging:
 
 ```bash
-SKIP_WASM_BUILD= cargo check --features with-all-runtime --tests --all
-SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p newrome-runtime
-SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p setheum-runtime
+RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum-node -lruntime=debug --dev
 ```
 
-### Check Debug (Testnet)
+### Run tests
 
 ```bash
-RUSTFLAGS="-Z macro-backtrace" SKIP_WASM_BUILD= cargo +nightly check --features with-newrome-runtime
+make test
 ```
 
-### Check `try-runtime` (Testnet + Mainnet)
+### Run benchmarks
 
+Run runtime benchmark tests:
 ```bash
-SKIP_WASM_BUILD= cargo check --features try-runtime --features with-all-runtime
+make bench
 ```
 
-## Test
-
-Test all native code:
-
-### Test (Testnet)
-
+Run module benchmark tests:
 ```bash
-SKIP_WASM_BUILD= cargo test --features with-newrome-runtime --all
+cargo test -p module-poc --all-features
 ```
 
-### Test setheum-evm (SEVM Testnet)
-
-```bash
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility test_setheum_evm
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility should_not_kill_contract_on_transfer_all
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_work
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_handle_invalid_input
+Run the module benchmarks and generate the weights file:
+```
+./target/release/setheum-node benchmark \
+    --chain=dev \
+    --steps=50 \
+    --repeat=20 \
+    --pallet=module_poc \
+    --extrinsic='*'  \
+    --execution=wasm \
+    --wasm-execution=compiled \
+    --heap-pages=4096 \
+    --output=./lib-serml/poc/src/weights.rs
 ```
 
-### Test All Runtimes (Testnet + Mainnet)
+### Run in debugger
 
 ```bash
-SKIP_WASM_BUILD= cargo test --all --features with-all-runtime
+make debug
 ```
 
-### Test All Benchmarking (Testnet + Mainnet)
+### Embedded docs
+
+Once the project has been built, the following command can be used to explore all parameters and subcommands:
 
 ```bash
-cargo test --features runtime-benchmarks --features with-all-runtime --features --all benchmarking
+./target/release/setheum-node -h
 ```
 
-### Test All - Runtimes, SEVM, Benchmarking (Testnet + Mainnet)
+### Release builds
 
+To list all available release builds run:
 ```bash
-SKIP_WASM_BUILD= cargo test --all --features with-all-runtime
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility test_setheum_evm
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility should_not_kill_contract_on_transfer_all
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_work
-SKIP_WASM_BUILD= cargo test --all --features with-ethereum-compatibility schedule_call_precompile_should_handle_invalid_input
-cargo test --features runtime-benchmarks --features with-all-runtime --features --all benchmarking
+git tag
 ```
 
-## Update
-
-### Update Cargo
-
+To create a corresponding production build, first checkout the tag:
 ```bash
-cargo update
+git checkout testnet-1
 ```
 
-### Update ORML
-
+Then run this command to install appropriate compiler version and produce a binary.
 ```bash
-cd lib-open && git checkout master && git pull
-git add lib-open
-cargo-update check-all
+make release
 ```
 
-### Update Predeploy-Contracts
+### On-Chain upgrade builds
 
+Build the wasm runtime with:
 ```bash
-cd predeploy-contracts && git checkout master && git pull
-git add predeploy-contracts
-cargo-update check-all
-```
-
-## Development (NewRome Dev)
-
-### Run - NewRome (Dev Chain)
-
-You can start a development chain with:
-
-```bash
-cargo run --features with-newrome-runtime -- --dev -lruntime=debug --instant-sealing
-```
-
-### Run - SEVM Development (Dev Chain - NewRome)
-
-You can start a development chain with:
-
-```bash
-cargo run --features with-newrome-runtime --features with-ethereum-compatibility -- --dev -lruntime=debug -levm=debug --instant-sealing
-```
-
-### Purge - Development (Dev Chain)
-
-```bash
-target/debug/setheum purge-chain --dev -y
-```
-
-### Restart - Development (Dev Chain - NewRome)
-
-```bash
-target/debug/setheum purge-chain --dev -y
-cargo run --features with-newrome-runtime -- --dev -lruntime=debug --instant-sealing
-```
-
-### Restart - Development (Dev Chain - NewRome)
-
-You can start a development chain with:
-
-```bash
-cargo run --features with-newrome-runtime -- --dev -lruntime=debug --instant-sealing
-```
-
-## TestNet (NewRome)
-
-### Build NewRome WASM
-
-```bash
-./scripts/build-only-wasm.sh -p newrome-runtime --features=with-ethereum-compatibility
-```
-
-## Mainnet (Setheum - `Not Production Ready!`)
-
-### Build Setheum WASM
-
-```bash
-./scripts/build-only-wasm.sh -p setheum-runtime --features=on-chain-release-build
-```
-
-### Build Setheum WASM (srtool)
-
-```bash
-PACKAGE=setheum-runtime BUILD_OPTS="--features on-chain-release-build" ./scripts/srtool-build.sh
+make wasm
 ```
 
 ### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
@@ -335,11 +257,3 @@ Bench bot can take care of syncing branch with `master` and generating WeightInf
 Comment on a PR `/bench runtime module <setheum_name>` i.e.: `serp_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
-
-### Generate runtime weights
-
-Comment on a PR `/bench runtime <runtime> <setheum_name>` i.e.: `/bench runtime newrome setheum_currencies`.
-
-To generate weights for all modules just pass `*` as `setheum_name` i.e: `/bench runtime newrome *`
-
-Bench bot will do the benchmarking, generate weights file push changes into your branch.

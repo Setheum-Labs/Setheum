@@ -1,26 +1,7 @@
-// This file is part of Setheum.
-
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-use frame_support::log;
-use setheum_evm::{Context, ExitError, ExitSucceed, Precompile};
-use setheum_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
+use frame_support::debug;
+use module_evm::{Context, ExitError, ExitSucceed, Precompile};
+use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
 use sp_core::U256;
-use sp_runtime::RuntimeDebug;
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*, result};
 
 use orml_traits::MultiCurrency as MultiCurrencyT;
@@ -42,8 +23,7 @@ pub struct MultiCurrencyPrecompile<AccountId, AddressMapping, CurrencyIdMapping,
 	PhantomData<(AccountId, AddressMapping, CurrencyIdMapping, MultiCurrency)>,
 );
 
-#[primitives_proc_macro::generate_function_selector]
-#[derive(RuntimeDebug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum Action {
 	QueryName = "name()",
@@ -154,4 +134,43 @@ fn vec_u8_from_str(b: &[u8]) -> Vec<u8> {
 	let mut be_bytes = [0u8; 32];
 	U256::from_big_endian(b).to_big_endian(&mut be_bytes[..]);
 	be_bytes.to_vec()
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::precompile::mock::get_function_selector;
+
+	#[test]
+	fn function_selector_match() {
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("name()")),
+			Into::<u32>::into(Action::QueryName)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("symbol()")),
+			Into::<u32>::into(Action::QuerySymbol)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("decimals()")),
+			Into::<u32>::into(Action::QueryDecimals)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("totalSupply()")),
+			Into::<u32>::into(Action::QueryTotalIssuance)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("balanceOf(address)")),
+			Into::<u32>::into(Action::QueryBalance)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("transfer(address,address,uint256)")),
+			Into::<u32>::into(Action::Transfer)
+		);
+	}
 }

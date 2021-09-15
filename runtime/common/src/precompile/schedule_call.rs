@@ -1,20 +1,3 @@
-// This file is part of Setheum.
-
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 // Disable the following lints
 #![allow(clippy::type_complexity)]
@@ -27,8 +10,8 @@ use frame_support::{
 		Currency, IsType, OriginTrait,
 	},
 };
-use setheum_evm::{Context, ExitError, ExitSucceed, Precompile};
-use setheum_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, TransactionPayment};
+use module_evm::{Context, ExitError, ExitSucceed, Precompile};
+use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, TransactionPayment};
 use primitives::{Balance, BlockNumber};
 use sp_core::{H160, U256};
 use sp_runtime::RuntimeDebug;
@@ -84,19 +67,18 @@ pub struct ScheduleCallPrecompile<
 	)>,
 );
 
-#[primitives_proc_macro::generate_function_selector]
-#[derive(RuntimeDebug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum Action {
-	Schedule = "scheduleCall(address,address,uint256,uint256,uint256,bytes)",
-	Cancel = "cancelCall(address,bytes)",
-	Reschedule = "rescheduleCall(address,uint256,bytes)",
+	Schedule = 0x64c91905,
+	Cancel = 0x93e32661,
+	Reschedule = 0x28302f34,
 }
 
 type PalletBalanceOf<T> =
-	<<T as setheum_evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	<<T as module_evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 type NegativeImbalanceOf<T> =
-	<<T as setheum_evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance;
+	<<T as module_evm::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance;
 
 impl<
 		AccountId,
@@ -125,11 +107,11 @@ impl<
 	CurrencyIdMapping: CurrencyIdMappingT,
 	Scheduler: ScheduleNamed<BlockNumber, Call, PalletsOrigin, Address = TaskAddress<BlockNumber>>,
 	ChargeTransactionPayment: TransactionPayment<AccountId, PalletBalanceOf<Runtime>, NegativeImbalanceOf<Runtime>>,
-	Call: Dispatchable<Origin = Origin> + Debug + From<setheum_evm::Call<Runtime>>,
+	Call: Dispatchable<Origin = Origin> + Debug + From<module_evm::Call<Runtime>>,
 	Origin: IsType<<Runtime as frame_system::Config>::Origin>
 		+ OriginTrait<AccountId = AccountId, PalletsOrigin = PalletsOrigin>,
 	PalletsOrigin: Into<<Runtime as frame_system::Config>::Origin> + From<frame_system::RawOrigin<AccountId>> + Clone,
-	Runtime: setheum_evm::Config + frame_system::Config<AccountId = AccountId>,
+	Runtime: module_evm::Config + frame_system::Config<AccountId = AccountId>,
 	PalletBalanceOf<Runtime>: IsType<Balance>,
 {
 	fn execute(
@@ -175,14 +157,14 @@ impl<
 					// reserve the transaction fee for gas_limit
 					use sp_runtime::traits::Convert;
 					let from_account = AddressMapping::get_account_id(&from);
-					let weight = <Runtime as setheum_evm::Config>::GasToWeight::convert(gas_limit);
+					let weight = <Runtime as module_evm::Config>::GasToWeight::convert(gas_limit);
 					_fee = ChargeTransactionPayment::reserve_fee(&from_account, weight).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
 				}
 
-				let call = setheum_evm::Call::<Runtime>::scheduled_call(
+				let call = module_evm::Call::<Runtime>::scheduled_call(
 					from,
 					target,
 					input_data,
@@ -284,5 +266,31 @@ impl<
 				Ok((ExitSucceed::Returned, vec![], 0))
 			}
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::precompile::mock::get_function_selector;
+
+	#[test]
+	fn function_selector_match() {
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector(
+				"scheduleCall(address,address,uint256,uint256,uint256,bytes)"
+			)),
+			Into::<u32>::into(Action::Schedule)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("cancelCall(address,bytes)")),
+			Into::<u32>::into(Action::Cancel)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("rescheduleCall(address,uint256,bytes)")),
+			Into::<u32>::into(Action::Reschedule)
+		);
 	}
 }

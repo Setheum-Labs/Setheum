@@ -1,29 +1,11 @@
-// This file is part of Setheum.
-
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, FullCodec, HasCompact};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
-	CurrencyId,
 	evm::{CallInfo, EvmAddress},
+	CurrencyId,
 };
 use sp_core::H160;
 use sp_runtime::{
@@ -33,42 +15,16 @@ use sp_runtime::{
 };
 use sp_std::{
 	cmp::{Eq, PartialEq},
+	fmt::Debug,
 	prelude::*,
 };
 
 pub mod mocks;
 
-pub type Balance = u128;
-pub type BlockNumber = u32;
-pub type FiatCurrencyId = CurrencyId;
-pub type ExchangeRate = FixedU128; // FixedPointNumber
-pub type Price = FixedU128; // FixedPointNumber
-pub type Rate = FixedU128; // FixedPointNumber
-pub type Ratio = FixedU128; // FixedPointNumber
-
-/// Extensible conversion trait. Generic over both source and destination types.
-pub trait Convert<A, B> {
-	/// Make conversion.
-	fn convert(a: A) -> B;
-}
-
-impl<A, B: Default> Convert<A, B> for () {
-	fn convert(_: A) -> B {
-		Default::default()
-	}
-}
-
-/// Extensible conversion trait. Generic over both source and destination types.
-pub trait ConvertPrice<FixedU128, U128> {
-	/// Make conversion.
-	fn convert_price_to_balance(p: FixedU128) -> u128;
-}
-
-impl<FixedU128, U128: Default> ConvertPrice<FixedU128, U128> for () {
-	fn convert_price_to_balance(_p: FixedU128) -> u128 {
-		Default::default()
-	}
-}
+pub type Price = FixedU128;
+pub type Ratio = FixedU128;
+pub type Rate = FixedU128;
+pub type ExchangeRate = FixedU128;
 
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
@@ -86,11 +42,23 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		min_target_amount: Balance,
 	) -> sp_std::result::Result<Balance, DispatchError>;
 
+	fn buyback_swap_with_exact_supply(
+		who: &AccountId,
+		path: &[CurrencyId],
+		supply_amount: Balance,
+	) -> sp_std::result::Result<Balance, DispatchError>;
+
 	fn swap_with_exact_target(
 		who: &AccountId,
 		path: &[CurrencyId],
 		target_amount: Balance,
 		max_supply_amount: Balance,
+	) -> sp_std::result::Result<Balance, DispatchError>;
+
+	fn buyback_swap_with_exact_target(
+		who: &AccountId,
+		path: &[CurrencyId],
+		target_amount: Balance,
 	) -> sp_std::result::Result<Balance, DispatchError>;
 
 	fn add_liquidity(
@@ -141,11 +109,27 @@ where
 		Ok(Default::default())
 	}
 
+	fn buyback_swap_with_exact_supply(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_supply_amount: Balance,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		Ok(Default::default())
+	}
+
 	fn swap_with_exact_target(
 		_who: &AccountId,
 		_path: &[CurrencyId],
 		_target_amount: Balance,
 		_max_supply_amount: Balance,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		Ok(Default::default())
+	}
+
+	fn buyback_swap_with_exact_target(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_target_amount: Balance,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		Ok(Default::default())
 	}
@@ -177,6 +161,9 @@ where
 pub trait SerpTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
+
+	/// Deliver System StableCurrency Inflation
+	fn issue_stablecurrency_inflation() -> DispatchResult;
 
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar
 	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
@@ -234,6 +221,18 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 
 	/// When SetCurrency gets SerpUp
 	fn swap_exact_setcurrency_to_dinar(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+	);
+
+	/// When SetCurrency gets inflation deposit
+	fn swap_exact_setcurrency_to_setter(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+	);
+
+	/// When SetCurrency gets inflation deposit
+	fn swap_exact_setcurrency_to_setheum(
 		currency_id: Self::CurrencyId,
 		supply_amount: Self::Balance,
 	);

@@ -26,12 +26,16 @@ use frame_support::{
 	construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients, PalletId,
 };
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, ReserveIdentifier, TokenSymbol, TradingPair};
+use primitives::{Amount, TokenSymbol, TradingPair};
 use smallvec::smallvec;
-use sp_core::{crypto::AccountId32, H256};
-use sp_runtime::{testing::Header, traits::IdentityLookup, Perbill};
+use sp_core::{crypto::AccountId32, H160, H256};
+use sp_runtime::{
+	testing::Header,
+	traits::{IdentityLookup, One},
+	Perbill,
+};
 use sp_std::cell::RefCell;
-use support::{mocks::MockAddressMapping, Price, PriceProvider, SerpTreasury};
+use support::{mocks::MockAddressMapping, Ratio, DEXManager, Price, SerpTreasury};
 
 pub type AccountId = AccountId32;
 pub type BlockNumber = u64;
@@ -39,9 +43,9 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -104,12 +108,10 @@ impl orml_tokens::Config for Runtime {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
 	type MaxLocks = ();
-	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
-	pub const NativeTokenExistentialDeposit: Balance = 10;
-	pub const MaxReserves: u32 = 50;
+	pub const NativeTokenExistentialDeposit: Balance = 0;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -119,21 +121,24 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = NativeTokenExistentialDeposit;
 	type AccountStore = System;
 	type MaxLocks = ();
-	type MaxReserves = MaxReserves;
-	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
 }
 
-pub type AdaptedBasicCurrency = setheum_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
+pub type AdaptedBasicCurrency = module_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
 }
 
 pub struct MockSerpTreasury;
 impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+
+	/// Deliver System StableCurrency Inflation
+	fn issue_stablecurrency_inflation() -> DispatchResult {
+		unimplemented!()
+	}
 
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar
 	fn get_buyback_serpup(
@@ -216,7 +221,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
+	/// deposit reserve asset (Setter (SETUSD)) to serp treasury by `who`
 	fn deposit_setter(
 		_from: &AccountId,
 		_amount: Balance
@@ -234,7 +239,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 }
 
-impl setheum_currencies::Config for Runtime {
+impl module_currencies::Config for Runtime {
 	type Event = Event;
     type SerpTreasury = MockSerpTreasury;
 	type MultiCurrency = Tokens;
@@ -255,31 +260,104 @@ parameter_types! {
 	pub const GetStableCurrencyExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETR, SETHEUM).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SETHEUM).unwrap(),
 	];
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
+		SETUSD,
+		SETUSD,
 	];
 }
 
-impl setheum_dex::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
-	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
-	type CurrencyIdMapping = ();
-	type WeightInfo = ();
-	type ListingOrigin = frame_system::EnsureSignedBy<Zero, AccountId>;
+pub struct MockDEX;
+impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
+	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
+		match (currency_id_a, currency_id_b) {
+			(SETUSD, SETHEUM) => (10000, 200),
+			(DNAR, SETUSD) => (200, 10000),
+			_ => (0, 0),
+		}
+	}
+
+	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
+		unimplemented!()
+	}
+
+	fn get_swap_target_amount(
+		_path: &[CurrencyId],
+		_supply_amount: Balance,
+	) -> Option<Balance> {
+		unimplemented!()
+	}
+
+	fn get_swap_supply_amount(
+		_path: &[CurrencyId],
+		_target_amount: Balance,
+	) -> Option<Balance> {
+		unimplemented!()
+	}
+
+	fn swap_with_exact_supply(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_supply_amount: Balance,
+		_min_target_amount: Balance,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		unimplemented!()
+	}
+
+	fn buyback_swap_with_exact_supply(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_supply_amount: Balance,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		unimplemented!()
+	}
+
+	fn swap_with_exact_target(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_target_amount: Balance,
+		_max_supply_amount: Balance,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		unimplemented!()
+	}
+
+	fn buyback_swap_with_exact_target(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_target_amount: Balance,
+	) -> sp_std::result::Result<Balance, DispatchError> {
+		unimplemented!()
+	}
+
+	fn add_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_max_amount_a: Balance,
+		_max_amount_b: Balance,
+		_min_share_increment: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn remove_liquidity(
+		_who: &AccountId,
+		_currency_id_a: CurrencyId,
+		_currency_id_b: CurrencyId,
+		_remove_share: Balance,
+		_min_withdrawn_a: Balance,
+		_min_withdrawn_b: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
 }
 
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
 	pub static TransactionByteFee: u128 = 1;
-	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETHEUM, SETR, DNAR]];
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETUSD, SETHEUM], vec![DNAR, SETUSD, SETHEUM]];
 }
 
 thread_local! {
@@ -332,7 +410,7 @@ impl Config for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = ();
-	type DEX = SetheumDEX;
+	type DEX = MockDEX;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = MockPriceSource;
@@ -370,13 +448,12 @@ construct_runtime!(
 		TransactionPayment: transaction_payment::{Pallet, Call, Storage},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currencies: setheum_currencies::{Pallet, Call, Event<T>},
-		SetheumDEX: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Currencies: module_currencies::{Pallet, Call, Event<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	balances: Vec<(AccountId, CurrencyId, Balance)>,
+	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
 	base_weight: u64,
 	byte_fee: u128,
 	weight_to_fee: u128,
@@ -386,7 +463,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			balances: vec![(ALICE, SETR, 10000), (ALICE, SETHEUM, 1000)],
+			endowed_accounts: vec![(ALICE, SETUSD, 10000), (ALICE, DNAR, 1000)],
 			base_weight: 0,
 			byte_fee: 2,
 			weight_to_fee: 1,
@@ -430,15 +507,7 @@ impl ExtBuilder {
 		.unwrap();
 
 		orml_tokens::GenesisConfig::<Runtime> {
-			balances: self.balances,
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-
-		setheum_dex::GenesisConfig::<Runtime> {
-			initial_listing_trading_pairs: vec![],
-			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![],
+			endowed_accounts: self.endowed_accounts,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

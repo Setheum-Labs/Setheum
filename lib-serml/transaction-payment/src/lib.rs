@@ -30,20 +30,21 @@ use frame_support::{
 	dispatch::{DispatchResult, Dispatchable},
 	pallet_prelude::*,
 	traits::{
-		Currency, ExistenceRequirement, Imbalance, NamedReservableCurrency, OnUnbalanced, SameOrOther, WithdrawReasons,
+		Currency, ExistenceRequirement, Imbalance, OnUnbalanced, ReservableCurrency, SameOrOther, WithdrawReasons,
 	},
 	weights::{DispatchInfo, GetDispatchInfo, Pays, PostDispatchInfo, WeightToFeeCoefficient, WeightToFeePolynomial},
-	BoundedVec,
 };
 use frame_system::pallet_prelude::*;
 use orml_traits::MultiCurrency;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, InclusionFee};
-use primitives::{Balance, CurrencyId, ReserveIdentifier};
+use primitives::{Balance, CurrencyId};
 use sp_runtime::{
 	traits::{
-		Bounded, CheckedSub, Convert, DispatchInfoOf, One, PostDispatchInfoOf, SaturatedConversion, Saturating,
-		SignedExtension, UniqueSaturatedInto, Zero,
+		Bounded, CheckedSub, Convert, DispatchInfoOf,
+		One, PostDispatchInfoOf, SaturatedConversion,
+		Saturating, SignedExtension,
+		UniqueSaturatedInto, Zero,
 	},
 	transaction_validity::{
 		InvalidTransaction, TransactionPriority, TransactionValidity, TransactionValidityError, ValidTransaction,
@@ -51,7 +52,7 @@ use sp_runtime::{
 	FixedPointNumber, FixedPointOperand, FixedU128, Perquintill,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{DEXManager, PriceProvider, Ratio, TransactionPayment};
+use support::{DEXManager, Ratio, TransactionPayment, PriceProvider};
 
 mod mock;
 mod tests;
@@ -216,12 +217,10 @@ where
 pub mod module {
 	use super::*;
 
-	pub const RESERVE_ID: ReserveIdentifier = ReserveIdentifier::TransactionPayment;
-
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Native currency id, the actual received currency type as fee for
-		/// treasury. Should be ACA
+		/// treasury. Should be SETHEUM
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 
@@ -230,10 +229,7 @@ pub mod module {
 		type DefaultFeeSwapPathList: Get<Vec<Vec<CurrencyId>>>;
 
 		/// The currency type in which fees will be paid.
-		type Currency: Currency<Self::AccountId>
-			+ NamedReservableCurrency<Self::AccountId, ReserveIdentifier = ReserveIdentifier>
-			+ Send
-			+ Sync;
+		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId> + Send + Sync;
 
 		/// Currency to transfer, reserve/unreserve, lock/unlock assets
 		type MultiCurrency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -822,12 +818,12 @@ where
 	fn reserve_fee(who: &T::AccountId, weight: Weight) -> Result<PalletBalanceOf<T>, DispatchError> {
 		let fee = Pallet::<T>::weight_to_fee(weight);
 		Pallet::<T>::ensure_can_charge_fee(who, fee, WithdrawReasons::TRANSACTION_PAYMENT);
-		<T as Config>::Currency::reserve_named(&RESERVE_ID, &who, fee)?;
+		<T as Config>::Currency::reserve(&who, fee)?;
 		Ok(fee)
 	}
 
 	fn unreserve_fee(who: &T::AccountId, fee: PalletBalanceOf<T>) {
-		<T as Config>::Currency::unreserve_named(&RESERVE_ID, &who, fee);
+		<T as Config>::Currency::unreserve(&who, fee);
 	}
 
 	fn unreserve_and_charge_fee(
@@ -835,7 +831,7 @@ where
 		weight: Weight,
 	) -> Result<(PalletBalanceOf<T>, NegativeImbalanceOf<T>), TransactionValidityError> {
 		let fee = Pallet::<T>::weight_to_fee(weight);
-		<T as Config>::Currency::unreserve_named(&RESERVE_ID, &who, fee);
+		<T as Config>::Currency::unreserve(&who, fee);
 
 		match <T as Config>::Currency::withdraw(
 			who,
