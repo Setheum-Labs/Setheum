@@ -235,6 +235,30 @@ Build the wasm runtime with:
 make wasm
 ```
 
+## Update
+
+### Update Cargo
+
+```bash
+cargo update
+```
+
+### Update ORML
+
+```bash
+cd lib-open && git checkout master && git pull
+git add lib-open
+cargo-update check-all
+```
+
+### Update Predeploy-Contracts
+
+```bash
+cd predeploy-contracts && git checkout master && git pull
+git add predeploy-contracts
+cargo-update check-all
+```
+
 ### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
 
 ```bash
