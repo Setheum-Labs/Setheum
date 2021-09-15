@@ -1,58 +1,55 @@
 [package]
 name = "runtime-common"
-version = "0.9.1"
-authors = ["Setheum Labs"]
+version = "0.7.3"
+authors = ["Setheum Developers"]
 edition = "2018"
 
 [dependencies]
-# external dependencies
 static_assertions = "1.1.0"
 num_enum = { version = "0.5.1", default-features = false }
-serde = { version = "1.0.101", optional = true, default-features = false }
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["derive", "max-encoded-len"] }
 
-# Substrate dependencies
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-pallet-collective = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
-pallet-membership = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev', default-features = false }
+serde = { version = "1.0.124", optional = true, default-features = false }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+max-encoded-len = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+pallet-scheduler  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+module-evm = { path = "../../lib-serml/evm", default-features = false }
 
-# orml dependencies
 orml-oracle = { path = "../../lib-open/oracle", default-features = false }
 orml-traits = { path = "../../lib-open/traits", default-features = false }
 
-# local dependencies
-setheum-evm = { path = "../../lib-serml/evm/evm", default-features = false }
-setheum-support = { path = "../../lib-serml/support", default-features = false }
-setheum-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
+module-support = { path = "../../lib-serml/support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 primitives-proc-macro = { path = "../../primitives/proc-macro" }
 
 [dev-dependencies]
-serde_json = "1.0.41"
+serde_json = "1.0.64"
 sha3 = { version = "0.9.1" }
 hex-literal = "0.3.1"
-sp-io = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-pallet-balances = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-pallet-proxy = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-pallet-utility = { git = "https://github.com/paritytech/substrate", tag = "monthly-2021-08", version = '4.0.0-dev' }
-setheum-service = {  path = "../../node/service" }
-orml-tokens = { path = "../../lib-open/tokens" }
-orml-nft = { path = "../../lib-open/nft" }
-setheum-currencies = { path = "../../lib-serml/tokens/currencies" }
-setheum-nft = { path = "../../lib-serml/tokens/nft" }
-setheum-dex = { path = "../../lib-serml/dex/dex" }
-serp-prices = { path = "../../lib-serml/serp/serp-prices" }
-setheum-transaction-payment = { path = "../../lib-serml/transaction-payment" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+setheum-node = {  path = "../../node" }
+orml-tokens = { path = "../../lib-open/tokens", default-features = false }
+module-currencies = { path = "../../lib-serml/currencies" }
+module-evm-bridge = { path = "../../lib-serml/evm-bridge" }
+module-evm-manager = { path = "../../lib-serml/evm-manager" }
+module-nft = { path = "../../lib-serml/nft" }
+module-dex = { path = "../../lib-serml/dex" }
+module-prices = { path = "../../lib-serml/prices" }
+module-transaction-payment = { path = "../../lib-serml/transaction-payment" }
+
 
 [features]
 default = ["std"]
 std = [
+	"num_enum/std",
 	"serde",
 	"codec/std",
 	"sp-core/std",
@@ -61,12 +58,12 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-scheduler/std",
-	"pallet-collective/std",
-	"pallet-membership/std",
+	"module-evm/std",
 	"orml-oracle/std",
 	"orml-traits/std",
-	"setheum-support/std",
+	"module-support/std",
 	"primitives/std",
-	"setheum-transaction-payment/std",
 ]
-with-ethereum-compatibility = []
+with-ethereum-compatibility = [
+	"module-evm/with-ethereum-compatibility",
+]

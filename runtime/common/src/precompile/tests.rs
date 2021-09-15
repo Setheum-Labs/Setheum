@@ -1,38 +1,20 @@
-// This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-#![allow(clippy::erasing_op)]
 #![cfg(test)]
 use super::*;
 use crate::precompile::{
 	mock::{
-		dnar_evm_address, alice, alice_evm_addr, setusd_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
-		get_task_id, lp_dnar_setusd_evm_address, new_test_ext, renbtc_evm_address, run_to_block, Balances, DexModule,
+		setheum_evm_address, alice, alice_evm_addr, setusd_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
+		get_task_id, lp_setheum_setusd_evm_address, new_test_ext, renbtc_evm_address, run_to_block, Balances, DexModule,
 		DexPrecompile, Event as TestEvent, MultiCurrencyPrecompile, Oracle, OraclePrecompile, Origin, Price,
-		ScheduleCallPrecompile, System, Test, ALICE, SETUSD, SETR, INITIAL_BALANCE, RENBTC,
+		ScheduleCallPrecompile, System, Test, ALICE, SETUSD, INITIAL_BALANCE, RENBTC,
 	},
 	schedule_call::TaskInfo,
 };
 use codec::Encode;
 use frame_support::{assert_noop, assert_ok};
 use hex_literal::hex;
-use setheum_evm::ExitError;
-use setheum_support::AddressMapping;
+use module_evm::ExitError;
+use module_support::AddressMapping;
 use orml_traits::DataFeeder;
 use primitives::{Balance, PREDEPLOY_ADDRESS_START};
 use sp_core::{H160, U256};
@@ -61,7 +43,7 @@ pub type WithSystemContractFilter = AllPrecompiles<
 >;
 
 #[test]
-fn precompile_filter_works_on_setheum_precompiles() {
+fn precompile_filter_works_on_core_precompiles() {
 	let precompile = H160::from_low_u64_be(PRECOMPILE_ADDRESS_START);
 
 	let mut non_system = [0u8; 20];
@@ -137,20 +119,20 @@ fn multicurrency_precompile_should_work() {
 		input[1 * 32..4 + 1 * 32].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryName).to_be_bytes());
 
 		// Token
-		context.caller = dnar_evm_address();
+		context.caller = setheum_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
-		expected_output[27..32].copy_from_slice(&b"Serp Dinar"[..]);
+		expected_output[27..32].copy_from_slice(&b"Setheum"[..]);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_setusd_evm_address();
+		context.caller = lp_setheum_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
-		expected_output[9..32].copy_from_slice(&b"LP Setheum - Setheum US Dollar"[..]);
+		expected_output[9..32].copy_from_slice(&b"LP Setheum - SetDollar"[..]);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
 
@@ -160,20 +142,20 @@ fn multicurrency_precompile_should_work() {
 		input[1 * 32..4 + 1 * 32].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QuerySymbol).to_be_bytes());
 
 		// Token
-		context.caller = dnar_evm_address();
+		context.caller = setheum_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
-		expected_output[29..32].copy_from_slice(&b"DNAR"[..]);
+		expected_output[29..32].copy_from_slice(&b"SETHEUM"[..]);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_setusd_evm_address();
+		context.caller = lp_setheum_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
-		expected_output[21..32].copy_from_slice(&b"LP_DNAR_SETUSD"[..]);
+		expected_output[21..32].copy_from_slice(&b"LP_SETHEUM_SETUSD"[..]);
 		assert_eq!(output, expected_output);
 		assert_eq!(used_gas, 0);
 
@@ -184,7 +166,7 @@ fn multicurrency_precompile_should_work() {
 			.copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryDecimals).to_be_bytes());
 
 		// Token
-		context.caller = dnar_evm_address();
+		context.caller = setheum_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -193,7 +175,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_setusd_evm_address();
+		context.caller = lp_setheum_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -208,7 +190,7 @@ fn multicurrency_precompile_should_work() {
 			.copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryTotalIssuance).to_be_bytes());
 
 		// Token
-		context.caller = dnar_evm_address();
+		context.caller = setheum_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -217,7 +199,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_setusd_evm_address();
+		context.caller = lp_setheum_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let expected_output = [0u8; 32];
@@ -233,7 +215,7 @@ fn multicurrency_precompile_should_work() {
 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 
 		// Token
-		context.caller = dnar_evm_address();
+		context.caller = setheum_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let mut expected_output = [0u8; 32];
@@ -242,7 +224,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(used_gas, 0);
 
 		// DexShare
-		context.caller = lp_dnar_setusd_evm_address();
+		context.caller = lp_setheum_setusd_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let expected_output = [0u8; 32];
@@ -263,7 +245,7 @@ fn multicurrency_precompile_should_work() {
 		let to_balance = Balances::free_balance(bob());
 
 		// Token
-		context.caller = dnar_evm_address();
+		context.caller = setheum_evm_address();
 		let (reason, output, used_gas) = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		let expected_output: Vec<u8> = vec![];
@@ -273,7 +255,7 @@ fn multicurrency_precompile_should_work() {
 		assert_eq!(Balances::free_balance(bob()), to_balance + 1);
 
 		// DexShare
-		context.caller = lp_dnar_setusd_evm_address();
+		context.caller = lp_setheum_setusd_evm_address();
 		assert_noop!(
 			MultiCurrencyPrecompile::execute(&input, None, &context),
 			ExitError::Other("BalanceTooLow".into())
@@ -297,7 +279,7 @@ fn oracle_precompile_should_work() {
 		// action
 		input[1 * 32..4 + 1 * 32].copy_from_slice(&Into::<u32>::into(oracle::Action::GetPrice).to_be_bytes());
 		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 
 		// no price yet
 		let (reason, output, used_gas) = OraclePrecompile::execute(&input, None, &context).unwrap();
@@ -386,7 +368,7 @@ fn schedule_call_precompile_should_work() {
 		// from
 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// target
-		U256::from(dnar_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from(setheum_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 		// value
 		U256::from(0).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// gas_limit
@@ -415,7 +397,7 @@ fn schedule_call_precompile_should_work() {
 		let (reason, output, used_gas) = ScheduleCallPrecompile::execute(&input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(used_gas, 0);
-		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Scheduled(3, 0));
+		let event = TestEvent::pallet_scheduler(pallet_scheduler::Event::<Test>::Scheduled(3, 0));
 		assert!(System::events().iter().any(|record| record.event == event));
 
 		// cancel schedule
@@ -437,7 +419,7 @@ fn schedule_call_precompile_should_work() {
 		let (reason, _output, used_gas) = ScheduleCallPrecompile::execute(&cancel_input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(used_gas, 0);
-		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Canceled(3, 0));
+		let event = TestEvent::pallet_scheduler(pallet_scheduler::Event::<Test>::Canceled(3, 0));
 		assert!(System::events().iter().any(|record| record.event == event));
 
 		let (reason, output, used_gas) = ScheduleCallPrecompile::execute(&input, None, &context).unwrap();
@@ -467,11 +449,11 @@ fn schedule_call_precompile_should_work() {
 		let (reason, _output, used_gas) = ScheduleCallPrecompile::execute(&reschedule_input, None, &context).unwrap();
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(used_gas, 0);
-		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Scheduled(5, 0));
+		let event = TestEvent::pallet_scheduler(pallet_scheduler::Event::<Test>::Scheduled(5, 0));
 		assert!(System::events().iter().any(|record| record.event == event));
 
-		let from_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
-		let to_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
+		let from_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
+		let to_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
 		#[cfg(not(feature = "with-ethereum-compatibility"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
@@ -518,7 +500,7 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 		// from
 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// target
-		U256::from(dnar_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from(setheum_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 		// value
 		U256::from(0).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// gas_limit
@@ -538,8 +520,8 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 		assert_eq!(reason, ExitSucceed::Returned);
 		assert_eq!(used_gas, 0);
 
-		let from_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
-		let to_account = <Test as setheum_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
+		let from_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
+		let to_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
 		#[cfg(not(feature = "with-ethereum-compatibility"))]
 		{
 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
@@ -619,9 +601,9 @@ fn dex_precompile_get_liquidity_should_work() {
 		// action
 		input[1 * 32..4 + 1 * 32].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityPool).to_be_bytes());
 		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from_big_endian(&setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 
 		let mut expected_output = [0u8; 64];
 		U256::from(1_000).to_big_endian(&mut expected_output[..32]);
@@ -664,9 +646,9 @@ fn dex_precompile_get_liquidity_token_address_should_work() {
 		input[1 * 32..4 + 1 * 32]
 			.copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityTokenAddress).to_be_bytes());
 		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+		U256::from_big_endian(&setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		let address = H160::from_str("0x0000000000000000000000010000000100000004").unwrap();
@@ -723,9 +705,9 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+		U256::from_big_endian(&setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(989).to_big_endian(&mut expected_output[..32]);
@@ -772,9 +754,9 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+		U256::from_big_endian(&setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(1).to_big_endian(&mut expected_output[..32]);
@@ -825,9 +807,9 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
+		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
+		U256::from_big_endian(&setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(989).to_big_endian(&mut expected_output[..32]);
@@ -878,9 +860,9 @@ fn dex_precompile_swap_with_exact_target_should_work() {
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
+		U256::from_big_endian(&renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
+		U256::from_big_endian(&setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
 
 		let mut expected_output = [0u8; 32];
 		U256::from(1).to_big_endian(&mut expected_output[..32]);

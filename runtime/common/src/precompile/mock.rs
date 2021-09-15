@@ -1,47 +1,34 @@
-// This file is part of Setheum.
-
-// Copyright (C) 2020-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
 #![cfg(test)]
 
 use crate::{AllPrecompiles, Ratio, RuntimeBlockWeights, SystemContractsFilter, Weight};
-use setheum_service::chain_spec::evm_genesis;
-use codec::{Decode, Encode, MaxEncodedLen};
+use setheum_node::chain_spec::evm_genesis;
+use codec::{Decode, Encode};
 use frame_support::{
 	assert_ok, ord_parameter_types, parameter_types,
-	traits::{GenesisBuild, InstanceFilter, OnFinalize, OnInitialize, SortedMembers},
+	traits::{GenesisBuild, InstanceFilter, MaxEncodedLen, OnFinalize, OnInitialize, SortedMembers},
 	weights::IdentityFee,
 	PalletId, RuntimeDebug,
 };
 use frame_system::{EnsureRoot, EnsureSignedBy};
-use setheum_support::{
-	mocks::MockAddressMapping, AddressMapping as AddressMappingT, ExchangeRate, ExchangeRateProvider, SerpTreasury,
+use module_support::{
+	mocks::MockAddressMapping, AddressMapping as AddressMappingT,
 };
 use orml_traits::{parameter_type_with_key, MultiReservableCurrency};
 pub use primitives::{
-	evm::EvmAddress, Amount, BlockNumber, CurrencyId, DexShare, Header, Nonce, ReserveIdentifier, TokenSymbol,
-	TradingPair,
+	evm::EvmAddress, TradingPair, DexShare, TokenSymbol,
+	Amount, BlockNumber, CurrencyId, Header, Nonce,
 };
+use sha3::{Digest, Keccak256};
 use sp_core::{crypto::AccountId32, H160, H256};
 use sp_runtime::{
 	traits::{BlakeTwo256, Convert, IdentityLookup, One as OneT},
 	DispatchResult, FixedPointNumber, FixedU128, Perbill,
 };
-use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, str::FromStr};
+use sp_std::{
+	collections::btree_map::BTreeMap,
+	convert::{TryFrom, TryInto},
+	str::FromStr,
+};
 
 pub type AccountId = AccountId32;
 type Key = CurrencyId;
@@ -53,11 +40,11 @@ parameter_types! {
 }
 impl frame_system::Config for Test {
 	type BaseCallFilter = ();
-	type BlockWeights = RuntimeBlockWeights;
+	type BlockWeights = BlockWeights;
 	type BlockLength = ();
 	type Origin = Origin;
 	type Call = Call;
-	type Index = u32;
+	type Index = u64;
 	type BlockNumber = BlockNumber;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
@@ -82,7 +69,6 @@ parameter_types! {
 	pub const ExpiresIn: u32 = 600;
 	pub const RootOperatorAccountId: AccountId = ALICE;
 	pub static OracleMembers: Vec<AccountId> = vec![ALICE, BOB, EVA];
-	pub const MaxHasDispatchedSize: u32 = 40;
 }
 
 pub struct Members;
@@ -102,7 +88,6 @@ impl orml_oracle::Config for Test {
 	type OracleValue = Price;
 	type RootOperatorAccountId = RootOperatorAccountId;
 	type Members = Members;
-	type MaxHasDispatchedSize = MaxHasDispatchedSize;
 	type WeightInfo = ();
 }
 
@@ -128,12 +113,10 @@ impl orml_tokens::Config for Test {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
 	type MaxLocks = ();
-	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
 	pub const ExistentialDeposit: Balance = 1;
-	pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Test {
@@ -142,139 +125,34 @@ impl pallet_balances::Config for Test {
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type MaxLocks = ();
-	type MaxReserves = MaxReserves;
-	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
+	type MaxLocks = ();
 }
 
-// Currencies constants - CurrencyId/TokenSymbol
 pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
-pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
-pub const SETCHF: CurrencyId = CurrencyId::Token(TokenSymbol::SETCHF);
-pub const SETSAR: CurrencyId = CurrencyId::Token(TokenSymbol::SETSAR);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
-
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
+pub const LP_SETHEUM_SETUSD: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
 pub const LP_DNAR_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETUSD));
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
+pub const LP_SETR_SETUSD: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
+pub const LP_SETEUR_SETUSD: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
+pub const LP_RENBTC_SETUSD: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = DNAR;
+	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
 }
 
-pub struct MockSerpTreasury;
-impl SerpTreasury<AccountId> for MockSerpTreasury {
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
-
-	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serpup(
-		_amount: Balance,
-		_currency_id: CurrencyId,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serpup(
-		_amount: Balance,
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-	
-	/// SerpUp ratio for SetPay Cashdrops
-	fn get_cashdrop_serpup(
-		_amount: Balance,
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serpup(
-		_currency_id: CurrencyId,
-		_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	fn on_serpdown(
-		_currency_id: CurrencyId,
-		_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// get the minimum supply of a setcurrency - by key
-	fn get_minimum_supply(
-		_currency_id: CurrencyId
-	) -> Balance {
-		unimplemented!()
-	}
-
-	/// issue standard to `who`
-	fn issue_standard(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_standard: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// burn standard(stable currency) of `who`
-	fn burn_standard(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_standard: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// issue setter of amount setter to `who`
-	fn issue_setter(
-		_who: &AccountId,
-		_setter: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// burn setter of `who`
-	fn burn_setter(
-		_who: &AccountId,
-		_setter: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
-	fn deposit_setter(
-		_from: &AccountId,
-		_amount: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_transfer_amount: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-}
-
-// TODO: Update!
-impl setheum_currencies::Config for Test {
+impl module_currencies::Config for Test {
 	type Event = Event;
-    type SerpTreasury = MockSerpTreasury;
+    type SerpTreasury = ();
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
@@ -283,11 +161,11 @@ impl setheum_currencies::Config for Test {
 	type EVMBridge = EVMBridge;
 }
 
-impl setheum_evm_bridge::Config for Test {
+impl module_evm_bridge::Config for Test {
 	type EVM = ModuleEVM;
 }
 
-impl setheum_evm_manager::Config for Test {
+impl module_evm_manager::Config for Test {
 	type Currency = Balances;
 	type EVMBridge = EVMBridge;
 }
@@ -295,18 +173,13 @@ impl setheum_evm_manager::Config for Test {
 parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
-	pub const DataDepositPerByte: Balance = 10;
-	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
-	pub MaxAttributesBytes: u32 = 2048;
+	pub const NftPalletId: PalletId = PalletId(*b"aca/aNFT");
 }
-impl setheum_nft::Config for Test {
+impl module_nft::Config for Test {
 	type Event = Event;
-	type Currency = Balances;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
-	type DataDepositPerByte = DataDepositPerByte;
 	type PalletId = NftPalletId;
-	type MaxAttributesBytes = MaxAttributesBytes;
 	type WeightInfo = ();
 }
 
@@ -318,20 +191,26 @@ parameter_types! {
 impl orml_nft::Config for Test {
 	type ClassId = u32;
 	type TokenId = u64;
-	type ClassData = setheum_nft::ClassData<Balance>;
-	type TokenData = setheum_nft::TokenData<Balance>;
+	type ClassData = module_nft::ClassData<Balance>;
+	type TokenData = module_nft::TokenData<Balance>;
 	type MaxClassMetadata = MaxClassMetadata;
 	type MaxTokenMetadata = MaxTokenMetadata;
 }
 
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
-	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![CurrencyId::Token(TokenSymbol::SETUSD), CurrencyId::Token(TokenSymbol::DNAR)]];
+	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::AUSD);
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = 
+		vec![
+			vec![SETUSD, SETHEUM],
+			vec![DNAR, SETUSD, SETHEUM]
+			vec![SETEUR, SETUSD, SETHEUM]
+			vec![RENBTC, SETUSD, SETHEUM]
+		];
 }
 
-impl setheum_transaction_payment::Config for Test {
+impl module_transaction_payment::Config for Test {
 	type NativeCurrencyId = GetNativeCurrencyId;
 	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
 	type Currency = Balances;
@@ -343,10 +222,10 @@ impl setheum_transaction_payment::Config for Test {
 	type DEX = ();
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
-	type PriceSource = serp_prices::RealTimePriceProvider<Test>;
+	type PriceSource = MockPriceSource;
 	type WeightInfo = ();
 }
-pub type ChargeTransactionPayment = setheum_transaction_payment::ChargeTransactionPayment<Test>;
+pub type ChargeTransactionPayment = module_transaction_payment::ChargeTransactionPayment<Test>;
 
 parameter_types! {
 	pub const ProxyDepositBase: u64 = 1;
@@ -423,26 +302,25 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 100);
-	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200);
-	pub const TradingPathLimit: u32 = 3;
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETCHF,
-		SETEUR,
-		SETGBP,
- 		SETSAR,
 		SETUSD,
+		SETEUR,
 	];
+	pub const GetExchangeFee: (u32, u32) = (1, 100); // 1%
+	pub const TradingPathLimit: u32 = 3;
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
+	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
 
-impl setheum_dex::Config for Test {
+impl module_dex::Config for Test {
 	type Event = Event;
 	type Currency = Tokens;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
+	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
@@ -450,9 +328,9 @@ impl setheum_dex::Config for Test {
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 
-pub type AdaptedBasicCurrency = setheum_currencies::BasicCurrencyAdapter<Test, Balances, Amount, BlockNumber>;
+pub type AdaptedBasicCurrency = module_currencies::BasicCurrencyAdapter<Test, Balances, Amount, BlockNumber>;
 
-pub type EvmCurrencyIdMapping = setheum_evm_manager::EvmCurrencyIdMapping<Test>;
+pub type EvmCurrencyIdMapping = module_evm_manager::EvmCurrencyIdMapping<Test>;
 pub type MultiCurrencyPrecompile =
 	crate::MultiCurrencyPrecompile<AccountId, MockAddressMapping, EvmCurrencyIdMapping, Currencies>;
 
@@ -496,7 +374,7 @@ impl Convert<u64, Weight> for GasToWeight {
 	}
 }
 
-impl setheum_evm::Config for Test {
+impl module_evm::Config for Test {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
 	type TransferAll = Currencies;
@@ -526,19 +404,24 @@ impl setheum_evm::Config for Test {
 }
 
 parameter_types! {
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // SetUSD currency ticker is SETUSD.
-	pub FiatUsdFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // Setter currency ticker is SETUSD.
+	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
+	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
+	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 1);
 }
 
 ord_parameter_types! {
 	pub const One: AccountId = AccountId::new([1u8; 32]);
 }
 
-impl setheum_prices::Config for Test {
+impl module_prices::Config for Test {
 	type Event = Event;
 	type Source = Oracle;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type FiatUsdFixedPrice = FiatUsdFixedPrice;
+	type SetterCurrencyId = GetSetUSDCurrencyId;
+	type SetUSDFixedPrice = SetUSDFixedPrice;
+	type SetterFixedPrice = SetterFixedPrice;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DexModule;
 	type Currency = Currencies;
@@ -551,7 +434,7 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const EVA: AccountId = AccountId::new([5u8; 32]);
 
 pub fn alice() -> AccountId {
-	<Test as setheum_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr())
+	<Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr())
 }
 
 pub fn alice_evm_addr() -> EvmAddress {
@@ -559,15 +442,15 @@ pub fn alice_evm_addr() -> EvmAddress {
 }
 
 pub fn bob() -> AccountId {
-	<Test as setheum_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr())
+	<Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr())
 }
 
 pub fn bob_evm_addr() -> EvmAddress {
 	EvmAddress::from_str("1000000000000000000000000000000000000002").unwrap()
 }
 
-pub fn dnar_evm_address() -> EvmAddress {
-	EvmAddress::try_from(DNAR).unwrap()
+pub fn setheum_evm_address() -> EvmAddress {
+	EvmAddress::try_from(SETHEUM).unwrap()
 }
 
 pub fn setusd_evm_address() -> EvmAddress {
@@ -578,8 +461,8 @@ pub fn renbtc_evm_address() -> EvmAddress {
 	EvmAddress::try_from(RENBTC).unwrap()
 }
 
-pub fn lp_dnar_setusd_evm_address() -> EvmAddress {
-	EvmAddress::try_from(LP_DNAR_SETUSD).unwrap()
+pub fn lp_setheum_setusd_evm_address() -> EvmAddress {
+	EvmAddress::try_from(LP_SETHEUM_SETUSD).unwrap()
 }
 
 pub fn erc20_address_not_exists() -> EvmAddress {
@@ -597,22 +480,21 @@ frame_support::construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
 		Oracle: orml_oracle::{Pallet, Storage, Call, Event<T>},
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Currencies: setheum_currencies::{Pallet, Call, Event<T>},
-		EVMBridge: setheum_evm_bridge::{Pallet},
-		EVMManager: setheum_evm_manager::{Pallet, Storage},
-		NFTModule: setheum_nft::{Pallet, Call, Event<T>},
-		TransactionPayment: setheum_transaction_payment::{Pallet, Call, Storage},
-		Prices: setheum_prices::{Pallet, Storage, Call, Event<T>},
-		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
-		Utility: pallet_utility::{Pallet, Call, Event},
-		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
-		DexModule: setheum_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
-		ModuleEVM: setheum_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
+		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		Currencies: module_currencies::{Module, Call, Event<T>},
+		EVMBridge: module_evm_bridge::{Module},
+		EVMManager: module_evm_manager::{Pallet, Storage},
+		TransactionPayment: module_transaction_payment::{Module, Call, Storage},
+		Prices: module_prices::{Pallet, Storage, Call, Event<T>},
+		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
+		Utility: pallet_utility::{Module, Call, Event},
+		Scheduler: pallet_scheduler::{Module, Call, Storage, Event<T>},
+		DexModule: module_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		ModuleEVM: module_evm::{Module, Config<T>, Call, Storage, Event<T>},
 	}
 );
 
@@ -626,8 +508,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	accounts.append(&mut evm_genesis_accounts);
 
 	accounts.insert(
-		alice_evm_addr(),
-		setheum_evm::GenesisAccount {
+		alice(),
+		module_evm::GenesisAccount {
 			nonce: 1,
 			balance: INITIAL_BALANCE,
 			storage: Default::default(),
@@ -635,8 +517,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		},
 	);
 	accounts.insert(
-		bob_evm_addr(),
-		setheum_evm::GenesisAccount {
+		bob(),
+		module_evm::GenesisAccount {
 			nonce: 1,
 			balance: INITIAL_BALANCE,
 			storage: Default::default(),
@@ -647,9 +529,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<Test>::default()
 		.assimilate_storage(&mut storage)
 		.unwrap();
-	setheum_evm::GenesisConfig::<Test> {
+	module_evm::GenesisConfig::<Test> {
 		accounts,
-		treasury: Default::default(),
 	}
 	.assimilate_storage(&mut storage)
 	.unwrap();
@@ -662,15 +543,15 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
 			ALICE,
-			RENBTC,
+			SETHEUM,
 			1_000_000_000_000
 		));
 		assert_ok!(Currencies::update_balance(Origin::root(), ALICE, SETUSD, 1_000_000_000));
 
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
-			MockAddressMapping::get_account_id(&alice_evm_addr()),
-			RENBTC,
+			MockAddressMapping::get_account_id(&alice()),
+			SETUSD,
 			1_000
 		));
 	});
@@ -689,4 +570,14 @@ pub fn get_task_id(output: Vec<u8>) -> Vec<u8> {
 	num[..].copy_from_slice(&output[32 - 4..32]);
 	let task_id_len: u32 = u32::from_be_bytes(num);
 	return output[32..32 + task_id_len as usize].to_vec();
+}
+
+pub fn get_function_selector(s: &str) -> [u8; 4] {
+	// create a SHA3-256 object
+	let mut hasher = Keccak256::new();
+	// write input message
+	hasher.update(s);
+	// read hash digest
+	let result = hasher.finalize();
+	result[..4].try_into().unwrap()
 }

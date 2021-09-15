@@ -1,22 +1,4 @@
-// This file is part of Setheum.
-
-// Copyright (C) 2019-2021 Setheum Labs.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-//! Common runtime code for Setheum and NewRome.
+//! Common runtime code
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -24,24 +6,23 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
 	parameter_types,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS},
 		DispatchClass, Weight,
 	},
 };
 use frame_system::{limits, EnsureOneOf, EnsureRoot};
-pub use setheum_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
+pub use module_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{
-	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
+	Balance, BlockNumber, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
 use sp_core::{
 	u32_trait::{_1, _2, _3, _4},
 	H160,
 };
 use sp_runtime::{
-	// TODO: move after https://github.com/paritytech/substrate/pull/9209
-	traits::Convert,
+	traits::{BlockNumberProvider, Convert},
 	transaction_validity::TransactionPriority,
-	Perbill, RuntimeDebug,
+	Perbill,
 };
 use static_assertions::const_assert;
 
@@ -51,10 +32,7 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::{
-	currency::{
-	TokenInfo, 
-	DNAR, SETHEUM, SETR, SETUSD, SETEUR, SETGBP, SETCHF, SETSAR, RENBTC,
-	},
+	currency::{TokenInfo, SETHEUM, DNAR, SETR, SETEUR, SETUSD, RENBTC},
 	AccountId,
 };
 
@@ -64,8 +42,7 @@ pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Mom
 parameter_types! {
 	// Operational is 3/4 of TransactionPriority::max_value().
 	// Ensure Inherent -> Operational tx -> Unsigned tx -> Signed normal tx
-	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;		// 50%
-	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 4;	// 25%
+	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 10;   // 10%
 }
 
 /// Check if the given `address` is a system contract.
@@ -75,7 +52,7 @@ pub fn is_system_contract(address: H160) -> bool {
 	address.as_bytes().starts_with(&SYSTEM_CONTRACT_ADDRESS_PREFIX)
 }
 
-pub fn is_setheum_precompile(address: H160) -> bool {
+pub fn is_core_precompile(address: H160) -> bool {
 	address >= H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)
 		&& address < H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)
 }
@@ -97,13 +74,12 @@ impl Convert<u64, Weight> for GasToWeight {
 	}
 }
 
-// TODO: somehow estimate this value. Start from a conservative value.
 pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
 /// used by  Operational  extrinsics.
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-/// We allow for 1 second of compute with a 3 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 1 * WEIGHT_PER_SECOND;
+/// We allow for 2 seconds of compute with a 5 second average block time.
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 500 * WEIGHT_PER_MILLIS;
 
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
 
@@ -144,6 +120,13 @@ parameter_types! {
 		.saturating_sub(BlockExecutionWeight::get());
 }
 
+pub struct DummyNomineeFilter;
+impl<AccountId> Contains<AccountId> for DummyNomineeFilter {
+	fn contains(_: &AccountId) -> bool {
+		true
+	}
+}
+
 // TODO: make those const fn
 pub fn dollar(currency_id: CurrencyId) -> Balance {
 	10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
@@ -161,92 +144,16 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 	millicent(currency_id) / 1000
 }
 
-pub fn deposit(items: u32, bytes: u32, currency_id: CurrencyId) -> Balance {
-	items as Balance * 15 * cent(currency_id) + (bytes as Balance) * 6 * cent(currency_id)
-}
-
-// /// Get current block number
-// pub trait BlockNumberProvider {
-// 	/// Type of `BlockNumber` to provide.
-// 	type BlockNumber: Codec + Clone + Ord + Eq + AtLeast32BitUnsigned;
-// 
-// 	/// Returns the current block number.
-// 	///
-// 	/// Provides an abstraction over an arbitrary way of providing the
-// 	/// current block number.
-// 	///
-// 	/// In case of using crate `sp_runtime` with the crate `frame-system`,
-// 	/// it is already implemented for
-// 	/// `frame_system::Pallet<T: Config>` as:
-// 	///
-// 	/// ```ignore
-// 	/// fn current_block_number() -> Self {
-// 	///     frame_system::Pallet<Config>::block_number()
-// 	/// }
-// 	/// ```
-// 	/// .
-// 	fn current_block_number() -> Self::BlockNumber;
-// }
-// 
-// impl<T: Config> BlockNumberProvider for Pallet<T> {
-// 	type BlockNumber = <T as Config>::BlockNumber;
-// 
-// 	fn current_block_number() -> Self::BlockNumber {
-// 		Pallet::<T>::block_number()
-// 	}
-// }
-
-pub struct MuhammadJibrilBlockNumberProvider<T>(sp_std::marker::PhantomData<T>);
-
-impl<T: frame_system::Config> BlockNumberProvider for MuhammadJibrilBlockNumberProvider<T> {
-	type BlockNumber = BlockNumber;
-
-	fn current_block_number() -> Self::BlockNumber {
-		frame_system::Pallet::<T>::block_number()
-	}
-}
-
-pub type GeneralCouncilInstance = pallet_collective::Instance1;
-pub type ShuraCouncilInstance = pallet_collective::Instance2;
+pub type ShuraCouncilInstance = pallet_collective::Instance1;
+pub type GeneralCouncilInstance = pallet_collective::Instance2;
 pub type FinancialCouncilInstance = pallet_collective::Instance3;
 pub type TechnicalCommitteeInstance = pallet_collective::Instance4;
 
-pub type GeneralCouncilMembershipInstance = pallet_membership::Instance1;
-pub type ShuraCouncilMembershipInstance = pallet_membership::Instance2;
+pub type ShuraCouncilMembershipInstance = pallet_membership::Instance1;
+pub type GeneralCouncilMembershipInstance = pallet_membership::Instance2;
 pub type FinancialCouncilMembershipInstance = pallet_membership::Instance3;
 pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
 pub type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
-
-// General Council
-pub type EnsureRootOrAllGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, GeneralCouncilInstance>,
->;
-
-pub type EnsureRootOrHalfGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, GeneralCouncilInstance>,
->;
-
-pub type EnsureRootOrOneThirdsGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, GeneralCouncilInstance>,
->;
-
-pub type EnsureRootOrTwoThirdsGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, GeneralCouncilInstance>,
->;
-
-pub type EnsureRootOrThreeFourthsGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, GeneralCouncilInstance>,
->;
 
 // Shura Council
 pub type EnsureRootOrAllShuraCouncil = EnsureOneOf<
@@ -277,6 +184,37 @@ pub type EnsureRootOrThreeFourthsShuraCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, ShuraCouncilInstance>,
+>;
+
+// General Council
+pub type EnsureRootOrAllGeneralCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, GeneralCouncilInstance>,
+>;
+
+pub type EnsureRootOrHalfGeneralCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, GeneralCouncilInstance>,
+>;
+
+pub type EnsureRootOrOneThirdsGeneralCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, GeneralCouncilInstance>,
+>;
+
+pub type EnsureRootOrTwoThirdsGeneralCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, GeneralCouncilInstance>,
+>;
+
+pub type EnsureRootOrThreeFourthsGeneralCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, GeneralCouncilInstance>,
 >;
 
 // Financial Council
@@ -364,11 +302,11 @@ mod tests {
 		assert!(SystemContractsFilter::is_allowed(H160::from_low_u64_be(1)));
 
 		let mut max_allowed_addr = [0u8; 20];
-		max_allowed_addr[SYSTEM_CONTRACT_ADDRESS_PREFIX.len()] = 127u8;
+		max_allowed_addr[SYSTEM_CONTRACT_LEADING_ZERO_BYTES] = 127u8;
 		assert!(SystemContractsFilter::is_allowed(max_allowed_addr.into()));
 
 		let mut min_blocked_addr = [0u8; 20];
-		min_blocked_addr[SYSTEM_CONTRACT_ADDRESS_PREFIX.len() - 1] = 1u8;
+		min_blocked_addr[SYSTEM_CONTRACT_LEADING_ZERO_BYTES - 1] = 1u8;
 		assert!(!SystemContractsFilter::is_allowed(min_blocked_addr.into()));
 	}
 
@@ -378,7 +316,7 @@ mod tests {
 		assert!(is_system_contract(H160::from_low_u64_be(u64::max_value())));
 
 		let mut bytes = [0u8; 20];
-		bytes[SYSTEM_CONTRACT_ADDRESS_PREFIX.len() - 1] = 1u8;
+		bytes[SYSTEM_CONTRACT_LEADING_ZERO_BYTES - 1] = 1u8;
 
 		assert!(!is_system_contract(bytes.into()));
 
@@ -389,14 +327,14 @@ mod tests {
 	}
 
 	#[test]
-	fn is_setheum_precompile_works() {
-		assert!(!is_setheum_precompile(H160::from_low_u64_be(0)));
-		assert!(!is_setheum_precompile(H160::from_low_u64_be(
+	fn is_core_precompile_works() {
+		assert!(!is_core_precompile(H160::from_low_u64_be(0)));
+		assert!(!is_core_precompile(H160::from_low_u64_be(
 			PRECOMPILE_ADDRESS_START - 1
 		)));
-		assert!(is_setheum_precompile(H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)));
-		assert!(is_setheum_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START - 1)));
-		assert!(!is_setheum_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)));
-		assert!(!is_setheum_precompile([1u8; 20].into()));
+		assert!(is_core_precompile(H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)));
+		assert!(is_core_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START - 1)));
+		assert!(!is_core_precompile(H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)));
+		assert!(!is_core_precompile([1u8; 20].into()));
 	}
 }

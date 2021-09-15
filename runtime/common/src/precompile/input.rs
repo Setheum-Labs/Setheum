@@ -25,8 +25,8 @@ use sp_std::{
 	vec::Vec,
 };
 
-use setheum_evm::ExitError;
-use setheum_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
+use module_evm::ExitError;
+use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_core::H160;
 
@@ -195,12 +195,11 @@ mod tests {
 	use frame_support::{assert_err, assert_ok};
 	use num_enum::TryFromPrimitive;
 	use sp_core::H160;
-	use sp_runtime::RuntimeDebug;
 
 	use module_support::mocks::{MockAddressMapping, MockCurrencyIdMapping};
 	use primitives::{AccountId, CurrencyId, TokenSymbol};
 
-	#[derive(RuntimeDebug, PartialEq, Eq, TryFromPrimitive)]
+	#[derive(Debug, PartialEq, Eq, TryFromPrimitive)]
 	#[repr(u32)]
 	pub enum Action {
 		QueryBalance = 0,
@@ -270,11 +269,11 @@ mod tests {
 		let mut raw_input = [0u8; 68];
 		raw_input[64] = 1;
 		let input = TestInput::new(&raw_input[..]);
-		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::DNAR));
+		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::ACA));
 
 		raw_input[67] = 1;
 		let input = TestInput::new(&raw_input[..]);
-		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SETR));
+		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::AUSD));
 	}
 
 	#[test]

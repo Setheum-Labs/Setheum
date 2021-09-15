@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use frame_support::log;
-use setheum_evm::{Context, ExitError, ExitSucceed, Precompile};
-use setheum_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
+use module_evm::{Context, ExitError, ExitSucceed, Precompile};
+use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
 use sp_core::{H160, U256};
-use sp_runtime::RuntimeDebug;
 use sp_std::{borrow::Cow, fmt::Debug, marker::PhantomData, prelude::*, result};
 
 use orml_traits::NFT as NFTT;
@@ -41,8 +40,7 @@ pub struct NFTPrecompile<AccountId, AddressMapping, CurrencyIdMapping, NFT>(
 	PhantomData<(AccountId, AddressMapping, CurrencyIdMapping, NFT)>,
 );
 
-#[primitives_proc_macro::generate_function_selector]
-#[derive(RuntimeDebug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[derive(Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum Action {
 	QueryBalance = "balanceOf(address)",
@@ -118,4 +116,28 @@ fn vec_u8_from_balance(b: NFTBalance) -> Vec<u8> {
 	let mut be_bytes = [0u8; 32];
 	U256::from(b).to_big_endian(&mut be_bytes[..]);
 	be_bytes.to_vec()
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::precompile::mock::get_function_selector;
+
+	#[test]
+	fn function_selector_match() {
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("balanceOf(address)")),
+			Into::<u32>::into(Action::QueryBalance)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("ownerOf(uint256,uint256)")),
+			Into::<u32>::into(Action::QueryOwner)
+		);
+
+		assert_eq!(
+			u32::from_be_bytes(get_function_selector("transfer(address,address,uint256,uint256)")),
+			Into::<u32>::into(Action::Transfer)
+		);
+	}
 }

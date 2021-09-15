@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#![allow(clippy::from_over_into)] 
+#![allow(clippy::from_over_into)]
 
 use crate::{evm::EvmAddress, *};
 use bstringify::bstringify;
@@ -128,38 +128,21 @@ macro_rules! create_currency_id {
 			];
 
 			let mut lp_tokens = vec![
-				// SETR paired LPs
 				Token {
-					symbol: "LP_SETHEUM_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETHEUM), DexShare::Token(SETR))).unwrap(),
+					symbol: "LP_SETHEUM_SETUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETHEUM), DexShare::Token(SETUSD))).unwrap(),
 				},
 				Token {
-					symbol: "LP_DNAR_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETR))).unwrap(),
+					symbol: "LP_DNAR_SETUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETUSD))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SETUSD_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETUSD), DexShare::Token(SETR))).unwrap(),
+					symbol: "LP_SETR_SETUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETR), DexShare::Token(SETUSD))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SETEUR_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETEUR), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETGBP_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETGBP), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETCHF_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETCHF), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETSAR_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETSAR), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_RENBTC_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETR))).unwrap(),
+					symbol: "LP_SETEUR_SETUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETEUR), DexShare::Token(SETUSD))).unwrap(),
 				},
 			];
 			tokens.append(&mut lp_tokens);
@@ -171,25 +154,18 @@ macro_rules! create_currency_id {
 
 create_currency_id! {
 	// Represent a Token symbol with 8 bit
-	// Bit 8 : 0 for Setheum Network
-	// Bit 7 : Reserved
-	// Bit 6 - 1 : The token ID
 	#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		/// Setheum Network
+		// Tier-1 Tokens
 		SETHEUM("Setheum", 12) = 0,
 		DNAR("Serp Dinar", 12) = 1,
+		// StableCurrencies
 		SETR("Setter", 12) = 2,
-		// SetCurrencies
-		SETUSD("SetDollar", 12) = 3,
-		SETEUR("SetEuro", 12) = 4,
-		SETGBP("SetPound", 12) = 5,
-		SETCHF("SetFranc", 12) = 6,
- 		SETSAR("SetRiyal", 12) = 7,
-		// Foreign Currencies
-		RENBTC("RenBTC", 8) = 8,
+		SETEUR("SetEuro", 12) = 3,
+		SETUSD("SetDollar", 12) = 4,
+		RENBTC("renBTC", 8) = 5,
 	}
 }
 
@@ -213,7 +189,6 @@ pub enum CurrencyId {
 	Token(TokenSymbol),
 	DexShare(DexShare, DexShare),
 	Erc20(EvmAddress),
-	ChainSafe(chainbridge::ResourceId),
 }
 
 impl CurrencyId {
@@ -231,27 +206,27 @@ impl CurrencyId {
 
 	pub fn split_dex_share_currency_id(&self) -> Option<(Self, Self)> {
 		match self {
-			CurrencyId::DexShare(dex_share_0, dex_share_1) => {
-				let currency_id_0: CurrencyId = (*dex_share_0).into();
-				let currency_id_1: CurrencyId = (*dex_share_1).into();
-				Some((currency_id_0, currency_id_1))
+			CurrencyId::DexShare(token_symbol_0, token_symbol_1) => {
+				let symbol_0: CurrencyId = (*token_symbol_0).into();
+				let symbol_1: CurrencyId = (*token_symbol_1).into();
+				Some((symbol_0, symbol_1))
 			}
 			_ => None,
 		}
 	}
 
 	pub fn join_dex_share_currency_id(currency_id_0: Self, currency_id_1: Self) -> Option<Self> {
-		let dex_share_0 = match currency_id_0 {
+		let token_symbol_0 = match currency_id_0 {
 			CurrencyId::Token(symbol) => DexShare::Token(symbol),
 			CurrencyId::Erc20(address) => DexShare::Erc20(address),
 			_ => return None,
 		};
-		let dex_share_1 = match currency_id_1 {
+		let token_symbol_1 = match currency_id_1 {
 			CurrencyId::Token(symbol) => DexShare::Token(symbol),
 			CurrencyId::Erc20(address) => DexShare::Erc20(address),
 			_ => return None,
 		};
-		Some(CurrencyId::DexShare(dex_share_0, dex_share_1))
+		Some(CurrencyId::DexShare(token_symbol_0, token_symbol_1))
 	}
 }
 
@@ -297,7 +272,6 @@ impl TryFrom<CurrencyId> for EvmAddress {
 				Ok(prefix | EvmAddress::from_low_u64_be(u64::from(symbol_0) << 32 | u64::from(symbol_1)))
 			}
 			CurrencyId::Erc20(address) => Ok(address),
-			CurrencyId::ChainSafe(_) => Err(()),
 		}
 	}
 }
