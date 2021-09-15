@@ -1,0 +1,40 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+
+  $ make <target...> [options]
+
+  Options:
+    --help             Show this help output
+    --version          Show package version
+    --debug            Enable extended log output
+ 
+
+  Targets:
+    configure-rust     Run target configure-rust
+    init               Run target init
+    release            Run target release
+    build              Run target build
+    wasm               Run target wasm
+    genesis            Run target genesis
+    check              Run target check
+    clippy             Run target clippy
+    watch              Run target watch
+    test               Run target test
+    debug              Run target debug
+    run                Run target run
+    log                Run target log
+    noeth              Run target noeth
+    bench              Run target bench
+    doc                Run target doc
+    cargo-update       Run target cargo-update
+
+  Templates:
+    ava                Generate ava setup (ava)
+    cli                Generate cli setup (minimist, tabtab, ge...)
+    default            Generate default setup (babel-cli, babel-plu...)
+    eslint             Generate eslint setup (eslint, eslint-confi...)
+    livereactload      Generate livereactload setup (babel-plugin-react-t...)
+    mocha              Generate mocha setup (mocha)
+    simple             Generate simple setup
+
+
+ 
