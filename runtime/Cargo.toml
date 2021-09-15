@@ -89,7 +89,7 @@ module-evm-accounts = { path = "../lib-serml/evm-accounts", default-features = f
 module-evm-bridge = { path = "../lib-serml/evm-bridge", default-features = false }
 module-evm-rpc-runtime-api = { path = "../lib-serml/evm/rpc/runtime_api",  default-features = false }
 
-module-transaction-payment = { path = "../lib-serml/transaction_payment", default-features = false }
+module-transaction-payment = { path = "../lib-serml/transaction-payment", default-features = false }
 module-support = { path = "../lib-serml/support", default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
