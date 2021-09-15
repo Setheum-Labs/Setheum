@@ -20,7 +20,7 @@
 //!
 //! ## Overview
 //!
-//! SERP Treasury manages the Setmint, and handle excess serplus
+//! SERP Treasury manages the SERP, and handle excess serplus
 //! and stabilize SetCurrencies standards timely in order to keep the
 //! system healthy. It manages the TES (Token Elasticity of Supply).
 
