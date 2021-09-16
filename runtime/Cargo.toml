@@ -55,7 +55,7 @@ sp-staking = { version = "3.0.0", default-features = false }
 sp-std = { version = "3.0.0", default-features = false }
 sp-transaction-pool = { version = "3.0.0", default-features = false }
 sp-version = { version = "3.0.0", default-features = false }
-libsecp256k1 = { version = "0.3.4", default-features = false, optional = true }
+libsecp256k1 = { version = "0.6", default-features = false, optional = true }
 
 # NPoS
 pallet-session = { version = "3.0.0", features = ["historical"], default-features = false }
@@ -97,7 +97,7 @@ runtime-common = { path = "common", default-features = false }
 
 
 [dev-dependencies]
-libsecp256k1 = "0.3.4"
+libsecp256k1 = "0.6"
 hex = "0.4.0"
 hex-literal = "0.3.1"
 

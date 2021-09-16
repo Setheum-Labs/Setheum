@@ -220,8 +220,8 @@ impl<T: Config> Pallet<T> {
 	}
 
 	// Returns an Etherum public key derived from an Ethereum secret key.
-	pub fn eth_public(secret: &secp256k1::SecretKey) -> secp256k1::PublicKey {
-		secp256k1::PublicKey::from_secret_key(secret)
+	pub fn eth_public(secret: &libsecp256k1::SecretKey) -> libsecp256k1::PublicKey {
+		libsecp256k1::PublicKey::from_secret_key(secret)
 	}
 
 	// Returns an Etherum address derived from an Ethereum secret key.
