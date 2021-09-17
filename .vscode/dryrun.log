@@ -1,3 +1,4 @@
+make --dry-run --always-make --keep-going --print-directory
 
   $ make <target...> [options]
 
@@ -5,7 +6,6 @@
     --help             Show this help output
     --version          Show package version
     --debug            Enable extended log output
- 
 
   Targets:
     configure-rust     Run target configure-rust
