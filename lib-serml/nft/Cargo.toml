@@ -17,8 +17,8 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 sp-runtime = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 sp-std = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 
-orml-nft = { path = "../../lib-open/nft", default-features = false }
-orml-traits = { path = "../../lib-open/traits", default-features = false }
+orml-nft = { path = "../../open-lib/nft", default-features = false }
+orml-traits = { path = "../../open-lib/traits", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
@@ -26,7 +26,7 @@ sp-io = { git = "https://github.com/Slixon-Technologies/substrate", branch = "ne
 pallet-balances = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 pallet-utility = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 
-orml-tokens = { path = "../../lib-open/tokens" }
+orml-tokens = { path = "../../open-lib/tokens" }
 module-currencies = { path = "../currencies" }
 support = { package = "module-support", path = "../support" }
 

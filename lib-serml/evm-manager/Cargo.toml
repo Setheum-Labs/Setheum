@@ -21,10 +21,10 @@ module-support = { path = "../support", default-features = false }
 [dev-dependencies]
 pallet-balances = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 pallet-timestamp = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
-orml-currencies = { path = "../../lib-open/currencies" }
-orml-tokens = { path = "../../lib-open/tokens" }
-orml-traits = { path = "../../lib-open/traits" }
-orml-utilities = { path = "../../lib-open/utilities" }
+orml-currencies = { path = "../../open-lib/currencies" }
+orml-tokens = { path = "../../open-lib/tokens" }
+orml-traits = { path = "../../open-lib/traits" }
+orml-utilities = { path = "../../open-lib/utilities" }
 module-evm = { path = "../evm" }
 module-evm-bridge = { path = "../evm-bridge" }
 

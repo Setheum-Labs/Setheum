@@ -15,8 +15,8 @@ sp-std = { git = "https://github.com/Slixon-Technologies/substrate", branch = "n
 frame-support = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 frame-system = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 
-orml-traits = { path = "../../lib-open/traits", default-features = false }
-orml-utilities = { path = "../../lib-open/utilities", default-features = false }
+orml-traits = { path = "../../open-lib/traits", default-features = false }
+orml-utilities = { path = "../../open-lib/utilities", default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
@@ -25,7 +25,7 @@ support = { package = "module-support", path = "../support", default-features = 
 sp-core = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 pallet-balances = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 pallet-timestamp = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
-tokens = { package = "orml-tokens", path = "../../lib-open/tokens" }
+tokens = { package = "orml-tokens", path = "../../open-lib/tokens" }
 module-evm = { path = "../evm" }
 module-evm-bridge = { path = "../evm-bridge" }
 

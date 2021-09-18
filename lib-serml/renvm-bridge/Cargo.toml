@@ -16,13 +16,13 @@ sp-core = { git = "https://github.com/Slixon-Technologies/substrate", branch = "
 sp-runtime = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 
 support = { package = "module-support", path = "../support", default-features = false }
-orml-traits = { path = "../../lib-open/traits", default-features = false }
+orml-traits = { path = "../../open-lib/traits", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.3.1"
-orml-currencies = { path = "../../lib-open/currencies" }
-orml-tokens = { path = "../../lib-open/tokens" }
+orml-currencies = { path = "../../open-lib/currencies" }
+orml-tokens = { path = "../../open-lib/tokens" }
 pallet-balances = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 
 [features]

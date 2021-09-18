@@ -246,8 +246,8 @@ cargo update
 ### Update ORML
 
 ```bash
-cd lib-open && git checkout master && git pull
-git add lib-open
+cd open-lib && git checkout master && git pull
+git add open-lib
 cargo-update check-all
 ```
 

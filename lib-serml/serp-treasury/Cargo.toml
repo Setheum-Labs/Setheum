@@ -15,8 +15,8 @@ sp-std = { git = "https://github.com/Slixon-Technologies/substrate", branch = "n
 sp-core = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 
 # orml dependencies
-orml-traits = { path = "../../lib-open/traits", default-features = false }
-orml-tokens = { path = "../../lib-open/tokens", default-features = false }
+orml-traits = { path = "../../open-lib/traits", default-features = false }
+orml-tokens = { path = "../../open-lib/tokens", default-features = false }
 
 # local dependencies
 prices = { package = "module-prices", path = "../prices", default-features = false }
@@ -27,8 +27,8 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 sp-core = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 sp-io = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 pallet-balances = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
-orml-currencies = { path = "../../lib-open/currencies" }
-orml-tokens = { path = "../../lib-open/tokens" }
+orml-currencies = { path = "../../open-lib/currencies" }
+orml-tokens = { path = "../../open-lib/tokens" }
 
 [features]
 default = ["std"]

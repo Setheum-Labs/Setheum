@@ -81,7 +81,7 @@ parameter_type_with_key! {
 }
 
 parameter_types! {
-	pub DustAccount: AccountId = PalletId(*b"lib-open/dst").into_account();
+	pub DustAccount: AccountId = PalletId(*b"open-lib/dst").into_account();
 	pub const MaxLocks: u32 = 100;
 }
 

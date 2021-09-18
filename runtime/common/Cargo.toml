@@ -18,8 +18,8 @@ frame-system = { git = "https://github.com/Slixon-Technologies/substrate", branc
 pallet-scheduler  = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 module-evm = { path = "../../lib-serml/evm", default-features = false }
 
-orml-oracle = { path = "../../lib-open/oracle", default-features = false }
-orml-traits = { path = "../../lib-open/traits", default-features = false }
+orml-oracle = { path = "../../open-lib/oracle", default-features = false }
+orml-traits = { path = "../../open-lib/traits", default-features = false }
 
 module-support = { path = "../../lib-serml/support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
@@ -35,7 +35,7 @@ pallet-balances = { git = "https://github.com/Slixon-Technologies/substrate", br
 pallet-proxy = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 pallet-utility = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 setheum-node = {  path = "../../node" }
-orml-tokens = { path = "../../lib-open/tokens", default-features = false }
+orml-tokens = { path = "../../open-lib/tokens", default-features = false }
 module-currencies = { path = "../../lib-serml/currencies" }
 module-evm-bridge = { path = "../../lib-serml/evm-bridge" }
 module-evm-manager = { path = "../../lib-serml/evm-manager" }

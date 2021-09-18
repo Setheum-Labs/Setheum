@@ -77,10 +77,10 @@ pallet-collective = { version = "3.0.0", default-features = false }
 module-poc = { path = "../lib-serml/poc", default-features = false }
 
 # local dependencies
-orml-traits = { path = "../lib-open/traits", default-features = false }
-orml-tokens = { path = "../lib-open/tokens", default-features = false }
-orml-authority = { path = "../lib-open/authority", default-features = false }
-orml-benchmarking = { path = "../lib-open/benchmarking", default-features = false, optional = true }
+orml-traits = { path = "../open-lib/traits", default-features = false }
+orml-tokens = { path = "../open-lib/tokens", default-features = false }
+orml-authority = { path = "../open-lib/authority", default-features = false }
+orml-benchmarking = { path = "../open-lib/benchmarking", default-features = false, optional = true }
 
 module-currencies = { path = "../lib-serml/currencies", default-features = false }
 

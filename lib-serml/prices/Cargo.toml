@@ -13,7 +13,7 @@ frame-system = { git = "https://github.com/Slixon-Technologies/substrate", branc
 sp-std = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 sp-core = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
 sp-arithmetic = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6", default-features = false }
-orml-traits = { package = "orml-traits", path = "../../lib-open/traits", default-features = false }
+orml-traits = { package = "orml-traits", path = "../../open-lib/traits", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
@@ -22,7 +22,7 @@ fixed = { default-features = false, git = "https://github.com/encointer/substrat
 [dev-dependencies]
 sp-core = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
 sp-io = { git = "https://github.com/Slixon-Technologies/substrate", branch = "newrome-0.9.6" }
-orml-tokens = { path = "../../lib-open/tokens" }
+orml-tokens = { path = "../../open-lib/tokens" }
 
 [features]
 default = ["std"]
