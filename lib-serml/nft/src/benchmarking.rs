@@ -205,7 +205,7 @@ mod mock {
 		pub const AnnouncementDepositBase: u64 = 1;
 		pub const AnnouncementDepositFactor: u64 = 1;
 	}
-	#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen)]
+	#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug)]
 	pub enum ProxyType {
 		Any,
 		JustTransfer,

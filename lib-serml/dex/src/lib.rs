@@ -33,7 +33,7 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::collapsible_if)]
 
-use frame_support::{log, pallet_prelude::*, traits::MaxEncodedLen, transactional, PalletId};
+use frame_support::{log, pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
@@ -53,7 +53,7 @@ pub use module::*;
 pub use weights::WeightInfo;
 
 /// Parameters of TradingPair in Provisioning status
-#[derive(Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq, MaxEncodedLen)]
+#[derive(Encode, Decode, Clone, Copy, RuntimeDebug, PartialEq, Eq)]
 pub struct TradingPairProvisionParameters<Balance, BlockNumber> {
 	/// limit contribution per time.
 	min_contribution: (Balance, Balance),
@@ -66,7 +66,7 @@ pub struct TradingPairProvisionParameters<Balance, BlockNumber> {
 }
 
 /// Status for TradingPair
-#[derive(Clone, Copy, Encode, Decode, RuntimeDebug, PartialEq, Eq, MaxEncodedLen)]
+#[derive(Clone, Copy, Encode, Decode, RuntimeDebug, PartialEq, Eq)]
 pub enum TradingPairStatus<Balance, BlockNumber> {
 	/// Default status,
 	/// can withdraw liquidity, re-enable and list this trading pair.

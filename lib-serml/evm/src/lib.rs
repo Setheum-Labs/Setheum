@@ -34,7 +34,7 @@ use frame_support::{
 	error::BadOrigin,
 	pallet_prelude::*,
 	traits::{
-		BalanceStatus, Currency, EnsureOrigin, ExistenceRequirement, Get, MaxEncodedLen, OnKilledAccount,
+		BalanceStatus, Currency, EnsureOrigin, ExistenceRequirement, Get, OnKilledAccount,
 		ReservableCurrency,
 	},
 	transactional,
@@ -222,7 +222,7 @@ pub mod module {
 		}
 	}
 
-	#[derive(Clone, Copy, Eq, PartialEq, RuntimeDebug, Encode, Decode, MaxEncodedLen)]
+	#[derive(Clone, Copy, Eq, PartialEq, RuntimeDebug, Encode, Decode)]
 	pub struct CodeInfo {
 		pub code_size: u32,
 		pub ref_count: u32,
