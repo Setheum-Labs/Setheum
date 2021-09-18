@@ -12,7 +12,6 @@ members = [
     'primitives',
 
 	'open-lib/authority',
-	'open-lib/bencher',
 	'open-lib/benchmarking',
 	'open-lib/currencies',
 	'open-lib/nft',
@@ -23,8 +22,6 @@ members = [
 	'open-lib/traits',
 	'open-lib/utilities',
 	'open-lib/vesting',
-	'open-lib/weight-gen',
-	'open-lib/weight-meter',
 ]
 # exclude = ['rpc']
 
