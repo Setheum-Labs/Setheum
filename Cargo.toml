@@ -87,7 +87,7 @@ zeroize = { opt-level = 3 }
 
 [patch.crates-io]
 frame-benchmarking = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
-frame-benchmarking-cli = { git = "https://github.com/PolymathNetwork/substrate", branch = "polymath-3.0.0" }
+frame-benchmarking-cli = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 frame-executive = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 frame-support = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 frame-support-procedural = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
