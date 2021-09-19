@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,7 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
+use primitives::mocks::MockAddressMapping;
 use primitives::{Amount, BlockNumber, CurrencyId, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
@@ -31,7 +32,6 @@ use sp_runtime::{
 	AccountId32,
 };
 use std::{collections::BTreeMap, str::FromStr};
-use support::mocks::MockAddressMapping;
 
 mod evm_mod {
 	pub use super::super::*;
@@ -61,10 +61,9 @@ impl frame_system::Config for Test {
 	type PalletInfo = PalletInfo;
 	type AccountData = pallet_balances::AccountData<u64>;
 	type OnNewAccount = ();
-	type OnKilledAccount = crate::CallKillAccount<Test>;
+	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_types! {
@@ -104,7 +103,6 @@ impl orml_tokens::Config for Test {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -147,7 +145,7 @@ ord_parameter_types! {
 impl Config for Test {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
-	type TransferAll = Currencies;
+	type MergeAccount = Currencies;
 	type NewContractExtraBytes = NewContractExtraBytes;
 	type StorageDepositPerByte = StorageDepositPerByte;
 	type MaxCodeSize = MaxCodeSize;
@@ -177,11 +175,11 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		EVM: evm_mod::{Pallet, Config<T>, Call, Storage, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		EVM: evm_mod::{Module, Config<T>, Call, Storage, Event<T>},
+		Tokens: orml_tokens::{Module, Storage, Event<T>},
+		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		Currencies: orml_currencies::{Module, Call, Event<T>},
 	}
 );
 
@@ -218,7 +216,9 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 			nonce: 1,
 			balance: Default::default(),
 			storage: Default::default(),
-			code: Default::default(),
+			code: vec![
+				0x00, // STOP
+			],
 		},
 	);
 	accounts.insert(
@@ -227,7 +227,9 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 			nonce: 1,
 			balance: Default::default(),
 			storage: Default::default(),
-			code: Default::default(),
+			code: vec![
+				0xff, // INVALID
+			],
 		},
 	);
 
@@ -253,12 +255,9 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	pallet_balances::GenesisConfig::<Test>::default()
 		.assimilate_storage(&mut t)
 		.unwrap();
-	evm_mod::GenesisConfig::<Test> {
-		accounts,
-		treasury: Default::default(),
-	}
-	.assimilate_storage(&mut t)
-	.unwrap();
+	evm_mod::GenesisConfig::<Test> { accounts }
+		.assimilate_storage(&mut t)
+		.unwrap();
 
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| System::set_block_number(1));

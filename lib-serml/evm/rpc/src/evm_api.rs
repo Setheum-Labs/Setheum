@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -18,28 +18,23 @@
 
 //! EVM rpc interface.
 
-use ethereum_types::H160;
+use ethereum_types::U256;
 use jsonrpc_core::Result;
 use jsonrpc_derive::rpc;
 use sp_core::Bytes;
 
 pub use rpc_impl_EVMApi::gen_server::EVMApi as EVMApiServer;
 
-use crate::call_request::{CallRequest, EstimateResourcesResponse};
+use crate::call_request::CallRequest;
 
 /// EVM rpc interface.
 #[rpc(server)]
 pub trait EVMApi<BlockHash> {
 	/// Call contract, returning the output data.
 	#[rpc(name = "evm_call")]
-	fn call(&self, _: CallRequest, at: Option<BlockHash>) -> Result<Bytes>;
+	fn call(&self, _: CallRequest, _: Option<BlockHash>) -> Result<Bytes>;
 
-	/// Estimate resources needed for execution of given contract.
-	#[rpc(name = "evm_estimateResources")]
-	fn estimate_resources(
-		&self,
-		from: H160,
-		unsigned_extrinsic: Bytes,
-		at: Option<BlockHash>,
-	) -> Result<EstimateResourcesResponse>;
+	/// Estimate gas needed for execution of given contract.
+	#[rpc(name = "evm_estimateGas")]
+	fn estimate_gas(&self, _: CallRequest, _: Option<BlockHash>) -> Result<U256>;
 }

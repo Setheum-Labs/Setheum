@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use frame_support::log;
+use frame_support::debug;
 use sp_core::H160;
 use sp_runtime::{DispatchError, DispatchResult};
 
@@ -47,7 +47,7 @@ impl<'handler> StorageMeter<'handler> {
 		contract: H160,
 		limit: u32,
 	) -> Result<Self, DispatchError> {
-		log::trace!(
+		debug::trace!(
 			target: "evm",
 			"StorageMeter: create: contract {:?} limit {:?}",
 			contract, limit
@@ -93,20 +93,25 @@ impl<'handler> StorageMeter<'handler> {
 	}
 
 	pub fn charge(&mut self, storage: u32) -> DispatchResult {
-		log::trace!(
+		debug::trace!(
 			target: "evm",
 			"StorageMeter: charge: storage {:?}",
 			storage
 		);
 		self.handle(|this| {
-			this.total_used = this.total_used.saturating_add(storage);
+			let used = this.total_used.saturating_add(storage);
+			if this.limit < used.saturating_sub(this.total_refunded) {
+				this.result = Err(this.out_of_storage_error());
+				return this.result;
+			}
+			this.total_used = used;
 			this.self_used = this.self_used.saturating_add(storage);
 			Ok(())
 		})
 	}
 
 	pub fn uncharge(&mut self, storage: u32) -> DispatchResult {
-		log::trace!(
+		debug::trace!(
 			target: "evm",
 			"StorageMeter: uncharge: storage {:?}",
 			storage
@@ -119,7 +124,7 @@ impl<'handler> StorageMeter<'handler> {
 	}
 
 	pub fn refund(&mut self, storage: u32) -> DispatchResult {
-		log::trace!(
+		debug::trace!(
 			target: "evm",
 			"StorageMeter: refund: storage {:?}",
 			storage
@@ -132,17 +137,13 @@ impl<'handler> StorageMeter<'handler> {
 	}
 
 	pub fn finish(mut self) -> DispatchResult {
-		log::trace!(
+		debug::trace!(
 			target: "evm",
 			"StorageMeter: finish: used {:?} refunded {:?}",
 			self.total_used, self.total_refunded
 		);
 		self.handle(|this| {
 			if let Err(x) = (|| {
-				if this.limit < this.total_used.saturating_sub(this.total_refunded) {
-					this.result = Err(this.out_of_storage_error());
-					return this.result;
-				}
 				this.handler
 					.charge_storage(&this.contract, this.self_used, this.self_refunded)?;
 				let new_limit = this
@@ -369,29 +370,13 @@ mod tests {
 		assert_ok!(storage_meter.charge(500));
 		assert_eq!(storage_meter.available_storage(), 0);
 
-		assert_ok!(storage_meter.charge(2));
-		assert_ok!(storage_meter.refund(1));
-		assert_ok!(storage_meter.child_meter(CONTRACT_2).map(|_| ()));
+		assert_err!(storage_meter.charge(1), DispatchError::Other("OutOfStorage"));
+		assert_err!(storage_meter.refund(1), DispatchError::Other("OutOfStorage"));
+		assert_err!(
+			storage_meter.child_meter(CONTRACT_2).map(|_| ()),
+			DispatchError::Other("OutOfStorage")
+		);
 		assert_err!(storage_meter.finish(), DispatchError::Other("OutOfStorage"));
-	}
-
-	#[test]
-	fn test_high_use_and_refund() {
-		let mut handler = DummyHandler::new();
-		handler.storages.insert(ALICE, 1000);
-
-		let mut storage_meter = StorageMeter::new(&mut handler, CONTRACT, 1000).unwrap();
-		assert_eq!(storage_meter.available_storage(), 1000);
-
-		assert_ok!(storage_meter.charge(1000));
-		assert_eq!(storage_meter.available_storage(), 0);
-
-		assert_ok!(storage_meter.charge(100));
-		assert_eq!(storage_meter.available_storage(), 0);
-		assert_ok!(storage_meter.refund(200));
-		assert_eq!(storage_meter.available_storage(), 100);
-		assert_ok!(storage_meter.child_meter(CONTRACT_2).map(|_| ()));
-		assert_ok!(storage_meter.finish());
 	}
 
 	#[test]
