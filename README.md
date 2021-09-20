@@ -90,6 +90,12 @@ build the Setheum node.
 
 ## Initialisation
 
+Clone this repository:
+
+```bash
+git clone --recursive https://github.com/Setheum-Labs/Setheum
+```
+
 Install Rust:
 
 ```bash
@@ -102,6 +108,18 @@ Make sure you have `submodule.recurse` set to true to configure submodule.
 git config --global submodule.recurse true
 ```
 
+You can install developer tools on Ubuntu 20.04 with:
+
+```bash
+sudo apt install make clang pkg-config libssl-dev build-essential
+```
+
+You can install the latest Rust toolchain with:
+
+```bash
+make init
+```
+
 Install required tools and install git hooks:
 
 ```bash
@@ -109,32 +127,10 @@ Install required tools and install git hooks:
 git submodule update --init --recursive
 ```
 
-### Clone
-To clone the repo with its submodules run:
-```bash
-git clone --recursive https://github.com/Setheum-Labs/Setheum
-```
-
-### Rust Setup
-
-If you don’t have Rust already, you can install it with:
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-You can install developer tools on Ubuntu 20.04 with:
-```bash
-sudo apt install make clang pkg-config libssl-dev build-essential
-```
-
-You can install the latest Rust toolchain with:
-```bash
-make init
-```
-
 ### Start a development node
 
 The `make run` command will launch a temporary node and its state will be discarded after you terminate the process.
+
 ```bash
 make run
 ```
