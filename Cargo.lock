@@ -1505,10 +1505,8 @@ dependencies = [
  "evm-gasometer 0.26.0",
  "evm-runtime 0.26.0",
  "log",
- "parity-scale-codec",
  "primitive-types",
  "rlp",
- "serde",
  "sha3 0.8.2",
 ]
 
@@ -1531,9 +1529,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f235e93b84fccc1ebdffad226dc56caf833de2fb2f3395f933d95fbf66b254e"
 dependencies = [
  "funty",
- "parity-scale-codec",
  "primitive-types",
- "serde",
 ]
 
 [[package]]
@@ -7633,13 +7629,14 @@ name = "setheum-primitives"
 version = "0.7.3"
 dependencies = [
  "bstringify",
- "evm 0.26.0",
+ "evm 0.24.0",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "parity-scale-codec",
  "primitives-proc-macro",
  "serde",
  "serde_json",
  "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
