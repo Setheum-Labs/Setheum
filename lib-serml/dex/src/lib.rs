@@ -22,10 +22,8 @@
 //!
 //! Built-in decentralized exchange modules in Setheum network, the swap
 //! mechanism refers to the design of Uniswap V2. In addition to being used for
-//! trading, DEX also participates in CDP liquidation, which is faster than
-//! liquidation by auction when the liquidity is sufficient. And providing
-//! market making liquidity for DEX will also receive stable currency as
-//! additional reward for its participation in the CDP liquidation.
+//! trading SERP stablecurrency serping operations and transaction fee swapping
+//! operations
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::too_many_arguments)]
@@ -33,14 +31,15 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::collapsible_if)]
 
-use frame_support::{log, pallet_prelude::*, transactional, PalletId};
+use frame_support::{pallet_prelude::*, transactional};
+use log::{error, info, debug, trace, warn};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
 use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, UniqueSaturatedInto, Zero},
-	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
+	DispatchError, DispatchResult, FixedPointNumber, ModuleId, RuntimeDebug, SaturatedConversion,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{CurrencyIdMapping, DEXManager, Price, Ratio};
@@ -125,7 +124,7 @@ pub mod module {
 
 		/// The DEX's module id, keep all assets in DEX.
 		#[pallet::constant]
-		type PalletId: Get<PalletId>;
+		type ModuleId: Get<ModuleId>;
 
 		/// Mapping between CurrencyId and ERC20 address so user can use Erc20
 		/// address as LP token.
@@ -561,7 +560,7 @@ pub mod module {
 
 impl<T: Config> Pallet<T> {
 	fn account_id() -> T::AccountId {
-		T::PalletId::get().into_account()
+		T::ModuleId::get().into_account()
 	}
 
 	/// Access status of specific trading_pair,

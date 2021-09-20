@@ -24,7 +24,7 @@ use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{
 	alice, bob, deploy_contracts, erc20_address, eva, AccountId, AdaptedBasicCurrency, Currencies, Event, ExtBuilder,
-	NativeCurrency, Origin, PalletBalances, Runtime, System, Tokens, EVM, ID_1, NATIVE_CURRENCY_ID, X_TOKEN_ID,
+	NativeCurrency, Origin, PalletBalances, Runtime, Tokens, EVM, ID_1, NATIVE_CURRENCY_ID, X_TOKEN_ID,
 };
 use sp_core::H160;
 use sp_runtime::traits::BadOrigin;
@@ -278,12 +278,12 @@ fn call_event_should_work() {
 			assert_ok!(Currencies::transfer(Some(alice()).into(), bob(), X_TOKEN_ID, 50, false));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 50);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 150);
-			System::assert_last_event(Event::currencies(crate::Event::Transferred(
+			Event::currencies(crate::Event::Transferred(
 				X_TOKEN_ID,
 				alice(),
 				bob(),
 				50,
-			)));
+			));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::transfer(
 				X_TOKEN_ID,
@@ -293,12 +293,12 @@ fn call_event_should_work() {
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 40);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 160);
-			System::assert_last_event(Event::currencies(crate::Event::Transferred(
+			Event::currencies(crate::Event::Transferred(
 				X_TOKEN_ID,
 				alice(),
 				bob(),
 				10,
-			)));
+			));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::deposit(
 				X_TOKEN_ID,
@@ -306,7 +306,7 @@ fn call_event_should_work() {
 				100
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 140);
-			System::assert_last_event(Event::currencies(crate::Event::Deposited(X_TOKEN_ID, alice(), 100)));
+			Event::currencies(crate::Event::Deposited(X_TOKEN_ID, alice(), 100));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::withdraw(
 				X_TOKEN_ID,
@@ -314,7 +314,7 @@ fn call_event_should_work() {
 				20
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 120);
-			System::assert_last_event(Event::currencies(crate::Event::Withdrawn(X_TOKEN_ID, alice(), 20)));
+			Event::currencies(crate::Event::Withdrawn(X_TOKEN_ID, alice(), 20));
 		});
 }
 

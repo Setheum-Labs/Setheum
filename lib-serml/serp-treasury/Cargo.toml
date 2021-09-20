@@ -22,6 +22,7 @@ orml-tokens = { path = "../../open-lib/tokens", default-features = false }
 prices = { package = "module-prices", path = "../prices", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+frame-benchmarking = { version = "3.0.0", default-features = false, optional = true }
 
 [dev-dependencies]
 sp-core = { version = '3.0.0' }
@@ -43,4 +44,10 @@ std = [
 	"orml-traits/std",
 	"support/std",
 	"primitives/std",
+	"frame-benchmarking/std",
+]
+runtime-benchmarks = [
+	"frame-benchmarking",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
 ]

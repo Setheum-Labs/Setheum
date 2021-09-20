@@ -27,18 +27,18 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional, PalletId};
+use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::{
 	DispatchResult, 
 	traits::{
-		AccountIdConversion, Bounded, One, Saturating, UniqueSaturatedInto, Zero,
+		AccountIdConversion, Bounded, Saturating, UniqueSaturatedInto, Zero,
 	},
-	FixedPointNumber
+	FixedPointNumber, ModuleId,
 };
-use sp_std::{convert::TryInto, prelude::*, vec};
+use sp_std::{prelude::*, vec};
 use support::{
 	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended,
 };
@@ -128,7 +128,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
-		type PalletId: Get<PalletId>;
+		type ModuleId: Get<ModuleId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -187,7 +187,7 @@ pub mod module {
 	#[pallet::storage]
 	#[pallet::getter(fn alternative_fee_swap_path)]
 	pub type AlternativeSwapPath<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, BoundedVec<CurrencyId, T::TradingPathLimit>, OptionQuery>;
+		StorageMap<_, Twox64Concat, T::AccountId, Vec<CurrencyId>, OptionQuery>;
 
 	/// The inflation rate amount per StableCurrencyInflationPeriod of specific
 	/// stable currency type.
@@ -233,7 +233,6 @@ pub mod module {
 		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
 		/// Handle excessive surplus or debits of system when block end
 		///
-		// TODO: Migrate `BlockNumber` to `Timestamp`
 		/// Triggers Serping for all system stablecoins at every block.
 		fn on_initialize(now: T::BlockNumber) -> Weight {
 			// SERP-TES Adjustment Frequency.
@@ -276,31 +275,13 @@ pub mod module {
 			Self::deposit_event(Event::StableCurrencyInflationRateUpdated(currency_id, size));
 			Ok(().into())
 		}
-
-		/// Set fee swap path
-		#[pallet::weight(<T as Config>::WeightInfo::set_alternative_swap_path())]
-		pub fn _set_alternative_swap_path(
-			origin: OriginFor<T>,
-			fee_swap_path: Option<Vec<CurrencyId>>,
-		) -> DispatchResult {
-			T::UpdateOrigin::ensure_origin(origin)?;
-
-			if let Some(path) = fee_swap_path {
-				let path: BoundedVec<CurrencyId, T::TradingPathLimit> =
-					path.try_into().map_err(|_| Error::<T>::InvalidSwapPath)?;
-				AlternativeSwapPath::<T>::insert(&Self::account_id(), &path);
-			} else {
-				AlternativeSwapPath::<T>::remove(&Self::account_id());
-			}
-			Ok(())
-		}
 	}
 }
 
 impl<T: Config> Pallet<T> {
 	/// Get account of SERP Treasury module.
 	pub fn account_id() -> T::AccountId {
-		T::PalletId::get().into_account()
+		T::ModuleId::get().into_account()
 	}
 }
 
@@ -389,7 +370,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				);
 			}
 
-			<Pallet<T>>::deposit_event(Event::InflationDelivery(currency_id, inflation_amount));
+			Self::deposit_event(Event::InflationDelivery(currency_id, inflation_amount));
 		}
 		Ok(())
 	}
@@ -411,7 +392,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			);
 		} 
 
-		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
 
@@ -423,7 +404,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Issue the SerpUp propper to the SetPayVault
 		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
 
-		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
 
@@ -437,7 +418,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Issue the SerpUp propper to the SetPayVault
 		Self::issue_standard(currency_id, &setpay_account, serping_amount)?;
 
-		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
 
@@ -457,7 +438,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::get_cashdrop_serpup(amount, currency_id)?;
 		Self::get_charity_fund_serpup(amount, currency_id)?;
 
-		<Pallet<T>>::deposit_event(Event::SerpUp(amount, currency_id));
+		Self::deposit_event(Event::SerpUp(amount, currency_id));
 		Ok(())
 	}
 
@@ -491,7 +472,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			);
 		} 
 
-		<Pallet<T>>::deposit_event(Event::SerpDown(amount, currency_id));
+		Self::deposit_event(Event::SerpDown(amount, currency_id));
 		Ok(())
 	}
 
@@ -560,13 +541,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 		let setter_currency_id = T::SetterCurrencyId::get();
 		
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
+		let swap_path = T::DefaultSwapPathList::get();
 
 		for path in swap_path {
 			match path.last() {
@@ -621,13 +596,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
+		let swap_path = T::DefaultSwapPathList::get();
 
 		for path in swap_path {
 			match path.last() {
@@ -681,14 +650,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 		let currency_id = T::SetterCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
-
+		let swap_path = T::DefaultSwapPathList::get();
+		
 		for path in swap_path {
 			// match path.last() {
 			// 	Some(dinar_currency_id) if *dinar_currency_id == dinar_currency_id => {
@@ -743,14 +706,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-		if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-			vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-		} else {
-			default_fee_swap_path_list
-		};
-
+		let swap_path = T::DefaultSwapPathList::get();
+		
 		for path in swap_path {
 			// match path.last() {
 			// 	Some(dinar_currency_id) if *dinar_currency_id == dinar_currency_id => {
@@ -805,14 +762,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
-
+		let swap_path = T::DefaultSwapPathList::get();
+		
 		for path in swap_path {
 			// match path.last() {
 				// Some(setter_currency_id) if *setter_currency_id == setter_currency_id => {
@@ -866,14 +817,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let native_currency_id = T::GetNativeCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
-
+		let swap_path = T::DefaultSwapPathList::get();
+		
 		for path in swap_path {
 			// match path.last() {
 			// 	Some(native_currency_id) if *native_currency_id == native_currency_id => {

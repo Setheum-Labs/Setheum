@@ -78,7 +78,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -95,7 +94,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 ord_parameter_types! {
@@ -112,7 +110,7 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const DEXModuleId: ModuleId = ModuleId(*b"set/sdex");
 }
 
 impl Config for Runtime {
@@ -123,7 +121,7 @@ impl Config for Runtime {
 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type ModuleId = DEXModuleId;
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
@@ -138,9 +136,9 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		DexModule: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
 	}
 );
 

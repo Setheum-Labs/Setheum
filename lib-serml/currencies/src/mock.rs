@@ -20,14 +20,14 @@
 
 #![cfg(test)]
 
-use frame_support::{assert_ok, ord_parameter_types, parameter_types, traits::GenesisBuild, PalletId};
+use frame_support::{assert_ok, ord_parameter_types, parameter_types, traits::GenesisBuild};
 use orml_traits::parameter_type_with_key;
 use primitives::{CurrencyId, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, IdentityLookup},
-	AccountId32, Perbill,
+	AccountId32, Perbill, ModuleId,
 };
 use support::{mocks::MockAddressMapping, AddressMapping, SerpTreasury};
 
@@ -69,7 +69,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 type Balance = u128;
@@ -81,7 +80,7 @@ parameter_type_with_key! {
 }
 
 parameter_types! {
-	pub DustAccount: AccountId = PalletId(*b"open-lib/dst").into_account();
+	pub DustAccount: AccountId = ModuleId(*b"srml/dst").into_account();
 	pub const MaxLocks: u32 = 100;
 }
 
@@ -93,7 +92,6 @@ impl tokens::Config for Runtime {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = tokens::TransferDust<Runtime, DustAccount>;
 	type WeightInfo = ();
-	type MaxLocks = MaxLocks;
 }
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
@@ -147,7 +145,7 @@ ord_parameter_types! {
 impl module_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = PalletBalances;
-	type TransferAll = ();
+	type MergeAccount = ();
 	type NewContractExtraBytes = NewContractExtraBytes;
 	type StorageDepositPerByte = StorageDepositPerByte;
 	type MaxCodeSize = MaxCodeSize;
@@ -306,12 +304,12 @@ frame_support::construct_runtime!(
 	NodeBlock = Block,
 	UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currencies: currencies::{Pallet, Call, Event<T>},
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: module_evm_bridge::{Pallet},
+		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		Tokens: tokens::{Module, Storage, Event<T>, Config<T>},
+		Currencies: currencies::{Module, Call, Event<T>},
+		EVM: module_evm::{Module, Config<T>, Call, Storage, Event<T>},
+		EVMBridge: module_evm_bridge::{Module},
 	}
 );
 

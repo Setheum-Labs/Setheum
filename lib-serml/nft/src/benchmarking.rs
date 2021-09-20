@@ -257,7 +257,7 @@ mod mock {
 	parameter_types! {
 		pub const CreateClassDeposit: Balance = 200;
 		pub const CreateTokenDeposit: Balance = 100;
-		pub const NftPalletId: PalletId = PalletId(*b"aca/aNFT");
+		pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 	}
 	impl crate::Config for Runtime {
 		type Event = ();

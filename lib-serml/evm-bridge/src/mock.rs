@@ -24,10 +24,9 @@ use super::*;
 use frame_support::{assert_ok, construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
 use primitives::evm::EvmAddress;
-use sha3::{Digest, Keccak256};
 use sp_core::{bytes::from_hex, crypto::AccountId32, H256};
 use sp_runtime::{testing::Header, traits::IdentityLookup};
-use sp_std::{convert::TryInto, str::FromStr};
+use sp_std::str::FromStr;
 use support::{mocks::MockAddressMapping, AddressMapping};
 
 pub type AccountId = AccountId32;
@@ -65,7 +64,6 @@ impl frame_system::Config for Runtime {
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_types! {
@@ -111,7 +109,7 @@ ord_parameter_types! {
 impl module_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
-	type TransferAll = ();
+	type MergeAccount = ();
 	type NewContractExtraBytes = NewContractExtraBytes;
 	type StorageDepositPerByte = StorageDepositPerByte;
 	type MaxCodeSize = MaxCodeSize;
@@ -121,6 +119,7 @@ impl module_evm::Config for Runtime {
 	type ChainId = ();
 	type GasToWeight = ();
 	type ChargeTransactionPayment = ();
+
 	type NetworkContractOrigin = EnsureSignedBy<NetworkContractAccount, AccountId32>;
 	type NetworkContractSource = NetworkContractSource;
 
@@ -135,7 +134,7 @@ impl module_evm::Config for Runtime {
 impl Config for Runtime {
 	type EVM = EVM;
 }
-pub type EvmBridgeModule = Pallet<Runtime>;
+pub type EvmBridgeModule = Module<Runtime>;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 type Block = frame_system::mocking::MockBlock<Runtime>;
@@ -146,22 +145,20 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		EVMBridge: evm_bridge::{Pallet},
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		EVMBridge: evm_bridge::{Module},
+		EVM: module_evm::{Module, Config<T>, Call, Storage, Event<T>},
+		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, Balance)>,
+	balances: Vec<(AccountId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self {
-			endowed_accounts: vec![],
-		}
+		Self { balances: vec![] }
 	}
 }
 
@@ -201,19 +198,9 @@ pub fn deploy_contracts() {
 	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
 }
 
-pub fn get_function_selector(s: &str) -> [u8; 4] {
-	// create a SHA3-256 object
-	let mut hasher = Keccak256::new();
-	// write input message
-	hasher.update(s);
-	// read hash digest
-	let result = hasher.finalize();
-	result[..4].try_into().unwrap()
-}
-
 impl ExtBuilder {
-	pub fn balances(mut self, endowed_accounts: Vec<(AccountId, Balance)>) -> Self {
-		self.endowed_accounts = endowed_accounts;
+	pub fn balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
+		self.balances = balances;
 		self
 	}
 
@@ -223,7 +210,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
-			balances: self.endowed_accounts.clone().into_iter().collect::<Vec<_>>(),
+			balances: self.balances.clone().into_iter().collect::<Vec<_>>(),
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

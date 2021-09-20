@@ -31,7 +31,7 @@ use frame_support::traits::Get;
 use sp_core::crypto::KeyTypeId;
 use sp_runtime::{
 	RuntimeDebug,
-	offchain::{http, Duration, storage::StorageValueRef},
+	offchain::{http, Duration},
 	traits::Zero,
 	transaction_validity::{InvalidTransaction, ValidTransaction, TransactionValidity},
 };
@@ -145,6 +145,7 @@ pub mod pallet {
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				Self::setter_on_tes().unwrap();
 				Self::setusd_on_tes().unwrap();
+				Self::seteur_on_tes().unwrap();
 			}
 		}
 	}
@@ -755,7 +756,7 @@ impl<T: Config> Pallet<T> {
 			}
 			_ => {}
 		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
+		Self::deposit_event(Event::SerpTes(T::SetterCurrencyId::get()));
 		Ok(())
 	}
 
@@ -834,7 +835,7 @@ impl<T: Config> Pallet<T> {
 			}
 			_ => {}
 		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(T::GetSetUSDCurrencyId::get()));
+		Self::deposit_event(Event::SerpTes(T::GetSetUSDCurrencyId::get()));
 		Ok(())
 	}
 
@@ -913,7 +914,7 @@ impl<T: Config> Pallet<T> {
 			}
 			_ => {}
 		}
-		<Pallet<T>>::deposit_event(Event::SerpTes(T::GetSetEURCurrencyId::get()));
+		Self::deposit_event(Event::SerpTes(T::GetSetEURCurrencyId::get()));
 		Ok(())
 	}
 

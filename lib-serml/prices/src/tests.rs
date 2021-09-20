@@ -198,10 +198,10 @@ fn lock_price_call_work() {
 		System::set_block_number(1);
 		assert_noop!(PricesModule::lock_price(Origin::signed(5), DNAR), BadOrigin,);
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), DNAR));
-		System::assert_last_event(Event::prices(crate::Event::LockPrice(
+		Event::prices(crate::Event::LockPrice(
 			DNAR,
 			Price::saturating_from_integer(100)
-		)));
+		));
 		assert_eq!(
 			PricesModule::locked_price(DNAR),
 			Some(Price::saturating_from_integer(100))
@@ -216,7 +216,7 @@ fn unlock_price_call_work() {
 		LockedPrice::<Runtime>::insert(SETR, Price::saturating_from_integer(80000));
 		assert_noop!(PricesModule::unlock_price(Origin::signed(5), SETR), BadOrigin,);
 		assert_ok!(PricesModule::unlock_price(Origin::signed(1), SETR));
-		System::assert_last_event(Event::prices(crate::Event::UnlockPrice(SETR)));
+		Event::prices(crate::Event::UnlockPrice(SETR));
 		assert_eq!(PricesModule::locked_price(SETR), None);
 	});
 }

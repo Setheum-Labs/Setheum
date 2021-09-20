@@ -49,7 +49,6 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
 	fn on_initialize(c: u32) -> Weight;
 	fn set_stable_currency_inflation_rate() -> Weight;
-	fn set_alternative_swap_path() -> Weight;
 }
 
 /// Weights for serp_treasury using the Setheum node and recommended hardware.
@@ -65,10 +64,6 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 		(3_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn set_alternative_swap_path() -> Weight {
-		(3_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
 }
 
 // For backwards compatibility and tests
@@ -80,10 +75,6 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
 	}
 	fn set_stable_currency_inflation_rate() -> Weight {
-		(3_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
-	fn set_alternative_swap_path() -> Weight {
 		(3_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}

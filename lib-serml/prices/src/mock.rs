@@ -29,7 +29,7 @@ use sp_core::{H160, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{IdentityLookup, One as OneT, Zero},
-	DispatchError, FixedPointNumber,
+	DispatchError, FixedPointNumber, DispatchResult,
 };
 use support::mocks::MockCurrencyIdMapping;
 
@@ -76,7 +76,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 pub struct MockDataProvider;
@@ -196,7 +195,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 ord_parameter_types! {
@@ -233,9 +231,9 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		PricesModule: prices::{Pallet, Storage, Call, Event<T>},
-		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
+		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		PricesModule: prices::{Module, Storage, Call, Event<T>},
+		Tokens: orml_tokens::{Module, Call, Storage, Event<T>},
 	}
 );
 

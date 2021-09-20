@@ -16,6 +16,7 @@ sp-std = { version = '3.0.0', default-features = false }
 orml-traits = { path = "../../open-lib/traits", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+log = "0.4.8"
 
 [dev-dependencies]
 orml-tokens = { path = "../../open-lib/tokens" }
@@ -37,4 +38,9 @@ std = [
 	"support/std",
 	"primitives/std",
 	"frame-benchmarking/std",
+]
+runtime-benchmarks = [
+	"frame-benchmarking",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
 ]

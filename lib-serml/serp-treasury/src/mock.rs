@@ -27,8 +27,8 @@ use orml_traits::parameter_type_with_key;
 use primitives::{Amount, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
-	testing::Header,
-	traits::{IdentityLookup, One as OneT},
+	testing::Header, ModuleId,
+	traits::IdentityLookup,
 };
 use sp_std::cell::RefCell;
 use support::{Price, PriceProvider};
@@ -82,7 +82,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -99,7 +98,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -139,7 +137,7 @@ parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
+	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/serp");
 	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
 	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
 	pub const CashDropPoolAccountId: AccountId = VAULT;
@@ -310,7 +308,7 @@ impl Config for Runtime {
 	type PriceSource = MockPriceSource;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
-	type PalletId = SerpTreasuryPalletId;
+	type ModuleId = SerpTreasuryModuleId;
 	type WeightInfo = ();
 }
 
@@ -323,11 +321,11 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Event<T>},
-		Currencies: orml_currencies::{Pallet, Call, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Config, Event<T>},
+		Currencies: orml_currencies::{Module, Call, Event<T>},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
 	}
 );
 

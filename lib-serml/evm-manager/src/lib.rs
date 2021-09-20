@@ -37,7 +37,7 @@ use sp_std::{
 	convert::{TryFrom, TryInto},
 	vec::Vec,
 };
-
+use sp_runtime::DispatchResult;
 mod mock;
 mod tests;
 

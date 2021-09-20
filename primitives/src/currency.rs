@@ -21,7 +21,8 @@
 use crate::{evm::EvmAddress, *};
 use bstringify::bstringify;
 use codec::{Decode, Encode};
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{RuntimeDebug, DispatchResult};
+use frame_support::transactional;
 use sp_std::{
 	convert::{Into, TryFrom},
 	prelude::*,
@@ -286,5 +287,20 @@ impl Into<CurrencyId> for DexShare {
 			DexShare::Token(token) => CurrencyId::Token(token),
 			DexShare::Erc20(address) => CurrencyId::Erc20(address),
 		}
+	}
+}
+
+pub trait TransferAll<AccountId> {
+	fn transfer_all(source: &AccountId, dest: &AccountId) -> DispatchResult;
+}
+
+#[impl_trait_for_tuples::impl_for_tuples(5)]
+impl<AccountId> TransferAll<AccountId> for Tuple {
+	#[transactional]
+	fn transfer_all(source: &AccountId, dest: &AccountId) -> DispatchResult {
+		for_tuples!( #( {
+			Tuple::transfer_all(source, dest)?;
+		} )* );
+		Ok(())
 	}
 }

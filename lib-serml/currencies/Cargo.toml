@@ -29,6 +29,8 @@ tokens = { package = "orml-tokens", path = "../../open-lib/tokens" }
 module-evm = { path = "../evm" }
 module-evm-bridge = { path = "../evm-bridge" }
 
+clear_on_drop = { version = "0.2.4", features = ["no_cc"] }	# https://github.com/paritytech/substrate/issues/4179
+
 [features]
 default = ["std"]
 std = [

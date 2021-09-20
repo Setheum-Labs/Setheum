@@ -1,6 +1,6 @@
-// This file is part of Setheum.
+// This file is part of Acala.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Acala Foundation.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -28,13 +28,14 @@ use frame_support::{
 	RuntimeDebug,
 };
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, Balance, BlockNumber, CurrencyId, TokenSymbol};
+use primitives::{evm::EvmAddress, Amount, BlockNumber, CurrencyId, TokenSymbol};
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
+	DispatchError, DispatchResult,
 };
-use support::mocks::MockAddressMapping;
+use support::{mocks::MockAddressMapping, EVMBridge, InvokeContext, SerpTreasury};
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -65,7 +66,6 @@ impl frame_system::Config for Runtime {
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
@@ -75,7 +75,7 @@ impl pallet_balances::Config for Runtime {
 	type Event = Event;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Runtime>;
+	type AccountStore = frame_system::Module<Runtime>;
 	type MaxLocks = ();
 	type WeightInfo = ();
 }
@@ -157,13 +157,158 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
-pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub struct MockEVMBridge;
+impl<AccountId, Balance> EVMBridge<AccountId, Balance> for MockEVMBridge
+where
+	AccountId: Default,
+	Balance: Default,
+{
+	fn name(_context: InvokeContext) -> Result<Vec<u8>, DispatchError> {
+		Ok(Default::default())
+	}
+	
+	fn symbol(_context: InvokeContext) -> Result<Vec<u8>, DispatchError> {
+		Ok(Default::default())
+	}
+	
+	fn decimals(_context: InvokeContext) -> Result<u8, DispatchError> {
+		Ok(Default::default())
+	}
+
+	fn total_supply(_context: InvokeContext) -> Result<Balance, DispatchError> {
+		Ok(Default::default())
+	}
+
+	fn balance_of(_context: InvokeContext, _address: EvmAddress) -> Result<Balance, DispatchError> {
+		Ok(Default::default())
+	}
+
+	fn transfer(_context: InvokeContext, _to: EvmAddress, _value: Balance) -> DispatchResult {
+		Ok(())
+	}
+
+	fn get_origin() -> Option<AccountId> {
+		None
+	}
+
+	fn set_origin(_origin: AccountId) {}
+}
+
+pub struct MockSerpTreasury;
+impl SerpTreasury<AccountId> for MockSerpTreasury {
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+
+	/// Deliver System StableCurrency Inflation
+	fn issue_stablecurrency_inflation() -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	/// SerpUp ratio for SetPay Cashdrops
+	fn get_cashdrop_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serpup(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// buy back and burn surplus(stable currencies) with swap by DEX.
+	fn on_serpdown(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// get the minimum supply of a setcurrency - by key
+	fn get_minimum_supply(
+		_currency_id: CurrencyId
+	) -> Balance {
+		unimplemented!()
+	}
+
+	/// issue standard to `who`
+	fn issue_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn standard(stable currency) of `who`
+	fn burn_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue setter of amount setter to `who`
+	fn issue_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn setter of `who`
+	fn burn_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
+	fn deposit_setter(
+		_from: &AccountId,
+		_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
+	fn claim_cashdrop(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_transfer_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+}
+
+pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
+	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
 }
 
 impl module_currencies::Config for Runtime {
@@ -171,36 +316,31 @@ impl module_currencies::Config for Runtime {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = NativeCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type SerpTreasury = MockSerpTreasury;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
-	type EVMBridge = ();
+	type EVMBridge = MockEVMBridge;
 }
 
 parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
-	pub const NftPalletId: PalletId = PalletId(*b"aca/aNFT");
+	pub const NftModuleId: ModuleId = ModuleId(*b"set/sNFT");
 }
 impl Config for Runtime {
 	type Event = Event;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
-	type PalletId = NftPalletId;
+	type ModuleId = NftModuleId;
+	type Currency = NativeCurrency;
 	type WeightInfo = ();
-}
-
-parameter_types! {
-	pub const MaxClassMetadata: u32 = 1024;
-	pub const MaxTokenMetadata: u32 = 1024;
 }
 
 impl orml_nft::Config for Runtime {
 	type ClassId = u32;
 	type TokenId = u64;
-	type ClassData = ClassData<Balance>;
-	type TokenData = TokenData<Balance>;
-	type MaxClassMetadata = MaxClassMetadata;
-	type MaxTokenMetadata = MaxTokenMetadata;
+	type ClassData = ClassData;
+	type TokenData = TokenData;
 }
 
 use frame_system::Call as SystemCall;
@@ -214,14 +354,14 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		NFTModule: nft::{Pallet, Call, Event<T>},
-		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
-		Utility: pallet_utility::{Pallet, Call, Event},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currency: module_currencies::{Pallet, Call, Event<T>},
+		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		NFTModule: nft::{Module, Call, Event<T>},
+		OrmlNFT: orml_nft::{Module, Storage, Config<T>},
+		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
+		Utility: pallet_utility::{Module, Call, Event},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		Currency: module_currencies::{Module, Call, Event<T>},
 	}
 );
 
@@ -255,4 +395,11 @@ impl ExtBuilder {
 		ext.execute_with(|| System::set_block_number(1));
 		ext
 	}
+}
+
+pub fn last_event() -> Event {
+	frame_system::Module::<Runtime>::events()
+		.pop()
+		.expect("Event expected")
+		.event
 }

@@ -23,7 +23,7 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 hex-literal = "0.3.1"
 orml-currencies = { path = "../../open-lib/currencies" }
 orml-tokens = { path = "../../open-lib/tokens" }
-pallet-balances = { version = '3.0.0' }
+pallet-balances = "3.0.0"
 
 [features]
 default = ["std"]
