@@ -135,6 +135,12 @@ The `make run` command will launch a temporary node and its state will be discar
 make run
 ```
 
+or
+
+```bash
+RUST_BACKTRACE=1 cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
+```
+
 ### Run a persistent single-node chain
 
 Use the following command to build the node without launching it:
