@@ -22,6 +22,7 @@
 
 pub mod currency;
 pub mod evm;
+pub mod mocks;
 
 use codec::{Decode, Encode};
 use core::ops::Range;
