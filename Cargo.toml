@@ -108,7 +108,6 @@ pallet-multisig = { git = "https://github.com/Slixon-Technologies/substrate", br
 pallet-offences = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-proxy = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-randomness-collective-flip = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
-pallet-recovery = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-scheduler = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-session = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-staking = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }

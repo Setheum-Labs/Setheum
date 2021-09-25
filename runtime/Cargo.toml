@@ -38,7 +38,6 @@ pallet-grandpa = { default-features = false, version = '3.0.0' }
 pallet-indices = { version = "3.0.0", default-features = false }
 pallet-proxy = { version = "3.0.0", default-features = false }
 pallet-randomness-collective-flip = { default-features = false, version = '3.0.0' }
-pallet-recovery = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6", default-features = false }
 pallet-scheduler = { version = "3.0.0", default-features = false }
 pallet-sudo = { default-features = false, version = '3.0.0' }
 pallet-timestamp = { default-features = false, version = '3.0.0' }
@@ -103,6 +102,7 @@ module-evm-manager = { path = "../lib-serml/evm-manager", default-features = fal
 module-evm-rpc-runtime-api = { path = "../lib-serml/evm/rpc/runtime_api",  default-features = false }
 module-nft = { path = "../lib-serml/nft", default-features = false }
 module-prices = { path = "../lib-serml/prices", default-features = false }
+module-recovery = { path = "../lib-serml/recovery", default-features = false }
 setheum-renvm-bridge = { path = "../lib-serml/renvm-bridge", default-features = false }
 serp-treasury = { path = "../lib-serml/serp-treasury", default-features = false }
 serp-ocw = { path = "../lib-serml/serp-ocw", default-features = false }
