@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use frame_support::{log, sp_runtime::FixedPointNumber};
+use frame_support::{debug, sp_runtime::FixedPointNumber};
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use primitives::CurrencyId;
-use sp_core::U256;
+use sp_core::{RuntimeDebug, U256};
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*, result};
 
 use super::input::{Input, InputT};
@@ -61,7 +61,7 @@ where
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
 		//TODO: evaluate cost
 
-		log::debug!(target: "evm", "oracle: input: {:?}", input);
+		debug::debug!(target: "evm", "oracle: input: {:?}", input);
 
 		let input = Input::<Action, AccountId, AddressMapping, CurrencyIdMapping>::new(input);
 
@@ -94,7 +94,7 @@ where
 					}
 				};
 
-				log::debug!(target: "evm", "oracle: getPrice currency_id: {:?}, price: {:?}, adjustment_multiplier: {:?}", currency_id, price, adjustment_multiplier);
+				debug::debug!(target: "evm", "oracle: getPrice currency_id: {:?}, price: {:?}, adjustment_multiplier: {:?}", currency_id, price, adjustment_multiplier);
 				Ok((
 					ExitSucceed::Returned,
 					vec_u8_from_price(price, adjustment_multiplier),

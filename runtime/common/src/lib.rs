@@ -17,7 +17,7 @@ use primitives::{
 };
 use sp_core::{
 	u32_trait::{_1, _2, _3, _4},
-	H160,
+	H160, RuntimeDebug,
 };
 use sp_runtime::{
 	traits::Convert,

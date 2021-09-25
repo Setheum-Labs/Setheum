@@ -1,5 +1,5 @@
 
-use frame_support::log;
+use frame_support::debug;
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use sp_core::U256;
@@ -49,7 +49,7 @@ where
 		_target_gas: Option<u64>,
 		_context: &Context,
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
-		log::debug!(target: "evm", "state_rent input: {:?}", input);
+		debug::debug!(target: "evm", "state_rent input: {:?}", input);
 		let input = Input::<Action, AccountId, AddressMapping, CurrencyIdMapping>::new(input);
 
 		let action = input.action()?;
@@ -87,7 +87,7 @@ where
 				let contract = input.evm_address_at(2)?;
 				let new_maintainer = input.evm_address_at(3)?;
 
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"state_rent: from: {:?}, contract: {:?}, new_maintainer: {:?}",
 					from, contract, new_maintainer,

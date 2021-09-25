@@ -17,6 +17,7 @@ frame-support = { version = '3.0.0', default-features = false }
 frame-system = { version = '3.0.0', default-features = false }
 pallet-scheduler  = { version = '3.0.0', default-features = false }
 pallet-collective = { version = "3.0.0", default-features = false }
+pallet-membership = { version = "3.0.0", default-features = false }
 
 module-evm = { path = "../../lib-serml/evm", default-features = false }
 
@@ -60,6 +61,7 @@ std = [
 	"frame-system/std",
 	"pallet-scheduler/std",
 	"pallet-collective/std",
+	"pallet-membership/std",
 	"module-evm/std",
 	"orml-oracle/std",
 	"orml-traits/std",

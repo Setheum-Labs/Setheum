@@ -4,7 +4,7 @@
 
 use frame_support::{
 	dispatch::Dispatchable,
-	ensure, log, parameter_types,
+	ensure, debug, parameter_types,
 	traits::{
 		schedule::{DispatchTime, Named as ScheduleNamed},
 		Currency, IsType, OriginTrait,
@@ -119,7 +119,7 @@ impl<
 		_target_gas: Option<u64>,
 		_context: &Context,
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
-		log::debug!(target: "evm", "schedule call: input: {:?}", input);
+		debug::debug!(target: "evm", "schedule call: input: {:?}", input);
 
 		let input = Input::<Action, AccountId, AddressMapping, CurrencyIdMapping>::new(input);
 
@@ -138,7 +138,7 @@ impl<
 				let input_len = input.u32_at(8)?;
 				let input_data = input.bytes_at(9, input_len as usize)?;
 
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"schedule call: from: {:?}, target: {:?}, value: {:?}, gas_limit: {:?}, storage_limit: {:?}, min_delay: {:?}, input_len: {:?}, input_data: {:?}",
 					from,
@@ -188,7 +188,7 @@ impl<
 				}
 				.encode();
 
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"schedule call: task_id: {:?}",
 					task_id,
@@ -217,7 +217,7 @@ impl<
 				let task_id_len = input.u32_at(3)?;
 				let task_id = input.bytes_at(4, task_id_len as usize)?;
 
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"cancel call: from: {:?}, task_id: {:?}",
 					from,
@@ -246,7 +246,7 @@ impl<
 				let task_id_len = input.u32_at(4)?;
 				let task_id = input.bytes_at(5, task_id_len as usize)?;
 
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"reschedule call: from: {:?}, task_id: {:?}, min_delay: {:?}",
 					from,
