@@ -11,7 +11,7 @@ use frame_support::{
 	},
 };
 use frame_system::{limits, EnsureOneOf, EnsureRoot};
-pub use module_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
+pub use module_support::{Contains, ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{
 	Balance, BlockNumber, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
@@ -20,7 +20,7 @@ use sp_core::{
 	H160,
 };
 use sp_runtime::{
-	traits::{BlockNumberProvider, Convert},
+	traits::Convert,
 	transaction_validity::TransactionPriority,
 	Perbill,
 };
