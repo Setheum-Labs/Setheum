@@ -4240,6 +4240,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "module-recovery"
+version = "3.0.0"
+dependencies = [
+ "enumflags2",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "module-support"
 version = "0.7.3"
 dependencies = [
@@ -5032,20 +5048,6 @@ dependencies = [
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "parity-scale-codec",
  "safe-mix",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "pallet-recovery"
-version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "enumflags2",
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "parity-scale-codec",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
@@ -7755,6 +7757,7 @@ dependencies = [
  "module-evm-rpc-runtime-api",
  "module-nft",
  "module-prices",
+ "module-recovery",
  "module-support",
  "module-transaction-payment",
  "orml-authority",
@@ -7780,7 +7783,6 @@ dependencies = [
  "pallet-offences",
  "pallet-proxy",
  "pallet-randomness-collective-flip",
- "pallet-recovery",
  "pallet-scheduler",
  "pallet-session",
  "pallet-staking",
