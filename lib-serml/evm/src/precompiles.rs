@@ -25,6 +25,7 @@ use primitive_types::H160;
 use ripemd160::Digest;
 use sp_runtime::SaturatedConversion;
 use sp_std::{cmp::min, vec::Vec};
+use tiny_keccak::Hasher;
 
 /// Custom precompiles to be used by EVM engine.
 pub trait Precompiles {
