@@ -124,7 +124,7 @@ where
 					path, supply_amount
 				);
 
-				let value = Dex::get_swap_target_amount(&path, supply_amount, None)
+				let value = Dex::get_swap_target_amount(&path, supply_amount)
 					.ok_or_else(|| ExitError::Other("Dex get_swap_target_amount failed".into()))?;
 
 				// output
@@ -147,7 +147,7 @@ where
 					path, target_amount
 				);
 
-				let value = Dex::get_swap_supply_amount(&path, target_amount, None)
+				let value = Dex::get_swap_supply_amount(&path, target_amount)
 					.ok_or_else(|| ExitError::Other("Dex get_swap_supply_amount failed".into()))?;
 
 				// output
@@ -173,7 +173,7 @@ where
 				);
 
 				let value =
-					Dex::swap_with_exact_supply(&who, &path, supply_amount, min_target_amount, None).map_err(|e| {
+					Dex::swap_with_exact_supply(&who, &path, supply_amount, min_target_amount).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
@@ -201,7 +201,7 @@ where
 				);
 
 				let value =
-					Dex::swap_with_exact_target(&who, &path, target_amount, max_supply_amount, None).map_err(|e| {
+					Dex::swap_with_exact_target(&who, &path, target_amount, max_supply_amount).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
@@ -233,7 +233,6 @@ where
 					max_amount_a,
 					max_amount_b,
 					min_share_increment,
-					false,
 				)
 				.map_err(|e| {
 					let err_msg: &str = e.into();
@@ -263,7 +262,6 @@ where
 					remove_share,
 					min_withdrawn_a,
 					min_withdrawn_b,
-					false,
 				)
 				.map_err(|e| {
 					let err_msg: &str = e.into();

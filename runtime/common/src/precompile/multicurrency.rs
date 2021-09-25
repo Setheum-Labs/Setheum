@@ -1,7 +1,7 @@
 use frame_support::debug;
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
 use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
-use sp_core::U256;
+use sp_core::{RuntimeDebug, U256};
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*, result};
 
 use orml_traits::MultiCurrency as MultiCurrencyT;

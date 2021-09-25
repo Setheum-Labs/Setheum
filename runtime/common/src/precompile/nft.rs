@@ -19,7 +19,8 @@
 use frame_support::debug;
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
 use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
-use sp_core::{H160, U256};
+use sp_core::{H160, RuntimeDebug, U256};
+
 use sp_std::{borrow::Cow, fmt::Debug, marker::PhantomData, prelude::*, result};
 
 use orml_traits::NFT as NFTT;
