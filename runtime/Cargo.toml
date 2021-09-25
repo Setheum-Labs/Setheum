@@ -38,7 +38,7 @@ pallet-grandpa = { default-features = false, version = '3.0.0' }
 pallet-indices = { version = "3.0.0", default-features = false }
 pallet-proxy = { version = "3.0.0", default-features = false }
 pallet-randomness-collective-flip = { default-features = false, version = '3.0.0' }
-pallet-recovery = { version = "3.0.0", default-features = false }
+pallet-recovery = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6", default-features = false }
 pallet-scheduler = { version = "3.0.0", default-features = false }
 pallet-sudo = { default-features = false, version = '3.0.0' }
 pallet-timestamp = { default-features = false, version = '3.0.0' }
