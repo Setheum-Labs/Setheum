@@ -807,6 +807,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "clear_on_drop"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9cc5db465b294c3fa986d5bbb0f3017cd850bff6dd6c52f9ccff8b4d21b7b08"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "cloudabi"
 version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1746,24 +1755,6 @@ dependencies = [
 [[package]]
 name = "frame-benchmarking"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "linregress",
- "parity-scale-codec",
- "paste 1.0.5",
- "sp-api 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "frame-benchmarking"
-version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
@@ -1777,6 +1768,24 @@ dependencies = [
  "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+]
+
+[[package]]
+name = "frame-benchmarking"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "linregress",
+ "parity-scale-codec",
+ "paste 1.0.5",
+ "sp-api 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -1840,17 +1849,6 @@ dependencies = [
 [[package]]
 name = "frame-metadata"
 version = "13.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "parity-scale-codec",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "frame-metadata"
-version = "13.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "parity-scale-codec",
@@ -1860,29 +1858,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "frame-support"
-version = "3.0.0"
+name = "frame-metadata"
+version = "13.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "bitflags",
- "frame-metadata 13.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-support-procedural 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "impl-trait-for-tuples 0.2.1",
- "log",
- "once_cell",
  "parity-scale-codec",
- "paste 1.0.5",
  "serde",
- "smallvec 1.6.1",
- "sp-arithmetic 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-inherents 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-staking 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-state-machine 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-tracing 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -1912,15 +1895,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "frame-support-procedural"
+name = "frame-support"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "Inflector",
- "frame-support-procedural-tools 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "proc-macro2",
- "quote",
- "syn",
+ "bitflags",
+ "frame-metadata 13.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-support-procedural 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "impl-trait-for-tuples 0.2.1",
+ "log",
+ "once_cell",
+ "parity-scale-codec",
+ "paste 1.0.5",
+ "serde",
+ "smallvec 1.6.1",
+ "sp-arithmetic 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-inherents 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-staking 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-state-machine 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-tracing 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -1936,12 +1933,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "frame-support-procedural-tools"
+name = "frame-support-procedural"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "frame-support-procedural-tools-derive 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "proc-macro-crate 0.1.5",
+ "Inflector",
+ "frame-support-procedural-tools 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "proc-macro2",
  "quote",
  "syn",
@@ -1960,10 +1957,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "frame-support-procedural-tools-derive"
+name = "frame-support-procedural-tools"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
+ "frame-support-procedural-tools-derive 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "proc-macro-crate 0.1.5",
  "proc-macro2",
  "quote",
  "syn",
@@ -1980,19 +1979,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "frame-system"
+name = "frame-support-procedural-tools-derive"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "impl-trait-for-tuples 0.2.1",
- "parity-scale-codec",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-version 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2009,6 +2002,22 @@ dependencies = [
  "sp-runtime 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "sp-version 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+]
+
+[[package]]
+name = "frame-system"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "impl-trait-for-tuples 0.2.1",
+ "parity-scale-codec",
+ "serde",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-version 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -4032,6 +4041,7 @@ dependencies = [
 name = "module-currencies"
 version = "1.0.0"
 dependencies = [
+ "clear_on_drop",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "module-evm",
@@ -4058,6 +4068,7 @@ dependencies = [
  "frame-benchmarking 3.1.0",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "log",
  "module-support",
  "orml-tokens",
  "orml-traits",
@@ -4107,7 +4118,7 @@ version = "1.0.0"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "libsecp256k1 0.6.0",
+ "libsecp256k1 0.3.5",
  "module-support",
  "orml-currencies",
  "orml-tokens",
@@ -4188,7 +4199,6 @@ name = "module-nft"
 version = "1.0.0"
 dependencies = [
  "enumflags2",
- "frame-benchmarking 3.1.0",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "module-currencies",
@@ -4198,25 +4208,8 @@ dependencies = [
  "orml-traits",
  "pallet-balances",
  "pallet-proxy",
+ "pallet-timestamp",
  "pallet-utility",
- "parity-scale-codec",
- "serde",
- "setheum-primitives",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "module-poc"
-version = "0.1.0"
-dependencies = [
- "frame-benchmarking 3.1.0",
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "pallet-balances",
- "pallet-collective",
  "parity-scale-codec",
  "serde",
  "setheum-primitives",
@@ -4855,6 +4848,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-bounties"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "pallet-treasury",
+ "parity-scale-codec",
+ "serde",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "pallet-collective"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
@@ -4958,6 +4965,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-membership"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "parity-scale-codec",
+ "serde",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
+name = "pallet-multisig"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "parity-scale-codec",
+ "serde",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "pallet-offences"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
@@ -4996,6 +5032,20 @@ dependencies = [
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "parity-scale-codec",
  "safe-mix",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
+name = "pallet-recovery"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "enumflags2",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "parity-scale-codec",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
@@ -5096,6 +5146,19 @@ dependencies = [
  "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-timestamp",
+]
+
+[[package]]
+name = "pallet-tips"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "pallet-treasury",
+ "parity-scale-codec",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -7542,6 +7605,7 @@ dependencies = [
  "orml-traits",
  "pallet-balances",
  "parity-scale-codec",
+ "serde",
  "setheum-primitives",
  "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
@@ -7555,6 +7619,7 @@ dependencies = [
 name = "serp-treasury"
 version = "0.9.1"
 dependencies = [
+ "frame-benchmarking 3.1.0",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "module-prices",
@@ -7631,6 +7696,8 @@ dependencies = [
  "bstringify",
  "evm 0.24.0",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "impl-trait-for-tuples 0.2.1",
+ "num-traits",
  "parity-scale-codec",
  "primitives-proc-macro",
  "serde",
@@ -7664,7 +7731,7 @@ dependencies = [
 
 [[package]]
 name = "setheum-runtime"
-version = "3.0.0"
+version = "0.9.6"
 dependencies = [
  "evm 0.26.0",
  "frame-benchmarking 3.1.0",
@@ -7676,42 +7743,61 @@ dependencies = [
  "hex",
  "hex-literal 0.3.3",
  "libsecp256k1 0.6.0",
+ "module-airdrop",
  "module-currencies",
+ "module-dex",
  "module-evm",
  "module-evm-accounts",
  "module-evm-bridge",
+ "module-evm-manager",
  "module-evm-rpc-runtime-api",
- "module-poc",
+ "module-nft",
+ "module-prices",
  "module-support",
  "module-transaction-payment",
  "orml-authority",
  "orml-benchmarking",
+ "orml-nft",
+ "orml-oracle",
+ "orml-oracle-rpc-runtime-api",
  "orml-tokens",
  "orml-traits",
+ "orml-vesting",
  "pallet-authority-discovery",
  "pallet-authorship",
  "pallet-babe",
  "pallet-balances",
+ "pallet-bounties",
  "pallet-collective",
  "pallet-grandpa",
  "pallet-identity",
  "pallet-im-online",
  "pallet-indices",
+ "pallet-membership",
+ "pallet-multisig",
  "pallet-offences",
+ "pallet-proxy",
  "pallet-randomness-collective-flip",
+ "pallet-recovery",
  "pallet-scheduler",
  "pallet-session",
  "pallet-staking",
  "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
+ "pallet-tips",
  "pallet-transaction-payment 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-treasury",
+ "pallet-utility",
  "parity-scale-codec",
  "runtime-common",
  "serde",
  "serde_json",
+ "serp-ocw",
+ "serp-treasury",
  "setheum-primitives",
+ "setheum-renvm-bridge",
  "smallvec 1.6.1",
  "sp-api 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-application-crypto 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
@@ -7949,22 +8035,6 @@ dependencies = [
 [[package]]
 name = "sp-api"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "hash-db",
- "parity-scale-codec",
- "sp-api-proc-macro 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-state-machine 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-version 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "thiserror",
-]
-
-[[package]]
-name = "sp-api"
-version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "hash-db",
@@ -7979,15 +8049,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-api-proc-macro"
+name = "sp-api"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "blake2-rfc",
- "proc-macro-crate 0.1.5",
- "proc-macro2",
- "quote",
- "syn",
+ "hash-db",
+ "parity-scale-codec",
+ "sp-api-proc-macro 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-state-machine 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-version 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "thiserror",
 ]
 
 [[package]]
@@ -8003,15 +8077,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-application-crypto"
+name = "sp-api-proc-macro"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "parity-scale-codec",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "blake2-rfc",
+ "proc-macro-crate 0.1.5",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -8027,15 +8101,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-arithmetic"
+name = "sp-application-crypto"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "integer-sqrt",
- "num-traits",
  "parity-scale-codec",
  "serde",
- "sp-debug-derive 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
@@ -8050,6 +8123,19 @@ dependencies = [
  "serde",
  "sp-debug-derive 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+]
+
+[[package]]
+name = "sp-arithmetic"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "integer-sqrt",
+ "num-traits",
+ "parity-scale-codec",
+ "serde",
+ "sp-debug-derive 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -8186,50 +8272,6 @@ dependencies = [
 [[package]]
 name = "sp-core"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "base58",
- "blake2-rfc",
- "byteorder",
- "dyn-clonable",
- "ed25519-dalek",
- "futures 0.3.17",
- "hash-db",
- "hash256-std-hasher",
- "hex",
- "impl-serde",
- "lazy_static",
- "libsecp256k1 0.6.0",
- "log",
- "merlin",
- "num-traits",
- "parity-scale-codec",
- "parity-util-mem",
- "parking_lot 0.11.2",
- "primitive-types",
- "rand 0.7.3",
- "regex",
- "schnorrkel",
- "secrecy",
- "serde",
- "sha2 0.9.8",
- "sp-debug-derive 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "substrate-bip39",
- "thiserror",
- "tiny-bip39",
- "tiny-keccak",
- "twox-hash",
- "wasmi",
- "zeroize",
-]
-
-[[package]]
-name = "sp-core"
-version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "base58",
@@ -8272,6 +8314,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-core"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "base58",
+ "blake2-rfc",
+ "byteorder",
+ "dyn-clonable",
+ "ed25519-dalek",
+ "futures 0.3.17",
+ "hash-db",
+ "hash256-std-hasher",
+ "hex",
+ "impl-serde",
+ "lazy_static",
+ "libsecp256k1 0.6.0",
+ "log",
+ "merlin",
+ "num-traits",
+ "parity-scale-codec",
+ "parity-util-mem",
+ "parking_lot 0.11.2",
+ "primitive-types",
+ "rand 0.7.3",
+ "regex",
+ "schnorrkel",
+ "secrecy",
+ "serde",
+ "sha2 0.9.8",
+ "sp-debug-derive 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "substrate-bip39",
+ "thiserror",
+ "tiny-bip39",
+ "tiny-keccak",
+ "twox-hash",
+ "wasmi",
+ "zeroize",
+]
+
+[[package]]
 name = "sp-database"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
@@ -8283,7 +8369,7 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -8293,22 +8379,11 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "sp-externalities"
-version = "0.9.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "environmental",
- "parity-scale-codec",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -8320,6 +8395,17 @@ dependencies = [
  "parity-scale-codec",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+]
+
+[[package]]
+name = "sp-externalities"
+version = "0.9.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "environmental",
+ "parity-scale-codec",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -8342,18 +8428,6 @@ dependencies = [
 [[package]]
 name = "sp-inherents"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "parity-scale-codec",
- "parking_lot 0.11.2",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "thiserror",
-]
-
-[[package]]
-name = "sp-inherents"
-version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "parity-scale-codec",
@@ -8364,27 +8438,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-io"
+name = "sp-inherents"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "futures 0.3.17",
- "hash-db",
- "libsecp256k1 0.6.0",
- "log",
  "parity-scale-codec",
  "parking_lot 0.11.2",
  "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-keystore 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-state-machine 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-tracing 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-trie 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "tracing",
- "tracing-core",
+ "thiserror",
 ]
 
 [[package]]
@@ -8412,6 +8474,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-io"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "futures 0.3.17",
+ "hash-db",
+ "libsecp256k1 0.6.0",
+ "log",
+ "parity-scale-codec",
+ "parking_lot 0.11.2",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-keystore 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-state-machine 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-tracing 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-trie 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "tracing",
+ "tracing-core",
+]
+
+[[package]]
 name = "sp-keyring"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
@@ -8420,6 +8506,22 @@ dependencies = [
  "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "strum",
+]
+
+[[package]]
+name = "sp-keystore"
+version = "0.9.0"
+source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
+dependencies = [
+ "async-trait",
+ "derive_more",
+ "futures 0.3.17",
+ "merlin",
+ "parity-scale-codec",
+ "parking_lot 0.11.2",
+ "schnorrkel",
+ "sp-core 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
 ]
 
 [[package]]
@@ -8437,22 +8539,6 @@ dependencies = [
  "serde",
  "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "sp-keystore"
-version = "0.9.0"
-source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
-dependencies = [
- "async-trait",
- "derive_more",
- "futures 0.3.17",
- "merlin",
- "parity-scale-codec",
- "parking_lot 0.11.2",
- "schnorrkel",
- "sp-core 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
- "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
 ]
 
 [[package]]
@@ -8492,7 +8578,7 @@ dependencies = [
 [[package]]
 name = "sp-panic-handler"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "backtrace",
 ]
@@ -8500,7 +8586,7 @@ dependencies = [
 [[package]]
 name = "sp-panic-handler"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
  "backtrace",
 ]
@@ -8512,27 +8598,6 @@ source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.
 dependencies = [
  "serde",
  "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "sp-runtime"
-version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "either",
- "hash256-std-hasher",
- "impl-trait-for-tuples 0.2.1",
- "log",
- "parity-scale-codec",
- "parity-util-mem",
- "paste 1.0.5",
- "rand 0.7.3",
- "serde",
- "sp-application-crypto 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-arithmetic 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -8557,20 +8622,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-runtime-interface"
+name = "sp-runtime"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
+ "either",
+ "hash256-std-hasher",
  "impl-trait-for-tuples 0.2.1",
+ "log",
  "parity-scale-codec",
- "primitive-types",
- "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime-interface-proc-macro 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "parity-util-mem",
+ "paste 1.0.5",
+ "rand 0.7.3",
+ "serde",
+ "sp-application-crypto 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-arithmetic 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-tracing 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-wasm-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "static_assertions",
 ]
 
 [[package]]
@@ -8591,9 +8660,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-runtime-interface-proc-macro"
+name = "sp-runtime-interface"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "impl-trait-for-tuples 0.2.1",
+ "parity-scale-codec",
+ "primitive-types",
+ "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime-interface-proc-macro 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-tracing 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "static_assertions",
+]
+
+[[package]]
+name = "sp-runtime-interface-proc-macro"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "Inflector",
  "proc-macro-crate 0.1.5",
@@ -8605,7 +8691,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface-proc-macro"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
  "Inflector",
  "proc-macro-crate 0.1.5",
@@ -8639,16 +8725,6 @@ dependencies = [
 [[package]]
 name = "sp-staking"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "parity-scale-codec",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "sp-staking"
-version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "parity-scale-codec",
@@ -8657,25 +8733,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-state-machine"
-version = "0.9.0"
+name = "sp-staking"
+version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "hash-db",
- "log",
- "num-traits",
  "parity-scale-codec",
- "parking_lot 0.11.2",
- "rand 0.7.3",
- "smallvec 1.6.1",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-panic-handler 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-trie 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "thiserror",
- "trie-db",
- "trie-root",
 ]
 
 [[package]]
@@ -8701,9 +8765,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-std"
-version = "3.0.0"
+name = "sp-state-machine"
+version = "0.9.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "hash-db",
+ "log",
+ "num-traits",
+ "parity-scale-codec",
+ "parking_lot 0.11.2",
+ "rand 0.7.3",
+ "smallvec 1.6.1",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-externalities 0.9.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-panic-handler 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-trie 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "thiserror",
+ "trie-db",
+ "trie-root",
+]
 
 [[package]]
 name = "sp-std"
@@ -8711,17 +8792,9 @@ version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 
 [[package]]
-name = "sp-storage"
+name = "sp-std"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "impl-serde",
- "parity-scale-codec",
- "ref-cast",
- "serde",
- "sp-debug-derive 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
 
 [[package]]
 name = "sp-storage"
@@ -8734,6 +8807,19 @@ dependencies = [
  "serde",
  "sp-debug-derive 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+]
+
+[[package]]
+name = "sp-storage"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "impl-serde",
+ "parity-scale-codec",
+ "ref-cast",
+ "serde",
+ "sp-debug-derive 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -8766,11 +8852,11 @@ dependencies = [
 [[package]]
 name = "sp-tracing"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "log",
  "parity-scale-codec",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "tracing",
  "tracing-core",
  "tracing-subscriber",
@@ -8779,11 +8865,11 @@ dependencies = [
 [[package]]
 name = "sp-tracing"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
  "log",
  "parity-scale-codec",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "tracing",
  "tracing-core",
  "tracing-subscriber",
@@ -8808,20 +8894,6 @@ dependencies = [
 [[package]]
 name = "sp-trie"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "hash-db",
- "memory-db",
- "parity-scale-codec",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "trie-db",
- "trie-root",
-]
-
-[[package]]
-name = "sp-trie"
-version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "hash-db",
@@ -8829,6 +8901,20 @@ dependencies = [
  "parity-scale-codec",
  "sp-core 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+ "trie-db",
+ "trie-root",
+]
+
+[[package]]
+name = "sp-trie"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "hash-db",
+ "memory-db",
+ "parity-scale-codec",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "trie-db",
  "trie-root",
 ]
@@ -8848,18 +8934,6 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-dependencies = [
- "impl-serde",
- "parity-scale-codec",
- "serde",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "sp-version"
-version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643#e03ca38d45f438932ec92bf69a40b6b16b6ec643"
 dependencies = [
  "impl-serde",
@@ -8870,14 +8944,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-wasm-interface"
+name = "sp-version"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
 dependencies = [
- "impl-trait-for-tuples 0.2.1",
+ "impl-serde",
  "parity-scale-codec",
+ "serde",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "wasmi",
 ]
 
 [[package]]
@@ -8888,6 +8963,17 @@ dependencies = [
  "impl-trait-for-tuples 0.2.1",
  "parity-scale-codec",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate.git?rev=e03ca38d45f438932ec92bf69a40b6b16b6ec643)",
+ "wasmi",
+]
+
+[[package]]
+name = "sp-wasm-interface"
+version = "3.0.0"
+source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
+dependencies = [
+ "impl-trait-for-tuples 0.2.1",
+ "parity-scale-codec",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "wasmi",
 ]
 
@@ -10442,28 +10528,3 @@ dependencies = [
  "itertools 0.9.0",
  "libc",
 ]
-
-[[patch.unused]]
-name = "pallet-bounties"
-version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-
-[[patch.unused]]
-name = "pallet-membership"
-version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-
-[[patch.unused]]
-name = "pallet-multisig"
-version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-
-[[patch.unused]]
-name = "pallet-recovery"
-version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
-
-[[patch.unused]]
-name = "pallet-tips"
-version = "3.0.0"
-source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#36fa6c17a25c8f631644dd17c9506de3c9fa3f79"
