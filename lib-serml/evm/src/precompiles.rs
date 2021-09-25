@@ -19,6 +19,7 @@
 //! Builtin precompiles.
 
 use evm::{Context, ExitError, ExitSucceed};
+use frame_support::pallet_prelude::PhantomData;
 use impl_trait_for_tuples::impl_for_tuples;
 use primitive_types::H160;
 use ripemd160::Digest;

@@ -4110,6 +4110,7 @@ dependencies = [
  "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "tiny-keccak",
 ]
 
 [[package]]
