@@ -120,8 +120,11 @@ pub mod module {
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SetCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
+		/// The minimum transfer amounts by currency_id,  to prevent cashdrop from dusty claims.
 		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
+
+		/// The minimum transfer amounts by currency_id,  to prevent cashdrop from dusty rewards.
+		type MinTransferForSystemCashdropReward: GetByKey<CurrencyId, Balance>;
 
 		/// The origin which may update incentive related params
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
@@ -517,14 +520,47 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::TransferTooLowForCashDrop,
 		);
 
-		let balance_cashdrop_amount = transfer_amount / 100; // 1% cashdrop
-		let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
-		ensure!(
-			balance_cashdrop_amount <= serp_balance,
-			Error::<T>::CashdropNotAvailable,
-		);
+		// IF Setter, use Setter claim rate (4%),
+		// else, use SetCurrency claim rate (2%).
+		if currency_id == T::SetterCurrencyId::get() {
+			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
+			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
+			ensure!(
+				balance_cashdrop_amount <= serp_balance,
+				Error::<T>::CashdropNotAvailable,
+			);
 
-		T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
+			T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
+
+			let min_transfer_for_sys_reward = T::MinTransferForSystemCashdropReward::get(&currency_id);
+
+			if transfer_amount >= min_transfer_for_sys_reward {
+				let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop_pool_reward
+				let treasury_reward = transfer_amount / 50; // 2% treasury reward
+
+				T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
+				T::Currency::deposit(currency_id, &T::SetheumTreasuryAccountId::get(), treasury_reward)?;
+			}
+		} else {
+			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
+			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
+			ensure!(
+				balance_cashdrop_amount <= serp_balance,
+				Error::<T>::CashdropNotAvailable,
+			);
+
+			T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
+
+			let min_transfer_for_sys_reward = T::MinTransferForSystemCashdropReward::get(&currency_id);
+
+			if transfer_amount >= min_transfer_for_sys_reward {
+				let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
+				let treasury_reward = transfer_amount / 100; // 1% treasury reward
+
+				T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
+				T::Currency::deposit(currency_id, &T::SetheumTreasuryAccountId::get(), treasury_reward)?;
+			}
+		}
 
 		Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 		Ok(())
