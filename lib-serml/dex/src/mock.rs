@@ -106,9 +106,9 @@ parameter_types! {
 		SETUSD,
 		SETEUR,
 	];
-	pub const GetExchangeFee: (u32, u32) = (1, 100); // 1%
+	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 3;
-	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/sdex");
 }

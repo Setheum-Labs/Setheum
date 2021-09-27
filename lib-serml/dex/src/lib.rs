@@ -103,7 +103,6 @@ pub mod module {
 		/// item is the denominator, fee_rate = numerator / denominator,
 		/// use (u32, u32) over `Rate` type to minimize internal division
 		/// operation.
-		#[pallet::constant]
 		type GetExchangeFee: Get<(u32, u32)>;
 
 		/// Trading fee waiver rate
@@ -111,7 +110,6 @@ pub mod module {
 		/// item is the denominator, fee_rate = numerator / denominator,
 		/// use (u32, u32) over `Rate` type to minimize internal division
 		/// operation.
-		#[pallet::constant]
 		type GetStableCurrencyExchangeFee: Get<(u32, u32)>;
 
 		/// The vault account to keep the Cashdrops for claiming.
