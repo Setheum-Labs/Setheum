@@ -92,7 +92,6 @@ orml-tokens = { path = "../open-lib/tokens", default-features = false }
 orml-traits = { path = "../open-lib/traits", default-features = false }
 orml-vesting = { path = "../open-lib/vesting", default-features = false }
 
-module-airdrop = { path = "../lib-serml/airdrop", default-features = false }
 module-currencies = { path = "../lib-serml/currencies", default-features = false }
 module-dex = { path = "../lib-serml/dex", default-features = false }
 module-evm = { path = "../lib-serml/evm", default-features = false }
@@ -175,7 +174,6 @@ std = [
 	"orml-nft/std",
 	"orml-vesting/std",
 
-	"module-airdrop/std",
 	"module-currencies/std",
 	"serp-treasury/std",
 	"serp-ocw/std",
