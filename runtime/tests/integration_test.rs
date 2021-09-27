@@ -202,14 +202,14 @@ fn test_authority_module() {
 
 			// schedule_dispatch
 			run_to_block(1);
-			// // DSWF transfer
+			// // SIF transfer
 			// let transfer_call = Call::Currencies(module_currencies::Call::transfer(
 			// 	AccountId::from(BOB).into(),
 			// 	CurrencyId::Token(TokenSymbol::SETUSD),
 			// 	amount(500),
 			// ));
-			// let dswf_call = Call::Authority(orml_authority::Call::dispatch_as(
-			// 	AuthoritysOriginId::DSWF,
+			// let sif_call = Call::Authority(orml_authority::Call::dispatch_as(
+			// 	AuthoritysOriginId::SIF,
 			// 	Box::new(transfer_call.clone()),
 			// ));
 			// assert_ok!(AuthorityModule::schedule_dispatch(
@@ -217,7 +217,7 @@ fn test_authority_module() {
 			// 	DispatchTime::At(2),
 			// 	0,
 			// 	true,
-			// 	Box::new(dswf_call.clone())
+			// 	Box::new(sif_call.clone())
 			// ));
             //
 			// assert_ok!(AuthorityModule::schedule_dispatch(
@@ -241,7 +241,7 @@ fn test_authority_module() {
 			// assert_eq!(
 			// 	Currencies::free_balance(
 			// 		CurrencyId::Token(TokenSymbol::SETUSD),
-			// 		&DSWFModuleId::get().into_account()
+			// 		&SIFModuleId::get().into_account()
 			// 	),
 			// 	amount(500)
 			// );

@@ -148,14 +148,20 @@ pub const LP_RENBTC_SETUSD: CurrencyId =
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
+	pub AirdropMinimum: u32 = 2;
+	pub AirdropMaximum: u32 = 3;
 }
 
 impl module_currencies::Config for Test {
 	type Event = Event;
-    type SerpTreasury = ();
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+    type SerpTreasury = ();
+	type AirdropAccountId = ();
+	type AirdropMinimum = AirdropMinimum;
+	type AirdropMaximum = AirdropMaximum;
+	type AirdropOrigin = ();
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;

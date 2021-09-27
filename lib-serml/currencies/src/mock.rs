@@ -279,12 +279,30 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 }
 
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
+
+parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+		SETEUR,
+	];
+	pub AirdropMinimum: u32 = 2;
+	pub AirdropMaximum: u32 = 3;
+}
+
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SerpTreasury = MockSerpTreasury;
+	type AirdropAccountId = ();
+	type AirdropMinimum = AirdropMinimum;
+	type AirdropMaximum = AirdropMaximum;
+	type AirdropOrigin = ();
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
@@ -383,6 +401,18 @@ impl ExtBuilder {
 			(bob(), NATIVE_CURRENCY_ID, 100),
 			(alice(), X_TOKEN_ID, 100),
 			(bob(), X_TOKEN_ID, 100),
+		])
+	}
+
+	pub fn one_hundred_for_alice_n_bob_n_eva(self) -> Self {
+		self.balances(vec![
+			(alice(), NATIVE_CURRENCY_ID, 100),
+			(bob(), NATIVE_CURRENCY_ID, 100),
+			(eva(), NATIVE_CURRENCY_ID, 100),
+			(alice(), X_TOKEN_ID, 100),
+			(bob(), X_TOKEN_ID, 100),
+			(eva(), X_TOKEN_ID, 100),
+		])
 		])
 	}
 
