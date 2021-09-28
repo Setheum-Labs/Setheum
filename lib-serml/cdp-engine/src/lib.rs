@@ -100,13 +100,7 @@ pub struct RiskManagementParams {
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct StableCurrencyRiskManagementParams<<T::Lookup as StaticLookup>::Source, Balance> {
-	pub currency: Vec<CurrencyId>,
-	pub rate: ExchangeRate,
-}
-
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct CurrencyExchangeRate<<T::Lookup as StaticLookup>::Source, Balance> {
+pub struct CurrencyExchangeRate<CurrencyId, ExchangeRate> {
 	pub currency: CurrencyId,
 	pub rate: ExchangeRate,
 }
