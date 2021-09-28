@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the serp-mint module.
+//! Mocks for the serp-setmint module.
 
 #![cfg(test)]
 
@@ -34,7 +34,7 @@ use sp_runtime::{
 use sp_std::cell::RefCell;
 use support::{AuctionManager, ExchangeRate, Price, PriceProvider, Rate, Ratio};
 
-mod serp_mint {
+mod serp_setmint {
 	pub use super::super::*;
 }
 
@@ -281,7 +281,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SerpMintModule: serp_mint::{Pallet, Storage, Call, Event<T>},
+		SerpMintModule: serp_setmint::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
