@@ -100,8 +100,14 @@ pub struct RiskManagementParams {
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-pub struct CurrencyExchangeRate<<T::Lookup as StaticLookup>::Source, Balance> {
+pub struct StableCurrencyRiskManagementParams<<T::Lookup as StaticLookup>::Source, Balance> {
 	pub currency: Vec<CurrencyId>,
+	pub rate: ExchangeRate,
+}
+
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
+pub struct CurrencyExchangeRate<<T::Lookup as StaticLookup>::Source, Balance> {
+	pub currency: CurrencyId,
 	pub rate: ExchangeRate,
 }
 
@@ -244,10 +250,10 @@ pub mod module {
 	/// Mapping from collateral type to its exchange rate of debit units and
 	/// debit value
 	///
-	/// DebitExchangeRate: CurrencyId => Option<CurrencyId, ExchangeRate>
+	/// DebitExchangeRate: CurrencyId => Option<Vec<CurrencyExchangeRate>>
 	#[pallet::storage]
 	#[pallet::getter(fn debit_exchange_rate)]
-	pub type DebitExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, CurrencyExchangeRate, OptionQuery>;
+	pub type DebitExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Vec<CurrencyExchangeRate>, OptionQuery>;
 
 	/// Mapping from collateral type to its risk management params
 	///
@@ -612,16 +618,16 @@ impl<T: Config> Pallet<T> {
 
 	pub fn get_debit_exchange_rate(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> ExchangeRate {
 
-		if let (currency, rate) = Self::debit_exchange_rate(collateral_currency_id) {
+		Self::debit_exchange_rate(collateral_currency_id)
+			.iter()
+			.for_each((currency, rate)| {
 
 			if T::StableCurrencyIds::get().contains(&stable_currency_id) && currency == &stable_currency_id {
 				rate
 			} else {
-				T::DefaultDebitExchangeRate::get,
+				T::DefaultDebitExchangeRate::get
 			}
-		} else {
-			T::DefaultDebitExchangeRate::get
-		}
+		});
 	}
 
 	pub fn get_debit_value(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId, debit_balance: Balance) -> Balance {
@@ -733,7 +739,7 @@ impl<T: Config> Pallet<T> {
 		let bad_debt_value = Self::get_debit_value(currency_id, debit);
 		let target_stable_amount = Self::get_liquidation_penalty(currency_id).saturating_mul_acc_int(bad_debt_value);
 
-		// try use collateral to swap enough native token in DEX when the price impact
+		// try use collateral to swap enough stable currency in DEX when the price impact
 		// is below the limit, otherwise create collateral auctions.
 		let liquidation_strategy = (|| -> Result<LiquidationStrategy, DispatchError> {
 			// swap exact stable with DEX in limit of price impact
