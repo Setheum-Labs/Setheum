@@ -20,14 +20,14 @@
 
 #![cfg(test)]
 
-use frame_support::{assert_ok, ord_parameter_types, parameter_types, traits::GenesisBuild, PalletId};
+use frame_support::{assert_ok, ord_parameter_types, parameter_types, traits::GenesisBuild};
 use orml_traits::parameter_type_with_key;
 use primitives::{CurrencyId, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, IdentityLookup},
-	AccountId32, Perbill,
+	AccountId32, Perbill, ModuleId,
 };
 use support::{mocks::MockAddressMapping, AddressMapping, SerpTreasury};
 
@@ -69,7 +69,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 type Balance = u128;
@@ -81,7 +80,7 @@ parameter_type_with_key! {
 }
 
 parameter_types! {
-	pub DustAccount: AccountId = PalletId(*b"lib-open/dst").into_account();
+	pub DustAccount: AccountId = ModuleId(*b"srml/dst").into_account();
 	pub const MaxLocks: u32 = 100;
 }
 
@@ -93,7 +92,6 @@ impl tokens::Config for Runtime {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = tokens::TransferDust<Runtime, DustAccount>;
 	type WeightInfo = ();
-	type MaxLocks = MaxLocks;
 }
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
@@ -147,7 +145,7 @@ ord_parameter_types! {
 impl module_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = PalletBalances;
-	type TransferAll = ();
+	type MergeAccount = ();
 	type NewContractExtraBytes = NewContractExtraBytes;
 	type StorageDepositPerByte = StorageDepositPerByte;
 	type MaxCodeSize = MaxCodeSize;
@@ -202,6 +200,38 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	fn get_cashdrop_serpup(
 		_amount: Balance,
 		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	/// SerpUp ratio for SetPay Cashdrops
+	fn get_cashdrop_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serplus(
+		_currency_id: CurrencyId,
+		_amount: Balance,
 	) -> DispatchResult {
 		unimplemented!()
 	}
@@ -281,12 +311,30 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 }
 
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
+
+parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+		SETEUR,
+	];
+	pub AirdropMinimum: u32 = 2;
+	pub AirdropMaximum: u32 = 3;
+}
+
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type SerpTreasury = MockSerpTreasury;
+	type AirdropAccountId = ();
+	type AirdropMinimum = AirdropMinimum;
+	type AirdropMaximum = AirdropMaximum;
+	type AirdropOrigin = ();
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
@@ -306,12 +354,12 @@ frame_support::construct_runtime!(
 	NodeBlock = Block,
 	UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currencies: currencies::{Pallet, Call, Event<T>},
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: module_evm_bridge::{Pallet},
+		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		Tokens: tokens::{Module, Storage, Event<T>, Config<T>},
+		Currencies: currencies::{Module, Call, Event<T>},
+		EVM: module_evm::{Module, Config<T>, Call, Storage, Event<T>},
+		EVMBridge: module_evm_bridge::{Module},
 	}
 );
 
@@ -385,6 +433,18 @@ impl ExtBuilder {
 			(bob(), NATIVE_CURRENCY_ID, 100),
 			(alice(), X_TOKEN_ID, 100),
 			(bob(), X_TOKEN_ID, 100),
+		])
+	}
+
+	pub fn one_hundred_for_alice_n_bob_n_eva(self) -> Self {
+		self.balances(vec![
+			(alice(), NATIVE_CURRENCY_ID, 100),
+			(bob(), NATIVE_CURRENCY_ID, 100),
+			(eva(), NATIVE_CURRENCY_ID, 100),
+			(alice(), X_TOKEN_ID, 100),
+			(bob(), X_TOKEN_ID, 100),
+			(eva(), X_TOKEN_ID, 100),
+		])
 		])
 	}
 

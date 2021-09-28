@@ -29,15 +29,15 @@ use frame_support::{
 		Currency as PalletCurrency, ExistenceRequirement, Get, LockableCurrency as PalletLockableCurrency,
 		ReservableCurrency as PalletReservableCurrency, WithdrawReasons,
 	},
-	transactional,
 };
 use frame_system::pallet_prelude::*;
 use orml_traits::{
+	account::MergeAccount,
 	arithmetic::{Signed, SimpleArithmetic},
-	currency::TransferAll,
 	BalanceStatus, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency, BasicReservableCurrency,
 	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
+use orml_utilities::with_transaction_result;
 use primitives::{evm::EvmAddress, CurrencyId};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
@@ -72,7 +72,7 @@ pub mod module {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type MultiCurrency: TransferAll<Self::AccountId>
+		type MultiCurrency: MergeAccount<Self::AccountId>
 			+ MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiLockableCurrency<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiReservableCurrency<Self::AccountId, CurrencyId = CurrencyId>;
@@ -88,6 +88,21 @@ pub mod module {
 		/// adjustment
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = BalanceOf<Self>, CurrencyId = CurrencyId>;
 
+		/// The account to distribute the system Airdrops from.
+		/// It should be `Setheum Treasury`.
+		#[pallet::constant]
+		type AirdropAccountId: Get<Self::AccountId>;
+
+		/// The minimum for length of Airdrop
+		type AirdropMinimum: Get<u32>;
+
+		/// The limit for length of Airdrop
+		type AirdropMaximum: Get<u32>;
+
+		/// The system origin which may do system origin Airdrops,
+		/// this origin has no `AirdropMaximum`.
+		type AirdropOrigin: EnsureOrigin<Self::Origin>;
+		
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
@@ -106,6 +121,8 @@ pub mod module {
 		Erc20InvalidOperation,
 		/// EVM account not found
 		EvmAccountNotFound,
+		/// Airdrop length is invalid
+		InvalidAirdropLength,
 	}
 
 	#[pallet::event]
@@ -121,6 +138,12 @@ pub mod module {
 		Withdrawn(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
 	}
 
+	#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
+	pub struct AirdropDetails<<T::Lookup as StaticLookup>::Source, Balance> {
+		pub dest: <T::Lookup as StaticLookup>::Source,
+		pub amount: Balance,
+	}
+	
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
@@ -129,6 +152,48 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		/// Airdrop specific balances to a list of specific accounts under a common `currency_id`.
+		///
+		/// The dispatch origin for this call must be `Signed` by the
+		/// transactor.
+		#[pallet::weight(T::WeightInfo::airdrop())]
+		#[transactional]
+		pub fn airdrop( 
+			origin: OriginFor<T>,
+			currency_id: CurrencyIdOf<T>,
+			details: Vec<AirdropDetails<<T::Lookup as StaticLookup>::Source, Balance>>,
+		) {
+			if origin = T::AirdropOrigin {
+				T::AirdropOrigin::ensure_origin(origin)?;
+				let from = T::AirdropAccountId::get();
+
+				let details_length = details.len();
+				ensure!(
+					details_length >= T::AirdropMinimum::get().saturated_into(),
+					Error::<T>::InvalidAirdropLength
+				);
+
+				self.details.iter().for_each(|(dest, amount)| {
+					let to = T::Lookup::lookup(dest)?;
+					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
+				}
+			} else {
+				let from = ensure_signed(origin)?;
+
+				let details_length = details.len();
+				ensure!(
+					details_length >= T::AirdropMinimum::get().saturated_into() && details_length <= T::AirdropMaximum::get().saturated_into(),
+					Error::<T>::InvalidAirdropLength
+				);
+
+				self.details.iter().for_each(|(dest, amount)| {
+					let to = T::Lookup::lookup(dest)?;
+					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
+				}
+			}
+			Self::deposit_event(RawEvent::Airdrop(currency_id, details));
+		}
+
 		/// Transfer some balance to another account under `currency_id`.
 		///
 		/// The dispatch origin for this call must be `Signed` by the
@@ -841,14 +906,18 @@ where
 	}
 }
 
-impl<T: Config> TransferAll<T::AccountId> for Pallet<T> {
-	#[transactional]
-	fn transfer_all(source: &T::AccountId, dest: &T::AccountId) -> DispatchResult {
-		// transfer non-native free to dest
-		T::MultiCurrency::transfer_all(source, dest)?;
+impl<T: Config> MergeAccount<T::AccountId> for Pallet<T> {
+	fn merge_account(source: &T::AccountId, dest: &T::AccountId) -> DispatchResult {
+		with_transaction_result(|| {
+			// transfer non-native free to dest
+			T::MultiCurrency::merge_account(source, dest)?;
 
-		// transfer all free to dest
-		T::NativeCurrency::transfer(source, dest, T::NativeCurrency::free_balance(source))
+			// unreserve all reserved currency
+			T::NativeCurrency::unreserve(source, T::NativeCurrency::reserved_balance(source));
+
+			// transfer all free to dest
+			T::NativeCurrency::transfer(source, dest, T::NativeCurrency::free_balance(source))
+		})
 	}
 }
 

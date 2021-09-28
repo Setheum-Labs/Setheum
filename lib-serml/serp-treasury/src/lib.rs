@@ -20,25 +20,25 @@
 //!
 //! ## Overview
 //!
-//! SERP Treasury manages the Setmint, and handle excess serplus
+//! SERP Treasury manages the SERP, and handle excess serplus
 //! and stabilize SetCurrencies standards timely in order to keep the
 //! system healthy. It manages the TES (Token Elasticity of Supply).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional, PalletId};
+use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::{
 	DispatchResult, 
 	traits::{
-		AccountIdConversion, Bounded, One, Saturating, UniqueSaturatedInto, Zero,
+		AccountIdConversion, Bounded, Saturating, UniqueSaturatedInto, Zero,
 	},
-	FixedPointNumber
+	FixedPointNumber, ModuleId,
 };
-use sp_std::{convert::TryInto, prelude::*, vec};
+use sp_std::{prelude::*, vec};
 use support::{
 	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended,
 };
@@ -70,6 +70,7 @@ pub mod module {
 		type StableCurrencyInflationPeriod: Get<Self::BlockNumber>;
 
 		/// The minimum total supply/issuance required to keep a currency live on SERP.
+		/// This can be bypassed through the CDP-Treasury if necessary.
 		type GetStableCurrencyMinimumSupply: GetByKey<CurrencyId, Balance>;
 
 		#[pallet::constant]
@@ -100,6 +101,10 @@ pub mod module {
 		/// CharityFund account.
 		type CharityFundAccountId: Get<Self::AccountId>;
 
+		/// CDP-Treasury account for processing serplus funds 
+		/// CDPTreasury account.
+		type CDPTreasuryAccountId: Get<Self::AccountId>;
+
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// SetheumTreasury account.
 		type SetheumTreasuryAccountId: Get<Self::AccountId>;
@@ -120,15 +125,18 @@ pub mod module {
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SetCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// The minimum transfer amounts by currency_id,  to secure cashdrop from dusty claims.
+		/// The minimum transfer amounts by currency_id,  to prevent cashdrop from dusty claims.
 		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
+
+		/// The minimum transfer amounts by currency_id,  to prevent cashdrop from dusty rewards.
+		type MinTransferForSystemCashdropReward: GetByKey<CurrencyId, Balance>;
 
 		/// The origin which may update incentive related params
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
-		type PalletId: Get<PalletId>;
+		type ModuleId: Get<ModuleId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -164,6 +172,8 @@ pub mod module {
 		SerpTes(CurrencyId),
 		/// Currency SerpUp has been delivered successfully.
 		SerpUpDelivery(Balance, CurrencyId),
+		/// Currency SerpUp has been delivered successfully.
+		SerplusDelivery(Balance, CurrencyId),
 		/// Currency SerpUp has been completed successfully.
 		SerpUp(Balance, CurrencyId),
 		/// Currency SerpDown has been triggered successfully.
@@ -187,7 +197,7 @@ pub mod module {
 	#[pallet::storage]
 	#[pallet::getter(fn alternative_fee_swap_path)]
 	pub type AlternativeSwapPath<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, BoundedVec<CurrencyId, T::TradingPathLimit>, OptionQuery>;
+		StorageMap<_, Twox64Concat, T::AccountId, Vec<CurrencyId>, OptionQuery>;
 
 	/// The inflation rate amount per StableCurrencyInflationPeriod of specific
 	/// stable currency type.
@@ -233,7 +243,6 @@ pub mod module {
 		/// `pallet_timestamp`, the `timestamp` is not yet up to date at this point.
 		/// Handle excessive surplus or debits of system when block end
 		///
-		// TODO: Migrate `BlockNumber` to `Timestamp`
 		/// Triggers Serping for all system stablecoins at every block.
 		fn on_initialize(now: T::BlockNumber) -> Weight {
 			// SERP-TES Adjustment Frequency.
@@ -276,31 +285,13 @@ pub mod module {
 			Self::deposit_event(Event::StableCurrencyInflationRateUpdated(currency_id, size));
 			Ok(().into())
 		}
-
-		/// Set fee swap path
-		#[pallet::weight(<T as Config>::WeightInfo::set_alternative_swap_path())]
-		pub fn _set_alternative_swap_path(
-			origin: OriginFor<T>,
-			fee_swap_path: Option<Vec<CurrencyId>>,
-		) -> DispatchResult {
-			T::UpdateOrigin::ensure_origin(origin)?;
-
-			if let Some(path) = fee_swap_path {
-				let path: BoundedVec<CurrencyId, T::TradingPathLimit> =
-					path.try_into().map_err(|_| Error::<T>::InvalidSwapPath)?;
-				AlternativeSwapPath::<T>::insert(&Self::account_id(), &path);
-			} else {
-				AlternativeSwapPath::<T>::remove(&Self::account_id());
-			}
-			Ok(())
-		}
 	}
 }
 
 impl<T: Config> Pallet<T> {
 	/// Get account of SERP Treasury module.
 	pub fn account_id() -> T::AccountId {
-		T::PalletId::get().into_account()
+		T::ModuleId::get().into_account()
 	}
 }
 
@@ -389,14 +380,14 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				);
 			}
 
-			<Pallet<T>>::deposit_event(Event::InflationDelivery(currency_id, inflation_amount));
+			Self::deposit_event(Event::InflationDelivery(currency_id, inflation_amount));
 		}
 		Ok(())
 	}
 
-	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar or Setter
 	fn get_buyback_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		// Setheum Treasury SerpUp Pool - 40%
+		// Setheum Treasury BuyBack Pool - 40%
 		let four: Balance = 4;
 		let serping_amount: Balance = four.saturating_mul(amount / 10);
 		
@@ -411,7 +402,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			);
 		} 
 
-		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
 
@@ -420,10 +411,10 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let charity_fund_account = T::CharityFundAccountId::get();
 		// Charity Fund SerpUp Pool - 10%
 		let serping_amount: Balance = amount / 10;
-		// Issue the SerpUp propper to the SetPayVault
+		// Issue the SerpUp propper to the Charity Fund
 		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
 
-		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
 	}
 
@@ -437,7 +428,69 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Issue the SerpUp propper to the SetPayVault
 		Self::issue_standard(currency_id, &setpay_account, serping_amount)?;
 
-		<Pallet<T>>::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
+		Ok(())
+	}
+
+	/// Serplus ratio for BuyBack Swaps to burn Setter
+	fn get_buyback_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		// Setheum Treasury BuyBack Pool - 40%
+		let four: Balance = 4;
+		let serping_amount: Balance = four.saturating_mul(amount / 10);
+		
+			<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_setter(
+				currency_id,
+				serping_amount,
+			);
+		} 
+
+		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
+		Ok(())
+	}
+
+	/// Serplus ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		let charity_fund = T::CharityFundAccountId::get();
+		// Charity Fund Serplus Pool - 10%
+		let serping_amount: Balance = amount / 10;
+		// Transfer the Serplus propper to the Charity Fund
+		T::Currency::transfer(currency_id, &T::CDPTreasuryAccountId, &charity_fund, serping_amount)?;
+
+		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
+		Ok(())
+	}
+
+	/// Serplus ratio for SetPay Cashdrops
+	fn get_cashdrop_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		let setpay = &T::CashDropPoolAccountId::get();
+
+		// SetPay Serplus Pool - 50%
+		let five: Balance = 5;
+		let serping_amount: Balance = five.saturating_mul(amount / 10);
+		// Transfer the Serplus propper to the SetPayVault
+		T::Currency::transfer(currency_id, &T::CDPTreasuryAccountId, &setpay, serping_amount)?;
+
+		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
+		Ok(())
+	}
+
+	/// issue system surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serplus(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
+		// ensure that the currency is a SetCurrency
+		ensure!(
+			T::StableCurrencyIds::get().contains(&currency_id),
+			Error::<T>:: InvalidCurrencyType,
+		);
+		// ensure that the amount is not zero
+		ensure!(
+			!amount.is_zero(),
+			Error::<T>::InvalidAmount,
+		);
+		Self::get_buyback_serplus(amount, currency_id)?;
+		Self::get_charity_fund_serplus(amount, currency_id)?;
+		Self::get_cashdrop_serplus(amount, currency_id)?;
+
+		Self::deposit_event(Event::SerpUp(amount, currency_id));
 		Ok(())
 	}
 
@@ -453,11 +506,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			!amount.is_zero(),
 			Error::<T>::InvalidAmount,
 		);
-		Self::get_buyback_serpup(amount, currency_id)?;
-		Self::get_cashdrop_serpup(amount, currency_id)?;
 		Self::get_charity_fund_serpup(amount, currency_id)?;
+		Self::get_cashdrop_serpup(amount, currency_id)?;
+		Self::get_buyback_serpup(amount, currency_id)?;
 
-		<Pallet<T>>::deposit_event(Event::SerpUp(amount, currency_id));
+		Self::deposit_event(Event::SerpUp(amount, currency_id));
 		Ok(())
 	}
 
@@ -491,7 +544,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			);
 		} 
 
-		<Pallet<T>>::deposit_event(Event::SerpDown(amount, currency_id));
+		Self::deposit_event(Event::SerpDown(amount, currency_id));
 		Ok(())
 	}
 
@@ -536,14 +589,47 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::TransferTooLowForCashDrop,
 		);
 
-		let balance_cashdrop_amount = transfer_amount / 100; // 1% cashdrop
-		let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
-		ensure!(
-			balance_cashdrop_amount <= serp_balance,
-			Error::<T>::CashdropNotAvailable,
-		);
+		// IF Setter, use Setter claim rate (4%),
+		// else, use SetCurrency claim rate (2%).
+		if currency_id == T::SetterCurrencyId::get() {
+			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
+			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
+			ensure!(
+				balance_cashdrop_amount <= serp_balance,
+				Error::<T>::CashdropNotAvailable,
+			);
 
-		T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
+			T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
+
+			let min_transfer_for_sys_reward = T::MinTransferForSystemCashdropReward::get(&currency_id);
+
+			if transfer_amount >= min_transfer_for_sys_reward {
+				let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop_pool_reward
+				let treasury_reward = transfer_amount / 50; // 2% treasury reward
+
+				T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
+				T::Currency::deposit(currency_id, &T::SetheumTreasuryAccountId::get(), treasury_reward)?;
+			}
+		} else {
+			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
+			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
+			ensure!(
+				balance_cashdrop_amount <= serp_balance,
+				Error::<T>::CashdropNotAvailable,
+			);
+
+			T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
+
+			let min_transfer_for_sys_reward = T::MinTransferForSystemCashdropReward::get(&currency_id);
+
+			if transfer_amount >= min_transfer_for_sys_reward {
+				let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
+				let treasury_reward = transfer_amount / 100; // 1% treasury reward
+
+				T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
+				T::Currency::deposit(currency_id, &T::SetheumTreasuryAccountId::get(), treasury_reward)?;
+			}
+		}
 
 		Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 		Ok(())
@@ -560,13 +646,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 		let setter_currency_id = T::SetterCurrencyId::get();
 		
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
+		let swap_path = T::DefaultSwapPathList::get();
 
 		for path in swap_path {
 			match path.last() {
@@ -621,13 +701,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
+		let swap_path = T::DefaultSwapPathList::get();
 
 		for path in swap_path {
 			match path.last() {
@@ -681,14 +755,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 		let currency_id = T::SetterCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
-
+		let swap_path = T::DefaultSwapPathList::get();
+		
 		for path in swap_path {
 			// match path.last() {
 			// 	Some(dinar_currency_id) if *dinar_currency_id == dinar_currency_id => {
@@ -743,14 +811,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-		if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-			vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-		} else {
-			default_fee_swap_path_list
-		};
-
+		let swap_path = T::DefaultSwapPathList::get();
+		
 		for path in swap_path {
 			// match path.last() {
 			// 	Some(dinar_currency_id) if *dinar_currency_id == dinar_currency_id => {
@@ -805,14 +867,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
-
+		let swap_path = T::DefaultSwapPathList::get();
+		
 		for path in swap_path {
 			// match path.last() {
 				// Some(setter_currency_id) if *setter_currency_id == setter_currency_id => {
@@ -854,6 +910,61 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		}
 	}
 
+	/// Swap exact amount of SetCurrency to Setter,
+	/// return actual supply SetCurrency amount
+	///
+	/// 
+	/// When SetCurrency gets serplus deposit
+	#[allow(unused_variables)]
+	fn serplus_swap_exact_setcurrency_to_setter(
+		currency_id: CurrencyId,
+		supply_amount: Balance,
+	) {
+		let setter_currency_id = T::SetterCurrencyId::get();
+
+		let swap_path = T::DefaultSwapPathList::get();
+		
+		for path in swap_path {
+			// match path.last() {
+				// Some(setter_currency_id) if *setter_currency_id == setter_currency_id => {
+				// 	let currency_id = *path.first().expect("these's first guaranteed by match");
+				// 	// calculate the supply limit according to oracle price and the slippage limit,
+				// 	// if oracle price is not avalible, do not limit
+				// 	let min_target_limit = if let Some(target_price) =
+				// 		T::PriceSource::get_relative_price(*setter_currency_id, currency_id)
+				// 	{
+				// 		Ratio::one()
+				// 			.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				// 			.reciprocal()
+				// 			.unwrap_or_else(Ratio::max_value)
+				// 			.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
+				// 	} else {
+				// 		CurrencyBalanceOf::<T>::max_value()
+				// 	};
+
+					if T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).is_ok() {
+						if T::Dex::buyback_swap_with_exact_supply(
+							&T::CDPTreasuryAccountId,
+							&path,
+							supply_amount.unique_saturated_into(),
+							// min_target_limit.unique_saturated_into(),
+						)
+						.is_ok()
+						{
+							// successfully swap, break iteration
+							break;
+						}
+					}
+			// 	}
+			// 	_ => {}
+			// }
+		}
+	}
+
 	/// Swap exact amount of SetCurrency to Setheum,
 	/// return actual supply SetCurrency amount
 	///
@@ -866,14 +977,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let native_currency_id = T::GetNativeCurrencyId::get();
 
-		let default_fee_swap_path_list = T::DefaultSwapPathList::get();
-		let swap_path: Vec<Vec<CurrencyId>> = 
-			if let Some(path) = AlternativeSwapPath::<T>::get(&Self::account_id()) {
-				vec![vec![path.into_inner()], default_fee_swap_path_list].concat()
-			} else {
-				default_fee_swap_path_list
-			};
-
+		let swap_path = T::DefaultSwapPathList::get();
+		
 		for path in swap_path {
 			// match path.last() {
 			// 	Some(native_currency_id) if *native_currency_id == native_currency_id => {

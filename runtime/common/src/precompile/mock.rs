@@ -5,9 +5,8 @@ use setheum_node::chain_spec::evm_genesis;
 use codec::{Decode, Encode};
 use frame_support::{
 	assert_ok, ord_parameter_types, parameter_types,
-	traits::{GenesisBuild, InstanceFilter, MaxEncodedLen, OnFinalize, OnInitialize, SortedMembers},
-	weights::IdentityFee,
-	PalletId, RuntimeDebug,
+	traits::{GenesisBuild, InstanceFilter, OnFinalize, OnInitialize, SortedMembers},
+	weights::IdentityFee, RuntimeDebug,
 };
 use frame_system::{EnsureRoot, EnsureSignedBy};
 use module_support::{
@@ -22,7 +21,7 @@ use sha3::{Digest, Keccak256};
 use sp_core::{crypto::AccountId32, H160, H256};
 use sp_runtime::{
 	traits::{BlakeTwo256, Convert, IdentityLookup, One as OneT},
-	DispatchResult, FixedPointNumber, FixedU128, Perbill,
+	DispatchResult, FixedPointNumber, FixedU128, Perbill, ModuleId,
 };
 use sp_std::{
 	collections::btree_map::BTreeMap,
@@ -148,14 +147,20 @@ pub const LP_RENBTC_SETUSD: CurrencyId =
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
+	pub AirdropMinimum: u32 = 2;
+	pub AirdropMaximum: u32 = 3;
 }
 
 impl module_currencies::Config for Test {
 	type Event = Event;
-    type SerpTreasury = ();
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+    type SerpTreasury = ();
+	type AirdropAccountId = ();
+	type AirdropMinimum = AirdropMinimum;
+	type AirdropMaximum = AirdropMaximum;
+	type AirdropOrigin = ();
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
@@ -173,13 +178,13 @@ impl module_evm_manager::Config for Test {
 parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
-	pub const NftPalletId: PalletId = PalletId(*b"aca/aNFT");
+	pub const NftModuleId: ModuleId = ModuleId(*b"set/aNFT");
 }
 impl module_nft::Config for Test {
 	type Event = Event;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
-	type PalletId = NftPalletId;
+	type ModuleId = NftModuleId;
 	type WeightInfo = ();
 }
 
@@ -199,7 +204,7 @@ impl orml_nft::Config for Test {
 
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
-	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::AUSD);
+	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = 
 		vec![
@@ -236,7 +241,7 @@ parameter_types! {
 	pub const AnnouncementDepositFactor: u64 = 1;
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug)]
 pub enum ProxyType {
 	Any,
 	JustTransfer,
@@ -311,7 +316,7 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const DEXModuleId: ModuleId = ModuleId(*b"set/sdex");
 }
 
 impl module_dex::Config for Test {
@@ -322,7 +327,7 @@ impl module_dex::Config for Test {
 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type ModuleId = DEXModuleId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;

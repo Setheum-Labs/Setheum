@@ -4,7 +4,7 @@ edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Unlicense'
 name = 'setheum-runtime'
-version = '3.0.0'
+version = '0.9.6'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
@@ -36,12 +36,16 @@ frame-system-rpc-runtime-api = { default-features = false, version = '3.0.0' }
 pallet-balances = { default-features = false, version = '3.0.0' }
 pallet-grandpa = { default-features = false, version = '3.0.0' }
 pallet-indices = { version = "3.0.0", default-features = false }
+pallet-proxy = { version = "3.0.0", default-features = false }
 pallet-randomness-collective-flip = { default-features = false, version = '3.0.0' }
 pallet-scheduler = { version = "3.0.0", default-features = false }
 pallet-sudo = { default-features = false, version = '3.0.0' }
 pallet-timestamp = { default-features = false, version = '3.0.0' }
+pallet-tips = { version = "3.0.0", default-features = false }
 pallet-transaction-payment = { default-features = false, version = '3.0.0' }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, version = '3.0.0' }
+pallet-treasury = { version = "3.0.0", default-features = false }
+pallet-utility = { version = "3.0.0", default-features = false }
 sp-api = { version = "3.0.0", default-features = false }
 sp-application-crypto = { version = "3.0.0", default-features = false }
 sp-block-builder = { version = "3.0.0", default-features = false }
@@ -55,7 +59,7 @@ sp-staking = { version = "3.0.0", default-features = false }
 sp-std = { version = "3.0.0", default-features = false }
 sp-transaction-pool = { version = "3.0.0", default-features = false }
 sp-version = { version = "3.0.0", default-features = false }
-libsecp256k1 = { version = "0.3.4", default-features = false, optional = true }
+libsecp256k1 = { version = "0.6", default-features = false, optional = true }
 
 # NPoS
 pallet-session = { version = "3.0.0", features = ["historical"], default-features = false }
@@ -72,32 +76,43 @@ pallet-authority-discovery = { version = "3.0.0", default-features = false }
 pallet-identity = { version = "3.0.0", default-features = false }
 
 
-# PoC
+# Governance and others
+pallet-bounties = { version = "3.0.0", default-features = false }
 pallet-collective = { version = "3.0.0", default-features = false }
-module-poc = { path = "../lib-serml/poc", default-features = false }
+pallet-membership = { version = "3.0.0", default-features = false }
+pallet-multisig = { version = "3.0.0", default-features = false }
 
 # local dependencies
-orml-traits = { path = "../lib-open/traits", default-features = false }
-orml-tokens = { path = "../lib-open/tokens", default-features = false }
-orml-authority = { path = "../lib-open/authority", default-features = false }
-orml-benchmarking = { path = "../lib-open/benchmarking", default-features = false, optional = true }
+orml-authority = { path = "../open-lib/authority", default-features = false }
+orml-benchmarking = { path = "../open-lib/benchmarking", default-features = false, optional = true }
+orml-nft= { path = "../open-lib/nft", default-features = false }
+orml-oracle = { path = "../open-lib/oracle", default-features = false }
+orml-oracle-rpc-runtime-api = { path = "../open-lib/oracle/rpc/runtime-api", default-features = false }
+orml-tokens = { path = "../open-lib/tokens", default-features = false }
+orml-traits = { path = "../open-lib/traits", default-features = false }
+orml-vesting = { path = "../open-lib/vesting", default-features = false }
 
 module-currencies = { path = "../lib-serml/currencies", default-features = false }
-
+module-dex = { path = "../lib-serml/dex", default-features = false }
 module-evm = { path = "../lib-serml/evm", default-features = false }
 module-evm-accounts = { path = "../lib-serml/evm-accounts", default-features = false }
 module-evm-bridge = { path = "../lib-serml/evm-bridge", default-features = false }
+module-evm-manager = { path = "../lib-serml/evm-manager", default-features = false }
 module-evm-rpc-runtime-api = { path = "../lib-serml/evm/rpc/runtime_api",  default-features = false }
-
-module-transaction-payment = { path = "../lib-serml/transaction_payment", default-features = false }
+module-nft = { path = "../lib-serml/nft", default-features = false }
+module-prices = { path = "../lib-serml/prices", default-features = false }
+module-recovery = { path = "../lib-serml/recovery", default-features = false }
+setheum-renvm-bridge = { path = "../lib-serml/renvm-bridge", default-features = false }
+serp-treasury = { path = "../lib-serml/serp-treasury", default-features = false }
+serp-ocw = { path = "../lib-serml/serp-ocw", default-features = false }
 module-support = { path = "../lib-serml/support", default-features = false }
-
+module-transaction-payment = { path = "../lib-serml/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
 runtime-common = { path = "common", default-features = false }
 
 
 [dev-dependencies]
-libsecp256k1 = "0.3.4"
+libsecp256k1 = "0.6"
 hex = "0.4.0"
 hex-literal = "0.3.1"
 
@@ -115,12 +130,18 @@ std = [
 	'pallet-balances/std',
 	'pallet-grandpa/std',
 	"pallet-indices/std",
+	"pallet-membership/std",
+	"pallet-multisig/std",
+	"pallet-proxy/std",
 	'pallet-randomness-collective-flip/std',
 	'pallet-sudo/std',
 	"pallet-scheduler/std",
 	'pallet-timestamp/std',
 	'pallet-transaction-payment/std',
 	'pallet-transaction-payment-rpc-runtime-api/std',
+	"pallet-treasury/std",
+	"pallet-utility/std",
+	"pallet-bounties/std",
 	"pallet-collective/std",
 	"pallet-session/std",
 	"pallet-staking/std",
@@ -148,12 +169,21 @@ std = [
 	"orml-tokens/std",
 	"orml-authority/std",
 	"orml-benchmarking/std",
+	"orml-oracle-rpc-runtime-api/std",
+	"orml-oracle/std",
+	"orml-nft/std",
+	"orml-vesting/std",
 
-	"module-poc/std",
 	"module-currencies/std",
+	"serp-treasury/std",
+	"serp-ocw/std",
+	"module-dex/std",
 	"module-evm/std",
 	"module-evm-accounts/std",
 	"module-evm-bridge/std",
+	"module-evm-manager/std",
+	"module-nft/std",
+	"module-prices/std",
 	"module-transaction-payment/std",
 	"module-support/std",
 
@@ -162,6 +192,8 @@ std = [
 	"runtime-common/std",
 
 	"module-evm-rpc-runtime-api/std",
+
+	"setheum-renvm-bridge/std",
 ]
 with-ethereum-compatibility = [
 	"evm",
@@ -184,5 +216,7 @@ runtime-benchmarks = [
 	"orml-authority/runtime-benchmarks",
 
 	"pallet-collective/runtime-benchmarks",
-	"module-poc/runtime-benchmarks"
+
+	"serp-treasury/runtime-benchmarks",
+	"module-dex/runtime-benchmarks",
 ]

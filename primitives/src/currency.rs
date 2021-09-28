@@ -21,7 +21,8 @@
 use crate::{evm::EvmAddress, *};
 use bstringify::bstringify;
 use codec::{Decode, Encode};
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{RuntimeDebug, DispatchResult};
+use frame_support::transactional;
 use sp_std::{
 	convert::{Into, TryFrom},
 	prelude::*,
@@ -144,6 +145,10 @@ macro_rules! create_currency_id {
 					symbol: "LP_SETEUR_SETUSD".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETEUR), DexShare::Token(SETUSD))).unwrap(),
 				},
+				Token {
+					symbol: "LP_RENBTC_SETUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETUSD))).unwrap(),
+				},
 			];
 			tokens.append(&mut lp_tokens);
 
@@ -165,7 +170,7 @@ create_currency_id! {
 		SETR("Setter", 12) = 2,
 		SETEUR("SetEuro", 12) = 3,
 		SETUSD("SetDollar", 12) = 4,
-		RENBTC("renBTC", 8) = 5,
+		RENBTC("renBTC", 8) = 121,
 	}
 }
 
@@ -282,5 +287,20 @@ impl Into<CurrencyId> for DexShare {
 			DexShare::Token(token) => CurrencyId::Token(token),
 			DexShare::Erc20(address) => CurrencyId::Erc20(address),
 		}
+	}
+}
+
+pub trait TransferAll<AccountId> {
+	fn transfer_all(source: &AccountId, dest: &AccountId) -> DispatchResult;
+}
+
+#[impl_trait_for_tuples::impl_for_tuples(5)]
+impl<AccountId> TransferAll<AccountId> for Tuple {
+	#[transactional]
+	fn transfer_all(source: &AccountId, dest: &AccountId) -> DispatchResult {
+		for_tuples!( #( {
+			Tuple::transfer_all(source, dest)?;
+		} )* );
+		Ok(())
 	}
 }

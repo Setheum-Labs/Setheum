@@ -23,7 +23,7 @@ use crate::*;
 use codec::Decode;
 use frame_support::{assert_ok, construct_runtime, parameter_types};
 use sp_core::{
-	offchain::{testing, OffchainWorkerExt, TransactionPoolExt},
+	offchain::{testing, OffchainExt, TransactionPoolExt},
 	sr25519::Signature,
 	H256, H160,
 };
@@ -31,7 +31,7 @@ use std::sync::Arc;
 
 use orml_traits::parameter_type_with_key;
 use primitives::{Amount, TokenSymbol};
-use support::{DEXManager, Ratio, SerpTreasury};
+use support::{DEXManager, SerpTreasury};
 
 use sp_keystore::{testing::KeyStore, KeystoreExt, SyncCryptoStore};
 use sp_runtime::{
@@ -46,8 +46,8 @@ type Block = frame_system::mocking::MockBlock<Runtime>;
 
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
 parameter_types! {
@@ -78,7 +78,6 @@ impl frame_system::Config for Runtime {
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 type Extrinsic = TestXt<Call, ()>;
@@ -125,7 +124,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 pub struct MockDEX;
@@ -247,6 +245,38 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	/// SerpUp ratio for SetPay Cashdrops
+	fn get_cashdrop_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serplus(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(
 		_currency_id: CurrencyId,
@@ -330,6 +360,7 @@ parameter_types! {
 	
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetEURCurrencyId: CurrencyId = SETEUR;
 }
 
 impl Config for Runtime {
@@ -354,9 +385,9 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		SerpOcw: serp_ocw::{Pallet, Call, Storage, Event<T>, ValidateUnsigned},
+		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		SerpOcw: serp_ocw::{Module, Call, Storage, Event<T>, ValidateUnsigned},
 	}
 );
 
@@ -395,7 +426,7 @@ fn it_aggregates_the_price() {
 fn should_make_http_call_and_parse_result() {
 	let (offchain, state) = testing::TestOffchainExt::new();
 	let mut t = sp_io::TestExternalities::default();
-	t.register_extension(OffchainWorkerExt::new(offchain));
+	t.register_extension(OffchainExt::new(offchain));
 
 	price_oracle_response(&mut state.write());
 
@@ -411,7 +442,7 @@ fn should_make_http_call_and_parse_result() {
 fn knows_how_to_mock_several_http_calls() {
 	let (offchain, state) = testing::TestOffchainExt::new();
 	let mut t = sp_io::TestExternalities::default();
-	t.register_extension(OffchainWorkerExt::new(offchain));
+	t.register_extension(OffchainExt::new(offchain));
 
 	{
 		let mut state = state.write();
@@ -467,7 +498,7 @@ fn should_submit_signed_transaction_on_chain() {
 	.unwrap();
 
 	let mut t = sp_io::TestExternalities::default();
-	t.register_extension(OffchainWorkerExt::new(offchain));
+	t.register_extension(OffchainExt::new(offchain));
 	t.register_extension(TransactionPoolExt::new(pool));
 	t.register_extension(KeystoreExt(Arc::new(keystore)));
 
@@ -507,7 +538,7 @@ fn should_submit_unsigned_transaction_on_chain_for_any_account() {
 		.clone();
 
 	let mut t = sp_io::TestExternalities::default();
-	t.register_extension(OffchainWorkerExt::new(offchain));
+	t.register_extension(OffchainExt::new(offchain));
 	t.register_extension(TransactionPoolExt::new(pool));
 	t.register_extension(KeystoreExt(Arc::new(keystore)));
 
@@ -567,7 +598,7 @@ fn should_submit_unsigned_transaction_on_chain_for_all_accounts() {
 		.clone();
 
 	let mut t = sp_io::TestExternalities::default();
-	t.register_extension(OffchainWorkerExt::new(offchain));
+	t.register_extension(OffchainExt::new(offchain));
 	t.register_extension(TransactionPoolExt::new(pool));
 	t.register_extension(KeystoreExt(Arc::new(keystore)));
 
@@ -613,7 +644,7 @@ fn should_submit_raw_unsigned_transaction_on_chain() {
 	let keystore = KeyStore::new();
 
 	let mut t = sp_io::TestExternalities::default();
-	t.register_extension(OffchainWorkerExt::new(offchain));
+	t.register_extension(OffchainExt::new(offchain));
 	t.register_extension(TransactionPoolExt::new(pool));
 	t.register_extension(KeystoreExt(Arc::new(keystore)));
 

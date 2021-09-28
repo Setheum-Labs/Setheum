@@ -8,22 +8,22 @@ edition = "2018"
 serde = { version = "1.0.124", optional = true }
 
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+frame-system = { version = '3.0.0', default-features = false }
+frame-support = { version = '3.0.0', default-features = false }
+sp-std = { version = '3.0.0', default-features = false }
+sp-io = { version = '3.0.0', default-features = false }
+sp-core = { version = '3.0.0', default-features = false }
+sp-runtime = { version = '3.0.0', default-features = false }
 
 support = { package = "module-support", path = "../support", default-features = false }
-orml-traits = { path = "../../lib-open/traits", default-features = false }
+orml-traits = { path = "../../open-lib/traits", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.3.1"
-orml-currencies = { path = "../../lib-open/currencies" }
-orml-tokens = { path = "../../lib-open/tokens" }
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+orml-currencies = { path = "../../open-lib/currencies" }
+orml-tokens = { path = "../../open-lib/tokens" }
+pallet-balances = "3.0.0"
 
 [features]
 default = ["std"]
@@ -39,4 +39,3 @@ std = [
 	"orml-traits/std",
 	"primitives/std",
 ]
-try-runtime = ["frame-support/try-runtime"]

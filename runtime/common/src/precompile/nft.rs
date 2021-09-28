@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,10 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use frame_support::log;
+use frame_support::debug;
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
 use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT};
-use sp_core::{H160, U256};
+use sp_core::{H160, RuntimeDebug, U256};
+
 use sp_std::{borrow::Cow, fmt::Debug, marker::PhantomData, prelude::*, result};
 
 use orml_traits::NFT as NFTT;
@@ -40,7 +41,8 @@ pub struct NFTPrecompile<AccountId, AddressMapping, CurrencyIdMapping, NFT>(
 	PhantomData<(AccountId, AddressMapping, CurrencyIdMapping, NFT)>,
 );
 
-#[derive(Debug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
+#[primitives_proc_macro::generate_function_selector]
+#[derive(RuntimeDebug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum Action {
 	QueryBalance = "balanceOf(address)",
@@ -61,7 +63,7 @@ where
 		_target_gas: Option<u64>,
 		_context: &Context,
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
-		log::debug!(target: "evm", "nft: input: {:?}", input);
+		debug::debug!(target: "evm", "nft: input: {:?}", input);
 
 		let input = Input::<Action, AccountId, AddressMapping, CurrencyIdMapping>::new(input);
 
@@ -71,7 +73,7 @@ where
 			Action::QueryBalance => {
 				let who = input.account_id_at(1)?;
 
-				log::debug!(target: "evm", "nft: query_balance who: {:?}", who);
+				debug::debug!(target: "evm", "nft: query_balance who: {:?}", who);
 
 				let balance = vec_u8_from_balance(NFT::balance(&who));
 
@@ -81,7 +83,7 @@ where
 				let class_id = input.u32_at(1)?;
 				let token_id = input.u64_at(2)?;
 
-				log::debug!(target: "evm", "nft: query_owner class_id: {:?}, token_id: {:?}", class_id, token_id);
+				debug::debug!(target: "evm", "nft: query_owner class_id: {:?}, token_id: {:?}", class_id, token_id);
 
 				let owner: H160 = if let Some(o) = NFT::owner((class_id, token_id)) {
 					AddressMapping::get_evm_address(&o).unwrap_or_else(|| AddressMapping::get_default_evm_address(&o))
@@ -101,7 +103,7 @@ where
 				let class_id = input.u32_at(3)?;
 				let token_id = input.u64_at(4)?;
 
-				log::debug!(target: "evm", "nft: transfer from: {:?}, to: {:?}, class_id: {:?}, token_id: {:?}", from, to, class_id, token_id);
+				debug::debug!(target: "evm", "nft: transfer from: {:?}, to: {:?}, class_id: {:?}, token_id: {:?}", from, to, class_id, token_id);
 
 				NFT::transfer(&from, &to, (class_id, token_id))
 					.map_err(|e| ExitError::Other(Cow::Borrowed(e.into())))?;

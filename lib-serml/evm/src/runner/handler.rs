@@ -21,18 +21,17 @@
 use crate::{
 	precompiles::Precompiles,
 	runner::storage_meter::{StorageMeter, StorageMeterHandler},
-	AccountInfo, AccountStorages, Accounts, AddressMapping, Codes, Config, ContractInfo, Error, Event, Log, Pallet,
-	Vicinity,
+	AccountInfo, AccountStorages, Accounts, AddressMapping, Codes, Config, ContractInfo, Error, Event, Log,
+	MergeAccount, Pallet, Vicinity,
 };
 use evm::{Capture, Context, CreateScheme, ExitError, ExitReason, Opcode, Runtime, Stack, Transfer};
 use evm_gasometer::{self as gasometer, Gasometer};
 use evm_runtime::{Config as EvmRuntimeConfig, Handler as HandlerT};
 use frame_support::{
-	log,
+	debug, require_transactional,
 	traits::{BalanceStatus, Currency, ExistenceRequirement, Get, ReservableCurrency},
 };
 use primitive_types::{H160, H256, U256};
-use primitives::{H160_PREFIX_DEXSHARE, H160_PREFIX_TOKEN, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX};
 use sha3::{Digest, Keccak256};
 use sp_runtime::{
 	traits::{One, Saturating, UniqueSaturatedInto, Zero},
@@ -56,24 +55,7 @@ fn l64(gas: u64) -> u64 {
 	gas - gas / 64
 }
 
-impl<'vicinity, 'config, 'meter, T: Config> Handler<'vicinity, 'config, 'meter, T> {
-	pub fn new(
-		vicinity: &'vicinity Vicinity,
-		gas_limit: u64,
-		storage_meter: StorageMeter<'meter>,
-		is_static: bool,
-		config: &'config EvmRuntimeConfig,
-	) -> Self {
-		Handler::<'vicinity, 'config, '_, T> {
-			vicinity,
-			config,
-			is_static,
-			gasometer: Gasometer::new(gas_limit, config),
-			storage_meter,
-			_marker: PhantomData,
-		}
-	}
-
+impl<'vicinity, 'config, T: Config> Handler<'vicinity, 'config, '_, T> {
 	pub fn run_transaction<R, F: FnOnce(&mut Handler<'vicinity, 'config, '_, T>) -> TransactionOutcome<R>>(
 		vicinity: &'vicinity Vicinity,
 		gas_limit: u64,
@@ -84,13 +66,23 @@ impl<'vicinity, 'config, 'meter, T: Config> Handler<'vicinity, 'config, 'meter, 
 		f: F,
 	) -> Result<R, DispatchError> {
 		frame_support::storage::with_transaction(|| {
-			let mut storage_meter_handler = StorageMeterHandlerImpl::<T>::new(vicinity.origin);
+			let mut storage_meter_handler = StorageMeterHandlerImpl::<T> {
+				origin: vicinity.origin,
+				_marker: PhantomData,
+			};
 			let storage_meter = match StorageMeter::new(&mut storage_meter_handler, contract, storage_limit) {
 				Ok(x) => x,
 				Err(e) => return TransactionOutcome::Rollback(Err(e)),
 			};
 
-			let mut substate = Handler::new(vicinity, gas_limit, storage_meter, is_static, config);
+			let mut substate = Handler::<'vicinity, 'config, '_, T> {
+				vicinity,
+				config,
+				is_static,
+				gasometer: Gasometer::new(gas_limit, config),
+				storage_meter,
+				_marker: PhantomData,
+			};
 
 			match f(&mut substate) {
 				TransactionOutcome::Commit(r) => match substate.storage_meter.finish() {
@@ -121,7 +113,14 @@ impl<'vicinity, 'config, 'meter, T: Config> Handler<'vicinity, 'config, 'meter, 
 				Err(e) => return TransactionOutcome::Rollback(Err(e)),
 			};
 
-			let mut substate = Handler::new(vicinity, gas_limit, storage_meter, is_static, config);
+			let mut substate = Handler::<'vicinity, 'config, '_, T> {
+				vicinity,
+				config,
+				is_static,
+				gasometer: Gasometer::new(gas_limit, config),
+				storage_meter,
+				_marker: PhantomData,
+			};
 
 			match f(&mut substate, &mut self.gasometer) {
 				TransactionOutcome::Commit(r) => match substate.storage_meter.finish() {
@@ -208,19 +207,19 @@ impl<'vicinity, 'config, 'meter, T: Config> Handler<'vicinity, 'config, 'meter, 
 		});
 	}
 
-	pub fn create_address(scheme: CreateScheme) -> Result<H160, ExitError> {
-		let address = match scheme {
+	pub fn create_address(scheme: CreateScheme) -> H160 {
+		match scheme {
 			CreateScheme::Create2 {
 				caller,
 				code_hash,
 				salt,
 			} => {
 				let mut hasher = Keccak256::new();
-				hasher.update(&[0xff]);
-				hasher.update(&caller[..]);
-				hasher.update(&salt[..]);
-				hasher.update(&code_hash[..]);
-				H256::from_slice(hasher.finalize().as_slice()).into()
+				hasher.input(&[0xff]);
+				hasher.input(&caller[..]);
+				hasher.input(&salt[..]);
+				hasher.input(&code_hash[..]);
+				H256::from_slice(hasher.result().as_slice()).into()
 			}
 			CreateScheme::Legacy { caller } => {
 				let nonce = Self::nonce(caller);
@@ -230,69 +229,32 @@ impl<'vicinity, 'config, 'meter, T: Config> Handler<'vicinity, 'config, 'meter, 
 				H256::from_slice(Keccak256::digest(&stream.out()).as_slice()).into()
 			}
 			CreateScheme::Fixed(naddress) => naddress,
-		};
-
-		if address.as_bytes().starts_with(&SYSTEM_CONTRACT_ADDRESS_PREFIX) {
-			Err(ExitError::Other(
-				Into::<&str>::into(Error::<T>::ConflictContractAddress).into(),
-			))
-		} else {
-			Ok(address)
 		}
 	}
 
-	pub fn can_call_contract(address: &H160, caller: &H160) -> bool {
+	// is contract && not deployed
+	pub fn is_undeployed_contract(address: &H160) -> bool {
 		if let Some(AccountInfo {
-			contract_info: Some(ContractInfo {
-				deployed, maintainer, ..
-			}),
+			contract_info: Some(ContractInfo { deployed, .. }),
 			..
 		}) = Accounts::<T>::get(address)
 		{
-			deployed || maintainer == *caller || Self::is_developer_or_contract(caller)
-		} else {
-			// contract non exist, we don't override defualt evm behaviour
-			true
-		}
-	}
-
-	pub fn is_developer_or_contract(caller: &H160) -> bool {
-		if let Some(AccountInfo {
-			contract_info,
-			developer_deposit,
-			..
-		}) = Accounts::<T>::get(caller)
-		{
-			contract_info.is_some() || developer_deposit.is_some()
+			!deployed
 		} else {
 			false
 		}
 	}
 
-	fn handle_mirrored_token(address: H160) -> H160 {
-		log::debug!(
-			target: "evm",
-			"handle_mirrored_token: address: {:?}",
-			address,
-		);
-
-		let addr = address.as_bytes();
-		if !addr.starts_with(&SYSTEM_CONTRACT_ADDRESS_PREFIX) {
-			return address;
-		}
-
-		if addr.starts_with(&H160_PREFIX_TOKEN) || addr.starts_with(&H160_PREFIX_DEXSHARE) {
-			// Token contracts.
-			let token_address = H160::from_low_u64_be(PREDEPLOY_ADDRESS_START);
-			log::debug!(
-				target: "evm",
-				"handle_mirrored_token: origin address: {:?}, token address: {:?}",
-				address,
-				token_address
-			);
-			token_address
+	pub fn has_permission_to_call(address: &H160) -> bool {
+		if let Some(AccountInfo {
+			contract_info,
+			developer_deposit,
+			..
+		}) = Accounts::<T>::get(address)
+		{
+			contract_info.is_some() || developer_deposit.is_some()
 		} else {
-			address
+			false
 		}
 	}
 }
@@ -333,19 +295,16 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 	}
 
 	fn code_size(&self, address: H160) -> U256 {
-		let addr = Self::handle_mirrored_token(address);
-		let code_hash = self.code_hash(addr);
+		let code_hash = self.code_hash(address);
 		U256::from(Codes::<T>::decode_len(&code_hash).unwrap_or(0))
 	}
 
 	fn code_hash(&self, address: H160) -> H256 {
-		let addr = Self::handle_mirrored_token(address);
-		Pallet::<T>::code_hash_at_address(&addr)
+		Pallet::<T>::code_hash_at_address(&address)
 	}
 
 	fn code(&self, address: H160) -> Vec<u8> {
-		let addr = Self::handle_mirrored_token(address);
-		Pallet::<T>::code_at_address(&addr).into_inner()
+		Pallet::<T>::code_at_address(&address)
 	}
 
 	fn storage(&self, address: H160, index: H256) -> H256 {
@@ -376,12 +335,12 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 			H256::default()
 		} else {
 			let number = T::BlockNumber::from(number.as_u32());
-			H256::from_slice(frame_system::Pallet::<T>::block_hash(number).as_ref())
+			H256::from_slice(frame_system::Module::<T>::block_hash(number).as_ref())
 		}
 	}
 
 	fn block_number(&self) -> U256 {
-		let number: u128 = frame_system::Pallet::<T>::block_number().unique_saturated_into();
+		let number: u128 = frame_system::Module::<T>::block_number().unique_saturated_into();
 		U256::from(number)
 	}
 
@@ -390,7 +349,7 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 	}
 
 	fn block_timestamp(&self) -> U256 {
-		let now: u128 = pallet_timestamp::Pallet::<T>::get().unique_saturated_into();
+		let now: u128 = pallet_timestamp::Module::<T>::get().unique_saturated_into();
 		U256::from(now / 1000)
 	}
 
@@ -446,15 +405,9 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 		}
 
 		match storage_change {
-			StorageChange::Added => {
-				Pallet::<T>::update_contract_storage_size(&address, STORAGE_SIZE as i32);
-				self.storage_meter.charge(STORAGE_SIZE)
-			}
-			StorageChange::Removed => {
-				Pallet::<T>::update_contract_storage_size(&address, -(STORAGE_SIZE as i32));
-				self.storage_meter.refund(STORAGE_SIZE)
-			}
-			StorageChange::None => Ok(()),
+			StorageChange::Added => self.storage_meter.charge(STORAGE_SIZE),
+			StorageChange::Removed => self.storage_meter.refund(STORAGE_SIZE),
+			_ => Ok(()),
 		}
 		.map_err(|_| ExitError::OutOfGas)
 	}
@@ -470,14 +423,16 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 			return Err(ExitError::OutOfGas);
 		}
 
-		let storage = Pallet::<T>::remove_contract(&address, &target)
-			.map_err(|e| ExitError::Other(Into::<&str>::into(e).into()))?;
+		let source = T::AddressMapping::get_account_id(&address);
+		let dest = T::AddressMapping::get_account_id(&target);
+
+		let size = Pallet::<T>::remove_account(&address)?;
 
 		self.storage_meter
-			.refund(storage)
-			.map_err(|e| ExitError::Other(Into::<&str>::into(e).into()))?;
+			.refund(size.saturating_add(T::NewContractExtraBytes::get()))
+			.map_err(|_| ExitError::Other("RefundStorageError".into()))?;
 
-		Ok(())
+		T::MergeAccount::merge_account(&source, &dest).map_err(|_| ExitError::Other("MergeAccountError".into()))
 	}
 
 	fn create(
@@ -488,7 +443,7 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 		init_code: Vec<u8>,
 		target_gas: Option<u64>,
 	) -> Capture<(ExitReason, Option<H160>, Vec<u8>), Self::CreateInterrupt> {
-		log::debug!(
+		debug::debug!(
 			target: "evm",
 			"handler: create: caller {:?}",
 			caller,
@@ -508,12 +463,7 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 		target_gas = min(target_gas, after_gas);
 		try_or_fail!(self.gasometer.record_cost(target_gas));
 
-		let maybe_address = Self::create_address(scheme);
-		let address = if let Err(e) = maybe_address {
-			return Capture::Exit((ExitReason::Error(e), None, Vec::new()));
-		} else {
-			maybe_address.unwrap()
-		};
+		let address = Self::create_address(scheme);
 		Self::inc_nonce(caller);
 
 		let origin = &self.vicinity.origin;
@@ -580,7 +530,7 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 		is_static: bool,
 		context: Context,
 	) -> Capture<(ExitReason, Vec<u8>), Self::CallInterrupt> {
-		log::debug!(
+		debug::debug!(
 			target: "evm",
 			"handler: call: source {:?} code_address {:?} input: {:?} target_gas {:?} gas_left {:?}",
 			context.caller,
@@ -625,7 +575,7 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 				try_or_rollback!(gasometer.record_cost(target_gas));
 
 				if let Some(ret) = T::Precompiles::execute(code_address, &input, Some(target_gas), &context) {
-					log::debug!(
+					debug::debug!(
 						target: "evm",
 						"handler: call-result: precompile result {:?}",
 						ret
@@ -653,7 +603,7 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 					input,
 				);
 
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"handler: call-result: reason {:?} out {:?} gas_left {:?}",
 					reason, out, substate.gas_left()
@@ -695,18 +645,9 @@ impl<'vicinity, 'config, 'meter, T: Config> HandlerT for Handler<'vicinity, 'con
 	}
 }
 
-pub struct StorageMeterHandlerImpl<T: Config> {
+struct StorageMeterHandlerImpl<T: Config> {
 	origin: H160,
 	_marker: PhantomData<T>,
-}
-
-impl<T: Config> StorageMeterHandlerImpl<T> {
-	pub fn new(origin: H160) -> Self {
-		Self {
-			origin,
-			_marker: Default::default(),
-		}
-	}
 }
 
 impl<T: Config> StorageMeterHandler for StorageMeterHandlerImpl<T> {
@@ -715,7 +656,7 @@ impl<T: Config> StorageMeterHandler for StorageMeterHandlerImpl<T> {
 			return Ok(());
 		}
 
-		log::debug!(
+		debug::debug!(
 			target: "evm",
 			"reserve_storage: from {:?} limit {:?}",
 			self.origin, limit,
@@ -735,7 +676,7 @@ impl<T: Config> StorageMeterHandler for StorageMeterHandlerImpl<T> {
 			return Ok(());
 		}
 
-		log::debug!(
+		debug::debug!(
 			target: "evm",
 			"unreserve_storage: from {:?} used {:?} refunded {:?} unused {:?}",
 			self.origin, used, refunded, unused
@@ -746,17 +687,18 @@ impl<T: Config> StorageMeterHandler for StorageMeterHandlerImpl<T> {
 
 		// should always be able to unreserve the amount
 		// but otherwise we will just ignore the issue here
-		let err_amount = T::Currency::unreserve(&user, amount);
-		debug_assert!(err_amount.is_zero());
+		let _ = T::Currency::unreserve(&user, amount);
+
 		Ok(())
 	}
 
+	#[require_transactional]
 	fn charge_storage(&mut self, contract: &H160, used: u32, refunded: u32) -> DispatchResult {
 		if used == refunded {
 			return Ok(());
 		}
 
-		log::debug!(
+		debug::debug!(
 			target: "evm",
 			"charge_storage: from {:?} contract {:?} used {:?} refunded {:?}",
 			&self.origin, contract, used, refunded
@@ -780,8 +722,7 @@ impl<T: Config> StorageMeterHandler for StorageMeterHandlerImpl<T> {
 			let amount = T::StorageDepositPerByte::get().saturating_mul(storage.into());
 
 			// user can't be a dead account
-			let val = T::Currency::repatriate_reserved(&contract_acc, &user, amount, BalanceStatus::Reserved)?;
-			debug_assert!(val.is_zero());
+			T::Currency::repatriate_reserved(&contract_acc, &user, amount, BalanceStatus::Reserved)?;
 		};
 
 		Ok(())

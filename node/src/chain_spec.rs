@@ -445,54 +445,6 @@ fn testnet_genesis(
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		module_airdrop: AirDropConfig {
-			airdrop_accounts: {
-				// SETHEUM allocation
-				let setheum_airdrop_accounts_json = &include_bytes!("../../resources/SETHEUM-airdrop.json")[..];
-				let setheum_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(setheum_airdrop_accounts_json).unwrap();
-			
-				// DNAR allocation
-				let dinar_airdrop_accounts_json = &include_bytes!("../../resources/DNAR-airdrop.json")[..];
-				let dinar_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(dinar_airdrop_accounts_json).unwrap();
-			
-				// SETR allocation
-				let setter_airdrop_accounts_json = &include_bytes!("../../resources/SETR-airdrop.json")[..];
-				let setter_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-			
-				// SETEUR allocation
-				let seteuro_airdrop_accounts_json = &include_bytes!("../../resources/SETEUR-airdrop.json")[..];
-				let seteuro_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(seteuro_airdrop_accounts_json).unwrap();
-			
-				// SETUSD allocation
-				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/SETUSD-airdrop.json")[..];
-				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
-			
-				setheum_airdrop_accounts
-					.iter()
-					.map(|(account_id, setheum_amount)| (account_id.clone(), AirDropCurrencyId::SETHEUM, *setheum_amount))
-					.chain(
-						dinar_airdrop_accounts
-							.iter()
-							.map(|(account_id, dinar_amount)| (account_id.clone(), AirDropCurrencyId::DNAR, *dinar_amount))
-							.chain(
-								setter_airdrop_accounts
-									.iter()
-									.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
-									.chain(
-										seteuro_airdrop_accounts
-											.iter()
-											.map(|(account_id, seteuro_amount)| (account_id.clone(), AirDropCurrencyId::SETEUR, *seteuro_amount))
-											.chain(
-												setdollar_airdrop_accounts
-													.iter()
-													.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
-											)
-									)
-							)
-					)
-					.collect::<Vec<_>>()
-			},
-		},
 		pallet_treasury: Default::default(),
 		module_evm: Some(EvmConfig {
 			accounts: evm_genesis_accounts,
@@ -640,53 +592,6 @@ fn mainnet_genesis(
 			initial_added_liquidity_pools: vec![],
 		},
 		orml_vesting: VestingConfig { vesting: setheum_vesting_list },
-		module_airdrop: AirDropConfig {
-			airdrop_accounts: {
-				// SETHEUM allocation
-				let setheum_airdrop_accounts_json = &include_bytes!("../../resources/SETHEUM-airdrop.json")[..];
-				let setheum_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(setheum_airdrop_accounts_json).unwrap();
-			
-				// DNAR allocation
-				let dinar_airdrop_accounts_json = &include_bytes!("../../resources/DNAR-airdrop.json")[..];
-				let dinar_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(dinar_airdrop_accounts_json).unwrap();
-			
-				// SETR allocation
-				let setter_airdrop_accounts_json = &include_bytes!("../../resources/SETR-airdrop.json")[..];
-				let setter_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-			
-				// SETEUR allocation
-				let seteuro_airdrop_accounts_json = &include_bytes!("../../resources/SETEUR-airdrop.json")[..];
-				let seteuro_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(seteuro_airdrop_accounts_json).unwrap();
-			
-				// SETUSD allocation
-				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/SETUSD-airdrop.json")[..];
-				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> = serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
-			
-				setheum_airdrop_accounts
-					.iter()
-					.map(|(account_id, setheum_amount)| (account_id.clone(), AirDropCurrencyId::SETHEUM, *setheum_amount))
-					.chain(
-						dinar_airdrop_accounts
-							.iter()
-							.map(|(account_id, dinar_amount)| (account_id.clone(), AirDropCurrencyId::DNAR, *dinar_amount))
-							.chain(
-								setter_airdrop_accounts
-									.iter()
-									.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
-									.chain(
-										seteuro_airdrop_accounts
-											.iter()
-											.map(|(account_id, seteuro_amount)| (account_id.clone(), AirDropCurrencyId::SETEUR, *seteuro_amount))
-											.chain(
-												setdollar_airdrop_accounts
-													.iter()
-													.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
-											)
-									)
-							)
-					)
-					.collect::<Vec<_>>()
-			},
 		},
 		pallet_treasury: Default::default(),
 		module_evm: Some(EvmConfig {

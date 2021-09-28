@@ -27,7 +27,7 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
 * [Setheum Foundation](https://github.com/Setheum-Foundation)]
 * [Slixon Technologies](https://github.com/Slixon-Technologies)
 
-## Core Products - Unique to Setheum (VP)
+## Core Products - Mostly Unique to Setheum
 
 ### The Tokens/Currencies
 
@@ -51,7 +51,7 @@ SETUSD("SetDollar", 12) = 3,
 SETEUR("SetEuro", 12) = 4,
 ```
 
-1. The Setter - The Setter is a basket currency pegged to the Top 10 Strongest and most valuable currencies. It serves as the medium of Exchange and the Defacto stablecoin of the Setheum Ecosystem. All other Setheum system stablecoins orbit around the Setter (SETR) and the SetMint for minting Setheum Currencies (system stablecoins) accepts only the Setter as the Minting Reserve Asset. Only with the Setter (SETR) can a user participate in the DNAR Auctions to stabilize the price of the Setter, while the Setter is Auctioned to stabilize the price of all the other SettCurrencies (system stablecoins). It's the star that brightens many planets - 10 to be exact
+1. The Setter - The Setter is a stable currency pegged to the US dollar at a ratio of 1:1.25, where 1 SETR = 1.25 USD (1 USD = 0.8 SETR). The Setter is used by the SERP to back the stability of the SetCurrencies - SETEUR and SETUSD, in turn these currencies pay tribute to the SETR from their inflation and increase in demand(SerpUps). The Setter's stability is in turn backed by the DNAR, while the SETR pays tribute to the DNAR through its inflation and demand in supply(SerpUp).
 
 2. [The SERP](./lib-serp) - The SERP (Setheum Elastic Reserve Protocol) is algorithmically responsible for stabilizing the prices of the Setheum Stable Currencies. No human interferrance is needed for this, it's all algorithmically handled by the SERP. The SERP is the backbone of Setheum, it is based on my TES (Token Elasticity of Supply) algorithm based on PES (Price Elasticity of Supply) such that the demand curve or price of a currency determines the supply serping point, meaning the supply curve of a SetCurrency will be adjusted according to the demand curve of that specific SetCurrency. The result will be burning or minting an amount equivalent to the serping point produced by the SERP-TES, the burning amount will be bought back by the SERP automatically through the built-in-DEX and the bought amount will be burnt to meet the satisfaction of the demand curve to prop the price back up to its peg, the opposite is done to lower the price of an under-supplied currency that is on demand and above its peg on the demand curve, for this the mint amount is divided into receipients including the SetPayTreasury where CashDrops are deposited for users to claim, the System Treasury under Governance, the Charity Fund stewarded by the Setheum Foundation, and the WelfareTreasury, more on the Welfare Treasury below.
 
@@ -62,21 +62,16 @@ SETEUR("SetEuro", 12) = 4,
 
 3. The CashDrops - The CashDrops that are dispatched by the SERP to the claimants (transactors/transactions that claim cashdrops). Whoever transacts witha SetCurrency (Setheum Stable Currency), they can toggle on claim cashdrop to get a cashback of 1% of the amount they transferred/sent, this amount is only cashdropped if the CashDropPool has enough funds to cover that amount. The funds in the CashDropPool are provided by the SERP through SerpUps and through SerpTransactionFees. SerpTransactionFees are 0.2% transaction fees that are paid on SetCurrency transactions, these funds are then transferred by the system to the SERP'S CashDropPool for CashDrops ready to be claimed.
 
-4. The EFE and EFFECTs - The EFE is the
+4. The EFE and EFFECTs - The EFE is the ExchangeFeeEvaluator, it basically takes lower exchange fees than the normal rate on DEX for stablecurrency pools, and the difference between those two rates is settled by the EFE to the LPs in stablecurrencies, to be eligible for the EFE one of the two currencies in the LP pair must be a Setheum stablecurrency. Therefore, the traders of that pool pay less fees and the LPs get more income because these pairs will attract more traders and that will in turn attract more liquidity by the LPs.
 
-5. [The SetMint](./lib-serml/setmint) - The Setmint is partly inspired by the Maker Protocol (MakerDAO), except that SetMint is on a very different principle of Setheum that ought not to be violated.
-SetMint is not a CDP but quite similar, as users can hold, authorize & transfer positions, users can reserve the Setter (SETR) to mint any SetCurrency of their choice without the need for over-collateralization, debt, interest rates, liquidation, or even stability fees. The stability of the Currencies is handles by the SERP, and the the Setter used as the reserve currency is also a SetCurrency (Setheum System Stablecoin) therefore eliminating position volatility and the risk of liquidation as all risk parameters have been eliminated with the Setter and Setheum's strong principle on the matters of the SetMint and Setheum's Monetary Policy.
-This is one of the reasons I see Setheum as one of the most Sophisticated Advanced Economic Systems yet so simple, easy to use and understand, and even easier to get started.
-
-6. [The SEVM](./lib-serml/evm) - The Setheum EVM is an Ethereum Virtual Machine (EVM) compatibility layer that implements the EVM on Setheum and bridges to Ethereum that opens the ground for interoperability between Ethereum and Setheum.
+5. [The SEVM](./lib-serml/evm) - The Setheum EVM is an Ethereum Virtual Machine (EVM) compatibility layer that implements the EVM on Setheum and bridges to Ethereum that opens the ground for interoperability between Ethereum and Setheum.
 The SEVM lets developers onboard, deploy or migrate their Ethereum Solidity Smart Contracts on Setheum seamlessly with little to no change in their code.
 The SetheumEVM has a beautiful library of developer tools that let developers deploy, manageand interact with their smart contracts and upgradable smart contracts on the S-EVM with popular and well documented tools like Truffle, MetaMask, et al.
 The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, to let users access the Setheumand the EVM both with a single wallet without having to use two separate wallets for compatibility.
 
 For all the SERML (Setheum Runtime Module Library) modules like the;
-[bridges](./lib-serml/bridges)
 [dex](./lib-serml/dex)
-[prices](./lib-serml/serp/serp-prices)
+[prices](./lib-serml/prices)
 [support](./lib-serml/support)
 [tokens](./lib-serml/tokens)
 [NFTs](./lib-serml/nft)
@@ -95,6 +90,12 @@ build the Setheum node.
 
 ## Initialisation
 
+Clone this repository:
+
+```bash
+git clone --recursive https://github.com/Setheum-Labs/Setheum
+```
+
 Install Rust:
 
 ```bash
@@ -107,6 +108,18 @@ Make sure you have `submodule.recurse` set to true to configure submodule.
 git config --global submodule.recurse true
 ```
 
+You can install developer tools on Ubuntu 20.04 with:
+
+```bash
+sudo apt install make clang pkg-config libssl-dev build-essential
+```
+
+You can install the latest Rust toolchain with:
+
+```bash
+make init
+```
+
 Install required tools and install git hooks:
 
 ```bash
@@ -114,34 +127,18 @@ Install required tools and install git hooks:
 git submodule update --init --recursive
 ```
 
-### Clone
-To clone the repo with its submodules run:
-```bash
-git clone --recursive https://github.com/Setheum-Labs/Setheum
-```
-
-### Rust Setup
-
-If you don’t have Rust already, you can install it with:
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-You can install developer tools on Ubuntu 20.04 with:
-```bash
-sudo apt install make clang pkg-config libssl-dev build-essential
-```
-
-You can install the latest Rust toolchain with:
-```bash
-make init
-```
-
 ### Start a development node
 
 The `make run` command will launch a temporary node and its state will be discarded after you terminate the process.
+
 ```bash
 make run
+```
+
+or
+
+```bash
+RUST_BACKTRACE=1 cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
 ```
 
 ### Run a persistent single-node chain
@@ -238,6 +235,30 @@ make release
 Build the wasm runtime with:
 ```bash
 make wasm
+```
+
+## Update
+
+### Update Cargo
+
+```bash
+cargo update
+```
+
+### Update ORML
+
+```bash
+cd open-lib && git checkout master && git pull
+git add open-lib
+cargo-update check-all
+```
+
+### Update Predeploy-Contracts
+
+```bash
+cd predeploy-contracts && git checkout master && git pull
+git add predeploy-contracts
+cargo-update check-all
 ```
 
 ### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)

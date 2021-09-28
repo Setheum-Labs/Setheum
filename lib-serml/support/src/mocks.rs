@@ -18,7 +18,7 @@
 
 use crate::{AddressMapping, CurrencyId, CurrencyIdMapping};
 use codec::Encode;
-use frame_support::pallet_prelude::DispatchResult;
+use sp_runtime::DispatchResult;
 use primitives::{currency::TokenInfo, evm::EvmAddress, H160_POSITION_TOKEN, H160_PREFIX_TOKEN};
 use sp_core::{crypto::AccountId32, H160};
 use sp_io::hashing::blake2_256;

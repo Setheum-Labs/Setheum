@@ -64,7 +64,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_types! {
@@ -75,7 +74,7 @@ impl pallet_balances::Config for Runtime {
 	type Event = Event;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Runtime>;
+	type AccountStore = frame_system::Module<Runtime>;
 	type MaxLocks = ();
 	type WeightInfo = ();
 }
@@ -94,7 +93,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -138,7 +136,7 @@ ord_parameter_types! {
 impl module_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
-	type TransferAll = ();
+	type MergeAccount = ();
 	type NewContractExtraBytes = NewContractExtraBytes;
 	type StorageDepositPerByte = StorageDepositPerByte;
 	type MaxCodeSize = MaxCodeSize;
@@ -193,14 +191,14 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
-		EvmManager: evm_manager::{Pallet, Storage},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Currencies: orml_currencies::{Pallet, Call, Event<T>},
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: module_evm_bridge::{Pallet},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
+		EvmManager: evm_manager::{Module, Storage},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		Currencies: orml_currencies::{Module, Call, Event<T>},
+		EVM: module_evm::{Module, Config<T>, Call, Storage, Event<T>},
+		EVMBridge: module_evm_bridge::{Module},
 	}
 );
 

@@ -8,23 +8,23 @@ edition = "2018"
 serde = { version = "1.0.124", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+frame-support = { version = '3.0.0', default-features = false }
+frame-system = { version = '3.0.0', default-features = false }
+sp-core = { version = '3.0.0', default-features = false }
+sp-io = { version = '3.0.0', default-features = false }
+sp-runtime = { version = '3.0.0', default-features = false }
+sp-std = { version = '3.0.0', default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 module-support = { path = "../support", default-features = false }
 
 [dev-dependencies]
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-orml-currencies = { path = "../../lib-open/currencies" }
-orml-tokens = { path = "../../lib-open/tokens" }
-orml-traits = { path = "../../lib-open/traits" }
-orml-utilities = { path = "../../lib-open/utilities" }
+pallet-balances = { version = '3.0.0' }
+pallet-timestamp = { version = '3.0.0' }
+orml-currencies = { path = "../../open-lib/currencies" }
+orml-tokens = { path = "../../open-lib/tokens" }
+orml-traits = { path = "../../open-lib/traits" }
+orml-utilities = { path = "../../open-lib/utilities" }
 module-evm = { path = "../evm" }
 module-evm-bridge = { path = "../evm-bridge" }
 
@@ -42,4 +42,3 @@ std = [
 	"primitives/std",
 	"module-support/std",
 ]
-try-runtime = ["frame-support/try-runtime"]

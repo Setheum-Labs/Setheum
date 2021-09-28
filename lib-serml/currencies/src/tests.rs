@@ -24,11 +24,37 @@ use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{
 	alice, bob, deploy_contracts, erc20_address, eva, AccountId, AdaptedBasicCurrency, Currencies, Event, ExtBuilder,
-	NativeCurrency, Origin, PalletBalances, Runtime, System, Tokens, EVM, ID_1, NATIVE_CURRENCY_ID, X_TOKEN_ID,
+	NativeCurrency, Origin, PalletBalances, Runtime, Tokens, EVM, ID_1, NATIVE_CURRENCY_ID, X_TOKEN_ID,
 };
 use sp_core::H160;
 use sp_runtime::traits::BadOrigin;
 use support::EVM as EVMTrait;
+
+#[test]
+fn airdrop_should_work() {
+	ExtBuilder::default()
+		.one_hundred_for_alice_n_bob_n_eva()
+		.build()
+		.execute_with(|| {
+			let details = vec![(bob(), 50), (eva(), 25)];
+			assert_ok!(Currencies::airdrop(Some(alice()).into(), X_TOKEN_ID, details));
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 25);
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 150);
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &eva()), 125);
+
+			let details_2 = vec![(alice(), 25), (eva(), 25)];
+			assert_ok!(Currencies::airdrop(Some(bob()).into(), X_TOKEN_ID, details_2));
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 100);
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 50);
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &eva()), 150);
+
+			let details_3 = vec![(alice(), 25), (bob(), 25)];
+			assert_ok!(Currencies::airdrop(Some(eva()).into(), X_TOKEN_ID, details_3));
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &eva()), 100);
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 75);
+			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 125);
+		});
+}
 
 #[test]
 fn multi_lockable_currency_should_work() {
@@ -278,12 +304,12 @@ fn call_event_should_work() {
 			assert_ok!(Currencies::transfer(Some(alice()).into(), bob(), X_TOKEN_ID, 50, false));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 50);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 150);
-			System::assert_last_event(Event::currencies(crate::Event::Transferred(
+			Event::currencies(crate::Event::Transferred(
 				X_TOKEN_ID,
 				alice(),
 				bob(),
 				50,
-			)));
+			));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::transfer(
 				X_TOKEN_ID,
@@ -293,12 +319,12 @@ fn call_event_should_work() {
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 40);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 160);
-			System::assert_last_event(Event::currencies(crate::Event::Transferred(
+			Event::currencies(crate::Event::Transferred(
 				X_TOKEN_ID,
 				alice(),
 				bob(),
 				10,
-			)));
+			));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::deposit(
 				X_TOKEN_ID,
@@ -306,7 +332,7 @@ fn call_event_should_work() {
 				100
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 140);
-			System::assert_last_event(Event::currencies(crate::Event::Deposited(X_TOKEN_ID, alice(), 100)));
+			Event::currencies(crate::Event::Deposited(X_TOKEN_ID, alice(), 100));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::withdraw(
 				X_TOKEN_ID,
@@ -314,7 +340,7 @@ fn call_event_should_work() {
 				20
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 120);
-			System::assert_last_event(Event::currencies(crate::Event::Withdrawn(X_TOKEN_ID, alice(), 20)));
+			Event::currencies(crate::Event::Withdrawn(X_TOKEN_ID, alice(), 20));
 		});
 }
 

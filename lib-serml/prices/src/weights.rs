@@ -34,7 +34,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./modules/prices/src/weights.rs
+// --output=./lib-serml/prices/src/weights.rs
 // --template=./templates/module-weight-template.hbs
 
 

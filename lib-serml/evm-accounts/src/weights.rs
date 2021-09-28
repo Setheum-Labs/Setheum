@@ -34,7 +34,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./modules/evm-accounts/src/weights.rs
+// --output=./lib-serml/evm-accounts/src/weights.rs
 // --template=./templates/module-weight-template.hbs
 
 

@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Decode, Encode, MaxEncodedLen};
+use codec::{Decode, Encode};
 use frame_support::{
 	parameter_types,
 	weights::{
@@ -11,16 +11,16 @@ use frame_support::{
 	},
 };
 use frame_system::{limits, EnsureOneOf, EnsureRoot};
-pub use module_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
+pub use module_support::{Contains, ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{
 	Balance, BlockNumber, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
 use sp_core::{
 	u32_trait::{_1, _2, _3, _4},
-	H160,
+	H160, RuntimeDebug,
 };
 use sp_runtime::{
-	traits::{BlockNumberProvider, Convert},
+	traits::Convert,
 	transaction_validity::TransactionPriority,
 	Perbill,
 };
@@ -280,7 +280,7 @@ pub type EnsureRootOrThreeFourthsTechnicalCommittee = EnsureOneOf<
 >;
 
 /// The type used to represent the kinds of proxying allowed.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug)]
 pub enum ProxyType {
 	Any,
 	CancelProxy,

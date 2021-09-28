@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the airdrop module.
+//! Mocks for the RenVM-Bridge module.
 
 #![cfg(test)]
 
@@ -65,7 +65,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_types! {
@@ -78,7 +77,7 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Runtime>;
+	type AccountStore = frame_system::Module<Runtime>;
 	type MaxLocks = ();
 	type WeightInfo = ();
 }
@@ -103,7 +102,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -136,11 +134,11 @@ frame_support::construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		RenVmBridge: renvm::{Pallet, Call, Config, Storage, Event<T>, ValidateUnsigned},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		RenVmBridge: renvm::{Module, Call, Config, Storage, Event<T>, ValidateUnsigned},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		Currencies: orml_currencies::{Module, Call, Event<T>},
 	}
 );
 

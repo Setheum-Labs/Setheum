@@ -23,19 +23,19 @@
 use super::*;
 use crate as transaction_payment;
 use frame_support::{
-	construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients, PalletId,
+	construct_runtime, ord_parameter_types, parameter_types, weights::WeightToFeeCoefficients,
 };
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, TokenSymbol, TradingPair};
+use primitives::{Amount, TokenSymbol};
 use smallvec::smallvec;
 use sp_core::{crypto::AccountId32, H160, H256};
 use sp_runtime::{
 	testing::Header,
-	traits::{IdentityLookup, One},
-	Perbill,
+	traits::IdentityLookup,
+	Perbill, 
 };
 use sp_std::cell::RefCell;
-use support::{mocks::MockAddressMapping, Ratio, DEXManager, Price, SerpTreasury};
+use support::{DEXManager, mocks::MockAddressMapping, SerpTreasury};
 
 pub type AccountId = AccountId32;
 pub type BlockNumber = u64;
@@ -90,7 +90,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -107,11 +106,11 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
-	pub const NativeTokenExistentialDeposit: Balance = 0;
+	pub const NativeTokenExistentialDeposit: Balance = 10;
+	pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -122,12 +121,6 @@ impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type MaxLocks = ();
 	type WeightInfo = ();
-}
-
-pub type AdaptedBasicCurrency = module_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
-
-parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
 }
 
 pub struct MockSerpTreasury;
@@ -160,6 +153,38 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	fn get_cashdrop_serpup(
 		_amount: Balance,
 		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	/// SerpUp ratio for SetPay Cashdrops
+	fn get_cashdrop_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serplus(
+		_currency_id: CurrencyId,
+		_amount: Balance,
 	) -> DispatchResult {
 		unimplemented!()
 	}
@@ -221,7 +246,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	/// deposit reserve asset (Setter (SETUSD)) to serp treasury by `who`
+	/// deposit Setter (Setter (SETR)) to serp treasury by `who`
 	fn deposit_setter(
 		_from: &AccountId,
 		_amount: Balance
@@ -239,34 +264,40 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 }
 
+pub type AdaptedBasicCurrency = module_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
+
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+		SETEUR,
+	];
+	pub AirdropMinimum: u32 = 2;
+	pub AirdropMaximum: u32 = 3;
+}
+
 impl module_currencies::Config for Runtime {
 	type Event = Event;
-    type SerpTreasury = MockSerpTreasury;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+    type SerpTreasury = MockSerpTreasury;
+	type AirdropAccountId = ();
+	type AirdropMinimum = AirdropMinimum;
+	type AirdropMaximum = AirdropMaximum;
+	type AirdropOrigin = ();
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = ();
 }
 
-ord_parameter_types! {
-	pub const Zero: AccountId = AccountId::new([0u8; 32]);
+thread_local! {
+	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
 }
 
-parameter_types! {
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
-	pub const GetStableCurrencyExchangeFee: (u32, u32) = (0, 100);
-	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, SETHEUM).unwrap(),
-	];
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETUSD,
-		SETUSD,
-	];
+ord_parameter_types! {
+	pub const Zero: AccountId = AccountId::new([0u8; 32]);
 }
 
 pub struct MockDEX;
@@ -274,7 +305,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(SETUSD, SETHEUM) => (10000, 200),
-			(DNAR, SETUSD) => (200, 10000),
+			(SETUSD, DNAR) => (200, 10000),
 			_ => (0, 0),
 		}
 	}
@@ -355,9 +386,9 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 }
 
 parameter_types! {
-	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![SETUSD, DNAR];
+	pub const SetUSDCurrencyId: CurrencyId = SETUSD;
 	pub static TransactionByteFee: u128 = 1;
-	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETUSD, SETHEUM], vec![DNAR, SETUSD, SETHEUM]];
 }
 
 thread_local! {
@@ -365,55 +396,17 @@ thread_local! {
 	pub static FEE_UNBALANCED_AMOUNT: RefCell<u128> = RefCell::new(0);
 }
 
-pub struct DealWithFees;
-impl OnUnbalanced<pallet_balances::NegativeImbalance<Runtime>> for DealWithFees {
-	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<Runtime>>) {
-		if let Some(fees) = fees_then_tips.next() {
-			FEE_UNBALANCED_AMOUNT.with(|a| *a.borrow_mut() += fees.peek());
-			if let Some(tips) = fees_then_tips.next() {
-				TIP_UNBALANCED_AMOUNT.with(|a| *a.borrow_mut() += tips.peek());
-			}
-		}
-	}
-}
-
-thread_local! {
-	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-}
-
-pub struct MockPriceSource;
-impl MockPriceSource {
-	pub fn set_relative_price(price: Option<Price>) {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
-	}
-}
-impl PriceProvider<CurrencyId> for MockPriceSource {
-	fn get_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut())
-	}
-
-	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
-		unimplemented!()
-	}
-	
-	fn lock_price(_currency_id: CurrencyId) {}
-
-	fn unlock_price(_currency_id: CurrencyId) {}
-}
-
 impl Config for Runtime {
+	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type DefaultFeeSwapPathList = DefaultFeeSwapPathList;
+	type SetUSDCurrencyId = SetUSDCurrencyId;
 	type Currency = PalletBalances;
 	type MultiCurrency = Currencies;
-	type OnTransactionPayment = DealWithFees;
+	type OnTransactionPayment = ();
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = ();
 	type DEX = MockDEX;
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type TradingPathLimit = TradingPathLimit;
-	type PriceSource = MockPriceSource;
 	type WeightInfo = ();
 }
 
@@ -444,16 +437,16 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		TransactionPayment: transaction_payment::{Pallet, Call, Storage},
-		PalletBalances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currencies: module_currencies::{Pallet, Call, Event<T>},
+		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		TransactionPayment: transaction_payment::{Module, Call, Storage},
+		PalletBalances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		Currencies: module_currencies::{Module, Call, Event<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 	base_weight: u64,
 	byte_fee: u128,
 	weight_to_fee: u128,
@@ -463,7 +456,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![(ALICE, SETUSD, 10000), (ALICE, DNAR, 1000)],
+			balances: vec![(ALICE, SETUSD, 10000), (ALICE, DNAR, 1000)],
 			base_weight: 0,
 			byte_fee: 2,
 			weight_to_fee: 1,
@@ -502,12 +495,6 @@ impl ExtBuilder {
 
 		pallet_balances::GenesisConfig::<Runtime> {
 			balances: self.native_balances,
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-
-		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

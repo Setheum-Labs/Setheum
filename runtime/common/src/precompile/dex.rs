@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -17,12 +17,12 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::input::{Input, InputT};
-use frame_support::log;
+use frame_support::debug;
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
 use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, DEXManager};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use primitives::{Balance, CurrencyId};
-use sp_core::U256;
+use sp_core::{RuntimeDebug, U256};
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*, result};
 
 /// The `DEX` impl precompile.
@@ -67,7 +67,7 @@ where
 	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
 		//TODO: evaluate cost
 
-		log::debug!(target: "evm", "dex: input: {:?}", input);
+		debug::debug!(target: "evm", "dex: input: {:?}", input);
 
 		let input = Input::<Action, AccountId, AddressMapping, CurrencyIdMapping>::new(input);
 
@@ -77,7 +77,7 @@ where
 			Action::GetLiquidityPool => {
 				let currency_id_a = input.currency_id_at(1)?;
 				let currency_id_b = input.currency_id_at(2)?;
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"dex: get_liquidity_pool currency_id_a: {:?}, currency_id_b: {:?}",
 					currency_id_a, currency_id_b
@@ -95,7 +95,7 @@ where
 			Action::GetLiquidityTokenAddress => {
 				let currency_id_a = input.currency_id_at(1)?;
 				let currency_id_b = input.currency_id_at(2)?;
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"dex: get_liquidity_token address currency_id_a: {:?}, currency_id_b: {:?}",
 					currency_id_a, currency_id_b
@@ -118,13 +118,13 @@ where
 				for i in 0..path_len {
 					path.push(input.currency_id_at((4 + i) as usize)?);
 				}
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"dex: get_swap_target_amount path: {:?}, supply_amount: {:?}",
 					path, supply_amount
 				);
 
-				let value = Dex::get_swap_target_amount(&path, supply_amount, None)
+				let value = Dex::get_swap_target_amount(&path, supply_amount)
 					.ok_or_else(|| ExitError::Other("Dex get_swap_target_amount failed".into()))?;
 
 				// output
@@ -141,13 +141,13 @@ where
 				for i in 0..path_len {
 					path.push(input.currency_id_at((4 + i) as usize)?);
 				}
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"dex: get_swap_supply_amount path: {:?}, target_amount: {:?}",
 					path, target_amount
 				);
 
-				let value = Dex::get_swap_supply_amount(&path, target_amount, None)
+				let value = Dex::get_swap_supply_amount(&path, target_amount)
 					.ok_or_else(|| ExitError::Other("Dex get_swap_supply_amount failed".into()))?;
 
 				// output
@@ -166,14 +166,14 @@ where
 				for i in 0..path_len {
 					path.push(input.currency_id_at((6 + i) as usize)?);
 				}
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"dex: swap_with_exact_supply who: {:?}, path: {:?}, supply_amount: {:?}, min_target_amount: {:?}",
 					who, path, supply_amount, min_target_amount
 				);
 
 				let value =
-					Dex::swap_with_exact_supply(&who, &path, supply_amount, min_target_amount, None).map_err(|e| {
+					Dex::swap_with_exact_supply(&who, &path, supply_amount, min_target_amount).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
@@ -194,14 +194,14 @@ where
 				for i in 0..path_len {
 					path.push(input.currency_id_at((6 + i) as usize)?);
 				}
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"dex: swap_with_exact_target who: {:?}, path: {:?}, target_amount: {:?}, max_supply_amount: {:?}",
 					who, path, target_amount, max_supply_amount
 				);
 
 				let value =
-					Dex::swap_with_exact_target(&who, &path, target_amount, max_supply_amount, None).map_err(|e| {
+					Dex::swap_with_exact_target(&who, &path, target_amount, max_supply_amount).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
@@ -220,7 +220,7 @@ where
 				let max_amount_b = input.balance_at(5)?;
 				let min_share_increment = input.balance_at(6)?;
 
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"dex: add_liquidity who: {:?}, currency_id_a: {:?}, currency_id_b: {:?}, max_amount_a: {:?}, max_amount_b: {:?}, min_share_increment: {:?}",
 					who, currency_id_a, currency_id_b, max_amount_a, max_amount_b, min_share_increment,
@@ -233,7 +233,6 @@ where
 					max_amount_a,
 					max_amount_b,
 					min_share_increment,
-					false,
 				)
 				.map_err(|e| {
 					let err_msg: &str = e.into();
@@ -250,7 +249,7 @@ where
 				let min_withdrawn_a = input.balance_at(5)?;
 				let min_withdrawn_b = input.balance_at(6)?;
 
-				log::debug!(
+				debug::debug!(
 					target: "evm",
 					"dex: remove_liquidity who: {:?}, currency_id_a: {:?}, currency_id_b: {:?}, remove_share: {:?}, min_withdrawn_a: {:?}, min_withdrawn_b: {:?}",
 					who, currency_id_a, currency_id_b, remove_share, min_withdrawn_a, min_withdrawn_b,
@@ -263,7 +262,6 @@ where
 					remove_share,
 					min_withdrawn_a,
 					min_withdrawn_b,
-					false,
 				)
 				.map_err(|e| {
 					let err_msg: &str = e.into();

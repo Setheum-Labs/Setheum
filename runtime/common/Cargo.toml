@@ -10,17 +10,19 @@ num_enum = { version = "0.5.1", default-features = false }
 
 serde = { version = "1.0.124", optional = true, default-features = false }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-max-encoded-len = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
-pallet-scheduler  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4", default-features = false }
+sp-std = { version = '3.0.0', default-features = false }
+sp-core = { version = '3.0.0', default-features = false }
+sp-runtime = { version = '3.0.0', default-features = false }
+frame-support = { version = '3.0.0', default-features = false }
+frame-system = { version = '3.0.0', default-features = false }
+pallet-scheduler  = { version = '3.0.0', default-features = false }
+pallet-collective = { version = "3.0.0", default-features = false }
+pallet-membership = { version = "3.0.0", default-features = false }
+
 module-evm = { path = "../../lib-serml/evm", default-features = false }
 
-orml-oracle = { path = "../../lib-open/oracle", default-features = false }
-orml-traits = { path = "../../lib-open/traits", default-features = false }
+orml-oracle = { path = "../../open-lib/oracle", default-features = false }
+orml-traits = { path = "../../open-lib/traits", default-features = false }
 
 module-support = { path = "../../lib-serml/support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
@@ -30,13 +32,13 @@ primitives-proc-macro = { path = "../../primitives/proc-macro" }
 serde_json = "1.0.64"
 sha3 = { version = "0.9.1" }
 hex-literal = "0.3.1"
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
-pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.4" }
+sp-io = { version = '3.0.0' }
+pallet-timestamp = { version = '3.0.0' }
+pallet-balances = { version = '3.0.0' }
+pallet-proxy = { version = '3.0.0' }
+pallet-utility = { version = '3.0.0' }
 setheum-node = {  path = "../../node" }
-orml-tokens = { path = "../../lib-open/tokens", default-features = false }
+orml-tokens = { path = "../../open-lib/tokens", default-features = false }
 module-currencies = { path = "../../lib-serml/currencies" }
 module-evm-bridge = { path = "../../lib-serml/evm-bridge" }
 module-evm-manager = { path = "../../lib-serml/evm-manager" }
@@ -58,6 +60,8 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-scheduler/std",
+	"pallet-collective/std",
+	"pallet-membership/std",
 	"module-evm/std",
 	"orml-oracle/std",
 	"orml-traits/std",

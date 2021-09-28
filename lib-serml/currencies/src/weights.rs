@@ -34,7 +34,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./modules/currencies/src/weights.rs
+// --output=./lib-serml/currencies/src/weights.rs
 // --template=./templates/module-weight-template.hbs
 
 
@@ -48,6 +48,7 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions needed for module_currencies.
 pub trait WeightInfo {
+	fn airdrop() -> Weight;
 	fn transfer_non_native_currency() -> Weight;
 	fn transfer_native_currency() -> Weight;
 	fn update_balance_non_native_currency() -> Weight;
@@ -58,6 +59,11 @@ pub trait WeightInfo {
 /// Weights for module_currencies using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
+	fn airdrop() -> Weight {
+		(130_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(6 as Weight))
+			.saturating_add(T::DbWeight::get().writes(6 as Weight))
+	}
 	fn transfer_non_native_currency() -> Weight {
 		(65_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
@@ -81,6 +87,11 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
+	fn airdrop() -> Weight {
+		(130_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(6 as Weight))
+	}
 	fn transfer_non_native_currency() -> Weight {
 		(65_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
