@@ -165,7 +165,7 @@ pub trait SerpTreasury<AccountId> {
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult;
 
-	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar or Setter
 	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
@@ -173,6 +173,18 @@ pub trait SerpTreasury<AccountId> {
 	
 	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	/// Serplus ratio for BuyBack Swaps to burn Setter
+	fn get_buyback_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	/// Serplus ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+	
+	/// Serplus ratio for SetPay Cashdrops
+	fn get_cashdrop_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	/// issue system surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
@@ -227,6 +239,12 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 
 	/// When SetCurrency gets inflation deposit
 	fn swap_exact_setcurrency_to_setter(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+	);
+
+	/// When SetCurrency gets serplus deposit
+	fn serplus_swap_exact_setcurrency_to_setter(
 		currency_id: Self::CurrencyId,
 		supply_amount: Self::Balance,
 	);

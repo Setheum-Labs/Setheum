@@ -70,6 +70,7 @@ pub mod module {
 		type StableCurrencyInflationPeriod: Get<Self::BlockNumber>;
 
 		/// The minimum total supply/issuance required to keep a currency live on SERP.
+		/// This can be bypassed through the CDP-Treasury if necessary.
 		type GetStableCurrencyMinimumSupply: GetByKey<CurrencyId, Balance>;
 
 		#[pallet::constant]
@@ -99,6 +100,10 @@ pub mod module {
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// CharityFund account.
 		type CharityFundAccountId: Get<Self::AccountId>;
+
+		/// CDP-Treasury account for processing serplus funds 
+		/// CDPTreasury account.
+		type CDPTreasuryAccountId: Get<Self::AccountId>;
 
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// SetheumTreasury account.
@@ -167,6 +172,8 @@ pub mod module {
 		SerpTes(CurrencyId),
 		/// Currency SerpUp has been delivered successfully.
 		SerpUpDelivery(Balance, CurrencyId),
+		/// Currency SerpUp has been delivered successfully.
+		SerplusDelivery(Balance, CurrencyId),
 		/// Currency SerpUp has been completed successfully.
 		SerpUp(Balance, CurrencyId),
 		/// Currency SerpDown has been triggered successfully.
@@ -378,9 +385,9 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar or Setter
 	fn get_buyback_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		// Setheum Treasury SerpUp Pool - 40%
+		// Setheum Treasury BuyBack Pool - 40%
 		let four: Balance = 4;
 		let serping_amount: Balance = four.saturating_mul(amount / 10);
 		
@@ -404,7 +411,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let charity_fund_account = T::CharityFundAccountId::get();
 		// Charity Fund SerpUp Pool - 10%
 		let serping_amount: Balance = amount / 10;
-		// Issue the SerpUp propper to the SetPayVault
+		// Issue the SerpUp propper to the Charity Fund
 		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
 
 		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
@@ -425,6 +432,68 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	/// Serplus ratio for BuyBack Swaps to burn Setter
+	fn get_buyback_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		// Setheum Treasury BuyBack Pool - 40%
+		let four: Balance = 4;
+		let serping_amount: Balance = four.saturating_mul(amount / 10);
+		
+			<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_setter(
+				currency_id,
+				serping_amount,
+			);
+		} 
+
+		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
+		Ok(())
+	}
+
+	/// Serplus ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		let charity_fund = T::CharityFundAccountId::get();
+		// Charity Fund Serplus Pool - 10%
+		let serping_amount: Balance = amount / 10;
+		// Transfer the Serplus propper to the Charity Fund
+		T::Currency::transfer(currency_id, &T::CDPTreasuryAccountId, &charity_fund, serping_amount)?;
+
+		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
+		Ok(())
+	}
+
+	/// Serplus ratio for SetPay Cashdrops
+	fn get_cashdrop_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		let setpay = &T::CashDropPoolAccountId::get();
+
+		// SetPay Serplus Pool - 50%
+		let five: Balance = 5;
+		let serping_amount: Balance = five.saturating_mul(amount / 10);
+		// Transfer the Serplus propper to the SetPayVault
+		T::Currency::transfer(currency_id, &T::CDPTreasuryAccountId, &setpay, serping_amount)?;
+
+		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
+		Ok(())
+	}
+
+	/// issue system surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serplus(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
+		// ensure that the currency is a SetCurrency
+		ensure!(
+			T::StableCurrencyIds::get().contains(&currency_id),
+			Error::<T>:: InvalidCurrencyType,
+		);
+		// ensure that the amount is not zero
+		ensure!(
+			!amount.is_zero(),
+			Error::<T>::InvalidAmount,
+		);
+		Self::get_buyback_serplus(amount, currency_id)?;
+		Self::get_charity_fund_serplus(amount, currency_id)?;
+		Self::get_cashdrop_serplus(amount, currency_id)?;
+
+		Self::deposit_event(Event::SerpUp(amount, currency_id));
+		Ok(())
+	}
+
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serpup(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SetCurrency
@@ -437,9 +506,9 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			!amount.is_zero(),
 			Error::<T>::InvalidAmount,
 		);
-		Self::get_buyback_serpup(amount, currency_id)?;
-		Self::get_cashdrop_serpup(amount, currency_id)?;
 		Self::get_charity_fund_serpup(amount, currency_id)?;
+		Self::get_cashdrop_serpup(amount, currency_id)?;
+		Self::get_buyback_serpup(amount, currency_id)?;
 
 		Self::deposit_event(Event::SerpUp(amount, currency_id));
 		Ok(())
@@ -825,6 +894,61 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 					).is_ok() {
 						if T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
+							&path,
+							supply_amount.unique_saturated_into(),
+							// min_target_limit.unique_saturated_into(),
+						)
+						.is_ok()
+						{
+							// successfully swap, break iteration
+							break;
+						}
+					}
+			// 	}
+			// 	_ => {}
+			// }
+		}
+	}
+
+	/// Swap exact amount of SetCurrency to Setter,
+	/// return actual supply SetCurrency amount
+	///
+	/// 
+	/// When SetCurrency gets serplus deposit
+	#[allow(unused_variables)]
+	fn serplus_swap_exact_setcurrency_to_setter(
+		currency_id: CurrencyId,
+		supply_amount: Balance,
+	) {
+		let setter_currency_id = T::SetterCurrencyId::get();
+
+		let swap_path = T::DefaultSwapPathList::get();
+		
+		for path in swap_path {
+			// match path.last() {
+				// Some(setter_currency_id) if *setter_currency_id == setter_currency_id => {
+				// 	let currency_id = *path.first().expect("these's first guaranteed by match");
+				// 	// calculate the supply limit according to oracle price and the slippage limit,
+				// 	// if oracle price is not avalible, do not limit
+				// 	let min_target_limit = if let Some(target_price) =
+				// 		T::PriceSource::get_relative_price(*setter_currency_id, currency_id)
+				// 	{
+				// 		Ratio::one()
+				// 			.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				// 			.reciprocal()
+				// 			.unwrap_or_else(Ratio::max_value)
+				// 			.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
+				// 	} else {
+				// 		CurrencyBalanceOf::<T>::max_value()
+				// 	};
+
+					if T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).is_ok() {
+						if T::Dex::buyback_swap_with_exact_supply(
+							&T::CDPTreasuryAccountId,
 							&path,
 							supply_amount.unique_saturated_into(),
 							// min_target_limit.unique_saturated_into(),

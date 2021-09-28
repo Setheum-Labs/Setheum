@@ -217,7 +217,7 @@ pub mod module {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		/// All non-native currency ids in Acala.
+		/// All non-native currency ids in Setheum.
 		#[pallet::constant]
 		type AllNonNativeCurrencyIds: Get<Vec<CurrencyId>>;
 

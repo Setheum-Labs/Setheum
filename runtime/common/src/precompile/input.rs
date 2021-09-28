@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -269,11 +269,11 @@ mod tests {
 		let mut raw_input = [0u8; 68];
 		raw_input[64] = 1;
 		let input = TestInput::new(&raw_input[..]);
-		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::ACA));
+		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SETHEUM));
 
 		raw_input[67] = 1;
 		let input = TestInput::new(&raw_input[..]);
-		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::AUSD));
+		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SETUSD));
 	}
 
 	#[test]

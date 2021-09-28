@@ -307,6 +307,7 @@ impl Config for Runtime {
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
+	type CDPTreasuryAccountId = ();
 	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
 	type DefaultSwapPathList = DefaultSwapPathList;
 	type Dex = MockDEX;

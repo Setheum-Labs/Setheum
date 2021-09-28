@@ -45,7 +45,7 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for module_cdp_treasury.
+/// Weight functions needed for cdp_treasury.
 pub trait WeightInfo {
 	fn on_initialize(c: u32) -> Weight;
 	fn set_stable_currency_inflation_rate() -> Weight;
