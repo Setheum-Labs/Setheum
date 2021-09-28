@@ -23,11 +23,11 @@ use sp_runtime::FixedPointNumber;
 
 pub struct DebitExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> Convert<(CurrencyId, Balance), Balance> for DebitExchangeRateConvertor<T>
+impl<T> Convert<((CurrencyId, CurrencyId), Balance), Balance> for DebitExchangeRateConvertor<T>
 where
 	T: Config,
 {
-	fn convert((collateral_currency_id, stable_currency_id, balance): (CurrencyId, Balance)) -> Balance {
+	fn convert((collateral_currency_id, stable_currency_id), balance): ((CurrencyId, CurrencyId), Balance)) -> Balance {
 		<Pallet<T>>::get_debit_exchange_rate(collateral_currency_id, stable_currency_id).saturating_mul_int(balance)
 	}
 }

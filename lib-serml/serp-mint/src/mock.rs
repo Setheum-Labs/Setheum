@@ -257,7 +257,6 @@ impl cdp_engine::Config for Runtime {
 	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type UnsignedPriority = UnsignedPriority;
 	type EmergencyShutdown = MockEmergencyShutdown;
-	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
 

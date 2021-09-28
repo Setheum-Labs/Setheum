@@ -35,7 +35,7 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero}, ModuleId,
 	ArithmeticError, DispatchError, DispatchResult, FixedPointNumber,
 };
-use support::{AuctionManager, CDPTreasury, CDPTreasuryExtended, DEXManager, Ratio};
+use support::{AuctionManager, CDPTreasury, CDPTreasuryExtended, DEXManager, Ratio, SerpTreasury};
 
 mod mock;
 mod tests;
@@ -58,13 +58,9 @@ pub mod module {
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
-		#[pallet::constant]
-		/// Setter (SETR) currency Stablecoin currency id
-		type SetterCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The SetUSD currency id, it should be SETUSD in Setheum.
-		type GetSetUSDCurrencyId: Get<CurrencyId>;
+		/// SERP Treasury for issuing/burning stable currency adjust standard value
+		/// adjustment
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = BalanceOf<Self>, CurrencyId = CurrencyId>;
 
 		/// Auction manager creates auction to handle system surplus and debit
 		type AuctionManagerHandler: AuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
