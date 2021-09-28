@@ -178,7 +178,7 @@ impl module_evm_manager::Config for Test {
 parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
-	pub const NftModuleId: ModuleId = ModuleId(*b"aca/aNFT");
+	pub const NftModuleId: ModuleId = ModuleId(*b"set/aNFT");
 }
 impl module_nft::Config for Test {
 	type Event = Event;

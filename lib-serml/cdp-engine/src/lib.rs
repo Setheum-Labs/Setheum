@@ -83,9 +83,6 @@ pub struct RiskManagementParams {
 	/// type.
 	pub maximum_total_debit_value: Balance,
 
-	/// Extra interest rate per sec, `None` value means not set
-	pub interest_rate_per_sec: Option<Rate>,
-
 	/// Liquidation ratio, when the collateral ratio of
 	/// CDP under this collateral type is below the liquidation ratio, this
 	/// CDP is unsafe and can be liquidated. `None` value means not set
@@ -230,9 +227,6 @@ pub mod module {
 		/// \[collateral_type, owner, sold_collateral_amount,
 		/// refund_collateral_amount, debit_value\]
 		CloseCDPInDebitByDEX(CurrencyId, T::AccountId, Balance, Balance, Balance),
-		/// The interest rate per sec for specific collateral type updated.
-		/// \[collateral_type, new_interest_rate_per_sec\]
-		InterestRatePerSec(CurrencyId, Option<Rate>),
 		/// The liquidation fee for specific collateral type updated.
 		/// \[collateral_type, new_liquidation_ratio\]
 		LiquidationRatioUpdated(CurrencyId, Option<Ratio>),
@@ -245,9 +239,6 @@ pub mod module {
 		/// The hard cap of total debit value for specific collateral type
 		/// updated. \[collateral_type, new_total_debit_value\]
 		MaximumTotalDebitValueUpdated(CurrencyId, Balance),
-		/// The global interest rate per sec for all types of collateral
-		/// updated. \[new_global_interest_rate_per_sec\]
-		GlobalInterestRatePerSecUpdated(Rate),
 	}
 
 	/// Mapping from collateral type to its exchange rate of debit units and
@@ -258,13 +249,6 @@ pub mod module {
 	#[pallet::getter(fn debit_exchange_rate)]
 	pub type DebitExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, CurrencyExchangeRate, OptionQuery>;
 
-	/// Global interest rate per sec for all types of collateral
-	///
-	/// GlobalInterestRatePerSec: Rate
-	#[pallet::storage]
-	#[pallet::getter(fn global_interest_rate_per_sec)]
-	pub type GlobalInterestRatePerSec<T: Config> = StorageValue<_, Rate, ValueQuery>;
-
 	/// Mapping from collateral type to its risk management params
 	///
 	/// CollateralParams: CurrencyId => RiskManagementParams
@@ -272,25 +256,16 @@ pub mod module {
 	#[pallet::getter(fn collateral_params)]
 	pub type CollateralParams<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, RiskManagementParams, ValueQuery>;
 
-	/// Timestamp in seconds of the last interest accumulation
-	///
-	/// LastAccumulationSecs: u64
-	#[pallet::storage]
-	#[pallet::getter(fn last_accumulation_secs)]
-	pub type LastAccumulationSecs<T: Config> = StorageValue<_, u64, ValueQuery>;
-
 	#[pallet::genesis_config]
 	pub struct GenesisConfig {
 		#[allow(clippy::type_complexity)]
 		pub collaterals_params: Vec<(
 			CurrencyId,
-			Option<Rate>,
 			Option<Ratio>,
 			Option<Rate>,
 			Option<Ratio>,
 			Balance,
 		)>,
-		pub global_interest_rate_per_sec: Rate,
 	}
 
 	#[cfg(feature = "std")]
@@ -298,7 +273,6 @@ pub mod module {
 		fn default() -> Self {
 			GenesisConfig {
 				collaterals_params: vec![],
-				global_interest_rate_per_sec: Default::default(),
 			}
 		}
 	}
@@ -309,7 +283,6 @@ pub mod module {
 			self.collaterals_params.iter().for_each(
 				|(
 					currency_id,
-					interest_rate_per_sec,
 					liquidation_ratio,
 					liquidation_penalty,
 					required_collateral_ratio,
@@ -319,7 +292,6 @@ pub mod module {
 						currency_id,
 						RiskManagementParams {
 							maximum_total_debit_value: *maximum_total_debit_value,
-							interest_rate_per_sec: *interest_rate_per_sec,
 							liquidation_ratio: *liquidation_ratio,
 							liquidation_penalty: *liquidation_penalty,
 							required_collateral_ratio: *required_collateral_ratio,
@@ -327,7 +299,6 @@ pub mod module {
 					);
 				},
 			);
-			GlobalInterestRatePerSec::<T>::put(self.global_interest_rate_per_sec);
 		}
 	}
 
@@ -336,23 +307,6 @@ pub mod module {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		/// Issue interest in stable currency for all types of collateral has
-		/// debit when block end, and update their debit exchange rate
-		fn on_initialize(now: T::BlockNumber) -> Weight {
-			// only after the block #1, `T::UnixTime::now()` will not report error.
-			// https://github.com/paritytech/substrate/blob/4ff92f10058cfe1b379362673dd369e33a919e66/frame/timestamp/src/lib.rs#L276
-			// so accumulate interest at the beginning of the block #2
-			let now_as_secs: u64 = if now > One::one() {
-				T::UnixTime::now().as_secs()
-			} else {
-				Default::default()
-			};
-			<T as Config>::WeightInfo::on_initialize(Self::accumulate_interest(
-				now_as_secs,
-				Self::last_accumulation_secs(),
-			))
-		}
-
 		/// Runs after every block. Start offchain worker to check CDP and
 		/// submit unsigned tx to trigger liquidation or settlement.
 		fn offchain_worker(now: T::BlockNumber) {
@@ -415,28 +369,12 @@ pub mod module {
 			Ok(())
 		}
 
-		/// Update global parameters related to risk management of CDP
-		///
-		/// The dispatch origin of this call must be `UpdateOrigin`.
-		///
-		/// - `global_interest_rate_per_sec`: global interest rate per sec.
-		#[pallet::weight((<T as Config>::WeightInfo::set_global_params(), DispatchClass::Operational))]
-		#[transactional]
-		pub fn set_global_params(origin: OriginFor<T>, global_interest_rate_per_sec: Rate) -> DispatchResult {
-			T::UpdateOrigin::ensure_origin(origin)?;
-			GlobalInterestRatePerSec::<T>::put(global_interest_rate_per_sec);
-			Self::deposit_event(Event::GlobalInterestRatePerSecUpdated(global_interest_rate_per_sec));
-			Ok(())
-		}
-
 		/// Update parameters related to risk management of CDP under specific
 		/// collateral type
 		///
 		/// The dispatch origin of this call must be `UpdateOrigin`.
 		///
 		/// - `currency_id`: collateral type.
-		/// - `interest_rate_per_sec`: extra interest rate per sec, `None` means do not update,
-		///   `Some(None)` means update it to `None`.
 		/// - `liquidation_ratio`: liquidation ratio, `None` means do not update, `Some(None)` means
 		///   update it to `None`.
 		/// - `liquidation_penalty`: liquidation penalty, `None` means do not update, `Some(None)`
@@ -449,7 +387,6 @@ pub mod module {
 		pub fn set_collateral_params(
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
-			interest_rate_per_sec: ChangeOptionRate,
 			liquidation_ratio: ChangeOptionRatio,
 			liquidation_penalty: ChangeOptionRate,
 			required_collateral_ratio: ChangeOptionRatio,
@@ -462,10 +399,6 @@ pub mod module {
 			);
 
 			let mut collateral_params = Self::collateral_params(currency_id);
-			if let Change::NewValue(update) = interest_rate_per_sec {
-				collateral_params.interest_rate_per_sec = update;
-				Self::deposit_event(Event::InterestRatePerSec(currency_id, update));
-			}
 			if let Change::NewValue(update) = liquidation_ratio {
 				collateral_params.liquidation_ratio = update;
 				Self::deposit_event(Event::LiquidationRatioUpdated(currency_id, update));
@@ -663,20 +596,6 @@ impl<T: Config> Pallet<T> {
 
 	pub fn required_collateral_ratio(currency_id: CurrencyId) -> Option<Ratio> {
 		Self::collateral_params(currency_id).required_collateral_ratio
-	}
-
-	pub fn get_interest_rate_per_sec(currency_id: CurrencyId) -> Rate {
-		Self::collateral_params(currency_id)
-			.interest_rate_per_sec
-			.unwrap_or_default()
-			.saturating_add(Self::global_interest_rate_per_sec())
-	}
-
-	pub fn compound_interest_rate(rate_per_sec: Rate, secs: u64) -> Rate {
-		rate_per_sec
-			.saturating_add(Rate::one())
-			.saturating_pow(secs.unique_saturated_into())
-			.saturating_sub(Rate::one())
 	}
 
 	pub fn get_liquidation_ratio(currency_id: CurrencyId) -> Ratio {

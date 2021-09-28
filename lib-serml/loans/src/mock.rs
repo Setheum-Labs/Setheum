@@ -158,8 +158,8 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetStableCurrencyId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"aca/cdpt");
-	pub TreasuryAccount: AccountId = ModuleId(*b"aca/hztr").into_account();
+	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
+	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
 }
 
 impl cdp_treasury::Config for Runtime {
@@ -212,7 +212,7 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 }
 
 parameter_types! {
-	pub const LoansModuleId: ModuleId = ModuleId(*b"aca/loan");
+	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
 }
 
 impl Config for Runtime {

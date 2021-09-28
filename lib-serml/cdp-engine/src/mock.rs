@@ -127,7 +127,7 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const LoansModuleId: ModuleId = ModuleId(*b"aca/loan");
+	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
 }
 
 impl loans::Config for Runtime {
@@ -199,8 +199,8 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 parameter_types! {
 	pub const GetStableCurrencyId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"aca/cdpt");
-	pub TreasuryAccount: AccountId = ModuleId(*b"aca/hztr").into_account();
+	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
+	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
 }
 
 impl cdp_treasury::Config for Runtime {
@@ -217,7 +217,7 @@ impl cdp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	pub const DEXModuleId: ModuleId = ModuleId(*b"aca/dexm");
+	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
@@ -304,15 +304,15 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		CDPEngineModule: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned},
-		CDPTreasuryModule: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>},
-		Currencies: orml_currencies::{Pallet, Call, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		LoansModule: loans::{Pallet, Storage, Call, Event<T>},
-		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
-		DEXModule: module_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		CDPEngineModule: cdp_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},
+		CDPTreasuryModule: cdp_treasury::{Module, Storage, Call, Config, Event<T>},
+		Currencies: orml_currencies::{Module, Call, Event<T>},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		LoansModule: loans::{Module, Storage, Call, Event<T>},
+		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
+		DEXModule: module_dex::{Module, Storage, Call, Event<T>, Config<T>},
+		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
 	}
 );
 

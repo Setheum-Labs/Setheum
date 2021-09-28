@@ -130,7 +130,7 @@ parameter_types! {
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
 		TradingPair::from_currency_ids(BTC, DNAR).unwrap(),
 	];
-	pub const DEXModuleId: ModuleId = ModuleId(*b"aca/dexm");
+	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 }
 
 impl module_dex::Config for Runtime {
@@ -186,7 +186,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"aca/cdpt");
+	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 	pub const TreasuryAccount: AccountId = 10;
 }
 

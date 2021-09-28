@@ -110,8 +110,8 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetStableCurrencyId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"aca/cdpt");
-	pub TreasuryAccount: AccountId = ModuleId(*b"aca/hztr").into_account();
+	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
+	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
 }
 
 impl cdp_treasury::Config for Runtime {
@@ -152,7 +152,7 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	pub const DEXModuleId: ModuleId = ModuleId(*b"aca/dexm");
+	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![TradingPair::from_currency_ids(SETUSD, BTC).unwrap()];
