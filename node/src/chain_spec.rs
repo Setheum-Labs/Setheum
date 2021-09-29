@@ -366,22 +366,6 @@ fn testnet_genesis(
 		.into_iter()
 		.collect::<Vec<(AccountId, Balance)>>();
 
-			// SETHEUM vesting
-			let setheum_vesting_list_json = &include_bytes!("../../resources/SETHEUM-vesting.json")[..];
-			let setheum_vesting_list: Vec<(AccountId, BlockNumber, BlockNumber, u32, Balance)> =
-				serde_json::from_slice(setheum_vesting_list_json).unwrap();
-
-			// ensure no duplicates exist.
-			let setheum_unique_vesting_accounts = setheum_vesting_list
-				.iter()
-				.map(|(x, _, _, _, _)| x)
-				.cloned()
-				.collect::<std::collections::BTreeSet<_>>();
-			assert!(
-				setheum_unique_vesting_accounts.len() == setheum_vesting_list.len(),
-				"duplicate vesting accounts in genesis."
-			);
-
 	GenesisConfig {
 		frame_system: Some(SystemConfig {
 			// Add Wasm runtime to storage.
@@ -435,7 +419,6 @@ fn testnet_genesis(
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		orml_vesting: VestingConfig { vesting: setheum_vesting_list },
 		module_evm: Some(EvmConfig {
 			accounts: evm_genesis_accounts,
 		}),
@@ -529,22 +512,6 @@ fn mainnet_genesis(
 				"total allocation must be equal to 258 million SETHEUM"
 			);
 
-			// SETHEUM vesting
-			let setheum_vesting_list_json = &include_bytes!("../../resources/SETHEUM-vesting.json")[..];
-			let setheum_vesting_list: Vec<(AccountId, BlockNumber, BlockNumber, u32, Balance)> =
-				serde_json::from_slice(setheum_vesting_list_json).unwrap();
-
-			// ensure no duplicates exist.
-			let setheum_unique_vesting_accounts = setheum_vesting_list
-				.iter()
-				.map(|(x, _, _, _, _)| x)
-				.cloned()
-				.collect::<std::collections::BTreeSet<_>>();
-			assert!(
-				setheum_unique_vesting_accounts.len() == setheum_vesting_list.len(),
-				"duplicate vesting accounts in genesis."
-			);
-
 	GenesisConfig {
 		frame_system: Some(SystemConfig {
 			// Add Wasm runtime to storage.
@@ -591,7 +558,7 @@ fn mainnet_genesis(
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		orml_vesting: VestingConfig { vesting: setheum_vesting_list },
+		
 		},
 		pallet_treasury: Default::default(),
 		module_evm: Some(EvmConfig {
