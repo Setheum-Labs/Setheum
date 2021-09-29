@@ -745,7 +745,11 @@ impl<T: Config> Pallet<T> {
 		// and decrease CDP's debit to zero
 		let settle_price: Price = T::PriceSource::get_relative_price(stable_currency_id, collateral_currency_id)
 			.ok_or(Error::<T>::InvalidFeedPrice)?;
-		let bad_debt_value = Self::get_debit_value(collateral_currency_id, stable_currency_id, debit);
+		let bad_debt_value = Self::get_debit_value(
+			collateral_currency_id,
+			stable_currency_id,
+			debit
+		);
 		let confiscate_collateral_amount =
 			sp_std::cmp::min(settle_price.saturating_mul_int(bad_debt_value), collateral);
 
@@ -780,7 +784,11 @@ impl<T: Config> Pallet<T> {
 		<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
 
 		// swap exact stable with DEX in limit of price impact
-		let debit_value = Self::get_debit_value(collateral_currency_id, stable_currency_id, debit);
+		let debit_value = Self::get_debit_value(
+			collateral_currency_id,
+			stable_currency_id,
+			debit
+		);
 		let actual_supply_collateral = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
 			collateral_currency_id,
 			stable_currency_id,
@@ -827,7 +835,11 @@ impl<T: Config> Pallet<T> {
 		// confiscate all collateral and debit of unsafe cdp to cdp treasury
 		<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, collateral, debit)?;
 
-		let bad_debt_value = Self::get_debit_value(collateral_currency_id, stable_currency_id, debit);
+		let bad_debt_value = Self::get_debit_value(
+			collateral_currency_id,
+			stable_currency_id,
+			debit
+		);
 		let target_stable_amount = Self::get_liquidation_penalty(
 			collateral_currency_id,
 			stable_currency_id
@@ -881,8 +893,16 @@ impl<T: Config> Pallet<T> {
 }
 
 impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pallet<T> {
-	fn get_bad_debt_value(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId, debit_balance: Balance) -> Balance {
-		Self::get_debit_value(collateral_currency_id, stable_currency_id, debit_balance)
+	fn get_bad_debt_value(
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
+		debit_balance: Balance
+	) -> Balance {
+		Self::get_debit_value(
+			collateral_currency_id,
+			stable_currency_id,
+			debit_balance
+		)
 	}
 
 	fn check_position_valid(
@@ -898,7 +918,11 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 				Error::<T>::InvalidCollateralType,
 			);
 
-			let debit_value = Self::get_debit_value(collateral_currency_id, stable_currency_id, debit_balance);
+			let debit_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit_balance
+			);
 			let feed_price = <T as Config>::PriceSource::get_relative_price(collateral_currency_id, stable_currency_id)
 				.ok_or(Error::<T>::InvalidFeedPrice)?;
 			let collateral_ratio =
@@ -928,9 +952,17 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 		Ok(())
 	}
 
-	fn check_debit_cap(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId, total_debit_balance: Balance) -> DispatchResult {
+	fn check_debit_cap(
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
+		total_debit_balance: Balance
+	) -> DispatchResult {
 		let hard_cap = Self::maximum_total_debit_value(collateral_currency_id, stable_currency_id);
-		let total_debit_value = Self::get_debit_value(collateral_currency_id, stable_currency_id, total_debit_balance);
+		let total_debit_value = Self::get_debit_value(
+			collateral_currency_id,
+			stable_currency_id,
+			total_debit_balance
+		);
 
 		ensure!(total_debit_value <= hard_cap, Error::<T>::ExceedDebitValueHardCap,);
 

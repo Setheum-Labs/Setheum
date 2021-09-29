@@ -26,6 +26,73 @@ pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 pub type ExchangeRate = FixedU128;
 
+pub trait AuctionManager<AccountId> {
+	type CurrencyId;
+	type Balance;
+	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
+
+	fn new_collateral_auction(
+		refund_recipient: &AccountId,
+		collateral_currency_id: Self::CurrencyId,
+		stable_currency_id: Self::CurrencyId,
+		amount: Self::Balance,
+		target: Self::Balance,
+	) -> DispatchResult;
+	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
+	fn get_total_collateral_in_auction(id: Self::CurrencyId) -> Self::Balance;
+	fn get_total_target_in_auction(id: Self::CurrencyId) -> Self::Balance;
+}
+
+pub trait RiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
+	fn get_bad_debt_value(
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
+		debit_balance: DebitBalance
+	) -> Balance;
+
+	fn check_position_valid(
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
+		collateral_balance: Balance,
+		debit_balance: DebitBalance,
+	) -> DispatchResult;
+
+	fn check_debit_cap(
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
+		total_debit_balance: DebitBalance
+	) -> DispatchResult;
+}
+
+impl<AccountId, CurrencyId, Balance: Default, DebitBalance> RiskManager<AccountId, CurrencyId, Balance, DebitBalance>
+	for ()
+{
+	fn get_bad_debt_value(
+		_collateral_currency_id: CurrencyId,
+		_stable_currency_id: CurrencyId,
+		_debit_balance: DebitBalance
+	) -> Balance {
+		Default::default()
+	}
+
+	fn check_position_valid(
+		_collateral_currency_id: CurrencyId,
+		_stable_currency_id: CurrencyId,
+		_collateral_balance: Balance,
+		_debit_balance: DebitBalance,
+	) -> DispatchResult {
+		Ok(())
+	}
+
+	fn check_debit_cap(
+		_collateral_currency_id: CurrencyId,
+		_stable_currency_id: CurrencyId,
+		_total_debit_balance: DebitBalance
+	) -> DispatchResult {
+		Ok(())
+	}
+}
+
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
@@ -254,6 +321,76 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		currency_id: Self::CurrencyId,
 		supply_amount: Self::Balance,
 	);
+}
+
+/// An abstraction of cdp treasury for Honzon Protocol.
+pub trait CDPTreasury<AccountId> {
+	type Balance;
+	type CurrencyId;
+
+	/// get surplus amount of cdp treasury
+	fn get_surplus_pool() -> Self::Balance;
+
+	/// get debit amount of cdp treasury
+	fn get_debit_pool(currency_id: Self::CurrencyId) -> Self::Balance;
+
+	/// get collateral assets amount of cdp treasury
+	fn get_total_collaterals(id: Self::CurrencyId) -> Self::Balance;
+
+	/// calculate the proportion of specific debit amount for the whole system
+	fn get_debit_proportion(currency_id: Self::CurrencyId) -> Ratio;
+
+	/// issue debit for cdp treasury
+	fn on_system_debit(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// issue surplus(stable currency) for cdp treasury
+	fn on_system_surplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// issue debit to `who`
+	/// if backed flag is true, means the debit to issue is backed on some
+	/// assets, otherwise will increase same amount of debit to system debit.
+	fn issue_debit(who: &AccountId, currency_id: Self::CurrencyId, debit: Self::Balance, backed: bool) -> DispatchResult;
+
+	/// burn debit(stable currency) of `who`
+	fn burn_debit(who: &AccountId, currency_id: Self::CurrencyId, debit: Self::Balance) -> DispatchResult;
+
+	/// deposit surplus(stable currency) to cdp treasury by `from`
+	fn deposit_surplus(from: &AccountId, currency_id: Self::CurrencyId, surplus: Self::Balance) -> DispatchResult;
+
+	/// deposit collateral assets to cdp treasury by `who`
+	fn deposit_collateral(from: &AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// withdraw collateral assets of cdp treasury to `who`
+	fn withdraw_collateral(to: &AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+}
+
+pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
+	fn swap_exact_collateral_to_stable(
+		collateral_currency_id: Self::CurrencyId,
+		stable_currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+		min_target_amount: Self::Balance,
+		maybe_path: Option<&[Self::CurrencyId]>,
+		collateral_in_auction: bool,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	fn swap_collateral_to_exact_stable(
+		collateral_currency_id: Self::CurrencyId,
+		stable_currency_id: Self::CurrencyId,
+		max_supply_amount: Self::Balance,
+		target_amount: Self::Balance,
+		maybe_path: Option<&[Self::CurrencyId]>,
+		collateral_in_auction: bool,
+	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+
+	fn create_collateral_auctions(
+		collateral_currency_id: Self::CurrencyId,
+		stable_currency_id: Self::CurrencyId,
+		amount: Self::Balance,
+		target: Self::Balance,
+		refund_receiver: AccountId,
+		splited: bool,
+	) -> DispatchResult;
 }
 
 pub trait PriceProvider<CurrencyId> {

@@ -36,4 +36,3 @@ std = [
 	"primitives/std",
 	"support/std",
 ]
-try-runtime = ["frame-support/try-runtime"]

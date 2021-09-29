@@ -185,7 +185,8 @@ pub mod module {
 		) -> DispatchResult {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			<Self as CDPTreasuryExtended<T::AccountId>>::create_collateral_auctions(
-				currency_id,
+				collateral_currency_id,
+				stable_currency_id,
 				amount,
 				target,
 				Self::account_id(),

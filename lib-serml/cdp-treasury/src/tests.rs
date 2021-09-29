@@ -414,7 +414,7 @@ fn extract_surplus_work() {
 		assert_eq!(Currencies::free_balance(SETUSD, &TreasuryAccount::get()), 0);
 
 		assert_noop!(
-			CDPTreasuryModule::extract_surplus(Origin::signed(5), 200),
+			CDPTreasuryModule::extract_surplus(SETUSD, Origin::signed(5), 200),
 			BadOrigin
 		);
 		assert_ok!(CDPTreasuryModule::extract_surplus(Origin::signed(1), 200));

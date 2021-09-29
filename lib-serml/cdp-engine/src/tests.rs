@@ -117,7 +117,7 @@ fn set_collateral_params_work() {
 		assert_noop!(
 			CDPEngineModule::set_collateral_params(
 				Origin::signed(1),
-				LDNAR,
+				SETR,
 				Change::NoChange,
 				Change::NoChange,
 				Change::NoChange,

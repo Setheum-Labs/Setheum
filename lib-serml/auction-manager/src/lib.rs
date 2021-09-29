@@ -225,11 +225,12 @@ pub mod module {
 	pub type TotalCollateralInAuction<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	/// Record of total target sales of all active collateral auctions
+	/// under specific stable currency type StableType => Balance
 	///
-	/// TotalTargetInAuction: Balance
+	/// TotalTargetInAuction: map CurrencyId => Balance
 	#[pallet::storage]
 	#[pallet::getter(fn total_target_in_auction)]
-	pub type TotalTargetInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
+	pub type TotalTargetInAuction<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -429,7 +430,9 @@ impl<T: Config> Pallet<T> {
 		TotalCollateralInAuction::<T>::mutate(collateral_auction.collateral_currency_id, |balance| {
 			*balance = balance.saturating_sub(collateral_auction.amount)
 		});
-		TotalTargetInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(collateral_auction.target));
+		TotalTargetInAuction::<T>::mutate(collateral_auction.stable_currency_id, |balance| {
+			*balance = balance.saturating_sub(collateral_auction.target));
+		});
 
 		Ok(())
 	}
@@ -669,7 +672,9 @@ impl<T: Config> Pallet<T> {
 		TotalCollateralInAuction::<T>::mutate(collateral_auction.collateral_currency_id, |balance| {
 			*balance = balance.saturating_sub(collateral_auction.amount)
 		});
-		TotalTargetInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(collateral_auction.target));
+		TotalTargetInAuction::<T>::mutate(collateral_auction.stable_currency_id, |balance| {
+			*balance = balance.saturating_sub(collateral_auction.target))
+		});
 	}
 
 	/// increment `new_bidder` reference and decrement `last_bidder`
@@ -746,7 +751,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 
 		if !target.is_zero() {
 			// no-op if target is zero
-			TotalTargetInAuction::<T>::try_mutate(|total| -> DispatchResult {
+			TotalTargetInAuction::<T>::try_mutate(stable_currency_id, |total| -> DispatchResult {
 				*total = total.checked_add(target).ok_or(Error::<T>::InvalidAmount)?;
 				Ok(())
 			})?;
@@ -798,7 +803,12 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 		Self::total_collateral_in_auction(id)
 	}
 
-	fn get_total_target_in_auction() -> Self::Balance {
-		Self::total_target_in_auction()
+	fn get_total_target_in_auction(id: Self::CurrencyId) -> Self::Balance {
+		ensure!(
+			T::StableCurrencyIds::get().contains(&id),
+			Error::<T>::InvalidCurrencyType,
+		);
+
+		Self::total_target_in_auction(id)
 	}
 }
