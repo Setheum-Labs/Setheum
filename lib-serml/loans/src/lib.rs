@@ -33,7 +33,7 @@ use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	ModuleId,
 	traits::{AccountIdConversion, Convert, Zero},
-	ArithmeticError, DispatchResult, RuntimeDebug,
+	DispatchResult, RuntimeDebug,
 };
 use sp_std::{convert::TryInto, result};
 use support::{CDPTreasury, RiskManager};

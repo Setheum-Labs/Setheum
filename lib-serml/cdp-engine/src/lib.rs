@@ -28,7 +28,7 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use frame_support::{log, pallet_prelude::*, transactional};
+use frame_support::{debug, pallet_prelude::*, transactional};
 use frame_system::{
 	offchain::{SendTransactionTypes, SubmitTransaction},
 	pallet_prelude::*,
@@ -299,14 +299,14 @@ pub mod module {
 		/// submit unsigned tx to trigger liquidation or settlement.
 		fn offchain_worker(now: T::BlockNumber) {
 			if let Err(e) = Self::_offchain_worker() {
-				log::info!(
+				debug::info!(
 					target: "cdp-engine offchain worker",
 					"cannot run offchain worker at {:?}: {:?}",
 					now,
 					e,
 				);
 			} else {
-				log::debug!(
+				debug::debug!(
 					target: "cdp-engine offchain worker",
 					"offchain worker start at block: {:?} already done!",
 					now,
@@ -481,7 +481,7 @@ impl<T: Config> Pallet<T> {
 
 		let call = Call::<T>::liquidate(collateral_currency_id, stable_currency_id, who.clone());
 		if SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).is_err() {
-			log::info!(
+			debug::info!(
 				target: "cdp-engine offchain worker",
 				"submit unsigned liquidation tx for \nCDP - AccountId {:?} CurrencyId {:?} CurrencyId {:?} \nfailed!",
 				who, collateral_currency_id, stable_currency_id,
@@ -499,7 +499,7 @@ impl<T: Config> Pallet<T> {
 
 		let call = Call::<T>::settle(collateral_currency_id, stable_currency_id, who.clone());
 		if SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).is_err() {
-			log::info!(
+			debug::info!(
 				target: "cdp-engine offchain worker",
 				"submit unsigned settlement tx for \nCDP - AccountId {:?} CurrencyId {:?} CurrencyId {:?} \nfailed!",
 				who, collateral_currency_id, stable_currency_id,
@@ -574,7 +574,7 @@ impl<T: Config> Pallet<T> {
 			guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
 		}
 		let iteration_end_time = sp_io::offchain::timestamp();
-		log::debug!(
+		debug::debug!(
 			target: "cdp-engine offchain worker",
 			"iteration info:\n max iterations is {:?}\n currency id: {:?}, start key: {:?}, iterate count: {:?}\n iteration start at: {:?}, end at: {:?}, execution time: {:?}\n",
 			max_iterations,

@@ -29,7 +29,7 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use frame_support::{log, pallet_prelude::*, transactional};
+use frame_support::{debug, pallet_prelude::*, transactional};
 use frame_system::{
 	offchain::{SendTransactionTypes, SubmitTransaction},
 	pallet_prelude::*,
@@ -242,13 +242,13 @@ pub mod module {
 		fn offchain_worker(now: T::BlockNumber) {
 			if T::EmergencyShutdown::is_shutdown() && sp_io::offchain::is_validator() {
 				if let Err(e) = Self::_offchain_worker() {
-					log::info!(
+					debug::info!(
 						target: "auction-manager",
 						"offchain worker: cannot run offchain worker at {:?}: {:?}",
 						now, e,
 					);
 				} else {
-					log::debug!(
+					debug::debug!(
 						target: "auction-manager",
 						"offchain worker: offchain worker start at block: {:?} already done!",
 						now,
@@ -315,7 +315,7 @@ impl<T: Config> Pallet<T> {
 	fn submit_cancel_auction_tx(auction_id: AuctionId) {
 		let call = Call::<T>::cancel(auction_id);
 		if let Err(err) = SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()) {
-			log::info!(
+			debug::info!(
 				target: "auction-manager",
 				"offchain worker: submit unsigned auction cancel tx for AuctionId {:?} failed: {:?}",
 				auction_id, err,
@@ -340,7 +340,7 @@ impl<T: Config> Pallet<T> {
 			.get::<u32>()
 			.unwrap_or(Some(DEFAULT_MAX_ITERATIONS));
 
-		log::debug!(
+		debug::debug!(
 			target: "auction-manager",
 			"offchain worker: max iterations is {:?}",
 			max_iterations
@@ -592,7 +592,7 @@ impl<T: Config> Pallet<T> {
 					// can be fixed by treasury council.
 					let res = T::CDPTreasury::issue_debit(&bidder, collateral_auction.stable_currency_id, bid_price, false);
 					if let Err(e) = res {
-						log::warn!(
+						debug::warn!(
 							target: "auction-manager",
 							"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
 							This is unexpected but should be safe",
@@ -612,7 +612,7 @@ impl<T: Config> Pallet<T> {
 						let res =
 							T::CDPTreasury::issue_debit(&collateral_auction.refund_recipient, collateral_auction.stable_currency_id, refund_amount, false);
 						if let Err(e) = res {
-							log::warn!(
+							debug::warn!(
 								target: "auction-manager",
 								"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
 								This is unexpected but should be safe",
@@ -642,7 +642,7 @@ impl<T: Config> Pallet<T> {
 					collateral_auction.amount,
 				);
 				if let Err(e) = res {
-					log::warn!(
+					debug::warn!(
 						target: "auction-manager",
 						"withdraw_collateral: failed to withdraw {:?} {:?} from CDP treasury to {:?}: {:?}. \
 						This is unexpected but should be safe",
@@ -684,7 +684,7 @@ impl<T: Config> Pallet<T> {
 			// No providers for the locks. This is impossible under normal circumstances
 			// since the funds that are under the lock will themselves be stored in the
 			// account and therefore will need a reference.
-			log::warn!(
+			debug::warn!(
 				target: "auction-manager",
 				"inc_consumers: failed for {:?}. \
 				This is impossible under normal circumstances.",
@@ -780,7 +780,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			// No providers for the locks. This is impossible under normal circumstances
 			// since the funds that are under the lock will themselves be stored in the
 			// account and therefore will need a reference.
-			log::warn!(
+			debug::warn!(
 				target: "auction-manager",
 				"Attempt to `inc_consumers` for {:?} failed. \
 				This is unexpected but should be safe.",

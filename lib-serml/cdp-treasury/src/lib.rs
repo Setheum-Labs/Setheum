@@ -27,13 +27,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{log, pallet_prelude::*, transactional};
+use frame_support::{debug, pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero}, ModuleId,
-	ArithmeticError, DispatchError, DispatchResult, FixedPointNumber,
+	DispatchError, DispatchResult, FixedPointNumber,
 };
 use support::{AuctionManager, CDPTreasury, CDPTreasuryExtended, DEXManager, Ratio, SerpTreasury};
 
@@ -100,6 +100,8 @@ pub mod module {
 		InvalidSwapPath,
 		/// The Currency is invalid
 		InvalidCurrencyType,
+		/// Arithmetic Overflow
+		Overflow,
 	}
 
 	#[pallet::event]
@@ -168,7 +170,7 @@ pub mod module {
 		// Extract surplus to SerpTreasury.
 		#[pallet::weight(T::WeightInfo::extract_surplus())]
 		#[transactional]
-		pub fn extract_surplus(currency_id: CurrencyId, origin: OriginFor<T>, amount: Balance) -> DispatchResult {
+		pub fn extract_surplus(origin: OriginFor<T>, currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			T::SerpTreasury::on_serplus(currency_id, amount)?;
 			Ok(())
@@ -259,7 +261,7 @@ impl<T: Config> Pallet<T> {
 						});
 					}
 					Err(e) => {
-						log::warn!(
+						debug::warn!(
 							target: "cdp-treasury",
 							"get_swap_supply_amount: Attempt to burn surplus {:?} failed: {:?}, this is unexpected but should be safe",
 							offset_amount, e
@@ -302,7 +304,7 @@ impl<T: Config> CDPTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::InvalidCurrencyType,
 		);
 		DebitPool::<T>::try_mutate(|(currency_id, debit_pool)| -> DispatchResult {
-			*debit_pool = debit_pool.checked_add(amount).ok_or(ArithmeticError::Overflow)?;
+			*debit_pool = debit_pool.checked_add(amount).ok_or(Error::<T>::Overflow)?;
 			Ok(())
 		})
 	}
