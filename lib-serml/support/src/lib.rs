@@ -329,7 +329,7 @@ pub trait CDPTreasury<AccountId> {
 	type CurrencyId;
 
 	/// get surplus amount of cdp treasury
-	fn get_surplus_pool() -> Self::Balance;
+	fn get_surplus_pool(currency_id: Self::CurrencyId) -> Self::Balance;
 
 	/// get debit amount of cdp treasury
 	fn get_debit_pool(currency_id: Self::CurrencyId) -> Self::Balance;
@@ -338,7 +338,7 @@ pub trait CDPTreasury<AccountId> {
 	fn get_total_collaterals(id: Self::CurrencyId) -> Self::Balance;
 
 	/// calculate the proportion of specific debit amount for the whole system
-	fn get_debit_proportion(currency_id: Self::CurrencyId) -> Ratio;
+	fn get_debit_proportion(currency_id: Self::CurrencyId, amount: Self::Balance) -> Ratio;
 
 	/// issue debit for cdp treasury
 	fn on_system_debit(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;

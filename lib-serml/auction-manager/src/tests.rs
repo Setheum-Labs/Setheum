@@ -70,9 +70,9 @@ fn new_collateral_auction_work() {
 		);
 
 		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, BTC, SETUSD, 10, 100));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::NewCollateralAuction(
+		Event::AuctionManagerModule(crate::Event::NewCollateralAuction(
 			0, BTC, SETUSD, 10, 100,
-		)));
+		));
 
 		assert_eq!(AuctionManagerModule::total_collateral_in_auction(BTC), 10);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 100);
@@ -178,7 +178,7 @@ fn collateral_auction_end_handler_without_bid() {
 
 		assert_eq!(AuctionManagerModule::collateral_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, None);
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CancelAuction(0)));
+		Event::AuctionManagerModule(crate::Event::CancelAuction(0));
 
 		assert_eq!(CDPTreasuryModule::total_collaterals(BTC), 100);
 		assert_eq!(AuctionManagerModule::collateral_auctions(0), None);
@@ -211,9 +211,9 @@ fn collateral_auction_end_handler_in_reverse_stage() {
 
 		assert_eq!(AuctionManagerModule::collateral_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, Some((BOB, 400)));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CollateralAuctionDealt(
+		Event::AuctionManagerModule(crate::Event::CollateralAuctionDealt(
 			0, BTC, 50, BOB, 200,
-		)));
+		));
 
 		assert_eq!(CDPTreasuryModule::total_collaterals(BTC), 0);
 		assert_eq!(AuctionManagerModule::collateral_auctions(0), None);
@@ -252,9 +252,9 @@ fn collateral_auction_end_handler_by_dealing_which_target_not_zero() {
 
 		assert_eq!(AuctionManagerModule::collateral_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, Some((BOB, 100)));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CollateralAuctionDealt(
+		Event::AuctionManagerModule(crate::Event::CollateralAuctionDealt(
 			0, BTC, 100, BOB, 100,
-		)));
+		));
 
 		assert_eq!(CDPTreasuryModule::total_collaterals(BTC), 0);
 		assert_eq!(AuctionManagerModule::collateral_auctions(0), None);
@@ -305,9 +305,9 @@ fn collateral_auction_end_handler_by_dex_which_target_not_zero() {
 
 		assert_eq!(AuctionManagerModule::collateral_auctions(0).is_some(), true);
 		AuctionManagerModule::on_auction_ended(0, Some((BOB, 20)));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::DEXTakeCollateralAuction(
+		Event::AuctionManagerModule(crate::Event::DEXTakeCollateralAuction(
 			0, BTC, 100, 500,
-		)));
+		));
 
 		assert_eq!(CDPTreasuryModule::total_collaterals(BTC), 0);
 		assert_eq!(AuctionManagerModule::collateral_auctions(0), None);
@@ -400,7 +400,7 @@ fn cancel_collateral_auction_work() {
 
 		mock_shutdown();
 		assert_ok!(AuctionManagerModule::cancel(Origin::none(), 0));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CancelAuction(0)));
+		Event::AuctionManagerModule(crate::Event::CancelAuction(0));
 
 		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1000);
 		assert_eq!(AuctionManagerModule::total_collateral_in_auction(BTC), 0);

@@ -22,7 +22,7 @@
 
 use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
-use frame_system::{EnsureOneOf, EnsureRoot, EnsureSignedBy};
+use frame_system::{EnsureOneOf, EnsureRoot, EnsureSignedBy, __InherentHiddenInstance, Module};
 use orml_traits::parameter_type_with_key;
 use primitives::{TokenSymbol, TradingPair};
 use sp_core::H256;
@@ -38,8 +38,11 @@ pub type AuctionId = u32;
 
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
+pub const BUYBACK_POOL: AccountId = 1;
 pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
@@ -74,7 +77,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -91,7 +93,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -105,8 +106,6 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
@@ -124,8 +123,14 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETEUR,
+		SETUSD,
+	];
+	pub GetExchangeFee: (u32, u32) = (0, 100);
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
+	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(SETUSD, BTC).unwrap(),
@@ -139,10 +144,12 @@ impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
+	type StableCurrencyIds = StableCurrencyIds;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
+	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
 	type ModuleId = DEXModuleId;
 	type CurrencyIdMapping = ();
-	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
@@ -160,7 +167,8 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 
 	fn new_collateral_auction(
 		_refund_recipient: &AccountId,
-		_currency_id: Self::CurrencyId,
+		_collateral_currency_id: Self::CurrencyId,
+		_stable_currency_id: Self::CurrencyId,
 		amount: Self::Balance,
 		_target: Self::Balance,
 	) -> DispatchResult {
@@ -177,7 +185,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		TOTAL_COLLATERAL_IN_AUCTION.with(|v| *v.borrow_mut())
 	}
 
-	fn get_total_target_in_auction() -> Self::Balance {
+	fn get_total_target_in_auction(_currency_id: Self::CurrencyId) -> Self::Balance {
 		unimplemented!()
 	}
 }
@@ -340,7 +348,7 @@ thread_local! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyIds = GetStableCurrencyIds;
+	type StableCurrencyIds = StableCurrencyIds;
 	type AuctionManagerHandler = MockAuctionManager;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -369,13 +377,13 @@ construct_runtime!(
 );
 
 pub struct ExtBuilder {
-	balances: Vec<(AccountId, CurrencyId, Balance)>,
+	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			balances: vec![
+			endowed_accounts: vec![
 				(ALICE, DNAR, 1000),
 				(ALICE, SETUSD, 1000),
 				(ALICE, BTC, 1000),
@@ -394,7 +402,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		orml_tokens::GenesisConfig::<Runtime> {
-			balances: self.balances,
+			endowed_accounts: self.endowed_accounts,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

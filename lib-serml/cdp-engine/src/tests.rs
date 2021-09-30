@@ -383,13 +383,13 @@ fn liquidate_unsafe_cdp_by_collateral_auction() {
 			Change::NoChange,
 		));
 		assert_ok!(CDPEngineModule::liquidate_unsafe_cdp(ALICE, BTC));
-		System::assert_last_event(Event::CDPEngineModule(crate::Event::LiquidateUnsafeCDP(
+		Event::CDPEngineModule(crate::Event::LiquidateUnsafeCDP(
 			BTC,
 			ALICE,
 			100,
 			50,
 			LiquidationStrategy::Auction,
-		)));
+		));
 		assert_eq!(CDPTreasuryModule::debit_pool(), 50);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 50);
@@ -429,7 +429,7 @@ fn settle_cdp_has_debit_work() {
 		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
 		assert_eq!(CDPTreasuryModule::total_collaterals(BTC), 0);
 		assert_ok!(CDPEngineModule::settle_cdp_has_debit(ALICE, BTC));
-		System::assert_last_event(Event::CDPEngineModule(crate::Event::SettleCDPInDebit(BTC, ALICE)));
+		Event::CDPEngineModule(crate::Event::SettleCDPInDebit(BTC, ALICE));
 		assert_eq!(LoansModule::positions(BTC, ALICE).debit, 0);
 		assert_eq!(CDPTreasuryModule::debit_pool(), 50);
 		assert_eq!(CDPTreasuryModule::total_collaterals(BTC), 50);
@@ -504,9 +504,9 @@ fn close_cdp_has_debit_by_dex_work() {
 			Change::NoChange,
 		));
 		assert_ok!(CDPEngineModule::close_cdp_has_debit_by_dex(ALICE, BTC, None));
-		System::assert_last_event(Event::CDPEngineModule(crate::Event::CloseCDPInDebitByDEX(
+		Event::CDPEngineModule(crate::Event::CloseCDPInDebitByDEX(
 			BTC, ALICE, 6, 94, 50,
-		)));
+		));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 994);
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 50);
 		assert_eq!(LoansModule::positions(BTC, ALICE).debit, 0);

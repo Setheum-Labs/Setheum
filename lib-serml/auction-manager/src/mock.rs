@@ -153,19 +153,21 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 
 parameter_types! {
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
+	pub GetExchangeFee: (u32, u32) = (0, 100);
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
+	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![TradingPair::from_currency_ids(SETUSD, BTC).unwrap()];
 }
-
 impl module_dex::Config for Runtime {
 	type Event = Event;
-	type Currency = Tokens;
+	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
+	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
 	type ModuleId = DEXModuleId;
 	type CurrencyIdMapping = ();
-	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }

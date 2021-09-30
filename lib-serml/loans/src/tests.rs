@@ -100,7 +100,7 @@ fn adjust_position_should_work() {
 		assert_eq!(LoansModule::positions(BTC, &ALICE).debit, 300);
 		assert_eq!(LoansModule::positions(BTC, &ALICE).collateral, 500);
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 150);
-		System::assert_last_event(Event::LoansModule(crate::Event::PositionUpdated(ALICE, BTC, 500, 300)));
+		Event::LoansModule(crate::Event::PositionUpdated(ALICE, BTC, 500, 300));
 
 		// collateral_adjustment is negatives
 		// remove module account.
@@ -170,7 +170,7 @@ fn transfer_loan_should_work() {
 		assert_eq!(LoansModule::positions(BTC, &ALICE).collateral, 0);
 		assert_eq!(LoansModule::positions(BTC, &BOB).debit, 1100);
 		assert_eq!(LoansModule::positions(BTC, &BOB).collateral, 500);
-		System::assert_last_event(Event::LoansModule(crate::Event::TransferLoan(ALICE, BOB, BTC)));
+		Event::LoansModule(crate::Event::TransferLoan(ALICE, BOB, BTC));
 	});
 }
 
@@ -198,8 +198,8 @@ fn confiscate_collateral_and_debit_work() {
 		assert_eq!(CDPTreasuryModule::debit_pool(), 100);
 		assert_eq!(LoansModule::positions(BTC, &ALICE).debit, 100);
 		assert_eq!(LoansModule::positions(BTC, &ALICE).collateral, 200);
-		System::assert_last_event(Event::LoansModule(crate::Event::ConfiscateCollateralAndDebit(
+		Event::LoansModule(crate::Event::ConfiscateCollateralAndDebit(
 			ALICE, BTC, 300, 200,
-		)));
+		));
 	});
 }

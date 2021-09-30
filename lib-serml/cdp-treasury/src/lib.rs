@@ -37,6 +37,7 @@ use sp_runtime::{
 };
 use support::{AuctionManager, CDPTreasury, CDPTreasuryExtended, DEXManager, Ratio, SerpTreasury};
 
+mod benchmarking;
 mod mock;
 mod tests;
 pub mod weights;
@@ -60,7 +61,7 @@ pub mod module {
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = BalanceOf<Self>, CurrencyId = CurrencyId>;
+		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// Auction manager creates auction to handle system surplus and debit
 		type AuctionManagerHandler: AuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -96,12 +97,12 @@ pub mod module {
 		SurplusPoolNotEnough,
 		/// The debit pool of CDP treasury is not enough
 		DebitPoolNotEnough,
+		/// debit pool overflow
+		DebitPoolOverflow,
 		/// The swap path is invalid
 		InvalidSwapPath,
 		/// The Currency is invalid
 		InvalidCurrencyType,
-		/// Arithmetic Overflow
-		Overflow,
 	}
 
 	#[pallet::event]
@@ -154,7 +155,7 @@ pub mod module {
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(_);
+	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
@@ -170,21 +171,22 @@ pub mod module {
 		// Extract surplus to SerpTreasury.
 		#[pallet::weight(T::WeightInfo::extract_surplus())]
 		#[transactional]
-		pub fn extract_surplus(origin: OriginFor<T>, currency_id: CurrencyId, amount: Balance) -> DispatchResult {
+		pub fn extract_surplus(origin: OriginFor<T>, currency_id: CurrencyId, amount: Balance) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			T::SerpTreasury::on_serplus(currency_id, amount)?;
-			Ok(())
+			Ok(().into())
 		}
 
 		#[pallet::weight(T::WeightInfo::auction_collateral())]
 		#[transactional]
 		pub fn auction_collateral(
 			origin: OriginFor<T>,
-			currency_id: CurrencyId,
+			collateral_currency_id: CurrencyId,
+			stable_currency_id: CurrencyId,
 			amount: Balance,
 			target: Balance,
 			splited: bool,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			<Self as CDPTreasuryExtended<T::AccountId>>::create_collateral_auctions(
 				collateral_currency_id,
@@ -194,7 +196,7 @@ pub mod module {
 				Self::account_id(),
 				splited,
 			)?;
-			Ok(())
+			Ok(().into())
 		}
 
 		/// Update parameters related to collateral auction under specific
@@ -210,11 +212,11 @@ pub mod module {
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			size: Balance,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ExpectedCollateralAuctionSize::<T>::insert(currency_id, size);
 			Self::deposit_event(Event::ExpectedCollateralAuctionSizeUpdated(currency_id, size));
-			Ok(())
+			Ok(().into())
 		}
 	}
 }
@@ -227,10 +229,6 @@ impl<T: Config> Pallet<T> {
 
 	/// Get current total surplus of system under `currency_id`.
 	pub fn surplus_pool(currency_id: CurrencyId) -> Balance {
-		ensure!(
-			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidCurrencyType,
-		);
 		T::Currency::free_balance(currency_id, &Self::account_id())
 	}
 
@@ -254,7 +252,7 @@ impl<T: Config> Pallet<T> {
 				let res = T::Currency::withdraw(currency_id, &Self::account_id(), offset_amount);
 				match res {
 					Ok(_) => {
-						DebitPool::<T>::mutate(|(currency_id, debit)| {
+						DebitPool::<T>::mutate(currency_id, |debit| {
 							*debit = debit
 								.checked_sub(offset_amount)
 								.expect("offset = min(debit, surplus); qed")
@@ -277,8 +275,8 @@ impl<T: Config> CDPTreasury<T::AccountId> for Pallet<T> {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
-	fn get_surplus_pool() -> Self::Balance {
-		Self::surplus_pool()
+	fn get_surplus_pool(currency_id: Self::CurrencyId) -> Self::Balance {
+		Self::surplus_pool(currency_id)
 	}
 
 	fn get_debit_pool(currency_id: Self::CurrencyId) -> Self::Balance {
@@ -290,10 +288,6 @@ impl<T: Config> CDPTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	fn get_debit_proportion(currency_id: Self::CurrencyId, amount: Self::Balance) -> Ratio {
-		ensure!(
-			T::StableCurrencyIds::get().contains(&currency_id),
-			Error::<T>::InvalidCurrencyType,
-		);
 		let stable_total_supply = T::Currency::total_issuance(currency_id);
 		Ratio::checked_from_rational(amount, stable_total_supply).unwrap_or_default()
 	}
@@ -303,8 +297,8 @@ impl<T: Config> CDPTreasury<T::AccountId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		DebitPool::<T>::try_mutate(|(currency_id, debit_pool)| -> DispatchResult {
-			*debit_pool = debit_pool.checked_add(amount).ok_or(Error::<T>::Overflow)?;
+		DebitPool::<T>::try_mutate(currency_id, |debit_pool| -> DispatchResult {
+			*debit_pool = debit_pool.checked_add(amount).ok_or(Error::<T>::DebitPoolOverflow)?;
 			Ok(())
 		})
 	}

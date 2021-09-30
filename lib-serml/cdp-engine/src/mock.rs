@@ -40,7 +40,10 @@ pub type AuctionId = u32;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
+pub const BUYBACK_POOL: AccountId = 4;
 pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -107,8 +110,6 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
@@ -217,8 +218,10 @@ impl cdp_treasury::Config for Runtime {
 
 parameter_types! {
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
-	pub const TradingPathLimit: u32 = 3;
+	pub GetExchangeFee: (u32, u32) = (0, 100);
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
+	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
+	pub const TradingPaCVthLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(SETUSD, BTC).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
@@ -229,10 +232,11 @@ impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
+	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
 	type ModuleId = DEXModuleId;
 	type CurrencyIdMapping = ();
-	type DEXIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 }
@@ -274,12 +278,14 @@ parameter_types! {
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![BTC, DNAR];
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETUSD, SETEUR];
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type PriceSource = MockPriceSource;
 	type CollateralCurrencyIds = CollateralCurrencyIds;
+	type StableCurrencyIds = StableCurrencyIds;
 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
@@ -287,7 +293,6 @@ impl Config for Runtime {
 	type GetStableCurrencyId = GetStableCurrencyId;
 	type CDPTreasury = CDPTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type UnsignedPriority = UnsignedPriority;
 	type EmergencyShutdown = MockEmergencyShutdown;
 	type WeightInfo = ();

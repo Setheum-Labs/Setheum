@@ -136,7 +136,7 @@ pub mod module {
 	pub type TotalPositions<T: Config> = StorageMap<_, Twox64Concat, (CurrencyId, CurrencyId), Position, ValueQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(_);
+	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
