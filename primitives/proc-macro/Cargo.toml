@@ -1,6 +1,6 @@
 [package]
 name = "primitives-proc-macro"
-version = "0.9.1"
+version = "0.9.6"
 authors = ["Setheum Labs"]
 edition = "2018"
 

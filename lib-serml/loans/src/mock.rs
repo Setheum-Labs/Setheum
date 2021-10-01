@@ -23,10 +23,6 @@
 use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
-use frame_system::Pallet;
-use frame_system::Config;
-use frame_system::Event;
-use codec::Error;
 use orml_traits::parameter_type_with_key;
 use primitives::TokenSymbol;
 use sp_core::H256;
@@ -46,6 +42,7 @@ pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
@@ -304,6 +301,7 @@ parameter_types! {
 		SETR,
 		SETEUR,
 		SETUSD,
+		SETGBP,
 	];
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
@@ -325,8 +323,8 @@ impl cdp_treasury::Config for Runtime {
 
 // mock convert
 pub struct MockConvert;
-impl Convert<(CurrencyId, CurrencyId, Balance), Balance> for MockConvert {
-	fn convert(a: (CurrencyId, CurrencyId, Balance)) -> Balance {
+impl Convert<(CurrencyId, Balance), Balance> for MockConvert {
+	fn convert(a: (CurrencyId, Balance)) -> Balance {
 		(a.1 / Balance::from(2u64)).into()
 	}
 }
@@ -339,7 +337,7 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 		stable_currency_id: CurrencyId,
 		debit_balance: Balance
 	) -> Balance {
-		MockConvert::convert((collateral_currency_id, stable_currency_id), debit_balance)
+		MockConvert::convert((collateral_currency_id, debit_balance))
 	}
 
 	fn check_position_valid(
@@ -349,8 +347,14 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 		_debit_balance: Balance,
 	) -> DispatchResult {
 		match (collateral_currency_id, stable_currency_id) {
+			(DNAR, SETR) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			(DNAR, SETEUR) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
 			(DNAR, SETUSD) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			(DNAR, SETGBP) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			(BTC, SETR) => Ok(()),
+			(BTC, SETEUR) => Ok(()),
 			(BTC, SETUSD) => Ok(()),
+			(BTC, SETGBP) => Ok(()),
 			(_, _) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
 		}
 	}
@@ -360,9 +364,15 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 		stable_currency_id: CurrencyId,
 		total_debit_balance: Balance
 	) -> DispatchResult {
-		match ((currency_id, stable_currency_id), total_debit_balance) {
+		match ((collateral_currency_id, stable_currency_id), total_debit_balance) {
+			(DNAR, SETR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(DNAR, SETEUR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(DNAR, SETUSD, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(DNAR, SETGBP, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(BTC, SETR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(BTC, SETEUR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(BTC, SETUSD, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(BTC, SETGBP, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(_, _) => Ok(()),
 		}
 	}
@@ -370,12 +380,25 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 
 parameter_types! {
 	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
+
+	pub const SetterCurrencyId: CurrencyId = SETR;
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetEURCurrencyId: CurrencyId = SETEUR;
+	pub const GetSetGBPCurrencyId: CurrencyId = SETGBP;
 }
 
 impl Config for Runtime {
 	type Event = Event;
-	type Convert = MockConvert;
+	type SetterConvert = MockConvert;
+	type SetDollarConvert = MockConvert;
+	type SetEuroConvert = MockConvert;
+	type SetPoundConvert = MockConvert;
 	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type SetterCurrencyId = SetterCurrencyId;
+    type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+    type GetSetEURCurrencyId = GetSetEURCurrencyId;
+    type GetSetGBPCurrencyId = GetSetGBPCurrencyId;
 	type RiskManager = MockRiskManager;
 	type CDPTreasury = CDPTreasuryModule;
 	type ModuleId = LoansModuleId;

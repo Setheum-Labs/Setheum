@@ -63,7 +63,12 @@ mod mock;
 mod tests;
 pub mod weights;
 
-pub use debit_exchange_rate_convertor::DebitExchangeRateConvertor;
+pub use debit_exchange_rate_convertor::{
+	SetterDebitExchangeRateConvertor,
+	SetDollarDebitExchangeRateConvertor,
+	SetEuroDebitExchangeRateConvertor,
+	SetPoundDebitExchangeRateConvertor
+};
 pub use module::*;
 pub use weights::WeightInfo;
 
@@ -232,10 +237,34 @@ pub mod module {
 	/// Mapping from collateral type to its exchange rate of debit units and
 	/// debit value
 	///
-	/// DebitExchangeRate: (CurrencyId, CurrencyId) => Option<ExchangeRate>
+	/// SetterDebitExchangeRate: CurrencyId => Option<ExchangeRate>
 	#[pallet::storage]
-	#[pallet::getter(fn debit_exchange_rate)]
-	pub type DebitExchangeRate<T: Config> = StorageMap<_, Twox64Concat, (CurrencyId, CurrencyId), ExchangeRate, OptionQuery>;
+	#[pallet::getter(fn setter_debit_exchange_rate)]
+	pub type SetterDebitExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, ExchangeRate, OptionQuery>;
+
+	/// Mapping from collateral type to its exchange rate of debit units and
+	/// debit value
+	///
+	/// SetDollarDebitExchangeRate: CurrencyId => Option<ExchangeRate>
+	#[pallet::storage]
+	#[pallet::getter(fn setdollar_debit_exchange_rate)]
+	pub type SetDollarDebitExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, ExchangeRate, OptionQuery>;
+
+	/// Mapping from collateral type to its exchange rate of debit units and
+	/// debit value
+	///
+	/// SetEuroDebitExchangeRate: CurrencyId => Option<ExchangeRate>
+	#[pallet::storage]
+	#[pallet::getter(fn seteuro_debit_exchange_rate)]
+	pub type SetEuroDebitExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, ExchangeRate, OptionQuery>;
+
+	/// Mapping from collateral type to its exchange rate of debit units and
+	/// debit value
+	///
+	/// SetPoundDebitExchangeRate: CurrencyId => Option<ExchangeRate>
+	#[pallet::storage]
+	#[pallet::getter(fn setpound_debit_exchange_rate)]
+	pub type SetPoundDebitExchangeRate<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, ExchangeRate, OptionQuery>;
 
 	/// Mapping from collateral type to its risk management params
 	///
@@ -673,23 +702,34 @@ impl<T: Config> Pallet<T> {
 
 	pub fn get_debit_exchange_rate(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> ExchangeRate {
 
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
-
-		Self::debit_exchange_rate((collateral_currency_id, stable_currency_id))
+		if stable_currency_id == T::SetterCurrencyId::get() {
+			Self::setter_debit_exchange_rate(collateral_currency_id)
+				.unwrap_or_else(T::DefaultDebitExchangeRate::get)
+		} else if stable_currency_id == T::GetSetUSDCurrencyId::get() {
+			Self::setdollar_debit_exchange_rate(collateral_currency_id)
+				.unwrap_or_else(T::DefaultDebitExchangeRate::get)
+		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+			Self::seteuro_debit_exchange_rate(collateral_currency_id)
+				.unwrap_or_else(T::DefaultDebitExchangeRate::get)
+		} else {
+			// else if stable_currency_id == T::GetSetGBPCurrencyId::get() { down here} // vvvvvvvvvvvvvvvvv
+			Self::setpound_debit_exchange_rate(collateral_currency_id)
 			.unwrap_or_else(T::DefaultDebitExchangeRate::get)
+		}
 	}
 
 	pub fn get_debit_value(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId, debit_balance: Balance) -> Balance {
 
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
-
-		crate::DebitExchangeRateConvertor::<T>::convert((collateral_currency_id, stable_currency_id), debit_balance)
+		if stable_currency_id == T::SetterCurrencyId::get() {
+			crate::SetterDebitExchangeRateConvertor::<T>::convert((collateral_currency_id, debit_balance))
+		} else if stable_currency_id == T::GetSetUSDCurrencyId::get() {
+			crate::SetDollarDebitExchangeRateConvertor::<T>::convert((collateral_currency_id, debit_balance))
+		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+			crate::SetEuroDebitExchangeRateConvertor::<T>::convert((collateral_currency_id, debit_balance))
+		} else {
+			// else if stable_currency_id == T::GetSetGBPCurrencyId::get() { down here} // vvvvvvvvvvvvvvvvv
+			crate::SetPoundDebitExchangeRateConvertor::<T>::convert((collateral_currency_id, debit_balance))
+		}
 	}
 
 	pub fn calculate_collateral_ratio(

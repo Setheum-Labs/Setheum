@@ -33,6 +33,6 @@ std = [
 	"sp-std/std",
 	"sp-runtime/std",
 	"orml-traits/std",
-	"primitives/std",
 	"support/std",
+	"primitives/std",
 ]
