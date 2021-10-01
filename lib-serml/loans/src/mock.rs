@@ -365,14 +365,14 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 		total_debit_balance: Balance
 	) -> DispatchResult {
 		match ((collateral_currency_id, stable_currency_id), total_debit_balance) {
-			(DNAR, SETR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(DNAR, SETEUR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(DNAR, SETUSD, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(DNAR, SETGBP, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(BTC, SETR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(BTC, SETEUR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(BTC, SETUSD, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(BTC, SETGBP, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((DNAR, SETR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((DNAR, SETEUR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((DNAR, SETUSD), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((DNAR, SETGBP), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((BTC, SETR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((BTC, SETEUR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((BTC, SETUSD), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((BTC, SETGBP), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(_, _) => Ok(()),
 		}
 	}

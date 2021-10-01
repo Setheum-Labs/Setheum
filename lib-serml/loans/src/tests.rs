@@ -136,7 +136,7 @@ fn update_loan_should_work() {
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
 
 		// should remove position storage if zero
-		assert_eq!(<SetDollarPositions<Runtime>>::contains_key(BTC, SETUSD, &ALICE), true);
+		assert_eq!(<SetDollarPositions<Runtime>>::contains_key(BTC, &ALICE), true);
 		assert_ok!(LoansModule::update_loan(&ALICE, BTC, SETUSD, -3000, -2000));
 		assert_eq!(LoansModule::setdollar_positions(BTC, &ALICE).debit, 0);
 		assert_eq!(LoansModule::setdollar_positions(BTC, &ALICE).collateral, 0);
