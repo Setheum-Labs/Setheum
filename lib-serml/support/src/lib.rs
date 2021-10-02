@@ -404,6 +404,10 @@ pub trait ExchangeRateProvider {
 	fn get_exchange_rate() -> ExchangeRate;
 }
 
+pub trait EmergencyShutdown {
+	fn is_shutdown() -> bool;
+}
+
 /// Return true if the call of EVM precompile contract is allowed.
 pub trait PrecompileCallerFilter {
 	fn is_allowed(caller: H160) -> bool;

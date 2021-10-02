@@ -79,7 +79,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -96,7 +95,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -197,7 +195,12 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETEUR,
+		SETUSD,
+		SETGBP,
+	];
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
@@ -206,14 +209,14 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
 	type AuctionManagerHandler = MockAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = CDPTreasuryModuleId;
-	type TreasuryAccount = TreasuryAccount;
+	type SerpTreasury = MockSerpTreasury;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type WeightInfo = ();
+	type ModuleId = CDPTreasuryModuleId;
 }
 
 parameter_types! {
@@ -278,7 +281,6 @@ parameter_types! {
 	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![BTC, DNAR];
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETR, SETUSD, SETEUR];
 }
 
 impl Config for Runtime {
