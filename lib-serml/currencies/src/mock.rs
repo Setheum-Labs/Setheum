@@ -445,7 +445,6 @@ impl ExtBuilder {
 			(bob(), X_TOKEN_ID, 100),
 			(eva(), X_TOKEN_ID, 100),
 		])
-		])
 	}
 
 	pub fn build(self) -> sp_io::TestExternalities {

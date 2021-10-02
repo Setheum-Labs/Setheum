@@ -22,6 +22,10 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
+use frame_system::{
+	Pallet, Config, Event, Module, Pallet
+};
+
 use codec::Codec;
 use frame_support::{
 	pallet_prelude::*,
@@ -38,7 +42,7 @@ use orml_traits::{
 	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
 use orml_utilities::with_transaction_result;
-use primitives::{evm::EvmAddress, CurrencyId};
+use primitives::{evm::EvmAddress, AccountId, CurrencyId};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, Saturating, StaticLookup, Zero},
@@ -139,7 +143,7 @@ pub mod module {
 	}
 
 	#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-	pub struct AirdropDetails<<T::Lookup as StaticLookup>::Source, Balance> {
+	pub struct AirdropDetails<AccountId, Balance> {
 		pub dest: <T::Lookup as StaticLookup>::Source,
 		pub amount: Balance,
 	}
@@ -176,7 +180,7 @@ pub mod module {
 				self.details.iter().for_each(|(dest, amount)| {
 					let to = T::Lookup::lookup(dest)?;
 					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-				}
+				})
 			} else {
 				let from = ensure_signed(origin)?;
 
@@ -189,7 +193,7 @@ pub mod module {
 				self.details.iter().for_each(|(dest, amount)| {
 					let to = T::Lookup::lookup(dest)?;
 					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-				}
+				})
 			}
 			Self::deposit_event(RawEvent::Airdrop(currency_id, details));
 		}
