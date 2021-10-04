@@ -27,10 +27,10 @@ use orml_traits::parameter_type_with_key;
 use primitives::TokenSymbol;
 use sp_core::H256;
 use sp_runtime::{
-	testing::Header,
+	testing::Header, ModuleId,
 	traits::{AccountIdConversion, IdentityLookup},
 };
-use support::{AuctionManager, RiskManager};
+use support::{AuctionManager, RiskManager, SerpTreasury};
 
 pub type AccountId = u128;
 pub type AuctionId = u32;
@@ -39,7 +39,10 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
@@ -74,12 +77,11 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
-		100
+		Default::default()
 	};
 }
 
@@ -91,7 +93,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -103,10 +104,8 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Runtime>;
+	type AccountStore = frame_system::Module<Runtime>;
 	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 
@@ -131,7 +130,8 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 
 	fn new_collateral_auction(
 		_refund_recipient: &AccountId,
-		_currency_id: Self::CurrencyId,
+		_collateral_currency_id: Self::CurrencyId,
+		_stable_currency_id: Self::CurrencyId,
 		_amount: Self::Balance,
 		_target: Self::Balance,
 	) -> DispatchResult {
@@ -142,7 +142,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Ok(())
 	}
 
-	fn get_total_target_in_auction() -> Self::Balance {
+	fn get_total_target_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
 
@@ -151,12 +151,158 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	}
 }
 
+pub struct MockSerpTreasury;
+impl SerpTreasury<AccountId> for MockSerpTreasury {
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+
+	/// Deliver System StableCurrency Inflation
+	fn issue_stablecurrency_inflation() -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	/// SerpUp ratio for SetPay Cashdrops
+	fn get_cashdrop_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_charity_fund_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	/// SerpUp ratio for SetPay Cashdrops
+	fn get_cashdrop_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serplus(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serpup(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// buy back and burn surplus(stable currencies) with swap by DEX.
+	fn on_serpdown(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// get the minimum supply of a setcurrency - by key
+	fn get_minimum_supply(
+		_currency_id: CurrencyId
+	) -> Balance {
+		unimplemented!()
+	}
+
+	/// issue standard to `who`
+	fn issue_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn standard(stable currency) of `who`
+	fn burn_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue setter of amount setter to `who`
+	fn issue_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn setter of `who`
+	fn burn_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
+	fn deposit_setter(
+		_from: &AccountId,
+		_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
+	fn claim_cashdrop(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_transfer_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+}
+
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETEUR,
+		SETUSD,
+		SETGBP,
+	];
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
@@ -165,14 +311,14 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
 	type AuctionManagerHandler = MockAuctionManager;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = CDPTreasuryModuleId;
-	type TreasuryAccount = TreasuryAccount;
+	type SerpTreasury = MockSerpTreasury;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type WeightInfo = ();
+	type ModuleId = CDPTreasuryModuleId;
 }
 
 // mock convert
@@ -186,26 +332,47 @@ impl Convert<(CurrencyId, Balance), Balance> for MockConvert {
 // mock risk manager
 pub struct MockRiskManager;
 impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
-	fn get_bad_debt_value(currency_id: CurrencyId, debit_balance: Balance) -> Balance {
-		MockConvert::convert((currency_id, debit_balance))
+	fn get_bad_debt_value(
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
+		debit_balance: Balance
+	) -> Balance {
+		MockConvert::convert((collateral_currency_id, debit_balance))
 	}
 
 	fn check_position_valid(
-		currency_id: CurrencyId,
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
 		_collateral_balance: Balance,
 		_debit_balance: Balance,
 	) -> DispatchResult {
-		match currency_id {
-			DNAR => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
-			BTC => Ok(()),
-			_ => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+		match (collateral_currency_id, stable_currency_id) {
+			(DNAR, SETR) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			(DNAR, SETEUR) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			(DNAR, SETUSD) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			(DNAR, SETGBP) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			(BTC, SETR) => Ok(()),
+			(BTC, SETEUR) => Ok(()),
+			(BTC, SETUSD) => Ok(()),
+			(BTC, SETGBP) => Ok(()),
+			(_, _) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
 		}
 	}
 
-	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: Balance) -> DispatchResult {
-		match (currency_id, total_debit_balance) {
-			(DNAR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(BTC, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+	fn check_debit_cap(
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
+		total_debit_balance: Balance
+	) -> DispatchResult {
+		match ((collateral_currency_id, stable_currency_id), total_debit_balance) {
+			((DNAR, SETR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((DNAR, SETEUR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((DNAR, SETUSD), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((DNAR, SETGBP), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((BTC, SETR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((BTC, SETEUR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((BTC, SETUSD), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			((BTC, SETGBP), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(_, _) => Ok(()),
 		}
 	}
@@ -213,12 +380,25 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 
 parameter_types! {
 	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
+
+	pub const SetterCurrencyId: CurrencyId = SETR;
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetEURCurrencyId: CurrencyId = SETEUR;
+	pub const GetSetGBPCurrencyId: CurrencyId = SETGBP;
 }
 
 impl Config for Runtime {
 	type Event = Event;
-	type Convert = MockConvert;
+	type SetterConvert = MockConvert;
+	type SetDollarConvert = MockConvert;
+	type SetEuroConvert = MockConvert;
+	type SetPoundConvert = MockConvert;
 	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type SetterCurrencyId = SetterCurrencyId;
+    type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+    type GetSetEURCurrencyId = GetSetEURCurrencyId;
+    type GetSetGBPCurrencyId = GetSetGBPCurrencyId;
 	type RiskManager = MockRiskManager;
 	type CDPTreasury = CDPTreasuryModule;
 	type ModuleId = LoansModuleId;
@@ -234,23 +414,23 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		LoansModule: loans::{Pallet, Storage, Call, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
-		Currencies: orml_currencies::{Pallet, Call, Event<T>},
-		CDPTreasuryModule: cdp_treasury::{Pallet, Storage, Call, Event<T>},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		LoansModule: loans::{Module, Storage, Call, Event<T>},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
+		Currencies: orml_currencies::{Module, Call, Event<T>},
+		CDPTreasuryModule: cdp_treasury::{Module, Storage, Call, Event<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	balances: Vec<(AccountId, CurrencyId, Balance)>,
+	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			balances: vec![
+			endowed_accounts: vec![
 				(ALICE, DNAR, 1000),
 				(ALICE, BTC, 1000),
 				(BOB, DNAR, 1000),
@@ -266,7 +446,7 @@ impl ExtBuilder {
 			.build_storage::<Runtime>()
 			.unwrap();
 		orml_tokens::GenesisConfig::<Runtime> {
-			balances: self.balances,
+			endowed_accounts: self.endowed_accounts,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

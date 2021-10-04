@@ -34,7 +34,7 @@ fn authorize_should_work() {
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
 		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), DepositPerAuthorization::get());
-		System::assert_last_event(Event::SerpMintModule(crate::Event::Authorization(ALICE, BOB, BTC)));
+		Event::SerpMintModule(crate::Event::Authorization(ALICE, BOB, BTC));
 		assert_ok!(SerpMintModule::check_authorization(&ALICE, &BOB, BTC));
 		assert_noop!(
 			SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB),
@@ -53,7 +53,7 @@ fn unauthorize_should_work() {
 
 		assert_ok!(SerpMintModule::unauthorize(Origin::signed(ALICE), BTC, BOB));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
-		System::assert_last_event(Event::SerpMintModule(crate::Event::UnAuthorization(ALICE, BOB, BTC)));
+		Event::SerpMintModule(crate::Event::UnAuthorization(ALICE, BOB, BTC));
 		assert_noop!(
 			SerpMintModule::check_authorization(&ALICE, &BOB, BTC),
 			Error::<Runtime>::NoPermission
@@ -74,7 +74,7 @@ fn unauthorize_all_should_work() {
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 200);
 		assert_ok!(SerpMintModule::unauthorize_all(Origin::signed(ALICE)));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
-		System::assert_last_event(Event::SerpMintModule(crate::Event::UnAuthorizationAll(ALICE)));
+		Event::SerpMintModule(crate::Event::UnAuthorizationAll(ALICE));
 
 		assert_noop!(
 			SerpMintModule::check_authorization(&ALICE, &BOB, BTC),

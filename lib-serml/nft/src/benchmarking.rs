@@ -26,12 +26,11 @@ use sp_std::vec;
 use frame_benchmarking::{account, benchmarks};
 use frame_support::{traits::Get, weights::DispatchClass};
 use frame_system::RawOrigin;
-use sp_runtime::traits::{AccountIdConversion, StaticLookup, UniqueSaturatedInto};
+use sp_runtime::traits::{ModuleId, AccountIdConversion, StaticLookup, UniqueSaturatedInto};
 
 pub use crate::*;
 use primitives::Balance;
 
-pub struct Module<T: Config>(crate::Pallet<T>);
 
 const SEED: u32 = 0;
 
@@ -60,8 +59,8 @@ benchmarks! {
 		let base_currency_amount = dollar(1000);
 		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
-		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
+		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
+		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 		T::Currency::make_free_balance_be(&module_account, base_currency_amount.unique_saturated_into());
 	}: _(RawOrigin::Signed(module_account), to_lookup, 0u32.into(), vec![1], i)
 
@@ -75,10 +74,10 @@ benchmarks! {
 		let base_currency_amount = dollar(1000);
 		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
-		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
+		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
+		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 		T::Currency::make_free_balance_be(&module_account, base_currency_amount.unique_saturated_into());
-		crate::Pallet::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
+		crate::Module::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
 	}: _(RawOrigin::Signed(to), caller_lookup, (0u32.into(), 0u32.into()))
 
 	// burn NFT token
@@ -90,10 +89,10 @@ benchmarks! {
 		let base_currency_amount = dollar(1000);
 		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
-		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
+		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
+		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 		T::Currency::make_free_balance_be(&module_account, base_currency_amount.unique_saturated_into());
-		crate::Pallet::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
+		crate::Module::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
 	}: _(RawOrigin::Signed(to), (0u32.into(), 0u32.into()))
 
 	// burn NFT token with remark
@@ -107,10 +106,10 @@ benchmarks! {
 		let base_currency_amount = dollar(1000);
 		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
-		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
+		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
+		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 		T::Currency::make_free_balance_be(&module_account, base_currency_amount.unique_saturated_into());
-		crate::Pallet::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
+		crate::Module::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
 	}: _(RawOrigin::Signed(to), (0u32.into(), 0u32.into()), remark_message)
 
 	// destroy NFT class
@@ -122,8 +121,8 @@ benchmarks! {
 
 		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
-		crate::Pallet::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
+		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
+		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 	}: _(RawOrigin::Signed(module_account), 0u32.into(), caller_lookup)
 }
 
@@ -178,7 +177,6 @@ mod mock {
 		type OnKilledAccount = ();
 		type SystemWeightInfo = ();
 		type SS58Prefix = ();
-		type OnSetCode = ();
 	}
 	parameter_types! {
 		pub const ExistentialDeposit: u64 = 1;
@@ -188,7 +186,7 @@ mod mock {
 		type Event = ();
 		type DustRemoval = ();
 		type ExistentialDeposit = ExistentialDeposit;
-		type AccountStore = frame_system::Pallet<Runtime>;
+		type AccountStore = frame_system::Module<Runtime>;
 		type MaxLocks = ();
 		type WeightInfo = ();
 	}
@@ -290,12 +288,12 @@ mod mock {
 			NodeBlock = Block,
 			UncheckedExtrinsic = UncheckedExtrinsic,
 		{
-			System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-			Utility: pallet_utility::{Pallet, Call, Event},
-			Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-			Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
-			OrmlNFT: orml_nft::{Pallet, Storage, Config<T>},
-			NFT: nft::{Pallet, Call, Event<T>},
+			System: frame_system::{Module, Call, Config, Storage, Event<T>},
+			Utility: pallet_utility::{Module, Call, Event},
+			Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+			Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
+			OrmlNFT: orml_nft::{Module, Storage, Config<T>},
+			NFT: nft::{Module, Call, Event<T>},
 		}
 	);
 

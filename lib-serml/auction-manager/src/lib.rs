@@ -29,7 +29,7 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use frame_support::{log, pallet_prelude::*, transactional};
+use frame_support::{debug, pallet_prelude::*, transactional};
 use frame_system::{
 	offchain::{SendTransactionTypes, SubmitTransaction},
 	pallet_prelude::*,
@@ -152,6 +152,9 @@ pub mod module {
 		/// Auction to manager the auction process
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
 
+		/// The stable currency ids
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
+
 		/// CDP treasury to escrow assets related to auction
 		type CDPTreasury: CDPTreasuryExtended<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
@@ -189,6 +192,8 @@ pub mod module {
 		InvalidBidPrice,
 		/// Invalid input amount
 		InvalidAmount,
+		/// Invalid Currency Type
+		InvalidCurrencyType,
 	}
 
 	#[pallet::event]
@@ -197,7 +202,7 @@ pub mod module {
 	pub enum Event<T: Config> {
 		/// Collateral auction created. \[auction_id, collateral_type,
 		/// collateral_amount, target_bid_price\]
-		NewCollateralAuction(AuctionId, CurrencyId, Balance, Balance),
+		NewCollateralAuction(AuctionId, CurrencyId, CurrencyId, Balance, Balance),
 		/// Active auction cancelled. \[auction_id\]
 		CancelAuction(AuctionId),
 		/// Collateral auction dealt. \[auction_id, collateral_type,
@@ -225,14 +230,15 @@ pub mod module {
 	pub type TotalCollateralInAuction<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	/// Record of total target sales of all active collateral auctions
+	/// under specific stable currency type StableType => Balance
 	///
-	/// TotalTargetInAuction: Balance
+	/// TotalTargetInAuction: map CurrencyId => Balance
 	#[pallet::storage]
 	#[pallet::getter(fn total_target_in_auction)]
-	pub type TotalTargetInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
+	pub type TotalTargetInAuction<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(_);
+	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
@@ -241,13 +247,13 @@ pub mod module {
 		fn offchain_worker(now: T::BlockNumber) {
 			if T::EmergencyShutdown::is_shutdown() && sp_io::offchain::is_validator() {
 				if let Err(e) = Self::_offchain_worker() {
-					log::info!(
+					debug::info!(
 						target: "auction-manager",
 						"offchain worker: cannot run offchain worker at {:?}: {:?}",
 						now, e,
 					);
 				} else {
-					log::debug!(
+					debug::debug!(
 						target: "auction-manager",
 						"offchain worker: offchain worker start at block: {:?} already done!",
 						now,
@@ -264,12 +270,12 @@ pub mod module {
 		/// The dispatch origin of this call must be _None_.
 		#[pallet::weight(T::WeightInfo::cancel_collateral_auction())]
 		#[transactional]
-		pub fn cancel(origin: OriginFor<T>, id: AuctionId) -> DispatchResult {
+		pub fn cancel(origin: OriginFor<T>, id: AuctionId) -> DispatchResultWithPostInfo {
 			ensure_none(origin)?;
 			ensure!(T::EmergencyShutdown::is_shutdown(), Error::<T>::MustAfterShutdown);
 			<Self as AuctionManager<T::AccountId>>::cancel_auction(id)?;
 			Self::deposit_event(Event::CancelAuction(id));
-			Ok(())
+			Ok(().into())
 		}
 	}
 
@@ -314,7 +320,7 @@ impl<T: Config> Pallet<T> {
 	fn submit_cancel_auction_tx(auction_id: AuctionId) {
 		let call = Call::<T>::cancel(auction_id);
 		if let Err(err) = SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()) {
-			log::info!(
+			debug::info!(
 				target: "auction-manager",
 				"offchain worker: submit unsigned auction cancel tx for AuctionId {:?} failed: {:?}",
 				auction_id, err,
@@ -339,7 +345,7 @@ impl<T: Config> Pallet<T> {
 			.get::<u32>()
 			.unwrap_or(Some(DEFAULT_MAX_ITERATIONS));
 
-		log::debug!(
+		debug::debug!(
 			target: "auction-manager",
 			"offchain worker: max iterations is {:?}",
 			max_iterations
@@ -416,7 +422,7 @@ impl<T: Config> Pallet<T> {
 		// if there's bid
 		if let Some((bidder, bid_price)) = last_bid {
 			// refund stable token to the bidder
-			T::CDPTreasury::issue_debit(&bidder, collateral_auction.stable_currency_id,, bid_price, false)?;
+			T::CDPTreasury::issue_debit(&bidder, collateral_auction.stable_currency_id, bid_price, false)?;
 
 			// decrease account ref of bidder
 			frame_system::Pallet::<T>::dec_consumers(&bidder);
@@ -429,7 +435,9 @@ impl<T: Config> Pallet<T> {
 		TotalCollateralInAuction::<T>::mutate(collateral_auction.collateral_currency_id, |balance| {
 			*balance = balance.saturating_sub(collateral_auction.amount)
 		});
-		TotalTargetInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(collateral_auction.target));
+		TotalTargetInAuction::<T>::mutate(collateral_auction.stable_currency_id, |balance| {
+			*balance = balance.saturating_sub(collateral_auction.target)
+		});
 
 		Ok(())
 	}
@@ -567,7 +575,6 @@ impl<T: Config> Pallet<T> {
 					< T::DEX::get_swap_target_amount(
 						&[collateral_auction.collateral_currency_id, collateral_auction.stable_currency_id],
 						collateral_auction.amount,
-						None,
 					)
 					.unwrap_or_default()
 			{
@@ -577,7 +584,6 @@ impl<T: Config> Pallet<T> {
 					collateral_auction.stable_currency_id,
 					collateral_auction.amount,
 					Zero::zero(),
-					None,
 					None,
 					true,
 				) {
@@ -589,7 +595,7 @@ impl<T: Config> Pallet<T> {
 					// can be fixed by treasury council.
 					let res = T::CDPTreasury::issue_debit(&bidder, collateral_auction.stable_currency_id, bid_price, false);
 					if let Err(e) = res {
-						log::warn!(
+						debug::warn!(
 							target: "auction-manager",
 							"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
 							This is unexpected but should be safe",
@@ -609,7 +615,7 @@ impl<T: Config> Pallet<T> {
 						let res =
 							T::CDPTreasury::issue_debit(&collateral_auction.refund_recipient, collateral_auction.stable_currency_id, refund_amount, false);
 						if let Err(e) = res {
-							log::warn!(
+							debug::warn!(
 								target: "auction-manager",
 								"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
 								This is unexpected but should be safe",
@@ -639,11 +645,11 @@ impl<T: Config> Pallet<T> {
 					collateral_auction.amount,
 				);
 				if let Err(e) = res {
-					log::warn!(
+					debug::warn!(
 						target: "auction-manager",
 						"withdraw_collateral: failed to withdraw {:?} {:?} from CDP treasury to {:?}: {:?}. \
 						This is unexpected but should be safe",
-						collateral_auction.amount, collateral_auction.currency_id, bidder, e
+						collateral_auction.amount, collateral_auction.collateral_currency_id, bidder, e
 					);
 					debug_assert!(false);
 				}
@@ -669,7 +675,9 @@ impl<T: Config> Pallet<T> {
 		TotalCollateralInAuction::<T>::mutate(collateral_auction.collateral_currency_id, |balance| {
 			*balance = balance.saturating_sub(collateral_auction.amount)
 		});
-		TotalTargetInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(collateral_auction.target));
+		TotalTargetInAuction::<T>::mutate(collateral_auction.stable_currency_id, |balance| {
+			*balance = balance.saturating_sub(collateral_auction.target)
+		});
 	}
 
 	/// increment `new_bidder` reference and decrement `last_bidder`
@@ -679,7 +687,7 @@ impl<T: Config> Pallet<T> {
 			// No providers for the locks. This is impossible under normal circumstances
 			// since the funds that are under the lock will themselves be stored in the
 			// account and therefore will need a reference.
-			log::warn!(
+			debug::warn!(
 				target: "auction-manager",
 				"inc_consumers: failed for {:?}. \
 				This is impossible under normal circumstances.",
@@ -738,6 +746,10 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 		amount: Self::Balance,
 		target: Self::Balance,
 	) -> DispatchResult {
+		ensure!(
+			T::StableCurrencyIds::get().contains(&stable_currency_id),
+			Error::<T>::InvalidCurrencyType,
+		);
 		ensure!(!amount.is_zero(), Error::<T>::InvalidAmount);
 		TotalCollateralInAuction::<T>::try_mutate(collateral_currency_id, |total| -> DispatchResult {
 			*total = total.checked_add(amount).ok_or(Error::<T>::InvalidAmount)?;
@@ -746,7 +758,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 
 		if !target.is_zero() {
 			// no-op if target is zero
-			TotalTargetInAuction::<T>::try_mutate(|total| -> DispatchResult {
+			TotalTargetInAuction::<T>::try_mutate(stable_currency_id, |total| -> DispatchResult {
 				*total = total.checked_add(target).ok_or(Error::<T>::InvalidAmount)?;
 				Ok(())
 			})?;
@@ -775,7 +787,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			// No providers for the locks. This is impossible under normal circumstances
 			// since the funds that are under the lock will themselves be stored in the
 			// account and therefore will need a reference.
-			log::warn!(
+			debug::warn!(
 				target: "auction-manager",
 				"Attempt to `inc_consumers` for {:?} failed. \
 				This is unexpected but should be safe.",
@@ -783,7 +795,13 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			);
 		}
 
-		Self::deposit_event(Event::NewCollateralAuction(auction_id, currency_id, amount, target));
+		Self::deposit_event(Event::NewCollateralAuction(
+			auction_id,
+			collateral_currency_id,
+			stable_currency_id,
+			amount,
+			target
+		));
 		Ok(())
 	}
 
@@ -798,7 +816,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 		Self::total_collateral_in_auction(id)
 	}
 
-	fn get_total_target_in_auction() -> Self::Balance {
-		Self::total_target_in_auction()
+	fn get_total_target_in_auction(id: Self::CurrencyId) -> Self::Balance {
+		Self::total_target_in_auction(id)
 	}
 }

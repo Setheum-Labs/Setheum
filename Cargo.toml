@@ -21,7 +21,6 @@ members = [
 	'open-lib/tokens',
 	'open-lib/traits',
 	'open-lib/utilities',
-	'open-lib/vesting',
 ]
 # exclude = ['rpc']
 

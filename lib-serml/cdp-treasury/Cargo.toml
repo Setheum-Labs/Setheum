@@ -14,11 +14,12 @@ sp-std = { version = '3.0.0', default-features = false }
 orml-traits = { path = "../../open-lib/traits", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+frame-benchmarking = { version = "3.0.0", default-features = false, optional = true }
 
 [dev-dependencies]
-sp-core = { version = '3.0.0' }
-sp-io = { version = '3.0.0' }
-pallet-balances = { version = '3.0.0' }
+sp-core = '3.0.0'
+sp-io = '3.0.0'
+pallet-balances = '3.0.0'
 orml-currencies = { path = "../../open-lib/currencies" }
 orml-auction = { path = "../../open-lib/auction" }
 module-dex = { path = "../dex" }
@@ -36,5 +37,10 @@ std = [
 	"orml-traits/std",
 	"support/std",
 	"primitives/std",
+	"frame-benchmarking/std",
 ]
-try-runtime = ["frame-support/try-runtime"]
+runtime-benchmarks = [
+	"frame-benchmarking",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+]

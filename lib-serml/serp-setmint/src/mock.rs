@@ -24,7 +24,7 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::{offchain::SendTransactionTypes, EnsureSignedBy};
 use orml_traits::parameter_type_with_key;
-use primitives::{Balance, Moment, ReserveIdentifier, TokenSymbol};
+use primitives::{Balance, Moment, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
@@ -47,6 +47,8 @@ pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
@@ -77,7 +79,6 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -94,7 +95,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
-	type MaxLocks = ();
 }
 
 parameter_types! {
@@ -107,10 +107,8 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Runtime>;
+	type AccountStore = frame_system::Module<Runtime>;
 	type MaxLocks = ();
-	type MaxReserves = MaxReserves;
-	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
@@ -264,12 +262,18 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETEUR,
+		SETUSD,
+	];
 	pub const DepositPerAuthorization: Balance = 100;
 }
 
 impl Config for Runtime {
 	type Event = Event;
-	type Currency = PalletBalances;
+	type Currency = Tokens;
+	type StableCurrencyIds = StableCurrencyIds;
 	type DepositPerAuthorization = DepositPerAuthorization;
 	type WeightInfo = ();
 }
@@ -280,15 +284,15 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SerpMintModule: serp_setmint::{Pallet, Storage, Call, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
-		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
-		Currencies: orml_currencies::{Pallet, Call, Event<T>},
-		LoansModule: loans::{Pallet, Storage, Call, Event<T>},
-		CDPTreasuryModule: cdp_treasury::{Pallet, Storage, Call, Event<T>},
-		CDPEngineModule: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned},
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
+		System: frame_system::{Module, Call, Storage, Config, Event<T>},
+		SerpMintModule: serp_setmint::{Module, Storage, Call, Event<T>},
+		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
+		Currencies: orml_currencies::{Module, Call, Event<T>},
+		LoansModule: loans::{Module, Storage, Call, Event<T>},
+		CDPTreasuryModule: cdp_treasury::{Module, Storage, Call, Event<T>},
+		CDPEngineModule: cdp_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},
+		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
 	}
 );
 

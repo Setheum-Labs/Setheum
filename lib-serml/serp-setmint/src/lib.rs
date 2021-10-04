@@ -29,13 +29,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, traits::ReservableCurrency, transactional};
+use frame_support::{pallet_prelude::*, transactional};
 use frame_system::pallet_prelude::*;
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{StaticLookup, Zero},
 	DispatchResult,
 };
+use orml_traits::MultiReservableCurrency;
 use sp_std::vec::Vec;
 use support::EmergencyShutdown;
 
@@ -50,14 +51,12 @@ pub use weights::WeightInfo;
 pub mod module {
 	use super::*;
 
-	pub const RESERVE_ID: ReserveIdentifier = ReserveIdentifier::Honzon;
-
 	#[pallet::config]
 	pub trait Config: frame_system::Config + cdp_engine::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// Currency for authorization reserved.
-		type Currency: ReservableCurrency<
+		type Currency: MultiReservableCurrency<
 			Self::AccountId,
 			Balance = Balance,
 		>;
@@ -116,7 +115,7 @@ pub mod module {
 	>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(_);
+	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -199,6 +198,7 @@ pub mod module {
 		#[pallet::weight(<T as Config>::WeightInfo::authorize())]
 		#[transactional]
 		pub fn authorize(
+
 			origin: OriginFor<T>,
 			collateral_currency_id: CurrencyId,
 			stable_currency_id: CurrencyId,
@@ -213,7 +213,7 @@ pub mod module {
 			Authorization::<T>::try_mutate_exists((&from, &to), (collateral_currency_id, stable_currency_id), |maybe_reserved| -> DispatchResult {
 				if maybe_reserved.is_none() {
 					let reserve_amount = T::DepositPerAuthorization::get();
-					<T as Config>::Currency::reserve_named(&RESERVE_ID, &from, reserve_amount)?;
+					<T as Config>::Currency::reserve(&collateral_currency_id, &from, reserve_amount)?;
 					*maybe_reserved = Some(reserve_amount);
 					Self::deposit_event(Event::Authorization(from.clone(), to.clone(), collateral_currency_id, stable_currency_id));
 					Ok(())
@@ -241,7 +241,7 @@ pub mod module {
 			let to = T::Lookup::lookup(to)?;
 			let reserved =
 				Authorization::<T>::take((&from, &to), (collateral_currency_id, stable_currency_id)).ok_or(Error::<T>::AuthorizationNotExists)?;
-			<T as Config>::Currency::unreserve_named(&RESERVE_ID, &from, reserved);
+			<T as Config>::Currency::unreserve(&collateral_currency_id, &from, reserved);
 			Self::deposit_event(Event::UnAuthorization(from, to, collateral_currency_id, stable_currency_id));
 			Ok(())
 		}
@@ -252,7 +252,7 @@ pub mod module {
 		pub fn unauthorize_all(origin: OriginFor<T>) -> DispatchResult {
 			let from = ensure_signed(origin)?;
 			Authorization::<T>::remove_prefix(&from, None);
-			<T as Config>::Currency::unreserve_all_named(&RESERVE_ID, &from);
+			<T as Config>::Currency::unreserve(&collateral_currency_id, &from);
 			Self::deposit_event(Event::UnAuthorizationAll(from));
 			Ok(())
 		}
