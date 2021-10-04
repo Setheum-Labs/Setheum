@@ -17,60 +17,62 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::*;
-use primitives::{Balance, CurrencyId};
+use primitives::{Balance, CurrencyId, TokenSymbol};
 use sp_runtime::traits::Convert;
 use sp_runtime::FixedPointNumber;
-use crate::{
-	SetterCurrencyId, GetSetUSDCurrencyId, GetSetEURCurrencyId, GetSetGBPCurrencyId
-}
+
+pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
+pub const GetSetEURCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const GetSetGBPCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 
 pub struct SetterDebitExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> Convert<(CurrencyId, CurrencyId, Balance), Balance> for SetterDebitExchangeRateConvertor<T>
+impl<T> Convert<(CurrencyId, Balance), Balance> for SetterDebitExchangeRateConvertor<T>
 where
 	T: Config,
 {
 	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
-		let stable_currency_id = T::SetterCurrencyId::get();
-		<Module<T>>::get_debit_exchange_rate(collateral_currency_id, stable_currency_id).saturating_mul_int(balance)
+		let stable_currency_id = SetterCurrencyId;
+		<Module<T>>::get_debit_exchange_rate(currency_id, stable_currency_id).saturating_mul_int(balance)
 	}
 }
 
 
 pub struct SetDollarDebitExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> Convert<(CurrencyId, CurrencyId, Balance), Balance> for SetDollarDebitExchangeRateConvertor<T>
+impl<T> Convert<(CurrencyId, Balance), Balance> for SetDollarDebitExchangeRateConvertor<T>
 where
 	T: Config,
 {
 	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
-		let stable_currency_id = T::GetSetUSDCurrencyId::get();
-		<Module<T>>::get_debit_exchange_rate(collateral_currency_id, stable_currency_id).saturating_mul_int(balance)
+		let stable_currency_id = GetSetUSDCurrencyId;
+		<Module<T>>::get_debit_exchange_rate(currency_id, stable_currency_id).saturating_mul_int(balance)
 	}
 }
 
 
 pub struct SetEuroDebitExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> Convert<(CurrencyId, CurrencyId, Balance), Balance> for SetEuroDebitExchangeRateConvertor<T>
+impl<T> Convert<(CurrencyId, Balance), Balance> for SetEuroDebitExchangeRateConvertor<T>
 where
 	T: Config,
 {
 	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
-		let stable_currency_id = T::GetSetEURCurrencyId::get();
-		<Module<T>>::get_debit_exchange_rate(collateral_currency_id, stable_currency_id).saturating_mul_int(balance)
+		let stable_currency_id = GetSetEURCurrencyId;
+		<Module<T>>::get_debit_exchange_rate(currency_id, stable_currency_id).saturating_mul_int(balance)
 	}
 }
 
 
 pub struct SetPoundDebitExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> Convert<(CurrencyId, CurrencyId, Balance), Balance> for SetPoundDebitExchangeRateConvertor<T>
+impl<T> Convert<(CurrencyId, Balance), Balance> for SetPoundDebitExchangeRateConvertor<T>
 where
 	T: Config,
 {
 	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
-		let stable_currency_id = T::GetSetGBPCurrencyId::get();
-		<Module<T>>::get_debit_exchange_rate(collateral_currency_id, stable_currency_id).saturating_mul_int(balance)
+		let stable_currency_id = GetSetGBPCurrencyId;
+		<Module<T>>::get_debit_exchange_rate(currency_id, stable_currency_id).saturating_mul_int(balance)
 	}
 }

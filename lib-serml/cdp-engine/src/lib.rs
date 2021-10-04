@@ -78,7 +78,7 @@ pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/cdp-engine/max-itera
 pub const LOCK_DURATION: u64 = 100;
 pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 
-pub type LoansOf<T> = loans::Pallet<T>;
+pub type LoansOf<T> = loans::Module<T>;
 
 /// Risk management params
 #[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, Default)]
@@ -131,7 +131,7 @@ pub mod module {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + loans::Config + SendTransactionTypes<Call<Self>> {
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Event: From<Event<Self>> + IsType<<zSelf as frame_system::Config>::Event>;
 
 		/// The list of valid collateral currency types
 		#[pallet::constant]
@@ -139,6 +139,18 @@ pub mod module {
 
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
+
+		/// The SETR currency id
+		type SetterCurrencyId: Get<CurrencyId>;
+
+		/// The SETUSD currency id
+		type GetSetUSDCurrencyId: Get<CurrencyId>;
+
+		/// The SETEUR currency id
+		type GetSetEURCurrencyId: Get<CurrencyId>;
+
+		/// The SETGBP currency id
+		type GetSetGBPCurrencyId: Get<CurrencyId>;
 
 		/// The default liquidation ratio for all collateral types of CDP
 		#[pallet::constant]
@@ -195,6 +207,8 @@ pub mod module {
 		IsUnsafe,
 		/// Invalid collateral type
 		InvalidCollateralType,
+		/// Invalid stable type
+		InvalidStableType,
 		/// Remain debit value in CDP below the dust amount
 		RemainDebitValueTooSmall,
 		/// Feed price is invalid
@@ -213,25 +227,25 @@ pub mod module {
 	pub enum Event<T: Config> {
 		/// Liquidate the unsafe CDP. \[collateral_type, owner,
 		/// collateral_amount, bad_debt_value, liquidation_strategy\]
-		LiquidateUnsafeCDP(CurrencyId, T::AccountId, Balance, Balance, LiquidationStrategy),
+		LiquidateUnsafeCDP(CurrencyId, CurrencyId, T::AccountId, Balance, Balance, LiquidationStrategy),
 		/// Settle the CDP has debit. [collateral_type, owner]
 		SettleCDPInDebit(CurrencyId, CurrencyId, T::AccountId),
 		/// Directly close CDP has debit by handle debit with DEX.
 		/// \[collateral_type, owner, sold_collateral_amount,
 		/// refund_collateral_amount, debit_value\]
-		CloseCDPInDebitByDEX(CurrencyId, T::AccountId, Balance, Balance, Balance),
+		CloseCDPInDebitByDEX(CurrencyId, CurrencyId, T::AccountId, Balance, Balance, Balance),
 		/// The liquidation fee for specific collateral type updated.
-		/// \[collateral_type, new_liquidation_ratio\]
-		LiquidationRatioUpdated(CurrencyId, Option<Ratio>),
+		/// \[collateral_type, stable_type, new_liquidation_ratio\]
+		LiquidationRatioUpdated(CurrencyId, CurrencyId, Option<Ratio>),
 		/// The liquidation penalty rate for specific collateral type updated.
 		/// \[collateral_type, new_liquidation_panelty\]
-		LiquidationPenaltyUpdated(CurrencyId, Option<Rate>),
+		LiquidationPenaltyUpdated(CurrencyId, CurrencyId, Option<Rate>),
 		/// The required collateral penalty rate for specific collateral type
 		/// updated. \[collateral_type, new_required_collateral_ratio\]
-		RequiredCollateralRatioUpdated(CurrencyId, Option<Ratio>),
+		RequiredCollateralRatioUpdated(CurrencyId, CurrencyId, Option<Ratio>),
 		/// The hard cap of total debit value for specific collateral type
 		/// updated. \[collateral_type, new_total_debit_value\]
-		MaximumTotalDebitValueUpdated(CurrencyId, Balance),
+		MaximumTotalDebitValueUpdated(CurrencyId, CurrencyId, Balance),
 	}
 
 	/// Mapping from collateral type to its exchange rate of debit units and
@@ -360,12 +374,19 @@ pub mod module {
 			collateral_currency_id: CurrencyId,
 			stable_currency_id: CurrencyId,
 			who: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResult {
+			maybe_path: Option<&[CurrencyId]>
+		) -> DispatchResultWithPostInfo {
 			ensure_none(origin)?;
+
+			ensure!(
+				T::StableCurrencyIds::get().contains(&stable_currency_id),
+				Error::<T>::InvalidStableType,
+			);
+
 			let who = T::Lookup::lookup(who)?;
 			ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
-			Self::liquidate_unsafe_cdp(who, collateral_currency_id, stable_currency_id)?;
-			Ok(())
+			Self::liquidate_unsafe_cdp(who, collateral_currency_id, stable_currency_id, maybe_path)?;
+			Ok(().into())
 		}
 
 		/// Settle CDP has debit after system shutdown
@@ -382,12 +403,18 @@ pub mod module {
 			collateral_currency_id: CurrencyId,
 			stable_currency_id: CurrencyId,
 			who: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			ensure_none(origin)?;
+
+			ensure!(
+				T::StableCurrencyIds::get().contains(&stable_currency_id),
+				Error::<T>::InvalidStableType,
+			);
+
 			let who = T::Lookup::lookup(who)?;
 			ensure!(T::EmergencyShutdown::is_shutdown(), Error::<T>::MustAfterShutdown);
 			Self::settle_cdp_has_debit(who, collateral_currency_id, stable_currency_id)?;
-			Ok(())
+			Ok(().into())
 		}
 
 		/// Update parameters related to risk management of CDP under specific
@@ -414,7 +441,7 @@ pub mod module {
 			liquidation_penalty: ChangeOptionRate,
 			required_collateral_ratio: ChangeOptionRatio,
 			maximum_total_debit_value: ChangeBalance,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			ensure!(
 				T::CollateralCurrencyIds::get().contains(&collateral_currency_id),
@@ -422,28 +449,28 @@ pub mod module {
 			);
 			ensure!(
 				T::StableCurrencyIds::get().contains(&stable_currency_id),
-				Error::<T>::InvalidCollateralType,
+				Error::<T>::InvalidStableType,
 			);
 
 			let mut collateral_params = Self::collateral_params((collateral_currency_id, stable_currency_id));
 			if let Change::NewValue(update) = liquidation_ratio {
 				collateral_params.liquidation_ratio = update;
-				Self::deposit_event(Event::LiquidationRatioUpdated(collateral_currency_id, update));
+				Self::deposit_event(Event::LiquidationRatioUpdated(collateral_currency_id, stable_currency_id, update));
 			}
 			if let Change::NewValue(update) = liquidation_penalty {
 				collateral_params.liquidation_penalty = update;
-				Self::deposit_event(Event::LiquidationPenaltyUpdated(collateral_currency_id, update));
+				Self::deposit_event(Event::LiquidationPenaltyUpdated(collateral_currency_id, stable_currency_id, update));
 			}
 			if let Change::NewValue(update) = required_collateral_ratio {
 				collateral_params.required_collateral_ratio = update;
-				Self::deposit_event(Event::RequiredCollateralRatioUpdated(collateral_currency_id, update));
+				Self::deposit_event(Event::RequiredCollateralRatioUpdated(collateral_currency_id, stable_currency_id, update));
 			}
-			if let Change::NewValue(val) = maximum_total_debit_value {
-				collateral_params.maximum_total_debit_value = val;
-				Self::deposit_event(Event::MaximumTotalDebitValueUpdated(collateral_currency_id, val));
+			if let Change::NewValue(update) = maximum_total_debit_value {
+				collateral_params.maximum_total_debit_value = update;
+				Self::deposit_event(Event::MaximumTotalDebitValueUpdated(collateral_currency_id, stable_currency_id, update));
 			}
 			CollateralParams::<T>::insert((collateral_currency_id, stable_currency_id), collateral_params);
-			Ok(())
+			Ok(().into())
 		}
 	}
 
@@ -452,49 +479,154 @@ pub mod module {
 		type Call = Call<T>;
 
 		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
-			match call {
-				Call::liquidate(collateral_currency_id, stable_currency_id, who) => {
-					let account = T::Lookup::lookup(who.clone())?;
 
-					ensure!(
-						T::StableCurrencyIds::get().contains(&stable_currency_id),
-						Error::<T>::InvalidCollateralType,
-					);
+			let  stable_currency_ids = T::StableCurrencyIds::get();
+			let  setter_currency_id = T::SetterCurrencyId::get();
+			let  setdollar_currency_id = T::GetSetUSDCurrencyId::get();
+			let  seteuro_currency_id = T::GetSetEURCurrencyId::get();
+			let  setpound_currency_id = T::GetSetGBPCurrencyId::get();
 
-					let Position { collateral, debit } = <LoansOf<T>>::positions((collateral_currency_id, stable_currency_id), &account);
-					if !Self::is_cdp_unsafe(*collateral_currency_id, *stable_currency_id, collateral, debit) || T::EmergencyShutdown::is_shutdown() {
-						return InvalidTransaction::Stale.into();
+			for stable_currency_id in stable_currency_ids {
+				
+				if stable_currency_id == setter_currency_id {
+					
+					match call {
+						Call::liquidate(collateral_currency_id, stable_currency_id, who, None) => {
+							let account = T::Lookup::lookup(who.clone())?;
+
+							let Position { collateral, debit } = <LoansOf<T>>::setter_positions(collateral_currency_id, &account);
+							if !Self::is_cdp_unsafe(*collateral_currency_id, *stable_currency_id, collateral, debit) || T::EmergencyShutdown::is_shutdown() {
+								return InvalidTransaction::Stale.into();
+							}
+
+							ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
+								.priority(T::UnsignedPriority::get())
+								.and_provides((<frame_system::Module<T>>::block_number(), collateral_currency_id, stable_currency_id, who))
+								.longevity(64_u64)
+								.propagate(true)
+								.build()
+						}
+						Call::settle(collateral_currency_id, stable_currency_id, who) => {
+							let account = T::Lookup::lookup(who.clone())?;
+
+							let Position { debit, .. } = <LoansOf<T>>::setter_positions(collateral_currency_id, account);
+							if debit.is_zero() || !T::EmergencyShutdown::is_shutdown() {
+								return InvalidTransaction::Stale.into();
+							}
+
+							ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
+								.priority(T::UnsignedPriority::get())
+								.and_provides((collateral_currency_id, stable_currency_id, who))
+								.longevity(64_u64)
+								.propagate(true)
+								.build()
+						}
+						_ => InvalidTransaction::Call.into(),
 					}
+				} else if stable_currency_id == setdollar_currency_id {
+					match call {
+						Call::liquidate(collateral_currency_id, stable_currency_id, who, None) => {
+							let account = T::Lookup::lookup(who.clone())?;
 
-					ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
-						.priority(T::UnsignedPriority::get())
-						.and_provides((<frame_system::Pallet<T>>::block_number(), collateral_currency_id, stable_currency_id, who))
-						.longevity(64_u64)
-						.propagate(true)
-						.build()
-				}
-				Call::settle(collateral_currency_id, stable_currency_id, who) => {
-					let account = T::Lookup::lookup(who.clone())?;
+							let Position { collateral, debit } = <LoansOf<T>>::setdollar_positions(collateral_currency_id, &account);
+							if !Self::is_cdp_unsafe(*collateral_currency_id, *stable_currency_id, collateral, debit) || T::EmergencyShutdown::is_shutdown() {
+								return InvalidTransaction::Stale.into();
+							}
 
-					ensure!(
-						T::StableCurrencyIds::get().contains(&stable_currency_id),
-						Error::<T>::InvalidCollateralType,
-					);
+							ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
+								.priority(T::UnsignedPriority::get())
+								.and_provides((<frame_system::Module<T>>::block_number(), collateral_currency_id, stable_currency_id, who))
+								.longevity(64_u64)
+								.propagate(true)
+								.build()
+						}
+						Call::settle(collateral_currency_id, stable_currency_id, who) => {
+							let account = T::Lookup::lookup(who.clone())?;
 
-					let Position { debit, .. } = <LoansOf<T>>::positions((collateral_currency_id, stable_currency_id), account);
-					if debit.is_zero() || !T::EmergencyShutdown::is_shutdown() {
-						return InvalidTransaction::Stale.into();
+							let Position { debit, .. } = <LoansOf<T>>::setdollar_positions(collateral_currency_id, account);
+							if debit.is_zero() || !T::EmergencyShutdown::is_shutdown() {
+								return InvalidTransaction::Stale.into();
+							}
+
+							ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
+								.priority(T::UnsignedPriority::get())
+								.and_provides((collateral_currency_id, stable_currency_id, who))
+								.longevity(64_u64)
+								.propagate(true)
+								.build()
+						}
+						_ => InvalidTransaction::Call.into(),
 					}
+				} else if stable_currency_id == seteuro_currency_id {
+					match call {
+						Call::liquidate(collateral_currency_id, stable_currency_id, who, None) => {
+							let account = T::Lookup::lookup(who.clone())?;
 
-					ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
-						.priority(T::UnsignedPriority::get())
-						.and_provides((collateral_currency_id, stable_currency_id, who))
-						.longevity(64_u64)
-						.propagate(true)
-						.build()
+							let Position { collateral, debit } = <LoansOf<T>>::seteuro_positions(collateral_currency_id, &account);
+							if !Self::is_cdp_unsafe(*collateral_currency_id, *stable_currency_id, collateral, debit) || T::EmergencyShutdown::is_shutdown() {
+								return InvalidTransaction::Stale.into();
+							}
+
+							ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
+								.priority(T::UnsignedPriority::get())
+								.and_provides((<frame_system::Module<T>>::block_number(), collateral_currency_id, stable_currency_id, who))
+								.longevity(64_u64)
+								.propagate(true)
+								.build()
+						}
+						Call::settle(collateral_currency_id, stable_currency_id, who) => {
+							let account = T::Lookup::lookup(who.clone())?;
+
+							let Position { debit, .. } = <LoansOf<T>>::seteuro_positions(collateral_currency_id, account);
+							if debit.is_zero() || !T::EmergencyShutdown::is_shutdown() {
+								return InvalidTransaction::Stale.into();
+							}
+
+							ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
+								.priority(T::UnsignedPriority::get())
+								.and_provides((collateral_currency_id, stable_currency_id, who))
+								.longevity(64_u64)
+								.propagate(true)
+								.build()
+						}
+						_ => InvalidTransaction::Call.into(),
+					}
+				} else if stable_currency_id == setpound_currency_id {
+					match call {
+						Call::liquidate(collateral_currency_id, stable_currency_id, who, None) => {
+							let account = T::Lookup::lookup(who.clone())?;
+
+							let Position { collateral, debit } = <LoansOf<T>>::setpound_positions(collateral_currency_id, &account);
+							if !Self::is_cdp_unsafe(*collateral_currency_id, *stable_currency_id, collateral, debit) || T::EmergencyShutdown::is_shutdown() {
+								return InvalidTransaction::Stale.into();
+							}
+
+							ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
+								.priority(T::UnsignedPriority::get())
+								.and_provides((<frame_system::Module<T>>::block_number(), collateral_currency_id, stable_currency_id, who))
+								.longevity(64_u64)
+								.propagate(true)
+								.build()
+						}
+						Call::settle(collateral_currency_id, stable_currency_id, who) => {
+							let account = T::Lookup::lookup(who.clone())?;
+
+							let Position { debit, .. } = <LoansOf<T>>::setpound_positions(collateral_currency_id, account);
+							if debit.is_zero() || !T::EmergencyShutdown::is_shutdown() {
+								return InvalidTransaction::Stale.into();
+							}
+
+							ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
+								.priority(T::UnsignedPriority::get())
+								.and_provides((collateral_currency_id, stable_currency_id, who))
+								.longevity(64_u64)
+								.propagate(true)
+								.build()
+						}
+						_ => InvalidTransaction::Call.into(),
+					}
 				}
-				_ => InvalidTransaction::Call.into(),
-			}
+			} 
 		}
 	}
 }
@@ -502,11 +634,6 @@ pub mod module {
 impl<T: Config> Pallet<T> {
 	fn submit_unsigned_liquidation_tx(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId, who: T::AccountId) {
 		let who = T::Lookup::unlookup(who);
-
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
 
 		let call = Call::<T>::liquidate(collateral_currency_id, stable_currency_id, who.clone());
 		if SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).is_err() {
@@ -520,11 +647,6 @@ impl<T: Config> Pallet<T> {
 
 	fn submit_unsigned_settlement_tx(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId, who: T::AccountId) {
 		let who = T::Lookup::unlookup(who);
-
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
 
 		let call = Call::<T>::settle(collateral_currency_id, stable_currency_id, who.clone());
 		if SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).is_err() {
@@ -553,9 +675,10 @@ impl<T: Config> Pallet<T> {
 		let mut guard = lock.try_lock().map_err(|_| OffchainErr::OffchainLock)?;
 
 		let collateral_currency_ids = T::CollateralCurrencyIds::get();
+		let stable_currency_ids = T::StableCurrencyIds::get();
 		let to_be_continue = StorageValueRef::persistent(&OFFCHAIN_WORKER_DATA);
 
-		// get to_be_continue record
+		// get to_be_continue record - collateral
 		let (collateral_position, start_key) =
 			if let Ok(Some((last_collateral_position, maybe_last_iterator_previous_key))) =
 				to_be_continue.get::<(u32, Option<Vec<u8>>)>()
@@ -566,82 +689,260 @@ impl<T: Config> Pallet<T> {
 				(pick_u32(&mut rng, collateral_currency_ids.len() as u32), None)
 			};
 
+		// get to_be_continue record - stable
+		let (stable_position, _stable_start_key) =
+			if let Ok(Some((last_stable_position, maybe_last_iterator_previous_key))) =
+				to_be_continue.get::<(u32, Option<Vec<u8>>)>()
+			{
+				(last_stable_position, maybe_last_iterator_previous_key)
+			} else {
+				let mut rng = ChaChaRng::from_seed(sp_io::offchain::random_seed());
+				(pick_u32(&mut rng, stable_currency_ids.len() as u32), None)
+			};
+
 		// get the max iterationns config
 		let max_iterations = StorageValueRef::persistent(&OFFCHAIN_WORKER_MAX_ITERATIONS)
 			.get::<u32>()
 			.unwrap_or(Some(DEFAULT_MAX_ITERATIONS));
 
+		let stable_currency_id = stable_currency_ids[stable_position as usize];
 		let collateral_currency_id = collateral_currency_ids[collateral_position as usize];
 		let is_shutdown = T::EmergencyShutdown::is_shutdown();
-		let mut map_iterator = <loans::Positions<T> as IterableStorageDoubleMapExtended<_, _, _>>::iter_prefix(
-			(collateral_currency_id, stable_currency_id)
-			max_iterations,
-			start_key.clone(),
-		);
 
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
-
-		let mut iteration_count = 0;
-		let iteration_start_time = sp_io::offchain::timestamp();
-
-		#[allow(clippy::while_let_on_iterator)]
-		while let Some((who, Position { collateral, debit })) = map_iterator.next() {
-			if !is_shutdown && Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit) {
-				// liquidate unsafe CDPs before emergency shutdown occurs
-				Self::submit_unsigned_liquidation_tx(currency_id, who);
-			} else if is_shutdown && !debit.is_zero() {
-				// settle CDPs with debit after emergency shutdown occurs.
-				Self::submit_unsigned_settlement_tx(currency_id, who);
+		if stable_currency_id == T::SetterCurrencyId::get() {
+			let mut map_iterator = <loans::SetterPositions<T> as IterableStorageDoubleMapExtended<_, _, _>>::iter_prefix(
+				collateral_currency_id,
+				max_iterations,
+				start_key.clone(),
+			);
+	
+			let mut iteration_count = 0;
+			let iteration_start_time = sp_io::offchain::timestamp();
+	
+			#[allow(clippy::while_let_on_iterator)]
+			while let Some((who, Position { collateral, debit })) = map_iterator.next() {
+				if !is_shutdown && Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit) {
+					// liquidate unsafe CDPs before emergency shutdown occurs
+					Self::submit_unsigned_liquidation_tx(collateral_currency_id, stable_currency_id, who);
+				} else if is_shutdown && !debit.is_zero() {
+					// settle CDPs with debit after emergency shutdown occurs.
+					Self::submit_unsigned_settlement_tx(collateral_currency_id, stable_currency_id, who);
+				}
+	
+				iteration_count += 1;
+	
+				// extend offchain worker lock
+				guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
 			}
-
-			iteration_count += 1;
-
-			// extend offchain worker lock
-			guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
-		}
-		let iteration_end_time = sp_io::offchain::timestamp();
-		debug::debug!(
-			target: "cdp-engine offchain worker",
-			"iteration info:\n max iterations is {:?}\n currency id: {:?}, start key: {:?}, iterate count: {:?}\n iteration start at: {:?}, end at: {:?}, execution time: {:?}\n",
-			max_iterations,
-			currency_id,
-			start_key,
-			iteration_count,
-			iteration_start_time,
-			iteration_end_time,
-			iteration_end_time.diff(&iteration_start_time)
-		);
-
-		// if iteration for map storage finished, clear to be continue record
-		// otherwise, update to be continue record
-		if map_iterator.finished {
-			let next_collateral_position =
-				if collateral_position < collateral_currency_ids.len().saturating_sub(1) as u32 {
-					collateral_position + 1
-				} else {
-					0
-				};
-			to_be_continue.set(&(next_collateral_position, Option::<Vec<u8>>::None));
+			let iteration_end_time = sp_io::offchain::timestamp();
+			debug::debug!(
+				target: "cdp-engine offchain worker",
+				"iteration info:\n max iterations is {:?}\n collateral currency id: {:?}, stable currency id {:?}, start key: {:?}, iterate count: {:?}\n iteration start at: {:?}, end at: {:?}, execution time: {:?}\n",
+				max_iterations,
+				collateral_currency_id,
+				stable_currency_id,
+				start_key,
+				iteration_count,
+				iteration_start_time,
+				iteration_end_time,
+				iteration_end_time.diff(&iteration_start_time)
+			);
+	
+			// if iteration for map storage finished, clear to be continue record
+			// otherwise, update to be continue record
+			if map_iterator.finished {
+				let next_collateral_position =
+					if collateral_position < collateral_currency_ids.len().saturating_sub(1) as u32 {
+						collateral_position + 1
+					} else {
+						0
+					};
+				to_be_continue.set(&(next_collateral_position, Option::<Vec<u8>>::None));
+			} else {
+				to_be_continue.set(&(collateral_position, Some(map_iterator.map_iterator.previous_key)));
+			}
+	
+			// Consume the guard but **do not** unlock the underlying lock.
+			guard.forget();
+	
+			Ok(())
+		} else if stable_currency_id == T::GetSetUSDCurrencyId::get() {
+			let mut map_iterator = <loans::SetDollarPositions<T> as IterableStorageDoubleMapExtended<_, _, _>>::iter_prefix(
+				collateral_currency_id,
+				max_iterations,
+				start_key.clone(),
+			);
+	
+			let mut iteration_count = 0;
+			let iteration_start_time = sp_io::offchain::timestamp();
+	
+			#[allow(clippy::while_let_on_iterator)]
+			while let Some((who, Position { collateral, debit })) = map_iterator.next() {
+				if !is_shutdown && Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit) {
+					// liquidate unsafe CDPs before emergency shutdown occurs
+					Self::submit_unsigned_liquidation_tx(collateral_currency_id, stable_currency_id, who);
+				} else if is_shutdown && !debit.is_zero() {
+					// settle CDPs with debit after emergency shutdown occurs.
+					Self::submit_unsigned_settlement_tx(collateral_currency_id, stable_currency_id, who);
+				}
+	
+				iteration_count += 1;
+	
+				// extend offchain worker lock
+				guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
+			}
+			let iteration_end_time = sp_io::offchain::timestamp();
+			debug::debug!(
+				target: "cdp-engine offchain worker",
+				"iteration info:\n max iterations is {:?}\n collateral currency id: {:?}, stable currency id {:?}, start key: {:?}, iterate count: {:?}\n iteration start at: {:?}, end at: {:?}, execution time: {:?}\n",
+				max_iterations,
+				collateral_currency_id,
+				stable_currency_id,
+				start_key,
+				iteration_count,
+				iteration_start_time,
+				iteration_end_time,
+				iteration_end_time.diff(&iteration_start_time)
+			);
+	
+			// if iteration for map storage finished, clear to be continue record
+			// otherwise, update to be continue record
+			if map_iterator.finished {
+				let next_collateral_position =
+					if collateral_position < collateral_currency_ids.len().saturating_sub(1) as u32 {
+						collateral_position + 1
+					} else {
+						0
+					};
+				to_be_continue.set(&(next_collateral_position, Option::<Vec<u8>>::None));
+			} else {
+				to_be_continue.set(&(collateral_position, Some(map_iterator.map_iterator.previous_key)));
+			}
+	
+			// Consume the guard but **do not** unlock the underlying lock.
+			guard.forget();
+	
+			Ok(())
+		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+			let mut map_iterator = <loans::SetEuroPositions<T> as IterableStorageDoubleMapExtended<_, _, _>>::iter_prefix(
+				collateral_currency_id,
+				max_iterations,
+				start_key.clone(),
+			);
+	
+			let mut iteration_count = 0;
+			let iteration_start_time = sp_io::offchain::timestamp();
+	
+			#[allow(clippy::while_let_on_iterator)]
+			while let Some((who, Position { collateral, debit })) = map_iterator.next() {
+				if !is_shutdown && Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit) {
+					// liquidate unsafe CDPs before emergency shutdown occurs
+					Self::submit_unsigned_liquidation_tx(collateral_currency_id, stable_currency_id, who);
+				} else if is_shutdown && !debit.is_zero() {
+					// settle CDPs with debit after emergency shutdown occurs.
+					Self::submit_unsigned_settlement_tx(collateral_currency_id, stable_currency_id, who);
+				}
+	
+				iteration_count += 1;
+	
+				// extend offchain worker lock
+				guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
+			}
+			let iteration_end_time = sp_io::offchain::timestamp();
+			debug::debug!(
+				target: "cdp-engine offchain worker",
+				"iteration info:\n max iterations is {:?}\n collateral currency id: {:?}, stable currency id {:?}, start key: {:?}, iterate count: {:?}\n iteration start at: {:?}, end at: {:?}, execution time: {:?}\n",
+				max_iterations,
+				collateral_currency_id,
+				stable_currency_id,
+				start_key,
+				iteration_count,
+				iteration_start_time,
+				iteration_end_time,
+				iteration_end_time.diff(&iteration_start_time)
+			);
+	
+			// if iteration for map storage finished, clear to be continue record
+			// otherwise, update to be continue record
+			if map_iterator.finished {
+				let next_collateral_position =
+					if collateral_position < collateral_currency_ids.len().saturating_sub(1) as u32 {
+						collateral_position + 1
+					} else {
+						0
+					};
+				to_be_continue.set(&(next_collateral_position, Option::<Vec<u8>>::None));
+			} else {
+				to_be_continue.set(&(collateral_position, Some(map_iterator.map_iterator.previous_key)));
+			}
+	
+			// Consume the guard but **do not** unlock the underlying lock.
+			guard.forget();
+	
+			Ok(())
 		} else {
-			to_be_continue.set(&(collateral_position, Some(map_iterator.map_iterator.previous_key)));
+			// else if stable_currency_id == T::GetSetGBPCurrencyId::get() { down here} // vvvvvvvvvvvvvvvvv
+			let mut map_iterator = <loans::SetPoundPositions<T> as IterableStorageDoubleMapExtended<_, _, _>>::iter_prefix(
+				collateral_currency_id,
+				max_iterations,
+				start_key.clone(),
+			);
+	
+			let mut iteration_count = 0;
+			let iteration_start_time = sp_io::offchain::timestamp();
+	
+			#[allow(clippy::while_let_on_iterator)]
+			while let Some((who, Position { collateral, debit })) = map_iterator.next() {
+				if !is_shutdown && Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit) {
+					// liquidate unsafe CDPs before emergency shutdown occurs
+					Self::submit_unsigned_liquidation_tx(collateral_currency_id, stable_currency_id, who);
+				} else if is_shutdown && !debit.is_zero() {
+					// settle CDPs with debit after emergency shutdown occurs.
+					Self::submit_unsigned_settlement_tx(collateral_currency_id, stable_currency_id, who);
+				}
+	
+				iteration_count += 1;
+	
+				// extend offchain worker lock
+				guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
+			}
+			let iteration_end_time = sp_io::offchain::timestamp();
+			debug::debug!(
+				target: "cdp-engine offchain worker",
+				"iteration info:\n max iterations is {:?}\n collateral currency id: {:?}, stable currency id {:?}, start key: {:?}, iterate count: {:?}\n iteration start at: {:?}, end at: {:?}, execution time: {:?}\n",
+				max_iterations,
+				collateral_currency_id,
+				stable_currency_id,
+				start_key,
+				iteration_count,
+				iteration_start_time,
+				iteration_end_time,
+				iteration_end_time.diff(&iteration_start_time)
+			);
+	
+			// if iteration for map storage finished, clear to be continue record
+			// otherwise, update to be continue record
+			if map_iterator.finished {
+				let next_collateral_position =
+					if collateral_position < collateral_currency_ids.len().saturating_sub(1) as u32 {
+						collateral_position + 1
+					} else {
+						0
+					};
+				to_be_continue.set(&(next_collateral_position, Option::<Vec<u8>>::None));
+			} else {
+				to_be_continue.set(&(collateral_position, Some(map_iterator.map_iterator.previous_key)));
+			}
+	
+			// Consume the guard but **do not** unlock the underlying lock.
+			guard.forget();
+	
+			Ok(())
 		}
-
-		// Consume the guard but **do not** unlock the underlying lock.
-		guard.forget();
-
-		Ok(())
 	}
 
 	pub fn is_cdp_unsafe(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId, collateral_amount: Balance, debit: Balance) -> bool {
 		
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
-
 		if let Some(feed_price) = T::PriceSource::get_relative_price(collateral_currency_id, stable_currency_id) {
 			let collateral_ratio = Self::calculate_collateral_ratio(
 				collateral_currency_id,
@@ -650,7 +951,7 @@ impl<T: Config> Pallet<T> {
 				debit,
 				feed_price
 			);
-			collateral_ratio < Self::get_liquidation_ratio(collateral_currency_id)
+			collateral_ratio < Self::get_liquidation_ratio(collateral_currency_id, stable_currency_id)
 		} else {
 			false
 		}
@@ -658,30 +959,15 @@ impl<T: Config> Pallet<T> {
 
 	pub fn maximum_total_debit_value(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> Balance {
 
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
-
 		Self::collateral_params((collateral_currency_id, stable_currency_id)).maximum_total_debit_value
 	}
 
 	pub fn required_collateral_ratio(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> Option<Ratio> {
 
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
-
 		Self::collateral_params((collateral_currency_id, stable_currency_id)).required_collateral_ratio
 	}
 
 	pub fn get_liquidation_ratio(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> Ratio {
-
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
 
 		Self::collateral_params((collateral_currency_id, stable_currency_id))
 			.liquidation_ratio
@@ -689,11 +975,6 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn get_liquidation_penalty(collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> Rate {
-
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
-		);
 
 		Self::collateral_params((collateral_currency_id, stable_currency_id))
 			.liquidation_penalty
@@ -758,7 +1039,7 @@ impl<T: Config> Pallet<T> {
 		);
 		ensure!(
 			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
+			Error::<T>::InvalidStableType,
 		);
 		<LoansOf<T>>::adjust_position(
 			who,
@@ -775,26 +1056,96 @@ impl<T: Config> Pallet<T> {
 		
 		ensure!(
 			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
+			Error::<T>::InvalidStableType,
 		);
 
-		let Position { collateral, debit } = <LoansOf<T>>::positions((collateral_currency_id, stable_currency_id), &who);
-		ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
+		if stable_currency_id == T::SetterCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setter_positions(collateral_currency_id, &who);
 
-		// confiscate collateral in cdp to cdp treasury
-		// and decrease CDP's debit to zero
-		let settle_price: Price = T::PriceSource::get_relative_price(stable_currency_id, collateral_currency_id)
-			.ok_or(Error::<T>::InvalidFeedPrice)?;
-		let bad_debt_value = Self::get_debit_value(
-			collateral_currency_id,
-			stable_currency_id,
-			debit
-		);
-		let confiscate_collateral_amount =
-			sp_std::cmp::min(settle_price.saturating_mul_int(bad_debt_value), collateral);
+			ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
 
-		// confiscate collateral and all debit
-		<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, confiscate_collateral_amount, debit)?;
+			// confiscate collateral in cdp to cdp treasury
+			// and decrease CDP's debit to zero
+			let settle_price: Price = T::PriceSource::get_relative_price(stable_currency_id, collateral_currency_id)
+				.ok_or(Error::<T>::InvalidFeedPrice)?;
+			let bad_debt_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let confiscate_collateral_amount =
+				sp_std::cmp::min(settle_price.saturating_mul_int(bad_debt_value), collateral);
+
+			// confiscate collateral and all debit
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, confiscate_collateral_amount, debit)?;
+
+		} else if stable_currency_id == T::GetSetUSDCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setdollar_positions(collateral_currency_id, &who);
+
+			ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
+
+			// confiscate collateral in cdp to cdp treasury
+			// and decrease CDP's debit to zero
+			let settle_price: Price = T::PriceSource::get_relative_price(stable_currency_id, collateral_currency_id)
+				.ok_or(Error::<T>::InvalidFeedPrice)?;
+			let bad_debt_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let confiscate_collateral_amount =
+				sp_std::cmp::min(settle_price.saturating_mul_int(bad_debt_value), collateral);
+
+			// confiscate collateral and all debit
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, confiscate_collateral_amount, debit)?;
+
+		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::seteuro_positions(collateral_currency_id, &who);
+
+			ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
+
+			// confiscate collateral in cdp to cdp treasury
+			// and decrease CDP's debit to zero
+			let settle_price: Price = T::PriceSource::get_relative_price(stable_currency_id, collateral_currency_id)
+				.ok_or(Error::<T>::InvalidFeedPrice)?;
+			let bad_debt_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let confiscate_collateral_amount =
+				sp_std::cmp::min(settle_price.saturating_mul_int(bad_debt_value), collateral);
+
+			// confiscate collateral and all debit
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, confiscate_collateral_amount, debit)?;
+
+		} else {
+			// else if stable_currency_id == T::GetSetGBPCurrencyId::get() { down here} // vvvvvvvvvvvvvvvvv
+
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setpound_positions(collateral_currency_id, &who);
+
+			ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
+
+			// confiscate collateral in cdp to cdp treasury
+			// and decrease CDP's debit to zero
+			let settle_price: Price = T::PriceSource::get_relative_price(stable_currency_id, collateral_currency_id)
+				.ok_or(Error::<T>::InvalidFeedPrice)?;
+			let bad_debt_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let confiscate_collateral_amount =
+				sp_std::cmp::min(settle_price.saturating_mul_int(bad_debt_value), collateral);
+
+			// confiscate collateral and all debit
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, confiscate_collateral_amount, debit)?;
+
+		}
 
 		Self::deposit_event(Event::SettleCDPInDebit(collateral_currency_id, stable_currency_id, who));
 		Ok(())
@@ -810,125 +1161,470 @@ impl<T: Config> Pallet<T> {
 
 		ensure!(
 			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
+			Error::<T>::InvalidStableType,
 		);
 
-		let Position { collateral, debit } = <LoansOf<T>>::positions((collateral_currency_id, stable_currency_id), &who);
-		ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
-		ensure!(
-			!Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id,  collateral, debit),
-			Error::<T>::IsUnsafe
-		);
+		if stable_currency_id == T::SetterCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setter_positions(collateral_currency_id, &who);
 
-		// confiscate all collateral and debit of unsafe cdp to cdp treasury
-		<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
+			ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
+			ensure!(
+				!Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id,  collateral, debit),
+				Error::<T>::IsUnsafe
+			);
+	
+			// confiscate all collateral and debit of unsafe cdp to cdp treasury
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
 
-		// swap exact stable with DEX in limit of price impact
-		let debit_value = Self::get_debit_value(
-			collateral_currency_id,
-			stable_currency_id,
-			debit
-		);
-		let actual_supply_collateral = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
-			collateral_currency_id,
-			stable_currency_id,
-			collateral,
-			debit_value,
-			None,
-			maybe_path,
-			false,
-		)?;
+			// swap exact stable with DEX in limit of price impact
+			let debit_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let actual_supply_collateral = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+				collateral_currency_id,
+				stable_currency_id,
+				collateral,
+				debit_value,
+				maybe_path,
+				false,
+			)?;
 
-		// refund remain collateral to CDP owner
-		let refund_collateral_amount = collateral
-			.checked_sub(actual_supply_collateral)
-			.expect("swap succecced means collateral >= actual_supply_collateral; qed");
-		<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
+			// refund remain collateral to CDP owner
+			let refund_collateral_amount = collateral
+				.checked_sub(actual_supply_collateral)
+				.expect("swap succecced means collateral >= actual_supply_collateral; qed");
+			<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
 
-		Self::deposit_event(Event::CloseCDPInDebitByDEX(
-			collateral_currency_id,
-			stable_currency_id,
-			who,
-			actual_supply_collateral,
-			refund_collateral_amount,
-			debit_value,
-		));
-		Ok(())
+			Self::deposit_event(Event::CloseCDPInDebitByDEX(
+				collateral_currency_id,
+				stable_currency_id,
+				who,
+				actual_supply_collateral,
+				refund_collateral_amount,
+				debit_value,
+			));
+			Ok(())
+		} else if stable_currency_id == T::GetSetUSDCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setdollar_positions(collateral_currency_id, &who);
+			
+			ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
+			ensure!(
+				!Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id,  collateral, debit),
+				Error::<T>::IsUnsafe
+			);
+	
+			// confiscate all collateral and debit of unsafe cdp to cdp treasury
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
+
+			// swap exact stable with DEX in limit of price impact
+			let debit_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let actual_supply_collateral = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+				collateral_currency_id,
+				stable_currency_id,
+				collateral,
+				debit_value,
+				maybe_path,
+				false,
+			)?;
+
+			// refund remain collateral to CDP owner
+			let refund_collateral_amount = collateral
+				.checked_sub(actual_supply_collateral)
+				.expect("swap succecced means collateral >= actual_supply_collateral; qed");
+			<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
+
+			Self::deposit_event(Event::CloseCDPInDebitByDEX(
+				collateral_currency_id,
+				stable_currency_id,
+				who,
+				actual_supply_collateral,
+				refund_collateral_amount,
+				debit_value,
+			));
+			Ok(())
+		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::seteuro_positions(collateral_currency_id, &who);
+			
+			ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
+			ensure!(
+				!Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id,  collateral, debit),
+				Error::<T>::IsUnsafe
+			);
+	
+			// confiscate all collateral and debit of unsafe cdp to cdp treasury
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
+
+			// swap exact stable with DEX in limit of price impact
+			let debit_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let actual_supply_collateral = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+				collateral_currency_id,
+				stable_currency_id,
+				collateral,
+				debit_value,
+				maybe_path,
+				false,
+			)?;
+
+			// refund remain collateral to CDP owner
+			let refund_collateral_amount = collateral
+				.checked_sub(actual_supply_collateral)
+				.expect("swap succecced means collateral >= actual_supply_collateral; qed");
+			<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
+
+			Self::deposit_event(Event::CloseCDPInDebitByDEX(
+				collateral_currency_id,
+				stable_currency_id,
+				who,
+				actual_supply_collateral,
+				refund_collateral_amount,
+				debit_value,
+			));
+			Ok(())
+		} else {
+			// else if stable_currency_id == T::GetSetGBPCurrencyId::get() { down here} // vvvvvvvvvvvvvvvvv
+
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setpound_positions(collateral_currency_id, &who);
+			
+			ensure!(!debit.is_zero(), Error::<T>::NoDebitValue);
+			ensure!(
+				!Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id,  collateral, debit),
+				Error::<T>::IsUnsafe
+			);
+		
+			// confiscate all collateral and debit of unsafe cdp to cdp treasury
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
+
+			// swap exact stable with DEX in limit of price impact
+			let debit_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let actual_supply_collateral = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+				collateral_currency_id,
+				stable_currency_id,
+				collateral,
+				debit_value,
+				maybe_path,
+				false,
+			)?;
+
+			// refund remain collateral to CDP owner
+			let refund_collateral_amount = collateral
+				.checked_sub(actual_supply_collateral)
+				.expect("swap succecced means collateral >= actual_supply_collateral; qed");
+			<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
+
+			Self::deposit_event(Event::CloseCDPInDebitByDEX(
+				collateral_currency_id,
+				stable_currency_id,
+				who,
+				actual_supply_collateral,
+				refund_collateral_amount,
+				debit_value,
+			));
+			Ok(())
+		}
 	}
 
 	// liquidate unsafe cdp
-	pub fn liquidate_unsafe_cdp(who: T::AccountId, collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> DispatchResult {
+	pub fn liquidate_unsafe_cdp(
+		who: T::AccountId,
+		collateral_currency_id: CurrencyId,
+		stable_currency_id: CurrencyId,
+		maybe_path: Option<&[CurrencyId]>
+	) -> DispatchResult {
 		
 		ensure!(
 			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCollateralType,
+			Error::<T>::InvalidStableType,
 		);
 
-		let Position { collateral, debit } = <LoansOf<T>>::positions((collateral_currency_id, stable_currency_id), &who);
+		if stable_currency_id == T::SetterCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setter_positions(collateral_currency_id, &who);
 
-		// ensure the cdp is unsafe
-		ensure!(
-			Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit),
-			Error::<T>::MustBeUnsafe
-		);
+			// ensure the cdp is unsafe
+			ensure!(
+				Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit),
+				Error::<T>::MustBeUnsafe
+			);
 
-		// confiscate all collateral and debit of unsafe cdp to cdp treasury
-		<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, collateral, debit)?;
+			// confiscate all collateral and debit of unsafe cdp to cdp treasury
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
 
-		let bad_debt_value = Self::get_debit_value(
-			collateral_currency_id,
-			stable_currency_id,
-			debit
-		);
-		let target_stable_amount = Self::get_liquidation_penalty(
-			collateral_currency_id,
-			stable_currency_id
-		).saturating_mul_acc_int(bad_debt_value);
-
-		// try use collateral to swap enough stable currency in DEX when the price impact
-		// is below the limit, otherwise create collateral auctions.
-		let liquidation_strategy = (|| -> Result<LiquidationStrategy, DispatchError> {
-			// swap exact stable with DEX in limit of price impact
-			if let Ok(actual_supply_collateral) = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+			let bad_debt_value = Self::get_debit_value(
 				collateral_currency_id,
 				stable_currency_id,
-				collateral,
-				target_stable_amount,
-				None,
-				false,
-			) {
-				// refund remain collateral to CDP owner
-				let refund_collateral_amount = collateral
-					.checked_sub(actual_supply_collateral)
-					.expect("swap succecced means collateral >= actual_supply_collateral; qed");
+				debit
+			);
+			let target_stable_amount = Self::get_liquidation_penalty(
+				collateral_currency_id,
+				stable_currency_id
+			).saturating_mul_acc_int(bad_debt_value);
 
-				<T as Config>::CDPTreasury::withdraw_collateral(&who, currency_id, refund_collateral_amount)?;
+			// try use collateral to swap enough stable currency in DEX when the price impact
+			// is below the limit, otherwise create collateral auctions.
+			let liquidation_strategy = (|| -> Result<LiquidationStrategy, DispatchError> {
+				// swap exact stable with DEX in limit of price impact
+				if let Ok(actual_supply_collateral) = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+					collateral_currency_id,
+					stable_currency_id,
+					collateral,
+					target_stable_amount,
+					maybe_path,
+					false,
+				) {
+					// refund remain collateral to CDP owner
+					let refund_collateral_amount = collateral
+						.checked_sub(actual_supply_collateral)
+						.expect("swap succecced means collateral >= actual_supply_collateral; qed");
 
-				return Ok(LiquidationStrategy::Exchange);
-			}
+					<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
 
-			// create collateral auctions by cdp treasury
-			<T as Config>::CDPTreasury::create_collateral_auctions(
+					return Ok(LiquidationStrategy::Exchange);
+				}
+
+				// create collateral auctions by cdp treasury
+				<T as Config>::CDPTreasury::create_collateral_auctions(
+					collateral_currency_id,
+					stable_currency_id,
+					collateral,
+					target_stable_amount,
+					who.clone(),
+					true,
+				)?;
+
+				Ok(LiquidationStrategy::Auction)
+			})()?;
+
+			Self::deposit_event(Event::LiquidateUnsafeCDP(
 				collateral_currency_id,
 				stable_currency_id,
+				who,
 				collateral,
-				target_stable_amount,
-				who.clone(),
-				true,
-			)?;
+				bad_debt_value,
+				liquidation_strategy,
+			));
+			Ok(())
+		} else if stable_currency_id == T::GetSetUSDCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setdollar_positions(collateral_currency_id, &who);
 
-			Ok(LiquidationStrategy::Auction)
-		})()?;
+			// ensure the cdp is unsafe
+			ensure!(
+				Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit),
+				Error::<T>::MustBeUnsafe
+			);
 
-		Self::deposit_event(Event::LiquidateUnsafeCDP(
-			collateral_currency_id,
-			stable_currency_id,
-			who,
-			collateral,
-			bad_debt_value,
-			liquidation_strategy,
-		));
-		Ok(())
+			// confiscate all collateral and debit of unsafe cdp to cdp treasury
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
+
+			let bad_debt_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let target_stable_amount = Self::get_liquidation_penalty(
+				collateral_currency_id,
+				stable_currency_id
+			).saturating_mul_acc_int(bad_debt_value);
+
+			// try use collateral to swap enough stable currency in DEX when the price impact
+			// is below the limit, otherwise create collateral auctions.
+			let liquidation_strategy = (|| -> Result<LiquidationStrategy, DispatchError> {
+				// swap exact stable with DEX in limit of price impact
+				if let Ok(actual_supply_collateral) = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+					collateral_currency_id,
+					stable_currency_id,
+					collateral,
+					target_stable_amount,
+					maybe_path,
+					false,
+				) {
+					// refund remain collateral to CDP owner
+					let refund_collateral_amount = collateral
+						.checked_sub(actual_supply_collateral)
+						.expect("swap succecced means collateral >= actual_supply_collateral; qed");
+
+					<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
+
+					return Ok(LiquidationStrategy::Exchange);
+				}
+
+				// create collateral auctions by cdp treasury
+				<T as Config>::CDPTreasury::create_collateral_auctions(
+					collateral_currency_id,
+					stable_currency_id,
+					collateral,
+					target_stable_amount,
+					who.clone(),
+					true,
+				)?;
+
+				Ok(LiquidationStrategy::Auction)
+			})()?;
+
+			Self::deposit_event(Event::LiquidateUnsafeCDP(
+				collateral_currency_id,
+				stable_currency_id,
+				who,
+				collateral,
+				bad_debt_value,
+				liquidation_strategy,
+			));
+			Ok(())
+		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::seteuro_positions(collateral_currency_id, &who);
+
+			// ensure the cdp is unsafe
+			ensure!(
+				Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit),
+				Error::<T>::MustBeUnsafe
+			);
+
+			// confiscate all collateral and debit of unsafe cdp to cdp treasury
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, collateral, debit)?;
+
+			let bad_debt_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let target_stable_amount = Self::get_liquidation_penalty(
+				collateral_currency_id,
+				stable_currency_id
+			).saturating_mul_acc_int(bad_debt_value);
+
+			// try use collateral to swap enough stable currency in DEX when the price impact
+			// is below the limit, otherwise create collateral auctions.
+			let liquidation_strategy = (|| -> Result<LiquidationStrategy, DispatchError> {
+				// swap exact stable with DEX in limit of price impact
+				if let Ok(actual_supply_collateral) = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+					collateral_currency_id,
+					stable_currency_id,
+					collateral,
+					target_stable_amount,
+					maybe_path,
+					false,
+				) {
+					// refund remain collateral to CDP owner
+					let refund_collateral_amount = collateral
+						.checked_sub(actual_supply_collateral)
+						.expect("swap succecced means collateral >= actual_supply_collateral; qed");
+
+					<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
+
+					return Ok(LiquidationStrategy::Exchange);
+				}
+
+				// create collateral auctions by cdp treasury
+				<T as Config>::CDPTreasury::create_collateral_auctions(
+					collateral_currency_id,
+					stable_currency_id,
+					collateral,
+					target_stable_amount,
+					who.clone(),
+					true,
+				)?;
+
+				Ok(LiquidationStrategy::Auction)
+			})()?;
+
+			Self::deposit_event(Event::LiquidateUnsafeCDP(
+				collateral_currency_id,
+				stable_currency_id,
+				who,
+				collateral,
+				bad_debt_value,
+				liquidation_strategy,
+			));
+			Ok(())
+		} else {
+			// else if stable_currency_id == T::GetSetGBPCurrencyId::get() { down here} // vvvvvvvvvvvvvvvvv
+			
+			// get `from` position data
+			let Position { collateral, debit } = <LoansOf<T>>::setpound_positions(collateral_currency_id, &who);
+
+			// ensure the cdp is unsafe
+			ensure!(
+				Self::is_cdp_unsafe(collateral_currency_id, stable_currency_id, collateral, debit),
+				Error::<T>::MustBeUnsafe
+			);
+
+			// confiscate all collateral and debit of unsafe cdp to cdp treasury
+			<LoansOf<T>>::confiscate_collateral_and_debit(&who, collateral_currency_id, stable_currency_id, debit)?;
+
+			let bad_debt_value = Self::get_debit_value(
+				collateral_currency_id,
+				stable_currency_id,
+				debit
+			);
+			let target_stable_amount = Self::get_liquidation_penalty(
+				collateral_currency_id,
+				stable_currency_id
+			).saturating_mul_acc_int(bad_debt_value);
+
+			// try use collateral to swap enough stable currency in DEX when the price impact
+			// is below the limit, otherwise create collateral auctions.
+			let liquidation_strategy = (|| -> Result<LiquidationStrategy, DispatchError> {
+				// swap exact stable with DEX in limit of price impact
+				if let Ok(actual_supply_collateral) = <T as Config>::CDPTreasury::swap_collateral_to_exact_stable(
+					collateral_currency_id,
+					stable_currency_id,
+					collateral,
+					target_stable_amount,
+					maybe_path,
+					false,
+				) {
+					// refund remain collateral to CDP owner
+					let refund_collateral_amount = collateral
+						.checked_sub(actual_supply_collateral)
+						.expect("swap succecced means collateral >= actual_supply_collateral; qed");
+
+					<T as Config>::CDPTreasury::withdraw_collateral(&who, collateral_currency_id, refund_collateral_amount)?;
+
+					return Ok(LiquidationStrategy::Exchange);
+				}
+
+				// create collateral auctions by cdp treasury
+				<T as Config>::CDPTreasury::create_collateral_auctions(
+					collateral_currency_id,
+					stable_currency_id,
+					collateral,
+					target_stable_amount,
+					who.clone(),
+					true,
+				)?;
+
+				Ok(LiquidationStrategy::Auction)
+			})()?;
+
+			Self::deposit_event(Event::LiquidateUnsafeCDP(
+				collateral_currency_id,
+				stable_currency_id,
+				who,
+				collateral,
+				bad_debt_value,
+				liquidation_strategy,
+			));
+			Ok(())
+		}
 	}
 }
 
@@ -955,7 +1651,7 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 
 			ensure!(
 				T::StableCurrencyIds::get().contains(&stable_currency_id),
-				Error::<T>::InvalidCollateralType,
+				Error::<T>::InvalidStableType,
 			);
 
 			let debit_value = Self::get_debit_value(
@@ -978,7 +1674,7 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 
 			// check the liquidation ratio
 			ensure!(
-				collateral_ratio >= Self::get_liquidation_ratio(currency_id),
+				collateral_ratio >= Self::get_liquidation_ratio(collateral_currency_id, stable_currency_id),
 				Error::<T>::BelowLiquidationRatio
 			);
 

@@ -110,7 +110,7 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 3;
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/sdex");
+	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 }
 
 impl Config for Runtime {
