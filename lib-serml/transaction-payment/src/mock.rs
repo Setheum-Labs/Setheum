@@ -43,7 +43,7 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
@@ -267,7 +267,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 pub type AdaptedBasicCurrency = module_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
+	pub const GetNativeCurrencyId: CurrencyId = SETM;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
@@ -304,7 +304,7 @@ pub struct MockDEX;
 impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
-			(SETUSD, SETHEUM) => (10000, 200),
+			(SETUSD, SETM) => (10000, 200),
 			(SETUSD, DNAR) => (200, 10000),
 			_ => (0, 0),
 		}

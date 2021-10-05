@@ -45,7 +45,7 @@ pub const VAULT: AccountId = 10;
 pub const ROOT: AccountId = 11;
 
 // Currencies constants - CurrencyId/TokenSymbol
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
@@ -116,7 +116,7 @@ impl pallet_balances::Config for Runtime {
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
+	pub const GetNativeCurrencyId: CurrencyId = SETM;
 }
 
 impl orml_currencies::Config for Runtime {
@@ -349,19 +349,19 @@ impl Default for ExtBuilder {
 				(ALICE, SETUSD, 1000),
 				(ALICE, SETR, 1000),
 				(ALICE, DNAR, 1000),
-				(ALICE, SETHEUM, 1000),
+				(ALICE, SETM, 1000),
 				(BOB, SETUSD, 1000),
 				(BOB, SETR, 1000),
 				(BOB, DNAR, 1000),
-				(BOB, SETHEUM, 1000),
+				(BOB, SETM, 1000),
 				(CHARITY_FUND, SETUSD, 1000),
 				(CHARITY_FUND, SETR, 1000),
 				(CHARITY_FUND, DNAR, 1000),
-				(CHARITY_FUND, SETHEUM, 1000),
+				(CHARITY_FUND, SETM, 1000),
 				(TREASURY, SETUSD, 1000),
 				(TREASURY, SETR, 1000),
 				(TREASURY, DNAR, 1000),
-				(TREASURY, SETHEUM, 1000),
+				(TREASURY, SETM, 1000),
 				(SETRPAY, SETUSD, 1000),
 				(SETRPAY, SETR, 1000),
 				(VAULT, SETUSD, 1000),

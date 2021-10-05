@@ -112,7 +112,7 @@
     "AuctionIdOf": "AuctionId",
     "TokenSymbol": {
         "_enum": {
-            "SETHEUM": 0,
+            "SETM": 0,
             "SETUSD": 1
         }
     },

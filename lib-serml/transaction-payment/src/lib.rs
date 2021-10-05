@@ -222,7 +222,7 @@ pub mod module {
 		type AllNonNativeCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// Native currency id, the actual received currency type as fee for
-		/// treasury. Should be SETHEUM
+		/// treasury. Should be SETM
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 

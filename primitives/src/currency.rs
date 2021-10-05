@@ -130,8 +130,8 @@ macro_rules! create_currency_id {
 
 			let mut lp_tokens = vec![
 				Token {
-					symbol: "LP_SETHEUM_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETHEUM), DexShare::Token(SETUSD))).unwrap(),
+					symbol: "LP_SETM_SETUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(SETUSD))).unwrap(),
 				},
 				Token {
 					symbol: "LP_DNAR_SETUSD".to_string(),
@@ -168,7 +168,7 @@ create_currency_id! {
 	#[repr(u8)]
 	pub enum TokenSymbol {
 		// Tier-1 Tokens
-		SETHEUM("Setheum", 12) = 0,
+		SETM("Setheum", 12) = 0,
 		DNAR("Serp Dinar", 12) = 1,
 		// StableCurrencies
 		SETR("Setter", 12) = 2,

@@ -32,7 +32,7 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::{
-	currency::{TokenInfo, SETHEUM, DNAR, SETR, SETEUR, SETUSD, RENBTC},
+	currency::{TokenInfo, SETM, DNAR, SETR, SETEUR, SETUSD, RENBTC},
 	AccountId,
 };
 

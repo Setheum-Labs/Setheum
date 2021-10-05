@@ -106,7 +106,7 @@ impl orml_tokens::Config for Test {
 }
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 }
 
 impl orml_currencies::Config for Test {

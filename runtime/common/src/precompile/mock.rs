@@ -128,25 +128,25 @@ impl pallet_balances::Config for Test {
 	type MaxLocks = ();
 }
 
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
-pub const LP_SETHEUM_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
+pub const LP_SETM_SETUSD: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
 pub const LP_DNAR_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
 pub const LP_SETR_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
 pub const LP_SETEUR_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
 pub const LP_RENBTC_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETHEUM), DexShare::Token(TokenSymbol::SETUSD));
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
+	pub const GetNativeCurrencyId: CurrencyId = SETM;
 	pub AirdropMinimum: u32 = 2;
 	pub AirdropMaximum: u32 = 3;
 }
@@ -208,10 +208,10 @@ parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = 
 		vec![
-			vec![SETUSD, SETHEUM],
-			vec![DNAR, SETUSD, SETHEUM]
-			vec![SETEUR, SETUSD, SETHEUM]
-			vec![RENBTC, SETUSD, SETHEUM]
+			vec![SETUSD, SETM],
+			vec![DNAR, SETUSD, SETM]
+			vec![SETEUR, SETUSD, SETM]
+			vec![RENBTC, SETUSD, SETM]
 		];
 }
 
@@ -455,7 +455,7 @@ pub fn bob_evm_addr() -> EvmAddress {
 }
 
 pub fn setheum_evm_address() -> EvmAddress {
-	EvmAddress::try_from(SETHEUM).unwrap()
+	EvmAddress::try_from(SETM).unwrap()
 }
 
 pub fn setusd_evm_address() -> EvmAddress {
@@ -467,7 +467,7 @@ pub fn renbtc_evm_address() -> EvmAddress {
 }
 
 pub fn lp_setheum_setusd_evm_address() -> EvmAddress {
-	EvmAddress::try_from(LP_SETHEUM_SETUSD).unwrap()
+	EvmAddress::try_from(LP_SETM_SETUSD).unwrap()
 }
 
 pub fn erc20_address_not_exists() -> EvmAddress {
@@ -548,7 +548,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
 			ALICE,
-			SETHEUM,
+			SETM,
 			1_000_000_000_000
 		));
 		assert_ok!(Currencies::update_balance(Origin::root(), ALICE, SETUSD, 1_000_000_000));

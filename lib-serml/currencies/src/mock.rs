@@ -94,7 +94,7 @@ impl tokens::Config for Runtime {
 	type WeightInfo = ();
 }
 
-pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
 parameter_types! {

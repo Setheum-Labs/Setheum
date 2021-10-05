@@ -191,7 +191,7 @@ pub mod opaque {
 
 /// Fee-related
 pub mod fee {
-	use super::{Balance, MILLI_SETHEUM};
+	use super::{Balance, MILLI_SETM};
 	use frame_support::weights::{
 		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	};
@@ -214,7 +214,7 @@ pub mod fee {
 	impl WeightToFeePolynomial for WeightToFee {
 		type Balance = Balance;
 		fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-			let p = MILLI_SETHEUM;
+			let p = MILLI_SETM;
 			let q = Balance::from(ExtrinsicBaseWeight::get()); // 125_000_000
 			smallvec![WeightToFeeCoefficient {
 				degree: 1,
@@ -467,9 +467,9 @@ impl pallet_im_online::Config for Runtime {
 }
 
 parameter_types! {
-	pub const BasicDeposit: Balance =      100 * SETHEUM;
-	pub const FieldDeposit: Balance =        1 * SETHEUM;
-	pub const SubAccountDeposit: Balance =  20 * SETHEUM;
+	pub const BasicDeposit: Balance =      100 * SETM;
+	pub const FieldDeposit: Balance =        1 * SETM;
+	pub const SubAccountDeposit: Balance =  20 * SETM;
 	pub const MaxSubAccounts: u32 = 100;
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 20;
@@ -492,7 +492,7 @@ impl pallet_identity::Config for Runtime {
 
 
 parameter_types! {
-	pub const IndexDeposit: Balance = 1 * SETHEUM;
+	pub const IndexDeposit: Balance = 1 * SETM;
 }
 
 impl pallet_indices::Config for Runtime {
@@ -545,7 +545,7 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![];
@@ -553,7 +553,7 @@ parameter_types! {
 }
 
 parameter_types! {
-	pub const TransactionByteFee: Balance = 10 * MILLI_SETHEUM;
+	pub const TransactionByteFee: Balance = 10 * MILLI_SETM;
 	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
 	pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(1, 100_000);
 	pub MinimumMultiplier:  Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000 as u128);
@@ -602,13 +602,13 @@ static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
 parameter_types! {
 	pub const ChainId: u64 = 25807;
-	// 10 SETHEUM minimum storage deposit
+	// 10 SETM minimum storage deposit
 	pub const NewContractExtraBytes: u32 = 10_000;
-	pub const StorageDepositPerByte: Balance = 1 * MILLI_SETHEUM;
+	pub const StorageDepositPerByte: Balance = 1 * MILLI_SETM;
 	pub const MaxCodeSize: u32 = 60 * 1024;
 	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
-	pub const DeveloperDeposit: Balance = 1_000 * SETHEUM;
-	pub const DeploymentFee: Balance    = 100 * SETHEUM;
+	pub const DeveloperDeposit: Balance = 1_000 * SETM;
+	pub const DeploymentFee: Balance    = 100 * SETM;
 }
 
 pub type MultiCurrencyPrecompile =
@@ -662,8 +662,8 @@ impl module_evm_bridge::Config for Runtime {
 parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
-	pub const NativeTokenExistentialDeposit: Balance =       1 * SETHEUM;
-	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * SETHEUM;
+	pub const NativeTokenExistentialDeposit: Balance =       1 * SETM;
+	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * SETM;
 	pub const MaxLocks: u32 = 50;
 }
 
@@ -737,9 +737,9 @@ parameter_types! {
 
 	pub const NominatorAPY: Perbill =     Perbill::from_percent(10);
 	pub const CouncilInflation: Perbill = Perbill::from_percent(1);
-	pub const CandidacyDeposit: Balance =   1_000_000 * primitives::currency::SETHEUM;
-	pub const MinLockAmount: Balance =        100_000 * primitives::currency::SETHEUM;
-	pub const TotalLockedCap: Balance = 2_000_000_000 * primitives::currency::SETHEUM;
+	pub const CandidacyDeposit: Balance =   1_000_000 * primitives::currency::SETM;
+	pub const MinLockAmount: Balance =        100_000 * primitives::currency::SETM;
+	pub const TotalLockedCap: Balance = 2_000_000_000 * primitives::currency::SETM;
 }
 
 impl pallet_collective::Config<TechCouncilInstance> for Runtime {

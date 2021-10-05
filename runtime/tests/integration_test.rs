@@ -397,7 +397,7 @@ fn test_evm_accounts_module() {
 	ExtBuilder::default()
 		.balances(vec![(
 			bob_account_id(),
-			CurrencyId::Token(TokenSymbol::SETHEUM),
+			CurrencyId::Token(TokenSymbol::SETM),
 			amount(1000),
 		)])
 		.build()
@@ -440,13 +440,13 @@ fn test_evm_accounts_module() {
 fn test_evm_module() {
 	ExtBuilder::default()
 		.balances(vec![
-			(alice_account_id(), CurrencyId::Token(TokenSymbol::SETHEUM), amount(1 * MILLI_SETHEUM)),
-			(bob_account_id(), CurrencyId::Token(TokenSymbol::SETHEUM), amount(1 * MILLI_SETHEUM)),
+			(alice_account_id(), CurrencyId::Token(TokenSymbol::SETM), amount(1 * MILLI_SETM)),
+			(bob_account_id(), CurrencyId::Token(TokenSymbol::SETM), amount(1 * MILLI_SETM)),
 		])
 		.build()
 		.execute_with(|| {
-			assert_eq!(Balances::free_balance(alice_account_id()), amount(1 * MILLI_SETHEUM));
-			assert_eq!(Balances::free_balance(bob_account_id()), amount(1 * MILLI_SETHEUM));
+			assert_eq!(Balances::free_balance(alice_account_id()), amount(1 * MILLI_SETM));
+			assert_eq!(Balances::free_balance(bob_account_id()), amount(1 * MILLI_SETM));
 
 			let _alice_address = EvmAccounts::eth_address(&alice());
 			let bob_address = EvmAccounts::eth_address(&bob());
@@ -465,16 +465,16 @@ fn test_evm_module() {
 
 			// test EvmAccounts Lookup
 			assert_eq!(Balances::free_balance(alice_account_id()), 999999999999989633000000000000000);
-			assert_eq!(Balances::free_balance(bob_account_id()), amount(1 * MILLI_SETHEUM));
+			assert_eq!(Balances::free_balance(bob_account_id()), amount(1 * MILLI_SETM));
 			let to = EvmAccounts::eth_address(&alice());
 			assert_ok!(Currencies::transfer(
 				Origin::signed(bob_account_id()),
 				MultiAddress::Address20(to.0),
-				CurrencyId::Token(TokenSymbol::SETHEUM),
-				amount(10 * MICRO_SETHEUM)
+				CurrencyId::Token(TokenSymbol::SETM),
+				amount(10 * MICRO_SETM)
 			));
 			assert_eq!(Balances::free_balance(alice_account_id()), 1009999999999989633000000000000000);
-			assert_eq!(Balances::free_balance(bob_account_id()), amount(1 * MILLI_SETHEUM) - amount(10 * MICRO_SETHEUM));
+			assert_eq!(Balances::free_balance(bob_account_id()), amount(1 * MILLI_SETM) - amount(10 * MICRO_SETM));
 		});
 }
 
@@ -483,13 +483,13 @@ fn test_evm_module() {
 fn test_evm_module() {
 	ExtBuilder::default()
 		.balances(vec![
-			(alice_account_id(), CurrencyId::Token(TokenSymbol::SETHEUM), amount(1 * MILLI_SETHEUM)),
-			(bob_account_id(), CurrencyId::Token(TokenSymbol::SETHEUM), amount(1 * MILLI_SETHEUM)),
+			(alice_account_id(), CurrencyId::Token(TokenSymbol::SETM), amount(1 * MILLI_SETM)),
+			(bob_account_id(), CurrencyId::Token(TokenSymbol::SETM), amount(1 * MILLI_SETM)),
 		])
 		.build()
 		.execute_with(|| {
-			assert_eq!(Balances::free_balance(alice_account_id()), amount(1 * MILLI_SETHEUM));
-			assert_eq!(Balances::free_balance(bob_account_id()), amount(1 * MILLI_SETHEUM));
+			assert_eq!(Balances::free_balance(alice_account_id()), amount(1 * MILLI_SETM));
+			assert_eq!(Balances::free_balance(bob_account_id()), amount(1 * MILLI_SETM));
 
 			use std::fs::{self, File};
 			use std::io::Read;

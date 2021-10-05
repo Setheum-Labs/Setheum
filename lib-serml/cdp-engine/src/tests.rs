@@ -346,7 +346,7 @@ fn adjust_position_work() {
 			Change::NewValue(10000),
 		));
 		assert_noop!(
-			CDPEngineModule::adjust_position(&ALICE, SETHEUM, SETUSD, 100, 50),
+			CDPEngineModule::adjust_position(&ALICE, SETM, SETUSD, 100, 50),
 			Error::<Runtime>::InvalidCollateralType,
 		);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);

@@ -31,7 +31,7 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARLIE: AccountId = 2;
-pub const SETHEUM: AirDropCurrencyId = AirDropCurrencyId::SETHEUM;
+pub const SETM: AirDropCurrencyId = AirDropCurrencyId::SETM;
 pub const DNAR: AirDropCurrencyId = AirDropCurrencyId::DNAR;
 
 mod airdrop {
@@ -102,7 +102,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		airdrop::GenesisConfig::<Runtime> {
-			airdrop_accounts: vec![(CHARLIE, DNAR, 100), (CHARLIE, DNAR, 50), (CHARLIE, SETHEUM, 80)],
+			airdrop_accounts: vec![(CHARLIE, DNAR, 100), (CHARLIE, DNAR, 50), (CHARLIE, SETM, 80)],
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

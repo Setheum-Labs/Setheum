@@ -74,7 +74,7 @@ pub mod module {
 		type GetStableCurrencyMinimumSupply: GetByKey<CurrencyId, Balance>;
 
 		#[pallet::constant]
-		/// Native (SETHEUM) currency Stablecoin currency id
+		/// Native (SETM) currency Stablecoin currency id
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -372,7 +372,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				// Deposit inflation
 				T::Currency::deposit(currency_id, &treasury_account, treasury_amount)?;
 
-				// SETHEUM - BuyBack Pool Distribution - 5%
+				// SETM - BuyBack Pool Distribution - 5%
 				let setheum_buyback_amount: Balance = one.saturating_mul(inflation_amount / 20);
 				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_setheum(
 					currency_id,
@@ -1002,7 +1002,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
 					).is_ok() {
-						// Swap and burn Native Currency (Setheum (SETHEUM))
+						// Swap and burn Native Currency (Setheum (SETM))
 						if T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
 							&path,

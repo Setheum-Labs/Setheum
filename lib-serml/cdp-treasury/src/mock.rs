@@ -39,7 +39,7 @@ pub type AuctionId = u32;
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const BUYBACK_POOL: AccountId = 1;
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
@@ -111,7 +111,7 @@ impl pallet_balances::Config for Runtime {
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
+	pub const GetNativeCurrencyId: CurrencyId = SETM;
 }
 
 impl orml_currencies::Config for Runtime {

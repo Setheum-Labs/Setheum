@@ -49,14 +49,14 @@ fn trading_pair_works() {
 #[test]
 fn currency_id_try_from_vec_u8_works() {
 	assert_ok!(
-		"SETHEUM".as_bytes().to_vec().try_into(),
-		CurrencyId::Token(TokenSymbol::SETHEUM)
+		"SETM".as_bytes().to_vec().try_into(),
+		CurrencyId::Token(TokenSymbol::SETM)
 	);
 }
 
 #[test]
 fn currency_id_into_u32_works() {
-	let currency_id = DexShare::Token(TokenSymbol::SETHEUM);
+	let currency_id = DexShare::Token(TokenSymbol::SETM);
 	assert_eq!(Into::<u32>::into(currency_id), 0x00);
 
 	let currency_id = DexShare::Token(TokenSymbol::SETUSD);
@@ -78,13 +78,13 @@ fn currency_id_into_u32_works() {
 #[test]
 fn currency_id_try_into_evm_address_works() {
 	assert_eq!(
-		EvmAddress::try_from(CurrencyId::Token(TokenSymbol::SETHEUM,)),
+		EvmAddress::try_from(CurrencyId::Token(TokenSymbol::SETM,)),
 		Ok(EvmAddress::from_str("0x0000000000000000000000000000000001000000").unwrap())
 	);
 
 	assert_eq!(
 		EvmAddress::try_from(CurrencyId::DexShare(
-			DexShare::Token(TokenSymbol::SETHEUM),
+			DexShare::Token(TokenSymbol::SETM),
 			DexShare::Token(TokenSymbol::SETUSD),
 		)),
 		Ok(EvmAddress::from_str("0x0000000000000000000000010000000000000004").unwrap())

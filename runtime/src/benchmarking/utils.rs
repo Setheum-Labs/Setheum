@@ -12,5 +12,5 @@ pub fn set_balance(currency_id: CurrencyId, who: &AccountId, balance: Balance) {
 }
 
 pub fn set_setheum_balance(who: &AccountId, balance: Balance) {
-	set_balance(CurrencyId::Token(TokenSymbol::SETHEUM), who, balance)
+	set_balance(CurrencyId::Token(TokenSymbol::SETM), who, balance)
 }

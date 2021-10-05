@@ -34,7 +34,7 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
 #### The Main Coins - Tokens
 
 ```bash
-SETHEUM("Setheum", 12) = 1, // Staking Token and Governance Token - Native token (Native Currency)
+SETM("Setheum", 12) = 1, // Staking Token and Governance Token - Native token (Native Currency)
 DNAR("Serp Dinar", 12) = 1, // SERP Reserve Asset
 ```
 

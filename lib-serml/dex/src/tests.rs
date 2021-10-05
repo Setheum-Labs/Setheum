@@ -24,7 +24,7 @@ use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{
 	DexModule, Event, ExtBuilder, ListingOrigin, Origin, Runtime, System, Tokens, ALICE, SETUSD, SETUSD_DNAR_PAIR,
-	SETUSD_SETHEUM_PAIR, BOB, DNAR, SETHEUM,
+	SETUSD_SETM_PAIR, BOB, DNAR, SETM,
 };
 use orml_traits::MultiReservableCurrency;
 use sp_runtime::traits::BadOrigin;
@@ -453,13 +453,13 @@ fn get_target_amounts_work() {
 		.build()
 		.execute_with(|| {
 			LiquidityPool::<Runtime>::insert(SETUSD_DNAR_PAIR, (50000, 10000));
-			LiquidityPool::<Runtime>::insert(SETUSD_SETHEUM_PAIR, (100000, 10));
+			LiquidityPool::<Runtime>::insert(SETUSD_SETM_PAIR, (100000, 10));
 			assert_noop!(
 				DexModule::get_target_amounts(&vec![DNAR], 10000),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DNAR, SETUSD, SETHEUM, DNAR], 10000),
+				DexModule::get_target_amounts(&vec![DNAR, SETUSD, SETM, DNAR], 10000),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
@@ -467,15 +467,15 @@ fn get_target_amounts_work() {
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DNAR, SETUSD, SETHEUM], 10000),
+				DexModule::get_target_amounts(&vec![DNAR, SETUSD, SETM], 10000),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DNAR, SETUSD, SETHEUM], 100),
+				DexModule::get_target_amounts(&vec![DNAR, SETUSD, SETM], 100),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 			assert_noop!(
-				DexModule::get_target_amounts(&vec![DNAR, SETHEUM], 100),
+				DexModule::get_target_amounts(&vec![DNAR, SETM], 100),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 		});
@@ -514,13 +514,13 @@ fn get_supply_amounts_work() {
 		.build()
 		.execute_with(|| {
 			LiquidityPool::<Runtime>::insert(SETUSD_DNAR_PAIR, (50000, 10000));
-			LiquidityPool::<Runtime>::insert(SETUSD_SETHEUM_PAIR, (100000, 10));
+			LiquidityPool::<Runtime>::insert(SETUSD_SETM_PAIR, (100000, 10));
 			assert_noop!(
 				DexModule::get_supply_amounts(&vec![DNAR], 10000),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
-				DexModule::get_supply_amounts(&vec![DNAR, SETUSD, SETHEUM, DNAR], 10000),
+				DexModule::get_supply_amounts(&vec![DNAR, SETUSD, SETM, DNAR], 10000),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 			assert_noop!(
@@ -528,11 +528,11 @@ fn get_supply_amounts_work() {
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 			assert_noop!(
-				DexModule::get_supply_amounts(&vec![DNAR, SETUSD, SETHEUM], 10000),
+				DexModule::get_supply_amounts(&vec![DNAR, SETUSD, SETM], 10000),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 			assert_noop!(
-				DexModule::get_supply_amounts(&vec![DNAR, SETHEUM], 10000),
+				DexModule::get_supply_amounts(&vec![DNAR, SETM], 10000),
 				Error::<Runtime>::InsufficientLiquidity,
 			);
 		});
@@ -561,15 +561,15 @@ fn _swap_by_path_work() {
 		.build()
 		.execute_with(|| {
 			LiquidityPool::<Runtime>::insert(SETUSD_DNAR_PAIR, (50000, 10000));
-			LiquidityPool::<Runtime>::insert(SETUSD_SETHEUM_PAIR, (100000, 10));
+			LiquidityPool::<Runtime>::insert(SETUSD_SETM_PAIR, (100000, 10));
 
 			assert_eq!(DexModule::get_liquidity(SETUSD, DNAR), (0, 0));
-			assert_eq!(DexModule::get_liquidity(SETUSD, SETHEUM), (0, 0));
+			assert_eq!(DexModule::get_liquidity(SETUSD, SETM), (0, 0));
 			assert_ok!(DexModule::_swap_by_path(&vec![DNAR, SETUSD], &vec![10000, 25000]));
 			assert_eq!(DexModule::get_liquidity(SETUSD, DNAR), (0, 10000));
-			assert_ok!(DexModule::_swap_by_path(&vec![DNAR, SETUSD, SETHEUM], &vec![4000, 10000, 2]));
+			assert_ok!(DexModule::_swap_by_path(&vec![DNAR, SETUSD, SETM], &vec![4000, 10000, 2]));
 			assert_eq!(DexModule::get_liquidity(SETUSD, DNAR), (0, 14000));
-			assert_eq!(DexModule::get_liquidity(SETUSD, SETHEUM), (10000, 0));
+			assert_eq!(DexModule::get_liquidity(SETUSD, SETM), (10000, 0));
 		});
 }
 
@@ -787,7 +787,7 @@ fn do_swap_with_exact_supply_work() {
 			assert_ok!(DexModule::add_liquidity(
 				Origin::signed(ALICE),
 				SETUSD,
-				SETHEUM,
+				SETM,
 				100_000_000_000_000,
 				10_000_000_000,
 				0,
@@ -798,7 +798,7 @@ fn do_swap_with_exact_supply_work() {
 				(500_000_000_000_000, 100_000_000_000_000)
 			);
 			assert_eq!(
-				DexModule::get_liquidity(SETUSD, SETHEUM),
+				DexModule::get_liquidity(SETUSD, SETM),
 				(100_000_000_000_000, 10_000_000_000)
 			);
 			assert_eq!(
@@ -806,10 +806,10 @@ fn do_swap_with_exact_supply_work() {
 				600_000_000_000_000
 			);
 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 100_000_000_000_000);
-			assert_eq!(Tokens::free_balance(SETHEUM, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &DexModule::account_id()), 10_000_000_000);
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
-			assert_eq!(Tokens::free_balance(SETHEUM, &BOB), 1_000_000_000_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &BOB), 1_000_000_000_000_000_000);
 
 			assert_noop!(
 				DexModule::do_swap_with_exact_supply(
@@ -821,7 +821,7 @@ fn do_swap_with_exact_supply_work() {
 				Error::<Runtime>::InsufficientTargetAmount
 			);
 			assert_noop!(
-				DexModule::do_swap_with_exact_supply(&BOB, &[DNAR, SETUSD, SETHEUM, DNAR], 100_000_000_000_000, 0),
+				DexModule::do_swap_with_exact_supply(&BOB, &[DNAR, SETUSD, SETM, DNAR], 100_000_000_000_000, 0),
 				Error::<Runtime>::InvalidTradingPathLength,
 			);
 
@@ -842,7 +842,7 @@ fn do_swap_with_exact_supply_work() {
 				(251_256_281_407_036, 200_000_000_000_000)
 			);
 			assert_eq!(
-				DexModule::get_liquidity(SETUSD, SETHEUM),
+				DexModule::get_liquidity(SETUSD, SETM),
 				(100_000_000_000_000, 10_000_000_000)
 			);
 			assert_eq!(
@@ -850,20 +850,20 @@ fn do_swap_with_exact_supply_work() {
 				351_256_281_407_036
 			);
 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 200_000_000_000_000);
-			assert_eq!(Tokens::free_balance(SETHEUM, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &DexModule::account_id()), 10_000_000_000);
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1000249373433583959);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_900_000_000_000_000);
-			assert_eq!(Tokens::free_balance(SETHEUM, &BOB), 1_000_000_000_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &BOB), 1_000_000_000_000_000_000);
 
 			assert_ok!(DexModule::do_swap_with_exact_supply(
 				&BOB,
-				&[DNAR, SETUSD, SETHEUM],
+				&[DNAR, SETUSD, SETM],
 				200_000_000_000_000,
 				1,
 			));
 			let swap_event_2 = Event::dex(crate::Event::Swap(
 				BOB,
-				vec![DNAR, SETUSD, SETHEUM],
+				vec![DNAR, SETUSD, SETM],
 				200_000_000_000_000,
 				5_530_663_837,
 			));
@@ -874,7 +874,7 @@ fn do_swap_with_exact_supply_work() {
 				(126_259_437_892_983, 400_000_000_000_000)
 			);
 			assert_eq!(
-				DexModule::get_liquidity(SETUSD, SETHEUM),
+				DexModule::get_liquidity(SETUSD, SETM),
 				(224_996_843_514_053, 4_469_336_163)
 			);
 			assert_eq!(
@@ -882,10 +882,10 @@ fn do_swap_with_exact_supply_work() {
 				351_256_281_407_036
 			);
 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 400_000_000_000_000);
-			assert_eq!(Tokens::free_balance(SETHEUM, &DexModule::account_id()), 4_469_336_163);
+			assert_eq!(Tokens::free_balance(SETM, &DexModule::account_id()), 4_469_336_163);
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1000249373433583959);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_700_000_000_000_000);
-			assert_eq!(Tokens::free_balance(SETHEUM, &BOB), 1_000_000_005_530_663_837);
+			assert_eq!(Tokens::free_balance(SETM, &BOB), 1_000_000_005_530_663_837);
 		});
 }
 
@@ -908,7 +908,7 @@ fn do_swap_with_exact_target_work() {
 			assert_ok!(DexModule::add_liquidity(
 				Origin::signed(ALICE),
 				SETUSD,
-				SETHEUM,
+				SETM,
 				100_000_000_000_000,
 				10_000_000_000,
 				0,
@@ -919,7 +919,7 @@ fn do_swap_with_exact_target_work() {
 				(500_000_000_000_000, 100_000_000_000_000)
 			);
 			assert_eq!(
-				DexModule::get_liquidity(SETUSD, SETHEUM),
+				DexModule::get_liquidity(SETUSD, SETM),
 				(100_000_000_000_000, 10_000_000_000)
 			);
 			assert_eq!(
@@ -927,10 +927,10 @@ fn do_swap_with_exact_target_work() {
 				600_000_000_000_000
 			);
 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 100_000_000_000_000);
-			assert_eq!(Tokens::free_balance(SETHEUM, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &DexModule::account_id()), 10_000_000_000);
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_000_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
-			assert_eq!(Tokens::free_balance(SETHEUM, &BOB), 1_000_000_000_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &BOB), 1_000_000_000_000_000_000);
 
 			assert_noop!(
 				DexModule::do_swap_with_exact_target(
@@ -956,7 +956,7 @@ fn do_swap_with_exact_target_work() {
 			assert_noop!(
 				DexModule::do_swap_with_exact_target(
 					&BOB,
-					&[DNAR, SETUSD, SETHEUM, DNAR],
+					&[DNAR, SETUSD, SETM, DNAR],
 					250_000_000_000_000,
 					200_000_000_000_000,
 				),
@@ -968,7 +968,7 @@ fn do_swap_with_exact_target_work() {
 				(250000000000001, 200502512562815)
 			);
 			assert_eq!(
-				DexModule::get_liquidity(SETUSD, SETHEUM),
+				DexModule::get_liquidity(SETUSD, SETM),
 				(100_000_000_000_000, 10_000_000_000)
 			);
 			assert_eq!(
@@ -976,20 +976,20 @@ fn do_swap_with_exact_target_work() {
 				350_000_000_000_001
 			);
 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 200502512562815);
-			assert_eq!(Tokens::free_balance(SETHEUM, &DexModule::account_id()), 10_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &DexModule::account_id()), 10_000_000_000);
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_250_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999899497487437185);
-			assert_eq!(Tokens::free_balance(SETHEUM, &BOB), 1_000_000_000_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &BOB), 1_000_000_000_000_000_000);
 
 			assert_ok!(DexModule::do_swap_with_exact_target(
 				&BOB,
-				&[DNAR, SETUSD, SETHEUM],
+				&[DNAR, SETUSD, SETM],
 				5_000_000_000,
 				2_000_000_000_000_000,
 			));
 			Event::dex(crate::Event::Swap(
 				BOB,
-				vec![DNAR, SETUSD, SETHEUM],
+				vec![DNAR, SETUSD, SETM],
 				137_654_580_386_993,
 				5_000_000_000,
 			));
@@ -999,7 +999,7 @@ fn do_swap_with_exact_target_work() {
 				(148_989_898_989_899, 337809489150946)
 			);
 			assert_eq!(
-				DexModule::get_liquidity(SETUSD, SETHEUM),
+				DexModule::get_liquidity(SETUSD, SETM),
 				(201_010_101_010_102, 5_000_000_000)
 			);
 			assert_eq!(
@@ -1007,10 +1007,10 @@ fn do_swap_with_exact_target_work() {
 				350_000_000_000_001
 			);
 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 337809489150946);
-			assert_eq!(Tokens::free_balance(SETHEUM, &DexModule::account_id()), 5_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &DexModule::account_id()), 5_000_000_000);
 			assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1_000_250_000_000_000_000);
 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999762190510849054);
-			assert_eq!(Tokens::free_balance(SETHEUM, &BOB), 1_000_000_005_000_000_000);
+			assert_eq!(Tokens::free_balance(SETM, &BOB), 1_000_000_005_000_000_000);
 		});
 }
 

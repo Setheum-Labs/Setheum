@@ -34,18 +34,18 @@ pub type AccountId = u128;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const BUYBACK_POOL: AccountId = 3;
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 
-pub const SETUSD_SETHEUM_PAIR: TradingPair = TradingPair(SETUSD, SETHEUM);
-pub const SETHEUM_SETUSD_PAIR: TradingPair = TradingPair(SETHEUM, SETUSD);
+pub const SETUSD_SETM_PAIR: TradingPair = TradingPair(SETUSD, SETM);
+pub const SETM_SETUSD_PAIR: TradingPair = TradingPair(SETM, SETUSD);
 pub const SETUSD_DNAR_PAIR: TradingPair = TradingPair(SETUSD, DNAR);
 pub const DNAR_SETUSD_PAIR: TradingPair = TradingPair(DNAR, SETUSD);
-pub const DNAR_SETHEUM_PAIR: TradingPair = TradingPair(DNAR, SETHEUM);
-pub const SETHEUM_DNAR_PAIR: TradingPair = TradingPair(SETHEUM, DNAR);
+pub const DNAR_SETM_PAIR: TradingPair = TradingPair(DNAR, SETM);
+pub const SETM_DNAR_PAIR: TradingPair = TradingPair(SETM, DNAR);
 
 mod dex {
 	pub use super::super::*;
@@ -156,9 +156,9 @@ impl Default for ExtBuilder {
 				(ALICE, SETUSD, 1_000_000_000_000_000_000u128),
 				(BOB, SETUSD, 1_000_000_000_000_000_000u128),
 				(BUYBACK_POOL, SETUSD, 1_000_000_000_000_000_000u128),
-				(ALICE, SETHEUM, 1_000_000_000_000_000_000u128),
-				(BOB, SETHEUM, 1_000_000_000_000_000_000u128),
-				(BUYBACK_POOL, SETHEUM, 1_000_000_000_000_000_000u128),
+				(ALICE, SETM, 1_000_000_000_000_000_000u128),
+				(BOB, SETM, 1_000_000_000_000_000_000u128),
+				(BUYBACK_POOL, SETM, 1_000_000_000_000_000_000u128),
 				(ALICE, DNAR, 1_000_000_000_000_000_000u128),
 				(BOB, DNAR, 1_000_000_000_000_000_000u128),
 				(BUYBACK_POOL, DNAR, 1_000_000_000_000_000_000u128),
@@ -186,25 +186,25 @@ impl ExtBuilder {
 				10,
 			),
 			(
-				SETUSD_SETHEUM_PAIR,
+				SETUSD_SETM_PAIR,
 				(20_000_000_000_000u128, 1_000_000_000u128),
 				(20_000_000_000_000_000u128, 1_000_000_000_000u128),
 				10,
 			),
 			(
-				SETHEUM_SETUSD_PAIR,
+				SETM_SETUSD_PAIR,
 				(20_000_000_000_000u128, 1_000_000_000u128),
 				(20_000_000_000_000_000u128, 1_000_000_000_000u128),
 				10,
 			),
 			(
-				DNAR_SETHEUM_PAIR,
+				DNAR_SETM_PAIR,
 				(4_000_000_000_000u128, 1_000_000_000u128),
 				(4_000_000_000_000_000u128, 1_000_000_000_000u128),
 				20,
 			),
 			(
-				SETHEUM_DNAR_PAIR,
+				SETM_DNAR_PAIR,
 				(4_000_000_000_000u128, 1_000_000_000u128),
 				(4_000_000_000_000_000u128, 1_000_000_000_000u128),
 				20,
@@ -217,10 +217,10 @@ impl ExtBuilder {
 		self.initial_enabled_trading_pairs = vec![
 			SETUSD_DNAR_PAIR,
 			DNAR_SETUSD_PAIR,
-			SETUSD_SETHEUM_PAIR,
-			SETHEUM_SETUSD_PAIR,
-			DNAR_SETHEUM_PAIR,
-			SETHEUM_DNAR_PAIR,
+			SETUSD_SETM_PAIR,
+			SETM_SETUSD_PAIR,
+			DNAR_SETM_PAIR,
+			SETM_DNAR_PAIR,
 			];
 		self
 	}
@@ -231,10 +231,10 @@ impl ExtBuilder {
 			vec![
 				(SETUSD_DNAR_PAIR, (1_000_000u128, 2_000_000u128)),
 				(DNAR_SETUSD_PAIR, (1_000_000u128, 2_000_000u128)),
-				(SETUSD_SETHEUM_PAIR, (1_000_000u128, 2_000_000u128)),
-				(SETHEUM_SETUSD_PAIR, (1_000_000u128, 2_000_000u128)),
-				(DNAR_SETHEUM_PAIR, (1_000_000u128, 2_000_000u128)),
-				(SETHEUM_DNAR_PAIR, (1_000_000u128, 2_000_000u128)),
+				(SETUSD_SETM_PAIR, (1_000_000u128, 2_000_000u128)),
+				(SETM_SETUSD_PAIR, (1_000_000u128, 2_000_000u128)),
+				(DNAR_SETM_PAIR, (1_000_000u128, 2_000_000u128)),
+				(SETM_DNAR_PAIR, (1_000_000u128, 2_000_000u128)),
 			],
 		)];
 		self

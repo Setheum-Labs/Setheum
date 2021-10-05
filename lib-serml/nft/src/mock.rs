@@ -337,10 +337,10 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 }
 
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETHEUM;
+	pub const GetNativeCurrencyId: CurrencyId = SETM;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
