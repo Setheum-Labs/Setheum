@@ -45,7 +45,6 @@ pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
@@ -118,7 +117,6 @@ parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDCurrencyId: CurrencyId = SETEUR;
 	pub const GetSetEURCurrencyId: CurrencyId = SETUSD;
-	pub const GetSetGBPCurrencyId: CurrencyId = SETGBP;
 }
 
 impl orml_currencies::Config for Runtime {
@@ -135,7 +133,6 @@ parameter_types! {
 		SETR,
 		SETEUR,
 		SETUSD,
-		SETGBP,
 	];
 }
 
@@ -144,13 +141,11 @@ impl loans::Config for Runtime {
 	type SetterConvert = SetterDebitExchangeRateConvertor<Runtime>;
 	type SetDollarConvert = SetDollarDebitExchangeRateConvertor<Runtime>;
 	type SetEuroConvert = SetEuroDebitExchangeRateConvertor<Runtime>;
-	type SetPoundConvert = SetPoundDebitExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
 	type SetterCurrencyId = SetterCurrencyId;
     type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
     type GetSetEURCurrencyId = GetSetEURCurrencyId;
-    type GetSetGBPCurrencyId = GetSetGBPCurrencyId;
 	type RiskManager = CDPEngineModule;
 	type CDPTreasury = CDPTreasuryModule;
 	type ModuleId = LoansModuleId;
@@ -176,8 +171,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 			(BTC, SETEUR) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			(SETUSD, BTC) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			(BTC, SETUSD) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(SETGBP, BTC) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(BTC, SETGBP) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			_ => None,
 		}
 	}
@@ -393,8 +386,6 @@ parameter_types! {
 		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, BTC).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETGBP, BTC).unwrap(),
-		TradingPair::from_currency_ids(SETGBP, DNAR).unwrap(),
 	];
 }
 
@@ -457,7 +448,6 @@ impl Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
     type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
     type GetSetEURCurrencyId = GetSetEURCurrencyId;
-    type GetSetGBPCurrencyId = GetSetGBPCurrencyId;
 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;

@@ -45,7 +45,6 @@ pub const BUYBACK_POOL: AccountId = 4;
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
-pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 mod auction_manager {
@@ -402,9 +401,6 @@ impl Default for ExtBuilder {
 				(ALICE, SETEUR, 1000),
 				(BOB, SETEUR, 1000),
 				(CAROL, SETEUR, 1000),
-				(ALICE, SETGBP, 1000),
-				(BOB, SETGBP, 1000),
-				(CAROL, SETGBP, 1000),
 				(ALICE, BTC, 1000),
 				(BOB, BTC, 1000),
 				(CAROL, BTC, 1000),

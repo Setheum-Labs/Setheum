@@ -24,7 +24,6 @@ use sp_runtime::FixedPointNumber;
 pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const GetSetEURCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const GetSetGBPCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 
 pub struct SetterDebitExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
 
@@ -60,19 +59,6 @@ where
 {
 	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
 		let stable_currency_id = GetSetEURCurrencyId;
-		<Module<T>>::get_debit_exchange_rate(currency_id, stable_currency_id).saturating_mul_int(balance)
-	}
-}
-
-
-pub struct SetPoundDebitExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
-
-impl<T> Convert<(CurrencyId, Balance), Balance> for SetPoundDebitExchangeRateConvertor<T>
-where
-	T: Config,
-{
-	fn convert((currency_id, balance): (CurrencyId, Balance)) -> Balance {
-		let stable_currency_id = GetSetGBPCurrencyId;
 		<Module<T>>::get_debit_exchange_rate(currency_id, stable_currency_id).saturating_mul_int(balance)
 	}
 }

@@ -72,10 +72,6 @@ pub mod module {
 		/// value(SETEUR)
 		type SetEuroConvert: Convert<(CurrencyId, Balance), Balance>;
 
-		/// Convert debit amount under specific collateral type to debit
-		/// value(SETGBP)
-		type SetPoundConvert: Convert<(CurrencyId, Balance), Balance>;
-
 		/// Currency type for deposit/withdraw collateral assets to/from loans
 		/// module
 		type Currency: MultiCurrencyExtended<
@@ -99,10 +95,6 @@ pub mod module {
 		#[pallet::constant]
 		/// The SETEUR currency id, it should be SETEUR in Setheum.
 		type GetSetEURCurrencyId: Get<CurrencyId>;
-
-		#[pallet::constant]
-		/// The SETGBP currency id, it should be SETGBP in Setheum.
-		type GetSetGBPCurrencyId: Get<CurrencyId>;
 
 		/// Risk manager is used to limit the debit size of CDP
 		type RiskManager: RiskManager<Self::AccountId, CurrencyId, Balance, Balance>;
@@ -171,15 +163,6 @@ pub mod module {
 	pub type SetEuroPositions<T: Config> =
 		StorageDoubleMap<_, Twox64Concat, CurrencyId, Twox64Concat, T::AccountId, Position, ValueQuery>;
 
-	/// The collateralized debit positions for SETGBP, map from
-	/// Owner -> CollateralType -> Position
-	///
-	/// SetPoundPositions: double_map CollateralType, AccountId => Position
-	#[pallet::storage]
-	#[pallet::getter(fn setpound_positions)]
-	pub type SetPoundPositions<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, CurrencyId, Twox64Concat, T::AccountId, Position, ValueQuery>;
-
 	/// The total collateralized debit positions for SETR, map from
 	/// CollateralType -> Position
 	///
@@ -203,14 +186,6 @@ pub mod module {
 	#[pallet::storage]
 	#[pallet::getter(fn total_seteuro_positions)]
 	pub type TotalSetEuroPositions<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Position, ValueQuery>;
-
-	/// The total collateralized debit positions for SETGBP, map from
-	/// CollateralType -> Position
-	///
-	/// TotalSetPoundPositions: CollateralType => Position
-	#[pallet::storage]
-	#[pallet::getter(fn total_setpound_positions)]
-	pub type TotalSetPoundPositions<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Position, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
@@ -336,7 +311,7 @@ impl<T: Config> Pallet<T> {
 			// ensure pass risk check
 			let Position { collateral, debit } = Self::setdollar_positions(collateral_currency_id, who);
 			T::RiskManager::check_position_valid(collateral_currency_id, stable_currency_id, collateral, debit)?;
-		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+		} else {
 			if debit_adjustment.is_positive() {
 				// check debit cap when increase debit
 				T::RiskManager::check_debit_cap(collateral_currency_id, stable_currency_id, Self::total_seteuro_positions(collateral_currency_id).debit)?;
@@ -351,23 +326,6 @@ impl<T: Config> Pallet<T> {
 
 			// ensure pass risk check
 			let Position { collateral, debit } = Self::seteuro_positions(collateral_currency_id, who);
-			T::RiskManager::check_position_valid(collateral_currency_id, stable_currency_id, collateral, debit)?;
-		} else {
-			// else if stable_currency_id == T::GetSetGBPCurrencyId::get() {DOWN HERE} // VVVVVVVVVVVVVVV
-			if debit_adjustment.is_positive() {
-				// check debit cap when increase debit
-				T::RiskManager::check_debit_cap(collateral_currency_id, stable_currency_id, Self::total_setpound_positions(collateral_currency_id).debit)?;
-
-				// issue debit with collateral backed by cdp treasury
-				T::CDPTreasury::issue_debit(who, stable_currency_id, T::SetPoundConvert::convert((collateral_currency_id, debit_balance_adjustment)), true)?;
-			} else if debit_adjustment.is_negative() {
-				// repay debit
-				// burn debit by cdp treasury
-				T::CDPTreasury::burn_debit(who, stable_currency_id, T::SetPoundConvert::convert((collateral_currency_id, debit_balance_adjustment)))?;
-			}
-
-			// ensure pass risk check
-			let Position { collateral, debit } = Self::setpound_positions(collateral_currency_id, who);
 			T::RiskManager::check_position_valid(collateral_currency_id, stable_currency_id, collateral, debit)?;
 		}
 
@@ -454,7 +412,7 @@ impl<T: Config> Pallet<T> {
 				debit_adjustment.saturating_neg(),
 			)?;
 			Self::update_loan(to, collateral_currency_id, stable_currency_id, collateral_adjustment, debit_adjustment)?;
-		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+		} else {
 			// get `from` position data
 			let Position { collateral, debit } = Self::seteuro_positions(collateral_currency_id, from);
 	
@@ -462,36 +420,6 @@ impl<T: Config> Pallet<T> {
 				collateral: to_collateral,
 				debit: to_debit,
 			} = Self::seteuro_positions(collateral_currency_id, to);
-			let new_to_collateral_balance = to_collateral
-				.checked_add(collateral)
-				.expect("existing collateral balance cannot overflow; qed");
-			let new_to_debit_balance = to_debit
-				.checked_add(debit)
-				.expect("existing debit balance cannot overflow; qed");
-	
-			// check new position
-			T::RiskManager::check_position_valid(collateral_currency_id, stable_currency_id, new_to_collateral_balance, new_to_debit_balance)?;
-	
-			// balance -> amount
-			let collateral_adjustment = Self::amount_try_from_balance(collateral)?;
-			let debit_adjustment = Self::amount_try_from_balance(debit)?;
-	
-			Self::update_loan(
-				from,
-				collateral_currency_id,
-				stable_currency_id, 
-				collateral_adjustment.saturating_neg(),
-				debit_adjustment.saturating_neg(),
-			)?;
-			Self::update_loan(to, collateral_currency_id, stable_currency_id, collateral_adjustment, debit_adjustment)?;
-		} else if stable_currency_id == T::GetSetGBPCurrencyId::get() {
-			// get `from` position data
-			let Position { collateral, debit } = Self::setpound_positions(collateral_currency_id, from);
-	
-			let Position {
-				collateral: to_collateral,
-				debit: to_debit,
-			} = Self::setpound_positions(collateral_currency_id, to);
 			let new_to_collateral_balance = to_collateral
 				.checked_add(collateral)
 				.expect("existing collateral balance cannot overflow; qed");
@@ -688,7 +616,7 @@ impl<T: Config> Pallet<T> {
 	
 				Ok(())
 			})
-		} else if stable_currency_id == T::GetSetEURCurrencyId::get() {
+		} else {
 			<SetEuroPositions<T>>::try_mutate_exists(collateral_currency_id, who, |may_be_position| -> DispatchResult {
 				let mut p = may_be_position.take().unwrap_or_default();
 				let new_collateral = if collateral_adjustment.is_positive() {
@@ -738,83 +666,6 @@ impl<T: Config> Pallet<T> {
 			})?;
 	
 			TotalSetEuroPositions::<T>::try_mutate(collateral_currency_id, |total_positions| -> DispatchResult {
-				total_positions.collateral = if collateral_adjustment.is_positive() {
-					total_positions
-						.collateral
-						.checked_add(collateral_balance)
-						.ok_or(Error::<T>::CollateralOverflow)
-				} else {
-					total_positions
-						.collateral
-						.checked_sub(collateral_balance)
-						.ok_or(Error::<T>::CollateralTooLow)
-				}?;
-	
-				total_positions.debit = if debit_adjustment.is_positive() {
-					total_positions
-						.debit
-						.checked_add(debit_balance)
-						.ok_or(Error::<T>::DebitOverflow)
-				} else {
-					total_positions
-						.debit
-						.checked_sub(debit_balance)
-						.ok_or(Error::<T>::DebitTooLow)
-				}?;
-	
-				Ok(())
-			})
-		} else {
-			// else if stable_currency_id == T::GetSetGBPCurrencyId::get() {down here} // vvvvvvvvvvvvvvvvvvvvvvvvvvvv
-			<SetPoundPositions<T>>::try_mutate_exists(collateral_currency_id, who, |may_be_position| -> DispatchResult {
-				let mut p = may_be_position.take().unwrap_or_default();
-				let new_collateral = if collateral_adjustment.is_positive() {
-					p.collateral
-						.checked_add(collateral_balance)
-						.ok_or(Error::<T>::CollateralOverflow)
-				} else {
-					p.collateral
-						.checked_sub(collateral_balance)
-						.ok_or(Error::<T>::CollateralTooLow)
-				}?;
-				let new_debit = if debit_adjustment.is_positive() {
-					p.debit.checked_add(debit_balance).ok_or(Error::<T>::DebitOverflow)
-				} else {
-					p.debit.checked_sub(debit_balance).ok_or(Error::<T>::DebitTooLow)
-				}?;
-	
-				// increase account ref if new position
-				if p.collateral.is_zero() && p.debit.is_zero() {
-					if frame_system::Module::<T>::inc_consumers(who).is_err() {
-						// No providers for the locks. This is impossible under normal circumstances
-						// since the funds that are under the lock will themselves be stored in the
-						// account and therefore will need a reference.
-						debug::warn!(
-							"Warning: Attempt to introduce lock consumer reference, yet no providers. \
-							This is unexpected but should be safe."
-						);
-					}
-				}
-	
-				p.collateral = new_collateral;
-	
-				T::OnUpdateLoan::happened(&(who.clone(), collateral_currency_id, debit_adjustment, p.debit));
-				p.debit = new_debit;
-	
-				if p.collateral.is_zero() && p.debit.is_zero() {
-					// decrease account ref if zero position
-					frame_system::Module::<T>::dec_consumers(who);
-	
-					// remove position storage if zero position
-					*may_be_position = None;
-				} else {
-					*may_be_position = Some(p);
-				}
-	
-				Ok(())
-			})?;
-	
-			TotalSetPoundPositions::<T>::try_mutate(collateral_currency_id, |total_positions| -> DispatchResult {
 				total_positions.collateral = if collateral_adjustment.is_positive() {
 					total_positions
 						.collateral

@@ -146,10 +146,6 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETEUR), DexShare::Token(SETUSD))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SETGBP_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETGBP), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
 					symbol: "LP_RENBTC_SETUSD".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETUSD))).unwrap(),
 				},
@@ -169,12 +165,12 @@ create_currency_id! {
 	pub enum TokenSymbol {
 		// Tier-1 Tokens
 		SETM("Setheum", 12) = 0,
-		DNAR("Serp Dinar", 12) = 1,
+		DNAR("The Dinar", 12) = 1,
 		// StableCurrencies
 		SETR("Setter", 12) = 2,
 		SETEUR("SetEuro", 12) = 3,
 		SETUSD("SetDollar", 12) = 4,
-		SETGBP("SetPound", 12) = 5,
+		// Foreign Currencies
 		RENBTC("renBTC", 8) = 121,
 	}
 }

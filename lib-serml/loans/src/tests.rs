@@ -172,28 +172,28 @@ fn transfer_loan_should_work() {
 fn confiscate_collateral_and_debit_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(LoansModule::update_loan(&BOB, BTC, SETGBP, 5000, 1000));
+		assert_ok!(LoansModule::update_loan(&BOB, BTC, SETR, 5000, 1000));
 		assert_eq!(Currencies::free_balance(BTC, &LoansModule::account_id()), 0);
 
 		// have no sufficient balance
 		assert_eq!(
-			LoansModule::confiscate_collateral_and_debit(&BOB, BTC, SETGBP, 5000, 1000).is_ok(),
+			LoansModule::confiscate_collateral_and_debit(&BOB, BTC, SETR, 5000, 1000).is_ok(),
 			false,
 		);
 
-		assert_ok!(LoansModule::adjust_position(&ALICE, BTC, SETGBP, 500, 300));
+		assert_ok!(LoansModule::adjust_position(&ALICE, BTC, SETR, 500, 300));
 		assert_eq!(CDPTreasuryModule::get_total_collaterals(BTC), 0);
-		assert_eq!(CDPTreasuryModule::debit_pool(SETGBP), 0);
-		assert_eq!(LoansModule::setpound_positions(BTC, &ALICE).debit, 300);
-		assert_eq!(LoansModule::setpound_positions(BTC, &ALICE).collateral, 500);
+		assert_eq!(CDPTreasuryModule::debit_pool(SETR), 0);
+		assert_eq!(LoansModule::setter_positions(BTC, &ALICE).debit, 300);
+		assert_eq!(LoansModule::setter_positions(BTC, &ALICE).collateral, 500);
 
-		assert_ok!(LoansModule::confiscate_collateral_and_debit(&ALICE, BTC, SETGBP, 300, 200));
+		assert_ok!(LoansModule::confiscate_collateral_and_debit(&ALICE, BTC, SETR, 300, 200));
 		assert_eq!(CDPTreasuryModule::get_total_collaterals(BTC), 300);
-		assert_eq!(CDPTreasuryModule::debit_pool(SETGBP), 100);
-		assert_eq!(LoansModule::setpound_positions(BTC, &ALICE).debit, 100);
-		assert_eq!(LoansModule::setpound_positions(BTC, &ALICE).collateral, 200);
+		assert_eq!(CDPTreasuryModule::debit_pool(SETR), 100);
+		assert_eq!(LoansModule::setter_positions(BTC, &ALICE).debit, 100);
+		assert_eq!(LoansModule::setter_positions(BTC, &ALICE).collateral, 200);
 		Event::loans(crate::Event::ConfiscateCollateralAndDebit(
-			ALICE, BTC, SETGBP, 300, 200,
+			ALICE, BTC, SETR, 300, 200,
 		));
 	});
 }
