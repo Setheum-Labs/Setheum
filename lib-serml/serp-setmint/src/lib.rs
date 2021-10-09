@@ -56,13 +56,7 @@ pub mod module {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// Currency for authorization reserved.
-		type Currency: MultiReservableCurrency<
-			Self::AccountId,
-			Balance = Balance,
-		>;
-
-		/// The stable currency ids
-		type StableCurrencyIds: Get<Vec<CurrencyId>>;
+		type Currency: ReservableCurrency<Self::AccountId, Balance = Balance>;
 
 		/// Reserved amount per authorization.
 		#[pallet::constant]
@@ -78,8 +72,6 @@ pub mod module {
 		NoPermission,
 		// The system has been shutdown
 		AlreadyShutdown,
-		// Authorization not exists
-		AuthorizationNotExists,
 		// Have authorized already
 		AlreadyAuthorized,
 	}
@@ -99,17 +91,17 @@ pub mod module {
 	}
 
 	/// The authorization relationship map from
-	/// (Authorizer, Authorizee) -> (CollateralType, StableType) -> Authorized
+	/// Authorizer -> (CollateralType, Authorizee) -> Authorized
 	///
-	/// Authorization: double_map (AccountId, T::AccountId), (CurrencyId, CurrencyId) => Option<Balance>
+	/// Authorization: double_map AccountId, (CurrencyId, T::AccountId) => Option<Balance>
 	#[pallet::storage]
 	#[pallet::getter(fn authorization)]
 	pub type Authorization<T: Config> = StorageDoubleMap<
 		_,
 		Twox64Concat,
-		(T::AccountId, T::AccountId),
+		T::AccountId,
 		Blake2_128Concat,
-		(CurrencyId, CurrencyId),
+		(CurrencyId, T::AccountId),
 		Balance,
 		OptionQuery,
 	>;
@@ -125,8 +117,7 @@ pub mod module {
 		/// Adjust the loans of `currency_id` by specific
 		/// `collateral_adjustment` and `debit_adjustment`
 		///
-		/// - `collateral_currency_id`: collateral currency id.
-		/// - `stable_currency_id`: stable currency id.
+		/// - `currency_id`: collateral currency id.
 		/// - `collateral_adjustment`: signed amount, positive means to deposit collateral currency
 		///   into CDP, negative means withdraw collateral currency from CDP.
 		/// - `debit_adjustment`: signed amount, positive means to issue some amount of stablecoin
@@ -136,19 +127,18 @@ pub mod module {
 		#[transactional]
 		pub fn adjust_loan(
 			origin: OriginFor<T>,
-			collateral_currency_id: CurrencyId,
-			stable_currency_id: CurrencyId,
+			currency_id: CurrencyId,
 			collateral_adjustment: Amount,
 			debit_adjustment: Amount,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
 			// not allowed to adjust the debit after system shutdown
 			if !debit_adjustment.is_zero() {
 				ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
 			}
-			<cdp_engine::Pallet<T>>::adjust_position(&who, collateral_currency_id, stable_currency_id, collateral_adjustment, debit_adjustment)?;
-			Ok(())
+			<cdp_engine::Pallet<T>>::adjust_position(&who, currency_id, collateral_adjustment, debit_adjustment)?;
+			Ok(().into())
 		}
 
 		#[pallet::weight(<T as Config>::WeightInfo::close_loan_has_debit_by_dex(
@@ -157,104 +147,100 @@ pub mod module {
 		#[transactional]
 		pub fn close_loan_has_debit_by_dex(
 			origin: OriginFor<T>,
-			collateral_currency_id: CurrencyId,
-			stable_currency_id: CurrencyId,
+			currency_id: CurrencyId,
 			maybe_path: Option<Vec<CurrencyId>>,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
-			<cdp_engine::Pallet<T>>::close_cdp_has_debit_by_dex(who, collateral_currency_id, stable_currency_id, maybe_path.as_deref())?;
-			Ok(())
+			<cdp_engine::Pallet<T>>::close_cdp_has_debit_by_dex(who, currency_id, maybe_path.as_deref())?;
+			Ok(().into())
 		}
 
-		/// Transfer the whole CDP of `from` under `currency_id_pair` to caller's CDP
-		/// under the same `currency_id_pair`, caller must have the authorization of
+		/// Transfer the whole CDP of `from` under `currency_id` to caller's CDP
+		/// under the same `currency_id`, caller must have the authorization of
 		/// `from` for the specific collateral type
 		///
-		/// - `collateral_currency_id`: collateral currency id.
-		/// - `stable_currency_id`: stable currency id.
+		/// - `currency_id`: collateral currency id.
 		/// - `from`: authorizer account
 		#[pallet::weight(<T as Config>::WeightInfo::transfer_loan_from())]
 		#[transactional]
 		pub fn transfer_loan_from(
 			origin: OriginFor<T>,
-			collateral_currency_id: CurrencyId,
-			stable_currency_id: CurrencyId,
+			currency_id: CurrencyId,
 			from: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
-			Self::check_authorization(&from, &to, collateral_currency_id, stable_currency_id)?;
-			<loans::Pallet<T>>::transfer_loan(&from, &to, collateral_currency_id, stable_currency_id)?;
-			Ok(())
+			Self::check_authorization(&from, &to, currency_id)?;
+			<loans::Pallet<T>>::transfer_loan(&from, &to, currency_id)?;
+			Ok(().into())
 		}
 
 		/// Authorize `to` to manipulate the loan under `currency_id`
 		///
-		/// - `collateral_currency_id`: collateral currency id.
-		/// - `stable_currency_id`: stable currency id.
+		/// - `currency_id`: collateral currency id.
 		/// - `to`: authorizee account
 		#[pallet::weight(<T as Config>::WeightInfo::authorize())]
 		#[transactional]
 		pub fn authorize(
 
 			origin: OriginFor<T>,
-			collateral_currency_id: CurrencyId,
-			stable_currency_id: CurrencyId,
+			currency_id: CurrencyId,
 			to: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
 			if from == to {
 				return Ok(());
 			}
 
-			Authorization::<T>::try_mutate_exists((&from, &to), (collateral_currency_id, stable_currency_id), |maybe_reserved| -> DispatchResult {
+			Authorization::<T>::try_mutate_exists(&from, (currency_id, &to), |maybe_reserved| -> DispatchResult {
 				if maybe_reserved.is_none() {
 					let reserve_amount = T::DepositPerAuthorization::get();
-					<T as Config>::Currency::reserve(&collateral_currency_id, &from, reserve_amount)?;
+					<T as Config>::Currency::reserve(&from, reserve_amount)?;
 					*maybe_reserved = Some(reserve_amount);
-					Self::deposit_event(Event::Authorization(from.clone(), to.clone(), collateral_currency_id, stable_currency_id));
+					Self::deposit_event(Event::Authorization(from.clone(), to.clone(), currency_id));
 					Ok(())
 				} else {
 					Err(Error::<T>::AlreadyAuthorized.into())
 				}
 			})?;
-			Ok(())
+			Ok(().into())
 		}
 
 		/// Cancel the authorization for `to` under `currency_id`
 		///
-		/// - `collateral_currency_id`: collateral currency id.
-		/// - `stable_currency_id`: stable currency id.
+		/// - `currency_id`: collateral currency id.
 		/// - `to`: authorizee account
 		#[pallet::weight(<T as Config>::WeightInfo::unauthorize())]
 		#[transactional]
 		pub fn unauthorize(
 			origin: OriginFor<T>,
-			collateral_currency_id: CurrencyId,
-			stable_currency_id: CurrencyId,
+			currency_id: CurrencyId,
 			to: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
-			let reserved =
-				Authorization::<T>::take((&from, &to), (collateral_currency_id, stable_currency_id)).ok_or(Error::<T>::AuthorizationNotExists)?;
-			<T as Config>::Currency::unreserve(&collateral_currency_id, &from, reserved);
-			Self::deposit_event(Event::UnAuthorization(from, to, collateral_currency_id, stable_currency_id));
-			Ok(())
+			if let Some(reserved) = Authorization::<T>::take(&from, (currency_id, &to)) {
+				<T as Config>::Currency::unreserve(&from, reserved);
+				Self::deposit_event(Event::UnAuthorization(from, to, currency_id));
+			}
+			Ok(().into())
 		}
 
 		/// Cancel all authorization of caller
 		#[pallet::weight(<T as Config>::WeightInfo::unauthorize_all(<T as cdp_engine::Config>::CollateralCurrencyIds::get().len() as u32))]
 		#[transactional]
-		pub fn unauthorize_all(origin: OriginFor<T>) -> DispatchResult {
+		pub fn unauthorize_all(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
-			Authorization::<T>::remove_prefix(&from, None);
-			<T as Config>::Currency::unreserve(&collateral_currency_id, &from);
+			let total_reserved: Balance = Authorization::<T>::drain_prefix(&from)
+				.fold(Zero::zero(), |total_reserved, (_, reserved)| {
+					total_reserved.saturating_add(reserved)
+				});
+			<T as Config>::Currency::unreserve(&from, total_reserved);
 			Self::deposit_event(Event::UnAuthorizationAll(from));
-			Ok(())
+			Ok(().into())
 		}
 	}
 }
@@ -264,15 +250,9 @@ impl<T: Config> Pallet<T> {
 	/// - `collateral_currency_id`: collateral currency id.
 	/// - `stable_currency_id`: stable currency id.
 	fn check_authorization(from: &T::AccountId, to: &T::AccountId, collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> DispatchResult {
-		
 		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCurrencyType,
-		);
-
-		ensure!(
-			from == to || Authorization::<T>::contains_key((from, to), (collateral_currency_id, stable_currency_id)),
-			Error::<T>::NoPermission
+			from == to || Authorization::<T>::contains_key(from, (currency_id, to)),
+			Error::<T>::NoAuthorization
 		);
 		Ok(())
 	}

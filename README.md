@@ -38,20 +38,19 @@ SETM("Setheum", 12) = 1, // Staking Token and Governance Token - Native token (N
 DNAR("The Dinar", 12) = 1, // SERP Reserve Asset
 ```
 
-#### The Setter - SERP Basket Stablecoin
+#### The Setter - SERP Stablecoin
 
 ```bash
-SETR("Setter", 12) = 2, // SetMint Reserve Asset, stablecoin basket currency.
+SETR("Setter", 12) = 2,
 ```
 
-#### The SetCurrencies - SERP Stablecoins
+#### The SetDollar - SERP + SetMint Stablecoin
 
 ```bash
 SETUSD("SetDollar", 12) = 3,
-SETEUR("SetEuro", 12) = 4,
 ```
 
-1. The Setter - The Setter is a stable currency pegged to the US dollar at a ratio of 1:1.25, where 1 SETR = 1.25 USD (1 USD = 0.8 SETR). The Setter is used by the SERP to back the stability of the SetCurrencies - SETEUR and SETUSD, in turn these currencies pay tribute to the SETR from their inflation and increase in demand(SerpUps). The Setter's stability is in turn backed by the DNAR, while the SETR pays tribute to the DNAR through its inflation and demand in supply(SerpUp).
+1. The Setter - The Setter is a stable currency pegged to the US dollar at a ratio of 1:2, where 1 SETR = 2 USD (1 USD = 0.5 SETR).
 
 2. [The SERP](./lib-serp) - The SERP (Setheum Elastic Reserve Protocol) is algorithmically responsible for stabilizing the prices of the Setheum Stable Currencies. No human interferrance is needed for this, it's all algorithmically handled by the SERP. The SERP is the backbone of Setheum, it is based on my TES (Token Elasticity of Supply) algorithm based on PES (Price Elasticity of Supply) such that the demand curve or price of a currency determines the supply serping point, meaning the supply curve of a SetCurrency will be adjusted according to the demand curve of that specific SetCurrency. The result will be burning or minting an amount equivalent to the serping point produced by the SERP-TES, the burning amount will be bought back by the SERP automatically through the built-in-DEX and the bought amount will be burnt to meet the satisfaction of the demand curve to prop the price back up to its peg, the opposite is done to lower the price of an under-supplied currency that is on demand and above its peg on the demand curve, for this the mint amount is divided into receipients including the SetPayTreasury where CashDrops are deposited for users to claim, the System Treasury under Governance, the Charity Fund stewarded by the Setheum Foundation, and the WelfareTreasury, more on the Welfare Treasury below.
 
@@ -69,15 +68,7 @@ The SEVM lets developers onboard, deploy or migrate their Ethereum Solidity Smar
 The SetheumEVM has a beautiful library of developer tools that let developers deploy, manageand interact with their smart contracts and upgradable smart contracts on the S-EVM with popular and well documented tools like Truffle, MetaMask, et al.
 The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, to let users access the Setheumand the EVM both with a single wallet without having to use two separate wallets for compatibility.
 
-For all the SERML (Setheum Runtime Module Library) modules like the;
-[dex](./lib-serml/dex)
-[prices](./lib-serml/prices)
-[support](./lib-serml/support)
-[tokens](./lib-serml/tokens)
-[NFTs](./lib-serml/nft)
-[transaction-payment](./lib-serml/transaction-payment)
-et al.
-Check the [lib-serml](./lib-serml)
+For all the SERML (Setheum Runtime Module Library) modules Check the [lib-serml](./lib-serml)
 
 # Getting Started 
 

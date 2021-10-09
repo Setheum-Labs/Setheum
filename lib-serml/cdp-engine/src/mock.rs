@@ -43,7 +43,6 @@ pub const CAROL: AccountId = 3;
 pub const BUYBACK_POOL: AccountId = 4;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -115,8 +114,7 @@ pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, P
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
 	pub const SetterCurrencyId: CurrencyId = SETR;
-	pub const GetSetUSDCurrencyId: CurrencyId = SETEUR;
-	pub const GetSetEURCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 }
 
 impl orml_currencies::Config for Runtime {
@@ -131,21 +129,14 @@ parameter_types! {
 	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETEUR,
 		SETUSD,
 	];
 }
 
 impl loans::Config for Runtime {
 	type Event = Event;
-	type SetterConvert = SetterDebitExchangeRateConvertor<Runtime>;
-	type SetDollarConvert = SetDollarDebitExchangeRateConvertor<Runtime>;
-	type SetEuroConvert = SetEuroDebitExchangeRateConvertor<Runtime>;
+	type Convert = DebitExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type SetterCurrencyId = SetterCurrencyId;
-    type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-    type GetSetEURCurrencyId = GetSetEURCurrencyId;
 	type RiskManager = CDPEngineModule;
 	type CDPTreasury = CDPTreasuryModule;
 	type ModuleId = LoansModuleId;
@@ -165,10 +156,6 @@ impl MockPriceSource {
 impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
 		match (base, quote) {
-			(SETR, BTC) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(BTC, SETR) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(SETEUR, BTC) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(BTC, SETEUR) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			(SETUSD, BTC) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			(BTC, SETUSD) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			_ => None,
@@ -192,8 +179,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 
 	fn new_collateral_auction(
 		_refund_recipient: &AccountId,
-		_collateral_currency_id: Self::CurrencyId,
-		_stable_currency_id: Self::CurrencyId,
+		_currency_id: Self::CurrencyId,
 		_amount: Self::Balance,
 		_target: Self::Balance,
 	) -> DispatchResult {
@@ -204,7 +190,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Ok(())
 	}
 
-	fn get_total_target_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+	fn get_total_target_in_auction() -> Self::Balance {
 		Default::default()
 	}
 
@@ -355,6 +341,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 }
 
 parameter_types! {
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
@@ -363,7 +350,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -380,10 +367,6 @@ parameter_types! {
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETR, BTC).unwrap(),
-		TradingPair::from_currency_ids(SETR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETEUR, BTC).unwrap(),
-		TradingPair::from_currency_ids(SETEUR, DNAR).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, BTC).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
 	];
@@ -444,10 +427,7 @@ parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type CollateralCurrencyIds = CollateralCurrencyIds;
-	type StableCurrencyIds = StableCurrencyIds;
-	type SetterCurrencyId = SetterCurrencyId;
     type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-    type GetSetEURCurrencyId = GetSetEURCurrencyId;
 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;

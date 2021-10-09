@@ -40,7 +40,6 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
@@ -129,8 +128,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 
 	fn new_collateral_auction(
 		_refund_recipient: &AccountId,
-		_collateral_currency_id: Self::CurrencyId,
-		_stable_currency_id: Self::CurrencyId,
+		_currency_id: Self::CurrencyId,
 		_amount: Self::Balance,
 		_target: Self::Balance,
 	) -> DispatchResult {
@@ -141,7 +139,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		Ok(())
 	}
 
-	fn get_total_target_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+	fn get_total_target_in_auction() -> Self::Balance {
 		Default::default()
 	}
 
@@ -296,11 +294,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETEUR,
-		SETUSD,
-	];
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
@@ -309,7 +303,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type DEX = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -330,43 +324,26 @@ impl Convert<(CurrencyId, Balance), Balance> for MockConvert {
 // mock risk manager
 pub struct MockRiskManager;
 impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
-	fn get_bad_debt_value(
-		collateral_currency_id: CurrencyId,
-		stable_currency_id: CurrencyId,
-		debit_balance: Balance
-	) -> Balance {
-		MockConvert::convert((collateral_currency_id, debit_balance))
+	fn get_bad_debt_value(currency_id: CurrencyId, debit_balance: Balance) -> Balance {
+		MockConvert::convert((currency_id, debit_balance))
 	}
 
 	fn check_position_valid(
-		collateral_currency_id: CurrencyId,
-		stable_currency_id: CurrencyId,
+		currency_id: CurrencyId,
 		_collateral_balance: Balance,
 		_debit_balance: Balance,
 	) -> DispatchResult {
-		match (collateral_currency_id, stable_currency_id) {
-			(DNAR, SETR) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
-			(DNAR, SETEUR) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
-			(DNAR, SETUSD) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
-			(BTC, SETR) => Ok(()),
-			(BTC, SETEUR) => Ok(()),
-			(BTC, SETUSD) => Ok(()),
-			(_, _) => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+		match currency_id {
+			DOT => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			BTC => Ok(()),
+			_ => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
 		}
 	}
 
-	fn check_debit_cap(
-		collateral_currency_id: CurrencyId,
-		stable_currency_id: CurrencyId,
-		total_debit_balance: Balance
-	) -> DispatchResult {
-		match ((collateral_currency_id, stable_currency_id), total_debit_balance) {
-			((DNAR, SETR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			((DNAR, SETEUR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			((DNAR, SETUSD), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			((BTC, SETR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			((BTC, SETEUR), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			((BTC, SETUSD), 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: Balance) -> DispatchResult {
+		match (currency_id, total_debit_balance) {
+			(DOT, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(BTC, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(_, _) => Ok(()),
 		}
 	}
@@ -374,22 +351,12 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 
 parameter_types! {
 	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
-
-	pub const SetterCurrencyId: CurrencyId = SETR;
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
-	pub const GetSetEURCurrencyId: CurrencyId = SETEUR;
 }
 
 impl Config for Runtime {
 	type Event = Event;
-	type SetterConvert = MockConvert;
-	type SetDollarConvert = MockConvert;
-	type SetEuroConvert = MockConvert;
+	type Convert = MockConvert;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type SetterCurrencyId = SetterCurrencyId;
-    type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-    type GetSetEURCurrencyId = GetSetEURCurrencyId;
 	type RiskManager = MockRiskManager;
 	type CDPTreasury = CDPTreasuryModule;
 	type ModuleId = LoansModuleId;

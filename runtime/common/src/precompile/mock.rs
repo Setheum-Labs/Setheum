@@ -131,7 +131,6 @@ impl pallet_balances::Config for Test {
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const RENBTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const LP_SETM_SETUSD: CurrencyId =
@@ -139,8 +138,6 @@ pub const LP_SETM_SETUSD: CurrencyId =
 pub const LP_DNAR_SETUSD: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
 pub const LP_SETR_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
-pub const LP_SETEUR_SETUSD: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
 pub const LP_RENBTC_SETUSD: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
@@ -204,13 +201,12 @@ impl orml_nft::Config for Test {
 
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
-	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+	pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = 
 		vec![
 			vec![SETUSD, SETM],
 			vec![DNAR, SETUSD, SETM]
-			vec![SETEUR, SETUSD, SETM]
 			vec![RENBTC, SETUSD, SETM]
 		];
 }
@@ -310,7 +306,6 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
-		SETEUR,
 	];
 	pub const GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 3;

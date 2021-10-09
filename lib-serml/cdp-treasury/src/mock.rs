@@ -41,8 +41,7 @@ pub const BOB: AccountId = 1;
 pub const BUYBACK_POOL: AccountId = 1;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
@@ -125,9 +124,9 @@ impl orml_currencies::Config for Runtime {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETEUR,
 		SETUSD,
 	];
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 	pub GetExchangeFee: (u32, u32) = (0, 100);
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
@@ -167,8 +166,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 
 	fn new_collateral_auction(
 		_refund_recipient: &AccountId,
-		_collateral_currency_id: Self::CurrencyId,
-		_stable_currency_id: Self::CurrencyId,
+		_currency_id: Self::CurrencyId,
 		amount: Self::Balance,
 		_target: Self::Balance,
 	) -> DispatchResult {
@@ -185,7 +183,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 		TOTAL_COLLATERAL_IN_AUCTION.with(|v| *v.borrow_mut())
 	}
 
-	fn get_total_target_in_auction(_currency_id: Self::CurrencyId) -> Self::Balance {
+	fn get_total_target_in_auction() -> Self::Balance {
 		unimplemented!()
 	}
 }
@@ -348,7 +346,7 @@ thread_local! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;

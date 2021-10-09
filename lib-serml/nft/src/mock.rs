@@ -344,7 +344,6 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
-		SETEUR,
 	];
 	pub AirdropMinimum: u32 = 2;
 	pub AirdropMaximum: u32 = 3;

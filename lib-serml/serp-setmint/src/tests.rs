@@ -56,11 +56,7 @@ fn unauthorize_should_work() {
 		Event::SerpMintModule(crate::Event::UnAuthorization(ALICE, BOB, BTC));
 		assert_noop!(
 			SerpMintModule::check_authorization(&ALICE, &BOB, BTC),
-			Error::<Runtime>::NoPermission
-		);
-		assert_noop!(
-			SerpMintModule::unauthorize(Origin::signed(ALICE), BTC, BOB),
-			Error::<Runtime>::AuthorizationNotExists
+			Error::<Runtime>::NoAuthorization
 		);
 	});
 }
@@ -70,7 +66,7 @@ fn unauthorize_all_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB));
-		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), DNAR, CAROL));
+		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), DOT, CAROL));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 200);
 		assert_ok!(SerpMintModule::unauthorize_all(Origin::signed(ALICE)));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
@@ -78,11 +74,11 @@ fn unauthorize_all_should_work() {
 
 		assert_noop!(
 			SerpMintModule::check_authorization(&ALICE, &BOB, BTC),
-			Error::<Runtime>::NoPermission
+			Error::<Runtime>::NoAuthorization
 		);
 		assert_noop!(
 			SerpMintModule::check_authorization(&ALICE, &BOB, DNAR),
-			Error::<Runtime>::NoPermission
+			Error::<Runtime>::NoAuthorization
 		);
 	});
 }
@@ -93,7 +89,6 @@ fn transfer_loan_from_should_work() {
 		assert_ok!(CDPEngineModule::set_collateral_params(
 			Origin::signed(1),
 			BTC,
-			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
@@ -112,7 +107,7 @@ fn transfer_unauthorization_loans_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
 			SerpMintModule::transfer_loan_from(Origin::signed(ALICE), BTC, BOB),
-			Error::<Runtime>::NoPermission,
+			Error::<Runtime>::NoAuthorization,
 		);
 	});
 }
@@ -123,7 +118,6 @@ fn adjust_loan_should_work() {
 		assert_ok!(CDPEngineModule::set_collateral_params(
 			Origin::signed(1),
 			BTC,
-			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
@@ -160,7 +154,6 @@ fn close_loan_has_debit_by_dex_work() {
 		assert_ok!(CDPEngineModule::set_collateral_params(
 			Origin::signed(1),
 			BTC,
-			Change::NewValue(Some(Rate::saturating_from_rational(1, 100000))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),

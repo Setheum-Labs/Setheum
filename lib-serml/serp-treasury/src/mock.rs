@@ -49,7 +49,6 @@ pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 
 mod serp_treasury {
 	pub use super::super::*;
@@ -130,7 +129,6 @@ impl orml_currencies::Config for Runtime {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETEUR,
 		SETUSD,
 	];
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
@@ -277,7 +275,6 @@ parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETR => 10_000,
-			&SETEUR => 10_000,
 			&SETUSD => 10_000,
 			_ => 0,
 		}

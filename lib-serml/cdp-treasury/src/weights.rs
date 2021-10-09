@@ -48,7 +48,7 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions needed for cdp_treasury.
 pub trait WeightInfo {
-	fn extract_surplus() -> Weight;
+	fn extract_surplus_to_serp() -> Weight;
 	fn auction_collateral() -> Weight;
 	fn set_expected_collateral_auction_size() -> Weight;
 }
@@ -56,7 +56,7 @@ pub trait WeightInfo {
 /// Weights for cdp_treasury using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
-	fn extract_surplus() -> Weight {
+	fn extract_surplus_to_serp() -> Weight {
 		(124_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
@@ -74,7 +74,7 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
-	fn extract_surplus() -> Weight {
+	fn extract_surplus_to_serp() -> Weight {
 		(124_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))

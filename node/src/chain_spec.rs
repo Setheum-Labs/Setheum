@@ -594,12 +594,13 @@ fn mainnet_genesis(
 }
 
 
-/// Token
+/// Tokens
+// TODO: Add SERP!
 pub fn setheum_properties() -> Properties {
 	let mut properties = Map::new();
 	let mut token_symbol: Vec<String> = vec![];
 	let mut token_decimals: Vec<u32> = vec![];
-	[SETM, DNAR, SETR, SETEUR, SETUSD].iter().for_each(|token| {
+	[SETM, DNAR, SETR, SETUSD].iter().for_each(|token| {
 		token_symbol.push(token.symbol().unwrap().to_string());
 		token_decimals.push(token.decimals().unwrap() as u32);
 	});

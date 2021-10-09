@@ -507,7 +507,6 @@ parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
-		SETEUR,
 	];
 	pub AirdropMinimum: u32 = 2;
 	pub AirdropMaximum: u32 = 3;
@@ -546,7 +545,7 @@ impl orml_tokens::Config for Runtime {
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+	pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![];
 
@@ -562,12 +561,13 @@ parameter_types! {
 impl module_transaction_payment::Config for Runtime {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyId = GetStableCurrencyId;
+	type SetUSDCurrencyId = GetSetUSDCurrencyId;
 	type Currency = Balances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = (); // fees get burned
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = fee::WeightToFee;
+	type DEX = DEX;
 	type FeeMultiplierUpdate = TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
 	type WeightInfo = weights::transaction_payment::WeightInfo<Runtime>;
 }

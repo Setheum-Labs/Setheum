@@ -942,13 +942,14 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				// 		CurrencyBalanceOf::<T>::max_value()
 				// 	};
 
-					if T::Currency::deposit(
-						currency_id,
+					if T::Currency::transfer(
+						T::GetSetUSDCurrencyId::get(),
+						CDPTreasuryAccountId,
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
 					).is_ok() {
 						if T::Dex::buyback_swap_with_exact_supply(
-							&T::CDPTreasuryAccountId,
+							&Self::account_id(),
 							&path,
 							supply_amount.unique_saturated_into(),
 							// min_target_limit.unique_saturated_into(),
