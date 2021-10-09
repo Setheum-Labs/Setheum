@@ -128,7 +128,7 @@ pub mod module {
 	/// DebitPool: map CurrencyId => Balance
 	#[pallet::storage]
 	#[pallet::getter(fn debit_pool)]
-	pub type DebitPool<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
+	pub type DebitPool<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig {
@@ -190,7 +190,6 @@ pub mod module {
 			T::UpdateOrigin::ensure_origin(origin)?;
 			<Self as CDPTreasuryExtended<T::AccountId>>::create_collateral_auctions(
 				currency_id,
-				T::GetSetUSDCurrencyId::get(),
 				amount,
 				target,
 				Self::account_id(),
@@ -258,7 +257,7 @@ impl<T: Config> Pallet<T> {
 					});
 				}
 				Err(e) => {
-					log::warn!(
+					debug::warn!(
 						target: "cdp-treasury",
 						"get_swap_supply_amount: Attempt to burn surplus {:?} failed: {:?}, this is unexpected but should be safe",
 						offset_amount, e

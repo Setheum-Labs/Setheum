@@ -23,7 +23,7 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use frame_system::{
-	Pallet, Config, Event, Module, Pallet
+	Pallet, Config, Event, Module
 };
 
 use codec::Codec;
@@ -166,7 +166,7 @@ pub mod module {
 			origin: OriginFor<T>,
 			currency_id: CurrencyIdOf<T>,
 			details: Vec<AirdropDetails<<T::Lookup as StaticLookup>::Source, Balance>>,
-		) {
+		) -> DispatchResultWithPostInfo {
 			if origin = T::AirdropOrigin {
 				T::AirdropOrigin::ensure_origin(origin)?;
 				let from = T::AirdropAccountId::get();
@@ -177,7 +177,7 @@ pub mod module {
 					Error::<T>::InvalidAirdropLength
 				);
 
-				self.details.iter().for_each(|(dest, amount)| {
+				details.iter().for_each(|(dest, amount)| {
 					let to = T::Lookup::lookup(dest)?;
 					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
 				})
@@ -190,7 +190,7 @@ pub mod module {
 					Error::<T>::InvalidAirdropLength
 				);
 
-				self.details.iter().for_each(|(dest, amount)| {
+				details.iter().for_each(|(dest, amount)| {
 					let to = T::Lookup::lookup(dest)?;
 					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
 				})

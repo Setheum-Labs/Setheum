@@ -588,7 +588,7 @@ impl<T: Config> Pallet<T> {
 					// can be fixed by treasury council.
 					let res = T::CDPTreasury::issue_debit(&bidder, bid_price, false);
 					if let Err(e) = res {
-						log::warn!(
+						debug::warn!(
 							target: "auction-manager",
 							"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
 							This is unexpected but should be safe",
@@ -608,7 +608,7 @@ impl<T: Config> Pallet<T> {
 						let res =
 							T::CDPTreasury::issue_debit(&collateral_auction.refund_recipient, refund_amount, false);
 						if let Err(e) = res {
-							log::warn!(
+							debug::warn!(
 								target: "auction-manager",
 								"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
 								This is unexpected but should be safe",
@@ -637,7 +637,7 @@ impl<T: Config> Pallet<T> {
 					collateral_auction.amount,
 				);
 				if let Err(e) = res {
-					log::warn!(
+					debug::warn!(
 						target: "auction-manager",
 						"withdraw_collateral: failed to withdraw {:?} {:?} from CDP treasury to {:?}: {:?}. \
 						This is unexpected but should be safe",
@@ -770,7 +770,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			// No providers for the locks. This is impossible under normal circumstances
 			// since the funds that are under the lock will themselves be stored in the
 			// account and therefore will need a reference.
-			log::warn!(
+			debug::warn!(
 				target: "auction-manager",
 				"Attempt to `inc_consumers` for {:?} failed. \
 				This is unexpected but should be safe.",

@@ -508,8 +508,8 @@ fn mainnet_genesis(
 			// check total allocated
 			assert_eq!(
 				total_allocated,
-				258_00_000 * dollar(SETM), // 258 million SETM
-				"total allocation must be equal to 258 million SETM"
+				20_000_000_000 * dollar(SETM), // 20 billion SETM
+				"total allocation must be equal to 20 billion SETM"
 			);
 
 	GenesisConfig {
