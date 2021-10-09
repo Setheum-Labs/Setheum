@@ -22,17 +22,17 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETM, ALICE, BOB, CHARLIE, DNAR};
+use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETR, ALICE, BOB, CHARLIE, SETUSD};
 use sp_runtime::traits::BadOrigin;
 
 #[test]
 fn airdrop_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_noop!(Airdrop::airdrop(Origin::signed(BOB), ALICE, DNAR, 10000), BadOrigin,);
-		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, DNAR, 10000));
-		Event::airdrop(RawEvent::Airdrop(ALICE, DNAR, 10000));
-		assert_eq!(Airdrop::airdrops(ALICE, DNAR), 10000);
+		assert_noop!(Airdrop::airdrop(Origin::signed(BOB), ALICE, SETUSD, 10000), BadOrigin,);
+		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETUSD, 10000));
+		Event::airdrop(RawEvent::Airdrop(ALICE, SETUSD, 10000));
+		assert_eq!(Airdrop::airdrops(ALICE, SETUSD), 10000);
 	});
 }
 
@@ -40,20 +40,20 @@ fn airdrop_work() {
 fn update_airdrop_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETM, 10000));
-		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETM, 10000));
-		assert_eq!(Airdrop::airdrops(ALICE, SETM), 20000);
-		assert_noop!(Airdrop::update_airdrop(Origin::signed(BOB), ALICE, SETM, 0), BadOrigin,);
-		assert_ok!(Airdrop::update_airdrop(Origin::root(), ALICE, SETM, 0));
-		Event::airdrop(RawEvent::UpdateAirdrop(ALICE, SETM, 0));
-		assert_eq!(Airdrop::airdrops(ALICE, SETM), 0);
+		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETR, 10000));
+		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETR, 10000));
+		assert_eq!(Airdrop::airdrops(ALICE, SETR), 20000);
+		assert_noop!(Airdrop::update_airdrop(Origin::signed(BOB), ALICE, SETR, 0), BadOrigin,);
+		assert_ok!(Airdrop::update_airdrop(Origin::root(), ALICE, SETR, 0));
+		Event::airdrop(RawEvent::UpdateAirdrop(ALICE, SETR, 0));
+		assert_eq!(Airdrop::airdrops(ALICE, SETR), 0);
 	});
 }
 
 #[test]
 fn genesis_config_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Airdrop::airdrops(CHARLIE, DNAR), 150);
-		assert_eq!(Airdrop::airdrops(CHARLIE, SETM), 80);
+		assert_eq!(Airdrop::airdrops(CHARLIE, SETUSD), 150);
+		assert_eq!(Airdrop::airdrops(CHARLIE, SETR), 80);
 	});
 }
