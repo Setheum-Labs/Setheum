@@ -31,8 +31,8 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARLIE: AccountId = 2;
-pub const SETM: AirDropCurrencyId = AirDropCurrencyId::SETR;
-pub const DNAR: AirDropCurrencyId = AirDropCurrencyId::SETUSD;
+pub const SETR: AirDropCurrencyId = AirDropCurrencyId::SETR;
+pub const SETUSD: AirDropCurrencyId = AirDropCurrencyId::SETUSD;
 
 mod airdrop {
 	pub use super::super::*;
