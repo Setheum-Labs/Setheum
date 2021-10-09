@@ -102,10 +102,6 @@ pub mod pallet {
 		/// The SETUSD currency id, it should be SETUSD in Setheum.
 		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
-		#[pallet::constant]
-		/// The SETEUR currency id, it should be SETEUR in Setheum.
-		type GetSetEURCurrencyId: Get<CurrencyId>;
-
 		/// A fetch duration period after we fetch prices.
 		type FetchPeriod: Get<Self::BlockNumber>;
 
@@ -145,7 +141,6 @@ pub mod pallet {
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				Self::setter_on_tes().unwrap();
 				Self::setusd_on_tes().unwrap();
-				Self::seteur_on_tes().unwrap();
 			}
 		}
 	}
@@ -836,85 +831,6 @@ impl<T: Config> Pallet<T> {
 			_ => {}
 		}
 		Self::deposit_event(Event::SerpTes(T::GetSetUSDCurrencyId::get()));
-		Ok(())
-	}
-
-	/// TODO: Update from EURS to SETEUR when listed.
-	/// Fetch current SETEUR price and return the result in cents.
-	#[allow(unused_variables)]
-	fn seteur_on_tes() -> Result<(), http::Error> {
-		// We want to keep the offchain worker execution time reasonable, so we set a hard-coded
-		// deadline to 2s to complete the external call.
-		// You can also wait idefinitely for the response, however you may still get a timeout
-		// coming from the host machine.
-		let deadline = sp_io::offchain::timestamp().add(Duration::from_millis(2_000));
-
-    	// cryptocompare fetch - market_price
-		let market_request =
-			http::Request::get("https://min-api.cryptocompare.com/data/price?fsym=EURS&tsyms=USD");
-		let market_pending = market_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let market_response = market_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if market_response.code != 200 {
-			log::warn!("Unexpected status code: {}", market_response.code);
-			return Err(http::Error::Unknown)
-		}
-		let market_body = market_response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let market_body_str = sp_std::str::from_utf8(&market_body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let market_price = match Self::parse_cryptocompare_price(market_body_str) {
-			Some(market_price) => Ok(market_price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", market_body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-    	// exchangehost fetch - peg_price
-		let peg_request =
-			http::Request::get("https://api.exchangerate.host/convert?from=EUR&to=USD");
-		let peg_pending = peg_request.deadline(deadline).send().map_err(|_| http::Error::IoError)?;
-		let peg_response = peg_pending.try_wait(deadline).map_err(|_| http::Error::DeadlineReached)??;
-		if peg_response.code != 200 {
-			log::warn!("Unexpected status code: {}", peg_response.code);
-			return Err(http::Error::Unknown)
-		}
-		let peg_body = peg_response.body().collect::<Vec<u8>>();
-		// Create a str slice from the body.
-		let peg_body_str = sp_std::str::from_utf8(&peg_body).map_err(|_| {
-			log::warn!("No UTF8 body");
-			http::Error::Unknown
-		})?;
-		let peg_price = match Self::parse_exchangehost_price(peg_body_str) {
-			Some(peg_price) => Ok(peg_price),
-			None => {
-				log::warn!("Unable to extract price from the response: {:?}", peg_body_str);
-				Err(http::Error::Unknown)
-			},
-		}?;
-
-		// Total Issuance of the currency
-		let total_supply = T::Currency::total_issuance(T::GetSetEURCurrencyId::get());
-
-		match market_price {
-			market_price if market_price > peg_price => {
-	
-				// safe from underflow because `peg_price` is checked to be less than `market_price`
-				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
-
-				T::SerpTreasury::on_serpup(T::GetSetEURCurrencyId::get(), expand_by).unwrap();
-			}
-			market_price if market_price < peg_price => {
-				// safe from underflow because `peg_price` is checked to be greater than `market_price`
-				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
-
-				T::SerpTreasury::on_serpdown(T::GetSetEURCurrencyId::get(), contract_by).unwrap();
-			}
-			_ => {}
-		}
-		Self::deposit_event(Event::SerpTes(T::GetSetEURCurrencyId::get()));
 		Ok(())
 	}
 

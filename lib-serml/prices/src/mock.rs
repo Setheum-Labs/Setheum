@@ -36,14 +36,14 @@ use support::mocks::MockCurrencyIdMapping;
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
-pub const SETHEUM: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const LP_SETR_SETUSD: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETR), DexShare::Token(TokenSymbol::SETUSD));
-pub const LP_SETUSD_SETHEUM: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::SETHEUM));
+pub const LP_SETUSD_SETM: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::SETM));
 
 mod prices {
 	pub use super::super::*;
@@ -85,7 +85,7 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 			SETUSD => Some(Price::saturating_from_rational(99, 100)),
 			SETR => Some(Price::saturating_from_rational(99, 100)),
 			DNAR => Some(Price::saturating_from_integer(100)),
-			SETHEUM => Some(Price::zero()),
+			SETM => Some(Price::zero()),
 			_ => None,
 		}
 	}

@@ -72,9 +72,7 @@ pub struct CollateralAuctionItem<AccountId, BlockNumber> {
 	/// Refund recipient for may receive refund
 	refund_recipient: AccountId,
 	/// Collateral type for sale
-	collateral_currency_id: CurrencyId,
-	/// Stable Currency type to buyback
-	stable_currency_id: CurrencyId,
+	currency_id: CurrencyId,
 	/// Initial collateral amount for sale
 	#[codec(compact)]
 	initial_amount: Balance,
@@ -149,11 +147,12 @@ pub mod module {
 		/// Currency to transfer assets
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
+		/// The stable currency id
+		#[pallet::constant]
+		type GetSetUSDCurrencyId: Get<CurrencyId>;
+
 		/// Auction to manager the auction process
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
-
-		/// The stable currency ids
-		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// CDP treasury to escrow assets related to auction
 		type CDPTreasury: CDPTreasuryExtended<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
@@ -202,15 +201,15 @@ pub mod module {
 	pub enum Event<T: Config> {
 		/// Collateral auction created. \[auction_id, collateral_type,
 		/// collateral_amount, target_bid_price\]
-		NewCollateralAuction(AuctionId, CurrencyId, CurrencyId, Balance, Balance),
+		NewCollateralAuction(AuctionId, CurrencyId, Balance, Balance),
 		/// Active auction cancelled. \[auction_id\]
 		CancelAuction(AuctionId),
 		/// Collateral auction dealt. \[auction_id, collateral_type,
-		/// stable_currency_type, collateral_amount, winner, payment_amount\]
-		CollateralAuctionDealt(AuctionId, CurrencyId, CurrencyId, Balance, T::AccountId, Balance),
+		/// collateral_amount, winner, payment_amount\]
+		CollateralAuctionDealt(AuctionId, CurrencyId, Balance, T::AccountId, Balance),
 		/// Dex take collateral auction. \[auction_id, collateral_type,
-		/// stable_currency_type, collateral_amount, turnover\]
-		DEXTakeCollateralAuction(AuctionId, CurrencyId, CurrencyId, Balance, Balance),
+		/// collateral_amount, turnover\]
+		DEXTakeCollateralAuction(AuctionId, CurrencyId, Balance, Balance),
 	}
 
 	/// Mapping from auction id to collateral auction info
@@ -230,12 +229,11 @@ pub mod module {
 	pub type TotalCollateralInAuction<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	/// Record of total target sales of all active collateral auctions
-	/// under specific stable currency type StableType => Balance
 	///
-	/// TotalTargetInAuction: map CurrencyId => Balance
+	/// TotalTargetInAuction: Balance
 	#[pallet::storage]
 	#[pallet::getter(fn total_target_in_auction)]
-	pub type TotalTargetInAuction<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
+	pub type TotalTargetInAuction<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
@@ -397,10 +395,8 @@ impl<T: Config> Pallet<T> {
 		}
 
 		// calculate how much collateral to offset target in settle price
-		let settle_price = T::PriceSource::get_relative_price(
-			collateral_auction.stable_currency_id,
-			collateral_auction.collateral_currency_id
-		)
+		let stable_currency_id = T::GetSetUSDCurrencyId::get();
+		let settle_price = T::PriceSource::get_relative_price(stable_currency_id, collateral_auction.currency_id)
 			.ok_or(Error::<T>::InvalidFeedPrice)?;
 		let confiscate_collateral_amount = if collateral_auction.always_forward() {
 			collateral_auction.amount
@@ -415,14 +411,14 @@ impl<T: Config> Pallet<T> {
 		// refund remain collateral to refund recipient from CDP treasury
 		T::CDPTreasury::withdraw_collateral(
 			&collateral_auction.refund_recipient,
-			collateral_auction.collateral_currency_id,
+			collateral_auction.currency_id,
 			refund_collateral_amount,
 		)?;
 
 		// if there's bid
 		if let Some((bidder, bid_price)) = last_bid {
 			// refund stable token to the bidder
-			T::CDPTreasury::issue_debit(&bidder, collateral_auction.stable_currency_id, bid_price, false)?;
+			T::CDPTreasury::issue_debit(&bidder, bid_price, false)?;
 
 			// decrease account ref of bidder
 			frame_system::Pallet::<T>::dec_consumers(&bidder);
@@ -432,12 +428,10 @@ impl<T: Config> Pallet<T> {
 		frame_system::Pallet::<T>::dec_consumers(&collateral_auction.refund_recipient);
 
 		// decrease total collateral and target in auction
-		TotalCollateralInAuction::<T>::mutate(collateral_auction.collateral_currency_id, |balance| {
+		TotalCollateralInAuction::<T>::mutate(collateral_auction.currency_id, |balance| {
 			*balance = balance.saturating_sub(collateral_auction.amount)
 		});
-		TotalTargetInAuction::<T>::mutate(collateral_auction.stable_currency_id, |balance| {
-			*balance = balance.saturating_sub(collateral_auction.target)
-		});
+		TotalTargetInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(collateral_auction.target));
 
 		Ok(())
 	}
@@ -521,7 +515,7 @@ impl<T: Config> Pallet<T> {
 				// if there's bid before, return stablecoin from new bidder to last bidder
 				if let Some(last_bidder) = last_bidder {
 					let refund = collateral_auction.payment_amount(last_bid_price);
-					T::Currency::transfer(collateral_auction.stable_currency_id, &new_bidder, last_bidder, refund)?;
+					T::Currency::transfer(T::GetSetUSDCurrencyId::get(), &new_bidder, last_bidder, refund)?;
 
 					payment = payment
 						.checked_sub(refund)
@@ -531,7 +525,7 @@ impl<T: Config> Pallet<T> {
 				}
 
 				// transfer remain payment from new bidder to CDP treasury
-				T::CDPTreasury::deposit_surplus(&new_bidder, collateral_auction.stable_currency_id, payment)?;
+				T::CDPTreasury::deposit_surplus(&new_bidder, payment)?;
 
 				// if collateral auction will be in reverse stage, refund collateral to it's
 				// origin from auction CDP treasury
@@ -542,12 +536,12 @@ impl<T: Config> Pallet<T> {
 					if !refund_collateral_amount.is_zero() {
 						T::CDPTreasury::withdraw_collateral(
 							&(collateral_auction.refund_recipient),
-							collateral_auction.collateral_currency_id,
+							collateral_auction.currency_id,
 							refund_collateral_amount,
 						)?;
 
 						// update total collateral in auction after refund
-						TotalCollateralInAuction::<T>::mutate(collateral_auction.collateral_currency_id, |balance| {
+						TotalCollateralInAuction::<T>::mutate(collateral_auction.currency_id, |balance| {
 							*balance = balance.saturating_sub(refund_collateral_amount)
 						});
 						collateral_auction.amount = new_collateral_amount;
@@ -573,15 +567,14 @@ impl<T: Config> Pallet<T> {
 			if !collateral_auction.in_reverse_stage(bid_price)
 				&& bid_price
 					< T::DEX::get_swap_target_amount(
-						&[collateral_auction.collateral_currency_id, collateral_auction.stable_currency_id],
+						&[collateral_auction.currency_id, T::GetSetUSDCurrencyId::get()],
 						collateral_auction.amount,
 					)
 					.unwrap_or_default()
 			{
 				// try swap collateral in auction with DEX to get stable
 				if let Ok(stable_amount) = T::CDPTreasury::swap_exact_collateral_to_stable(
-					collateral_auction.collateral_currency_id,
-					collateral_auction.stable_currency_id,
+					collateral_auction.currency_id,
 					collateral_auction.amount,
 					Zero::zero(),
 					None,
@@ -593,9 +586,9 @@ impl<T: Config> Pallet<T> {
 					// refund stable currency to the last bidder, it shouldn't fail and affect the
 					// process. but even it failed, just the winner did not get the bid price. it
 					// can be fixed by treasury council.
-					let res = T::CDPTreasury::issue_debit(&bidder, collateral_auction.stable_currency_id, bid_price, false);
+					let res = T::CDPTreasury::issue_debit(&bidder, bid_price, false);
 					if let Err(e) = res {
-						debug::warn!(
+						log::warn!(
 							target: "auction-manager",
 							"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
 							This is unexpected but should be safe",
@@ -613,9 +606,9 @@ impl<T: Config> Pallet<T> {
 						// but even it failed, just the winner did not get the refund amount. it can be
 						// fixed by treasury council.
 						let res =
-							T::CDPTreasury::issue_debit(&collateral_auction.refund_recipient, collateral_auction.stable_currency_id, refund_amount, false);
+							T::CDPTreasury::issue_debit(&collateral_auction.refund_recipient, refund_amount, false);
 						if let Err(e) = res {
-							debug::warn!(
+							log::warn!(
 								target: "auction-manager",
 								"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
 								This is unexpected but should be safe",
@@ -627,8 +620,7 @@ impl<T: Config> Pallet<T> {
 
 					Self::deposit_event(Event::DEXTakeCollateralAuction(
 						auction_id,
-						collateral_auction.collateral_currency_id,
-						collateral_auction.stable_currency_id,
+						collateral_auction.currency_id,
 						collateral_auction.amount,
 						stable_amount,
 					));
@@ -641,15 +633,15 @@ impl<T: Config> Pallet<T> {
 				// can be fixed by treasury council.
 				let res = T::CDPTreasury::withdraw_collateral(
 					&bidder,
-					collateral_auction.collateral_currency_id,
+					collateral_auction.currency_id,
 					collateral_auction.amount,
 				);
 				if let Err(e) = res {
-					debug::warn!(
+					log::warn!(
 						target: "auction-manager",
 						"withdraw_collateral: failed to withdraw {:?} {:?} from CDP treasury to {:?}: {:?}. \
 						This is unexpected but should be safe",
-						collateral_auction.amount, collateral_auction.collateral_currency_id, bidder, e
+						collateral_auction.amount, collateral_auction.currency_id, bidder, e
 					);
 					debug_assert!(false);
 				}
@@ -657,8 +649,7 @@ impl<T: Config> Pallet<T> {
 				let payment_amount = collateral_auction.payment_amount(bid_price);
 				Self::deposit_event(Event::CollateralAuctionDealt(
 					auction_id,
-					collateral_auction.collateral_currency_id,
-					collateral_auction.stable_currency_id,
+					collateral_auction.currency_id,
 					collateral_auction.amount,
 					bidder,
 					payment_amount,
@@ -672,12 +663,10 @@ impl<T: Config> Pallet<T> {
 		frame_system::Pallet::<T>::dec_consumers(&collateral_auction.refund_recipient);
 
 		// update auction records
-		TotalCollateralInAuction::<T>::mutate(collateral_auction.collateral_currency_id, |balance| {
+		TotalCollateralInAuction::<T>::mutate(collateral_auction.currency_id, |balance| {
 			*balance = balance.saturating_sub(collateral_auction.amount)
 		});
-		TotalTargetInAuction::<T>::mutate(collateral_auction.stable_currency_id, |balance| {
-			*balance = balance.saturating_sub(collateral_auction.target)
-		});
+		TotalTargetInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(collateral_auction.target));
 	}
 
 	/// increment `new_bidder` reference and decrement `last_bidder`
@@ -741,24 +730,19 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 
 	fn new_collateral_auction(
 		refund_recipient: &T::AccountId,
-		collateral_currency_id: Self::CurrencyId,
-		stable_currency_id: Self::CurrencyId,
+		currency_id: Self::CurrencyId,
 		amount: Self::Balance,
 		target: Self::Balance,
 	) -> DispatchResult {
-		ensure!(
-			T::StableCurrencyIds::get().contains(&stable_currency_id),
-			Error::<T>::InvalidCurrencyType,
-		);
 		ensure!(!amount.is_zero(), Error::<T>::InvalidAmount);
-		TotalCollateralInAuction::<T>::try_mutate(collateral_currency_id, |total| -> DispatchResult {
+		TotalCollateralInAuction::<T>::try_mutate(currency_id, |total| -> DispatchResult {
 			*total = total.checked_add(amount).ok_or(Error::<T>::InvalidAmount)?;
 			Ok(())
 		})?;
 
 		if !target.is_zero() {
 			// no-op if target is zero
-			TotalTargetInAuction::<T>::try_mutate(stable_currency_id, |total| -> DispatchResult {
+			TotalTargetInAuction::<T>::try_mutate(|total| -> DispatchResult {
 				*total = total.checked_add(target).ok_or(Error::<T>::InvalidAmount)?;
 				Ok(())
 			})?;
@@ -773,8 +757,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			auction_id,
 			CollateralAuctionItem {
 				refund_recipient: refund_recipient.clone(),
-				collateral_currency_id,
-				stable_currency_id,
+				currency_id,
 				initial_amount: amount,
 				amount,
 				target,
@@ -787,7 +770,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			// No providers for the locks. This is impossible under normal circumstances
 			// since the funds that are under the lock will themselves be stored in the
 			// account and therefore will need a reference.
-			debug::warn!(
+			log::warn!(
 				target: "auction-manager",
 				"Attempt to `inc_consumers` for {:?} failed. \
 				This is unexpected but should be safe.",
@@ -795,13 +778,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			);
 		}
 
-		Self::deposit_event(Event::NewCollateralAuction(
-			auction_id,
-			collateral_currency_id,
-			stable_currency_id,
-			amount,
-			target
-		));
+		Self::deposit_event(Event::NewCollateralAuction(auction_id, currency_id, amount, target));
 		Ok(())
 	}
 
@@ -816,7 +793,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 		Self::total_collateral_in_auction(id)
 	}
 
-	fn get_total_target_in_auction(id: Self::CurrencyId) -> Self::Balance {
-		Self::total_target_in_auction(id)
+	fn get_total_target_in_auction() -> Self::Balance {
+		Self::total_target_in_auction()
 	}
 }

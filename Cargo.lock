@@ -376,6 +376,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "auction-manager"
+version = "0.9.6"
+dependencies = [
+ "cdp-treasury",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "module-dex",
+ "module-support",
+ "orml-auction",
+ "orml-tokens",
+ "orml-traits",
+ "orml-utilities",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "setheum-primitives",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -699,6 +722,56 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d26a6ce4b6a484fa3edb70f7efa6fc430fd2b87285fe8b84304fd0936faa0dc0"
 dependencies = [
  "jobserver",
+]
+
+[[package]]
+name = "cdp-engine"
+version = "0.9.6"
+dependencies = [
+ "cdp-treasury",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "module-dex",
+ "module-loans",
+ "module-support",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "orml-utilities",
+ "pallet-balances",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "rand_chacha 0.2.2",
+ "serde",
+ "setheum-primitives",
+ "sp-application-crypto 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
+name = "cdp-treasury"
+version = "0.9.6"
+dependencies = [
+ "frame-benchmarking 3.1.0",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "module-dex",
+ "module-support",
+ "orml-auction",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "setheum-primitives",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
 ]
 
 [[package]]
@@ -4025,7 +4098,7 @@ dependencies = [
 
 [[package]]
 name = "module-airdrop"
-version = "1.0.0"
+version = "0.9.6"
 dependencies = [
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
@@ -4063,7 +4136,7 @@ dependencies = [
 
 [[package]]
 name = "module-dex"
-version = "0.9.1"
+version = "0.9.6"
 dependencies = [
  "frame-benchmarking 3.1.0",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
@@ -4196,6 +4269,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "module-loans"
+version = "0.9.6"
+dependencies = [
+ "cdp-treasury",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "module-support",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "setheum-primitives",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "module-nft"
 version = "1.0.0"
 dependencies = [
@@ -4242,7 +4336,7 @@ dependencies = [
 
 [[package]]
 name = "module-recovery"
-version = "3.0.0"
+version = "0.9.6"
 dependencies = [
  "enumflags2",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
@@ -4607,6 +4701,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28988d872ab76095a6e6ac88d99b54fd267702734fd7ffe610ca27f533ddb95a"
 
 [[package]]
+name = "orml-auction"
+version = "0.4.1-dev"
+dependencies = [
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "funty",
+ "orml-traits",
+ "parity-scale-codec",
+ "serde",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "orml-authority"
 version = "0.4.1-dev"
 dependencies = [
@@ -4763,22 +4873,6 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "serde_json",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "orml-vesting"
-version = "0.4.1-dev"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "funty",
- "pallet-balances",
- "parity-scale-codec",
- "serde",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
@@ -5711,7 +5805,7 @@ dependencies = [
 
 [[package]]
 name = "primitives-proc-macro"
-version = "0.9.1"
+version = "0.9.6"
 dependencies = [
  "proc-macro-crate 1.1.0",
  "proc-macro2",
@@ -7621,6 +7715,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "serp-setmint"
+version = "0.9.6"
+dependencies = [
+ "cdp-engine",
+ "cdp-treasury",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "module-loans",
+ "module-support",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "setheum-primitives",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "serp-treasury"
 version = "0.9.1"
 dependencies = [
@@ -7696,7 +7813,7 @@ dependencies = [
 
 [[package]]
 name = "setheum-primitives"
-version = "0.7.3"
+version = "0.9.6"
 dependencies = [
  "bstringify",
  "evm 0.24.0",
@@ -7748,7 +7865,6 @@ dependencies = [
  "hex",
  "hex-literal 0.3.3",
  "libsecp256k1 0.6.0",
- "module-airdrop",
  "module-currencies",
  "module-dex",
  "module-evm",
@@ -7768,7 +7884,6 @@ dependencies = [
  "orml-oracle-rpc-runtime-api",
  "orml-tokens",
  "orml-traits",
- "orml-vesting",
  "pallet-authority-discovery",
  "pallet-authorship",
  "pallet-babe",

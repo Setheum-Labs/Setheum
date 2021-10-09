@@ -4,7 +4,7 @@ use setheum_runtime::{
 	BabeConfig, BalancesConfig, GenesisConfig, GrandpaConfig, SudoConfig, SystemConfig,
 	IndicesConfig, EvmConfig, StakingConfig, SessionConfig, AuthorityDiscoveryConfig,
 	WASM_BINARY,
-	TokenSymbol, TokensConfig, SETHEUM,
+	TokenSymbol, TokensConfig, SETM,
 	StakerStatus,
 	ImOnlineId, AuthorityDiscoveryId,
 	MaxNativeTokenExistentialDeposit,
@@ -337,8 +337,8 @@ fn testnet_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let  initial_balance: u128 = 100_000_000 * SETHEUM;
-	let  initial_staking: u128 =   1_000_000 * SETHEUM;
+	let  initial_balance: u128 = 100_000_000 * SETM;
+	let  initial_staking: u128 =   1_000_000 * SETM;
 	let existential_deposit = NativeTokenExistentialDeposit::get();
 
 	let balances = initial_authorities
@@ -471,14 +471,14 @@ fn mainnet_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let initial_staking: u128 = 100_000 * dollar(SETHEUM);
+	let initial_staking: u128 = 100_000 * dollar(SETM);
 	let existential_deposit = NativeTokenExistentialDeposit::get();
 	let mut total_allocated: Balance = Zero::zero();
 
 	let initial_allocation = initial_authorities
 		.iter()
-		.map(|x| (x.0.clone(), initial_staking + dollar(SETHEUM))) // bit more for fee
-		.chain(endowed_accounts.iter().cloned().map(|x| (x.0.clone(), x.1 * dollar(SETHEUM))))
+		.map(|x| (x.0.clone(), initial_staking + dollar(SETM))) // bit more for fee
+		.chain(endowed_accounts.iter().cloned().map(|x| (x.0.clone(), x.1 * dollar(SETM))))
 		.chain(
 			get_all_module_accounts()
 				.iter()
@@ -508,8 +508,8 @@ fn mainnet_genesis(
 			// check total allocated
 			assert_eq!(
 				total_allocated,
-				258_00_000 * dollar(SETHEUM), // 258 million SETHEUM
-				"total allocation must be equal to 258 million SETHEUM"
+				258_00_000 * dollar(SETM), // 258 million SETM
+				"total allocation must be equal to 258 million SETM"
 			);
 
 	GenesisConfig {
@@ -594,12 +594,13 @@ fn mainnet_genesis(
 }
 
 
-/// Token
+/// Tokens
+// TODO: Add SERP!
 pub fn setheum_properties() -> Properties {
 	let mut properties = Map::new();
 	let mut token_symbol: Vec<String> = vec![];
 	let mut token_decimals: Vec<u32> = vec![];
-	[SETHEUM, DNAR, SETR, SETEUR, SETUSD].iter().for_each(|token| {
+	[SETM, DNAR, SETR, SETUSD].iter().for_each(|token| {
 		token_symbol.push(token.symbol().unwrap().to_string());
 		token_decimals.push(token.decimals().unwrap() as u32);
 	});

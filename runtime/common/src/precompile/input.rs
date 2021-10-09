@@ -269,7 +269,7 @@ mod tests {
 		let mut raw_input = [0u8; 68];
 		raw_input[64] = 1;
 		let input = TestInput::new(&raw_input[..]);
-		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SETHEUM));
+		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SETM));
 
 		raw_input[67] = 1;
 		let input = TestInput::new(&raw_input[..]);

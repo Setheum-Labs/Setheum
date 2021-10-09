@@ -94,7 +94,7 @@ impl tokens::Config for Runtime {
 	type WeightInfo = ();
 }
 
-pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETHEUM);
+pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
 parameter_types! {
@@ -313,13 +313,11 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
-		SETEUR,
 	];
 	pub AirdropMinimum: u32 = 2;
 	pub AirdropMaximum: u32 = 3;

@@ -20,7 +20,6 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 sp-io = { version = '3.0.0' }
 sp-core = { version = '3.0.0' }
 pallet-balances = { version = '3.0.0' }
-pallet-timestamp = { version = '3.0.0' }
 orml-currencies = { path = "../../open-lib/currencies" }
 orml-traits = { path = "../../open-lib/traits" }
 orml-tokens = { path = "../../open-lib/tokens" }

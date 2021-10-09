@@ -44,8 +44,6 @@ pub const CAROL: AccountId = 3;
 pub const BUYBACK_POOL: AccountId = 4;
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
-pub const SETGBP: CurrencyId = CurrencyId::Token(TokenSymbol::SETGBP);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 mod auction_manager {
@@ -251,6 +249,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
+	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 }
@@ -258,7 +257,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type AuctionManagerHandler = AuctionManagerModule;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -293,11 +292,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETEUR,
-		SETUSD,
-	];
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 	pub GetExchangeFee: (u32, u32) = (0, 100);
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
@@ -348,7 +342,7 @@ impl Config for Runtime {
 	type MinimumIncrementSize = MinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type StableCurrencyIds = StableCurrencyIds;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type CDPTreasury = CDPTreasuryModule;
 	type DEX = DEXModule;
 	type PriceSource = MockPriceSource;
@@ -393,18 +387,9 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			endowed_accounts: vec![
-				(ALICE, SETR, 1000),
-				(BOB, SETR, 1000),
-				(CAROL, SETR, 1000),
 				(ALICE, SETUSD, 1000),
 				(BOB, SETUSD, 1000),
 				(CAROL, SETUSD, 1000),
-				(ALICE, SETEUR, 1000),
-				(BOB, SETEUR, 1000),
-				(CAROL, SETEUR, 1000),
-				(ALICE, SETGBP, 1000),
-				(BOB, SETGBP, 1000),
-				(CAROL, SETGBP, 1000),
 				(ALICE, BTC, 1000),
 				(BOB, BTC, 1000),
 				(CAROL, BTC, 1000),

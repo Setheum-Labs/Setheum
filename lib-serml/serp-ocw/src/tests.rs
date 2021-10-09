@@ -47,7 +47,6 @@ type Block = frame_system::mocking::MockBlock<Runtime>;
 // Currencies constants - CurrencyId/TokenSymbol
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETEUR: CurrencyId = CurrencyId::Token(TokenSymbol::SETEUR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
 parameter_types! {
@@ -360,7 +359,6 @@ parameter_types! {
 	
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
-	pub const GetSetEURCurrencyId: CurrencyId = SETEUR;
 }
 
 impl Config for Runtime {
@@ -371,7 +369,6 @@ impl Config for Runtime {
     type SerpTreasury = MockSerpTreasury;
     type SetterCurrencyId = SetterCurrencyId;
     type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-    type GetSetEURCurrencyId = GetSetEURCurrencyId;
     type FetchPeriod = FetchPeriod;
 	type GracePeriod = GracePeriod;
 	type UnsignedInterval = UnsignedInterval;

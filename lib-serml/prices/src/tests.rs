@@ -143,22 +143,22 @@ fn get_price_of_stable_currency_id() {
 #[test]
 fn get_price_of_lp_token_currency_id() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(MockDEX::get_liquidity_pool(SETUSD, SETHEUM), (0, 0));
-		assert_eq!(PricesModule::get_price(LP_SETUSD_SETHEUM), None);
-		assert_ok!(Tokens::deposit(LP_SETUSD_SETHEUM, &1, 100));
-		assert_eq!(Tokens::total_issuance(LP_SETUSD_SETHEUM), 100);
+		assert_eq!(MockDEX::get_liquidity_pool(SETUSD, SETM), (0, 0));
+		assert_eq!(PricesModule::get_price(LP_SETUSD_SETM), None);
+		assert_ok!(Tokens::deposit(LP_SETUSD_SETM, &1, 100));
+		assert_eq!(Tokens::total_issuance(LP_SETUSD_SETM), 100);
 		assert_eq!(
 			PricesModule::get_price(SETUSD),
 			Some(Price::saturating_from_rational(1000000u128, 1))
 		);
 		assert_eq!(
-			PricesModule::get_price(LP_SETUSD_SETHEUM),
+			PricesModule::get_price(LP_SETUSD_SETM),
 			lp_token_fair_price(
-				Tokens::total_issuance(LP_SETUSD_SETHEUM),
-				MockDEX::get_liquidity_pool(SETUSD, SETHEUM).0,
-				MockDEX::get_liquidity_pool(SETUSD, SETHEUM).1,
+				Tokens::total_issuance(LP_SETUSD_SETM),
+				MockDEX::get_liquidity_pool(SETUSD, SETM).0,
+				MockDEX::get_liquidity_pool(SETUSD, SETM).1,
 				PricesModule::get_price(SETUSD).unwrap(),
-				PricesModule::get_price(SETHEUM).unwrap()
+				PricesModule::get_price(SETM).unwrap()
 			)
 		);
 
