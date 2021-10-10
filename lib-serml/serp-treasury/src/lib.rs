@@ -437,12 +437,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Setheum Treasury BuyBack Pool - 40%
 		let four: Balance = 4;
 		let serping_amount: Balance = four.saturating_mul(amount / 10);
-		
-			<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_setter(
-				currency_id,
-				serping_amount,
-			);
-		} 
+	
+		<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_setter(
+			currency_id,
+			serping_amount,
+		);
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
 		Ok(())
@@ -578,7 +577,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(currency_id: CurrencyId, who: &T::AccountId, transfer_amount: Balance) -> DispatchResult {
+	fn claim_cashdrop(currency_id: CurrencyId, who: &T::AccountId, transfer_amount: Self::Balance) -> DispatchResult {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,

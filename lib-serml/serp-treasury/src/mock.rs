@@ -40,6 +40,7 @@ pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARITY_FUND: AccountId = 2;
 pub const TREASURY: AccountId = 3;
+pub const CDP_TREASURY: AccountId = 4;
 pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
 pub const ROOT: AccountId = 11;
@@ -137,6 +138,7 @@ parameter_types! {
 
 	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/serp");
 	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
+	pub const CDPTreasuryAccountId: AccountId = CDP_TREASURY;
 	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
 	pub const CashDropPoolAccountId: AccountId = VAULT;
 }
@@ -304,7 +306,7 @@ impl Config for Runtime {
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
-	type CDPTreasuryAccountId = ();
+	type CDPTreasuryAccountId = CDPTreasuryAccountId;
 	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
 	type DefaultSwapPathList = DefaultSwapPathList;
 	type Dex = MockDEX;
