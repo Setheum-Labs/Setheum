@@ -291,7 +291,7 @@ impl<T: Config> CDPTreasury<T::AccountId> for Pallet<T> {
 
 	fn on_system_debit(amount: Self::Balance) -> DispatchResult {
 		DebitPool::<T>::try_mutate(|debit_pool| -> DispatchResult {
-			*debit_pool = debit_pool.checked_add(amount).ok_or(ArithmeticError::Overflow)?;
+			*debit_pool = debit_pool.checked_add(amount).ok_or(Error::<T>::DebitPoolOverflow)?;
 			Ok(())
 		})
 	}

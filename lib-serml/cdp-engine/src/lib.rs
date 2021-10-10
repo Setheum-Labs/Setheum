@@ -55,7 +55,8 @@ use sp_runtime::{
 };
 use sp_std::prelude::*;
 use support::{
-	CDPTreasury, CDPTreasuryExtended, EmergencyShutdown, ExchangeRate, Price, PriceProvider, Rate, Ratio, RiskManager,
+	CDPTreasury, CDPTreasuryExtended, EmergencyShutdown,
+	ExchangeRate, Price, PriceProvider, Rate, Ratio, RiskManager,
 };
 
 mod debit_exchange_rate_convertor;
@@ -448,7 +449,7 @@ impl<T: Config> Pallet<T> {
 		let who = T::Lookup::unlookup(who);
 		let call = Call::<T>::liquidate(currency_id, who.clone());
 		if SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).is_err() {
-			log::info!(
+			debug::info!(
 				target: "cdp-engine offchain worker",
 				"submit unsigned liquidation tx for \nCDP - AccountId {:?} CurrencyId {:?} \nfailed!",
 				who, currency_id,
@@ -460,7 +461,7 @@ impl<T: Config> Pallet<T> {
 		let who = T::Lookup::unlookup(who);
 		let call = Call::<T>::settle(currency_id, who.clone());
 		if SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).is_err() {
-			log::info!(
+			debug::info!(
 				target: "cdp-engine offchain worker",
 				"submit unsigned settlement tx for \nCDP - AccountId {:?} CurrencyId {:?} \nfailed!",
 				who, currency_id,
@@ -530,7 +531,7 @@ impl<T: Config> Pallet<T> {
 			guard.extend_lock().map_err(|_| OffchainErr::OffchainLock)?;
 		}
 		let iteration_end_time = sp_io::offchain::timestamp();
-		log::debug!(
+		debug::debug!(
 			target: "cdp-engine offchain worker",
 			"iteration info:\n max iterations is {:?}\n currency id: {:?}, start key: {:?}, iterate count: {:?}\n iteration start at: {:?}, end at: {:?}, execution time: {:?}\n",
 			max_iterations,
@@ -713,7 +714,7 @@ impl<T: Config> Pallet<T> {
 				currency_id,
 				collateral,
 				target_stable_amount,
-				maybe_path,
+				None,
 				false,
 			) {
 				// refund remain collateral to CDP owner
@@ -760,6 +761,7 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 		debit_balance: Balance,
 	) -> DispatchResult {
 		if !debit_balance.is_zero() {
+			
 			let debit_value = Self::get_debit_value(currency_id, debit_balance);
 			let feed_price = <T as Config>::PriceSource::get_relative_price(currency_id, T::GetSetUSDCurrencyId::get())
 				.ok_or(Error::<T>::InvalidFeedPrice)?;

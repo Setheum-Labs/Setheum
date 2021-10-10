@@ -54,7 +54,7 @@ fn on_system_debit_work() {
 		assert_ok!(CDPTreasuryModule::on_system_debit(1000));
 		assert_eq!(CDPTreasuryModule::debit_pool(), 1000);
 		assert_noop!(
-			CDPTreasuryModule::on_system_debit(SETUSD, Balance::max_value()),
+			CDPTreasuryModule::on_system_debit(Balance::max_value()),
 			Error::<Runtime>::DebitPoolOverflow,
 		);
 	});
@@ -105,11 +105,11 @@ fn issue_debit_work() {
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 1000);
 		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
 
-		assert_ok!(CDPTreasuryModule::issue_debit(&ALICE, SETUSD, 1000, true));
+		assert_ok!(CDPTreasuryModule::issue_debit(&ALICE, 1000, true));
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 2000);
 		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
 
-		assert_ok!(CDPTreasuryModule::issue_debit(&ALICE, SETUSD, 1000, false));
+		assert_ok!(CDPTreasuryModule::issue_debit(&ALICE, 1000, false));
 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 3000);
 		assert_eq!(CDPTreasuryModule::debit_pool(), 1000);
 	});

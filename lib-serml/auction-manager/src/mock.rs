@@ -292,6 +292,10 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+	];
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
 	pub GetExchangeFee: (u32, u32) = (0, 100);
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);

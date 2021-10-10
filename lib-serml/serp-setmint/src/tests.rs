@@ -66,7 +66,7 @@ fn unauthorize_all_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB));
-		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), DOT, CAROL));
+		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), DNAR, CAROL));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 200);
 		assert_ok!(SerpMintModule::unauthorize_all(Origin::signed(ALICE)));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);

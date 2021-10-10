@@ -341,7 +341,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 }
 
 parameter_types! {
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();

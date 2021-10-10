@@ -67,7 +67,7 @@ fn adjust_position_should_work() {
 
 		// mock can't pass position valid check
 		assert_noop!(
-			LoansModule::adjust_position(&ALICE, DOT, 500, 0),
+			LoansModule::adjust_position(&ALICE, DNAR, 500, 0),
 			sp_runtime::DispatchError::Other("mock invalid position error")
 		);
 
@@ -75,12 +75,6 @@ fn adjust_position_should_work() {
 		assert_noop!(
 			LoansModule::adjust_position(&ALICE, BTC, 1000, 1000),
 			sp_runtime::DispatchError::Other("mock exceed debit value cap error")
-		);
-
-		// failed because ED of collateral
-		assert_noop!(
-			LoansModule::adjust_position(&ALICE, BTC, 99, 0),
-			orml_tokens::Error::<Runtime>::ExistentialDeposit,
 		);
 
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
@@ -178,7 +172,7 @@ fn transfer_loan_should_work() {
 fn confiscate_collateral_and_debit_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(LoansModule::update_loan(&BOB, BTC, SETR, 5000, 1000));
+		assert_ok!(LoansModule::update_loan(&BOB, BTC, 5000, 1000));
 		assert_eq!(Currencies::free_balance(BTC, &LoansModule::account_id()), 0);
 
 		// have no sufficient balance
