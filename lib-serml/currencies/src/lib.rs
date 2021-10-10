@@ -42,7 +42,7 @@ use orml_traits::{
 	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
 use orml_utilities::with_transaction_result;
-use primitives::{evm::EvmAddress, AccountId, CurrencyId};
+use primitives::{Balance, evm::EvmAddress, AccountId, CurrencyId};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, Saturating, StaticLookup, Zero},
@@ -161,11 +161,10 @@ pub mod module {
 		/// The dispatch origin for this call must be `Signed` by the
 		/// transactor.
 		#[pallet::weight(T::WeightInfo::airdrop())]
-		#[transactional]
 		pub fn airdrop( 
 			origin: OriginFor<T>,
 			currency_id: CurrencyIdOf<T>,
-			details: Vec<AirdropDetails<<T::Lookup as StaticLookup>::Source, Balance>>,
+			details: Vec<AirdropDetails<AccountId, BalanceOf<T>>>,
 		) -> DispatchResultWithPostInfo {
 			if origin = T::AirdropOrigin {
 				T::AirdropOrigin::ensure_origin(origin)?;
@@ -195,7 +194,7 @@ pub mod module {
 					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
 				})
 			}
-			Self::deposit_event(RawEvent::Airdrop(currency_id, details));
+			Self::deposit_event(Event::Airdrop(currency_id, details));
 		}
 
 		/// Transfer some balance to another account under `currency_id`.

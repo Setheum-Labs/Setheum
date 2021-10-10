@@ -262,10 +262,10 @@ parameter_type_with_key! {
 			_ => 0,
 		}
 	};
-	pub MinTransferForSystemCashdropReward: |currency_id: CurrencyId| -> Balance {
+	pub MaximumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&SETR => 2,
-			&SETUSD => 2,
+			&SETR => 200,
+			&SETUSD => 200,
 			_ => 0,
 		}
 	};
@@ -312,7 +312,7 @@ impl Config for Runtime {
 	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = MockPriceSource;
 	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
-	type MinTransferForSystemCashdropReward = MinTransferForSystemCashdropReward;
+	type MaximumClaimableTransferAmounts = MaximumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
 	type ModuleId = SerpTreasuryModuleId;
 	type WeightInfo = ();
