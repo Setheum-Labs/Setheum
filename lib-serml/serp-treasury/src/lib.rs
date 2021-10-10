@@ -450,10 +450,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// Serplus ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		let charity_fund = T::CharityFundAccountId::get();
+		let cdp_treasury = T::CDPTreasuryAccountId::get();
 		// Charity Fund Serplus Pool - 10%
 		let serping_amount: Balance = amount / 10;
 		// Transfer the Serplus propper to the Charity Fund
-		T::Currency::transfer(currency_id, &T::CDPTreasuryAccountId, &charity_fund, serping_amount)?;
+		T::Currency::transfer(currency_id, &cdp_treasury, &charity_fund, serping_amount)?;
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
 		Ok(())
@@ -462,12 +463,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// Serplus ratio for SetPay Cashdrops
 	fn get_cashdrop_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		let setpay = &T::CashDropPoolAccountId::get();
-
+		let cdp_treasury = T::CDPTreasuryAccountId::get();
 		// SetPay Serplus Pool - 50%
 		let five: Balance = 5;
 		let serping_amount: Balance = five.saturating_mul(amount / 10);
 		// Transfer the Serplus propper to the SetPayVault
-		T::Currency::transfer(currency_id, &T::CDPTreasuryAccountId, &setpay, serping_amount)?;
+		T::Currency::transfer(currency_id, &cdp_treasury, &setpay, serping_amount)?;
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
 		Ok(())
@@ -931,7 +932,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 
 					if T::Currency::transfer(
 						T::GetSetUSDCurrencyId::get(),
-						CDPTreasuryAccountId,
+						&T::CDPTreasuryAccountId::get(),
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
 					).is_ok() {

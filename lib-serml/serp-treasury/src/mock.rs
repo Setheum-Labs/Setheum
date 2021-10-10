@@ -40,7 +40,7 @@ pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARITY_FUND: AccountId = 2;
 pub const TREASURY: AccountId = 3;
-pub const CDP_TREASURY: AccountId = 4;
+pub const CDP_TREASURY: AccountId = 5;
 pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
 pub const ROOT: AccountId = 11;
@@ -361,6 +361,10 @@ impl Default for ExtBuilder {
 				(TREASURY, SETR, 1000),
 				(TREASURY, DNAR, 1000),
 				(TREASURY, SETM, 1000),
+				(CDP_TREASURY, SETUSD, 1000),
+				(CDP_TREASURY, SETR, 1000),
+				(CDP_TREASURY, DNAR, 1000),
+				(CDP_TREASURY, SETM, 1000),
 				(SETRPAY, SETUSD, 1000),
 				(SETRPAY, SETR, 1000),
 				(VAULT, SETUSD, 1000),
