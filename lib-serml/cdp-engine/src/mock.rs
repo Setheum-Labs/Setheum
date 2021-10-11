@@ -21,20 +21,15 @@
 #![cfg(test)]
 
 use super::*;
-use frame_system::Config;
-use frame_system::Module;
-use frame_system::Pallet;
-use frame_system::Call;
-use frame_system::Event;
-
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
-use frame_system::{EnsureSignedBy, __InherentHiddenInstance};
+use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{Moment, TokenSymbol, TradingPair};
+use primitives::{TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
-	testing::{Header, TestXt}, ModuleId,
-	traits::{AccountIdConversion, IdentityLookup, One as OneT},
+	testing::{Header, TestXt},
+	traits::IdentityLookup,
+	ModuleId,
 };
 use sp_std::cell::RefCell;
 use support::{AuctionManager, EmergencyShutdown, SerpTreasury};
@@ -48,10 +43,10 @@ pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const BUYBACK_POOL: AccountId = 4;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 
 mod cdp_engine {
 	pub use super::super::*;
@@ -111,7 +106,7 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Runtime>;
+	type AccountStore = frame_system::Module<Runtime>;
 	type MaxLocks = ();
 	type WeightInfo = ();
 }
@@ -119,7 +114,6 @@ pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, P
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 }
 
@@ -133,10 +127,6 @@ impl orml_currencies::Config for Runtime {
 
 parameter_types! {
 	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETUSD,
-	];
 }
 
 impl loans::Config for Runtime {
@@ -203,6 +193,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	fn get_total_collateral_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
+
 }
 
 pub struct MockSerpTreasury;
@@ -349,7 +340,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 parameter_types! {
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
-	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
 }
 
 impl cdp_treasury::Config for Runtime {
@@ -357,24 +347,22 @@ impl cdp_treasury::Config for Runtime {
 	type Currency = Currencies;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type AuctionManagerHandler = MockAuctionManager;
-	type DEX = DEXModule;
-	type MaxAuctionsCount = MaxAuctionsCount;
 	type SerpTreasury = MockSerpTreasury;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type WeightInfo = ();
+	type DEX = DEXModule;
+	type MaxAuctionsCount = MaxAuctionsCount;
 	type ModuleId = CDPTreasuryModuleId;
+	type WeightInfo = ();
 }
 
 parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETUSD];
 	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
-	pub GetExchangeFee: (u32, u32) = (0, 100);
+	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, BTC).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-	];
+	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(SETUSD, BTC), TradingPair::new(SETUSD, DNAR)];
 }
 
 impl module_dex::Config for Runtime {
@@ -389,16 +377,6 @@ impl module_dex::Config for Runtime {
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
-}
-
-parameter_types! {
-	pub const MinimumPeriod: Moment = 1000;
-}
-impl pallet_timestamp::Config for Runtime {
-	type Moment = Moment;
-	type OnTimestampSet = ();
-	type MinimumPeriod = MinimumPeriod;
-	type WeightInfo = ();
 }
 
 thread_local! {
@@ -425,20 +403,21 @@ parameter_types! {
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(10, 100);
 	pub const MinimumDebitValue: Balance = 2;
+	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![BTC, DNAR];
 }
 
 impl Config for Runtime {
 	type Event = Event;
+	type PriceSource = MockPriceSource;
 	type CollateralCurrencyIds = CollateralCurrencyIds;
-    type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumDebitValue = MinimumDebitValue;
 	type CDPTreasury = CDPTreasuryModule;
-	type PriceSource = MockPriceSource;
 	type UnsignedPriority = UnsignedPriority;
 	type EmergencyShutdown = MockEmergencyShutdown;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
@@ -462,7 +441,6 @@ construct_runtime!(
 		LoansModule: loans::{Module, Storage, Call, Event<T>},
 		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
 		DEXModule: module_dex::{Module, Storage, Call, Event<T>, Config<T>},
-		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
 	}
 );
 
