@@ -21,6 +21,12 @@
 #![cfg(test)]
 
 use super::*;
+use frame_system::Config;
+use frame_system::Module;
+use frame_system::Pallet;
+use frame_system::Call;
+use frame_system::Event;
+
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::{EnsureSignedBy, __InherentHiddenInstance};
 use orml_traits::parameter_type_with_key;

@@ -336,7 +336,7 @@ pub mod module {
 			target += addition;
 
 			sp_io::TestExternalities::new_empty().execute_with(|| {
-				<frame_system::Pallet<T>>::set_block_consumed_resources(target, 0);
+				<frame_system::Module<T>>::set_block_consumed_resources(target, 0);
 				let next = T::FeeMultiplierUpdate::convert(min_value);
 				assert!(
 					next > min_value,

@@ -25,6 +25,11 @@ use frame_support::{assert_noop, assert_ok};
 use mock::{Event, *};
 use orml_traits::MultiCurrency;
 use sp_runtime::traits::BadOrigin;
+use frame_system::Config;
+use frame_system::Module;
+use frame_system::Pallet;
+use frame_system::Call;
+use frame_system::Event;
 
 #[test]
 fn is_cdp_unsafe_work() {

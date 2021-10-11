@@ -748,7 +748,7 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			})?;
 		}
 
-		let start_time = <frame_system::Pallet<T>>::block_number();
+		let start_time = <frame_system::Module<T>>::block_number();
 
 		// do not set end time for collateral auction
 		let auction_id = T::Auction::new_auction(start_time, None)?;

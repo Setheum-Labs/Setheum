@@ -20,6 +20,11 @@ use super::*;
 use primitives::{Balance, CurrencyId};
 use sp_runtime::traits::Convert;
 use sp_runtime::FixedPointNumber;
+use frame_system::Config;
+use frame_system::Module;
+use frame_system::Pallet;
+use frame_system::Call;
+use frame_system::Event;
 
 pub struct DebitExchangeRateConvertor<T>(sp_std::marker::PhantomData<T>);
 

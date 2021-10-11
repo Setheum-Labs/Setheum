@@ -27,6 +27,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
+use frame_system::Config;
+use frame_system::Module;
+use frame_system::Pallet;
+use frame_system::Call;
+use frame_system::Event;
 
 use frame_support::{debug, pallet_prelude::*, transactional};
 use frame_system::{
@@ -419,7 +424,7 @@ pub mod module {
 
 					ValidTransaction::with_tag_prefix("CDPEngineOffchainWorker")
 						.priority(T::UnsignedPriority::get())
-						.and_provides((<frame_system::Pallet<T>>::block_number(), currency_id, who))
+						.and_provides((<frame_system::Module<T>>::block_number(), currency_id, who))
 						.longevity(64_u64)
 						.propagate(true)
 						.build()
