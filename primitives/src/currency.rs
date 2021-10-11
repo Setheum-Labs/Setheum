@@ -166,7 +166,7 @@ create_currency_id! {
 		SETM("Setheum", 12) = 0,
 		SERP("Serp", 12) = 1,
 		DNAR("The Dinar", 12) = 2,
-		// StableCurrencies
+		// Tier-2 Tokens (StableCurrencies)
 		SETR("Setter", 12) = 3,
 		SETUSD("SetDollar", 12) = 4,
 		// Foreign Currencies
