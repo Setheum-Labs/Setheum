@@ -134,7 +134,7 @@ pub mod module {
 
 		/// Stablecoin currency id
 		#[pallet::constant]
-		type SetUSDCurrencyId: Get<CurrencyId>;
+		type GetSetUSDCurrencyId: Get<CurrencyId>;
 
 		/// The default liquidation ratio for all collateral types of CDP
 		#[pallet::constant]
@@ -768,7 +768,7 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 		if !debit_balance.is_zero() {
 			
 			let debit_value = Self::get_debit_value(currency_id, debit_balance);
-			let feed_price = <T as Config>::PriceSource::get_relative_price(currency_id, T::GetSetUSDCurrencyId::get())
+			let feed_price: Price = T::PriceSource::get_relative_price(currency_id, T::GetSetUSDCurrencyId::get())
 				.ok_or(Error::<T>::InvalidFeedPrice)?;
 			let collateral_ratio =
 				Self::calculate_collateral_ratio(currency_id, collateral_balance, debit_balance, feed_price);

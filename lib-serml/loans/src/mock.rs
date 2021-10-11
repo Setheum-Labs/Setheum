@@ -39,7 +39,6 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);

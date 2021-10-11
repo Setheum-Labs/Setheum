@@ -257,23 +257,6 @@ ord_parameter_types! {
 }
 
 parameter_type_with_key! {
-	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 2,
-			&SETUSD => 2,
-			_ => 0,
-		}
-	};
-	pub MaximumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 200,
-			&SETUSD => 200,
-			_ => 0,
-		}
-	};
-}
-
-parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETR => 10_000,
@@ -288,6 +271,10 @@ parameter_types! {
 	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
 	pub const TradingPathLimit: u32 = 3;
 	pub StableCurrencyInflationPeriod: u64 = 5;
+	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
+	pub SetterMaximumClaimableTransferAmounts: Balance = 200;
+	pub SetDollarMinimumClaimableTransferAmounts: Balance = 2;
+	pub SetDollarMaximumClaimableTransferAmounts: Balance = 200;
 }
 
 ord_parameter_types! {
@@ -313,8 +300,10 @@ impl Config for Runtime {
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = MockPriceSource;
-	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
-	type MaximumClaimableTransferAmounts = MaximumClaimableTransferAmounts;
+	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
+	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
+	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
+	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
 	type ModuleId = SerpTreasuryModuleId;
 	type WeightInfo = ();

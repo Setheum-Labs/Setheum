@@ -125,11 +125,17 @@ pub mod module {
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SetCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// The minimum transfer amounts by currency_id, that is eligible for cashdrop.
-		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
+		/// The minimum transfer amounts for SETR, that is eligible for cashdrop.
+		type SetterMinimumClaimableTransferAmounts: Get<Balance>;
 
-		/// The maximum transfer amounts by currency_id, that is eligible for cashdrop.
-		type MaximumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
+		/// The maximum transfer amounts for SETR, that is eligible for cashdrop.
+		type SetterMaximumClaimableTransferAmounts: Get<Balance>;
+
+		/// The minimum transfer amounts for SETUSD, that is eligible for cashdrop.
+		type SetDollarMinimumClaimableTransferAmounts: Get<Balance>;
+
+		/// The maximum transfer amounts for SETUSD, that is eligible for cashdrop.
+		type SetDollarMaximumClaimableTransferAmounts: Get<Balance>;
 
 		/// The origin which may update incentive related params
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
@@ -583,17 +589,18 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		let minimum_claimable_transfer = T::MinimumClaimableTransferAmounts::get(&currency_id);
-		let maximum_claimable_transfer = T::MaximumClaimableTransferAmounts::get(&currency_id);
-
-		ensure!(
-			transfer_amount <= minimum_claimable_transfer || transfer_amount >= maximum_claimable_transfer,
-			Error::<T>::TransferNotEligibleForCashDrop,
-		);
 
 		// IF Setter, use Setter claim rate (4%),
 		// else, use SetDollar claim rate (2%).
 		if currency_id == T::SetterCurrencyId::get() {
+			let minimum_claimable_transfer = T::SetterMinimumClaimableTransferAmounts::get();
+			let maximum_claimable_transfer = T::SetterMaximumClaimableTransferAmounts::get();
+
+			ensure!(
+				transfer_amount <= minimum_claimable_transfer || transfer_amount >= maximum_claimable_transfer,
+				Error::<T>::TransferNotEligibleForCashDrop,
+			);
+
 			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
 			let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop_pool_reward
 			let serp_balance = T::Currency::free_balance(currency_id, &T::CashDropPoolAccountId::get());
@@ -606,6 +613,14 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
 		} else {
 			// for the SetDollar ---vvvvvvvvv---
+			let minimum_claimable_transfer = T::SetDollarMinimumClaimableTransferAmounts::get();
+			let maximum_claimable_transfer = T::SetDollarMaximumClaimableTransferAmounts::get();
+
+			ensure!(
+				transfer_amount <= minimum_claimable_transfer || transfer_amount >= maximum_claimable_transfer,
+				Error::<T>::TransferNotEligibleForCashDrop,
+			);
+
 			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
 			let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
 			let serp_balance = T::Currency::free_balance(currency_id, &T::CashDropPoolAccountId::get());
