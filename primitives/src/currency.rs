@@ -134,6 +134,10 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(SETUSD))).unwrap(),
 				},
 				Token {
+					symbol: "LP_SERP_SETUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SERP), DexShare::Token(SETUSD))).unwrap(),
+				},
+				Token {
 					symbol: "LP_DNAR_SETUSD".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETUSD))).unwrap(),
 				},
@@ -161,9 +165,10 @@ create_currency_id! {
 	pub enum TokenSymbol {
 		// Tier-1 Tokens
 		SETM("Setheum", 12) = 0,
-		DNAR("The Dinar", 12) = 1,
+		SERP("Serp", 12) = 1,
+		DNAR("The Dinar", 12) = 2,
 		// StableCurrencies
-		SETR("Setter", 12) = 2,
+		SETR("Setter", 12) = 3,
 		SETUSD("SetDollar", 12) = 4,
 		// Foreign Currencies
 		RENBTC("renBTC", 8) = 121,
