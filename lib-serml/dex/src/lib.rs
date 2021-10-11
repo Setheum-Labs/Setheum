@@ -32,7 +32,6 @@
 #![allow(clippy::collapsible_if)]
 
 use frame_support::{pallet_prelude::*, transactional};
-use log::*;
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
