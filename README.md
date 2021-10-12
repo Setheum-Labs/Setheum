@@ -24,7 +24,7 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
 
 * [Muhammad-Jibril B.A.](https://github.com/JBA-Khalifa)
 * [Setheum Labs](https://github.com/Setheum-Labs)
-* [Setheum Foundation](https://github.com/Setheum-Foundation)]
+* [Setheum Foundation](https://github.com/Setheum-Foundation)
 * [Slixon Technologies](https://github.com/Slixon-Technologies)
 
 ## Core Products - Mostly Unique to Setheum
