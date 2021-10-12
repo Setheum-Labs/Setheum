@@ -24,11 +24,11 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::{offchain::SendTransactionTypes, EnsureSignedBy};
 use orml_traits::parameter_type_with_key;
-use primitives::{Balance, Moment, TokenSymbol};
+use primitives::{Balance, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
-	traits::{AccountIdConversion, IdentityLookup, One as OneT},
+	traits::{AccountIdConversion, IdentityLookup},
 	FixedPointNumber, ModuleId,
 };
 use sp_std::cell::RefCell;
@@ -399,8 +399,7 @@ parameter_types! {
 
 impl Config for Runtime {
 	type Event = Event;
-	type Currency = Tokens;
-	type StableCurrencyIds = StableCurrencyIds;
+	type Currency = PalletBalances;
 	type DepositPerAuthorization = DepositPerAuthorization;
 	type WeightInfo = ();
 }
@@ -435,14 +434,14 @@ where
 
 pub struct ExtBuilder {
 	endowed_native: Vec<(AccountId, Balance)>,
-	balances: Vec<(AccountId, CurrencyId, Balance)>,
+	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			endowed_native: vec![(ALICE, 1000)],
-			balances: vec![
+			endowed_accounts: vec![
 				(ALICE, BTC, 1000),
 				(BOB, BTC, 1000),
 				(ALICE, DNAR, 1000),
@@ -465,7 +464,7 @@ impl ExtBuilder {
 		.unwrap();
 
 		orml_tokens::GenesisConfig::<Runtime> {
-			balances: self.balances,
+			endowed_accounts: self.endowed_accounts,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

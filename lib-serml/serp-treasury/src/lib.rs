@@ -125,11 +125,17 @@ pub mod module {
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SetCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
-		/// The minimum transfer amounts by currency_id,  to prevent cashdrop from dusty claims.
-		type MinimumClaimableTransferAmounts: GetByKey<CurrencyId, Balance>;
+		/// The minimum transfer amounts for SETR, that is eligible for cashdrop.
+		type SetterMinimumClaimableTransferAmounts: Get<Balance>;
 
-		/// The minimum transfer amounts by currency_id,  to prevent cashdrop from dusty rewards.
-		type MinTransferForSystemCashdropReward: GetByKey<CurrencyId, Balance>;
+		/// The maximum transfer amounts for SETR, that is eligible for cashdrop.
+		type SetterMaximumClaimableTransferAmounts: Get<Balance>;
+
+		/// The minimum transfer amounts for SETUSD, that is eligible for cashdrop.
+		type SetDollarMinimumClaimableTransferAmounts: Get<Balance>;
+
+		/// The maximum transfer amounts for SETUSD, that is eligible for cashdrop.
+		type SetDollarMaximumClaimableTransferAmounts: Get<Balance>;
 
 		/// The origin which may update incentive related params
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
@@ -161,8 +167,8 @@ pub mod module {
 		InvalidSwapPath,
 		/// CashDrop is not available.
 		CashdropNotAvailable,
-		/// Transfer is too low for CashDrop.
-		TransferTooLowForCashDrop,
+		/// Transfer is too low or too high for CashDrop.
+		TransferNotEligibleForCashDrop,
 	}
 
 	#[pallet::event]
@@ -437,12 +443,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Setheum Treasury BuyBack Pool - 40%
 		let four: Balance = 4;
 		let serping_amount: Balance = four.saturating_mul(amount / 10);
-		
-			<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_setter(
-				currency_id,
-				serping_amount,
-			);
-		} 
+	
+		<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_setter(
+			currency_id,
+			serping_amount,
+		);
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
 		Ok(())
@@ -451,10 +456,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// Serplus ratio for Setheum Foundation's Charity Fund
 	fn get_charity_fund_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		let charity_fund = T::CharityFundAccountId::get();
+		let cdp_treasury = T::CDPTreasuryAccountId::get();
 		// Charity Fund Serplus Pool - 10%
 		let serping_amount: Balance = amount / 10;
 		// Transfer the Serplus propper to the Charity Fund
-		T::Currency::transfer(currency_id, &T::CDPTreasuryAccountId, &charity_fund, serping_amount)?;
+		T::Currency::transfer(currency_id, &cdp_treasury, &charity_fund, serping_amount)?;
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
 		Ok(())
@@ -463,12 +469,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// Serplus ratio for SetPay Cashdrops
 	fn get_cashdrop_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		let setpay = &T::CashDropPoolAccountId::get();
-
+		let cdp_treasury = T::CDPTreasuryAccountId::get();
 		// SetPay Serplus Pool - 50%
 		let five: Balance = 5;
 		let serping_amount: Balance = five.saturating_mul(amount / 10);
 		// Transfer the Serplus propper to the SetPayVault
-		T::Currency::transfer(currency_id, &T::CDPTreasuryAccountId, &setpay, serping_amount)?;
+		T::Currency::transfer(currency_id, &cdp_treasury, &setpay, serping_amount)?;
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
 		Ok(())
@@ -578,60 +584,57 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(currency_id: CurrencyId, who: &T::AccountId, transfer_amount: Balance) -> DispatchResult {
+	fn claim_cashdrop(currency_id: CurrencyId, who: &T::AccountId, transfer_amount: Self::Balance) -> DispatchResult {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
 		);
-		let minimum_claimable_transfer = T::MinimumClaimableTransferAmounts::get(&currency_id);
-		ensure!(
-			transfer_amount >= minimum_claimable_transfer,
-			Error::<T>::TransferTooLowForCashDrop,
-		);
 
 		// IF Setter, use Setter claim rate (4%),
-		// else, use SetCurrency claim rate (2%).
+		// else, use SetDollar claim rate (2%).
 		if currency_id == T::SetterCurrencyId::get() {
+			let minimum_claimable_transfer = T::SetterMinimumClaimableTransferAmounts::get();
+			let maximum_claimable_transfer = T::SetterMaximumClaimableTransferAmounts::get();
+
+			ensure!(
+				transfer_amount <= minimum_claimable_transfer || transfer_amount >= maximum_claimable_transfer,
+				Error::<T>::TransferNotEligibleForCashDrop,
+			);
+
 			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
-			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
+			let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop_pool_reward
+			let serp_balance = T::Currency::free_balance(currency_id, &T::CashDropPoolAccountId::get());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
 			);
 
 			T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
-
-			let min_transfer_for_sys_reward = T::MinTransferForSystemCashdropReward::get(&currency_id);
-
-			if transfer_amount >= min_transfer_for_sys_reward {
-				let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop_pool_reward
-				let treasury_reward = transfer_amount / 50; // 2% treasury reward
-
-				T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
-				T::Currency::deposit(currency_id, &T::SetheumTreasuryAccountId::get(), treasury_reward)?;
-			}
+			T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
 		} else {
+			// for the SetDollar ---vvvvvvvvv---
+			let minimum_claimable_transfer = T::SetDollarMinimumClaimableTransferAmounts::get();
+			let maximum_claimable_transfer = T::SetDollarMaximumClaimableTransferAmounts::get();
+
+			ensure!(
+				transfer_amount <= minimum_claimable_transfer || transfer_amount >= maximum_claimable_transfer,
+				Error::<T>::TransferNotEligibleForCashDrop,
+			);
+
 			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
-			let serp_balance = T::Currency::free_balance(currency_id, &Self::account_id());
+			let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
+			let serp_balance = T::Currency::free_balance(currency_id, &T::CashDropPoolAccountId::get());
 			ensure!(
 				balance_cashdrop_amount <= serp_balance,
 				Error::<T>::CashdropNotAvailable,
 			);
 
 			T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
+			T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
 
-			let min_transfer_for_sys_reward = T::MinTransferForSystemCashdropReward::get(&currency_id);
-
-			if transfer_amount >= min_transfer_for_sys_reward {
-				let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
-				let treasury_reward = transfer_amount / 100; // 1% treasury reward
-
-				T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
-				T::Currency::deposit(currency_id, &T::SetheumTreasuryAccountId::get(), treasury_reward)?;
-			}
+			Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 		}
 
-		Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 		Ok(())
 	}
 }
@@ -944,7 +947,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 
 					if T::Currency::transfer(
 						T::GetSetUSDCurrencyId::get(),
-						CDPTreasuryAccountId,
+						&T::CDPTreasuryAccountId::get(),
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
 					).is_ok() {

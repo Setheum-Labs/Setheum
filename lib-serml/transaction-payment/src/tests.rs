@@ -26,8 +26,8 @@ use frame_support::{
 	weights::{DispatchClass, DispatchInfo, Pays},
 };
 use mock::{
-	AccountId, BlockWeights, Call, Currencies, MockDEX, ExtBuilder, Origin, Runtime, TransactionPayment, SETM, ALICE,
-	SETUSD, BOB, CHARLIE, DNAR, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
+	AccountId, BlockWeights, Call, Currencies, ExtBuilder, Origin, Runtime, TransactionPayment, SETM, ALICE,
+	SETUSD, BOB, CHARLIE, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
 };
 use orml_traits::MultiCurrency;
 use sp_runtime::testing::TestXt;

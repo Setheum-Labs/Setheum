@@ -31,23 +31,17 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
 
 ### The Tokens/Currencies
 
-#### The Main Coins - Tokens
 
 ```bash
-SETM("Setheum", 12) = 1, // Staking Token and Governance Token - Native token (Native Currency)
-DNAR("The Dinar", 12) = 1, // SERP Reserve Asset
-```
-
-#### The Setter - SERP Stablecoin
-
-```bash
-SETR("Setter", 12) = 2,
-```
-
-#### The SetDollar - SERP + SetMint Stablecoin
-
-```bash
-SETUSD("SetDollar", 12) = 3,
+    // Tier-1 Tokens
+    SETM("Setheum", 12) = 0,
+    SERP("Serp", 12) = 1,
+    DNAR("The Dinar", 12) = 2,
+    // Tier-2 Tokens (StableCurrencies)
+    SETR("Setter", 12) = 3,
+    SETUSD("SetDollar", 12) = 4,
+    // Foreign Currencies
+    RENBTC("renBTC", 8) = 121,
 ```
 
 1. The Setter - The Setter is a stable currency pegged to the US dollar at a ratio of 1:2, where 1 SETR = 2 USD (1 USD = 0.5 SETR).

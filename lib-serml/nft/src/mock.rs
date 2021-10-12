@@ -341,10 +341,6 @@ pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETUSD,
-	];
 	pub AirdropMinimum: u32 = 2;
 	pub AirdropMaximum: u32 = 3;
 }
@@ -354,11 +350,8 @@ impl module_currencies::Config for Runtime {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = NativeCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type StableCurrencyIds = ();
 	type SerpTreasury = MockSerpTreasury;
-	type AirdropAccountId = ();
-	type AirdropMinimum = AirdropMinimum;
-	type AirdropMaximum = AirdropMaximum;
-	type AirdropOrigin = ();
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = MockEVMBridge;

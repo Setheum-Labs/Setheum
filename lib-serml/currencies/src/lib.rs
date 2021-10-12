@@ -22,15 +22,11 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use frame_system::{
-	Pallet, Config, Event, Module, Pallet
-};
-
 use codec::Codec;
 use frame_support::{
 	pallet_prelude::*,
 	traits::{
-		Currency as PalletCurrency, ExistenceRequirement, Get, LockableCurrency as PalletLockableCurrency,
+		Currency as PalletCurrency, ExistenceRequirement, LockableCurrency as PalletLockableCurrency,
 		ReservableCurrency as PalletReservableCurrency, WithdrawReasons,
 	},
 };
@@ -42,7 +38,8 @@ use orml_traits::{
 	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
 };
 use orml_utilities::with_transaction_result;
-use primitives::{evm::EvmAddress, AccountId, CurrencyId};
+
+use primitives::{evm::EvmAddress, CurrencyId};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, Saturating, StaticLookup, Zero},
@@ -88,25 +85,13 @@ pub mod module {
 		#[pallet::constant]
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
+		/// The stable currency ids
+		type StableCurrencyIds: Get<Vec<CurrencyId>>;
+		
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
 		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = BalanceOf<Self>, CurrencyId = CurrencyId>;
 
-		/// The account to distribute the system Airdrops from.
-		/// It should be `Setheum Treasury`.
-		#[pallet::constant]
-		type AirdropAccountId: Get<Self::AccountId>;
-
-		/// The minimum for length of Airdrop
-		type AirdropMinimum: Get<u32>;
-
-		/// The limit for length of Airdrop
-		type AirdropMaximum: Get<u32>;
-
-		/// The system origin which may do system origin Airdrops,
-		/// this origin has no `AirdropMaximum`.
-		type AirdropOrigin: EnsureOrigin<Self::Origin>;
-		
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
@@ -125,8 +110,6 @@ pub mod module {
 		Erc20InvalidOperation,
 		/// EVM account not found
 		EvmAccountNotFound,
-		/// Airdrop length is invalid
-		InvalidAirdropLength,
 	}
 
 	#[pallet::event]
@@ -142,12 +125,6 @@ pub mod module {
 		Withdrawn(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
 	}
 
-	#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug)]
-	pub struct AirdropDetails<AccountId, Balance> {
-		pub dest: <T::Lookup as StaticLookup>::Source,
-		pub amount: Balance,
-	}
-	
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
 
@@ -156,48 +133,6 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Airdrop specific balances to a list of specific accounts under a common `currency_id`.
-		///
-		/// The dispatch origin for this call must be `Signed` by the
-		/// transactor.
-		#[pallet::weight(T::WeightInfo::airdrop())]
-		#[transactional]
-		pub fn airdrop( 
-			origin: OriginFor<T>,
-			currency_id: CurrencyIdOf<T>,
-			details: Vec<AirdropDetails<<T::Lookup as StaticLookup>::Source, Balance>>,
-		) {
-			if origin = T::AirdropOrigin {
-				T::AirdropOrigin::ensure_origin(origin)?;
-				let from = T::AirdropAccountId::get();
-
-				let details_length = details.len();
-				ensure!(
-					details_length >= T::AirdropMinimum::get().saturated_into(),
-					Error::<T>::InvalidAirdropLength
-				);
-
-				self.details.iter().for_each(|(dest, amount)| {
-					let to = T::Lookup::lookup(dest)?;
-					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-				})
-			} else {
-				let from = ensure_signed(origin)?;
-
-				let details_length = details.len();
-				ensure!(
-					details_length >= T::AirdropMinimum::get().saturated_into() && details_length <= T::AirdropMaximum::get().saturated_into(),
-					Error::<T>::InvalidAirdropLength
-				);
-
-				self.details.iter().for_each(|(dest, amount)| {
-					let to = T::Lookup::lookup(dest)?;
-					<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-				})
-			}
-			Self::deposit_event(RawEvent::Airdrop(currency_id, details));
-		}
-
 		/// Transfer some balance to another account under `currency_id`.
 		///
 		/// The dispatch origin for this call must be `Signed` by the
@@ -213,7 +148,7 @@ pub mod module {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-			if claim {
+			if claim && T::StableCurrencyIds::get().contains(&currency_id) {
 				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)?
 			};
 			Ok(().into())

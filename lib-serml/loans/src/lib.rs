@@ -33,7 +33,7 @@ use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, Zero},
-	DispatchError, DispatchResult, ModuleId, RuntimeDebug,
+	DispatchResult, ModuleId, RuntimeDebug,
 };
 use sp_std::{convert::TryInto, result};
 use support::{CDPTreasury, RiskManager};
@@ -280,16 +280,16 @@ impl<T: Config> Pallet<T> {
 			let new_collateral = if collateral_adjustment.is_positive() {
 				p.collateral
 					.checked_add(collateral_balance)
-					.ok_or(ArithmeticError::Overflow)
+					.ok_or(Error::<T>::CollateralOverflow)
 			} else {
 				p.collateral
 					.checked_sub(collateral_balance)
-					.ok_or(ArithmeticError::Underflow)
+					.ok_or(Error::<T>::CollateralTooLow)
 			}?;
 			let new_debit = if debit_adjustment.is_positive() {
-				p.debit.checked_add(debit_balance).ok_or(ArithmeticError::Overflow)
+				p.debit.checked_add(debit_balance).ok_or(Error::<T>::DebitOverflow)
 			} else {
-				p.debit.checked_sub(debit_balance).ok_or(ArithmeticError::Underflow)
+				p.debit.checked_sub(debit_balance).ok_or(Error::<T>::DebitTooLow)
 			}?;
 
 			// increase account ref if new position
@@ -298,7 +298,7 @@ impl<T: Config> Pallet<T> {
 					// No providers for the locks. This is impossible under normal circumstances
 					// since the funds that are under the lock will themselves be stored in the
 					// account and therefore will need a reference.
-					log::warn!(
+					debug::warn!(
 						"Warning: Attempt to introduce lock consumer reference, yet no providers. \
 						This is unexpected but should be safe."
 					);
@@ -328,24 +328,24 @@ impl<T: Config> Pallet<T> {
 				total_positions
 					.collateral
 					.checked_add(collateral_balance)
-					.ok_or(ArithmeticError::Overflow)
+					.ok_or(Error::<T>::CollateralOverflow)
 			} else {
 				total_positions
 					.collateral
 					.checked_sub(collateral_balance)
-					.ok_or(ArithmeticError::Underflow)
+					.ok_or(Error::<T>::CollateralTooLow)
 			}?;
 
 			total_positions.debit = if debit_adjustment.is_positive() {
 				total_positions
 					.debit
 					.checked_add(debit_balance)
-					.ok_or(ArithmeticError::Overflow)
+					.ok_or(Error::<T>::DebitOverflow)
 			} else {
 				total_positions
 					.debit
 					.checked_sub(debit_balance)
-					.ok_or(ArithmeticError::Underflow)
+					.ok_or(Error::<T>::DebitTooLow)
 			}?;
 
 			Ok(())

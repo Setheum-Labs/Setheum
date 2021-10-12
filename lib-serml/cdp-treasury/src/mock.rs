@@ -22,7 +22,7 @@
 
 use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
-use frame_system::{EnsureOneOf, EnsureRoot, EnsureSignedBy, __InherentHiddenInstance, Module};
+use frame_system::{EnsureOneOf, EnsureRoot, EnsureSignedBy};
 use orml_traits::parameter_type_with_key;
 use primitives::{TokenSymbol, TradingPair};
 use sp_core::H256;

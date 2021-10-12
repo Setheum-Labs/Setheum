@@ -40,6 +40,7 @@ pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARITY_FUND: AccountId = 2;
 pub const TREASURY: AccountId = 3;
+pub const CDP_TREASURY: AccountId = 5;
 pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
 pub const ROOT: AccountId = 11;
@@ -137,6 +138,7 @@ parameter_types! {
 
 	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/serp");
 	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
+	pub const CDPTreasuryAccountId: AccountId = CDP_TREASURY;
 	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
 	pub const CashDropPoolAccountId: AccountId = VAULT;
 }
@@ -255,23 +257,6 @@ ord_parameter_types! {
 }
 
 parameter_type_with_key! {
-	pub MinimumClaimableTransferAmounts: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 2,
-			&SETUSD => 2,
-			_ => 0,
-		}
-	};
-	pub MinTransferForSystemCashdropReward: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 2,
-			&SETUSD => 2,
-			_ => 0,
-		}
-	};
-}
-
-parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETR => 10_000,
@@ -286,6 +271,10 @@ parameter_types! {
 	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
 	pub const TradingPathLimit: u32 = 3;
 	pub StableCurrencyInflationPeriod: u64 = 5;
+	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
+	pub SetterMaximumClaimableTransferAmounts: Balance = 200;
+	pub SetDollarMinimumClaimableTransferAmounts: Balance = 2;
+	pub SetDollarMaximumClaimableTransferAmounts: Balance = 200;
 }
 
 ord_parameter_types! {
@@ -304,15 +293,17 @@ impl Config for Runtime {
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CharityFundAccountId = CharityFundAccountId;
-	type CDPTreasuryAccountId = ();
+	type CDPTreasuryAccountId = CDPTreasuryAccountId;
 	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
 	type DefaultSwapPathList = DefaultSwapPathList;
 	type Dex = MockDEX;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = MockPriceSource;
-	type MinimumClaimableTransferAmounts = MinimumClaimableTransferAmounts;
-	type MinTransferForSystemCashdropReward = MinTransferForSystemCashdropReward;
+	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
+	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
+	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
+	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
 	type ModuleId = SerpTreasuryModuleId;
 	type WeightInfo = ();
@@ -359,6 +350,10 @@ impl Default for ExtBuilder {
 				(TREASURY, SETR, 1000),
 				(TREASURY, DNAR, 1000),
 				(TREASURY, SETM, 1000),
+				(CDP_TREASURY, SETUSD, 1000),
+				(CDP_TREASURY, SETR, 1000),
+				(CDP_TREASURY, DNAR, 1000),
+				(CDP_TREASURY, SETM, 1000),
 				(SETRPAY, SETUSD, 1000),
 				(SETRPAY, SETR, 1000),
 				(VAULT, SETUSD, 1000),

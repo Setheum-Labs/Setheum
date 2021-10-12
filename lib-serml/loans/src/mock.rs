@@ -39,7 +39,6 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
@@ -334,7 +333,7 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 		_debit_balance: Balance,
 	) -> DispatchResult {
 		match currency_id {
-			DOT => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
+			DNAR => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
 			BTC => Ok(()),
 			_ => Err(sp_runtime::DispatchError::Other("mock invalid position error")),
 		}
@@ -342,7 +341,7 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 
 	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: Balance) -> DispatchResult {
 		match (currency_id, total_debit_balance) {
-			(DOT, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(DNAR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(BTC, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(_, _) => Ok(()),
 		}

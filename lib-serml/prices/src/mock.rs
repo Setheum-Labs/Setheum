@@ -28,7 +28,7 @@ use primitives::{Amount, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
 	testing::Header,
-	traits::{IdentityLookup, One as OneT, Zero},
+	traits::IdentityLookup,
 	DispatchError, FixedPointNumber, DispatchResult,
 };
 use support::mocks::MockCurrencyIdMapping;

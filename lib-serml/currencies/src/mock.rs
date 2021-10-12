@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the currencies module.
+//! Mocks for the Currencies module.
 
 #![cfg(test)]
 
@@ -27,7 +27,7 @@ use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, IdentityLookup},
-	AccountId32, Perbill, ModuleId,
+	AccountId32, ModuleId, Perbill,
 };
 use support::{mocks::MockAddressMapping, AddressMapping, SerpTreasury};
 
@@ -81,7 +81,6 @@ parameter_type_with_key! {
 
 parameter_types! {
 	pub DustAccount: AccountId = ModuleId(*b"srml/dst").into_account();
-	pub const MaxLocks: u32 = 100;
 }
 
 impl tokens::Config for Runtime {
@@ -115,7 +114,7 @@ impl pallet_balances::Config for Runtime {
 	type MaxLocks = ();
 }
 
-pub type PalletBalances = pallet_balances::Pallet<Runtime>;
+pub type PalletBalances = pallet_balances::Module<Runtime>;
 
 parameter_types! {
 	pub const MinimumPeriod: u64 = 1000;
@@ -328,11 +327,8 @@ impl Config for Runtime {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
 	type SerpTreasury = MockSerpTreasury;
-	type AirdropAccountId = ();
-	type AirdropMinimum = AirdropMinimum;
-	type AirdropMaximum = AirdropMaximum;
-	type AirdropOrigin = ();
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
@@ -431,17 +427,6 @@ impl ExtBuilder {
 			(bob(), NATIVE_CURRENCY_ID, 100),
 			(alice(), X_TOKEN_ID, 100),
 			(bob(), X_TOKEN_ID, 100),
-		])
-	}
-
-	pub fn one_hundred_for_alice_n_bob_n_eva(self) -> Self {
-		self.balances(vec![
-			(alice(), NATIVE_CURRENCY_ID, 100),
-			(bob(), NATIVE_CURRENCY_ID, 100),
-			(eva(), NATIVE_CURRENCY_ID, 100),
-			(alice(), X_TOKEN_ID, 100),
-			(bob(), X_TOKEN_ID, 100),
-			(eva(), X_TOKEN_ID, 100),
 		])
 	}
 

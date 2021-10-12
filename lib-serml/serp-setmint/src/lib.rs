@@ -29,14 +29,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional};
+use frame_support::{pallet_prelude::*, traits::ReservableCurrency, transactional};
 use frame_system::pallet_prelude::*;
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{StaticLookup, Zero},
 	DispatchResult,
 };
-use orml_traits::MultiReservableCurrency;
 use sp_std::vec::Vec;
 use support::EmergencyShutdown;
 
@@ -68,8 +67,8 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		// No permisson
-		NoPermission,
+		// No authorization
+		NoAuthorization,
 		// The system has been shutdown
 		AlreadyShutdown,
 		// Have authorized already
@@ -184,7 +183,6 @@ pub mod module {
 		#[pallet::weight(<T as Config>::WeightInfo::authorize())]
 		#[transactional]
 		pub fn authorize(
-
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			to: <T::Lookup as StaticLookup>::Source,
@@ -192,7 +190,7 @@ pub mod module {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
 			if from == to {
-				return Ok(());
+				return Ok(().into());
 			}
 
 			Authorization::<T>::try_mutate_exists(&from, (currency_id, &to), |maybe_reserved| -> DispatchResult {
@@ -246,10 +244,8 @@ pub mod module {
 }
 
 impl<T: Config> Pallet<T> {
-	/// Check if `from` has the authorization of `to` under:
-	/// - `collateral_currency_id`: collateral currency id.
-	/// - `stable_currency_id`: stable currency id.
-	fn check_authorization(from: &T::AccountId, to: &T::AccountId, collateral_currency_id: CurrencyId, stable_currency_id: CurrencyId) -> DispatchResult {
+	/// Check if `from` has the authorization of `to` under `currency_id`
+	fn check_authorization(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		ensure!(
 			from == to || Authorization::<T>::contains_key(from, (currency_id, to)),
 			Error::<T>::NoAuthorization

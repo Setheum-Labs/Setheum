@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -29,32 +29,6 @@ use mock::{
 use sp_core::H160;
 use sp_runtime::traits::BadOrigin;
 use support::EVM as EVMTrait;
-
-#[test]
-fn airdrop_should_work() {
-	ExtBuilder::default()
-		.one_hundred_for_alice_n_bob_n_eva()
-		.build()
-		.execute_with(|| {
-			let details = vec![(bob(), 50), (eva(), 25)];
-			assert_ok!(Currencies::airdrop(Some(alice()).into(), X_TOKEN_ID, details));
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 25);
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 150);
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &eva()), 125);
-
-			let details_2 = vec![(alice(), 25), (eva(), 25)];
-			assert_ok!(Currencies::airdrop(Some(bob()).into(), X_TOKEN_ID, details_2));
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 100);
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 50);
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &eva()), 150);
-
-			let details_3 = vec![(alice(), 25), (bob(), 25)];
-			assert_ok!(Currencies::airdrop(Some(eva()).into(), X_TOKEN_ID, details_3));
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &eva()), 100);
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 75);
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 125);
-		});
-}
 
 #[test]
 fn multi_lockable_currency_should_work() {
