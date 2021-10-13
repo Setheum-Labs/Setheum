@@ -6,7 +6,7 @@
     "lldb.executable": "/usr/bin/lldb"
   },
   "extensions": [
-    "rust-lang.rust",
+    // "rust-lang.rust",
     "bungcip.better-toml",
     "vadimcn.vscode-lldb"
   ],
