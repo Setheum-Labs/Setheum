@@ -249,7 +249,7 @@ cargo-update check-all
 ### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
 
 ```bash
-./scripts/generate-tokens-and-predeploy-contracts.sh
+../scripts/generate-tokens-and-predeploy-contracts.sh
 ```
 
 __Note:__ All build commands with `SKIP_WASM_BUILD` are designed for local development purposes and hence have the `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.

@@ -494,7 +494,7 @@ fn test_evm_module() {
 			use std::fs::{self, File};
 			use std::io::Read;
 
-			let paths = fs::read_dir("../../runtime/mandala/tests/solidity_test").unwrap();
+			let paths = fs::read_dir("../../runtime/setheum/tests/solidity_test").unwrap();
 			let file_names = paths
 				.filter_map(|entry| entry.ok().and_then(|e| e.path().to_str().map(|s| String::from(s))))
 				.collect::<Vec<String>>();
