@@ -83,8 +83,17 @@ pub use primitives::{
 };
 
 pub use runtime_common::{
-	BlockLength, BlockWeights, GasToWeight, OffchainSolutionWeightLimit,
-	Price, Rate, Ratio, SystemContractsFilter,
+	cent, dollar, microcent, millicent, BlockLength, BlockWeights, OffchainSolutionWeightLimit,
+	EnsureRootOrAllPublicFundCouncil, EnsureRootOrAllShuraCouncil, EnsureRootOrAllTechnicalCommittee,
+	EnsureRootOrHalfFinancialCouncil, EnsureRootOrHalfPublicFundCouncil, EnsureRootOrHalfShuraCouncil,
+	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsPublicFundCouncil, ExchangeRate,
+	EnsureRootOrThreeFourthsShuraCouncil, EnsureRootOrTwoThirdsPublicFundCouncil, EnsureRootOrTwoThirdsShuraCouncil,
+	EnsureRootOrTwoThirdsTechnicalCommittee, FinancialCouncilInstance, FinancialCouncilMembershipInstance,
+	GasToWeight, PublicFundCouncilInstance, ShuraCouncilInstance, PublicFundCouncilMembershipInstance,
+	ShuraCouncilMembershipInstance, OperatorMembershipInstanceSetheum, OperatorMembershipInstanceBand,
+	Price, Rate, Ratio, RelaychainBlockNumberProvider, RuntimeBlockLength, RuntimeBlockWeights,
+	SystemContractsFilter, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
+	TimeStampedPrice, SETM, SERP, DNAR, SETR, SETUSD, RENBTC,
 };
 
 pub use primitives::{currency::*, time::*};

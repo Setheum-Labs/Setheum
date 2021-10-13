@@ -1,3 +1,20 @@
+// This file is part of Setheum.
+
+// Copyright (C) 2020-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
 //! Common runtime code
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -13,7 +30,7 @@ use frame_support::{
 use frame_system::{limits, EnsureOneOf, EnsureRoot};
 pub use module_support::{Contains, ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{
-	Balance, BlockNumber, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
+	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
 use sp_core::{
 	u32_trait::{_1, _2, _3, _4},
@@ -31,7 +48,10 @@ pub use precompile::{
 	AllPrecompiles, DexPrecompile, MultiCurrencyPrecompile, NFTPrecompile, OraclePrecompile, ScheduleCallPrecompile,
 	StateRentPrecompile,
 };
-pub use primitives::{currency::{TokenInfo, SETM, DNAR, SETR, SETUSD, RENBTC}, AccountId};
+pub use primitives::{
+	currency::{TokenInfo, SETM, SERP, DNAR, SETR, SETUSD, RENBTC},
+	AccountId
+};
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
 
@@ -39,7 +59,9 @@ pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Mom
 parameter_types! {
 	// Operational is 3/4 of TransactionPriority::max_value().
 	// Ensure Inherent -> Operational tx -> Unsigned tx -> Signed normal tx
-	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 10;   // 10%
+	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+	pub const CdpEngineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+	pub const AuctionManagerUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
 }
 
 /// Check if the given `address` is a system contract.
@@ -142,13 +164,13 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 }
 
 pub type ShuraCouncilInstance = pallet_collective::Instance1;
-pub type GeneralCouncilInstance = pallet_collective::Instance2;
 pub type FinancialCouncilInstance = pallet_collective::Instance3;
+pub type PublicFundCouncilInstance = pallet_collective::Instance2;
 pub type TechnicalCommitteeInstance = pallet_collective::Instance4;
 
 pub type ShuraCouncilMembershipInstance = pallet_membership::Instance1;
-pub type GeneralCouncilMembershipInstance = pallet_membership::Instance2;
 pub type FinancialCouncilMembershipInstance = pallet_membership::Instance3;
+pub type PublicFundCouncilMembershipInstance = pallet_membership::Instance2;
 pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
 pub type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
 
@@ -183,37 +205,6 @@ pub type EnsureRootOrThreeFourthsShuraCouncil = EnsureOneOf<
 	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, ShuraCouncilInstance>,
 >;
 
-// General Council
-pub type EnsureRootOrAllGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, GeneralCouncilInstance>,
->;
-
-pub type EnsureRootOrHalfGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, GeneralCouncilInstance>,
->;
-
-pub type EnsureRootOrOneThirdsGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, GeneralCouncilInstance>,
->;
-
-pub type EnsureRootOrTwoThirdsGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, GeneralCouncilInstance>,
->;
-
-pub type EnsureRootOrThreeFourthsGeneralCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, GeneralCouncilInstance>,
->;
-
 // Financial Council
 pub type EnsureRootOrAllFinancialCouncil = EnsureOneOf<
 	AccountId,
@@ -243,6 +234,37 @@ pub type EnsureRootOrThreeFourthsFinancialCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, FinancialCouncilInstance>,
+>;
+
+// SPF (Public Fund) Council
+pub type EnsureRootOrAllPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, PublicFundCouncilInstance>,
+>;
+
+pub type EnsureRootOrHalfPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, PublicFundCouncilInstance>,
+>;
+
+pub type EnsureRootOrOneThirdsPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, PublicFundCouncilInstance>,
+>;
+
+pub type EnsureRootOrTwoThirdsPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, PublicFundCouncilInstance>,
+>;
+
+pub type EnsureRootOrThreeFourthsPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, PublicFundCouncilInstance>,
 >;
 
 // Technical Committee Council
