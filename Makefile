@@ -1,7 +1,7 @@
 .PHONY: configure-rust
 configure-rust:
-	rustup install 1.51.0
-	rustup default 1.51.0
+	rustup install
+	rustup default
 	rustup toolchain install nightly-2021-05-09
 	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
 	rustup component add clippy
@@ -73,9 +73,12 @@ bench:
 doc:
 	SKIP_WASM_BUILD=1 cargo doc --open
 
-.PHONY: cargo-update
+.PHONY: update
 cargo-update:
 	cargo update
 	cargo update --manifest-path node/Cargo.toml
 	make test
 
+.PHONY: generate-tokens
+generate-tokens:
+	./scripts/generate-tokens-and-predeploy-contracts.sh
