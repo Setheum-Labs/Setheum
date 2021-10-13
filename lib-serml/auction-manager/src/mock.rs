@@ -28,7 +28,7 @@ use primitives::{TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt}, ModuleId,
-	traits::{AccountIdConversion, IdentityLookup, One as OneT},
+	traits::IdentityLookup,
 };
 use sp_std::cell::RefCell;
 pub use support::{Price, SerpTreasury};
