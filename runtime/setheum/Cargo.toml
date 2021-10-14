@@ -107,7 +107,7 @@ serp-ocw = { path = "../lib-serml/serp-ocw", default-features = false }
 module-support = { path = "../lib-serml/support", default-features = false }
 module-transaction-payment = { path = "../lib-serml/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
-runtime-common = { path = "common", default-features = false }
+runtime-common = { path = "../common", default-features = false }
 
 
 [dev-dependencies]

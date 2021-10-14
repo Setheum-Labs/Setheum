@@ -87,12 +87,6 @@ Install Rust:
 curl https://sh.rustup.rs -sSf | sh
 ```
 
-Make sure you have `submodule.recurse` set to true to configure submodule.
-
-```bash
-git config --global submodule.recurse true
-```
-
 You can install developer tools on Ubuntu 20.04 with:
 
 ```bash
@@ -103,6 +97,12 @@ You can install the latest Rust toolchain with:
 
 ```bash
 make init
+```
+
+Make sure you have `submodule.recurse` set to true to configure submodule.
+
+```bash
+git config --global submodule.recurse true
 ```
 
 Install required tools and install git hooks:
@@ -227,7 +227,7 @@ make wasm
 ### Update Cargo
 
 ```bash
-cargo update
+make update
 ```
 
 ### Update ORML
@@ -249,7 +249,7 @@ cargo-update check-all
 ### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
 
 ```bash
-./scripts/generate-tokens-and-predeploy-contracts.sh
+make generate-tokens
 ```
 
 __Note:__ All build commands with `SKIP_WASM_BUILD` are designed for local development purposes and hence have the `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.

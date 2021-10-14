@@ -23,7 +23,6 @@
 use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{Event, *};
-use sp_runtime::traits::One;
 
 #[test]
 fn get_auction_time_to_close_work() {

@@ -72,7 +72,7 @@ evm-rpc = { path = "../lib-serml/evm/rpc" }
 setheum-primitives = { path = "../primitives" }
 
 # runtime
-setheum-runtime = { path = '../runtime' }
+setheum-runtime = { path = '../runtime/setheum' }
 
 [features]
 default = []

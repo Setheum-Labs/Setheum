@@ -28,7 +28,6 @@
 #![allow(clippy::collapsible_if)]
 
 use frame_support::{debug, pallet_prelude::*, transactional};
-use frame_system::pallet_prelude::*;
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
