@@ -602,11 +602,11 @@ fn mainnet_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let  setm_foundation_alloc: u128 = 4_000_000_000 * dollar(SETM);
-	let  setm_treasury_alloc: u128 = 2_000_000_000 * dollar(SETM);
-	let  setm_spf_alloc: u128 = 4_000_000_000 * dollar(SETM);
-	let  setm_team_alloc: u128 = 8_400_000_000 * dollar(SETM);
-	let  setm_advisors_n_partners_alloc: u128 = 1_600_000_000 * dollar(SETM);
+	let  setm_foundation_alloc: u128 = 516_000_000 * dollar(SETM);
+	let  setm_treasury_alloc: u128 = 258_000_000 * dollar(SETM);
+	let  setm_spf_alloc: u128 = 516_000_000 * dollar(SETM);
+	let  setm_team_alloc: u128 = 1_083_600_000 * dollar(SETM);
+	let  setm_advisors_n_partners_alloc: u128 = 206_400_000 * dollar(SETM);
 
 	let  serp_foundation_alloc: u128 = 516_000_000 * dollar(SERP);
 	let  serp_treasury_alloc: u128 = 258_000_000 * dollar(SERP);
