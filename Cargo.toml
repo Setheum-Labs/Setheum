@@ -8,7 +8,8 @@ split-debuginfo = "unpacked"
 members = [
     'node',
     'lib-serml/*',
-    'runtime',
+    'runtime/common',
+    'runtime/setheum',
     'primitives',
 
 	'open-lib/authority',

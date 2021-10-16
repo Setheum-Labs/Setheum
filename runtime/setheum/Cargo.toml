@@ -27,7 +27,7 @@ serde_json = "1.0.60"
 evm = { version = "0.26.0", optional = true, default-features = false }
 
 # Substrate dependencies
-frame-benchmarking = { default-features = false, optional = true, version = '3.1.0' }
+frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
 frame-executive = { default-features = false, version = '3.0.0' }
 frame-support = { default-features = false, version = '3.0.0' }
 frame-system = { default-features = false, version = '3.0.0' }
@@ -83,30 +83,30 @@ pallet-membership = { version = "3.0.0", default-features = false }
 pallet-multisig = { version = "3.0.0", default-features = false }
 
 # local dependencies
-orml-authority = { path = "../open-lib/authority", default-features = false }
-orml-benchmarking = { path = "../open-lib/benchmarking", default-features = false, optional = true }
-orml-nft= { path = "../open-lib/nft", default-features = false }
-orml-oracle = { path = "../open-lib/oracle", default-features = false }
-orml-oracle-rpc-runtime-api = { path = "../open-lib/oracle/rpc/runtime-api", default-features = false }
-orml-tokens = { path = "../open-lib/tokens", default-features = false }
-orml-traits = { path = "../open-lib/traits", default-features = false }
+orml-authority = { path = "../../open-lib/authority", default-features = false }
+orml-benchmarking = { path = "../../open-lib/benchmarking", default-features = false, optional = true }
+orml-nft= { path = "../../open-lib/nft", default-features = false }
+orml-oracle = { path = "../../open-lib/oracle", default-features = false }
+orml-oracle-rpc-runtime-api = { path = "../../open-lib/oracle/rpc/runtime-api", default-features = false }
+orml-tokens = { path = "../../open-lib/tokens", default-features = false }
+orml-traits = { path = "../../open-lib/traits", default-features = false }
 
-module-currencies = { path = "../lib-serml/currencies", default-features = false }
-module-dex = { path = "../lib-serml/dex", default-features = false }
-module-evm = { path = "../lib-serml/evm", default-features = false }
-module-evm-accounts = { path = "../lib-serml/evm-accounts", default-features = false }
-module-evm-bridge = { path = "../lib-serml/evm-bridge", default-features = false }
-module-evm-manager = { path = "../lib-serml/evm-manager", default-features = false }
-module-evm-rpc-runtime-api = { path = "../lib-serml/evm/rpc/runtime_api",  default-features = false }
-module-nft = { path = "../lib-serml/nft", default-features = false }
-module-prices = { path = "../lib-serml/prices", default-features = false }
-module-recovery = { path = "../lib-serml/recovery", default-features = false }
-setheum-renvm-bridge = { path = "../lib-serml/renvm-bridge", default-features = false }
-serp-treasury = { path = "../lib-serml/serp-treasury", default-features = false }
-serp-ocw = { path = "../lib-serml/serp-ocw", default-features = false }
-module-support = { path = "../lib-serml/support", default-features = false }
-module-transaction-payment = { path = "../lib-serml/transaction-payment", default-features = false }
-primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
+module-currencies = { path = "../../lib-serml/currencies", default-features = false }
+module-dex = { path = "../../lib-serml/dex", default-features = false }
+module-evm = { path = "../../lib-serml/evm", default-features = false }
+module-evm-accounts = { path = "../../lib-serml/evm-accounts", default-features = false }
+module-evm-bridge = { path = "../../lib-serml/evm-bridge", default-features = false }
+module-evm-manager = { path = "../../lib-serml/evm-manager", default-features = false }
+module-evm-rpc-runtime-api = { path = "../../lib-serml/evm/rpc/runtime_api",  default-features = false }
+module-nft = { path = "../../lib-serml/nft", default-features = false }
+module-prices = { path = "../../lib-serml/prices", default-features = false }
+module-recovery = { path = "../../lib-serml/recovery", default-features = false }
+setheum-renvm-bridge = { path = "../../lib-serml/renvm-bridge", default-features = false }
+serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = false }
+serp-ocw = { path = "../../lib-serml/serp-ocw", default-features = false }
+module-support = { path = "../../lib-serml/support", default-features = false }
+module-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 runtime-common = { path = "../common", default-features = false }
 
 
