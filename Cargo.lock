@@ -1863,25 +1863,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "frame-benchmarking"
-version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70fe99487f84579a3f2c4ba52650fec875492eea41be0e4eea8019187f105052"
-dependencies = [
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "linregress",
- "parity-scale-codec",
- "paste 1.0.5",
- "sp-api 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-runtime-interface 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-storage 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
 name = "frame-benchmarking-cli"
 version = "3.0.0"
 source = "git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6#95bfa808c85f39099ff833ccb0593fcaef0e0825"
@@ -7875,7 +7856,7 @@ name = "setheum-runtime"
 version = "0.9.6"
 dependencies = [
  "evm 0.26.0",
- "frame-benchmarking 3.0.0",
+ "frame-benchmarking 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-executive",
  "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
