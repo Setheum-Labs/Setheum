@@ -1,0 +1,38 @@
+[package]
+name = 'channel-follows-rpc'
+version = '0.9.6'
+authors = ["Setheum Labs"]
+edition = '2018'
+
+[dependencies.serde]
+optional = true
+features = ['derive']
+version = '1.0.119'
+
+[dependencies]
+jsonrpc-core = '15.0.0'
+jsonrpc-core-client = '15.0.0'
+jsonrpc-derive = '15.0.0'
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
+
+# Local dependencies
+slixon-utils = { default-features = false, path = '../../utils' }
+
+# Custom Runtime API
+channel-follows-runtime-api = { default-features = false, path = 'runtime-api' }
+
+# Substrate dependencies
+sp-api = { default-features = false, version = '3.0.0' }
+sp-blockchain = { default-features = false, version = '3.0.0' }
+sp-rpc = { default-features = false, version = '3.0.0' }
+sp-runtime = { default-features = false, version = '3.0.0' }
+
+[features]
+default = ['std']
+std = [
+  'serde',
+  'sp-runtime/std',
+  'sp-api/std',
+  'channel-follows-runtime-api/std',
+  'slixon-utils/std',
+]

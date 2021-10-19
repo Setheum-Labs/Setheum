@@ -1,0 +1,65 @@
+{
+  "ChannelPermissionSet": "BTreeSet<ChannelPermission>",
+
+  "ChannelPermission": {
+    "_enum": [
+      "ManageRoles",
+
+      "RepresentChannelInternally",
+      "RepresentChannelExternally",
+
+      "UpdateChannel",
+
+      "CreateSubchannels",
+      "UpdateOwnSubchannels",
+      "DeleteOwnSubchannels",
+      "HideOwnSubchannels",
+
+      "UpdateAnySubchannel",
+      "DeleteAnySubchannel",
+      "HideAnySubchannel",
+
+      "CreatePosts",
+      "UpdateOwnPosts",
+      "DeleteOwnPosts",
+      "HideOwnPosts",
+
+      "UpdateAnyPost",
+      "DeleteAnyPost",
+      "HideAnyPost",
+
+      "CreateComments",
+      "UpdateOwnComments",
+      "DeleteOwnComments",
+      "HideOwnComments",
+
+      "HideAnyComment",
+
+      "Upvote",
+      "Downvote",
+      "Share",
+
+      "OverrideSubchannelPermissions",
+      "OverridePostPermissions",
+
+      "SuggestEntityStatus",
+      "UpdateEntityStatus",
+
+      "UpdateChannelSettings"
+    ]
+  },
+
+  "ChannelPermissions": {
+    "none": "Option<ChannelPermissionSet>",
+    "everyone": "Option<ChannelPermissionSet>",
+    "follower": "Option<ChannelPermissionSet>",
+    "channel_owner": "Option<ChannelPermissionSet>"
+  },
+
+  "ChannelPermissionsContext": {
+    "channel_id": "ChannelId",
+    "is_channel_owner": "bool",
+    "is_channel_follower": "bool",
+    "channel_perms": "Option<ChannelPermissions>"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "PostId": "u64",
+
+  "Post": {
+    "id": "PostId",
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+
+    "owner": "AccountId",
+
+    "extension": "PostExtension",
+
+    "channel_id": "Option<ChannelId>",
+    "content": "Content",
+    "hidden": "bool",
+
+    "replies_count": "u16",
+    "hidden_replies_count": "u16",
+
+    "shares_count": "u16",
+    "upvotes_count": "u16",
+    "downvotes_count": "u16",
+
+    "score": "i32"
+  },
+
+  "PostUpdate": {
+    "channel_id": "Option<ChannelId>",
+    "content": "Option<Content>",
+    "hidden": "Option<bool>"
+  },
+
+  "PostExtension": {
+    "_enum": {
+      "RegularPost": "Null",
+      "Comment": "Comment",
+      "SharedPost": "PostId"
+    }
+  },
+
+  "Comment": {
+    "parent_id": "Option<PostId>",
+    "root_post_id": "PostId"
+  }
+}

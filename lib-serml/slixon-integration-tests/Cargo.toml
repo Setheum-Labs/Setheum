@@ -1,0 +1,61 @@
+[package]
+name = 'slixon-integration-tests'
+version = '0.9.6'
+authors = ["Setheum Labs"]
+edition = '2018'
+
+[features]
+default = ['std']
+std = [
+    'codec/std',
+    'frame-support/std',
+    'frame-system/std',
+    'pallet-balances/std',
+    'pallet-timestamp/std',
+    'sp-runtime/std',
+    'sp-std/std',
+    'sp-io/std',
+    'slixon-posts/std',
+    'slixon-channels/std',
+    'slixon-utils/std',
+]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
+
+# Substrate dependencies
+frame-support = { default-features = false, version = '3.0.0' }
+frame-system = { default-features = false, version = '3.0.0' }
+
+pallet-balances = { default-features = false, version = '3.0.0' }
+pallet-timestamp = { default-features = false, version = '3.0.0' }
+
+sp-runtime = { default-features = false, version = '3.0.0' }
+sp-std = { default-features = false, version = '3.0.0' }
+sp-io = { default-features = false, version = '3.0.0' }
+
+[dev-dependencies]
+# Local dependencies
+slixon-moderation = { default-features = false, path = '../moderation' }
+slixon-permissions = { default-features = false, path = '../permissions' }
+
+slixon-post-history = { default-features = false, path = '../post-history' }
+slixon-posts = { default-features = false, path = '../posts' }
+
+slixon-profile-follows = { default-features = false, path = '../profile-follows' }
+slixon-profile-history = { default-features = false, path = '../profile-history' }
+slixon-profiles = { default-features = false, path = '../profiles' }
+
+slixon-reactions = { default-features = false, path = '../reactions' }
+slixon-roles = { default-features = false, path = '../roles' }
+slixon-scores = { default-features = false, path = '../scores' }
+
+slixon-channel-follows = { default-features = false, path = '../channel-follows' }
+slixon-channel-history = { default-features = false, path = '../channel-history' }
+slixon-channel-ownership = { default-features = false, path = '../channel-ownership' }
+slixon-channels = { default-features = false, path = '../channels' }
+
+slixon-utils = { default-features = false, path = '../utils' }
+
+# Substrate dependencies
+sp-core = { default-features = false, version = '3.0.0' }

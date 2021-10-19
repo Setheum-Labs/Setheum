@@ -1,0 +1,15 @@
+{
+  "ScoringAction": {
+    "_enum": [
+      "UpvotePost",
+      "DownvotePost",
+      "SharePost",
+      "CreateComment",
+      "UpvoteComment",
+      "DownvoteComment",
+      "ShareComment",
+      "FollowChannel",
+      "FollowAccount"
+    ]
+  }
+}

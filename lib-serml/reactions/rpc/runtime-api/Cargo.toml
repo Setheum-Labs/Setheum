@@ -1,0 +1,32 @@
+[package]
+name = 'reactions-runtime-api'
+version = '0.9.6'
+authors = ["Setheum Labs"]
+edition = '2018'
+
+[dependencies.serde]
+optional = true
+features = ["derive"]
+version = "1.0.119"
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+# Local dependencies
+slixon-reactions = { default-features = false, path = '../..' }
+slixon-utils = { default-features = false, path = '../../../utils' }
+
+# Substrate dependencies
+sp-api = { default-features = false, version = '3.0.0' }
+sp-runtime = { default-features = false, version = '3.0.0' }
+sp-std = { default-features = false, version = '3.0.0' }
+
+[features]
+default = ['std']
+std = [
+	'serde',
+	'sp-api/std',
+	'sp-std/std',
+	'sp-runtime/std',
+	'slixon-utils/std',
+	'slixon-reactions/std',
+]

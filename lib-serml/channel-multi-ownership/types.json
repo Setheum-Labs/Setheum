@@ -1,0 +1,23 @@
+{
+  "ChangeId": "u64",
+
+  "ChannelOwners": {
+    "created": "WhoAndWhen",
+    "channel_id": "ChannelId",
+    "owners": "Vec<AccountId>",
+    "threshold": "u16",
+
+    "changes_count": "u16"
+  },
+  "Change": {
+    "created": "WhoAndWhen",
+    "id": "ChangeId",
+    "channel_id": "ChannelId",
+    "add_owners": "Vec<AccountId>",
+    "remove_owners": "Vec<AccountId>",
+    "new_threshold": "Option<u16>",
+    "notes": "Text",
+    "confirmed_by": "Vec<AccountId>",
+    "expires_at": "BlockNumber"
+  }
+}

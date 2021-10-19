@@ -1,11 +1,8 @@
 [package]
 name = "module-recovery"
-version = "0.9.6"
+version = '0.9.6'
 authors = ["Setheum Labs"]
-edition = "2018"
-license = "Apache-2.0"
-description = "Setheum account recovery pallet"
-readme = "README.md"
+edition = '2018'
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

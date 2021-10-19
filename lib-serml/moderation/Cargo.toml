@@ -1,0 +1,54 @@
+[package]
+name = 'slixon-moderation'
+version = '0.9.6'
+authors = ["Setheum Labs"]
+edition = '2018'
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+[features]
+default = ['std']
+std = [
+    'codec/std',
+    'sp-runtime/std',
+    'sp-std/std',
+    'frame-support/std',
+    'frame-system/std',
+    'module-support/std',
+    'slixon-permissions/std',
+    'slixon-posts/std',
+    'slixon-channels/std',
+    'slixon-channel-follows/std',
+    'slixon-utils/std',
+]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
+
+# Local dependencies
+module-support = { default-features = false, path = '../support' }
+slixon-permissions = { default-features = false, path = '../permissions' }
+slixon-posts = { default-features = false, path = '../posts' }
+slixon-channel-follows = { default-features = false, path = '../channel-follows' }
+slixon-channels = { default-features = false, path = '../channels' }
+slixon-utils = { default-features = false, path = '../utils' }
+
+# Substrate dependencies
+frame-support = { default-features = false, version = '3.0.0' }
+frame-system = { default-features = false, version = '3.0.0' }
+
+sp-runtime = { default-features = false, version = '3.0.0' }
+sp-std = { default-features = false, version = '3.0.0' }
+
+[dev-dependencies]
+# Local dependencies
+slixon-profiles = { default-features = false, path = '../profiles' }
+slixon-roles = { default-features = false, path = '../roles' }
+
+# Substrate dependencies
+pallet-balances = { default-features = false, version = '3.0.0' }
+pallet-timestamp = { default-features = false, version = '3.0.0' }
+
+sp-core = { default-features = false, version = '3.0.0' }
+sp-io = { default-features = false, version = '3.0.0' }

@@ -1,0 +1,30 @@
+{
+  "Channel": {
+    "id": "ChannelId",
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+
+    "owner": "AccountId",
+
+    "parent_id": "Option<ChannelId>",
+    "handle": "Option<Text>",
+    "content": "Content",
+    "hidden": "bool",
+
+    "posts_count": "u32",
+    "hidden_posts_count": "u32",
+    "followers_count": "u32",
+
+    "score": "i32",
+
+    "permissions": "Option<ChannelPermissions>"
+  },
+
+  "ChannelUpdate": {
+    "parent_id": "Option<Option<ChannelId>>",
+    "handle": "Option<Option<Text>>",
+    "content": "Option<Content>",
+    "hidden": "Option<bool>",
+    "permissions": "Option<Option<ChannelPermissions>>"
+  }
+}

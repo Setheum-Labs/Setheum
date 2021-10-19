@@ -1,0 +1,41 @@
+[package]
+name = 'slixon-reactions'
+version = '0.9.6'
+authors = ["Setheum Labs"]
+edition = '2018'
+
+[features]
+default = ['std']
+std = [
+    'serde',
+    'codec/std',
+    'frame-support/std',
+    'frame-system/std',
+    'sp-runtime/std',
+    'sp-std/std',
+    'module-support/std',
+    'slixon-permissions/std',
+    'slixon-posts/std',
+    'slixon-channels/std',
+    'slixon-utils/std',
+]
+
+[dependencies.serde]
+optional = true
+features = ['derive']
+version = "1.0.119"
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+# Local dependencies
+module-support = { default-features = false, path = '../support' }
+slixon-permissions = { default-features = false, path = '../permissions' }
+slixon-posts = { default-features = false, path = '../posts' }
+slixon-channels = { default-features = false, path = '../channels' }
+slixon-utils = { default-features = false, path = '../utils' }
+
+# Substrate dependencies
+frame-support = { default-features = false, version = '3.0.0' }
+frame-system = { default-features = false, version = '3.0.0' }
+sp-runtime = { default-features = false, version = '3.0.0' }
+sp-std = { default-features = false, version = '3.0.0' }

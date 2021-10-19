@@ -1,0 +1,41 @@
+{
+  "ReportId": "u64",
+
+  "EntityId": {
+    "_enum": {
+      "Content": "Content",
+      "Account": "AccountId",
+      "Channel": "ChannelId",
+      "Post": "PostId"
+    }
+  },
+
+  "EntityStatus": {
+    "_enum": [
+      "Allowed",
+      "Blocked"
+    ]
+  },
+
+  "Report": {
+    "id": "ReportId",
+    "created": "WhoAndWhen",
+    "reported_entity": "EntityId",
+    "reported_within": "ChannelId",
+    "reason": "Content"
+  },
+
+  "SuggestedStatus": {
+    "suggested": "WhoAndWhen",
+    "status": "Option<EntityStatus>",
+    "report_id": "Option<ReportId>"
+  },
+
+  "ChannelModerationSettings": {
+    "autoblock_threshold": "Option<u16>"
+  },
+
+  "ChannelModerationSettingsUpdate": {
+    "autoblock_threshold": "Option<Option<u16>>"
+  }
+}

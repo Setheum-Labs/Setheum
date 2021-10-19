@@ -1,0 +1,308 @@
+{
+  "Address": "AccountId",
+  "LookupSource": "AccountId",
+  "IpfsCid": "Text",
+  "DonationId": "u64",
+  "DonationRecipient": {
+    "_enum": {
+      "Account": "AccountId",
+      "Channel": "ChannelId",
+      "Post": "PostId"
+    }
+  },
+  "Donation": {
+    "id": "DonationId",
+    "created": "WhoAndWhen",
+    "recipient": "DonationRecipient",
+    "donation_wallet": "AccountId",
+    "amount": "Balance",
+    "comment_id": "Option<PostId>"
+  },
+  "DonationSettings": {
+    "donations_allowed": "bool",
+    "min_amount": "Option<Balance>",
+    "max_amount": "Option<Balance>"
+  },
+  "DonationSettingsUpdate": {
+    "donations_allowed": "Option<bool>",
+    "min_amount": "Option<Option<Balance>>",
+    "max_amount": "Option<Option<Balance>>"
+  },
+  "Faucet": {
+    "enabled": "bool",
+    "period": "BlockNumber",
+    "period_limit": "Balance",
+    "drip_limit": "Balance",
+    "next_period_at": "BlockNumber",
+    "dripped_in_current_period": "Balance"
+  },
+  "FaucetUpdate": {
+    "enabled": "Option<bool>",
+    "period": "Option<BlockNumber>",
+    "period_limit": "Option<Balance>",
+    "drip_limit": "Option<Balance>"
+  },
+  "ReportId": "u64",
+  "EntityId": {
+    "_enum": {
+      "Content": "Content",
+      "Account": "AccountId",
+      "Channel": "ChannelId",
+      "Post": "PostId"
+    }
+  },
+  "EntityStatus": {
+    "_enum": [
+      "Allowed",
+      "Blocked"
+    ]
+  },
+  "Report": {
+    "id": "ReportId",
+    "created": "WhoAndWhen",
+    "reported_entity": "EntityId",
+    "reported_within": "ChannelId",
+    "reason": "Content"
+  },
+  "SuggestedStatus": {
+    "suggested": "WhoAndWhen",
+    "status": "Option<EntityStatus>",
+    "report_id": "Option<ReportId>"
+  },
+  "ChannelModerationSettings": {
+    "autoblock_threshold": "Option<u16>"
+  },
+  "ChannelModerationSettingsUpdate": {
+    "autoblock_threshold": "Option<Option<u16>>"
+  },
+  "ChannelPermissionSet": "BTreeSet<ChannelPermission>",
+  "ChannelPermission": {
+    "_enum": [
+      "ManageRoles",
+      "RepresentChannelInternally",
+      "RepresentChannelExternally",
+      "UpdateChannel",
+      "CreateSubchannels",
+      "UpdateOwnSubchannels",
+      "DeleteOwnSubchannels",
+      "HideOwnSubchannels",
+      "UpdateAnySubchannel",
+      "DeleteAnySubchannel",
+      "HideAnySubchannel",
+      "CreatePosts",
+      "UpdateOwnPosts",
+      "DeleteOwnPosts",
+      "HideOwnPosts",
+      "UpdateAnyPost",
+      "DeleteAnyPost",
+      "HideAnyPost",
+      "CreateComments",
+      "UpdateOwnComments",
+      "DeleteOwnComments",
+      "HideOwnComments",
+      "HideAnyComment",
+      "Upvote",
+      "Downvote",
+      "Share",
+      "OverrideSubchannelPermissions",
+      "OverridePostPermissions",
+      "SuggestEntityStatus",
+      "UpdateEntityStatus",
+      "UpdateChannelSettings"
+    ]
+  },
+  "ChannelPermissions": {
+    "none": "Option<ChannelPermissionSet>",
+    "everyone": "Option<ChannelPermissionSet>",
+    "follower": "Option<ChannelPermissionSet>",
+    "channel_owner": "Option<ChannelPermissionSet>"
+  },
+  "ChannelPermissionsContext": {
+    "channel_id": "ChannelId",
+    "is_channel_owner": "bool",
+    "is_channel_follower": "bool",
+    "channel_perms": "Option<ChannelPermissions>"
+  },
+  "PostHistoryRecord": {
+    "edited": "WhoAndWhen",
+    "old_data": "PostUpdate"
+  },
+  "PostId": "u64",
+  "Post": {
+    "id": "PostId",
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "owner": "AccountId",
+    "extension": "PostExtension",
+    "channel_id": "Option<ChannelId>",
+    "content": "Content",
+    "hidden": "bool",
+    "replies_count": "u16",
+    "hidden_replies_count": "u16",
+    "shares_count": "u16",
+    "upvotes_count": "u16",
+    "downvotes_count": "u16",
+    "score": "i32"
+  },
+  "PostUpdate": {
+    "channel_id": "Option<ChannelId>",
+    "content": "Option<Content>",
+    "hidden": "Option<bool>"
+  },
+  "PostExtension": {
+    "_enum": {
+      "RegularPost": "Null",
+      "Comment": "Comment",
+      "SharedPost": "PostId"
+    }
+  },
+  "Comment": {
+    "parent_id": "Option<PostId>",
+    "root_post_id": "PostId"
+  },
+  "ProfileHistoryRecord": {
+    "edited": "WhoAndWhen",
+    "old_data": "ProfileUpdate"
+  },
+  "SocialAccount": {
+    "followers_count": "u32",
+    "following_accounts_count": "u16",
+    "following_channels_count": "u16",
+    "reputation": "u32",
+    "profile": "Option<Profile>"
+  },
+  "Profile": {
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "content": "Content"
+  },
+  "ProfileUpdate": {
+    "content": "Option<Content>"
+  },
+  "ReactionId": "u64",
+  "ReactionKind": {
+    "_enum": [
+      "Upvote",
+      "Downvote"
+    ]
+  },
+  "Reaction": {
+    "id": "ReactionId",
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "kind": "ReactionKind"
+  },
+  "RoleId": "u64",
+  "Role": {
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "id": "RoleId",
+    "channel_id": "ChannelId",
+    "disabled": "bool",
+    "expires_at": "Option<BlockNumber>",
+    "content": "Content",
+    "permissions": "ChannelPermissionSet"
+  },
+  "RoleUpdate": {
+    "disabled": "Option<bool>",
+    "content": "Option<Content>",
+    "permissions": "Option<ChannelPermissionSet>"
+  },
+  "ScoringAction": {
+    "_enum": [
+      "UpvotePost",
+      "DownvotePost",
+      "SharePost",
+      "CreateComment",
+      "UpvoteComment",
+      "DownvoteComment",
+      "ShareComment",
+      "FollowChannel",
+      "FollowAccount"
+    ]
+  },
+  "SessionKey": {
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "expires_at": "BlockNumber",
+    "limit": "Option<Balance>",
+    "spent": "Balance"
+  },
+  "ChannelHistoryRecord": {
+    "edited": "WhoAndWhen",
+    "old_data": "ChannelUpdate"
+  },
+  "Channel": {
+    "id": "ChannelId",
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "owner": "AccountId",
+    "parent_id": "Option<ChannelId>",
+    "handle": "Option<Text>",
+    "content": "Content",
+    "hidden": "bool",
+    "posts_count": "u32",
+    "hidden_posts_count": "u32",
+    "followers_count": "u32",
+    "score": "i32",
+    "permissions": "Option<ChannelPermissions>"
+  },
+  "ChannelUpdate": {
+    "parent_id": "Option<Option<ChannelId>>",
+    "handle": "Option<Option<Text>>",
+    "content": "Option<Content>",
+    "hidden": "Option<bool>",
+    "permissions": "Option<Option<ChannelPermissions>>"
+  },
+  "SubscriptionPlanId": "u64",
+  "SubscriptionId": "u64",
+  "SubscriptionPeriod": {
+    "_enum": {
+      "Daily": "Null",
+      "Weekly": "Null",
+      "Monthly": "Null",
+      "Quarterly": "Null",
+      "Yearly": "Null",
+      "Custom": "BlockNumber"
+    }
+  },
+  "SubscriptionPlan": {
+    "id": "SubscriptionPlanId",
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "is_active": "bool",
+    "content": "Content",
+    "channel_id": "ChannelId",
+    "wallet": "Option<AccountId>",
+    "price": "Balance",
+    "period": "SubscriptionPeriod"
+  },
+  "Subscription": {
+    "id": "SubscriptionPlanId",
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "is_active": "bool",
+    "wallet": "Option<AccountId>",
+    "plan_id": "SubscriptionPlanId"
+  },
+  "ChannelId": "u64",
+  "WhoAndWhen": {
+    "account": "AccountId",
+    "block": "BlockNumber",
+    "time": "Moment"
+  },
+  "User": {
+    "_enum": {
+      "Account": "AccountId",
+      "Channel": "ChannelId"
+    }
+  },
+  "Content": {
+    "_enum": {
+      "None": "Null",
+      "Raw": "Text",
+      "IPFS": "Text",
+      "Hyper": "Text"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "RoleId": "u64",
+
+  "Role": {
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "id": "RoleId",
+    "channel_id": "ChannelId",
+    "disabled": "bool",
+    "expires_at": "Option<BlockNumber>",
+    "content": "Content",
+    "permissions": "ChannelPermissionSet"
+  },
+
+  "RoleUpdate": {
+    "disabled": "Option<bool>",
+    "content": "Option<Content>",
+    "permissions": "Option<ChannelPermissionSet>"
+  }
+}

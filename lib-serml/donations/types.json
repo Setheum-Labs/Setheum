@@ -1,0 +1,32 @@
+{
+  "DonationId": "u64",
+  
+  "DonationRecipient": {
+    "_enum": {
+      "Account": "AccountId",
+      "Channel": "ChannelId",
+      "Post": "PostId"
+    }
+  },
+  
+  "Donation": {
+    "id": "DonationId",
+    "created": "WhoAndWhen",
+    "recipient": "DonationRecipient",
+    "donation_wallet": "AccountId",
+    "amount": "Balance",
+    "comment_id": "Option<PostId>"
+  },
+
+  "DonationSettings": {
+    "donations_allowed": "bool",
+    "min_amount": "Option<Balance>",
+    "max_amount": "Option<Balance>"
+  },
+
+  "DonationSettingsUpdate": {
+    "donations_allowed": "Option<bool>",
+    "min_amount": "Option<Option<Balance>>",
+    "max_amount": "Option<Option<Balance>>"
+  }
+}

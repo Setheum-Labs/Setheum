@@ -1,0 +1,9 @@
+{
+  "SessionKey": {
+    "created": "WhoAndWhen",
+    "updated": "Option<WhoAndWhen>",
+    "expires_at": "BlockNumber",
+    "limit": "Option<Balance>",
+    "spent": "Balance"
+  }
+}

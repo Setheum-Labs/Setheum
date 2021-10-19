@@ -1,3 +1,21 @@
+// This file is part of Setheum.
+
+// Copyright (C) 2019-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
@@ -19,7 +37,15 @@ use sp_std::{
 	prelude::*,
 };
 
+use permissions::{
+	ChannelPermission,
+	ChannelPermissions,
+	ChannelPermissionsContext
+  };
+  use utils::{ChannelId, User};
+  
 pub mod mocks;
+pub mod moderation;
 
 pub type Price = FixedU128;
 pub type Ratio = FixedU128;
@@ -631,3 +657,49 @@ impl CurrencyIdMapping for () {
 		None
 	}
 }
+
+/// Slixon traits support
+///
+/// Minimal set of fields from Channel struct that are required by roles module.
+pub struct ChannelForRoles<AccountId> {
+	pub owner: AccountId,
+	pub permissions: Option<ChannelPermissions>,
+  }
+  
+  pub trait ChannelForRolesProvider {
+	type AccountId;
+  
+	fn get_channel(id: ChannelId) -> Result<ChannelForRoles<Self::AccountId>, DispatchError>;
+  }
+  
+  pub trait ChannelFollowsProvider {
+	type AccountId;
+  
+	fn is_channel_follower(account: Self::AccountId, channel_id: ChannelId) -> bool;
+  }
+  
+  pub trait PermissionChecker {
+	type AccountId;
+  
+	fn ensure_user_has_channel_permission(
+	  user: User<Self::AccountId>,
+	  ctx: ChannelPermissionsContext,
+	  permission: ChannelPermission,
+	  error: DispatchError,
+	) -> DispatchResult;
+  
+	fn ensure_account_has_channel_permission(
+	  account: Self::AccountId,
+	  ctx: ChannelPermissionsContext,
+	  permission: ChannelPermission,
+	  error: DispatchError,
+	) -> DispatchResult {
+  
+	  Self::ensure_user_has_channel_permission(
+		User::Account(account),
+		ctx,
+		permission,
+		error
+	  )
+	}
+  }

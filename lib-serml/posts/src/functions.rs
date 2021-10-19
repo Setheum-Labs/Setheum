@@ -1,0 +1,559 @@
+// This file is part of Setheum.
+
+// Copyright (C) 2019-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+use frame_support::dispatch::DispatchResult;
+
+use slixon_utils::{ChannelId, remove_from_vec};
+
+use super::*;
+
+impl<T: Trait> Post<T> {
+
+    pub fn new(
+        id: PostId,
+        created_by: T::AccountId,
+        channel_id_opt: Option<ChannelId>,
+        extension: PostExtension,
+        content: Content
+    ) -> Self {
+        Post {
+            id,
+            created: WhoAndWhen::<T>::new(created_by.clone()),
+            updated: None,
+            owner: created_by,
+            extension,
+            channel_id: channel_id_opt,
+            content,
+            hidden: false,
+            replies_count: 0,
+            hidden_replies_count: 0,
+            shares_count: 0,
+            upvotes_count: 0,
+            downvotes_count: 0,
+            score: 0
+        }
+    }
+
+    pub fn ensure_owner(&self, account: &T::AccountId) -> DispatchResult {
+        ensure!(self.is_owner(account), Error::<T>::NotAPostOwner);
+        Ok(())
+    }
+
+    pub fn is_owner(&self, account: &T::AccountId) -> bool {
+        self.owner == *account
+    }
+
+    pub fn is_root_post(&self) -> bool {
+        !self.is_comment()
+    }
+
+    pub fn is_regular_post(&self) -> bool {
+        matches!(self.extension, PostExtension::RegularPost)
+    }
+
+    pub fn is_comment(&self) -> bool {
+        matches!(self.extension, PostExtension::Comment(_))
+    }
+
+    pub fn is_sharing_post(&self) -> bool {
+        matches!(self.extension, PostExtension::SharedPost(_))
+    }
+
+    pub fn get_comment_ext(&self) -> Result<Comment, DispatchError> {
+        match self.extension {
+            PostExtension::Comment(comment_ext) => Ok(comment_ext),
+            _ => Err(Error::<T>::NotComment.into())
+        }
+    }
+
+    pub fn get_shared_post_id(&self) -> Result<PostId, DispatchError> {
+        match self.extension {
+            PostExtension::SharedPost(post_id) => Ok(post_id),
+            _ => Err(Error::<T>::NotASharingPost.into())
+        }
+    }
+
+    pub fn get_root_post(&self) -> Result<Post<T>, DispatchError> {
+        match self.extension {
+            PostExtension::RegularPost | PostExtension::SharedPost(_) =>
+                Ok(self.clone()),
+            PostExtension::Comment(comment) =>
+                Module::require_post(comment.root_post_id),
+        }
+    }
+
+    pub fn get_channel_id(&self) -> Result<ChannelId, DispatchError> {
+        Self::try_get_channel_id(self).ok_or_else(|| Error::<T>::PostHasNoChannelId.into())
+    }
+
+    pub fn try_get_channel_id(&self) -> Option<ChannelId> {
+        if let Ok(root_post) = self.get_root_post() {
+            return root_post.channel_id;
+        }
+
+        None
+    }
+
+    pub fn get_channel(&self) -> Result<Channel<T>, DispatchError> {
+        let root_post = self.get_root_post()?;
+        let channel_id = root_post.channel_id.ok_or(Error::<T>::PostHasNoChannelId)?;
+        Channels::require_channel(channel_id)
+    }
+
+    pub fn try_get_channel(&self) -> Option<Channel<T>> {
+        if let Ok(root_post) = self.get_root_post() {
+            return root_post.channel_id.and_then(|channel_id| Channels::require_channel(channel_id).ok());
+        }
+
+        None
+    }
+
+    // TODO use macros to generate inc/dec fns for Channel, Post.
+
+    pub fn inc_replies(&mut self) {
+        self.replies_count = self.replies_count.saturating_add(1);
+    }
+
+    pub fn dec_replies(&mut self) {
+        self.replies_count = self.replies_count.saturating_sub(1);
+    }
+
+    pub fn inc_hidden_replies(&mut self) {
+        self.hidden_replies_count = self.hidden_replies_count.saturating_add(1);
+    }
+
+    pub fn dec_hidden_replies(&mut self) {
+        self.hidden_replies_count = self.hidden_replies_count.saturating_sub(1);
+    }
+
+    pub fn inc_shares(&mut self) {
+        self.shares_count = self.shares_count.saturating_add(1);
+    }
+
+    pub fn dec_shares(&mut self) {
+        self.shares_count = self.shares_count.saturating_sub(1);
+    }
+
+    pub fn inc_upvotes(&mut self) {
+        self.upvotes_count = self.upvotes_count.saturating_add(1);
+    }
+
+    pub fn dec_upvotes(&mut self) {
+        self.upvotes_count = self.upvotes_count.saturating_sub(1);
+    }
+
+    pub fn inc_downvotes(&mut self) {
+        self.downvotes_count = self.downvotes_count.saturating_add(1);
+    }
+
+    pub fn dec_downvotes(&mut self) {
+        self.downvotes_count = self.downvotes_count.saturating_sub(1);
+    }
+
+    #[allow(clippy::comparison_chain)]
+    pub fn change_score(&mut self, diff: i16) {
+        if diff > 0 {
+            self.score = self.score.saturating_add(diff.abs() as i32);
+        } else if diff < 0 {
+            self.score = self.score.saturating_sub(diff.abs() as i32);
+        }
+    }
+
+    pub fn is_public(&self) -> bool {
+        !self.hidden && self.content.is_some()
+    }
+
+    pub fn is_unlisted(&self) -> bool {
+        !self.is_public()
+    }
+}
+
+impl Default for PostUpdate {
+    fn default() -> Self {
+        PostUpdate {
+            channel_id: None,
+            content: None,
+            hidden: None
+        }
+    }
+}
+
+impl<T: Trait> Module<T> {
+
+    pub fn ensure_account_can_update_post(
+        editor: &T::AccountId,
+        post: &Post<T>,
+        channel: &Channel<T>
+    ) -> DispatchResult {
+        let is_owner = post.is_owner(&editor);
+        let is_comment = post.is_comment();
+
+        let permission_to_check: ChannelPermission;
+        let permission_error: DispatchError;
+
+        if is_comment {
+          if is_owner {
+            permission_to_check = ChannelPermission::UpdateOwnComments;
+            permission_error = Error::<T>::NoPermissionToUpdateOwnComments.into();
+          } else {
+            return Err(Error::<T>::NotACommentAuthor.into());
+          }
+        } else {
+          // Not a comment
+
+          if is_owner {
+            permission_to_check = ChannelPermission::UpdateOwnPosts;
+            permission_error = Error::<T>::NoPermissionToUpdateOwnPosts.into();
+          } else {
+            permission_to_check = ChannelPermission::UpdateAnyPost;
+            permission_error = Error::<T>::NoPermissionToUpdateAnyPost.into();
+          }
+        }
+
+        Channels::ensure_account_has_channel_permission(
+          editor.clone(),
+          channel,
+          permission_to_check,
+          permission_error
+        )
+    }
+
+    /// Check that there is a `Post` with such `post_id` in the storage
+    /// or return`PostNotFound` error.
+    pub fn ensure_post_exists(post_id: PostId) -> DispatchResult {
+        ensure!(<PostById<T>>::contains_key(post_id), Error::<T>::PostNotFound);
+        Ok(())
+    }
+
+    /// Get `Post` by id from the storage or return `PostNotFound` error.
+    pub fn require_post(post_id: ChannelId) -> Result<Post<T>, DispatchError> {
+        Ok(Self::post_by_id(post_id).ok_or(Error::<T>::PostNotFound)?)
+    }
+
+    fn share_post(
+        account: T::AccountId,
+        original_post: &mut Post<T>,
+        shared_post_id: PostId
+    ) -> DispatchResult {
+        original_post.inc_shares();
+
+        T::PostScores::score_post_on_new_share(account.clone(), original_post)?;
+
+        let original_post_id = original_post.id;
+        PostById::insert(original_post_id, original_post.clone());
+        SharedPostIdsByOriginalPostId::mutate(original_post_id, |ids| ids.push(shared_post_id));
+
+        Self::deposit_event(RawEvent::PostShared(account, original_post_id));
+
+        Ok(())
+    }
+
+    pub fn is_root_post_hidden(post_id: PostId) -> Result<bool, DispatchError> {
+        let post = Self::require_post(post_id)?;
+        let root_post = post.get_root_post()?;
+        Ok(root_post.hidden)
+    }
+
+    pub fn is_root_post_visible(post_id: PostId) -> Result<bool, DispatchError> {
+        Self::is_root_post_hidden(post_id).map(|v| !v)
+    }
+
+    pub fn mutate_post_by_id<F: FnOnce(&mut Post<T>)> (
+        post_id: PostId,
+        f: F
+    ) -> Result<Post<T>, DispatchError> {
+        <PostById<T>>::mutate(post_id, |post_opt| {
+            if let Some(ref mut post) = post_opt.clone() {
+                f(post);
+                *post_opt = Some(post.clone());
+
+                return Ok(post.clone());
+            }
+
+            Err(Error::<T>::PostNotFound.into())
+        })
+    }
+
+    // TODO refactor to a tail recursion
+    /// Get all post ancestors (parent_id) including this post
+    pub fn get_post_ancestors(post_id: PostId) -> Vec<Post<T>> {
+        let mut ancestors: Vec<Post<T>> = Vec::new();
+
+        if let Some(post) = Self::post_by_id(post_id) {
+            ancestors.push(post.clone());
+            if let Some(parent_id) = post.get_comment_ext().ok().unwrap().parent_id {
+                ancestors.extend(Self::get_post_ancestors(parent_id).iter().cloned());
+            }
+        }
+
+        ancestors
+    }
+
+    /// Applies function to all post ancestors (parent_id) including this post
+    pub fn for_each_post_ancestor<F: FnMut(&mut Post<T>) + Copy> (
+        post_id: PostId,
+        f: F
+    ) -> DispatchResult {
+        let post = Self::mutate_post_by_id(post_id, f)?;
+
+        if let PostExtension::Comment(comment_ext) = post.extension {
+            if let Some(parent_id) = comment_ext.parent_id {
+                Self::for_each_post_ancestor(parent_id, f)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn try_get_post_replies(post_id: PostId) -> Vec<Post<T>> {
+        let mut replies: Vec<Post<T>> = Vec::new();
+
+        if let Some(post) = Self::post_by_id(post_id) {
+            replies.push(post);
+            for reply_id in Self::reply_ids_by_post_id(post_id).iter() {
+                replies.extend(Self::try_get_post_replies(*reply_id).iter().cloned());
+            }
+        }
+
+        replies
+    }
+
+    /// Recursively et all nested post replies (reply_ids_by_post_id)
+    pub fn get_post_replies(post_id: PostId) -> Result<Vec<Post<T>>, DispatchError> {
+        let reply_ids = Self::reply_ids_by_post_id(post_id);
+        ensure!(!reply_ids.is_empty(), Error::<T>::NoRepliesOnPost);
+
+        let mut replies: Vec<Post<T>> = Vec::new();
+        for reply_id in reply_ids.iter() {
+            replies.extend(Self::try_get_post_replies(*reply_id));
+        }
+        Ok(replies)
+    }
+    // TODO: maybe add for_each_reply?
+
+    pub(crate) fn create_comment(
+        creator: &T::AccountId,
+        new_post_id: PostId,
+        comment_ext: Comment,
+        root_post: &mut Post<T>
+    ) -> DispatchResult {
+        let mut commented_post_id = root_post.id;
+
+        if let Some(parent_id) = comment_ext.parent_id {
+            let parent_comment = Self::post_by_id(parent_id).ok_or(Error::<T>::UnknownParentComment)?;
+            ensure!(parent_comment.is_comment(), Error::<T>::NotACommentByParentId);
+
+            let ancestors = Self::get_post_ancestors(parent_id);
+            ensure!(ancestors.len() < T::MaxCommentDepth::get() as usize, Error::<T>::MaxCommentDepthReached);
+
+            commented_post_id = parent_id;
+        }
+
+        root_post.inc_replies();
+        T::PostScores::score_root_post_on_new_comment(creator.clone(), root_post)?;
+
+        Self::for_each_post_ancestor(commented_post_id, |post| post.inc_replies())?;
+        PostById::insert(root_post.id, root_post);
+        ReplyIdsByPostId::mutate(commented_post_id, |reply_ids| reply_ids.push(new_post_id));
+
+        Ok(())
+    }
+
+    pub(crate) fn create_sharing_post(
+        creator: &T::AccountId,
+        new_post_id: PostId,
+        original_post_id: PostId,
+        channel: &mut Channel<T>
+    ) -> DispatchResult {
+        let original_post = &mut Self::post_by_id(original_post_id)
+            .ok_or(Error::<T>::OriginalPostNotFound)?;
+
+        ensure!(!original_post.is_sharing_post(), Error::<T>::CannotShareSharingPost);
+
+        // Check if it's allowed to share a post from the channel of original post.
+        Channels::ensure_account_has_channel_permission(
+            creator.clone(),
+            &original_post.get_channel()?,
+            ChannelPermission::Share,
+            Error::<T>::NoPermissionToShare.into()
+        )?;
+
+        channel.inc_posts();
+
+        Self::share_post(creator.clone(), original_post, new_post_id)
+    }
+
+    fn mutate_posts_count_on_channel<F: FnMut(&mut u32) + Copy> (
+        channel_id: ChannelId,
+        post: &Post<T>,
+        mut f: F
+    ) -> DispatchResult {
+        Channels::<T>::mutate_channel_by_id(channel_id, |channel: &mut Channel<T>| {
+            f(&mut channel.posts_count);
+            if post.hidden {
+                f(&mut channel.hidden_posts_count);
+            }
+        }).map(|_| ())
+    }
+
+    pub(crate) fn move_post_to_channel(
+        editor: T::AccountId,
+        post: &mut Post<T>,
+        new_channel_id: ChannelId
+    ) -> DispatchResult {
+        let old_channel_id_opt = post.try_get_channel_id();
+        let new_channel = Channels::<T>::require_channel(new_channel_id)?;
+
+        ensure!(
+            T::IsAccountBlocked::is_allowed_account(editor.clone(), new_channel_id),
+            UtilsError::<T>::AccountIsBlocked
+        );
+        Channels::ensure_account_has_channel_permission(
+            editor,
+            &new_channel,
+            ChannelPermission::CreatePosts,
+            Error::<T>::NoPermissionToCreatePosts.into()
+        )?;
+        ensure!(
+            T::IsPostBlocked::is_allowed_post(post.id, new_channel_id),
+            UtilsError::<T>::PostIsBlocked
+        );
+        ensure!(
+            T::IsContentBlocked::is_allowed_content(post.content.clone(), new_channel_id),
+            UtilsError::<T>::ContentIsBlocked
+        );
+
+        match post.extension {
+            PostExtension::RegularPost | PostExtension::SharedPost(_) => {
+
+                if let Some(old_channel_id) = old_channel_id_opt {
+
+                    // Decrease the number of posts on the old channel
+                    Self::mutate_posts_count_on_channel(
+                        old_channel_id,
+                        post,
+                        |counter| *counter = counter.saturating_sub(1)
+                    )?;
+
+                    // Decrease a score on the old channel
+                    Channels::<T>::mutate_channel_by_id(
+                        old_channel_id,
+                        |channel| channel.score = channel.score.saturating_sub(post.score)
+                    )?;
+
+                    PostIdsByChannelId::mutate(old_channel_id, |post_ids| remove_from_vec(post_ids, post.id));
+                }
+
+                // Increase the number of posts on the new channel
+                Self::mutate_posts_count_on_channel(
+                    new_channel_id,
+                    post,
+                    |counter| *counter = counter.saturating_add(1)
+                )?;
+
+                // Increase a score on the new channel
+                Channels::<T>::mutate_channel_by_id(
+                    new_channel_id,
+                    |channel| channel.score = channel.score.saturating_add(post.score)
+                )?;
+
+                PostIdsByChannelId::mutate(new_channel_id, |post_ids| post_ids.push(post.id));
+
+                post.channel_id = Some(new_channel_id);
+                PostById::<T>::insert(post.id, post);
+
+                Ok(())
+            },
+            _ => fail!(Error::<T>::CannotUpdateChannelIdOnComment),
+        }
+    }
+
+    pub fn delete_post_from_channel(post_id: PostId) -> DispatchResult {
+        let mut post = Self::require_post(post_id)?;
+
+        if let PostExtension::Comment(comment_ext) = post.extension {
+            post.extension = PostExtension::RegularPost;
+
+            let root_post = &mut Self::require_post(comment_ext.root_post_id)?;
+            let parent_id = comment_ext.parent_id.unwrap_or(root_post.id);
+
+            let dec_replies_count: fn(&mut Post<T>) = |p| {
+                p.dec_replies();
+                if p.hidden {
+                    p.dec_hidden_replies();
+                }
+            };
+
+            dec_replies_count(root_post);
+            PostById::<T>::insert(root_post.id, root_post.clone());
+            Self::for_each_post_ancestor(parent_id, dec_replies_count)?;
+
+            // Subtract the weight of CreateComment from the root post and its channel
+            T::PostScores::score_root_post_on_new_comment(post.created.account.clone(), root_post)?;
+            let replies = Self::get_post_replies(post_id)?;
+            for reply in replies.iter() {
+                T::PostScores::score_root_post_on_new_comment(reply.created.account.clone(), root_post)?;
+            }
+        } else {
+            // If post is not a comment:
+
+            let channel_id = post.get_channel_id()?;
+
+            // Decrease the number of posts on the channel
+            Self::mutate_posts_count_on_channel(
+                channel_id,
+                &post,
+                |counter| *counter = counter.saturating_sub(1)
+            )?;
+
+            Channels::<T>::mutate_channel_by_id(
+                channel_id,
+                |channel| channel.score = channel.score.saturating_sub(post.score)
+            )?;
+
+            post.channel_id = None;
+            PostIdsByChannelId::mutate(channel_id, |post_ids| remove_from_vec(post_ids, post_id));
+        }
+
+        PostById::<T>::insert(post.id, post);
+
+        Ok(())
+    }
+
+    /// Rewrite ancestor counters when Post hidden status changes
+    /// Warning: This will affect storage state!
+    pub(crate) fn update_counters_on_comment_hidden_change(
+        comment_ext: &Comment,
+        becomes_hidden: bool
+    ) -> DispatchResult {
+        let root_post = &mut Self::require_post(comment_ext.root_post_id)?;
+        let commented_post_id = comment_ext.parent_id.unwrap_or(root_post.id);
+
+        let mut update_hidden_replies: fn(&mut Post<T>) = Post::inc_hidden_replies;
+        if !becomes_hidden {
+            update_hidden_replies = Post::dec_hidden_replies;
+        }
+
+        Self::for_each_post_ancestor(commented_post_id, |post| update_hidden_replies(post))?;
+
+        update_hidden_replies(root_post);
+        PostById::insert(root_post.id, root_post);
+
+        Ok(())
+    }
+}
