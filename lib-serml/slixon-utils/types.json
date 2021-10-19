@@ -1,0 +1,25 @@
+{
+  "ChannelId": "u64",
+
+  "WhoAndWhen": {
+    "account": "AccountId",
+    "block": "BlockNumber",
+    "time": "Moment"
+  },
+
+  "User": {
+    "_enum": {
+      "Account": "AccountId",
+      "Channel": "ChannelId"
+    }
+  },
+
+  "Content": {
+    "_enum": {
+      "None": "Null",
+      "Raw": "Text",
+      "IPFS": "Text",
+      "Hyper": "Text"
+    }
+  }
+}
