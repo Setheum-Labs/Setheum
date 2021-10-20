@@ -68,6 +68,7 @@ sc-consensus-slots = { version = '0.9.0' }
 module-evm = { path = "../lib-serml/evm" }
 module-evm-rpc-runtime-api = {path = "../lib-serml/evm/rpc/runtime_api" }
 evm-rpc = { path = "../lib-serml/evm/rpc" }
+setheum-renvm-bridge = { path = "../lib-serml/renvm-bridge" }
 
 setheum-primitives = { path = "../primitives" }
 
@@ -75,7 +76,8 @@ setheum-primitives = { path = "../primitives" }
 setheum-runtime = { path = '../runtime/setheum' }
 
 [features]
-default = []
+default = [ "std" ]
+std = []
 runtime-benchmarks = ['setheum-runtime/runtime-benchmarks']
 with-ethereum-compatibility = [
 	"setheum-runtime/with-ethereum-compatibility"
