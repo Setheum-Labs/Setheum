@@ -1,6 +1,6 @@
 [package]
 name = "setheum-renvm-bridge"
-version = "1.0.0"
+version = "0.9.6"
 authors = ["Setheum Labs"]
 edition = "2018"
 
