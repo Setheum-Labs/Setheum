@@ -7,7 +7,7 @@ use setheum_runtime::{
 	DexConfig, ShuraCouncilMembershipConfig, SudoConfig, OrmlNFTConfig, FinancialCouncilMembershipConfig, PublicFundCouncilMembershipConfig,
 	TechnicalCommitteeMembershipConfig, OperatorMembershipSetheumConfig, SETM, SERP, DNAR, SETR, SETUSD, RENBTC,
 };
-use runtime_common::TokenInfo;
+use primitives::TokenInfo;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount};
@@ -535,7 +535,6 @@ fn testnet_genesis(
 					.collect::<Vec<_>>()
 			},
 		},
-		// TODO: Add `SerpTreasuryConfig`
 		module_evm: Some(EvmConfig {
 			accounts: evm_genesis_accounts,
 		}),
@@ -819,7 +818,6 @@ fn mainnet_genesis(
 					.collect::<Vec<_>>()
 			},
 		},
-		// TODO: Add `SerpTreasuryConfig`
 		module_evm: Some(EvmConfig {
 			accounts: evm_genesis_accounts,
 		}),

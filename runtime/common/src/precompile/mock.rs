@@ -144,8 +144,9 @@ pub const LP_RENBTC_SETUSD: CurrencyId =
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub AirdropMinimum: u32 = 2;
-	pub AirdropMaximum: u32 = 3;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR, SETUSD,
+	];
 }
 
 impl module_currencies::Config for Test {
@@ -153,11 +154,8 @@ impl module_currencies::Config for Test {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
     type SerpTreasury = ();
-	type AirdropAccountId = ();
-	type AirdropMinimum = AirdropMinimum;
-	type AirdropMaximum = AirdropMaximum;
-	type AirdropOrigin = ();
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;

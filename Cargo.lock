@@ -1424,6 +1424,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
+name = "emergency-shutdown"
+version = "0.9.6"
+dependencies = [
+ "cdp-treasury",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "module-loans",
+ "module-support",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "setheum-primitives",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "enum-as-inner"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7856,6 +7878,10 @@ dependencies = [
 name = "setheum-runtime"
 version = "0.9.6"
 dependencies = [
+ "auction-manager",
+ "cdp-engine",
+ "cdp-treasury",
+ "emergency-shutdown",
  "evm 0.26.0",
  "frame-benchmarking 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "frame-executive",
@@ -7866,6 +7892,7 @@ dependencies = [
  "hex",
  "hex-literal 0.3.3",
  "libsecp256k1 0.6.0",
+ "module-airdrop",
  "module-currencies",
  "module-dex",
  "module-evm",
@@ -7873,6 +7900,7 @@ dependencies = [
  "module-evm-bridge",
  "module-evm-manager",
  "module-evm-rpc-runtime-api",
+ "module-loans",
  "module-nft",
  "module-prices",
  "module-recovery",
@@ -7916,6 +7944,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serp-ocw",
+ "serp-setmint",
  "serp-treasury",
  "setheum-primitives",
  "setheum-renvm-bridge",
@@ -7935,6 +7964,7 @@ dependencies = [
  "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
  "sp-transaction-pool",
  "sp-version 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "static_assertions",
  "substrate-wasm-builder",
 ]
 

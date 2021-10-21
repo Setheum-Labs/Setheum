@@ -132,11 +132,9 @@ pub mod module {
 		type NewContractExtraBytes: Get<u32>;
 
 		/// Storage required for per byte.
-		#[pallet::constant]
 		type StorageDepositPerByte: Get<BalanceOf<Self>>;
 
 		/// Contract max code size.
-		#[pallet::constant]
 		type MaxCodeSize: Get<u32>;
 
 		/// The overarching event type.
@@ -163,15 +161,12 @@ pub mod module {
 		type NetworkContractOrigin: EnsureOrigin<Self::Origin>;
 
 		/// The EVM address for creating system contract.
-		#[pallet::constant]
 		type NetworkContractSource: Get<EvmAddress>;
 
 		/// Deposit for the developer.
-		#[pallet::constant]
 		type DeveloperDeposit: Get<BalanceOf<Self>>;
 
 		/// The fee for deploying the contract.
-		#[pallet::constant]
 		type DeploymentFee: Get<BalanceOf<Self>>;
 
 		type TreasuryAccount: Get<Self::AccountId>;
