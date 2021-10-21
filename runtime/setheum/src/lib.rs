@@ -29,7 +29,7 @@ use codec::Encode;
 use sp_std::prelude::*;
 use sp_core::{
 	crypto::KeyTypeId,
-	u32_trait::{_2, _3, _4},
+	u32_trait::{_1, _2, _3, _4},
 	H160, OpaqueMetadata, Decode,
 };
 use sp_runtime::{
@@ -82,6 +82,8 @@ pub use frame_support::{
 };
 pub use frame_system::{ensure_root, EnsureOneOf, EnsureRoot, RawOrigin};
 
+use static_assertions::const_assert;
+
 use orml_tokens::CurrencyAdapter;
 use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
 use orml_authority::EnsureDelayed;
@@ -95,30 +97,130 @@ use module_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 
 pub use pallet_staking::StakerStatus;
 pub use primitives::{
-	evm::EstimateResourcesRequest,
+	evm::EstimateResourcesRequest, AuthoritysOriginId,
 	AccountId, AccountIndex, Amount, Balance, BlockNumber,
+	currency::{TokenInfo, SETM, SERP, DNAR, SETR, SETUSD, RENBTC},
 	CurrencyId, EraIndex, Hash, Moment, Nonce, Signature, TokenSymbol,
-	AuthoritysOriginId,
+	PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
+pub use module_support::{Contains, ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 
-pub use runtime_common::{
-	cent, dollar, microcent, millicent, BlockLength, BlockWeights, OffchainSolutionWeightLimit,
-	EnsureRootOrAllPublicFundCouncil, EnsureRootOrAllShuraCouncil, EnsureRootOrAllTechnicalCommittee,
-	EnsureRootOrHalfFinancialCouncil, EnsureRootOrHalfPublicFundCouncil, EnsureRootOrHalfShuraCouncil,
-	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrThreeFourthsPublicFundCouncil, ExchangeRate,
-	EnsureRootOrThreeFourthsShuraCouncil, EnsureRootOrTwoThirdsPublicFundCouncil, EnsureRootOrTwoThirdsShuraCouncil,
-	EnsureRootOrTwoThirdsTechnicalCommittee, FinancialCouncilInstance, FinancialCouncilMembershipInstance,
-	GasToWeight, PublicFundCouncilInstance, ShuraCouncilInstance, PublicFundCouncilMembershipInstance,
-	ShuraCouncilMembershipInstance, OperatorMembershipInstanceSetheum, OperatorMembershipInstanceBand,
-	Price, Rate, Ratio, RelaychainBlockNumberProvider, RuntimeBlockLength, RuntimeBlockWeights,
-	SystemContractsFilter, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
-	TimeStampedPrice, SETM, SERP, DNAR, SETR, SETUSD, RENBTC,
-};
+pub use runtime_common::{};
 
 pub use primitives::{currency::*, time::*};
 
 mod weights;
 mod benchmarking;
+
+pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
+
+// Priority of unsigned transactions
+parameter_types! {
+	// Operational is 3/4 of TransactionPriority::max_value().
+	// Ensure Inherent -> Operational tx -> Unsigned tx -> Signed normal tx
+	pub const RenvmBridgeUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+	pub const CdpEngineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+	pub const AuctionManagerUnsignedPriority: TransactionPriority = TransactionPriority::max_value() - 1;
+}
+
+/// Check if the given `address` is a system contract.
+///
+/// It's system contract if the address starts with SYSTEM_CONTRACT_ADDRESS_PREFIX.
+pub fn is_system_contract(address: H160) -> bool {
+	address.as_bytes().starts_with(&SYSTEM_CONTRACT_ADDRESS_PREFIX)
+}
+
+pub fn is_core_precompile(address: H160) -> bool {
+	address >= H160::from_low_u64_be(PRECOMPILE_ADDRESS_START)
+		&& address < H160::from_low_u64_be(PREDEPLOY_ADDRESS_START)
+}
+
+/// The call is allowed only if caller is a system contract.
+pub struct SystemContractsFilter;
+impl PrecompileCallerFilter for SystemContractsFilter {
+	fn is_allowed(caller: H160) -> bool {
+		is_system_contract(caller)
+	}
+}
+
+/// Convert gas to weight
+pub struct GasToWeight;
+impl Convert<u64, Weight> for GasToWeight {
+	fn convert(a: u64) -> u64 {
+		// TODO: estimate this
+		a as Weight
+	}
+}
+
+pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
+/// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
+/// used by  Operational  extrinsics.
+const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+/// We allow for 2 seconds of compute with a 5 second average block time.
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 500 * WEIGHT_PER_MILLIS;
+
+const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
+
+parameter_types! {
+	/// Maximum length of block. Up to 5MB.
+	pub BlockLength: limits::BlockLength =
+		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+	/// Block weights base values and limits.
+	pub BlockWeights: limits::BlockWeights = limits::BlockWeights::builder()
+		.base_block(BlockExecutionWeight::get())
+		.for_class(DispatchClass::all(), |weights| {
+			weights.base_extrinsic = ExtrinsicBaseWeight::get();
+		})
+		.for_class(DispatchClass::Normal, |weights| {
+			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+		})
+		.for_class(DispatchClass::Operational, |weights| {
+			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+			// Operational transactions have an extra reserved space, so that they
+			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
+			weights.reserved = Some(
+				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT,
+			);
+		})
+		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
+		.build_or_panic();
+}
+
+parameter_types! {
+	/// A limit for off-chain phragmen unsigned solution submission.
+	///
+	/// We want to keep it as high as possible, but can't risk having it reject,
+	/// so we always subtract the base block execution weight.
+	pub OffchainSolutionWeightLimit: Weight = BlockWeights::get()
+		.get(DispatchClass::Normal)
+		.max_extrinsic
+		.expect("Normal extrinsics have weight limit configured by default; qed")
+		.saturating_sub(BlockExecutionWeight::get());
+}
+
+pub struct DummyNomineeFilter;
+impl<AccountId> Contains<AccountId> for DummyNomineeFilter {
+	fn contains(_: &AccountId) -> bool {
+		true
+	}
+}
+
+// TODO: make those const fn
+pub fn dollar(currency_id: CurrencyId) -> Balance {
+	10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
+}
+
+pub fn cent(currency_id: CurrencyId) -> Balance {
+	dollar(currency_id) / 100
+}
+
+pub fn millicent(currency_id: CurrencyId) -> Balance {
+	cent(currency_id) / 1000
+}
+
+pub fn microcent(currency_id: CurrencyId) -> Balance {
+	millicent(currency_id) / 1000
+}
 
 //
 // formerly authority.rs
@@ -146,8 +248,8 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		CDPTreasuryModuleId::get().into_account(),
 		LoansModuleId::get().into_account(),
 		DEXModuleId::get().into_account(),
+		BuyBackPoolAccountId::get(),
 		ZeroAccountId::get(),
-		OneAccountId::get(),
 		TwoAccountId::get(),
 	]
 }
@@ -472,7 +574,7 @@ impl pallet_staking::Config for Runtime {
 	type CurrencyToVote = U128CurrencyToVote;
 	type RewardRemainder = SetheumTreasury;
 	type Event = Event;
-	type Slash = SetheumTreasury; // send the slashed funds to the pallet treasury.
+	type Slash = SetheumTreasury; // send the slashed funds to the Setheum treasury.
 	type Reward = (); // rewards are minted from the void
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
@@ -614,7 +716,13 @@ parameter_types! {
 	pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 	// All currency types except for native currency, Sort by fee charge order
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![];
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
+		SERP,
+		DNAR,
+		SETR,
+		SETUSD,
+		RENBTC
+	];
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
@@ -675,19 +783,18 @@ impl module_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub StableCurrencyFixedPrice: Price = Price::saturating_from_rational(1, 1);
-	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
+	pub SetterFixedPrice: Price = Price::saturating_from_rational(2, 1); // $2
 }
 
 impl module_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type StableCurrencyFixedPrice = StableCurrencyFixedPrice;
-	type GetStakingCurrencyId = GetStakingCurrencyId;
-	type GetLiquidCurrencyId = GetLiquidCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type SetterCurrencyId = GetSetUSDCurrencyId;
+	type SetUSDFixedPrice = SetUSDFixedPrice;
+	type SetterFixedPrice = SetterFixedPrice;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
-	type LiquidStakingExchangeRateProvider = LiquidStakingExchangeRateProvider;
 	type DEX = Dex;
 	type Currency = Currencies;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
@@ -710,8 +817,8 @@ impl module_transaction_payment::Config for Runtime {
 	type OnTransactionPayment = Treasury;
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = fee::WeightToFee;
-	type DEX = DEX;
 	type FeeMultiplierUpdate = TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
+	type DEX = DEX;
 	type WeightInfo = weights::transaction_payment::WeightInfo<Runtime>;
 }
 
@@ -894,7 +1001,7 @@ impl auction_manager::Config for Runtime {
 	type MinimumIncrementSize = MinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type CDPTreasury = CdpTreasury;
 	type DEX = Dex;
 	type PriceSource = Prices;
@@ -905,12 +1012,12 @@ impl auction_manager::Config for Runtime {
 
 impl module_loans::Config for Runtime {
 	type Event = Event;
-	type Convert = module_cdp_engine::DebitExchangeRateConvertor<Runtime>;
+	type Convert = cdp_engine::DebitExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type RiskManager = CdpEngine;
 	type CDPTreasury = CdpTreasury;
 	type ModuleId = LoansModuleId;
-	type OnUpdateLoan = module_incentives::OnUpdateLoan<Runtime>;
+	type OnUpdateLoan = ();
 }
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
@@ -973,30 +1080,51 @@ where
 }
 
 parameter_types! {
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, SETR];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![
+		SETM,
+		SERP,
+		DNAR,
+		SETR,
+		RENBTC
+	];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(130, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(8, 100);
 	pub MinimumDebitValue: Balance = dollar(SETUSD);
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(15, 100);
+	// pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(15, 100);
 }
 
 impl cdp_engine::Config for Runtime {
 	type Event = Event;
 	type PriceSource = Prices;
 	type CollateralCurrencyIds = CollateralCurrencyIds;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumDebitValue = MinimumDebitValue;
-	type GetStableCurrencyId = GetStableCurrencyId;
 	type CDPTreasury = CdpTreasury;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type MaxSlippageSwapWithDEX = MaxSlippageSwapWithDEX;
 	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
 	type EmergencyShutdown = EmergencyShutdown;
-	type UnixTime = Timestamp;
+	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type WeightInfo = weights::cdp_engine::WeightInfo<Runtime>;
+}
+
+parameter_types! {
+	pub const MaxAuctionsCount: u32 = 100;
+}
+
+impl cdp_treasury::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type AuctionManagerHandler = AuctionManager;
+	type DEX = Dex;
+	type MaxAuctionsCount = MaxAuctionsCount;
+	type SerpTreasury = SerpTreasury;
+	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+	type WeightInfo = weights::cdp_treasury::WeightInfo<Runtime>;
+	type ModuleId = CDPTreasuryModuleId;
 }
 
 parameter_types! {
@@ -1016,43 +1144,29 @@ impl emergency_shutdown::Config for Runtime {
 	type PriceSource = Prices;
 	type CDPTreasury = CdpTreasury;
 	type AuctionManagerHandler = AuctionManager;
-	type ShutdownOrigin = EnsureRoot<AccountId>; // TODO: Update to `EnsureRootOrThreeFourthsFinancialCouncil`
+	type ShutdownOrigin = EnsureRootOrThreeFourthsFinancialCouncil;
 	type WeightInfo = weights::emergency_shutdown::WeightInfo<Runtime>;
 }
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (3, 1000);	// 0.3%
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub const TradingPathLimit: u32 = 3;
+	pub BuyBackPoolAccountId: AccountId = AccountId::from([1u8; 32]);
 }
 
 impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
+	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
 	type ModuleId = DEXModuleId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
-	type DEXIncentives = Incentives;
 	type WeightInfo = weights::module_dex::WeightInfo<Runtime>;
-	type ListingOrigin = EnsureRootOrHalfGeneralCouncil;
-}
-
-parameter_types! {
-	pub const MaxAuctionsCount: u32 = 100;
-	pub HonzonTreasuryAccount: AccountId = HonzonTreasuryModuleId::get().into_account();
-}
-
-impl cdp_treasury::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = AuctionManager;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type DEX = Dex;
-	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = CDPTreasuryModuleId;
-	type TreasuryAccount = HonzonTreasuryAccount;
-	type WeightInfo = weights::cdp_treasury::WeightInfo<Runtime>;
+	type ListingOrigin = EnsureRootOrHalfFinancialCouncil;
 }
 
 parameter_types! {
@@ -1072,18 +1186,17 @@ impl module_nft::Config for Runtime {
 	type WeightInfo = weights::module_nft::WeightInfo<Runtime>;
 }
 
-parameter_types! {
-	pub MaxClassMetadata: u32 = 1024;
-	pub MaxTokenMetadata: u32 = 1024;
-}
+// TODO: Update NFT module then impl.
+// parameter_types! {
+// 	pub MaxClassMetadata: u32 = 1024;
+// 	pub MaxTokenMetadata: u32 = 1024;
+// }
 
 impl orml_nft::Config for Runtime {
 	type ClassId = u32;
 	type TokenId = u64;
 	type ClassData = module_nft::ClassData<Balance>;
 	type TokenData = module_nft::TokenData<Balance>;
-	type MaxClassMetadata = MaxClassMetadata;
-	type MaxTokenMetadata = MaxTokenMetadata;
 }
 
 parameter_types! {
@@ -1193,6 +1306,145 @@ impl pallet_sudo::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
 }
+
+
+
+pub type ShuraCouncilInstance = pallet_collective::Instance1;
+pub type FinancialCouncilInstance = pallet_collective::Instance3;
+pub type PublicFundCouncilInstance = pallet_collective::Instance2;
+pub type TechnicalCommitteeInstance = pallet_collective::Instance4;
+
+pub type ShuraCouncilMembershipInstance = pallet_membership::Instance1;
+pub type FinancialCouncilMembershipInstance = pallet_membership::Instance3;
+pub type PublicFundCouncilMembershipInstance = pallet_membership::Instance2;
+pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance4;
+pub type OperatorMembershipInstanceSetheum = pallet_membership::Instance5;
+
+// Shura Council
+pub type EnsureRootOrAllShuraCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, ShuraCouncilInstance>,
+>;
+
+pub type EnsureRootOrHalfShuraCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, ShuraCouncilInstance>,
+>;
+
+pub type EnsureRootOrOneThirdsShuraCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, ShuraCouncilInstance>,
+>;
+
+pub type EnsureRootOrTwoThirdsShuraCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, ShuraCouncilInstance>,
+>;
+
+pub type EnsureRootOrThreeFourthsShuraCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, ShuraCouncilInstance>,
+>;
+
+// Financial Council
+pub type EnsureRootOrAllFinancialCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, FinancialCouncilInstance>,
+>;
+
+pub type EnsureRootOrHalfFinancialCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, FinancialCouncilInstance>,
+>;
+
+pub type EnsureRootOrOneThirdsFinancialCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, FinancialCouncilInstance>,
+>;
+
+pub type EnsureRootOrTwoThirdsFinancialCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, FinancialCouncilInstance>,
+>;
+
+pub type EnsureRootOrThreeFourthsFinancialCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, FinancialCouncilInstance>,
+>;
+
+// SPF (Public Fund) Council
+pub type EnsureRootOrAllPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, PublicFundCouncilInstance>,
+>;
+
+pub type EnsureRootOrHalfPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, PublicFundCouncilInstance>,
+>;
+
+pub type EnsureRootOrOneThirdsPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, PublicFundCouncilInstance>,
+>;
+
+pub type EnsureRootOrTwoThirdsPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, PublicFundCouncilInstance>,
+>;
+
+pub type EnsureRootOrThreeFourthsPublicFundCouncil = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, PublicFundCouncilInstance>,
+>;
+
+// Technical Committee Council
+pub type EnsureRootOrAllTechnicalCommittee = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCommitteeInstance>,
+>;
+
+pub type EnsureRootOrHalfTechnicalCommittee = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, TechnicalCommitteeInstance>,
+>;
+
+pub type EnsureRootOrOneThirdsTechnicalCommittee = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, TechnicalCommitteeInstance>,
+>;
+
+pub type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCommitteeInstance>,
+>;
+
+pub type EnsureRootOrThreeFourthsTechnicalCommittee = EnsureOneOf<
+	AccountId,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, TechnicalCommitteeInstance>,
+>;
+
+
 
 parameter_types! {
 	pub const ShuraCouncilMotionDuration: BlockNumber = 3 * DAYS;
