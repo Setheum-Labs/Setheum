@@ -4135,6 +4135,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "module-emergency-shutdown"
+version = "0.7.9"
+dependencies = [
+ "cdp-treasury",
+ "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "module-loans",
+ "module-support",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "setheum-primitives",
+ "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-io 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+ "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
+]
+
+[[package]]
 name = "module-evm"
 version = "0.9.6"
 dependencies = [
