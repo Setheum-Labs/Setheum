@@ -341,8 +341,6 @@ pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub AirdropMinimum: u32 = 2;
-	pub AirdropMaximum: u32 = 3;
 }
 
 impl module_currencies::Config for Runtime {

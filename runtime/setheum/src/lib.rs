@@ -64,12 +64,13 @@ pub use frame_support::{
 };
 pub use frame_system::{ensure_root, EnsureOneOf, EnsureRoot, RawOrigin};
 
-use orml_traits::{parameter_type_with_key};
+use orml_tokens::CurrencyAdapter;
+use orml_traits::{create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended};
 use orml_authority::EnsureDelayed;
 
 use module_evm::{CallInfo, CreateInfo};
 use module_evm_accounts::EvmAddressMapping;
-use module_currencies::{BasicCurrencyAdapter};
+use module_currencies::{BasicCurrencyAdapter, Currency};
 use module_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 
 // re-exports
@@ -114,7 +115,15 @@ parameter_types! {
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
-		BurnAccount::get(),
+		LoansModuleId::get().into_account(),
+		CDPTreasuryModuleId::get().into_account(),
+		SerpTreasuryModuleId::get().into_account(),
+		DEXModuleId::get().into_account(),
+		PublicFundModuleId::get().into_account(),
+		TreasuryModuleId::get().into_account(),
+		ZeroAccountId::get(),
+		OneAccountId::get(),
+		TwoAccountId::get(),
 	]
 }
 
@@ -122,7 +131,10 @@ pub struct AuthorityConfigImpl;
 impl orml_authority::AuthorityConfig<Origin, OriginCaller, BlockNumber> for AuthorityConfigImpl {
 	fn check_schedule_dispatch(origin: Origin, _priority: Priority) -> DispatchResult {
 		EnsureRoot::<AccountId>::try_origin(origin)
-			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
+		.or_else(|o| EnsureRootOrHalfShuraCouncil::try_origin(o).map(|_| ()))
+		.or_else(|o| EnsureRootOrHalfFinancialCouncil::try_origin(o).map(|_| ()))
+		.or_else(|o| EnsureRootOrHalfPublicFundCouncil::try_origin(o).map(|_| ()))
+		.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 	}
 
 	fn check_fast_track_schedule(
@@ -130,16 +142,28 @@ impl orml_authority::AuthorityConfig<Origin, OriginCaller, BlockNumber> for Auth
 		_initial_origin: &OriginCaller,
 		_new_delay: BlockNumber,
 	) -> DispatchResult {
-		ensure_root(origin).map_err(|_| BadOrigin.into())
+		ensure_root(origin.clone()).or_else(|_| {
+			if new_delay / HOURS < 12 {
+				EnsureRootOrTwoThirdsTechnicalCommittee::ensure_origin(origin)
+					.map_or_else(|e| Err(e.into()), |_| Ok(()))
+			} else {
+				EnsureRootOrOneThirdsTechnicalCommittee::ensure_origin(origin)
+					.map_or_else(|e| Err(e.into()), |_| Ok(()))
+			}
+		})
 	}
 
 	fn check_delay_schedule(origin: Origin, _initial_origin: &OriginCaller) -> DispatchResult {
-		ensure_root(origin).map_err(|_| BadOrigin.into())
+		ensure_root(origin.clone()).or_else(|_| {
+			EnsureRootOrOneThirdsTechnicalCommittee::ensure_origin(origin).map_or_else(|e| Err(e.into()), |_| Ok(()))
+		})
 	}
 
 	fn check_cancel_schedule(origin: Origin, initial_origin: &OriginCaller) -> DispatchResult {
 		ensure_root(origin.clone()).or_else(|_| {
-			if origin.caller() == initial_origin {
+			if origin.caller() == initial_origin
+				|| EnsureRootOrThreeFourthsShuraCouncil::ensure_origin(origin).is_ok()
+			{
 				Ok(())
 			} else {
 				Err(BadOrigin.into())
@@ -152,20 +176,39 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 	fn into_origin(self) -> OriginCaller {
 		match self {
 			AuthoritysOriginId::Root => Origin::root().caller().clone(),
+			AuthoritysOriginId::Treasury => Origin::signed(TreasuryModuleId::get().into_account())
+				.caller()
+				.clone(),
+			AuthoritysOriginId::PublicFund => Origin::signed(PublicFundModuleId::get().into_account())
+				.caller()
+				.clone(),
 		}
 	}
 
 	fn check_dispatch_from(&self, origin: Origin) -> DispatchResult {
 		ensure_root(origin.clone()).or_else(|_| {
 			match self {
-			AuthoritysOriginId::Root => <EnsureDelayed<
-				SevenDays,
-				EnsureRoot<AccountId>,
-				BlockNumber,
-				OriginCaller,
-			> as EnsureOrigin<Origin>>::ensure_origin(origin)
-			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(())),
-		}
+				AuthoritysOriginId::Root => <EnsureDelayed<
+					SevenDays,
+					EnsureRootOrThreeFourthsShuraCouncil,
+					BlockNumber,
+					OriginCaller,
+				> as EnsureOrigin<Origin>>::ensure_origin(origin)
+				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(())),
+				AuthoritysOriginId::Treasury => {
+					<EnsureDelayed<OneDay, EnsureRootOrHalfShuraCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
+						Origin,
+					>>::ensure_origin(origin)
+					.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
+				}
+				AuthoritysOriginId::PublicFund => <EnsureDelayed<
+					OneDay,
+					EnsureRootOrHalfPublicFundCouncil,
+					BlockNumber,
+					OriginCaller,
+				> as EnsureOrigin<Origin>>::ensure_origin(origin)
+				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
+			}
 		})
 	}
 }
@@ -200,12 +243,20 @@ pub mod opaque {
 
 /// Fee-related
 pub mod fee {
-	use super::{Balance, MILLI_SETM};
+	use primitives::Balance;
 	use frame_support::weights::{
-		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
+		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient,
+		WeightToFeeCoefficients, WeightToFeePolynomial,
 	};
 	use smallvec::smallvec;
 	use sp_runtime::Perbill;
+
+	/// The block saturation level. Fees will be updates based on this value.
+	pub const TARGET_BLOCK_FULLNESS: Perbill = Perbill::from_percent(25);
+
+	fn base_tx_in_setm() -> Balance {
+		cent(SETM) / 10
+	}
 
 	/// Handles converting a weight scalar to a fee value, based on the scale
 	/// and granularity of the node's balance type.
@@ -223,7 +274,8 @@ pub mod fee {
 	impl WeightToFeePolynomial for WeightToFee {
 		type Balance = Balance;
 		fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-			let p = MILLI_SETM;
+			// in Setheum, extrinsic base weight (smallest non-zero weight) is mapped to 1/10 CENT:
+			let p = base_tx_in_setm();
 			let q = Balance::from(ExtrinsicBaseWeight::get()); // 125_000_000
 			smallvec![WeightToFeeCoefficient {
 				degree: 1,
@@ -239,8 +291,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("setheum"),
 	impl_name: create_runtime_str!("setheum"),
 	authoring_version: 1,
-	spec_version: 5,
-	impl_version: 5,
+	spec_version: 1,
+	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
 };
@@ -256,14 +308,35 @@ pub fn native_version() -> NativeVersion {
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
-	pub const BlockHashCount: BlockNumber = 2400;
-	pub const SS58Prefix: u8 = 42;
+	pub const BlockHashCount: BlockNumber = 1200; // mortal tx can be valid up to 1 hour after signing
+	pub const SS58Prefix: u8 = 258;
 }
 
+pub struct BaseCallFilter;
+impl Filter<Call> for BaseCallFilter {
+	fn filter(call: &Call) -> bool {
+		matches!(
+			call,
+			// Core
+			Call::System(_) | Call::Timestamp(_) |
+			// Utility
+			Call::Scheduler(_) | Call::Utility(_) | Call::Multisig(_) |
+			// Sudo
+			Call::Sudo(_) |
+			// PoA
+			Call::Authority(_) | Call::ShuraCouncil(_) | Call::ShuraCouncilMembership(_) |
+			Call::FinancialCouncil(_) | Call::FinancialCouncilMembership(_) |
+			Call::PublicFundCouncil(_) | Call::PublicFundCouncilMembership(_) |
+			Call::TechnicalCommittee(_) | Call::TechnicalCommitteeMembership(_) |
+			// Oracle
+			Call::SetheumOracle(_) | Call::OperatorMembershipSetheum(_)
+		)
+	}
+}
 
 impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = ();
+	type BaseCallFilter = BaseCallFilter;
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = BlockWeights;
 	/// The maximum length of a block (in bytes).
@@ -342,10 +415,10 @@ impl pallet_session::historical::Config for Runtime {
 }
 
 pallet_staking_reward_curve::build! {
-	// 4.5% min, 27.5% max, 50% ideal stake
+	// 2.58% min, 25.8% max, 50% ideal stake
 	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
-		min_inflation: 0_045_000,
-		max_inflation: 0_275_000,
+		min_inflation: 0_025_800,
+		max_inflation: 0_258_000,
 		ideal_stake: 0_500_000,
 		falloff: 0_050_000,
 		max_piece_count: 40,
@@ -354,13 +427,13 @@ pallet_staking_reward_curve::build! {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: sp_staking::SessionIndex = 24; // 24 hours
-	pub const BondingDuration: pallet_staking::EraIndex = 28; // 28 days
-	pub const SlashDeferDuration: pallet_staking::EraIndex = 27; // 27 days
+	pub const SessionsPerEra: sp_staking::SessionIndex = 2; // 2 hours
+	pub const BondingDuration: pallet_staking::EraIndex = 4; // 8 hours
+	pub const SlashDeferDuration: pallet_staking::EraIndex = 2; // 4 hours
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 	// only top N nominators get paid for each validator
-	pub const MaxNominatorRewardedPerValidator: u32 = 64;
-	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
+	pub const MaxNominatorRewardedPerValidator: u32 = 258;
+	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 2;
 	pub const MaxIterations: u32 = 5;
 	// 0.05%. The higher the value, the more strict solution acceptance becomes.
 	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5 as u32, 10_000);
@@ -374,7 +447,7 @@ impl pallet_staking::Config for Runtime {
 	type CurrencyToVote = U128CurrencyToVote;
 	type RewardRemainder = (); // burn
 	type Event = Event;
-	type Slash = (); // burn slashed rewards
+	type Slash = SetheumTreasury; // send the slashed funds to the pallet treasury.
 	type Reward = (); // rewards are minted from the void
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
@@ -392,7 +465,6 @@ impl pallet_staking::Config for Runtime {
 	type WeightInfo = ();
 	type OffchainSolutionWeightLimit = OffchainSolutionWeightLimit;
 }
-
 
 impl pallet_babe::Config for Runtime {
 	type EpochDuration = EpochDuration;
@@ -513,12 +585,18 @@ impl pallet_indices::Config for Runtime {
 }
 
 parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+	pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+	// All currency types except for native currency, Sort by fee charge order
+	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![];
+}
+
+parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
 	];
-	pub AirdropMinimum: u32 = 2;
-	pub AirdropMaximum: u32 = 3;
 }
 
 impl module_currencies::Config for Runtime {
@@ -526,12 +604,9 @@ impl module_currencies::Config for Runtime {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type SerpTreasury = ();
-	type AirdropAccountId = ();
-	type AirdropMinimum = AirdropMinimum;
-	type AirdropMaximum = AirdropMaximum;
-	type AirdropOrigin = ();
-	type WeightInfo = ();
+	type StableCurrencyIds = StableCurrencyIds;
+	type SerpTreasury = SerpTreasury;
+	type WeightInfo = weights::module_currencies::WeightInfo<Runtime>;
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type EVMBridge = EVMBridge;
 }
@@ -550,14 +625,6 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = orml_tokens::BurnDust<Runtime>;
-}
-
-parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-	pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-	// All currency types except for native currency, Sort by fee charge order
-	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![];
-
 }
 
 parameter_types! {
