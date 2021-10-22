@@ -1,11 +1,11 @@
 .PHONY: configure-rust
 configure-rust:
-	rustup install nightly-2021-05-09
+	rustup install nightly
 	rustup default stable
 	rustup update
 	rustup update nightly
 	rustup toolchain install nightly
-	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
+	rustup target add wasm32-unknown-unknown --toolchain nightly
 
 .PHONY: init
 init:
