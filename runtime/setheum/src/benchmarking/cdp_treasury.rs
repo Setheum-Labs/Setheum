@@ -44,8 +44,26 @@ runtime_benchmarks! {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::benchmarking::utils::tests::new_test_ext;
-	use orml_benchmarking::impl_benchmark_test_suite;
+	use frame_support::assert_ok;
 
-	impl_benchmark_test_suite!(new_test_ext(),);
+	fn new_test_ext() -> sp_io::TestExternalities {
+		frame_system::GenesisConfig::default()
+			.build_storage::<Runtime>()
+			.unwrap()
+			.into()
+	}
+
+	#[test]
+	fn test_auction_collateral() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(test_benchmark_auction_collateral());
+		});
+	}
+
+	#[test]
+	fn test_set_expected_collateral_auction_size() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(test_benchmark_set_expected_collateral_auction_size());
+		});
+	}
 }

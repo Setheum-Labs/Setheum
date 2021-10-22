@@ -874,7 +874,7 @@ impl module_evm_accounts::Config for Runtime {
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type MergeAccount = Currencies;
 	type OnClaim = EvmAccountsOnClaimHandler;
-	type WeightInfo = weights::evm_accounts::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_evm_accounts::WeightInfo<Runtime>;
 }
 
 #[cfg(feature = "with-ethereum-compatibility")]
@@ -953,7 +953,7 @@ impl module_evm::Config for Runtime {
 	type DeveloperDeposit = DeveloperDeposit;
 	type DeploymentFee = DeploymentFee;
 	type FreeDeploymentOrigin = EnsureRootOrHalfShuraCouncil;
-	type WeightInfo = weights::evm::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_evm::WeightInfo<Runtime>;
 
 	#[cfg(feature = "with-ethereum-compatibility")]
 	fn config() -> &'static evm::Config {
@@ -1243,8 +1243,8 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::Loan => {
 				matches!(
 					c,
-					Call::Honzon(module_honzon::Call::adjust_loan(..))
-						| Call::Honzon(module_honzon::Call::close_loan_has_debit_by_dex(..))
+					Call::SetMint(serp_setmint::Call::adjust_loan(..))
+						| Call::SetMint(serp_setmint::Call::close_loan_has_debit_by_dex(..))
 				)
 			}
 		}
@@ -2243,6 +2243,7 @@ impl_runtime_apis! {
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850").to_vec().into(),
 				// System Events
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7").to_vec().into(),
+				/// TODO: Update hexcode
 				// Caller 0 Account
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da946c154ffd9992e395af90b5b13cc6f295c77033fce8a9045824a6690bbf99c6db269502f0a8d1d2a008542d5690a0749").to_vec().into(),
 				// Caller 1 Account

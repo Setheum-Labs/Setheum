@@ -34,7 +34,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./runtime/karura/src/weights/
+// --output=./runtime/setheum/src/weights/
 
 #![allow(unused_parens)]
 #![allow(unused_imports)]
@@ -49,16 +49,6 @@ impl<T: frame_system::Config> orml_auction::WeightInfo for WeightInfo<T> {
 		(285_044_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(11 as Weight))
 			.saturating_add(T::DbWeight::get().writes(13 as Weight))
-	}
-	fn bid_surplus_auction() -> Weight {
-		(170_365_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
-			.saturating_add(T::DbWeight::get().writes(5 as Weight))
-	}
-	fn bid_debit_auction() -> Weight {
-		(147_290_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(7 as Weight))
-			.saturating_add(T::DbWeight::get().writes(8 as Weight))
 	}
 	fn on_finalize(c: u32) -> Weight {
 		(0 as Weight)

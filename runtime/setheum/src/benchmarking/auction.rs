@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, Auction, AuctionId, AuctionManager, AuctionTimeToClose, CdpTreasury, Runtime, System, setm, SETUSD, DNAR,
+	dollar, Auction, AuctionId, AuctionManager, AuctionTimeToClose, CdpTreasury, Runtime, System, SETM, SETUSD, DNAR,
 };
 
 use super::utils::set_balance;
@@ -79,67 +79,6 @@ runtime_benchmarks! {
 		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
 	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
 
-	// `bid` a surplus auction, best cases:
-	// there's no bidder before
-	#[extra]
-	bid_surplus_auction_as_first_bidder {
-		let bidder = account("bidder", 0, SEED);
-
-		let surplus_amount = 100 * dollar(SETUSD);
-		let bid_price = d * dollar(setm);
-		let auction_id: AuctionId = 0;
-
-		set_balance(setm, &bidder, bid_price);
-		AuctionManager::new_surplus_auction(surplus_amount)?;
-	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
-
-	// `bid` a surplus auction, worst cases:
-	// there's bidder before
-	bid_surplus_auction {
-		let bidder = account("bidder", 0, SEED);
-		let previous_bidder = account("previous_bidder", 0, SEED);
-		let surplus_amount = 100 * dollar(SETUSD);
-		let bid_price = (d as u128 * 2u128) * dollar(setm);
-		let previous_bid_price = d * dollar(setm);
-		let auction_id: AuctionId = 0;
-
-		set_balance(setm, &bidder, bid_price);
-		set_balance(setm, &previous_bidder, previous_bid_price);
-		AuctionManager::new_surplus_auction(surplus_amount)?;
-		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
-	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
-
-	// `bid` a debit auction, best cases:
-	// there's no bidder before and bid price happens to be debit amount
-	#[extra]
-	bid_debit_auction_as_first_bidder {
-		let bidder = account("bidder", 0, SEED);
-
-		let fix_debit_amount = 100 * dollar(SETUSD);
-		let initial_amount = 10 * dollar(setm);
-		let auction_id: AuctionId = 0;
-
-		set_balance(SETUSD, &bidder, fix_debit_amount);
-		AuctionManager::new_debit_auction(initial_amount ,fix_debit_amount)?;
-	}: bid(RawOrigin::Signed(bidder), auction_id, fix_debit_amount)
-
-	// `bid` a debit auction, worst cases:
-	// there's bidder before
-	bid_debit_auction {
-		let bidder = account("bidder", 0, SEED);
-		let previous_bidder = account("previous_bidder", 0, SEED);
-		let fix_debit_amount = 100 * dollar(SETUSD);
-		let initial_amount = 10 * dollar(setm);
-		let previous_bid_price = fix_debit_amount;
-		let bid_price = fix_debit_amount * 2;
-		let auction_id: AuctionId = 0;
-
-		set_balance(SETUSD, &bidder, bid_price);
-		set_balance(SETUSD, &previous_bidder, previous_bid_price);
-		AuctionManager::new_debit_auction(initial_amount ,fix_debit_amount)?;
-		Auction::bid(RawOrigin::Signed(previous_bidder).into(), auction_id, previous_bid_price)?;
-	}: bid(RawOrigin::Signed(bidder), auction_id, bid_price)
-
 	on_finalize {
 		let c in ...;
 
@@ -182,34 +121,6 @@ mod tests {
 	fn bid_collateral_auction() {
 		new_test_ext().execute_with(|| {
 			assert_ok!(test_benchmark_bid_collateral_auction());
-		});
-	}
-
-	#[test]
-	fn bid_surplus_auction_as_first_bidder() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_bid_surplus_auction_as_first_bidder());
-		});
-	}
-
-	#[test]
-	fn bid_surplus_auction() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_bid_surplus_auction());
-		});
-	}
-
-	#[test]
-	fn bid_debit_auction_as_first_bidder() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_bid_debit_auction_as_first_bidder());
-		});
-	}
-
-	#[test]
-	fn bid_debit_auction() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_bid_debit_auction());
 		});
 	}
 

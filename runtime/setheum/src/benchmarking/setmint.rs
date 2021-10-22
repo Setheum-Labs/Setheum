@@ -17,8 +17,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, SetheumOracle, AccountId, Amount, CdpEngine, CollateralCurrencyIds, CurrencyId, Honzon, Indices, Price, Rate,
-	Ratio, Runtime, SETUSD, DOT,
+	dollar, SetheumOracle, AccountId, Amount, CdpEngine, CollateralCurrencyIds, CurrencyId, SetMint, Indices, Price, Rate,
+	Ratio, Runtime, SETUSD, SETM,
 };
 
 use super::utils::set_balance;
@@ -36,7 +36,7 @@ use sp_std::prelude::*;
 const SEED: u32 = 0;
 
 runtime_benchmarks! {
-	{ Runtime, module_honzon }
+	{ Runtime, serp_setmint }
 
 	_ {}
 
@@ -44,18 +44,18 @@ runtime_benchmarks! {
 		let caller: AccountId = account("caller", 0, SEED);
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = Indices::unlookup(to);
-	}: _(RawOrigin::Signed(caller), DOT, to_lookup)
+	}: _(RawOrigin::Signed(caller), SETM, to_lookup)
 
 	unauthorize {
 		let caller: AccountId = account("caller", 0, SEED);
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = Indices::unlookup(to);
-		Honzon::authorize(
+		SetMint::authorize(
 			RawOrigin::Signed(caller.clone()).into(),
-			DOT,
+			SETM,
 			to_lookup.clone()
 		)?;
-	}: _(RawOrigin::Signed(caller), DOT, to_lookup)
+	}: _(RawOrigin::Signed(caller), SETM, to_lookup)
 
 	unauthorize_all {
 		let c in 0 .. CollateralCurrencyIds::get().len().saturating_sub(1) as u32;
@@ -66,7 +66,7 @@ runtime_benchmarks! {
 		let to_lookup = Indices::unlookup(to);
 
 		for i in 0 .. c {
-			Honzon::authorize(
+			SetMint::authorize(
 				RawOrigin::Signed(caller.clone()).into(),
 				currency_ids[i as usize],
 				to_lookup.clone(),
@@ -138,7 +138,7 @@ runtime_benchmarks! {
 		)?;
 
 		// initialize sender's loan
-		Honzon::adjust_loan(
+		SetMint::adjust_loan(
 			RawOrigin::Signed(sender.clone()).into(),
 			currency_id,
 			collateral_amount.try_into().unwrap(),
@@ -146,7 +146,7 @@ runtime_benchmarks! {
 		)?;
 
 		// authorize receiver
-		Honzon::authorize(
+		SetMint::authorize(
 			RawOrigin::Signed(sender.clone()).into(),
 			currency_id,
 			receiver_lookup,

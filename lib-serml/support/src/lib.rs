@@ -304,7 +304,7 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 	);
 }
 
-/// An abstraction of cdp treasury for Honzon Protocol.
+/// An abstraction of cdp treasury for SetMint Protocol.
 pub trait CDPTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;

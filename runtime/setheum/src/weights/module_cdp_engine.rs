@@ -34,7 +34,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./runtime/karura/src/weights/
+// --output=./runtime/setheum/src/weights/
 
 #![allow(unused_parens)]
 #![allow(unused_imports)]
@@ -46,25 +46,22 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> module_cdp_engine::WeightInfo for WeightInfo<T> {
 	fn set_collateral_params() -> Weight {
-		(70_199_000 as Weight)
+		(62_708_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn set_global_params() -> Weight {
-		(22_324_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
 	fn liquidate_by_auction() -> Weight {
-		(391_413_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(28 as Weight))
-			.saturating_add(T::DbWeight::get().writes(17 as Weight))
+		(289_849_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(21 as Weight))
+			.saturating_add(T::DbWeight::get().writes(15 as Weight))
 	}
 	fn liquidate_by_dex() -> Weight {
-		(483_028_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(29 as Weight))
+		(424_412_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(23 as Weight))
 			.saturating_add(T::DbWeight::get().writes(15 as Weight))
 	}
 	fn settle() -> Weight {
-		(186_821_000 as Weight)
+		(175_911_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(11 as Weight))
 			.saturating_add(T::DbWeight::get().writes(8 as Weight))
 	}
