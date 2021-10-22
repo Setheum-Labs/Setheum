@@ -34,7 +34,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./runtime/karura/src/weights/
+// --output=./runtime/setheum/src/weights/
 
 #![allow(unused_parens)]
 #![allow(unused_imports)]
@@ -45,18 +45,8 @@ use sp_std::marker::PhantomData;
 /// Weight functions for module_auction_manager.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> module_auction_manager::WeightInfo for WeightInfo<T> {
-	fn cancel_surplus_auction() -> Weight {
-		(59_644_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
-	}
-	fn cancel_debit_auction() -> Weight {
-		(61_230_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(5 as Weight))
-			.saturating_add(T::DbWeight::get().writes(4 as Weight))
-	}
 	fn cancel_collateral_auction() -> Weight {
-		(151_099_000 as Weight)
+		(153_031_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(9 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))
 	}

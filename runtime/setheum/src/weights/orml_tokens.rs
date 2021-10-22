@@ -34,7 +34,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./runtime/karura/src/weights/
+// --output=./runtime/setheum/src/weights/
 
 #![allow(unused_parens)]
 #![allow(unused_imports)]

@@ -20,12 +20,12 @@
 //!
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 3.0.0
 //! DATE: 2021-05-31, STEPS: `[50, ]`, REPEAT: 20, LOW RANGE: `[]`, HIGH RANGE: `[]`
-//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("karura-latest"), DB CACHE: 128
+//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("setheum-latest"), DB CACHE: 128
 
 // Executed Command:
 // target/release/setheum
 // benchmark
-// --chain=karura-latest
+// --chain=setheum-latest
 // --steps=50
 // --repeat=20
 // --pallet=*
@@ -34,7 +34,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --template=./templates/runtime-weight-template.hbs
-// --output=./runtime/karura/src/weights/
+// --output=./runtime/setheum/src/weights/
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
