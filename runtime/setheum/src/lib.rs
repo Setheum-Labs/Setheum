@@ -874,7 +874,7 @@ impl module_evm_accounts::Config for Runtime {
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type MergeAccount = Currencies;
 	type OnClaim = EvmAccountsOnClaimHandler;
-	type WeightInfo = weights::evm_accounts::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_evm_accounts::WeightInfo<Runtime>;
 }
 
 #[cfg(feature = "with-ethereum-compatibility")]
@@ -953,7 +953,7 @@ impl module_evm::Config for Runtime {
 	type DeveloperDeposit = DeveloperDeposit;
 	type DeploymentFee = DeploymentFee;
 	type FreeDeploymentOrigin = EnsureRootOrHalfShuraCouncil;
-	type WeightInfo = weights::evm::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_evm::WeightInfo<Runtime>;
 
 	#[cfg(feature = "with-ethereum-compatibility")]
 	fn config() -> &'static evm::Config {
@@ -1243,8 +1243,8 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::Loan => {
 				matches!(
 					c,
-					Call::SetMint(module_honzon::Call::adjust_loan(..))
-						| Call::SetMint(module_honzon::Call::close_loan_has_debit_by_dex(..))
+					Call::SetMint(serp_setmint::Call::adjust_loan(..))
+						| Call::SetMint(serp_setmint::Call::close_loan_has_debit_by_dex(..))
 				)
 			}
 		}
