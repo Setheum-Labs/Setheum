@@ -601,37 +601,37 @@ fn mainnet_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let  setm_foundation_alloc: u128 = 516_000_000 * dollar(SETM);
-	let  setm_treasury_alloc: u128 = 258_000_000 * dollar(SETM);
-	let  setm_spf_alloc: u128 = 516_000_000 * dollar(SETM);
-	let  setm_team_alloc: u128 = 1_083_600_000 * dollar(SETM);
-	let  setm_advisors_n_partners_alloc: u128 = 206_400_000 * dollar(SETM);
+	let  setm_foundation_alloc: u128 = 626_600_000 * dollar(SETM);
+	let  setm_treasury_alloc: u128 = 313_300_000 * dollar(SETM);
+	let  setm_spf_alloc: u128 = 626_600_000 * dollar(SETM);
+	let  setm_team_alloc: u128 = 1_315_860_000 * dollar(SETM);
+	let  setm_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETM);
 
-	let  serp_foundation_alloc: u128 = 516_000_000 * dollar(SERP);
-	let  serp_treasury_alloc: u128 = 258_000_000 * dollar(SERP);
-	let  serp_spf_alloc: u128 = 516_000_000 * dollar(SERP);
-	let  serp_team_alloc: u128 = 1_083_600_000 * dollar(SERP);
-	let  serp_advisors_n_partners_alloc: u128 = 206_400_000 * dollar(SERP);
+	let  serp_foundation_alloc: u128 = 51_600_000 * dollar(SERP);
+	let  serp_treasury_alloc: u128 = 25_800_000 * dollar(SERP);
+	let  serp_spf_alloc: u128 = 51_600_000 * dollar(SERP);
+	let  serp_team_alloc: u128 = 108_360_000 * dollar(SERP);
+	let  serp_advisors_n_partners_alloc: u128 = 20_640_000 * dollar(SERP);
 
-	let  dnar_foundation_alloc: u128 = 51_600_000 * dollar(DNAR);
-	let  dnar_treasury_alloc: u128 = 25_800_000 * dollar(DNAR);
-	let  dnar_spf_alloc: u128 = 51_600_000 * dollar(DNAR);
-	let  dnar_team_alloc: u128 = 108_360_000 * dollar(DNAR);
-	let  dnar_advisors_n_partners_alloc: u128 = 20_640_000 * dollar(DNAR);
+	let  dnar_foundation_alloc: u128 = 14_000_000 * dollar(DNAR);
+	let  dnar_treasury_alloc: u128 = 7_000_000 * dollar(DNAR);
+	let  dnar_spf_alloc: u128 = 14_000_000 * dollar(DNAR);
+	let  dnar_team_alloc: u128 = 29_400_000 * dollar(DNAR);
+	let  dnar_advisors_n_partners_alloc: u128 = 5_600_000 * dollar(DNAR);
 
-	let  setr_foundation_alloc: u128 = 2_000_000_000 * dollar(SETR);
-	let  setr_treasury_alloc: u128 = 1_000_000_000 * dollar(SETR);
-	let  setr_cashdrop_alloc: u128 = 2_000_000_000 * dollar(SETR);
-	let  setr_spf_alloc: u128 = 2_000_000_000 * dollar(SETR);
-	let  setr_team_alloc: u128 = 2_000_000_000 * dollar(SETR);
-	let  setr_advisors_n_partners_alloc: u128 = 500_000_000 * dollar(SETR);
+	let  setr_foundation_alloc: u128 = 2_580_124_313 * dollar(SETR);
+	let  setr_treasury_alloc: u128 = 1_315_124_258 * dollar(SETR);
+	let  setr_cashdrop_alloc: u128 = 2_313_124_258 * dollar(SETR);
+	let  setr_spf_alloc: u128 = 2_258_124_258 * dollar(SETR);
+	let  setr_team_alloc: u128 = 2_580_124_315 * dollar(SETR);
+	let  setr_advisors_n_partners_alloc: u128 = 852_313_258 * dollar(SETR);
 
-	let  setusd_foundation_alloc: u128 = 2_000_000_000 * dollar(SETUSD);
-	let  setusd_treasury_alloc: u128 = 1_000_000_000 * dollar(SETUSD);
-	let  setusd_cashdrop_alloc: u128 = 2_000_000_000 * dollar(SETUSD);
-	let  setusd_spf_alloc: u128 = 2_000_000_000 * dollar(SETUSD);
-	let  setusd_team_alloc: u128 = 2_000_000_000 * dollar(SETUSD);
-	let  setusd_advisors_n_partners_alloc: u128 = 500_000_000 * dollar(SETUSD);
+	let  setusd_foundation_alloc: u128 = 2_580_124_313 * dollar(SETUSD);
+	let  setusd_treasury_alloc: u128 = 1_315_124_258 * dollar(SETUSD);
+	let  setusd_cashdrop_alloc: u128 = 2_313_124_258 * dollar(SETUSD);
+	let  setusd_spf_alloc: u128 = 2_258_124_258 * dollar(SETUSD);
+	let  setusd_team_alloc: u128 = 2_580_124_315 * dollar(SETUSD);
+	let  setusd_advisors_n_partners_alloc: u128 = 852_313_258 * dollar(SETUSD);
 
 	let initial_staking: u128 = 258_000 * dollar(SETM);
 	let existential_deposit = NativeTokenExistentialDeposit::get();
