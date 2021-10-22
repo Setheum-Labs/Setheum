@@ -1243,8 +1243,8 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::Loan => {
 				matches!(
 					c,
-					Call::Honzon(module_honzon::Call::adjust_loan(..))
-						| Call::Honzon(module_honzon::Call::close_loan_has_debit_by_dex(..))
+					Call::SetMint(module_honzon::Call::adjust_loan(..))
+						| Call::SetMint(module_honzon::Call::close_loan_has_debit_by_dex(..))
 				)
 			}
 		}

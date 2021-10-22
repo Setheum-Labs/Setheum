@@ -58,7 +58,6 @@ fn inject_liquidity(
 		max_amount,
 		max_other_currency_amount,
 		Default::default(),
-		false,
 	)?;
 
 	Ok(())
@@ -73,7 +72,6 @@ runtime_benchmarks! {
 	}: _(
 		RawOrigin::Root,
 		SETM,
-		Change::NewValue(Some(Rate::saturating_from_rational(1, 1000000))),
 		Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 		Change::NewValue(Some(Rate::saturating_from_rational(20, 100))),
 		Change::NewValue(Some(Ratio::saturating_from_rational(180, 100))),
@@ -105,7 +103,6 @@ runtime_benchmarks! {
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
 			currency_id,
-			Change::NoChange,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
@@ -121,7 +118,6 @@ runtime_benchmarks! {
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
 			currency_id,
-			Change::NoChange,
 			Change::NewValue(Some(Ratio::saturating_from_rational(1000, 100))),
 			Change::NoChange,
 			Change::NoChange,
@@ -159,7 +155,6 @@ runtime_benchmarks! {
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
 			SETM,
-			Change::NoChange,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
@@ -173,7 +168,6 @@ runtime_benchmarks! {
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
 			SETM,
-			Change::NoChange,
 			Change::NewValue(Some(Ratio::saturating_from_rational(1000, 100))),
 			Change::NoChange,
 			Change::NoChange,
@@ -208,7 +202,6 @@ runtime_benchmarks! {
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
 			currency_id,
-			Change::NoChange,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
@@ -226,8 +219,40 @@ runtime_benchmarks! {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::benchmarking::utils::tests::new_test_ext;
-	use orml_benchmarking::impl_benchmark_test_suite;
+	use frame_support::assert_ok;
 
-	impl_benchmark_test_suite!(new_test_ext(),);
+	fn new_test_ext() -> sp_io::TestExternalities {
+		frame_system::GenesisConfig::default()
+			.build_storage::<Runtime>()
+			.unwrap()
+			.into()
+	}
+
+	#[test]
+	fn test_set_collateral_params() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(test_benchmark_set_collateral_params());
+		});
+	}
+
+	#[test]
+	fn test_liquidate_by_auction() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(test_benchmark_liquidate_by_auction());
+		});
+	}
+
+	#[test]
+	fn test_liquidate_by_dex() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(test_benchmark_liquidate_by_dex());
+		});
+	}
+
+	#[test]
+	fn test_settle() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(test_benchmark_settle());
+		});
+	}
 }

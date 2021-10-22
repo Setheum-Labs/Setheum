@@ -36,7 +36,7 @@ fn inject_liquidity(
 	currency_id_b: CurrencyId,
 	max_amount_a: Balance,
 	max_amount_b: Balance,
-	deposit: bool,
+	min_share_increment: Balance,
 ) -> Result<(), &'static str> {
 	// set balance
 	<Currencies as MultiCurrencyExtended<_>>::update_balance(
@@ -58,7 +58,7 @@ fn inject_liquidity(
 		currency_id_b,
 		max_amount_a,
 		max_amount_b,
-		deposit,
+		min_share_increment,
 	)?;
 
 	Ok(())
@@ -116,8 +116,8 @@ runtime_benchmarks! {
 		<Currencies as MultiCurrencyExtended<_>>::update_balance(trading_pair.1, &second_maker, amount_b.unique_saturated_into())?;
 
 		// first maker inject liquidity
-		inject_liquidity(first_maker.clone(), trading_pair.0, trading_pair.1, amount_a, amount_b, false)?;
-	}: add_liquidity(RawOrigin::Signed(second_maker), trading_pair.0, trading_pair.1, amount_a, amount_b, false)
+		inject_liquidity(first_maker.clone(), trading_pair.0, trading_pair.1, amount_a, amount_b, 1)?;
+	}: add_liquidity(RawOrigin::Signed(second_maker), trading_pair.0, trading_pair.1, amount_a, amount_b, 1)
 
 	// worst: add liquidity and stake lp
 	add_liquidity_and_deposit {
@@ -132,22 +132,22 @@ runtime_benchmarks! {
 		<Currencies as MultiCurrencyExtended<_>>::update_balance(trading_pair.1, &second_maker, amount_b.unique_saturated_into())?;
 
 		// first maker inject liquidity
-		inject_liquidity(first_maker.clone(), trading_pair.0, trading_pair.1, amount_a, amount_b, true)?;
-	}: add_liquidity(RawOrigin::Signed(second_maker), trading_pair.0, trading_pair.1, amount_a, amount_b, true)
+		inject_liquidity(first_maker.clone(), trading_pair.0, trading_pair.1, amount_a, amount_b, 1)?;
+	}: add_liquidity(RawOrigin::Signed(second_maker), trading_pair.0, trading_pair.1, amount_a, amount_b, 1)
 
 	// remove liquidity by liquid lp share
 	remove_liquidity {
 		let maker: AccountId = account("maker", 0, SEED);
 		let trading_pair = EnabledTradingPairs::get()[0];
-		inject_liquidity(maker.clone(), trading_pair.0, trading_pair.1, 100 * dollar(trading_pair.0), 10_000 * dollar(trading_pair.1), false)?;
-	}: remove_liquidity(RawOrigin::Signed(maker), trading_pair.0, trading_pair.1, 50 * dollar(trading_pair.0), false)
+		inject_liquidity(maker.clone(), trading_pair.0, trading_pair.1, 100 * dollar(trading_pair.0), 10_000 * dollar(trading_pair.1), 1)?;
+	}: remove_liquidity(RawOrigin::Signed(maker), trading_pair.0, trading_pair.1, 50 * dollar(trading_pair.0), 1)
 
 	// remove liquidity by withdraw staking lp share
 	remove_liquidity_by_withdraw {
 		let maker: AccountId = account("maker", 0, SEED);
 		let trading_pair = EnabledTradingPairs::get()[0];
-		inject_liquidity(maker.clone(), trading_pair.0, trading_pair.1, 100 * dollar(trading_pair.0), 10_000 * dollar(trading_pair.1), true)?;
-	}: remove_liquidity(RawOrigin::Signed(maker), trading_pair.0, trading_pair.1, 50 * dollar(trading_pair.0), true)
+		inject_liquidity(maker.clone(), trading_pair.0, trading_pair.1, 100 * dollar(trading_pair.0), 10_000 * dollar(trading_pair.1), 1)?;
+	}: remove_liquidity(RawOrigin::Signed(maker), trading_pair.0, trading_pair.1, 50 * dollar(trading_pair.0), 1)
 
 	swap_with_exact_supply {
 		let u in 2 .. TradingPathLimit::get() as u32;
@@ -169,7 +169,7 @@ runtime_benchmarks! {
 
 		let maker: AccountId = account("maker", 0, SEED);
 		let taker: AccountId = account("taker", 0, SEED);
-		inject_liquidity(maker, trading_pair.0, trading_pair.1, 10_000 * dollar(trading_pair.0), 10_000 * dollar(trading_pair.1), false)?;
+		inject_liquidity(maker, trading_pair.0, trading_pair.1, 10_000 * dollar(trading_pair.0), 10_000 * dollar(trading_pair.1), 1)?;
 
 		<Currencies as MultiCurrencyExtended<_>>::update_balance(path[0], &taker, (10_000 * dollar(path[0])).unique_saturated_into())?;
 	}: swap_with_exact_supply(RawOrigin::Signed(taker), path.clone(), 100 * dollar(path[0]), 0)
@@ -194,7 +194,7 @@ runtime_benchmarks! {
 
 		let maker: AccountId = account("maker", 0, SEED);
 		let taker: AccountId = account("taker", 0, SEED);
-		inject_liquidity(maker, trading_pair.0, trading_pair.1, 10_000 * dollar(trading_pair.0), 10_000 * dollar(trading_pair.1), false)?;
+		inject_liquidity(maker, trading_pair.0, trading_pair.1, 10_000 * dollar(trading_pair.0), 10_000 * dollar(trading_pair.1), 1)?;
 
 		<Currencies as MultiCurrencyExtended<_>>::update_balance(path[0], &taker, (10_000 * dollar(path[0])).unique_saturated_into())?;
 	}: swap_with_exact_target(RawOrigin::Signed(taker), path.clone(), 10 * dollar(path[path.len() - 1]), 100 * dollar(path[0]))
