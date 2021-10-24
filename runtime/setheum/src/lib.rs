@@ -1134,17 +1134,22 @@ parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(5, 100);
 	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = 
 		vec![
-			vec![DNAR, SETUSD, SETR], 	// swap_dinar_to_exact_setter();
-			vec![SETR, SETUSD], 		// swap_setter_to_exact_setcurrency();
-			vec![SETR, SETUSD, DNAR],	// swap_exact_setter_to_dinar();
-			vec![SETR, SETUSD, DNAR], 	// swap_exact_setcurrency_to_dinar()1;
-			vec![SETUSD, DNAR], 		// swap_exact_setcurrency_to_dinar()2;
-			vec![SETUSD, SETR] 			// swap_exact_setcurrency_to_setter();
-			vec![SETUSD, SETR] 			// serplus_swap_exact_setcurrency_to_setter(();
-			vec![SETR, SETUSD, SETM] 	// swap_exact_setcurrency_to_setheum()1;
-			vec![SETUSD, SETM] 			// swap_exact_setcurrency_to_setheum()2;
-			vec![SETR, SETUSD, SERP] 	// swap_exact_setcurrency_to_serp()1;
-			vec![SETUSD, SERP] 			// swap_exact_setcurrency_to_serp()2;
+			vec![DNAR, SETUSD, SETR], 	//1 swap_dinar_to_exact_setter();
+			vec![SERP, SETUSD, SETR], 	//2 swap_serp_to_exact_setter();
+			vec![DNAR, SETUSD], 		//3 swap_dinar_to_exact_setcurrency()1;
+			vec![DNAR, SETUSD, SETR], 	//4 swap_dinar_to_exact_setcurrency()2;
+			vec![SETR, SETUSD], 		//5 swap_setter_to_exact_setcurrency();
+			vec![SERP, SETUSD], 		//6 swap_serp_to_exact_setcurrency()1;
+			vec![SERP, SETUSD, SETR], 	//7 swap_serp_to_exact_setcurrency()2;
+			vec![SETR, SETUSD, DNAR],	//8 swap_exact_setter_to_dinar();
+			vec![SETR, SETUSD, SERP],	//9 swap_exact_setter_to_serp();
+			vec![SETR, SETUSD, DNAR], 	//10 swap_exact_setcurrency_to_dinar()1;
+			vec![SETUSD, DNAR], 		//11 swap_exact_setcurrency_to_dinar()2;
+			vec![SETUSD, SETR] 			//12 swap_exact_setcurrency_to_setter();
+			vec![SETR, SETUSD, SETM] 	//13 swap_exact_setcurrency_to_native()1;
+			vec![SETUSD, SETM] 			//14 swap_exact_setcurrency_to_native()2;
+			vec![SETR, SETUSD, SERP] 	//15 swap_exact_setcurrency_to_serp()1;
+			vec![SETUSD, SERP] 			//16 swap_exact_setcurrency_to_serp()2;
 		];
 	pub const TradingPathLimit: u32 = 3;
 	pub StableCurrencyInflationPeriod: u64 = 300; // 15 minutes (3 seconds BLOCKTIME) - [34,560 periods per annum]

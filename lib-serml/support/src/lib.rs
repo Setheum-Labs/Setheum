@@ -228,17 +228,14 @@ pub trait SerpTreasury<AccountId> {
 	/// Serplus ratio for Setheum Foundation's Charity Fund
 	fn get_public_fund_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 	
-	/// Serplus ratio for SetPay Cashdrops
-	fn get_cashdrop_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
 	/// issue system surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	pub fn on_serplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	pub fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	pub fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// get the minimum supply of a setcurrency - by key
 	fn get_minimum_supply(currency_id: Self::CurrencyId) -> Self::Balance;
@@ -259,12 +256,23 @@ pub trait SerpTreasury<AccountId> {
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
+	pub fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 	// when setter needs serpdown
 	fn swap_dinar_to_exact_setter(
+		target_amount: Self::Balance,
+	);
+
+	// when setter needs serpdown
+	fn swap_serp_to_exact_setter(
+		target_amount: Self::Balance,
+	);
+
+	/// When SetCurrency needs SerpDown
+	fn swap_dinar_to_exact_setcurrency(
+		currency_id: Self::CurrencyId,
 		target_amount: Self::Balance,
 	);
 
@@ -274,8 +282,19 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		target_amount: Self::Balance,
 	);
 
+	/// When SetCurrency needs SerpDown
+	fn swap_serp_to_exact_setcurrency(
+		currency_id: Self::CurrencyId,
+		target_amount: Self::Balance,
+	);
+
 	/// When Setter gets SerpUp
 	fn swap_exact_setter_to_dinar(
+		supply_amount: Self::Balance,
+	);
+
+	/// When Setter gets SerpUp
+	fn swap_exact_setter_to_serp(
 		supply_amount: Self::Balance,
 	);
 
@@ -297,8 +316,20 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		supply_amount: Self::Balance,
 	);
 
+	/// When SetCurrency gets serplus deposit
+	fn serplus_swap_exact_setcurrency_to_native(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+	);
+
 	/// When SetCurrency gets inflation deposit
-	fn swap_exact_setcurrency_to_setheum(
+	fn swap_exact_setcurrency_to_native(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+	);
+	
+	/// When SetCurrency gets inflation deposit
+	fn swap_exact_setcurrency_to_serp(
 		currency_id: Self::CurrencyId,
 		supply_amount: Self::Balance,
 	);
