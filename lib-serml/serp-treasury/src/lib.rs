@@ -74,6 +74,7 @@ pub mod module {
 		type GetStableCurrencyMinimumSupply: GetByKey<CurrencyId, Balance>;
 
 		#[pallet::constant]
+		/// Native (SETM) currency id
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
