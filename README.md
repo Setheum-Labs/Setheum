@@ -29,7 +29,7 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
 
 ## Core Products - Mostly Unique to Setheum
 
-### The Tokens - [Currencies](https://github.com/Setheum-Labs/Setheum/blob/master/primitives/src/currency.rs#:~:text=%7D-,create_currency_id!%20%7B,%7D,-pub%20trait%20TokenInfo)
+### The Tokens - [Currencies](./primitives/src/currency.rs#:~:text=%7D-,create_currency_id!%20%7B,%7D,-pub%20trait%20TokenInfo)
 
 
 ```bash
