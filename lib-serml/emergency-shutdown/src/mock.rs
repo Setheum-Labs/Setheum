@@ -243,16 +243,8 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 	
-	/// SerpUp ratio for SetPay Cashdrops
-	fn get_cashdrop_serplus(
-		_amount: Balance,
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serplus(
+	pub fn on_serplus(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -260,7 +252,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serpup(
+	pub fn on_serpup(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -268,7 +260,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	fn on_serpdown(
+	pub fn on_serpdown(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -325,7 +317,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(
+	pub fn claim_cashdrop(
 		_currency_id: CurrencyId,
 		_who: &AccountId,
 		_transfer_amount: Balance
