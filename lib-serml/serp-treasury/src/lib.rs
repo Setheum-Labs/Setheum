@@ -74,15 +74,19 @@ pub mod module {
 		type GetStableCurrencyMinimumSupply: GetByKey<CurrencyId, Balance>;
 
 		#[pallet::constant]
-		/// Native (SETM) currency Stablecoin currency id
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The Dinar (DNAR) currency Stablecoin currency id
+		/// The Serp (SERP) currency id
+		type GetSerpCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Dinar (DNAR) currency id
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// Setter (SETR) currency Stablecoin currency id
+		/// Setter (SETR) currency id
+		/// 
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -842,7 +846,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
 					).is_ok() {
-						// Swap and burn Native Reserve asset (Dinar (DNAR))
+						// Swap and burn The Dinar Reserve asset (Dinar (DNAR))
 						if T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
 							&path,
@@ -1028,7 +1032,61 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		}
 	}
 	
-	/// TODO: Add swap_exact_setcurrency_to_serp(); - Ref: #592 https://github.com/Setheum-Labs/Setheum/issues/592
+	/// Swap exact amount of Setter to Serp,
+	/// return actual supply Setter amount
+	///
+	/// 
+	/// When Setter gets SerpUp
+	#[allow(unused_variables)]
+	fn swap_exact_setcurrency_to_serp(
+		currency_id: CurrencyId,
+		supply_amount: Balance,
+	) {
+		let serptoken_currency_id = T::GetSerpCurrencyId::get(); 
+
+		let swap_path = T::DefaultSwapPathList::get();
+		
+		for path in swap_path {
+			// match path.last() {
+			// 	Some(serptoken_currency_id) if *serptoken_currency_id == serptoken_currency_id => {
+			// 		let currency_id = *path.first().expect("these's first guaranteed by match");
+			// 		// calculate the target limit according to oracle price and the slippage limit,
+			// 		// if oracle price is not avalible, do not limit
+			// 		let min_target_limit = if let Some(target_price) =
+			// 			T::PriceSource::get_relative_price(*serptoken_currency_id, currency_id)
+			// 		{
+			// 			Ratio::one()
+			// 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+			// 				.reciprocal()
+			// 				.unwrap_or_else(Ratio::max_value)
+			// 				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
+			// 		} else {
+			// 			CurrencyBalanceOf::<T>::max_value()
+			// 		};
+
+					if T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).is_ok() {
+						// Swap and burn Serp Reserve asset (Serp (SERP))
+						if T::Dex::buyback_swap_with_exact_supply(
+							&Self::account_id(),
+							&path,
+							supply_amount.unique_saturated_into(),
+							// min_target_limit.unique_saturated_into(),
+						)
+						.is_ok()
+						{
+							// successfully swap, break iteration.
+							break;
+						}
+					}
+			// 	}
+			// 	_ => {}
+			// }
+		}
+	}
 }
 
 #[cfg(feature = "std")]
