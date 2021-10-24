@@ -123,7 +123,6 @@ pub mod module {
 		/// always do this.
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
-		#[pallet::constant]
 		/// The list of valid collateral currency types
 		type CollateralCurrencyIds: Get<Vec<CurrencyId>>;
 

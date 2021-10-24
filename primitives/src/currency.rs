@@ -169,7 +169,7 @@ create_currency_id! {
 		// Tier-2 Tokens (StableCurrencies)
 		SETR("Setter", 12) = 3,
 		SETUSD("SetDollar", 12) = 4,
-		// Foreign Currencies
+		// Foreign Currencies 121 - 255
 		RENBTC("renBTC", 8) = 121,
 	}
 }

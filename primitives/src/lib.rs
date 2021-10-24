@@ -137,6 +137,8 @@ pub enum AirDropCurrencyId {
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum AuthoritysOriginId {
 	Root,
+	SetheumTreasury,
+	PublicFund,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]

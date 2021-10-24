@@ -78,7 +78,7 @@ pub mod module {
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// Native (DNAR) currency Stablecoin currency id
+		/// The Dinar (DNAR) currency Stablecoin currency id
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -98,15 +98,18 @@ pub mod module {
 		type CashDropPoolAccountId: Get<Self::AccountId>;
 
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
-		/// CharityFund account.
-		type CharityFundAccountId: Get<Self::AccountId>;
+		/// PublicFund account.
+		#[pallet::constant]
+		type PublicFundAccountId: Get<Self::AccountId>;
 
 		/// CDP-Treasury account for processing serplus funds 
 		/// CDPTreasury account.
+		#[pallet::constant]
 		type CDPTreasuryAccountId: Get<Self::AccountId>;
 
 		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
 		/// SetheumTreasury account.
+		#[pallet::constant]
 		type SetheumTreasuryAccountId: Get<Self::AccountId>;
 
 		/// Default fee swap path list
@@ -310,7 +313,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 		// the inflation receiving accounts.
 		let cashdrop_account = &T::CashDropPoolAccountId::get();
-		let charity_fund_account = T::CharityFundAccountId::get();
+		let public_fund_account = T::PublicFundAccountId::get();
 		let treasury_account = T::SetheumTreasuryAccountId::get();
 
 		for currency_id in T::StableCurrencyIds::get() {
@@ -334,11 +337,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 					dinar_buyback_amount,
 				);
 
-				// CharityFund Distribution - 20%
+				// PublicFund Distribution - 20%
 				let two: Balance = 2;
-				let charity_fund_amount: Balance = two.saturating_mul(inflation_amount / 10);
+				let public_fund_amount: Balance = two.saturating_mul(inflation_amount / 10);
 				// Deposit inflation
-				T::Currency::deposit(currency_id, &charity_fund_account, charity_fund_amount)?;
+				T::Currency::deposit(currency_id, &public_fund_account, public_fund_amount)?;
 		
 				// Setheum Treasury Distribution - 10%
 				let one: Balance = 1;
@@ -367,11 +370,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 					setter_buyback_amount,
 				);
 
-				// CharityFund Distribution - 10%
+				// PublicFund Distribution - 10%
 				let one: Balance = 1;
-				let charity_fund_amount: Balance = one.saturating_mul(inflation_amount / 10);
+				let public_fund_amount: Balance = one.saturating_mul(inflation_amount / 10);
 				// Deposit inflation
-				T::Currency::deposit(currency_id, &charity_fund_account, charity_fund_amount)?;
+				T::Currency::deposit(currency_id, &public_fund_account, public_fund_amount)?;
 		
 				// Setheum Treasury Distribution - 10%
 				let treasury_amount: Balance = one.saturating_mul(inflation_amount / 20);
@@ -413,12 +416,12 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let charity_fund_account = T::CharityFundAccountId::get();
+	fn get_public_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		let public_fund_account = T::PublicFundAccountId::get();
 		// Charity Fund SerpUp Pool - 10%
 		let serping_amount: Balance = amount / 10;
 		// Issue the SerpUp propper to the Charity Fund
-		Self::issue_standard(currency_id, &charity_fund_account, serping_amount)?;
+		Self::issue_standard(currency_id, &public_fund_account, serping_amount)?;
 
 		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -454,13 +457,13 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// Serplus ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let charity_fund = T::CharityFundAccountId::get();
+	fn get_public_fund_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
+		let public_fund = T::PublicFundAccountId::get();
 		let cdp_treasury = T::CDPTreasuryAccountId::get();
 		// Charity Fund Serplus Pool - 10%
 		let serping_amount: Balance = amount / 10;
 		// Transfer the Serplus propper to the Charity Fund
-		T::Currency::transfer(currency_id, &cdp_treasury, &charity_fund, serping_amount)?;
+		T::Currency::transfer(currency_id, &cdp_treasury, &public_fund, serping_amount)?;
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
 		Ok(())
@@ -493,7 +496,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::InvalidAmount,
 		);
 		Self::get_buyback_serplus(amount, currency_id)?;
-		Self::get_charity_fund_serplus(amount, currency_id)?;
+		Self::get_public_fund_serplus(amount, currency_id)?;
 		Self::get_cashdrop_serplus(amount, currency_id)?;
 
 		Self::deposit_event(Event::SerpUp(amount, currency_id));
@@ -512,7 +515,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			!amount.is_zero(),
 			Error::<T>::InvalidAmount,
 		);
-		Self::get_charity_fund_serpup(amount, currency_id)?;
+		Self::get_public_fund_serpup(amount, currency_id)?;
 		Self::get_cashdrop_serpup(amount, currency_id)?;
 		Self::get_buyback_serpup(amount, currency_id)?;
 
@@ -1024,6 +1027,8 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			// }
 		}
 	}
+	
+	/// TODO: Add swap_exact_setcurrency_to_serp(); - Ref: #592 https://github.com/Setheum-Labs/Setheum/issues/592
 }
 
 #[cfg(feature = "std")]
