@@ -1177,7 +1177,7 @@ impl serp_treasury::Config for Runtime {
 	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	// type GetSerpCurrencyId = GetSerpCurrencyId;
+	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
