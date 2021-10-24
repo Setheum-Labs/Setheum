@@ -166,7 +166,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serpup(
+	fn get_public_fund_serpup(
 		_amount: Balance,
 		_currency_id: CurrencyId
 	) -> DispatchResult {
@@ -190,7 +190,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serplus(
+	fn get_public_fund_serplus(
 		_amount: Balance,
 		_currency_id: CurrencyId
 	) -> DispatchResult {

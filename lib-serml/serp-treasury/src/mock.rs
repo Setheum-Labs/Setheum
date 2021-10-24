@@ -137,7 +137,7 @@ parameter_types! {
 	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 
 	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/serp");
-	pub const CharityFundAccountId: AccountId = CHARITY_FUND;
+	pub const PublicFundAccountId: AccountId = CHARITY_FUND;
 	pub const CDPTreasuryAccountId: AccountId = CDP_TREASURY;
 	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
 	pub const CashDropPoolAccountId: AccountId = VAULT;
@@ -292,7 +292,7 @@ impl Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
-	type CharityFundAccountId = CharityFundAccountId;
+	type PublicFundAccountId = PublicFundAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;
 	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
 	type DefaultSwapPathList = DefaultSwapPathList;

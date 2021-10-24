@@ -58,7 +58,6 @@ pub mod module {
 		type Currency: ReservableCurrency<Self::AccountId, Balance = Balance>;
 
 		/// Reserved amount per authorization.
-		#[pallet::constant]
 		type DepositPerAuthorization: Get<Balance>;
 
 		/// Weight information for the extrinsics in this module.

@@ -217,7 +217,7 @@ pub trait SerpTreasury<AccountId> {
 	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+	fn get_public_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 	
 	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
@@ -226,7 +226,7 @@ pub trait SerpTreasury<AccountId> {
 	fn get_buyback_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// Serplus ratio for Setheum Foundation's Charity Fund
-	fn get_charity_fund_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+	fn get_public_fund_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 	
 	/// Serplus ratio for SetPay Cashdrops
 	fn get_cashdrop_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;

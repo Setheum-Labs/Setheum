@@ -248,9 +248,10 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		CDPTreasuryModuleId::get().into_account(),
 		LoansModuleId::get().into_account(),
 		DEXModuleId::get().into_account(),
-		BuyBackPoolAccountId::get(),
-		ZeroAccountId::get(),
-		TwoAccountId::get(),
+		ZeroAccountId::get(),		 	// ACCOUNT 0
+		BuyBackPoolAccountId::get(), 	// ACCOUNT 1
+		CashDropPoolAccountId::get(), 	// ACCOUNT 2
+		ThreeAccountId::get(),			// ACCOUNT 3
 	]
 }
 
@@ -713,19 +714,28 @@ impl pallet_indices::Config for Runtime {
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-	pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+	pub const GetSerpCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+	pub const GetDinarCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+	pub const GetSetUSDCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
+		SETUSD,
+		SETR,
 		SERP,
 		DNAR,
-		SETR,
-		SETUSD,
 		RENBTC
 	];
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
+	];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![
+		SETM,
+		SERP,
+		DNAR,
+		SETR,
+		RENBTC
 	];
 }
 
@@ -1080,13 +1090,6 @@ where
 }
 
 parameter_types! {
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![
-		SETM,
-		SERP,
-		DNAR,
-		SETR,
-		RENBTC
-	];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(130, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(8, 100);
@@ -1128,6 +1131,75 @@ impl cdp_treasury::Config for Runtime {
 }
 
 parameter_types! {
+	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(5, 100);
+	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = 
+		vec![
+			vec![DNAR, SETUSD, SETR], 	// swap_dinar_to_exact_setter();
+			vec![SETR, SETUSD], 		// swap_setter_to_exact_setcurrency();
+			vec![SETR, SETUSD, DNAR],	// swap_exact_setter_to_dinar();
+			vec![SETR, SETUSD, DNAR], 	// swap_exact_setcurrency_to_dinar()1;
+			vec![SETUSD, DNAR], 		// swap_exact_setcurrency_to_dinar()2;
+			vec![SETUSD, SETR] 			// swap_exact_setcurrency_to_setter();
+			vec![SETUSD, SETR] 			// serplus_swap_exact_setcurrency_to_setter(();
+			vec![SETR, SETUSD, SETM] 	// swap_exact_setcurrency_to_setheum()1;
+			vec![SETUSD, SETM] 			// swap_exact_setcurrency_to_setheum()2;
+			vec![SETR, SETUSD, SERP] 	// swap_exact_setcurrency_to_serp()1;
+			vec![SETUSD, SERP] 			// swap_exact_setcurrency_to_serp()2;
+		];
+	pub const TradingPathLimit: u32 = 3;
+	pub StableCurrencyInflationPeriod: u64 = 300; // 15 minutes (3 seconds BLOCKTIME) - [34,560 periods per annum]
+	pub SetterMinimumClaimableTransferAmounts: Balance = 1 * dollar(SETR); 				// $2
+	pub SetterMaximumClaimableTransferAmounts: Balance = 200_000 * dollar(SETR);		// $400_000
+	pub SetDollarMinimumClaimableTransferAmounts: Balance = 10 * dollar(SETR); 			// $10
+	pub SetDollarMaximumClaimableTransferAmounts: Balance = 20_000_000 * dollar(SETR);	// $20_000_000
+}
+
+parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETR => 10_000_000_000* dollar(SETR),
+			&SETUSD => 10_000_000_000* dollar(SETUSD),
+			_ => 0,
+		}
+	};
+}
+
+parameter_types! {
+	pub const CashDropPoolAccount: AccountId = AccountId::from([2u8; 32]); // ACCOUNT 2
+	pub const PublicFundAccount: AccountId = PublicFundModuleId::get().into_account();
+	pub const CDPTreasuryAccount: AccountId = CDPTreasuryModuleId::get().into_account();
+}
+
+impl serp_treasury::Config for Runtime {
+	type Event = Event;
+	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
+	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	// type GetSerpCurrencyId = GetSerpCurrencyId;
+	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type CashDropPoolAccountId = CashDropPoolAccount;
+	type PublicFundAccountId = PublicFundAccount;
+	type CDPTreasuryAccountId = CDPTreasuryAccount;
+	type SetheumTreasuryAccountId = SetheumTreasuryAccount;
+	type DefaultSwapPathList = DefaultSwapPathList;
+	type Dex = Dex;
+	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type TradingPathLimit = TradingPathLimit;
+	type PriceSource = Prices;
+	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
+	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
+	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
+	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
+	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+	type ModuleId = SerpTreasuryModuleId;
+	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
+}
+
+parameter_types! {
 	pub DepositPerAuthorization: Balance = deposit(1, 64);
 }
 
@@ -1149,9 +1221,8 @@ impl emergency_shutdown::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (3, 1000);	// 0.3%
-	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
-	pub const TradingPathLimit: u32 = 3;
+	pub GetExchangeFee: (u32, u32) = (3, 1000);	// 0.3%
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub BuyBackPoolAccountId: AccountId = AccountId::from([1u8; 32]);
 }
 
