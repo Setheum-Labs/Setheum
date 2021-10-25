@@ -112,7 +112,7 @@ pub mod module {
 		#[pallet::constant]
 		type CDPTreasuryAccountId: Get<Self::AccountId>;
 
-		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
+		/// SerpUp pool/account for receiving Treasury funds
 		/// SetheumTreasury account.
 		#[pallet::constant]
 		type SetheumTreasuryAccountId: Get<Self::AccountId>;
