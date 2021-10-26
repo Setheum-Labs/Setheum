@@ -33,7 +33,6 @@ use sp_runtime::{
 };
 use sp_std::{prelude::*};
 
-use crate::Balance;
 pub use currency::{CurrencyId, DexShare, TokenSymbol, SETM};
 
 #[cfg(feature = "std")]
@@ -70,8 +69,8 @@ pub mod time {
 		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 	};
 	
-	pub fn deposit(items: u32, bytes: u32) -> Balance {
-		items as Balance * 2 * dollar(SETM) + (bytes as Balance) * 10 * millicent(SETM)
+	pub fn deposit(items: u32, bytes: u32) -> u128 {
+		items as u128 * 2 * dollar(SETM) + (bytes as u128) * 10 * millicent(SETM)
 	}
 }
 
