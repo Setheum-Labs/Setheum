@@ -33,7 +33,8 @@ use sp_runtime::{
 };
 use sp_std::{prelude::*};
 
-pub use currency::{CurrencyId, DexShare, TokenSymbol};
+use crate::Balance;
+pub use currency::{CurrencyId, DexShare, TokenSymbol, SETM};
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -45,6 +46,7 @@ mod tests;
 /// Time and blocks.
 pub mod time {
 	use super::{BlockNumber, Moment};
+	use runtime_common::{dollar, millicent};
 
 	// 3 seconds average blocktime
 	pub const SECS_PER_BLOCK: Moment = 3;
@@ -69,7 +71,7 @@ pub mod time {
 	};
 	
 	pub fn deposit(items: u32, bytes: u32) -> Balance {
-		items as Balance * 2 * dollar(SETM) + (bytes as Balance) * 10 * millicent(KAR)
+		items as Balance * 2 * dollar(SETM) + (bytes as Balance) * 10 * millicent(SETM)
 	}
 }
 
