@@ -33,7 +33,8 @@ use sp_runtime::{
 };
 use sp_std::{prelude::*};
 
-pub use currency::{CurrencyId, DexShare, TokenSymbol, SETM};
+pub use currency::{CurrencyId, DexShare, TokenSymbol};
+use crate::SETM;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -45,8 +46,6 @@ mod tests;
 /// Time and blocks.
 pub mod time {
 	use super::{BlockNumber, Moment};
-	use runtime_common::{dollar, millicent};
-
 	// 3 seconds average blocktime
 	pub const SECS_PER_BLOCK: Moment = 3;
 	pub const MILLISECS_PER_BLOCK: Moment = SECS_PER_BLOCK * 1000;
@@ -68,6 +67,24 @@ pub mod time {
 
 		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 	};
+	
+	// TODO: make those const fn
+	// another implementation is in `runtime_common`
+	pub fn dollar(currency_id: CurrencyId) -> u128 {
+		10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
+	}
+
+	pub fn cent(currency_id: CurrencyId) -> u128 {
+		dollar(currency_id) / 100
+	}
+
+	pub fn millicent(currency_id: CurrencyId) -> u128 {
+		cent(currency_id) / 1000
+	}
+
+	pub fn microcent(currency_id: CurrencyId) -> u128 {
+		millicent(currency_id) / 1000
+	}
 	
 	pub fn deposit(items: u32, bytes: u32) -> u128 {
 		items as u128 * 2 * dollar(SETM) + (bytes as u128) * 10 * millicent(SETM)
