@@ -1,0 +1,40 @@
+[package]
+name = "module-balances"
+version = "0.9.70"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+serde = { optional = true, version = "1.0.116" }
+codec = { package = "parity-scale-codec", default-features = false, features = ["derive"], version = "2.0.0" }
+sp-std = { default-features = false, version = "3.0.0" }
+sp-runtime = { default-features = false, version = "3.0.0" }
+frame-benchmarking = { default-features = false, optional = true, version = "3.0.0" }
+frame-support = { default-features = false, version = "3.0.0" }
+frame-system = { default-features = false, version = "3.0.0" }
+
+# crust runtime modules
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+
+[dev-dependencies]
+sp-io = "3.0.0"
+sp-core = "3.0.0"
+pallet-transaction-payment = "3.0.0"
+primitives = { package = "setheum-primitives", path = "../../primitives", features = ["test"] }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"sp-std/std",
+	"sp-runtime/std",
+	"frame-benchmarking/std",
+	"frame-support/std",
+	"frame-system/std",
+	"primitives/std"
+]
+runtime-benchmarks = ["frame-benchmarking"]

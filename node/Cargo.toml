@@ -6,7 +6,7 @@ edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Unlicense'
 name = 'setheum-node'
-version = '0.9.6'
+version = '0.9.70'
 
 [[bin]]
 name = 'setheum-node'

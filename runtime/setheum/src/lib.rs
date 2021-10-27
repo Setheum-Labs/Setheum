@@ -107,7 +107,7 @@ pub use module_support::{Contains, ExchangeRate, PrecompileCallerFilter, Price, 
 
 pub use runtime_common::{};
 
-pub use primitives::{currency::*, time::*};
+pub use primitives::{currency::*, constants::time::*};
 
 mod weights;
 mod benchmarking;
