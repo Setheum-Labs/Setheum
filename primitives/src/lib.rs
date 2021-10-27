@@ -20,8 +20,10 @@
 #![allow(clippy::unnecessary_cast)]
 #![allow(clippy::upper_case_acronyms)]
 
+pub mod constants;
 pub mod currency;
 pub mod evm;
+pub mod traits;
 pub mod mocks;
 
 use codec::{Decode, Encode};
@@ -34,64 +36,12 @@ use sp_runtime::{
 use sp_std::{prelude::*};
 
 pub use currency::{CurrencyId, DexShare, TokenSymbol};
-pub use currency::{TokenSymbol::SETM};
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 mod tests;
-
-
-/// Time and blocks.
-pub mod time {
-	pub use currency::{CurrencyId, DexShare, TokenSymbol};
-	pub use currency::{TokenSymbol::SETM};
-	use super::{BlockNumber, Moment};
-	// 3 seconds average blocktime
-	pub const SECS_PER_BLOCK: Moment = 3;
-	pub const MILLISECS_PER_BLOCK: Moment = SECS_PER_BLOCK * 1000;
-
-	// These time units are defined in number of blocks.
-	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
-	pub const HOURS: BlockNumber = MINUTES * 60;
-	pub const DAYS: BlockNumber = HOURS * 24;
-
-	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
-
-	// 1 in 4 blocks (on average, not counting collisions) will be primary BABE
-	// blocks.
-	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
-
-	pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = HOURS;
-	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
-		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
-
-		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
-	};
-	
-	// TODO: make those const fn
-	// another implementation is in `runtime_common`
-	pub fn dollar(currency_id: CurrencyId) -> u128 {
-		10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
-	}
-
-	pub fn cent(currency_id: CurrencyId) -> u128 {
-		dollar(currency_id) / 100
-	}
-
-	pub fn millicent(currency_id: CurrencyId) -> u128 {
-		cent(currency_id) / 1000
-	}
-
-	pub fn microcent(currency_id: CurrencyId) -> u128 {
-		millicent(currency_id) / 1000
-	}
-	
-	pub fn deposit(items: u32, bytes: u32) -> u128 {
-		items as u128 * 2 * dollar(SETM) + (bytes as u128) * 10 * millicent(SETM)
-	}
-}
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -142,6 +92,46 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 
 /// Block ID.
 pub type BlockId = generic::BlockId<Block>;
+
+/// Index of a transaction in the chain.
+pub type Index = u32;
+
+/// Digest item type.
+pub type DigestItem = generic::DigestItem<Hash>;
+
+/// The IAS signature type
+pub type IASSig = Vec<u8>;
+
+/// The ISV body type, contains the enclave code and public key
+pub type ISVBody = Vec<u8>;
+
+/// sworker certification type, begin with `-----BEGIN CERTIFICATE-----`
+/// and end with `-----END CERTIFICATE-----`
+pub type SworkerCert = Vec<u8>;
+
+/// sworker public key, little-endian-format, 64 bytes vec
+pub type SworkerPubKey = Vec<u8>;
+
+/// sworker anchor, just use SworkerPubKey right now, 64 bytes vec
+pub type SworkerAnchor = SworkerPubKey;
+
+/// sworker signature, little-endian-format, 64 bytes vec
+pub type SworkerSignature = Vec<u8>;
+
+/// sworker enclave code
+pub type SworkerCode = Vec<u8>;
+
+/// Work report empty workload/storage merkle root
+pub type MerkleRoot = Vec<u8>;
+
+/// File Alias for a file
+pub type FileAlias = Vec<u8>;
+
+/// Report index, always be a multiple of era number
+pub type ReportSlot = u64;
+
+/// Market vendor's address info
+pub type AddressInfo = Vec<u8>;
 
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;

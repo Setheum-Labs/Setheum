@@ -146,20 +146,20 @@ impl<AccountId> Contains<AccountId> for DummyNomineeFilter {
 	}
 }
 
-// TODO: make those const fn
-pub fn dollar(currency_id: CurrencyId) -> Balance {
+// another implementation is in `primitives/constants.rs`
+pub const fn dollar(currency_id: CurrencyId) -> Balance {
 	10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
 }
 
-pub fn cent(currency_id: CurrencyId) -> Balance {
+pub const fn cent(currency_id: CurrencyId) -> Balance {
 	dollar(currency_id) / 100
 }
 
-pub fn millicent(currency_id: CurrencyId) -> Balance {
+pub const fn millicent(currency_id: CurrencyId) -> Balance {
 	cent(currency_id) / 1000
 }
 
-pub fn microcent(currency_id: CurrencyId) -> Balance {
+pub const fn microcent(currency_id: CurrencyId) -> Balance {
 	millicent(currency_id) / 1000
 }
 

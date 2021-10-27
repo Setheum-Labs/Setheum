@@ -4,7 +4,7 @@ edition = '2018'
 homepage = 'https://setheum.xyz'
 license = 'Unlicense'
 name = 'setheum-runtime'
-version = '0.9.6'
+version = '0.9.70'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']

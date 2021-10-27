@@ -4,7 +4,7 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 
 <div align="center">
 	
-[![Setheum version](https://img.shields.io/badge/Setheum-0.9.6-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
+[![Setheum version](https://img.shields.io/badge/Setheum-0.9.70-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
 [![Substrate version](https://img.shields.io/badge/Substrate-3.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
 [![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=green)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
  <br />
