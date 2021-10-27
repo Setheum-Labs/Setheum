@@ -21,7 +21,7 @@ frame-benchmarking = { version = "3.0.0", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
 market = { package = "setcloud-market", path = "../../setcloud-market", default-features = false }
 swork = { package = "setcloud-swork", path = "../../setcloud-swork", default-features = false }
-balances = { package = "pallet-balances", version = '3.0.0', default-features = false }
+balances = { package = "module-balances", path = "../balances", default-features = false }
 
 [features]
 default = ["std"]

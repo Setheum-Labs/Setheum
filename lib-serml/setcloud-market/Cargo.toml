@@ -41,6 +41,6 @@ runtime-benchmarks = [
 [dev-dependencies]
 hex = "0.4.2"
 swork = { package = "setcloud-swork", path = "../setcloud-swork" }
-balances = { package = "pallet-balances", version = '3.0.0' }
+balances = { package = "module-balances", path = "../balances" }
 primitives = { package = "setheum-primitives", path = "../../primitives", features = ["test"] }
 frame-benchmarking = "3.0.0"

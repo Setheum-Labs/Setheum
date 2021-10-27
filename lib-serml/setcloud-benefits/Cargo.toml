@@ -21,7 +21,7 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 frame-benchmarking = { default-features = false, optional = true, version = "3.0.0" }
 
 [dev-dependencies]
-balances = { package = "pallet-balances", version = '3.0.0' }
+balances = { package = "module-balances", path = "../balances" }
 primitives = { package = "setheum-primitives", path = "../../primitives", features = ["test"] }
 hex-literal = "0.3.1"
 frame-benchmarking = "3.0.0"
