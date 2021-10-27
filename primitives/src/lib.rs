@@ -34,7 +34,7 @@ use sp_runtime::{
 use sp_std::{prelude::*};
 
 pub use currency::{CurrencyId, DexShare, TokenSymbol};
-use crate::SETM;
+pub use currency::{TokenSymbol::SETM};
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -45,6 +45,8 @@ mod tests;
 
 /// Time and blocks.
 pub mod time {
+	pub use currency::{CurrencyId, DexShare, TokenSymbol};
+	pub use currency::{TokenSymbol::SETM};
 	use super::{BlockNumber, Moment};
 	// 3 seconds average blocktime
 	pub const SECS_PER_BLOCK: Moment = 3;
