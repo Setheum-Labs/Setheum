@@ -146,21 +146,33 @@ impl<AccountId> Contains<AccountId> for DummyNomineeFilter {
 	}
 }
 
-// another implementation is in `primitives/constants.rs`
-pub const fn dollar(currency_id: CurrencyId) -> Balance {
+// TODO: make those const fn
+// Another constant implementation is in `primitives/constants.rs`
+pub fn dollar(currency_id: CurrencyId) -> Balance {
 	10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
 }
 
-pub const fn cent(currency_id: CurrencyId) -> Balance {
+pub fn cent(currency_id: CurrencyId) -> Balance {
 	dollar(currency_id) / 100
 }
 
-pub const fn millicent(currency_id: CurrencyId) -> Balance {
+pub fn millicent(currency_id: CurrencyId) -> Balance {
 	cent(currency_id) / 1000
 }
 
-pub const fn microcent(currency_id: CurrencyId) -> Balance {
+pub fn microcent(currency_id: CurrencyId) -> Balance {
 	millicent(currency_id) / 1000
+}
+
+// The nanoscent is only for currencies that have up to 12 decimals like the SETM
+// 12 decimals = 1 Trillion nanocents
+// 1 Trillion NANOCENTS = 1 DOLLAR
+pub fn nanocent(currency_id: CurrencyId) -> Balance {
+	microcent(currency_id) / 10000
+}
+
+pub fn deposit(items: u32, bytes: u32) -> Balance {
+	items as Balance * 1_000 * cent(SETM) + (bytes as Balance) * 100 * millicent(SETM)
 }
 
 pub type ShuraCouncilInstance = pallet_collective::Instance1;

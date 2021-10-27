@@ -20,30 +20,19 @@
 pub mod currency {
     use crate::Balance;
 
-	// another implementation is in `runtime_common`
-	pub const fn dollar(currency_id: CurrencyId) -> Balance {
-		10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
-	}
+    pub const TWELVE_DECIMALS: Balance = 1_000_000_000_000; // 12 decimals = 1 Trillion nanocents
+    pub const DOLLARS: Balance = TWELVE_DECIMALS;
+    pub const CENTS: Balance = DOLLARS / 100;
+    pub const MILLICENTS: Balance = CENTS / 1_000;
+    pub const MICROCENTS: Balance = MILLICENTS / 1_000;
+    // The nanoscent is only for currencies that have up to 12 decimals like the SETM
+    // 1 Trillion NANOCENTS = 1 DOLLAR
+    pub const NANOCENTS: Balance = MICROCENTS / 10_000;
 
-	pub const fn cent(currency_id: CurrencyId) -> Balance {
-		dollar(currency_id) / 100
-	}
-
-	pub const fn millicent(currency_id: CurrencyId) -> Balance {
-		cent(currency_id) / 1000
-	}
-
-	pub const fn microcent(currency_id: CurrencyId) -> Balance {
-		millicent(currency_id) / 1000
-	}
-	
-	pub const fn deposit(items: u32, bytes: u32) -> Balance {
-		items as Balance * 2 * dollar(SETM) + (bytes as Balance) * 10 * millicent(SETM)
-	}
     // GPoS rewards in the first year
-    pub const FIRST_YEAR_REWARDS: Balance = 5_000_000 * dollar(SETM);
+    pub const FIRST_YEAR_REWARDS: Balance = 808_314_000 * DOLLARS;
 
-    pub const fn deposit(items: u32, bytes: u32) -> Balance {
+    pub const fn const_fn_deposit(items: u32, bytes: u32) -> Balance {
 		items as Balance * 1_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
 	}
 }
@@ -88,10 +77,10 @@ pub mod time {
 
 pub mod staking {
     use crate::Balance;
-    // The reward decrease ratio per year
-    pub const REWARD_DECREASE_RATIO: (Balance, Balance) = (88, 100);
-    // The minimal reward ratio
-    pub const MIN_REWARD_RATIO: (Balance, Balance) = (28, 1000);
+    // The reward decrease ratio per year = 85.2%
+    pub const REWARD_DECREASE_RATIO: (Balance, Balance) = (852, 1000);
+    // The minimal reward ratio = 2.58%
+    pub const MIN_REWARD_RATIO: (Balance, Balance) = (258, 10000);
     // The start year for extra reward
     pub const EXTRA_REWARD_START_YEAR: u64 = 4;
 }

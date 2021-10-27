@@ -1,0 +1,7 @@
+[package]
+name = "inverse-funtion"
+version = "0.9.70"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[dependencies]
