@@ -19,7 +19,6 @@ members = [
     'lib-serml/emergency-shutdown',
     'lib-serml/evm',
     'lib-serml/evm/rpc',
-    'lib-serml/evm/rpc/runtime-api',
     'lib-serml/evm-accounts',
     'lib-serml/evm-bridge',
     'lib-serml/evm-manager',
