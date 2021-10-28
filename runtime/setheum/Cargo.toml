@@ -206,7 +206,7 @@ std = [
 	"module-support/std",
 	"module-transaction-payment/std",
 	
-	"setheum-primitives/std",
+	"primitives/std",
 	"runtime-common/std",
 	
 	"serp-ocw/std",
