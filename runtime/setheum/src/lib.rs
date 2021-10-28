@@ -87,6 +87,8 @@ pub use frame_system::{ensure_root, EnsureOneOf, EnsureRoot, RawOrigin};
 
 use static_assertions::const_assert;
 
+use sp_staking::SessionIndex;
+
 /// Implementations of some helper traits passed into runtime modules as associated types.
 use impls::{CurrencyToVoteHandler, Author};
 
@@ -101,7 +103,7 @@ use module_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 
 // re-exports
 
-pub use pallet_staking::StakerStatus;
+pub use module_staking::StakerStatus;
 pub use primitives::{
 	evm::EstimateResourcesRequest, AuthoritysOriginId,
 	AccountId, AccountIndex, Amount, Balance, BlockNumber,
@@ -526,14 +528,14 @@ parameter_types! {
 impl pallet_session::Config for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = pallet_staking::StashOf<Self>;
+	type ValidatorIdOf = module_staking::StashOf<Self>;
 	type ShouldEndSession = Babe;
 	type NextSessionRotation = Babe;
 	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
 	type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = opaque::SessionKeys;
 	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_session::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -544,15 +546,15 @@ parameter_types! {
 }
 
 impl pallet_session::historical::Config for Runtime {
-	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
-	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
+	type FullIdentification = module_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = module_staking::ExposureOf<Runtime>;
 }
 
 parameter_types! {
-	pub const SessionsPerEra: sp_staking::SessionIndex = 2; // 2 hours
-	pub const BondingDuration: pallet_staking::EraIndex = 4; // 8 hours
-	pub const SlashDeferDuration: pallet_staking::EraIndex = 3; // 6 hours
-    // 1 * CRUs / TB, since we treat 1 TB = 1_000_000_000_000, so the ratio = `1`
+	pub const SessionsPerEra: sp_staking::SessionIndex = 3; // 3 hours
+	pub const BondingDuration: EraIndex = 3; // 9 hours
+	pub const SlashDeferDuration: EraIndex = 2; // 6 hours
+    // 1 * SETM / TB, since we treat 1 TB = 1_000_000_000_000, so the ratio = `1`
     pub const SPowerRatio: u128 = 1;
 	// only top N nominators get paid for each validator
     // 128 guarantors for one validator.
@@ -564,7 +566,7 @@ parameter_types! {
     pub const UncheckedFrozenBondFund: Balance = 1 * DOLLARS;
 }
 // GPos Staking based on FRAME's NPoS `pallet_staking`
-impl staking::Config for Runtime {
+impl module_staking::Config for Runtime {
     type ModuleId = StakingModuleId;
     type Currency = StakingBalances;
     type UnixTime = Timestamp;
@@ -590,7 +592,7 @@ impl staking::Config for Runtime {
     type MarketStakingPotDuration = MarketStakingPotDuration;
     type BenefitInterface = Benefits;
     type UncheckedFrozenBondFund = UncheckedFrozenBondFund;
-    type WeightInfo = staking::weight::WeightInfo;
+    type WeightInfo = module_staking::weight::WeightInfo;
 }
 
 impl pallet_babe::Config for Runtime {
@@ -1929,15 +1931,15 @@ construct_runtime!(
 		EmergencyShutdown: emergency_shutdown::{Module, Storage, Call, Event<T>} = 33,
 
         // SetCloud
-        Swork: setcloud_swork::{Module, Call, Storage, Event<T>, Config<T>} = 34,
-        Market: setcloud_market::{Module, Call, Storage, Event<T>, Config} = 35,
-        Benefits: setcloud_benefits::{Module, Call, Storage, Event<T>} = 36,
+        SetCloudSwork: setcloud_swork::{Module, Call, Storage, Event<T>, Config<T>} = 34,
+        SetCloudMarket: setcloud_market::{Module, Call, Storage, Event<T>, Config} = 35,
+        SetCloudBenefits: setcloud_benefits::{Module, Call, Storage, Event<T>} = 36,
 
 		// Consensus
 		Authorship: pallet_authorship::{Module, Call, Storage, Inherent} = 37,
 		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned} = 38,
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event, ValidateUnsigned} = 39,
-        Staking: staking::{Module, Call, Storage, Config<T>, Event<T>},
+        Staking: module_staking::{Module, Call, Storage, Config<T>, Event<T>},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>} = 41,
 		Historical: pallet_session_historical::{Module} = 42,
 		Offences: pallet_offences::{Module, Call, Storage, Event} = 43,
@@ -2329,26 +2331,36 @@ impl_runtime_apis! {
 			use module_nft::benchmarking::Module as NftBench;
 
 			use frame_system_benchmarking::Module as SystemBench;
+            use setcloud_swork_benchmarking::Module as SetCloudSworkBench;
+
 			impl frame_system_benchmarking::Config for Runtime {}
+            impl setcloud_swork_benchmarking::Config for Runtime {}
 
 			let whitelist: Vec<TrackedStorageKey> = vec![
+				/// TODO: Update hexcode
 				// Block Number
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac").to_vec().into(),
+				/// TODO: Update hexcode
 				// Total Issuance
 				hex_literal::hex!("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80").to_vec().into(),
+				/// TODO: Update hexcode
 				// Execution Phase
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a").to_vec().into(),
+				/// TODO: Update hexcode
 				// Event Count
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850").to_vec().into(),
+				/// TODO: Update hexcode
 				// System Events
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7").to_vec().into(),
 				/// TODO: Update hexcode
 				// Caller 0 Account
-				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da946c154ffd9992e395af90b5b13cc6f295c77033fce8a9045824a6690bbf99c6db269502f0a8d1d2a008542d5690a0749").to_vec().into(),
+				hex_literal::hex!().to_vec().into(),
+				/// TODO: Update hexcode
 				// Caller 1 Account
-				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da946c154ffd9992e395af90b5b13cc6f295c77033fce8a9045824a6690bbf99c6db269502f0a8d1d2a008542d5690a0749").to_vec().into(),
+				hex_literal::hex!().to_vec().into(),
+				/// TODO: Update hexcode
 				// Treasury Account
-				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da95ecffd7b6c0f78751baa9d281e0bfa3a6d6f646c70792f74727372790000000000000000000000000000000000000000").to_vec().into(),
+				hex_literal::hex!().to_vec().into(),
 			];
 
 			let mut batches = Vec::<BenchmarkBatch>::new();
@@ -2360,6 +2372,11 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, module_nft, NftBench::<Runtime>);
 
+            add_benchmark!(params, batches, module_staking, Staking);
+            add_benchmark!(params, batches, setcloud_market, SetCloudMarket);
+            add_benchmark!(params, batches, setcloud_swork, SetCloudSworkBench::<Runtime>);
+            add_benchmark!(params, batches, setcloud_benefits, SetCloudBenefits);
+			
 			orml_add_benchmark!(params, batches, module_dex, benchmarking::dex);
 			orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);
 			orml_add_benchmark!(params, batches, cdp_engine, benchmarking::cdp_engine);

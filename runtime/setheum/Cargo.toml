@@ -116,13 +116,13 @@ serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = fal
 
 setheum-renvm-bridge = { path = "../../lib-serml/renvm-bridge", default-features = false }
 
-module-balances = { package = "module-balances", path = "../../lib-serml/balances", default-features = false }
-market = { package = "setcloud-market", path = "../../lib-serml/setcloud-market", default-features = false }
-swork = { package = "setcloud-swork", path = "../../lib-serml/setcloud-swork", default-features = false }
-benefits = { package = "setcloud-benefits", path = "../../lib-serml/setcloud-benefits", default-features = false }
-swork-benchmarking = { package = "setcloud-swork-benchmarking", path = "../../lib-serml/setcloud-swork/benchmarking", default-features = false, optional = true }
+module-balances = { path = "../../lib-serml/balances", default-features = false }
+setcloud-market = { path = "../../lib-serml/setcloud-market", default-features = false }
+setcloud-swork = { path = "../../lib-serml/setcloud-swork", default-features = false }
+setcloud-benefits = { path = "../../lib-serml/setcloud-benefits", default-features = false }
+setcloud-swork-benchmarking = { path = "../../lib-serml/setcloud-swork/benchmarking", default-features = false, optional = true }
 # GPoS based on NPoS
-staking = { package = "module-staking", path = "../../lib-serml/staking", default-features = false }
+module-staking = { package = "module-staking", path = "../../lib-serml/staking", default-features = false }
 
 [dev-dependencies]
 libsecp256k1 = "0.6"
