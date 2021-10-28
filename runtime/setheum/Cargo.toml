@@ -2,7 +2,6 @@
 authors = ['Setheum Labs']
 edition = '2018'
 homepage = 'https://setheum.xyz'
-license = 'Unlicense'
 name = 'setheum-runtime'
 version = '0.9.70'
 
@@ -12,14 +11,8 @@ targets = ['x86_64-unknown-linux-gnu']
 [build-dependencies]
 substrate-wasm-builder = '4.0.0'
 
-# alias "parity-scale-code" to "codec"
-[dependencies.codec]
-default-features = false
-features = ['derive']
-package = 'parity-scale-codec'
-version = '2.0.0'
-
 [dependencies]
+codec = { default-features = false, features = ["derive"], package = "parity-scale-codec", version = "2.0.0" }
 smallvec = "1.4.0"
 static_assertions = "1.1.0"
 hex-literal = { optional = true, version = '0.3.1' }
@@ -28,6 +21,8 @@ serde_json = "1.0.60"
 evm = { version = "0.26.0", optional = true, default-features = false }
 
 # Substrate dependencies
+authority-discovery-primitives = { default-features = false, package = "sp-authority-discovery", version = "3.0.0" }
+babe-primitives = { default-features = false, package = "sp-consensus-babe", version = "0.9.0" }
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
 frame-executive = { default-features = false, version = '3.0.0' }
 frame-support = { default-features = false, version = '3.0.0' }
@@ -60,11 +55,12 @@ sp-staking = { version = "3.0.0", default-features = false }
 sp-std = { version = "3.0.0", default-features = false }
 sp-transaction-pool = { version = "3.0.0", default-features = false }
 sp-version = { version = "3.0.0", default-features = false }
+sp-arithmetic = { default-features = false, version = "3.0.0" }
+
 libsecp256k1 = { version = "0.6", default-features = false, optional = true }
 
 # NPoS
 pallet-session = { version = "3.0.0", features = ["historical"], default-features = false }
-pallet-staking = { version = "3.0.0", default-features = false }
 pallet-staking-reward-curve = { version = "3.0.0", default-features = false }
 pallet-authorship = { version = "3.0.0", default-features = false }
 pallet-babe = { version = "3.0.0", default-features = false }
@@ -120,6 +116,13 @@ serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = fal
 
 setheum-renvm-bridge = { path = "../../lib-serml/renvm-bridge", default-features = false }
 
+module-balances = { path = "../../lib-serml/balances", default-features = false }
+setcloud-market = { path = "../../lib-serml/setcloud-market", default-features = false }
+setcloud-swork = { path = "../../lib-serml/setcloud-swork", default-features = false }
+setcloud-benefits = { path = "../../lib-serml/setcloud-benefits", default-features = false }
+setcloud-swork-benchmarking = { path = "../../lib-serml/setcloud-swork/benchmarking", default-features = false, optional = true }
+# GPoS based on NPoS
+module-staking = { package = "module-staking", path = "../../lib-serml/staking", default-features = false }
 
 [dev-dependencies]
 libsecp256k1 = "0.6"
@@ -154,7 +157,6 @@ std = [
 	"pallet-bounties/std",
 	"pallet-collective/std",
 	"pallet-session/std",
-	"pallet-staking/std",
 	"pallet-authorship/std",
 	"pallet-babe/std",
 	"sp-consensus-babe/std",
@@ -210,6 +212,13 @@ std = [
 	"serp-treasury/std",
 	
 	"setheum-renvm-bridge/std",
+	
+	"module-balances/std",
+	"market/std",
+	"swork/std",
+	"benefits/std",
+	"swork-benchmarking/std",
+	"staking/std",
 ]
 with-ethereum-compatibility = [
 	"evm",
@@ -235,4 +244,10 @@ runtime-benchmarks = [
 
 	"serp-treasury/runtime-benchmarks",
 	"module-dex/runtime-benchmarks",
+
+    "balances/runtime-benchmarks",
+    "staking/runtime-benchmarks",
+    "market/runtime-benchmarks",
+    "swork-benchmarking",
+    "benefits/runtime-benchmarks",	
 ]
