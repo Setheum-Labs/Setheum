@@ -4,7 +4,6 @@ build = 'build.rs'
 description = 'Setheum Substrate Node'
 edition = '2018'
 homepage = 'https://setheum.xyz'
-license = 'Unlicense'
 name = 'setheum-node'
 version = '0.9.70'
 
@@ -16,8 +15,11 @@ targets = ['x86_64-unknown-linux-gnu']
 
 [build-dependencies]
 substrate-build-script-utils = { version = '3.0.0' }
+frame-benchmarking-cli = { optional = true, version = "3.0.0" }
 
 [dependencies]
+futures = "0.3.8"
+log = "0.4.11"
 hex-literal = "0.3.1"
 jsonrpc-core = '15.1.0'
 structopt = '0.3.8'
@@ -26,7 +28,7 @@ serde_json = "1.0.41"
 
 # Substrate dependencies
 frame-benchmarking = { version = '3.0.0' }
-frame-benchmarking-cli = { version = '3.0.0' }
+frame-benchmarking-cli = { optional = true, version = "3.0.0" }
 pallet-transaction-payment-rpc = { version = '3.0.0' }
 sc-chain-spec = { version = '3.0.0' }
 sc-basic-authorship = { version = "0.9.0" }
@@ -65,20 +67,24 @@ sc-consensus-epochs = { version = '0.9.0' }
 sc-consensus-slots = { version = '0.9.0' }
 
 
+# Setheum runtime modules
 module-evm = { path = "../lib-serml/evm" }
 module-evm-rpc-runtime-api = {path = "../lib-serml/evm/rpc/runtime_api" }
 evm-rpc = { path = "../lib-serml/evm/rpc" }
 setheum-renvm-bridge = { path = "../lib-serml/renvm-bridge" }
-
 setheum-primitives = { path = "../primitives" }
-
-# runtime
 setheum-runtime = { path = '../runtime/setheum' }
+setcloud-market = { path = "../lib-serml/setcloud-market" }
+module-staking = { path = "../lib-serml/staking" }
+setcloud-swork = { path = "../lib-serml/setcloud-swork" }
 
 [features]
 default = [ "std" ]
 std = []
-runtime-benchmarks = ['setheum-runtime/runtime-benchmarks']
+runtime-benchmarks = [
+	'setheum-runtime/runtime-benchmarks',
+    "frame-benchmarking-cli",
+]
 with-ethereum-compatibility = [
 	"setheum-runtime/with-ethereum-compatibility"
 ]

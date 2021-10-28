@@ -133,6 +133,8 @@ hex-literal = "0.3.1"
 [features]
 default = ['std']
 std = [
+    "authority-discovery-primitives/std",
+    "babe-primitives/std",
 	'codec/std',
 	'serde',
 	'frame-executive/std',
@@ -204,7 +206,7 @@ std = [
 	"module-support/std",
 	"module-transaction-payment/std",
 	
-	"primitives/std",
+	"setheum-primitives/std",
 	"runtime-common/std",
 	
 	"serp-ocw/std",
@@ -214,11 +216,11 @@ std = [
 	"setheum-renvm-bridge/std",
 	
 	"module-balances/std",
-	"market/std",
-	"swork/std",
-	"benefits/std",
-	"swork-benchmarking/std",
-	"staking/std",
+	"setcloud-market/std",
+	"setcloud-swork/std",
+	"setcloud-benefits/std",
+	"setcloud-swork-benchmarking/std",
+	"module-staking/std",
 ]
 with-ethereum-compatibility = [
 	"evm",
@@ -245,9 +247,9 @@ runtime-benchmarks = [
 	"serp-treasury/runtime-benchmarks",
 	"module-dex/runtime-benchmarks",
 
-    "balances/runtime-benchmarks",
-    "staking/runtime-benchmarks",
-    "market/runtime-benchmarks",
-    "swork-benchmarking",
-    "benefits/runtime-benchmarks",	
+    "module-balances/runtime-benchmarks",
+    "module-staking/runtime-benchmarks",
+    "setcloud-market/runtime-benchmarks",
+    "setcloud-swork-benchmarking",
+    "setcloud-benefits/runtime-benchmarks",	
 ]
