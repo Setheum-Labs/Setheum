@@ -6,12 +6,44 @@ split-debuginfo = "unpacked"
 
 [workspace]
 members = [
+	#Setheum Node
     'node',
-    'lib-serml/*',
+	#Setheum Runtime Module Library (SERML)
+    'lib-serml/airdrop',
+    'lib-serml/auction-manager',
+    'lib-serml/balances',
+    'lib-serml/cdp-engine',
+    'lib-serml/cdp-treasury',
+    'lib-serml/currencies',
+    'lib-serml/dex',
+    'lib-serml/emergency-shutdown',
+    'lib-serml/evm',
+    'lib-serml/evm/rpc',
+    'lib-serml/evm/rpc/runtime-api',
+    'lib-serml/evm-accounts',
+    'lib-serml/evm-bridge',
+    'lib-serml/evm-manager',
+    'lib-serml/loans',
+    'lib-serml/nft',
+    'lib-serml/prices',
+    'lib-serml/recovery',
+    'lib-serml/renvm-bridge',
+    'lib-serml/serp-ocw',
+    'lib-serml/serp-setmint',
+    'lib-serml/serp-treasury',
+    'lib-serml/setcloud-benefits',
+    'lib-serml/setcloud-market',
+    'lib-serml/setcloud-swork',
+    'lib-serml/setcloud-swork/benchmarking',
+    'lib-serml/staking',
+    'lib-serml/support',
+    'lib-serml/transaction-payment',
+	#Setheum Runtime
     'runtime/common',
     'runtime/setheum',
+	#Setheum Primitives
     'primitives',
-
+	#Open Runtime Module Library (ORML)
 	'open-lib/authority',
 	'open-lib/benchmarking',
 	'open-lib/currencies',
@@ -23,6 +55,15 @@ members = [
 	'open-lib/traits',
 	'open-lib/utilities',
 ]
+exclude = [
+    "utils/webpki",
+    "utils/ring",
+    "utils/serde_json_no_std",
+    "utils/serde_derive_no_std",
+    "utils/serde_derive_no_std"
+]
+resolver = "2"
+
 # exclude = ['rpc']
 
 # The list of dependencies below (which can be both direct and indirect dependencies) are crates
