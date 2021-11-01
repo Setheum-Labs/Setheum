@@ -131,8 +131,6 @@ hex-literal = "0.3.1"
 [features]
 default = ['std']
 std = [
-    "authority-discovery-primitives/std",
-    "babe-primitives/std",
 	'codec/std',
 	'serde',
 	'frame-executive/std',
