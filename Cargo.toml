@@ -3,6 +3,15 @@ panic = 'unwind'
 
 [profile.dev]
 split-debuginfo = "unpacked"
+opt-level = 0
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = 'unwind'
+incremental = true
+codegen-units = 256
+rpath = false
 
 [workspace]
 members = [
@@ -155,7 +164,6 @@ pallet-proxy = { git = "https://github.com/Slixon-Technologies/substrate", branc
 pallet-randomness-collective-flip = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-scheduler = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-session = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
-pallet-staking = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-staking-reward-curve = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-sudo = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 pallet-timestamp = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
