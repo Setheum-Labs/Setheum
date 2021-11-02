@@ -3,15 +3,7 @@ panic = 'unwind'
 
 [profile.dev]
 split-debuginfo = "unpacked"
-opt-level = 0
-debug = true
-debug-assertions = true
-overflow-checks = true
-lto = false
-panic = 'unwind'
-incremental = true
-codegen-units = 256
-rpath = false
+incremental = false
 
 [workspace]
 members = [
