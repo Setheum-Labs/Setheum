@@ -550,123 +550,7 @@ impl pallet_session::historical::Config for Runtime {
 	type FullIdentificationOf = module_staking::ExposureOf<Runtime>;
 }
 
-parameter_types! {
-	pub const SessionsPerEra: sp_staking::SessionIndex = 3; // 3 hours
-	pub const BondingDuration: EraIndex = 4; // 12 hours
-	pub const SlashDeferDuration: EraIndex = 3; // 9 hours
-    // 1 * SETM / TB, since we treat 1 TB = 1_000_000_000_000, so the ratio = `1`
-    pub const SPowerRatio: u128 = 1;
-	// only top N nominators get paid for each validator
-    // 128 guarantors for one validator.
-	pub const MaxGuarantorRewardedPerValidator: u32 = 128;
-    pub const StakingModuleId: ModuleId = ModuleId(*b"sstaking");
-    // 60 eras means 14 days if era = 6 hours
-    pub const MarketStakingPotDuration: u32 = 60;
-    // free transfer amount for other locks
-    pub const UncheckedFrozenBondFund: Balance = 1 * dollar(SETM);
-}
-// GPos Staking based on FRAME's NPoS `pallet_staking`
-impl module_staking::Config for Runtime {
-    type ModuleId = StakingModuleId;
-    type Currency = StakingBalances;
-    type UnixTime = Timestamp;
-
-    type CurrencyToVote = CurrencyToVoteHandler;
-	// send the reward remainder to the Setheum treasury.
-    type RewardRemainder = SetheumTreasury;
-    type Event = Event;
-	// send the slashed funds to the Setheum treasury.
-    type Slash = SetheumTreasury;
-	 // rewards are minted from the void
-	type Reward = ();
-    type Randomness = RandomnessCollectiveFlip;
-    type SessionsPerEra = SessionsPerEra;
-    type BondingDuration = BondingDuration;
-    type MaxGuarantorRewardedPerValidator = MaxGuarantorRewardedPerValidator;
-    type SlashDeferDuration = SlashDeferDuration;
-    // A majority of the Technical Committee can cancel the slash.
-    type SlashCancelOrigin = EnsureRootOrThreeFourthsTechnicalCommittee;
-    type SessionInterface = Self;
-    type SPowerRatio = SPowerRatio;
-    type MarketStakingPot = SetCloudMarket;
-    type MarketStakingPotDuration = MarketStakingPotDuration;
-    type BenefitInterface = Benefits;
-    type UncheckedFrozenBondFund = UncheckedFrozenBondFund;
-    type WeightInfo = module_staking::weight::WeightInfo;
-}
-
-parameter_types! {
-    pub const BenefitReportWorkCost: Balance = 3 * dollars(SETM);
-    pub BenefitsLimitRatio: Perbill = Perbill::from_rational_approximation(2u64, 1000);
-    pub const BenefitMarketCostRatio: Perbill = Perbill::one();
-}
-
-impl setcloud_benefits::Config for Runtime {
-    type Event = Event;
-    type Currency = StakingBalances;
-    type BenefitReportWorkCost = BenefitReportWorkCost;
-    type BenefitsLimitRatio = BenefitsLimitRatio;
-    type BenefitMarketCostRatio = BenefitMarketCostRatio;
-    type BondingDuration = BondingDuration;
-    type WeightInfo = setcloud_benefits::weight::WeightInfo<Runtime>;
-}
-
-parameter_types! {
-    /// Unit is pico
-    pub const MarketModuleId: ModuleId = ModuleId(*b"scmarket");
-    pub const FileDuration: BlockNumber = 180 * DAYS;
-    pub const LiquidityDuration: BlockNumber = 15 * DAYS;
-    pub const FileReplica: u32 = 4;
-    pub const InitFileByteFee: Balance = MILLICENTS / 1000; // Need align with FileDuration and FileReplica
-    pub const InitFileKeysCountFee: Balance = MILLICENTS / 10;
-    pub const StorageReferenceRatio: (u128, u128) = (50, 100); // 50/100 = 50%
-    pub StorageIncreaseRatio: Perbill = Perbill::from_rational_approximation(6u64, 100000);
-    pub StorageDecreaseRatio: Perbill = Perbill::from_rational_approximation(5u64, 100000);
-    pub const StakingRatio: Perbill = Perbill::from_percent(72);
-    pub const StorageRatio: Perbill = Perbill::from_percent(18);
-    pub const MaximumFileSize: u64 = 34_359_738_368; // 32G = 32 * 1024 * 1024 * 1024
-    pub const RenewRewardRatio: Perbill = Perbill::from_percent(5);
-}
-
-impl market::Config for Runtime {
-    /// The market's module id, used for deriving its sovereign account ID.
-    type ModuleId = MarketModuleId;
-    type Currency = StakingBalances;
-    type SworkerInterface = SetCloudSwork;
-    type BenefitInterface = Benefits;
-    type Event = Event;
-    /// File duration.
-    type FileDuration = FileDuration;
-    type LiquidityDuration = LiquidityDuration;
-    type FileReplica = FileReplica;
-    type InitFileByteFee = InitFileByteFee;
-    type InitFileKeysCountFee = InitFileKeysCountFee;
-    type StorageReferenceRatio = StorageReferenceRatio;
-    type StorageIncreaseRatio = StorageIncreaseRatio;
-    type StorageDecreaseRatio = StorageDecreaseRatio;
-    type StakingRatio = StakingRatio;
-    type StorageRatio = StorageRatio;
-    type WeightInfo = setcloud_::weight::WeightInfo<Runtime>;
-    type MaximumFileSize = MaximumFileSize;
-    type RenewRewardRatio = RenewRewardRatio;
-}
-
-parameter_types! {
-    pub const PunishmentSlots: u32 = 8; // 8 report slot == 8 hours
-    pub const MaxGroupSize: u32 = 1000;
-}
-
-impl setcloud_swork::Config for Runtime {
-    type Currency = Balances;
-    type Event = Event;
-    type PunishmentSlots = PunishmentSlots;
-    type Works = Staking;
-    type MarketInterface = SetCloudMarket;
-    type MaxGroupSize = MaxGroupSize;
-    type BenefitInterface = SetCloudBenefits;
-    type WeightInfo = setcloud_swork::weight::WeightInfo<Runtime>;
-}
-
+/// TODO: Add pallet_staking.,
 impl pallet_babe::Config for Runtime {
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
@@ -2039,8 +1923,6 @@ construct_runtime!(
 
 		// Tokens
 		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>} = 17,
-        StakingBalances: module_balances::<Instance1>::{Module, Call, Storage, Config<T>, Event<T>} = 18,
-		Currencies: module_currencies::{Module, Call, Event<T>} = 19,
 		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>} = 20,
 		NFT: module_nft::{Module, Call, Event<T>} = 21,
 
@@ -2059,11 +1941,6 @@ construct_runtime!(
 		SerpOcw: serp_ocw::{Module, Storage, Call, Config, Event<T>} = 31,
 		CdpEngine: cdp_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned} = 32,
 		EmergencyShutdown: emergency_shutdown::{Module, Storage, Call, Event<T>} = 33,
-
-        // SetCloud
-        SetCloudSwork: setcloud_swork::{Module, Call, Storage, Event<T>, Config<T>} = 34,
-        SetCloudMarket: setcloud_market::{Module, Call, Storage, Event<T>, Config} = 35,
-        SetCloudBenefits: setcloud_benefits::{Module, Call, Storage, Event<T>} = 36,
 
 		// Consensus
 		Authorship: pallet_authorship::{Module, Call, Storage, Inherent} = 37,
@@ -2469,10 +2346,8 @@ impl_runtime_apis! {
 			use module_nft::benchmarking::Module as NftBench;
 
 			use frame_system_benchmarking::Module as SystemBench;
-            use setcloud_swork_benchmarking::Module as SetCloudSworkBench;
 
 			impl frame_system_benchmarking::Config for Runtime {}
-            impl setcloud_swork_benchmarking::Config for Runtime {}
 
 			let whitelist: Vec<TrackedStorageKey> = vec![
 				/// TODO: Update hexcode
@@ -2510,10 +2385,6 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, module_nft, NftBench::<Runtime>);
 
-            add_benchmark!(params, batches, module_staking, Staking);
-            add_benchmark!(params, batches, setcloud_market, SetCloudMarket);
-            add_benchmark!(params, batches, setcloud_swork, SetCloudSworkBench::<Runtime>);
-            add_benchmark!(params, batches, setcloud_benefits, SetCloudBenefits);
 			
 			orml_add_benchmark!(params, batches, module_dex, benchmarking::dex);
 			orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);

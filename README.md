@@ -72,11 +72,6 @@ For all the SERML (Setheum Runtime Module Library) modules Check the [lib-serml]
 
 This project contains some configuration files to help get started :hammer_and_wrench:
 
-### Rust Setup
-
-Follow the [Rust setup instructions](./doc/rust-setup.md) before using the included Makefile to
-build the Setheum node.
-
 ## Initialisation
 
 Clone this repository:
@@ -90,6 +85,8 @@ Install Rust:
 ```bash
 curl https://sh.rustup.rs -sSf | sh
 ```
+
+> If, after installation, running `rustc --version` in the console fails, refer to [it](https://www.rust-lang.org/tools/install) to repair.
 
 You can install developer tools on Ubuntu 20.04 with:
 
