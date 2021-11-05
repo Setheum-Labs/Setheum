@@ -103,7 +103,7 @@ use module_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 
 // re-exports
 
-pub use module_staking::StakerStatus;
+pub use pallet_staking::StakerStatus;
 pub use primitives::{
 	evm::EstimateResourcesRequest, AuthoritysOriginId,
 	AccountId, AccountIndex, Amount, Balance, BlockNumber,
@@ -528,7 +528,7 @@ parameter_types! {
 impl pallet_session::Config for Runtime {
 	type Event = Event;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
-	type ValidatorIdOf = module_staking::StashOf<Self>;
+	type ValidatorIdOf = pallet_staking::StashOf<Self>;
 	type ShouldEndSession = Babe;
 	type NextSessionRotation = Babe;
 	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
@@ -546,11 +546,78 @@ parameter_types! {
 }
 
 impl pallet_session::historical::Config for Runtime {
-	type FullIdentification = module_staking::Exposure<AccountId, Balance>;
-	type FullIdentificationOf = module_staking::ExposureOf<Runtime>;
+	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
 }
 
-/// TODO: Add pallet_staking.,
+pallet_staking_reward_curve::build! {
+	// 2.58% min, 25.8% max, 50% ideal stake
+	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
+		min_inflation: 0_025_000,
+		max_inflation: 0_100_000,
+		ideal_stake: 0_500_000,
+		falloff: 0_050_000,
+		max_piece_count: 40,
+		test_precision: 0_005_000,
+	);
+}
+
+parameter_types! {
+	pub const SessionsPerEra: sp_staking::SessionIndex = 3; // 3 hours
+	pub const BondingDuration: pallet_staking::EraIndex = 4; // 12 hours
+	pub const SlashDeferDuration: pallet_staking::EraIndex = 2; // 6 hours
+	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
+	pub const MaxNominatorRewardedPerValidator: u32 = 64;
+	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
+	pub const MaxIterations: u32 = 5;
+	// 0.05%. The higher the value, the more strict solution acceptance becomes.
+	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
+	// offchain tx signing
+	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+}
+
+impl pallet_staking::Config for Runtime {
+	type Currency = Balances;
+	type UnixTime = Timestamp;
+	type CurrencyToVote = U128CurrencyToVote;
+	type RewardRemainder = SetheumTreasury;
+	type Event = Event;
+	type Slash = SetheumTreasury; // send the slashed funds to the Setheum treasury.
+	type Reward = (); // rewards are minted from the void
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDuration = BondingDuration;
+	type SlashDeferDuration = SlashDeferDuration;
+	type SlashCancelOrigin = EnsureRootOrThreeFourthsTechnicalCommittee;
+	type SessionInterface = Self;
+	type RewardCurve = RewardCurve;
+	type NextNewSession = Session;
+	type ElectionLookahead = ElectionLookahead;
+	type Call = Call;
+	type MaxIterations = MaxIterations;
+	type MinSolutionScoreBump = MinSolutionScoreBump;
+	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+	type UnsignedPriority = StakingUnsignedPriority;
+	type WeightInfo = ();
+	type OffchainSolutionWeightLimit = OffchainSolutionWeightLimit;
+}
+
+parameter_types! {
+	pub ConfigDepositBase: Balance = 10 * cent(DRAM);
+	pub FriendDepositFactor: Balance = cent(DRAM);
+	pub const MaxFriends: u16 = 9;
+	pub RecoveryDeposit: Balance = 10 * cent(DRAM);
+}
+
+impl pallet_recovery::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type Currency = Balances;
+	type ConfigDepositBase = ConfigDepositBase;
+	type FriendDepositFactor = FriendDepositFactor;
+	type MaxFriends = MaxFriends;
+	type RecoveryDeposit = RecoveryDeposit;
+}
+
 impl pallet_babe::Config for Runtime {
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
@@ -1946,7 +2013,7 @@ construct_runtime!(
 		Authorship: pallet_authorship::{Module, Call, Storage, Inherent} = 37,
 		Babe: pallet_babe::{Module, Call, Storage, Config, Inherent, ValidateUnsigned} = 38,
 		Grandpa: pallet_grandpa::{Module, Call, Storage, Config, Event, ValidateUnsigned} = 39,
-        Staking: module_staking::{Module, Call, Storage, Config<T>, Event<T>},
+        Staking: pallet_staking::{Module, Call, Storage, Config<T>, Event<T>},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>} = 41,
 		Historical: pallet_session_historical::{Module} = 42,
 		Offences: pallet_offences::{Module, Call, Storage, Event} = 43,
@@ -1970,6 +2037,9 @@ construct_runtime!(
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
 		SetheumOracle: orml_oracle::<Instance1>::{Module, Storage, Call, Event<T>} = 56,
 		OperatorMembershipSetheum: pallet_membership::<Instance5>::{Module, Call, Storage, Event<T>, Config<T>} = 57,
+
+		// Recovery
+		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 58,
 	}
 );
 

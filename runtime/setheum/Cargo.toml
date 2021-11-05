@@ -59,6 +59,7 @@ libsecp256k1 = { version = "0.6", default-features = false, optional = true }
 
 # NPoS
 pallet-session = { version = "3.0.0", features = ["historical"], default-features = false }
+pallet-staking = { version = "3.0.0", default-features = false }
 pallet-staking-reward-curve = { version = "3.0.0", default-features = false }
 pallet-authorship = { version = "3.0.0", default-features = false }
 pallet-babe = { version = "3.0.0", default-features = false }
@@ -147,6 +148,7 @@ std = [
 	"pallet-bounties/std",
 	"pallet-collective/std",
 	"pallet-session/std",
+	"pallet-staking/std",
 	"pallet-authorship/std",
 	"pallet-babe/std",
 	"sp-consensus-babe/std",
