@@ -198,7 +198,7 @@ sp-core = { git = "https://github.com/Slixon-Technologies/substrate", branch = "
 sp-externalities = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 sp-finality-grandpa = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 sp-inherents = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
-sp-io = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
+# sp-io = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 sp-keystore = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 sp-offchain = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
 sp-rpc = { git = "https://github.com/Slixon-Technologies/substrate", branch = "setheum-0.9.6" }
