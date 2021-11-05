@@ -1,5 +1,5 @@
-// Copyright (C) 2019-2020 Crust Network Technologies Ltd.
-// This file is part of Crust.
+// Copyright (C) 2019-2020 Setheum Network Technologies Ltd.
+// This file is part of Setheum.
 
 #![allow(unused_parens)]
 #![allow(unused_imports)]
