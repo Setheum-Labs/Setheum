@@ -114,14 +114,6 @@ serp-treasury = { path = "../../lib-serml/serp-treasury", default-features = fal
 
 setheum-renvm-bridge = { path = "../../lib-serml/renvm-bridge", default-features = false }
 
-module-balances = { path = "../../lib-serml/balances", default-features = false }
-setcloud-market = { path = "../../lib-serml/setcloud-market", default-features = false }
-setcloud-swork = { path = "../../lib-serml/setcloud-swork", default-features = false }
-setcloud-benefits = { path = "../../lib-serml/setcloud-benefits", default-features = false }
-setcloud-swork-benchmarking = { path = "../../lib-serml/setcloud-swork/benchmarking", default-features = false, optional = true }
-# GPoS based on NPoS
-module-staking = { package = "module-staking", path = "../../lib-serml/staking", default-features = false }
-
 [dev-dependencies]
 libsecp256k1 = "0.6"
 hex = "0.4.0"
@@ -210,13 +202,6 @@ std = [
 	"serp-treasury/std",
 	
 	"setheum-renvm-bridge/std",
-	
-	"module-balances/std",
-	"setcloud-market/std",
-	"setcloud-swork/std",
-	"setcloud-benefits/std",
-	"setcloud-swork-benchmarking/std",
-	"module-staking/std",
 ]
 with-ethereum-compatibility = [
 	"evm",
@@ -242,10 +227,4 @@ runtime-benchmarks = [
 
 	"serp-treasury/runtime-benchmarks",
 	"module-dex/runtime-benchmarks",
-
-    "module-balances/runtime-benchmarks",
-    "module-staking/runtime-benchmarks",
-    "setcloud-market/runtime-benchmarks",
-    "setcloud-swork-benchmarking",
-    "setcloud-benefits/runtime-benchmarks",	
 ]

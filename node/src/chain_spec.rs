@@ -485,10 +485,6 @@ fn testnet_genesis(
 			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
 			..Default::default()
 		}),
-        setcloud_market: Some(Default::default()),
-        setcloud_swork: Some(SworkConfig {
-            init_codes: vec![]
-        }),
 		pallet_babe: Some(BabeConfig { authorities: vec![] }),
 		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
 		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
@@ -774,10 +770,6 @@ fn mainnet_genesis(
 			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
 			..Default::default()
 		}),
-        setcloud_market: Some(Default::default()),
-        setcloud_swork: Some(SworkConfig {
-            init_codes: vec![]
-        }),
 		pallet_babe: Some(BabeConfig { authorities: vec![] }),
 		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
 		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),

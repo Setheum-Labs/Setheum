@@ -33,11 +33,6 @@ members = [
     # 'lib-serml/serp-ocw',
     # 'lib-serml/serp-setmint',
     # 'lib-serml/serp-treasury',
-    # 'lib-serml/setcloud-benefits',
-    # 'lib-serml/setcloud-market',
-    # 'lib-serml/setcloud-swork',
-    # 'lib-serml/setcloud-swork/benchmarking',
-    # 'lib-serml/staking',
     # 'lib-serml/support',
     # 'lib-serml/transaction-payment',
 
@@ -59,13 +54,6 @@ members = [
 	'open-lib/tokens',
 	'open-lib/traits',
 	'open-lib/utilities',
-]
-exclude = [
-    "utils/webpki",
-    "utils/ring",
-    "utils/serde_json_no_std",
-    "utils/serde_derive_no_std",
-    "utils/serde_derive_no_std"
 ]
 resolver = "2"
 
