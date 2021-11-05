@@ -14,7 +14,7 @@ name = 'setheum-node'
 targets = ['x86_64-unknown-linux-gnu']
 
 [build-dependencies]
-substrate-build-script-utils = { version = '3.0.0' }
+serml-build-script-utils = { path = "../lib-serml/build-script-utils"}
 frame-benchmarking-cli = { optional = true, version = "3.0.0" }
 
 [dependencies]
