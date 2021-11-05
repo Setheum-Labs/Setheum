@@ -105,33 +105,8 @@ pub type IASSig = Vec<u8>;
 /// The ISV body type, contains the enclave code and public key
 pub type ISVBody = Vec<u8>;
 
-/// sworker certification type, begin with `-----BEGIN CERTIFICATE-----`
-/// and end with `-----END CERTIFICATE-----`
-pub type SworkerCert = Vec<u8>;
-
-/// sworker public key, little-endian-format, 64 bytes vec
-pub type SworkerPubKey = Vec<u8>;
-
-/// sworker anchor, just use SworkerPubKey right now, 64 bytes vec
-pub type SworkerAnchor = SworkerPubKey;
-
-/// sworker signature, little-endian-format, 64 bytes vec
-pub type SworkerSignature = Vec<u8>;
-
-/// sworker enclave code
-pub type SworkerCode = Vec<u8>;
-
 /// Work report empty workload/storage merkle root
 pub type MerkleRoot = Vec<u8>;
-
-/// File Alias for a file
-pub type FileAlias = Vec<u8>;
-
-/// Report index, always be a multiple of era number
-pub type ReportSlot = u64;
-
-/// Market vendor's address info
-pub type AddressInfo = Vec<u8>;
 
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;

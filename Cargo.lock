@@ -7933,90 +7933,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "setcloud-benefits"
-version = "0.9.70"
-dependencies = [
- "frame-benchmarking 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "hex-literal 0.3.3",
- "module-balances",
- "parity-scale-codec",
- "rustc-hex",
- "serde",
- "serde_derive",
- "setheum-primitives",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "setcloud-market"
-version = "0.9.70"
-dependencies = [
- "frame-benchmarking 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "hex",
- "module-balances",
- "parity-scale-codec",
- "serde",
- "serde_json",
- "setcloud-swork",
- "setheum-primitives",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
-name = "setcloud-swork"
-version = "0.9.70"
-dependencies = [
- "base64 0.12.3",
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "hex",
- "module-balances",
- "p256",
- "parity-scale-codec",
- "serde",
- "serde_json_no_std",
- "setcloud-market",
- "setheum-primitives",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-keyring 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "webpki 0.21.0",
-]
-
-[[package]]
-name = "setcloud-swork-benchmarking"
-version = "0.9.70"
-dependencies = [
- "frame-benchmarking 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-support 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "frame-system 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "hex",
- "module-balances",
- "parity-scale-codec",
- "serde",
- "setcloud-market",
- "setcloud-swork",
- "setheum-primitives",
- "sp-core 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-io 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-keyring 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sp-runtime 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
- "sp-std 3.0.0 (git+https://github.com/Slixon-Technologies/substrate?branch=setheum-0.9.6)",
-]
-
-[[package]]
 name = "setheum-node"
 version = "0.9.70"
 dependencies = [
@@ -8053,8 +7969,6 @@ dependencies = [
  "serde",
  "serde_json",
  "serml-build-script-utils",
- "setcloud-market",
- "setcloud-swork",
  "setheum-primitives",
  "setheum-renvm-bridge",
  "setheum-runtime",
