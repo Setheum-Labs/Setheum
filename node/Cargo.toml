@@ -74,9 +74,6 @@ evm-rpc = { path = "../lib-serml/evm/rpc" }
 setheum-renvm-bridge = { path = "../lib-serml/renvm-bridge" }
 setheum-primitives = { path = "../primitives" }
 setheum-runtime = { path = '../runtime/setheum' }
-setcloud-market = { path = "../lib-serml/setcloud-market" }
-module-staking = { path = "../lib-serml/staking" }
-setcloud-swork = { path = "../lib-serml/setcloud-swork" }
 
 [features]
 default = [ "std" ]

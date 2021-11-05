@@ -7,7 +7,6 @@ use setheum_runtime::{
 	DexConfig, ShuraCouncilMembershipConfig, SudoConfig, OrmlNFTConfig, FinancialCouncilMembershipConfig, PublicFundCouncilMembershipConfig,
 	TechnicalCommitteeMembershipConfig, OperatorMembershipSetheumConfig, SETM, SERP, DNAR, SETR, SETUSD, RENBTC,
 };
-use module_staking::Forcing;
 use primitives::TokenInfo;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
@@ -473,7 +472,7 @@ fn testnet_genesis(
 						)))
 				.collect::<Vec<_>>(),
 		}),
-		module_staking: Some(StakingConfig {
+		pallet_staking: Some(StakingConfig {
 			validator_count: initial_authorities.len() as u32 * 2,
 			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities
@@ -481,7 +480,6 @@ fn testnet_genesis(
 				.map(|x| (x.0.clone(), x.1.clone(), initial_staking, StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
-            force_era: Forcing::NotForcing,
 			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
 			..Default::default()
 		}),
@@ -758,7 +756,7 @@ fn mainnet_genesis(
 						)))
 				.collect::<Vec<_>>(),
 		}),
-		module_staking: Some(StakingConfig {
+		pallet_staking: Some(StakingConfig {
 			validator_count: initial_authorities.len() as u32 * 2,
 			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities
@@ -766,7 +764,6 @@ fn mainnet_genesis(
 				.map(|x| (x.0.clone(), x.1.clone(), initial_staking, StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
-            force_era: Forcing::NotForcing,
 			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
 			..Default::default()
 		}),
