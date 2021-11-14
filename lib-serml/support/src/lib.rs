@@ -1,7 +1,25 @@
+// This file is part of Setheum.
+
+// Copyright (C) 2020-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode, FullCodec};
+use codec::{Decode, Encode, FullCodec, HasCompact};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
 	evm::{CallInfo, EvmAddress},
@@ -49,6 +67,7 @@ pub trait RiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 		currency_id: CurrencyId,
 		collateral_balance: Balance,
 		debit_balance: DebitBalance,
+		check_required_ratio: bool,
 	) -> DispatchResult;
 
 	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: DebitBalance) -> DispatchResult;
@@ -65,6 +84,7 @@ impl<AccountId, CurrencyId, Balance: Default, DebitBalance> RiskManager<AccountI
 		_currency_id: CurrencyId,
 		_collateral_balance: Balance,
 		_debit_balance: DebitBalance,
+		_check_required_ratio: bool,
 	) -> DispatchResult {
 		Ok(())
 	}
@@ -403,10 +423,20 @@ pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
 }
 
 pub trait PriceProvider<CurrencyId> {
-	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
-	fn lock_price(currency_id: CurrencyId);
-	fn unlock_price(currency_id: CurrencyId);
+
+	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
+		if let (Some(base_price), Some(quote_price)) = (Self::get_price(base), Self::get_price(quote)) {
+			base_price.checked_div(&quote_price)
+		} else {
+			None
+		}
+	}
+}
+
+pub trait LockablePrice<CurrencyId> {
+	fn lock_price(currency_id: CurrencyId) -> DispatchResult;
+	fn unlock_price(currency_id: CurrencyId) -> DispatchResult;
 }
 
 pub trait ExchangeRateProvider {
