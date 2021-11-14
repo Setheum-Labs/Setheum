@@ -5,7 +5,7 @@ description = 'Setheum Substrate Node'
 edition = '2018'
 homepage = 'https://setheum.xyz'
 name = 'setheum-node'
-version = '0.9.70'
+version = '0.9.80'
 
 [[bin]]
 name = 'setheum-node'

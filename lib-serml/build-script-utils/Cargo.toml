@@ -1,7 +1,7 @@
 [package]
 name = "serml-build-script-utils"
 description = "Crate with utility functions for `build.rs` scripts."
-version = "0.9.70"
+version = "0.9.80"
 authors = ["Setheum Labs"]
 edition = "2018"
 

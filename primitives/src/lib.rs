@@ -23,10 +23,10 @@
 pub mod constants;
 pub mod currency;
 pub mod evm;
-pub mod traits;
-pub mod mocks;
+pub mod signature;
+pub mod unchecked_extrinsic;
 
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 use core::ops::Range;
 use sp_runtime::{
 	generic,
@@ -48,7 +48,7 @@ pub type BlockNumber = u32;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on
 /// the chain.
-pub type Signature = MultiSignature;
+pub type Signature = signature::SetheumMultiSignature;
 
 /// Alias to the public key used for this chain, actually a `MultiSigner`. Like
 /// the signature, this also isn't a fixed size when encoded, as different
@@ -84,6 +84,9 @@ pub type Amount = i128;
 /// Auction ID
 pub type AuctionId = u32;
 
+/// Share type
+pub type Share = u128;
+
 /// Header type.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 
@@ -118,6 +121,7 @@ pub enum AirDropCurrencyId {
 	SETUSD = 1,
 }
 
+//TODO: Add `AlSharifTreasury` and `FoundationTreasury`
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum AuthoritysOriginId {
@@ -161,29 +165,9 @@ impl TradingPair {
 		self.1
 	}
 
-	pub fn new(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Self {
-		if currency_id_a > currency_id_b {
-			TradingPair(currency_id_b, currency_id_a)
-		} else {
-			TradingPair(currency_id_a, currency_id_b)
-		}
-	}
-
-	pub fn from_token_currency_ids(currency_id_0: CurrencyId, currency_id_1: CurrencyId) -> Option<Self> {
-		match currency_id_0.is_token_currency_id() && currency_id_1.is_token_currency_id() {
-			true if currency_id_0 > currency_id_1 => Some(TradingPair(currency_id_1, currency_id_0)),
-			true if currency_id_0 < currency_id_1 => Some(TradingPair(currency_id_0, currency_id_1)),
-			_ => None,
-		}
-	}
-
 	pub fn dex_share_currency_id(&self) -> CurrencyId {
 		CurrencyId::join_dex_share_currency_id(self.first(), self.second())
 			.expect("shouldn't be invalid! guaranteed by construction")
-	}
-
-	pub fn get_dex_share_currency_id(&self) -> Option<CurrencyId> {
-		CurrencyId::join_dex_share_currency_id(self.0, self.1)
 	}
 }
 
