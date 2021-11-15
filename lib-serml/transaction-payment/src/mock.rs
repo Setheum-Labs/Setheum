@@ -374,7 +374,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 
 parameter_types! {
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![SETUSD, DNAR];
-	pub const SetUSDCurrencyId: CurrencyId = SETUSD;
+	pub const StableCurrencyId: CurrencyId = SETUSD;
 	pub static TransactionByteFee: u128 = 1;
 }
 
@@ -386,7 +386,7 @@ thread_local! {
 impl Config for Runtime {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type SetUSDCurrencyId = SetUSDCurrencyId;
+	type StableCurrencyId = StableCurrencyId;
 	type Currency = PalletBalances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = ();

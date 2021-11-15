@@ -5,7 +5,7 @@ authors = ["Setheum Labs"]
 edition = "2018"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 hex-literal = { version = "0.3.1" }
 impl-trait-for-tuples = "0.1"
 primitive-types = { version = "0.10.0", default-features = false, features = ["rlp", "byteorder"] }
@@ -63,7 +63,6 @@ std = [
 	"module-support/std",
 ]
 with-ethereum-compatibility = []
-try-runtime = ["frame-support/try-runtime"]
 tracing = [
 	"evm/tracing",
 	"evm-gasometer/tracing",

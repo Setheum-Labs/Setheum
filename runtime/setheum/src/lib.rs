@@ -862,7 +862,7 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 impl module_transaction_payment::Config for Runtime {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type SetUSDCurrencyId = GetStableCurrencyId;
+	type StableCurrencyId = GetStableCurrencyId;
 	type Currency = Balances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = Treasury;

@@ -228,7 +228,7 @@ pub mod module {
 
 		/// Stable currency id, should be SETUSD
 		#[pallet::constant]
-		type SetUSDCurrencyId: Get<CurrencyId>;
+		type StableCurrencyId: Get<CurrencyId>;
 
 		/// The currency type in which fees will be paid.
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId> + Send + Sync;
@@ -547,7 +547,7 @@ where
 
 	pub fn ensure_can_charge_fee(who: &T::AccountId, fee: PalletBalanceOf<T>, reason: WithdrawReasons) {
 		let native_currency_id = T::NativeCurrencyId::get();
-		let stable_currency_id = T::SetUSDCurrencyId::get();
+		let stable_currency_id = T::StableCurrencyId::get();
 		let other_currency_ids = T::AllNonNativeCurrencyIds::get();
 		let mut charge_fee_order: Vec<CurrencyId> =
 			if let Some(default_fee_currency_id) = DefaultFeeCurrencyId::<T>::get(who) {

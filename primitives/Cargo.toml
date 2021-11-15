@@ -9,15 +9,13 @@ bstringify = "0.1.2"
 serde = { version = "1.0.124", optional = true }
 num-traits = { version = "0.2.14", default-features = false }
 impl-trait-for-tuples = "0.2.1"
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["max-encoded-len"] }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["max-encoded-len"] }
 num_enum = { version = "0.5.1", default-features = false }
-parity-util-mem = { version = "0.10.0", default-features = false, features = ["primitive-types"] }
 
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
@@ -35,13 +33,11 @@ std = [
 	"serde",
 	"codec/std",
 	"num_enum/std",
-	"parity-util-mem/std",
 
 	"sp-runtime/std",
 	"sp-core/std",
 	"sp-std/std",
 	"sp-io/std",
-	"sp-api/std",
 
 	"frame-support/std",
 
