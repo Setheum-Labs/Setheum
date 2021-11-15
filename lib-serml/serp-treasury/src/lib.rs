@@ -27,7 +27,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional};
+use frame_support::{log, pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
@@ -36,7 +36,7 @@ use sp_runtime::{
 	traits::{
 		AccountIdConversion, Bounded, Saturating, UniqueSaturatedInto, Zero,
 	},
-	FixedPointNumber, ModuleId,
+	FixedPointNumber,
 };
 use sp_std::{prelude::*, vec};
 use support::{
@@ -92,7 +92,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The SetUSD currency id, it should be SETUSD in Setheum.
-		type GetSetUSDCurrencyId: Get<CurrencyId>;
+		type GetStableCurrencyId: Get<CurrencyId>;
 
 		// CashDrop period for transferring cashdrop.
 		// The ideal period is after every `24 hours`.
@@ -150,7 +150,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The SERP Treasury's module id, keeps serplus and reserve asset.
-		type ModuleId: Get<ModuleId>;
+		type PalletId: Get<PalletId>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -305,7 +305,7 @@ pub mod module {
 impl<T: Config> Pallet<T> {
 	/// Get account of SERP Treasury module.
 	pub fn account_id() -> T::AccountId {
-		T::ModuleId::get().into_account()
+		T::PalletId::get().into_account()
 	}
 }
 
@@ -498,7 +498,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// issue system surplus(SETUSD) to their destinations according to the serpup_ratio.
-	pub fn on_serplus(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
+	fn on_serplus(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -517,7 +517,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serpup(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
+	fn on_serpup(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -541,7 +541,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	//
 	// TODO: Update to add the burning of the stablecoins!
 	//
-	pub fn on_serpdown(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
+	fn on_serpdown(currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		// ensure that the currency is a SetCurrency
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
@@ -603,7 +603,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	pub fn claim_cashdrop(currency_id: CurrencyId, who: &T::AccountId, transfer_amount: Self::Balance) -> DispatchResult {
+	fn claim_cashdrop(currency_id: CurrencyId, who: &T::AccountId, transfer_amount: Self::Balance) -> DispatchResult {
 		ensure!(
 			T::StableCurrencyIds::get().contains(&currency_id),
 			Error::<T>::InvalidCurrencyType,
@@ -1178,7 +1178,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				// 	};
 
 					if T::Currency::transfer(
-						T::GetSetUSDCurrencyId::get(),
+						T::GetStableCurrencyId::get(),
 						&T::CDPTreasuryAccountId::get(),
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
@@ -1234,7 +1234,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				// 	};
 
 					if T::Currency::transfer(
-						T::GetSetUSDCurrencyId::get(),
+						T::GetStableCurrencyId::get(),
 						&T::CDPTreasuryAccountId::get(),
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()

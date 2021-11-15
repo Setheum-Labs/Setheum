@@ -17,6 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![allow(clippy::unused_unit)]
 
 use frame_support::{decl_event, decl_module, decl_storage, transactional};
 use frame_system::{self as system, ensure_root};
@@ -93,4 +94,4 @@ decl_module! {
 	}
 }
 
-impl<T: Config> Module<T> {}
+impl<T: Config> Pallet<T> {}

@@ -31,7 +31,7 @@ use core::ops::Range;
 use sp_runtime::{
 	generic,
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
-	MultiSignature, RuntimeDebug,
+	RuntimeDebug,
 };
 use sp_std::{prelude::*};
 
@@ -58,6 +58,9 @@ pub type AccountPublic = <Signature as Verify>::Signer;
 /// Alias to the opaque account ID type for this chain, actually a
 /// `AccountId32`. This is always 32 bytes.
 pub type AccountId = <AccountPublic as IdentifyAccount>::AccountId;
+
+/// The address format for describing accounts.
+pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
 
 /// The type for looking up accounts. We don't expect more than 4 billion of
 /// them.
@@ -176,6 +179,17 @@ impl Decode for TradingPair {
 		let (first, second): (CurrencyId, CurrencyId) = Decode::decode(input)?;
 		TradingPair::from_currency_ids(first, second).ok_or_else(|| codec::Error::from("invalid currency id"))
 	}
+}
+
+#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, MaxEncodedLen)]
+#[repr(u8)]
+pub enum ReserveIdentifier {
+	EvmStorageDeposit,
+	EvmDeveloperDeposit,
+	Nft,
+	TransactionPayment,
+	// always the last, indicate number of variants
+	Count,
 }
 
 /// Ethereum precompiles

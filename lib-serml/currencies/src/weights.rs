@@ -53,6 +53,7 @@ pub trait WeightInfo {
 	fn update_balance_non_native_currency() -> Weight;
 	fn update_balance_native_currency_creating() -> Weight;
 	fn update_balance_native_currency_killing() -> Weight;
+	fn sweep_dust(c: u32, ) -> Weight;
 }
 
 /// Weights for module_currencies using the Setheum node and recommended hardware.
@@ -60,22 +61,37 @@ pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn transfer_non_native_currency() -> Weight {
 		(65_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(6 as Weight))
-			.saturating_add(T::DbWeight::get().writes(6 as Weight))
+			.saturating_add(T::DbWeight::get().reads(5 as Weight))
+			.saturating_add(T::DbWeight::get().writes(4 as Weight))
 	}
 	fn transfer_native_currency() -> Weight {
-		(11_000_000 as Weight)
+		(59_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(3 as Weight))
+			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
 	fn update_balance_non_native_currency() -> Weight {
-		(31_000_000 as Weight)
+		(36_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
 	fn update_balance_native_currency_creating() -> Weight {
-		(14_000_000 as Weight)
+		(34_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(1 as Weight))
+			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 	fn update_balance_native_currency_killing() -> Weight {
-		(13_000_000 as Weight)
+		(35_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(3 as Weight))
+			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+	}
+	fn sweep_dust(c: u32, ) -> Weight {
+		(7_733_000 as Weight)
+			// Standard Error: 93_000
+			.saturating_add((25_350_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add(T::DbWeight::get().reads(1 as Weight))
+			.saturating_add(T::DbWeight::get().reads((2 as Weight).saturating_mul(c as Weight)))
+			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+			.saturating_add(T::DbWeight::get().writes((2 as Weight).saturating_mul(c as Weight)))
 	}
 }
 
@@ -83,21 +99,36 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 impl WeightInfo for () {
 	fn transfer_non_native_currency() -> Weight {
 		(65_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(6 as Weight))
+			.saturating_add(RocksDbWeight::get().reads(5 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
 	}
 	fn transfer_native_currency() -> Weight {
-		(11_000_000 as Weight)
+		(59_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
 	}
 	fn update_balance_non_native_currency() -> Weight {
-		(31_000_000 as Weight)
+		(36_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
 	}
 	fn update_balance_native_currency_creating() -> Weight {
-		(14_000_000 as Weight)
+		(34_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}
 	fn update_balance_native_currency_killing() -> Weight {
-		(13_000_000 as Weight)
+		(35_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+	}
+	fn sweep_dust(c: u32, ) -> Weight {
+		(7_733_000 as Weight)
+			// Standard Error: 93_000
+			.saturating_add((25_350_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
+			.saturating_add(RocksDbWeight::get().reads((2 as Weight).saturating_mul(c as Weight)))
+			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+			.saturating_add(RocksDbWeight::get().writes((2 as Weight).saturating_mul(c as Weight)))
 	}
 }

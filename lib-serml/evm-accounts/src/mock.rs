@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -65,6 +65,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_types! {
@@ -75,8 +76,10 @@ impl pallet_balances::Config for Runtime {
 	type Event = Event;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Module<Runtime>;
+	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 
@@ -94,6 +97,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
@@ -113,7 +118,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type AddressMapping = EvmAddressMapping<Runtime>;
-	type MergeAccount = Currencies;
+	type TransferAll = Currencies;
 	type WeightInfo = ();
 }
 
@@ -126,11 +131,11 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		EvmAccountsModule: evm_accounts::{Module, Call, Storage, Event<T>},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-		Currencies: orml_currencies::{Module, Call, Event<T>},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		EvmAccountsModule: evm_accounts::{Pallet, Call, Storage, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Currencies: orml_currencies::{Pallet, Call, Event<T>},
 	}
 );
 

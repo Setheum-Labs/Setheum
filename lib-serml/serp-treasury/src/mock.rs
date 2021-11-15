@@ -27,7 +27,7 @@ use orml_traits::parameter_type_with_key;
 use primitives::{Amount, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
-	testing::Header, ModuleId,
+	testing::Header,
 	traits::IdentityLookup,
 };
 use sp_std::cell::RefCell;
@@ -83,8 +83,8 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
-
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
@@ -99,6 +99,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
@@ -112,6 +114,8 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
@@ -136,9 +140,9 @@ parameter_types! {
 	pub const GetSerpCurrencyId: CurrencyId = SERP;
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const GetStableCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/serp");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const PublicFundAccountId: AccountId = CHARITY_FUND;
 	pub const CDPTreasuryAccountId: AccountId = CDP_TREASURY;
 	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
@@ -293,7 +297,7 @@ impl Config for Runtime {
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type GetStableCurrencyId = GetStableCurrencyId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type PublicFundAccountId = PublicFundAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;
@@ -308,7 +312,7 @@ impl Config for Runtime {
 	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
 	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
-	type ModuleId = SerpTreasuryModuleId;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 

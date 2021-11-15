@@ -76,6 +76,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -92,6 +93,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
@@ -105,6 +108,8 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
@@ -126,7 +131,7 @@ parameter_types! {
 		SETR,
 		SETUSD,
 	];
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
+	pub const GetStableCurrencyId: CurrencyId = SETUSD;
 	pub GetExchangeFee: (u32, u32) = (0, 100);
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
@@ -239,7 +244,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 	
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serplus(
+	fn on_serplus(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -247,7 +252,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serpup(
+	fn on_serpup(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -255,7 +260,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	pub fn on_serpdown(
+	fn on_serpdown(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -312,7 +317,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	pub fn claim_cashdrop(
+	fn claim_cashdrop(
 		_currency_id: CurrencyId,
 		_who: &AccountId,
 		_transfer_amount: Balance
@@ -338,10 +343,11 @@ thread_local! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type GetStableCurrencyId = GetStableCurrencyId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
+	type PalletId = CDPTreasuryPalletId;
 	type SerpTreasury = MockSerpTreasury;
 	type UpdateOrigin = EnsureOneOf<AccountId, EnsureRoot<AccountId>, EnsureSignedBy<One, AccountId>>;
 	type WeightInfo = ();
@@ -357,23 +363,23 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		CDPTreasuryModule: cdp_treasury::{Module, Storage, Call, Config, Event<T>},
-		Currencies: orml_currencies::{Module, Call, Event<T>},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		DEXModule: module_dex::{Module, Storage, Call, Event<T>, Config<T>},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		CDPTreasuryModule: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>},
+		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
+		DEXModule: module_dex::{Pallet, Storage, Call, Event<T>, Config<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
+			balances: vec![
 				(ALICE, DNAR, 1000),
 				(ALICE, SETUSD, 1000),
 				(ALICE, BTC, 1000),
@@ -392,7 +398,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

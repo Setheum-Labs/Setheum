@@ -20,14 +20,14 @@
 
 #![cfg(test)]
 
-use frame_support::{assert_ok, ord_parameter_types, parameter_types, traits::GenesisBuild};
+use frame_support::{assert_ok, ord_parameter_types, parameter_types, traits::GenesisBuild, PalletId};
 use orml_traits::parameter_type_with_key;
 use primitives::{CurrencyId, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, IdentityLookup},
-	AccountId32, ModuleId, Perbill,
+	AccountId32, Perbill,
 };
 use support::{mocks::MockAddressMapping, AddressMapping, SerpTreasury};
 
@@ -69,18 +69,21 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 type Balance = u128;
 
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		if *currency_id == DNAR { return 2; }
 		Default::default()
 	};
 }
 
 parameter_types! {
-	pub DustAccount: AccountId = ModuleId(*b"srml/dst").into_account();
+	pub DustAccount: AccountId = PalletId(*b"srml/dst").into_account();
+	pub const MaxLocks: u32 = 100;
 }
 
 impl tokens::Config for Runtime {
@@ -91,10 +94,13 @@ impl tokens::Config for Runtime {
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = tokens::TransferDust<Runtime, DustAccount>;
 	type WeightInfo = ();
+	type MaxLocks = MaxLocks;
+	type DustRemovalWhitelist = ();
 }
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
@@ -102,6 +108,7 @@ parameter_types! {
 
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
+	pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -110,11 +117,13 @@ impl pallet_balances::Config for Runtime {
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
-	type WeightInfo = ();
 	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
+	type WeightInfo = ();
 }
 
-pub type PalletBalances = pallet_balances::Module<Runtime>;
+pub type PalletBalances = pallet_balances::Pallet<Runtime>;
 
 parameter_types! {
 	pub const MinimumPeriod: u64 = 1000;
@@ -136,7 +145,6 @@ ord_parameter_types! {
 	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
 	pub const NetworkContractAccount: AccountId32 = AccountId32::from([0u8; 32]);
 	pub const StorageDepositPerByte: u128 = 10;
-	pub const MaxCodeSize: u32 = 60 * 1024;
 	pub const DeveloperDeposit: u64 = 1000;
 	pub const DeploymentFee: u64 = 200;
 }
@@ -144,11 +152,9 @@ ord_parameter_types! {
 impl module_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = PalletBalances;
-	type MergeAccount = ();
+	type TransferAll = ();
 	type NewContractExtraBytes = NewContractExtraBytes;
 	type StorageDepositPerByte = StorageDepositPerByte;
-	type MaxCodeSize = MaxCodeSize;
-
 	type Event = Event;
 	type Precompiles = ();
 	type ChainId = ();
@@ -162,6 +168,8 @@ impl module_evm::Config for Runtime {
 	type TreasuryAccount = TreasuryAccount;
 	type FreeDeploymentOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
 
+	type Runner = module_evm::runner::stack::Runner<Self>;
+	type FindAuthor = ();
 	type WeightInfo = ();
 }
 
@@ -220,7 +228,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 	
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serplus(
+	fn on_serplus(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -228,7 +236,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serpup(
+	fn on_serpup(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -236,7 +244,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	pub fn on_serpdown(
+	fn on_serpdown(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -293,7 +301,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	pub fn claim_cashdrop(
+	fn claim_cashdrop(
 		_currency_id: CurrencyId,
 		_who: &AccountId,
 		_transfer_amount: Balance
@@ -310,8 +318,6 @@ parameter_types! {
 		SETR,
 		SETUSD,
 	];
-	pub AirdropMinimum: u32 = 2;
-	pub AirdropMaximum: u32 = 3;
 }
 
 impl Config for Runtime {
@@ -324,6 +330,8 @@ impl Config for Runtime {
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
+	type SweepOrigin = EnsureSignedBy<CouncilAccount, AccountId>;
+	type OnDust = crate::TransferDust<Runtime, DustAccount>;
 }
 
 pub type NativeCurrency = Currency<Runtime, GetNativeCurrencyId>;
@@ -340,12 +348,12 @@ frame_support::construct_runtime!(
 	NodeBlock = Block,
 	UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Module, Call, Config, Storage, Event<T>},
-		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-		Tokens: tokens::{Module, Storage, Event<T>, Config<T>},
-		Currencies: currencies::{Module, Call, Event<T>},
-		EVM: module_evm::{Module, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: module_evm_bridge::{Module},
+		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
+		Currencies: currencies::{Pallet, Call, Event<T>},
+		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
+		EVMBridge: module_evm_bridge::{Pallet},
 	}
 );
 
@@ -385,31 +393,40 @@ pub fn deploy_contracts() {
 		Origin::signed(NetworkContractAccount::get()),
 		code,
 		0,
-		2100_000,
+		2_100_000,
 		10000
 	));
 
-	let event = Event::module_evm(module_evm::Event::Created(erc20_address()));
-	assert_eq!(System::events().iter().last().unwrap().event, event);
+	System::assert_last_event(Event::EVM(module_evm::Event::Created(
+		alice_evm_addr(),
+		erc20_address(),
+		vec![module_evm::Log {
+			address: H160::from_str("0x0000000000000000000000000000000002000000").unwrap(),
+			topics: vec![
+				H256::from_str("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef").unwrap(),
+				H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
+				H256::from_str("0x0000000000000000000000001000000000000000000000000000000000000001").unwrap(),
+			],
+			data: H256::from_low_u64_be(10000).as_bytes().to_vec(),
+		}],
+	)));
 
 	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
 }
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self {
-			endowed_accounts: vec![],
-		}
+		Self { balances: vec![] }
 	}
 }
 
 impl ExtBuilder {
-	pub fn balances(mut self, endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>) -> Self {
-		self.endowed_accounts = endowed_accounts;
+	pub fn balances(mut self, balances: Vec<(AccountId, CurrencyId, Balance)>) -> Self {
+		self.balances = balances;
 		self
 	}
 

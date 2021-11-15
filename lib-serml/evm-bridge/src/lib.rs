@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -34,13 +34,6 @@ use support::{EVMBridge as EVMBridgeTrait, ExecutionMode, InvokeContext, EVM};
 
 type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 type BalanceOf<T> = <<T as Config>::EVM as EVM<AccountIdOf<T>>>::Balance;
-
-// pub const METHOD_NAME: u32 = 0x06fdde03;
-// pub const METHOD_SYMBOL: u32 = 0x95d89b41;
-// pub const METHOD_DECIMALS: u32 = 0x313ce567;
-// pub const METHOD_TOTAL_SUPPLY: u32 = 0x18160ddd;
-// pub const METHOD_BALANCE_OF: u32 = 0x70a08231;
-// pub const METHOD_TRANSFER: u32 = 0xa9059cbb;
 
 #[primitives_proc_macro::generate_function_selector]
 #[derive(RuntimeDebug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
@@ -84,7 +77,7 @@ pub mod module {
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -103,7 +96,7 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 		let info = T::EVM::execute(context, input, Default::default(), 2_100_000, 0, ExecutionMode::View)?;
 
 		Self::handle_exit_reason(info.exit_reason)?;
-		Self::decode_string(info.output.as_slice().to_vec())
+		Self::decode_string(info.value.as_slice().to_vec())
 	}
 
 	// Calls the symbol method on an ERC20 contract using the given context
@@ -115,7 +108,7 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 		let info = T::EVM::execute(context, input, Default::default(), 2_100_000, 0, ExecutionMode::View)?;
 
 		Self::handle_exit_reason(info.exit_reason)?;
-		Self::decode_string(info.output.as_slice().to_vec())
+		Self::decode_string(info.value.as_slice().to_vec())
 	}
 
 	// Calls the decimals method on an ERC20 contract using the given context
@@ -128,8 +121,8 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 
 		Self::handle_exit_reason(info.exit_reason)?;
 
-		ensure!(info.output.len() == 32, Error::<T>::InvalidReturnValue);
-		let value = U256::from(info.output.as_slice()).saturated_into::<u8>();
+		ensure!(info.value.len() == 32, Error::<T>::InvalidReturnValue);
+		let value = U256::from(info.value.as_slice()).saturated_into::<u8>();
 		Ok(value)
 	}
 
@@ -143,8 +136,8 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 
 		Self::handle_exit_reason(info.exit_reason)?;
 
-		ensure!(info.output.len() == 32, Error::<T>::InvalidReturnValue);
-		let value = U256::from(info.output.as_slice()).saturated_into::<u128>();
+		ensure!(info.value.len() == 32, Error::<T>::InvalidReturnValue);
+		let value = U256::from(info.value.as_slice()).saturated_into::<u128>();
 		Ok(value.saturated_into::<BalanceOf<T>>())
 	}
 
@@ -160,7 +153,7 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 
 		Self::handle_exit_reason(info.exit_reason)?;
 
-		Ok(U256::from(info.output.as_slice())
+		Ok(U256::from(info.value.as_slice())
 			.saturated_into::<u128>()
 			.saturated_into::<BalanceOf<T>>())
 	}
@@ -193,7 +186,7 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 
 		// Check return value to make sure not calling on empty contracts.
 		ensure!(
-			!info.output.is_empty() && info.output == bytes,
+			!info.value.is_empty() && info.value == bytes,
 			Error::<T>::InvalidReturnValue
 		);
 		Ok(())

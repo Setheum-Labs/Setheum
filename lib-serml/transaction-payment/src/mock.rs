@@ -90,8 +90,8 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
-
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
@@ -106,6 +106,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
@@ -174,7 +176,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 	
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serplus(
+	fn on_serplus(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -182,7 +184,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serpup(
+	fn on_serpup(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -190,7 +192,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	pub fn on_serpdown(
+	fn on_serpdown(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -247,7 +249,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	pub fn claim_cashdrop(
+	fn claim_cashdrop(
 		_currency_id: CurrencyId,
 		_who: &AccountId,
 		_transfer_amount: Balance

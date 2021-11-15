@@ -76,8 +76,8 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
-
 pub struct MockDataProvider;
 impl DataProvider<CurrencyId, Price> for MockDataProvider {
 	fn get(currency_id: &CurrencyId) -> Option<Price> {
@@ -195,6 +195,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 ord_parameter_types! {
@@ -202,7 +204,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // Setter currency ticker is SETUSD.
+	pub const GetStableCurrencyId: CurrencyId = SETUSD; // Setter currency ticker is SETUSD.
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
 	pub SetUSDFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
 	pub SetterFixedPrice: Price = Price::one();
@@ -211,8 +213,8 @@ parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Source = MockDataProvider;
-	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type SetterCurrencyId = GetSetUSDCurrencyId;
+	type GetStableCurrencyId = GetStableCurrencyId;
+	type SetterCurrencyId = GetStableCurrencyId;
 	type SetUSDFixedPrice = SetUSDFixedPrice;
 	type SetterFixedPrice = SetterFixedPrice;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;

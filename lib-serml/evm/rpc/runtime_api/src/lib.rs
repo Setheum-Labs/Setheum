@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #![allow(clippy::all)]
 
 use ethereum_types::H160;
-use primitives::evm::{CallInfo, CreateInfo};
+use primitives::evm::{CallInfo, CreateInfo, EstimateResourcesRequest};
 use sp_runtime::{
 	codec::Codec,
 	traits::{MaybeDisplay, MaybeFromStr},
@@ -36,7 +36,7 @@ sp_api::decl_runtime_apis! {
 			to: H160,
 			data: Vec<u8>,
 			value: Balance,
-			gas_limit: u32,
+			gas_limit: u64,
 			storage_limit: u32,
 			estimate: bool,
 		) -> Result<CallInfo, sp_runtime::DispatchError>;
@@ -45,9 +45,11 @@ sp_api::decl_runtime_apis! {
 			from: H160,
 			data: Vec<u8>,
 			value: Balance,
-			gas_limit: u32,
+			gas_limit: u64,
 			storage_limit: u32,
 			estimate: bool,
 		) -> Result<CreateInfo, sp_runtime::DispatchError>;
+
+		fn get_estimate_resources_request(data: Vec<u8>) -> Result<EstimateResourcesRequest, sp_runtime::DispatchError>;
 	}
 }

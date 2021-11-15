@@ -16,12 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::Balance;
+use crate::{Balance, BlockNumber, Nonce};
 use codec::{Decode, Encode};
 use evm::ExitReason;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-use sp_core::{H160, U256};
+use sp_core::{H160, H256, U256};
 use sp_runtime::RuntimeDebug;
 use sp_std::vec::Vec;
 

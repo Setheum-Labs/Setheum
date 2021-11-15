@@ -27,7 +27,7 @@ use primitives::{
 };
 use sp_core::H160;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize},
+	traits::{AtLeast32BitUnsigned, CheckedDiv, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
@@ -249,13 +249,13 @@ pub trait SerpTreasury<AccountId> {
 	fn get_public_fund_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 	
 	/// issue system surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn on_serplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	pub fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// get the minimum supply of a setcurrency - by key
 	fn get_minimum_supply(currency_id: Self::CurrencyId) -> Self::Balance;
@@ -276,7 +276,7 @@ pub trait SerpTreasury<AccountId> {
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	pub fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
+	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
@@ -401,7 +401,7 @@ pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
 		currency_id: Self::CurrencyId,
 		supply_amount: Self::Balance,
 		min_target_amount: Self::Balance,
-		maybe_path: Option<&[Self::CurrencyId]>,
+		swap_path: &[Self::CurrencyId],
 		collateral_in_auction: bool,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
@@ -409,7 +409,7 @@ pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
 		currency_id: Self::CurrencyId,
 		max_supply_amount: Self::Balance,
 		target_amount: Self::Balance,
-		maybe_path: Option<&[Self::CurrencyId]>,
+		swap_path: &[Self::CurrencyId],
 		collateral_in_auction: bool,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
@@ -424,7 +424,6 @@ pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
 
 pub trait PriceProvider<CurrencyId> {
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
-
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
 		if let (Some(base_price), Some(quote_price)) = (Self::get_price(base), Self::get_price(quote)) {
 			base_price.checked_div(&quote_price)

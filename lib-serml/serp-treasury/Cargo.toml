@@ -6,13 +6,12 @@ edition = "2018"
 
 [dependencies]
 serde = { version = "1.0.124", optional = true }
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
 
-sp-runtime = { version = '3.0.0', default-features = false }
-frame-support = { version = '3.0.0', default-features = false }
-frame-system = { version = '3.0.0', default-features = false }
-sp-std = { version = '3.0.0', default-features = false }
-sp-core = { version = '3.0.0', default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
 # orml dependencies
 orml-traits = { path = "../../open-lib/traits", default-features = false }
@@ -22,12 +21,11 @@ orml-tokens = { path = "../../open-lib/tokens", default-features = false }
 prices = { package = "module-prices", path = "../prices", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-frame-benchmarking = { version = "3.0.0", default-features = false, optional = true }
 
 [dev-dependencies]
-sp-core = { version = '3.0.0' }
-sp-io = { version = '3.0.0' }
-pallet-balances = { version = '3.0.0' }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 orml-currencies = { path = "../../open-lib/currencies" }
 orml-tokens = { path = "../../open-lib/tokens" }
 
@@ -44,10 +42,5 @@ std = [
 	"orml-traits/std",
 	"support/std",
 	"primitives/std",
-	"frame-benchmarking/std",
 ]
-runtime-benchmarks = [
-	"frame-benchmarking",
-	"frame-support/runtime-benchmarks",
-	"frame-system/runtime-benchmarks",
-]
+try-runtime = ["frame-support/try-runtime"]

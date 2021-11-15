@@ -66,7 +66,7 @@ pub mod module {
 
 		/// The SetDollar currency id, it should be SETUSD in Setheum.
 		#[pallet::constant]
-		type GetSetUSDCurrencyId: Get<CurrencyId>;
+		type GetStableCurrencyId: Get<CurrencyId>;
 
 		/// The Setter currency id, it should be SETR in Setheum.
 		#[pallet::constant]
@@ -163,7 +163,7 @@ impl<T: Config> PriceProvider<CurrencyId> for Pallet<T> {
 	/// get the exchange rate of specific currency to USD
 	/// Note: this returns the price for 1 basic unit
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_feed_price = if currency_id == T::GetSetUSDCurrencyId::get() {
+		let maybe_feed_price = if currency_id == T::GetStableCurrencyId::get() {
 			// if is SetUSD, return SetDollar fixed price
 			Some(T::SetUSDFixedPrice::get())
 		} else if currency_id == T::SetterCurrencyId::get() {

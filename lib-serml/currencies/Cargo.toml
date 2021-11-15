@@ -6,31 +6,28 @@ edition = "2018"
 
 [dependencies]
 serde = { version = "1.0.124", optional = true }
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-sp-core = { version = '3.0.0', default-features = false }
-sp-runtime = { version = '3.0.0', default-features = false }
-sp-io = { version = '3.0.0', default-features = false }
-sp-std = { version = '3.0.0', default-features = false }
-impl-trait-for-tuples = "0.1.3"
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-frame-support = { version = '3.0.0', default-features = false }
-frame-system = { version = '3.0.0', default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-orml-traits = { path = "../../open-lib/traits", default-features = false }
-orml-utilities = { path = "../../open-lib/utilities", default-features = false }
+orml-traits = { path = "../../orml/traits", default-features = false }
+orml-utilities = { path = "../../orml/utilities", default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
 
 [dev-dependencies]
-sp-core = { version = '3.0.0' }
-pallet-balances = { version = '3.0.0' }
-pallet-timestamp = { version = '3.0.0' }
-tokens = { package = "orml-tokens", path = "../../open-lib/tokens" }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+tokens = { package = "orml-tokens", path = "../../orml/tokens" }
 module-evm = { path = "../evm" }
 module-evm-bridge = { path = "../evm-bridge" }
-
-clear_on_drop = { version = "0.2.4", features = ["no_cc"] }	# https://github.com/paritytech/substrate/issues/4179
 
 [features]
 default = ["std"]
@@ -48,3 +45,4 @@ std = [
 	"primitives/std",
 	"support/std",
 ]
+try-runtime = ["frame-support/try-runtime"]

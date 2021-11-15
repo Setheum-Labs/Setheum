@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2019-2021 Setheum Labs.
+// Copyright (C) 2020-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -259,7 +259,7 @@ fn decimals_works() {
 					DexShare::Erc20(erc20_address()),
 					DexShare::Erc20(erc20_address_not_exists())
 				)),
-				None
+				Some(17)
 			);
 		});
 }
