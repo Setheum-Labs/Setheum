@@ -8,8 +8,5 @@
 	path = parity-common
 	url = https://github.com/JBA-Khalifa/parity-common
 [submodule "open-lib"]
-	path = parity-common
-	url = https://github.com/Slixon-Technologies/open-runtime-module-library
-[submodule "open-runtime-module-library"]
-	path = open-runtime-module-library
+	path = open-lib
 	url = https://github.com/Slixon-Technologies/open-runtime-module-library
