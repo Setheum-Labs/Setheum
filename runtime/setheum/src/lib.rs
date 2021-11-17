@@ -740,7 +740,7 @@ parameter_types! {
 	pub const GetSerpCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 	pub const GetDinarCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+	pub const GetSetUSDId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	// All currency types except for native currency, Sort by fee charge order
 	pub AllNonNativeCurrencyIds: Vec<CurrencyId> = vec![
 		SETUSD,
@@ -823,8 +823,8 @@ parameter_types! {
 impl module_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type SetterCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
+	type SetterCurrencyId = GetSetUSDId;
 	type SetUSDFixedPrice = SetUSDFixedPrice;
 	type SetterFixedPrice = SetterFixedPrice;
 	type LockOrigin = EnsureRootOrTwoThirdsGeneralCouncil;
@@ -862,7 +862,7 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 impl module_transaction_payment::Config for Runtime {
 	type AllNonNativeCurrencyIds = AllNonNativeCurrencyIds;
 	type NativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyId = GetStableCurrencyId;
+	type StableCurrencyId = GetSetUSDId;
 	type Currency = Balances;
 	type MultiCurrency = Currencies;
 	type OnTransactionPayment = Treasury;
@@ -1052,7 +1052,7 @@ impl auction_manager::Config for Runtime {
 	type MinimumIncrementSize = MinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasury = CdpTreasury;
 	type DEX = Dex;
 	type PriceSource = Prices;
@@ -1142,7 +1142,7 @@ impl cdp_engine::Config for Runtime {
 	type Event = Event;
 	type PriceSource = Prices;
 	type CollateralCurrencyIds = CollateralCurrencyIds;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
@@ -1161,7 +1161,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = AuctionManager;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -1226,7 +1226,7 @@ impl serp_treasury::Config for Runtime {
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type CashDropPoolAccountId = CashDropPoolAccount;
 	type PublicFundAccountId = PublicFundAccount;
 	type CDPTreasuryAccountId = CDPTreasuryAccount;

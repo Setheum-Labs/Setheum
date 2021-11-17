@@ -57,7 +57,7 @@ pub mod module {
 
 		/// Stablecoin currency id
 		#[pallet::constant]
-		type GetStableCurrencyId: Get<CurrencyId>;
+		type GetSetUSDId: Get<CurrencyId>;
 
 		/// SERP Treasury for issuing/burning stable currency adjust standard value
 		/// adjustment
@@ -172,7 +172,7 @@ pub mod module {
 		#[transactional]
 		pub fn extract_surplus_to_serp(origin: OriginFor<T>, amount: Balance) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			T::SerpTreasury::on_serplus(T::GetStableCurrencyId::get(), amount)?;
+			T::SerpTreasury::on_serplus(T::GetSetUSDId::get(), amount)?;
 			Ok(().into())
 		}
 
@@ -226,7 +226,7 @@ impl<T: Config> Pallet<T> {
 
 	/// Get current total surplus of system.
 	pub fn surplus_pool() -> Balance {
-		T::Currency::free_balance(T::GetStableCurrencyId::get(), &Self::account_id())
+		T::Currency::free_balance(T::GetSetUSDId::get(), &Self::account_id())
 	}
 
 	/// Get total collateral amount of cdp treasury module.
@@ -245,7 +245,7 @@ impl<T: Config> Pallet<T> {
 
 		// Burn the amount that is equal to offset amount of stable currency.
 		if !offset_amount.is_zero() {
-			let res = T::Currency::withdraw(T::GetStableCurrencyId::get(), &Self::account_id(), offset_amount);
+			let res = T::Currency::withdraw(T::GetSetUSDId::get(), &Self::account_id(), offset_amount);
 			match res {
 				Ok(_) => {
 					DebitPool::<T>::mutate(|debit| {
@@ -283,7 +283,7 @@ impl<T: Config> CDPTreasury<T::AccountId> for Pallet<T> {
 	}
 
 	fn get_debit_proportion(amount: Self::Balance) -> Ratio {
-		let stable_total_supply = T::Currency::total_issuance(T::GetStableCurrencyId::get());
+		let stable_total_supply = T::Currency::total_issuance(T::GetSetUSDId::get());
 		Ratio::checked_from_rational(amount, stable_total_supply).unwrap_or_default()
 	}
 
@@ -303,17 +303,17 @@ impl<T: Config> CDPTreasury<T::AccountId> for Pallet<T> {
 		if !backed {
 			Self::on_system_debit(debit)?;
 		}
-		T::Currency::deposit(T::GetStableCurrencyId::get(), who, debit)?;
+		T::Currency::deposit(T::GetSetUSDId::get(), who, debit)?;
 
 		Ok(())
 	}
 
 	fn burn_debit(who: &T::AccountId, debit: Self::Balance) -> DispatchResult {
-		T::Currency::withdraw(T::GetStableCurrencyId::get(), who, debit)
+		T::Currency::withdraw(T::GetSetUSDId::get(), who, debit)
 	}
 
 	fn deposit_surplus(from: &T::AccountId, surplus: Self::Balance) -> DispatchResult {
-		T::Currency::transfer(T::GetStableCurrencyId::get(), from, &Self::account_id(), surplus)
+		T::Currency::transfer(T::GetSetUSDId::get(), from, &Self::account_id(), surplus)
 	}
 
 	fn deposit_collateral(from: &T::AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult {
@@ -352,7 +352,7 @@ impl<T: Config> CDPTreasuryExtended<T::AccountId> for Pallet<T> {
 		ensure!(
 			swap_path_length >= 2
 				&& swap_path[0] == currency_id
-				&& swap_path[swap_path_length - 1] == T::GetStableCurrencyId::get(),
+				&& swap_path[swap_path_length - 1] == T::GetSetUSDId::get(),
 			Error::<T>::InvalidSwapPath
 		);
 
@@ -385,7 +385,7 @@ impl<T: Config> CDPTreasuryExtended<T::AccountId> for Pallet<T> {
 		ensure!(
 			swap_path_length >= 2
 				&& swap_path[0] == currency_id
-				&& swap_path[swap_path_length - 1] == T::GetStableCurrencyId::get(),
+				&& swap_path[swap_path_length - 1] == T::GetSetUSDId::get(),
 			Error::<T>::InvalidSwapPath
 		);
 

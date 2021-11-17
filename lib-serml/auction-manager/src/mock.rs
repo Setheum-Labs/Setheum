@@ -41,11 +41,10 @@ pub type Amount = i64;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
-pub const BUYBACK_POOL: AccountId = 4;
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
 mod auction_manager {
 	pub use super::super::*;
@@ -245,21 +244,21 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
+	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 }
 
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = AuctionManagerModule;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type SerpTreasury = MockSerpTreasury;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
-	type ModuleId = CDPTreasuryModuleId;
+	type PalletId = CDPTreasuryPalletId;
 	type WeightInfo = ();
 }
 
@@ -288,29 +287,23 @@ parameter_types! {
 		SETR,
 		SETUSD,
 	];
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
-	pub GetExchangeFee: (u32, u32) = (0, 100);
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
-	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
+	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, BTC).unwrap(),
-		TradingPair::from_currency_ids(DNAR, BTC).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap()
-	];
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
+	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
 }
+
 impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type GetExchangeFee = GetExchangeFee;
 	type StableCurrencyIds = StableCurrencyIds;
+	type GetExchangeFee = GetExchangeFee;
 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
-	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXMPalletId;
+	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
-	type ListingOrigin = EnsureSignedBy<One, AccountId>;
+	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 
 thread_local! {
@@ -346,7 +339,7 @@ impl Config for Runtime {
 	type MinimumIncrementSize = MinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasury = CDPTreasuryModule;
 	type DEX = DEXModule;
 	type PriceSource = MockPriceSource;

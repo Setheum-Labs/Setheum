@@ -351,7 +351,7 @@ parameter_types! {
 	pub const UnsignedPriority: u64 = 1 << 20;
 	
 	pub const SetterCurrencyId: CurrencyId = SETR;
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = SETUSD;
 }
 
 impl Config for Runtime {
@@ -361,7 +361,7 @@ impl Config for Runtime {
 	type Currency = Tokens;
     type SerpTreasury = MockSerpTreasury;
     type SetterCurrencyId = SetterCurrencyId;
-    type GetStableCurrencyId = GetStableCurrencyId;
+    type GetSetUSDId = GetSetUSDId;
     type FetchPeriod = FetchPeriod;
 	type GracePeriod = GracePeriod;
 	type UnsignedInterval = UnsignedInterval;

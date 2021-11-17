@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 
 use crate::{
 	dollar, SetheumOracle, AccountId, Amount, Balance, CdpEngine, CurrencyId, Dex, EmergencyShutdown,
-	GetStableCurrencyId, Indices, MaxSlippageSwapWithDEX, MinimumDebitValue, Price, Rate, Ratio, Runtime, SETUSD, SETM,
+	GetSetUSDId, Indices, MaxSlippageSwapWithDEX, MinimumDebitValue, Price, Rate, Ratio, Runtime, SETUSD, SETM,
 };
 
 use super::utils::set_balance;
@@ -42,7 +42,7 @@ fn inject_liquidity(
 	max_amount: Balance,
 	max_other_currency_amount: Balance,
 ) -> Result<(), &'static str> {
-	let base_currency_id = GetStableCurrencyId::get();
+	let base_currency_id = GetSetUSDId::get();
 
 	// set balance
 	set_balance(currency_id, &maker, max_other_currency_amount.unique_saturated_into());

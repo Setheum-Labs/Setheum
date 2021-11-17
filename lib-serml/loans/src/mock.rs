@@ -287,7 +287,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 	pub TreasuryAccount: AccountId = ModuleId(*b"set/smtr").into_account();
@@ -296,7 +296,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type DEX = ();
 	type MaxAuctionsCount = MaxAuctionsCount;

@@ -92,7 +92,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The SetUSD currency id, it should be SETUSD in Setheum.
-		type GetStableCurrencyId: Get<CurrencyId>;
+		type GetSetUSDId: Get<CurrencyId>;
 
 		// CashDrop period for transferring cashdrop.
 		// The ideal period is after every `24 hours`.
@@ -1178,7 +1178,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				// 	};
 
 					if T::Currency::transfer(
-						T::GetStableCurrencyId::get(),
+						T::GetSetUSDId::get(),
 						&T::CDPTreasuryAccountId::get(),
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
@@ -1234,7 +1234,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				// 	};
 
 					if T::Currency::transfer(
-						T::GetStableCurrencyId::get(),
+						T::GetSetUSDId::get(),
 						&T::CDPTreasuryAccountId::get(),
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()

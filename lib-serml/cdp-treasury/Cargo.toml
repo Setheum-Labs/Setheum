@@ -19,7 +19,7 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-oorml-currencies = { path = "../../open-lib/currencies" }
+orml-currencies = { path = "../../open-lib/currencies" }
 orml-auction = { path = "../../open-lib/auction" }
 module-dex = { path = "../dex" }
 orml-tokens = { path = "../../open-lib/tokens" }

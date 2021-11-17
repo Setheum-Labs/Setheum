@@ -199,7 +199,7 @@ impl orml_nft::Config for Test {
 
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
-	pub const GetStableCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+	pub const GetSetUSDId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = 
 		vec![
@@ -402,7 +402,7 @@ impl module_evm::Config for Test {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = SETUSD; // Setter currency ticker is SETUSD.
+	pub const GetSetUSDId: CurrencyId = SETUSD; // Setter currency ticker is SETUSD.
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
 	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
 	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1);
@@ -416,8 +416,8 @@ ord_parameter_types! {
 impl module_prices::Config for Test {
 	type Event = Event;
 	type Source = Oracle;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type SetterCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
+	type SetterCurrencyId = GetSetUSDId;
 	type SetUSDFixedPrice = SetUSDFixedPrice;
 	type SetterFixedPrice = SetterFixedPrice;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;

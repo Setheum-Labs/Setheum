@@ -59,9 +59,9 @@ pub mod weights;
 pub use module::*;
 pub use weights::WeightInfo;
 
-pub const OFFCHAIN_WORKER_DATA: &[u8] = b"acala/auction-manager/data/";
-pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"acala/auction-manager/lock/";
-pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"acala/auction-manager/max-iterations/";
+pub const OFFCHAIN_WORKER_DATA: &[u8] = b"setheum/auction-manager/data/";
+pub const OFFCHAIN_WORKER_LOCK: &[u8] = b"setheum/auction-manager/lock/";
+pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/auction-manager/max-iterations/";
 pub const LOCK_DURATION: u64 = 100;
 pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 
@@ -146,7 +146,7 @@ pub mod module {
 
 		/// The stable currency id
 		#[pallet::constant]
-		type GetStableCurrencyId: Get<CurrencyId>;
+		type GetSetUSDId: Get<CurrencyId>;
 
 		/// Currency to transfer assets
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -267,7 +267,7 @@ pub mod module {
 		fn integrity_test() {
 			assert!(T::DefaultSwapParitalPathList::get()
 				.iter()
-				.all(|path| !path.is_empty() && path[path.len() - 1] == T::GetStableCurrencyId::get()));
+				.all(|path| !path.is_empty() && path[path.len() - 1] == T::GetSetUSDId::get()));
 		}
 	}
 
@@ -424,7 +424,7 @@ impl<T: Config> Pallet<T> {
 
 		// calculate how much collateral to offset target in settle price
 		let settle_price =
-			T::PriceSource::get_relative_price(T::GetStableCurrencyId::get(), collateral_auction.currency_id)
+			T::PriceSource::get_relative_price(T::GetSetUSDId::get(), collateral_auction.currency_id)
 				.ok_or(Error::<T>::InvalidFeedPrice)?;
 		let confiscate_collateral_amount = if collateral_auction.always_forward() {
 			collateral_auction.amount
@@ -543,7 +543,7 @@ impl<T: Config> Pallet<T> {
 				// if there's bid before, return stablecoin from new bidder to last bidder
 				if let Some(last_bidder) = last_bidder {
 					let refund = collateral_auction.payment_amount(last_bid_price);
-					T::Currency::transfer(T::GetStableCurrencyId::get(), &new_bidder, last_bidder, refund)?;
+					T::Currency::transfer(T::GetSetUSDId::get(), &new_bidder, last_bidder, refund)?;
 
 					payment = payment
 						.checked_sub(refund)

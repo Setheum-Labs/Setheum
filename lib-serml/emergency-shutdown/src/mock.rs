@@ -1,6 +1,6 @@
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -333,7 +333,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
 }
@@ -341,7 +341,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = ();

@@ -118,7 +118,7 @@ pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, P
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = SETUSD;
 }
 
 impl orml_currencies::Config for Runtime {
@@ -336,7 +336,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type SerpTreasury = MockSerpTreasury;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
@@ -427,7 +427,7 @@ impl Config for Runtime {
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumDebitValue = MinimumDebitValue;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasury = CDPTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;

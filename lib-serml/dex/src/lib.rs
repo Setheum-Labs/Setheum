@@ -111,10 +111,6 @@ pub mod module {
 		/// operation.
 		type GetStableCurrencyExchangeFee: Get<(u32, u32)>;
 
-		/// The vault account to keep the Cashdrops for claiming.
-		#[pallet::constant]
-		type BuyBackPoolAccountId: Get<Self::AccountId>;
-
 		/// The limit for length of trading path
 		#[pallet::constant]
 		type TradingPathLimit: Get<u32>;

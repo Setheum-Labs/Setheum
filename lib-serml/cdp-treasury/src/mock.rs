@@ -131,7 +131,7 @@ parameter_types! {
 		SETR,
 		SETUSD,
 	];
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub GetExchangeFee: (u32, u32) = (0, 100);
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
@@ -343,7 +343,7 @@ thread_local! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;

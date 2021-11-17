@@ -100,7 +100,7 @@ pub mod pallet {
 
 		#[pallet::constant]
 		/// The SETUSD currency id, it should be SETUSD in Setheum.
-		type GetStableCurrencyId: Get<CurrencyId>;
+		type GetSetUSDId: Get<CurrencyId>;
 
 		/// A fetch duration period after we fetch prices.
 		type FetchPeriod: Get<Self::BlockNumber>;
@@ -812,7 +812,7 @@ impl<T: Config> Pallet<T> {
 		}?;
 
 		// Total Issuance of the currency
-		let total_supply = T::Currency::total_issuance(T::GetStableCurrencyId::get());
+		let total_supply = T::Currency::total_issuance(T::GetSetUSDId::get());
 
 		match market_price {
 			market_price if market_price > peg_price => {
@@ -820,17 +820,17 @@ impl<T: Config> Pallet<T> {
 				// safe from underflow because `peg_price` is checked to be less than `market_price`
 				let expand_by = Self::calculate_supply_change(market_price, peg_price, total_supply);
 
-				T::SerpTreasury::on_serpup(T::GetStableCurrencyId::get(), expand_by).unwrap();
+				T::SerpTreasury::on_serpup(T::GetSetUSDId::get(), expand_by).unwrap();
 			}
 			market_price if market_price < peg_price => {
 				// safe from underflow because `peg_price` is checked to be greater than `market_price`
 				let contract_by = Self::calculate_supply_change(peg_price, market_price, total_supply);
 
-				T::SerpTreasury::on_serpdown(T::GetStableCurrencyId::get(), contract_by).unwrap();
+				T::SerpTreasury::on_serpdown(T::GetSetUSDId::get(), contract_by).unwrap();
 			}
 			_ => {}
 		}
-		Self::deposit_event(Event::SerpTes(T::GetStableCurrencyId::get()));
+		Self::deposit_event(Event::SerpTes(T::GetSetUSDId::get()));
 		Ok(())
 	}
 

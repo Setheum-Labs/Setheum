@@ -30,7 +30,7 @@ fn surplus_pool_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(CDPTreasuryModule::surplus_pool(), 0);
 		assert_ok!(Currencies::deposit(
-			GetStableCurrencyId::get(),
+			GetSetUSDId::get(),
 			&CDPTreasuryModule::account_id(),
 			500
 		));

@@ -140,7 +140,7 @@ parameter_types! {
 	pub const GetSerpCurrencyId: CurrencyId = SERP;
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetStableCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const GetSetUSDId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const PublicFundAccountId: AccountId = CHARITY_FUND;
@@ -297,7 +297,7 @@ impl Config for Runtime {
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetStableCurrencyId = GetStableCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type PublicFundAccountId = PublicFundAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;

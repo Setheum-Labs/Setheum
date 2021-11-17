@@ -155,7 +155,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// Stablecoin currency id = SETUSD
-		type GetStableCurrencyId: Get<CurrencyId>;
+		type GetSetUSDId: Get<CurrencyId>;
 
 		/// When swap with DEX, the acceptable max slippage for the price from oracle.
 		#[pallet::constant]
@@ -330,7 +330,7 @@ pub mod module {
 		fn integrity_test() {
 			assert!(T::DefaultSwapParitalPathList::get()
 				.iter()
-				.all(|path| !path.is_empty() && path[path.len() - 1] == T::GetStableCurrencyId::get()));
+				.all(|path| !path.is_empty() && path[path.len() - 1] == T::GetSetUSDId::get()));
 		}
 	}
 
@@ -602,7 +602,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn check_cdp_status(currency_id: CurrencyId, collateral_amount: Balance, debit_amount: Balance) -> CDPStatus {
-		let stable_currency_id = T::GetStableCurrencyId::get();
+		let stable_currency_id = T::GetSetUSDId::get();
 		if let Some(feed_price) = T::PriceSource::get_relative_price(currency_id, stable_currency_id) {
 			let collateral_ratio =
 				Self::calculate_collateral_ratio(currency_id, collateral_amount, debit_amount, feed_price);
@@ -677,7 +677,7 @@ impl<T: Config> Pallet<T> {
 
 		// confiscate collateral in cdp to cdp treasury
 		// and decrease CDP's debit to zero
-		let settle_price: Price = T::PriceSource::get_relative_price(T::GetStableCurrencyId::get(), currency_id)
+		let settle_price: Price = T::PriceSource::get_relative_price(T::GetSetUSDId::get(), currency_id)
 			.ok_or(Error::<T>::InvalidFeedPrice)?;
 		let bad_debt_value = Self::get_debit_value(currency_id, debit);
 		let confiscate_collateral_amount =
@@ -794,7 +794,7 @@ impl<T: Config> Pallet<T> {
 				.reciprocal()
 				.unwrap_or_else(Ratio::max_value)
 				.saturating_mul_int(
-					T::PriceSource::get_relative_price(T::GetStableCurrencyId::get(), currency_id)
+					T::PriceSource::get_relative_price(T::GetSetUSDId::get(), currency_id)
 						.expect("the oracle price should be avalible because liquidation are triggered by it.")
 						.saturating_mul_int(target_stable_amount),
 				);
@@ -864,7 +864,7 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 	) -> DispatchResult {
 		if !debit_balance.is_zero() {
 			let debit_value = Self::get_debit_value(currency_id, debit_balance);
-			let feed_price = <T as Config>::PriceSource::get_relative_price(currency_id, T::GetStableCurrencyId::get())
+			let feed_price = <T as Config>::PriceSource::get_relative_price(currency_id, T::GetSetUSDId::get())
 				.ok_or(Error::<T>::InvalidFeedPrice)?;
 			let collateral_ratio =
 				Self::calculate_collateral_ratio(currency_id, collateral_balance, debit_balance, feed_price);
