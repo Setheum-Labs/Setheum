@@ -1,5 +1,0 @@
-# SetMint - Setheum Multicollateral Stablecoin Mint Loans Gateway:
-
-The SetMint - Inspired by MakerDAO Protocol, the CDP (Collateralized Debt Position) protocol on Ethereum. The Setheum CDP has zero interest rates, zero stability fees, and is fully halal and collateralized. This differentiates SetMint from any other CDP Protocol, making it by far the only halal loan protocol in the entire industry. And it is Multi-Collateral.
-Just reserve some collateral to mint some SETUSD, when returning the loan just return exactly what was loaned and unreserve the collateral with no fees and no interest.
-This lets the muslim world also participate in the industry and take part in trading and yield making strategies that are within their dome of principles, for me this is a gamechanger that I wished was there for me, therefore I am building it for people like me who need it but haven’t been given the chance to be pleased by it, and also non-muslims that want to break-free from the interest-based alternatives to a more efficient system based on truth, fairness and equality.

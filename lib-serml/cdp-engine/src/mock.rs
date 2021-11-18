@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -21,15 +22,14 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{TokenSymbol, TradingPair};
+use primitives::{Moment, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
-	traits::IdentityLookup,
-	ModuleId,
+	traits::{IdentityLookup, One as OneT},
 };
 use sp_std::cell::RefCell;
 use support::{AuctionManager, EmergencyShutdown, SerpTreasury};
@@ -41,12 +41,11 @@ pub type AuctionId = u32;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
-pub const BUYBACK_POOL: AccountId = 4;
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
 mod cdp_engine {
 	pub use super::super::*;
@@ -79,6 +78,7 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_type_with_key! {
@@ -95,6 +95,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
@@ -106,15 +108,16 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Module<Runtime>;
+	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;
 }
 
 impl orml_currencies::Config for Runtime {
@@ -126,7 +129,7 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
+	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");
 }
 
 impl loans::Config for Runtime {
@@ -135,8 +138,7 @@ impl loans::Config for Runtime {
 	type Currency = Currencies;
 	type RiskManager = CDPEngineModule;
 	type CDPTreasury = CDPTreasuryModule;
-	type ModuleId = LoansModuleId;
-	type OnUpdateLoan = ();
+	type PalletId = LoansPalletId;
 }
 
 thread_local! {
@@ -152,19 +154,15 @@ impl MockPriceSource {
 impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
 		match (base, quote) {
-			(SETUSD, BTC) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(BTC, SETUSD) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
+			(SETUSD, SERP) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
+			(SERP, SETUSD) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			_ => None,
 		}
 	}
 
 	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
+		unimplemented!()
 	}
-
-	fn lock_price(_currency_id: CurrencyId) {}
-
-	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
 pub struct MockAuctionManager;
@@ -193,13 +191,24 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	fn get_total_collateral_in_auction(_id: Self::CurrencyId) -> Self::Balance {
 		Default::default()
 	}
-
 }
 
 pub struct MockSerpTreasury;
 impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+
+	fn calculate_supply_change(
+		_numerator: Balance,
+		_denominator: Balance,
+		_supply: Balance
+	) -> Self::Balance{
+		unimplemented!()
+	}
+
+	fn serp_tes_now() -> DispatchResult{
+		unimplemented!()
+	}
 
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult {
@@ -246,8 +255,43 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 	
+	fn get_alsharif_fund_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_alsharif_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_cashdrop_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serplus(
+	fn on_serplus(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -255,7 +299,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serpup(
+	fn on_serpup(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -263,7 +307,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	pub fn on_serpdown(
+	fn on_serpdown(
 		_currency_id: CurrencyId,
 		_amount: Balance,
 	) -> DispatchResult {
@@ -320,7 +364,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	pub fn claim_cashdrop(
+	fn claim_cashdrop(
 		_currency_id: CurrencyId,
 		_who: &AccountId,
 		_transfer_amount: Balance
@@ -330,45 +374,63 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 }
 
 parameter_types! {
+	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
+	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 }
 
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type SerpTreasury = MockSerpTreasury;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type ModuleId = CDPTreasuryModuleId;
+	type PalletId = CDPTreasuryPalletId;
 	type WeightInfo = ();
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETUSD];
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
-	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
+	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+	];
+	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 3;
-	pub EnabledTradingPairs : Vec<TradingPair> = vec![TradingPair::new(SETUSD, BTC), TradingPair::new(SETUSD, DNAR)];
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
+	pub EnabledTradingPairs: Vec<TradingPair> = vec![
+		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETM, SERP).unwrap(),
+		TradingPair::from_currency_ids(SETM, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETM, SETUSD).unwrap(),
+	];
 }
 
-impl module_dex::Config for Runtime {
+impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
-	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = DEXModuleId;
+	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
+}
+
+parameter_types! {
+	pub const MinimumPeriod: Moment = 1000;
+}
+impl pallet_timestamp::Config for Runtime {
+	type Moment = Moment;
+	type OnTimestampSet = ();
+	type MinimumPeriod = MinimumPeriod;
+	type WeightInfo = ();
 }
 
 thread_local! {
@@ -392,27 +454,33 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(3, 2);
-	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::one();
+	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(10, 100);
 	pub const MinimumDebitValue: Balance = 2;
-	pub MaxSlippageSwapWithDEX: Ratio = Ratio::saturating_from_rational(50, 100);
+	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![BTC, DNAR];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SERP, DNAR];
+	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
+		vec![SETUSD],
+		vec![SETM, SETUSD],
+	];
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type PriceSource = MockPriceSource;
 	type CollateralCurrencyIds = CollateralCurrencyIds;
-	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumDebitValue = MinimumDebitValue;
+	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasury = CDPTreasuryModule;
+	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type UnsignedPriority = UnsignedPriority;
 	type EmergencyShutdown = MockEmergencyShutdown;
-	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
+	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
 	type WeightInfo = ();
 }
 
@@ -425,14 +493,15 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		CDPEngineModule: cdp_engine::{Module, Storage, Call, Event<T>, Config, ValidateUnsigned},
-		CDPTreasuryModule: cdp_treasury::{Module, Storage, Call, Config, Event<T>},
-		Currencies: orml_currencies::{Module, Call, Event<T>},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		LoansModule: loans::{Module, Storage, Call, Event<T>},
-		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		DEXModule: module_dex::{Module, Storage, Call, Event<T>, Config<T>},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		CDPEngineModule: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned},
+		CDPTreasuryModule: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>},
+		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		LoansModule: loans::{Pallet, Storage, Call, Event<T>},
+		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
+		DEXModule: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
 	}
 );
 
@@ -448,19 +517,20 @@ where
 }
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
-				(ALICE, BTC, 1000),
-				(BOB, BTC, 1000),
-				(CAROL, BTC, 100),
+			balances: vec![
+				(ALICE, SERP, 1000),
+				(BOB, SERP, 1000),
+				(CAROL, SERP, 10000),
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
-				(CAROL, SETUSD, 1000),
+				(CAROL, DNAR, 10000),
+				(CAROL, SETUSD, 10000),
 			],
 		}
 	}
@@ -472,13 +542,19 @@ impl ExtBuilder {
 			.build_storage::<Runtime>()
 			.unwrap();
 
-		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+		pallet_balances::GenesisConfig::<Runtime> {
+			balances: vec![(CAROL, 10000)],
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		module_dex::GenesisConfig::<Runtime> {
+		orml_tokens::GenesisConfig::<Runtime> {
+			balances: self.balances,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		dex::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
@@ -487,5 +563,14 @@ impl ExtBuilder {
 		.unwrap();
 
 		t.into()
+	}
+
+	pub fn lots_of_accounts() -> Self {
+		let mut balances = Vec::new();
+		for i in 0..1001 {
+			let account_id: AccountId = i;
+			balances.push((account_id, SERP, 1000));
+		}
+		Self { balances }
 	}
 }

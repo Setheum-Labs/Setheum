@@ -1,10 +1,12 @@
+بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+
 # Setheum Node
 
 Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Setheum SERML, ready for hacking :rocket:
 
 <div align="center">
 	
-[![Setheum version](https://img.shields.io/badge/Setheum-0.9.70-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
+[![Setheum version](https://img.shields.io/badge/Setheum-0.9.80-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
 [![Substrate version](https://img.shields.io/badge/Substrate-3.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
 [![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=green)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
  <br />
@@ -40,8 +42,6 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
     // Tier-2 Tokens (StableCurrencies)
     SETR("Setter", 12) = 3,
     SETUSD("SetDollar", 12) = 4,
-    // Foreign Currencies
-    RENBTC("renBTC", 8) = 121,
 ```
 
 1. [The Setter](./primitives/src/currency.rs#:~:text=SETR(%22Setter%22%2C%2012)%20%3D%203%2C) - The Setter is a stable currency pegged to the US dollar at a ratio of 1:2, where 1 SETR = $2 USD ($1 USD = 0.5 SETR).
@@ -116,15 +116,15 @@ git submodule update --init --recursive
 ### Start a development node
 
 The `make run` command will launch a temporary node and its state will be discarded after you terminate the process.
-
 ```bash
 make run
 ```
 
-or
+OR
 
+The `make run-nightly` (using cargo nightly) command will launch a temporary node and its state will be discarded after you terminate the process.
 ```bash
-RUST_BACKTRACE=1 cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
+make run-nightly
 ```
 
 ### Run a persistent single-node chain
@@ -138,19 +138,19 @@ make build
 This command will start the single-node development chain with persistent state:
 
 ```bash
-./target/release/setheum-node --dev
+./target/release/setheum --dev
 ```
 
 Purge the development chain's state:
 
 ```bash
-./target/release/setheum-node purge-chain --dev
+./target/release/setheum purge-chain --dev
 ```
 
 Start the development chain with detailed logging:
 
 ```bash
-RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum-node -lruntime=debug --dev
+RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum -lruntime=debug --dev
 ```
 
 ### Run tests
@@ -173,11 +173,11 @@ cargo test -p module-poc --all-features
 
 Run the module benchmarks and generate the weights file:
 ```
-./target/release/setheum-node benchmark \
+./target/release/setheum benchmark \
     --chain=dev \
     --steps=50 \
     --repeat=20 \
-    --pallet=module_poc \
+    --pallet=module_airdrop \
     --extrinsic='*'  \
     --execution=wasm \
     --wasm-execution=compiled \
@@ -196,7 +196,7 @@ make debug
 Once the project has been built, the following command can be used to explore all parameters and subcommands:
 
 ```bash
-./target/release/setheum-node -h
+./target/release/setheum -h
 ```
 
 ### Release builds
@@ -255,7 +255,7 @@ make generate-tokens
 
 __Note:__ All build commands with `SKIP_WASM_BUILD` are designed for local development purposes and hence have the `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.
 
-## 6. Bench Bot
+## Bench Bot
 
 Bench bot can take care of syncing branch with `master` and generating WeightInfos for module or runtime.
 
@@ -264,3 +264,18 @@ Bench bot can take care of syncing branch with `master` and generating WeightInf
 Comment on a PR `/bench runtime module <setheum_name>` i.e.: `serp_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
+
+### Fork setheum-chain
+
+You can create a fork of a live chain (testnet / mainnet) for development purposes.
+
+1) Build binary and sync with target chain on localhost defaults. You will need to use unsafe rpc.
+2) Execute the `Make` command ensuring to specify chain name (testnet / mainnet).
+```bash
+make chain=testnet fork
+```
+3) Now run a forked chain:
+```bash
+cd fork/data
+./binary --chain fork.json --alice
+```

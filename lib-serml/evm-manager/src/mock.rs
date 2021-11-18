@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -25,8 +26,8 @@ use frame_support::{assert_ok, construct_runtime, ord_parameter_types, parameter
 use frame_system::EnsureSignedBy;
 use module_support::{mocks::MockAddressMapping, AddressMapping};
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, Balance, CurrencyId, TokenSymbol};
-use sp_core::{bytes::from_hex, crypto::AccountId32, H256};
+use primitives::{Amount, Balance, CurrencyId, ReserveIdentifier, TokenSymbol};
+use sp_core::{bytes::from_hex, crypto::AccountId32, H160, H256};
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 use std::str::FromStr;
 
@@ -64,18 +65,22 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
 
 parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
+	pub const MaxReserves: u32 = 50;
 }
 impl pallet_balances::Config for Runtime {
 	type Balance = Balance;
 	type Event = Event;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Module<Runtime>;
+	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
 }
 
@@ -93,6 +98,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
@@ -128,7 +135,6 @@ ord_parameter_types! {
 	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
 	pub const NetworkContractAccount: AccountId32 = AccountId32::from([0u8; 32]);
 	pub const StorageDepositPerByte: u128 = 10;
-	pub const MaxCodeSize: u32 = 60 * 1024;
 	pub const DeveloperDeposit: u64 = 1000;
 	pub const DeploymentFee: u64 = 200;
 }
@@ -136,11 +142,9 @@ ord_parameter_types! {
 impl module_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
-	type MergeAccount = ();
+	type TransferAll = ();
 	type NewContractExtraBytes = NewContractExtraBytes;
 	type StorageDepositPerByte = StorageDepositPerByte;
-	type MaxCodeSize = MaxCodeSize;
-
 	type Event = Event;
 	type Precompiles = ();
 	type ChainId = ();
@@ -154,6 +158,8 @@ impl module_evm::Config for Runtime {
 	type TreasuryAccount = TreasuryAccount;
 	type FreeDeploymentOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
 
+	type Runner = module_evm::runner::stack::Runner<Self>;
+	type FindAuthor = ();
 	type WeightInfo = ();
 }
 
@@ -191,14 +197,14 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
-		EvmManager: evm_manager::{Module, Storage},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-		Currencies: orml_currencies::{Module, Call, Event<T>},
-		EVM: module_evm::{Module, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: module_evm_bridge::{Module},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
+		EvmManager: evm_manager::{Pallet, Storage},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
+		EVMBridge: module_evm_bridge::{Pallet},
 	}
 );
 
@@ -208,31 +214,40 @@ pub fn deploy_contracts() {
 		Origin::signed(NetworkContractAccount::get()),
 		code,
 		0,
-		2100_000,
+		2_100_000,
 		10000
 	));
 
-	let event = Event::module_evm(module_evm::Event::Created(erc20_address()));
-	assert_eq!(System::events().iter().last().unwrap().event, event);
+	System::assert_last_event(Event::EVM(module_evm::Event::Created(
+		alice_evm_addr(),
+		erc20_address(),
+		vec![module_evm::Log {
+			address: H160::from_str("0x0000000000000000000000000000000002000000").unwrap(),
+			topics: vec![
+				H256::from_str("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef").unwrap(),
+				H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
+				H256::from_str("0x0000000000000000000000001000000000000000000000000000000000000001").unwrap(),
+			],
+			data: H256::from_low_u64_be(10000).as_bytes().to_vec(),
+		}],
+	)));
 
 	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
 }
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, Balance)>,
+	balances: Vec<(AccountId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self {
-			endowed_accounts: vec![],
-		}
+		Self { balances: vec![] }
 	}
 }
 
 impl ExtBuilder {
-	pub fn balances(mut self, endowed_accounts: Vec<(AccountId, Balance)>) -> Self {
-		self.endowed_accounts = endowed_accounts;
+	pub fn balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
+		self.balances = balances;
 		self
 	}
 
@@ -242,7 +257,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
-			balances: self.endowed_accounts.clone().into_iter().collect::<Vec<_>>(),
+			balances: self.balances.into_iter().collect::<Vec<_>>(),
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

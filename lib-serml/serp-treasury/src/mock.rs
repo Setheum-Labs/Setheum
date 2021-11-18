@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -27,8 +28,8 @@ use orml_traits::parameter_type_with_key;
 use primitives::{Amount, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
-	testing::Header, ModuleId,
-	traits::IdentityLookup,
+	testing::Header,
+	traits::{IdentityLookup, One as OneT}
 };
 use sp_std::cell::RefCell;
 use support::{Price, PriceProvider};
@@ -39,6 +40,7 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
 pub const CHARITY_FUND: AccountId = 2;
+pub const AL_SHARIF_FUND: AccountId = 4;
 pub const TREASURY: AccountId = 3;
 pub const CDP_TREASURY: AccountId = 5;
 pub const SETRPAY: AccountId = 9;
@@ -83,8 +85,8 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
 }
-
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
@@ -99,6 +101,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 parameter_types! {
@@ -112,6 +116,8 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
@@ -136,10 +142,11 @@ parameter_types! {
 	pub const GetSerpCurrencyId: CurrencyId = SERP;
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const GetSetUSDId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 
-	pub const SerpTreasuryModuleId: ModuleId = ModuleId(*b"set/serp");
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const PublicFundAccountId: AccountId = CHARITY_FUND;
+	pub const AlSharifFundAccountId: AccountId = AL_SHARIF_FUND;
 	pub const CDPTreasuryAccountId: AccountId = CDP_TREASURY;
 	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
 	pub const CashDropPoolAccountId: AccountId = VAULT;
@@ -249,9 +256,6 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 		None
 	}
 
-	fn lock_price(_currency_id: CurrencyId) {}
-
-	fn unlock_price(_currency_id: CurrencyId) {}
 }
 
 ord_parameter_types! {
@@ -293,9 +297,10 @@ impl Config for Runtime {
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type PublicFundAccountId = PublicFundAccountId;
+	type AlSharifFundAccountId = AlSharifFundAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;
 	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
 	type DefaultSwapPathList = DefaultSwapPathList;
@@ -308,7 +313,7 @@ impl Config for Runtime {
 	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
 	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
-	type ModuleId = SerpTreasuryModuleId;
+	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = ();
 }
 
@@ -321,22 +326,22 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		SerpTreasuryModule: serp_treasury::{Module, Storage, Call, Config, Event<T>},
-		Currencies: orml_currencies::{Module, Call, Event<T>},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Config, Event<T>},
+		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
+			balances: vec![
 				(ALICE, SETUSD, 1000),
 				(ALICE, SETR, 1000),
 				(ALICE, DNAR, 1000),
@@ -349,6 +354,10 @@ impl Default for ExtBuilder {
 				(CHARITY_FUND, SETR, 1000),
 				(CHARITY_FUND, DNAR, 1000),
 				(CHARITY_FUND, SETM, 1000),
+				(AL_SHARIF_FUND, SETUSD, 1000),
+				(AL_SHARIF_FUND, SETR, 1000),
+				(AL_SHARIF_FUND, DNAR, 1000),
+				(AL_SHARIF_FUND, SETM, 1000),
 				(TREASURY, SETUSD, 1000),
 				(TREASURY, SETR, 1000),
 				(TREASURY, DNAR, 1000),
@@ -372,9 +381,9 @@ impl ExtBuilder {
 			.build_storage::<Runtime>()
 			.unwrap();
 
-		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
-		}
+			orml_tokens::GenesisConfig::<Runtime> {
+				balances: self.balances,
+			}
 		.assimilate_storage(&mut t)
 		.unwrap();
 

@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -26,19 +27,18 @@ use codec::Codec;
 use frame_support::{
 	pallet_prelude::*,
 	traits::{
-		Currency as PalletCurrency, ExistenceRequirement, LockableCurrency as PalletLockableCurrency,
+		Currency as PalletCurrency, ExistenceRequirement, Get, LockableCurrency as PalletLockableCurrency,
 		ReservableCurrency as PalletReservableCurrency, WithdrawReasons,
 	},
+	transactional,
 };
 use frame_system::pallet_prelude::*;
 use orml_traits::{
-	account::MergeAccount,
 	arithmetic::{Signed, SimpleArithmetic},
+	currency::TransferAll,
 	BalanceStatus, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency, BasicReservableCurrency,
-	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency,
+	LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency, MultiReservableCurrency, OnDust,
 };
-use orml_utilities::with_transaction_result;
-
 use primitives::{evm::EvmAddress, CurrencyId};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
@@ -49,6 +49,7 @@ use sp_std::{
 	convert::{TryFrom, TryInto},
 	fmt::Debug,
 	marker, result,
+	vec::Vec,
 };
 use support::{AddressMapping, EVMBridge, InvokeContext, SerpTreasury};
 
@@ -73,7 +74,7 @@ pub mod module {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type MultiCurrency: MergeAccount<Self::AccountId>
+		type MultiCurrency: TransferAll<Self::AccountId>
 			+ MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiLockableCurrency<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiReservableCurrency<Self::AccountId, CurrencyId = CurrencyId>;
@@ -98,6 +99,12 @@ pub mod module {
 		/// Mapping from address to account id.
 		type AddressMapping: AddressMapping<Self::AccountId>;
 		type EVMBridge: EVMBridge<Self::AccountId, BalanceOf<Self>>;
+
+		/// The AccountId that can perform a sweep dust.
+		type SweepOrigin: EnsureOrigin<Self::Origin>;
+
+		/// Handler to burn or transfer account's dust
+		type OnDust: OnDust<Self::AccountId, CurrencyId, BalanceOf<Self>>;
 	}
 
 	#[pallet::error]
@@ -110,23 +117,28 @@ pub mod module {
 		Erc20InvalidOperation,
 		/// EVM account not found
 		EvmAccountNotFound,
+		/// Real origin not found
+		RealOriginNotFound,
 	}
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
+	#[pallet::metadata(T::AccountId = "AccountId", BalanceOf<T> = "Balance", CurrencyIdOf<T> = "CurrencyId")]
 	pub enum Event<T: Config> {
-		/// Currency transfer success. [currency_id, from, to, amount]
+		/// Currency transfer success. \[currency_id, from, to, amount\]
 		Transferred(CurrencyIdOf<T>, T::AccountId, T::AccountId, BalanceOf<T>),
-		/// Update balance success. [currency_id, who, amount]
+		/// Update balance success. \[currency_id, who, amount\]
 		BalanceUpdated(CurrencyIdOf<T>, T::AccountId, AmountOf<T>),
-		/// Deposit success. [currency_id, who, amount]
+		/// Deposit success. \[currency_id, who, amount\]
 		Deposited(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
-		/// Withdraw success. [currency_id, who, amount]
+		/// Withdraw success. \[currency_id, who, amount\]
 		Withdrawn(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
+		/// Dust swept. \[currency_id, who, amount\]
+		DustSwept(CurrencyIdOf<T>, T::AccountId, BalanceOf<T>),
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -144,14 +156,17 @@ pub mod module {
 			currency_id: CurrencyIdOf<T>,
 			#[pallet::compact] amount: BalanceOf<T>,
 			claim: bool,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
-			<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-			if claim && T::StableCurrencyIds::get().contains(&currency_id) {
-				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)?
-			};
-			Ok(().into())
+			if <Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount).is_ok() {
+				if claim && T::StableCurrencyIds::get().contains(&currency_id) {
+					T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)?
+				} else if claim && !T::StableCurrencyIds::get().contains(&currency_id) {
+					return Ok(())
+				}
+			}
+			Ok(())
 		}
 
 		/// Transfer some native currency to another account.
@@ -163,13 +178,13 @@ pub mod module {
 			origin: OriginFor<T>,
 			dest: <T::Lookup as StaticLookup>::Source,
 			#[pallet::compact] amount: BalanceOf<T>,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			T::NativeCurrency::transfer(&from, &to, amount)?;
 
 			Self::deposit_event(Event::Transferred(T::GetNativeCurrencyId::get(), from, to, amount));
-			Ok(().into())
+			Ok(())
 		}
 
 		/// update amount of account `who` under `currency_id`.
@@ -181,11 +196,38 @@ pub mod module {
 			who: <T::Lookup as StaticLookup>::Source,
 			currency_id: CurrencyIdOf<T>,
 			amount: AmountOf<T>,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			ensure_root(origin)?;
 			let dest = T::Lookup::lookup(who)?;
 			<Self as MultiCurrencyExtended<T::AccountId>>::update_balance(currency_id, &dest, amount)?;
-			Ok(().into())
+			Ok(())
+		}
+
+		#[pallet::weight(T::WeightInfo::sweep_dust(accounts.len() as u32))]
+		pub fn sweep_dust(
+			origin: OriginFor<T>,
+			currency_id: CurrencyIdOf<T>,
+			accounts: Vec<T::AccountId>,
+		) -> DispatchResult {
+			T::SweepOrigin::ensure_origin(origin)?;
+			if let CurrencyId::Erc20(_) = currency_id {
+				return Err(Error::<T>::Erc20InvalidOperation.into());
+			}
+			for account in accounts {
+				let free_balance = Self::free_balance(currency_id, &account);
+				if free_balance.is_zero() {
+					continue;
+				}
+				let total_balance = Self::total_balance(currency_id, &account);
+				if free_balance != total_balance {
+					continue;
+				}
+				if free_balance < Self::minimum_balance(currency_id) {
+					T::OnDust::on_dust(&account, currency_id, free_balance);
+					Self::deposit_event(Event::DustSwept(currency_id, account, free_balance));
+				}
+			}
+			Ok(())
 		}
 	}
 }
@@ -218,7 +260,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	fn total_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
-				if let Some(address) = T::AddressMapping::get_evm_address(&who) {
+				if let Some(address) = T::AddressMapping::get_evm_address(who) {
 					let context = InvokeContext {
 						contract,
 						sender: Default::default(),
@@ -236,7 +278,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	fn free_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
-				if let Some(address) = T::AddressMapping::get_evm_address(&who) {
+				if let Some(address) = T::AddressMapping::get_evm_address(who) {
 					let context = InvokeContext {
 						contract,
 						sender: Default::default(),
@@ -254,7 +296,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	fn ensure_can_withdraw(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
-				let address = T::AddressMapping::get_evm_address(&who).ok_or(Error::<T>::EvmAccountNotFound)?;
+				let address = T::AddressMapping::get_evm_address(who).ok_or(Error::<T>::EvmAccountNotFound)?;
 				let balance = T::EVMBridge::balance_of(
 					InvokeContext {
 						contract,
@@ -284,10 +326,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
-				let sender = T::AddressMapping::get_evm_address(&from).ok_or(Error::<T>::EvmAccountNotFound)?;
-				let origin = T::EVMBridge::get_origin().unwrap_or_default();
+				let sender = T::AddressMapping::get_evm_address(from).ok_or(Error::<T>::EvmAccountNotFound)?;
+				let origin = T::EVMBridge::get_origin().ok_or(Error::<T>::RealOriginNotFound)?;
 				let origin_address = T::AddressMapping::get_or_create_evm_address(&origin);
-				let address = T::AddressMapping::get_or_create_evm_address(&to);
+				let address = T::AddressMapping::get_or_create_evm_address(to);
 				T::EVMBridge::transfer(
 					InvokeContext {
 						contract,
@@ -421,7 +463,7 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 	fn reserved_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
-				if let Some(address) = T::AddressMapping::get_evm_address(&who) {
+				if let Some(address) = T::AddressMapping::get_evm_address(who) {
 					return T::EVMBridge::balance_of(
 						InvokeContext {
 							contract,
@@ -445,7 +487,7 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 				if value.is_zero() {
 					return Ok(());
 				}
-				let address = T::AddressMapping::get_evm_address(&who).ok_or(Error::<T>::EvmAccountNotFound)?;
+				let address = T::AddressMapping::get_evm_address(who).ok_or(Error::<T>::EvmAccountNotFound)?;
 				T::EVMBridge::transfer(
 					InvokeContext {
 						contract,
@@ -467,7 +509,7 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 				if value.is_zero() {
 					return value;
 				}
-				if let Some(address) = T::AddressMapping::get_evm_address(&who) {
+				if let Some(address) = T::AddressMapping::get_evm_address(who) {
 					let sender = reserve_address(address);
 					let reserved_balance = T::EVMBridge::balance_of(
 						InvokeContext {
@@ -521,8 +563,8 @@ impl<T: Config> MultiReservableCurrency<T::AccountId> for Pallet<T> {
 				}
 
 				let slashed_address =
-					T::AddressMapping::get_evm_address(&slashed).ok_or(Error::<T>::EvmAccountNotFound)?;
-				let beneficiary_address = T::AddressMapping::get_or_create_evm_address(&beneficiary);
+					T::AddressMapping::get_evm_address(slashed).ok_or(Error::<T>::EvmAccountNotFound)?;
+				let beneficiary_address = T::AddressMapping::get_or_create_evm_address(beneficiary);
 
 				let slashed_reserve_address = reserve_address(slashed_address);
 				let beneficiary_reserve_address = reserve_address(beneficiary_address);
@@ -845,22 +887,35 @@ where
 	}
 }
 
-impl<T: Config> MergeAccount<T::AccountId> for Pallet<T> {
-	fn merge_account(source: &T::AccountId, dest: &T::AccountId) -> DispatchResult {
-		with_transaction_result(|| {
-			// transfer non-native free to dest
-			T::MultiCurrency::merge_account(source, dest)?;
+impl<T: Config> TransferAll<T::AccountId> for Pallet<T> {
+	#[transactional]
+	fn transfer_all(source: &T::AccountId, dest: &T::AccountId) -> DispatchResult {
+		// transfer non-native free to dest
+		T::MultiCurrency::transfer_all(source, dest)?;
 
-			// unreserve all reserved currency
-			T::NativeCurrency::unreserve(source, T::NativeCurrency::reserved_balance(source));
-
-			// transfer all free to dest
-			T::NativeCurrency::transfer(source, dest, T::NativeCurrency::free_balance(source))
-		})
+		// transfer all free to dest
+		T::NativeCurrency::transfer(source, dest, T::NativeCurrency::free_balance(source))
 	}
 }
 
 fn reserve_address(address: EvmAddress) -> EvmAddress {
 	let payload = (b"erc20:", address);
 	EvmAddress::from_slice(&payload.using_encoded(blake2_256)[0..20])
+}
+
+pub struct TransferDust<T, GetAccountId>(marker::PhantomData<(T, GetAccountId)>);
+impl<T: Config, GetAccountId> OnDust<T::AccountId, CurrencyIdOf<T>, BalanceOf<T>> for TransferDust<T, GetAccountId>
+where
+	T: Config,
+	GetAccountId: Get<T::AccountId>,
+{
+	fn on_dust(who: &T::AccountId, currency_id: CurrencyIdOf<T>, amount: BalanceOf<T>) {
+		// transfer the dust to treasury account, ignore the result,
+		// if failed will leave some dust which still could be recycled.
+		let _ = match currency_id {
+			CurrencyId::Erc20(_) => Ok(()),
+			id if id == T::GetNativeCurrencyId::get() => T::NativeCurrency::transfer(who, &GetAccountId::get(), amount),
+			_ => T::MultiCurrency::transfer(currency_id, who, &GetAccountId::get(), amount),
+		};
+	}
 }

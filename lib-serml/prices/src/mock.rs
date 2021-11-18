@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -24,13 +25,14 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
 use orml_traits::{parameter_type_with_key, DataFeeder};
-use primitives::{Amount, TokenSymbol};
+use primitives::{currency::DexShare, Amount, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
 	testing::Header,
-	traits::IdentityLookup,
-	DispatchError, FixedPointNumber, DispatchResult,
+	traits::{IdentityLookup, One as OneT, Zero},
+	DispatchError, FixedPointNumber,
 };
+use sp_std::cell::RefCell;
 use support::mocks::MockCurrencyIdMapping;
 
 pub type AccountId = u128;
@@ -39,11 +41,10 @@ pub type BlockNumber = u64;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const LP_SETR_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETR), DexShare::Token(TokenSymbol::SETUSD));
-pub const LP_SETUSD_SETM: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::SETM));
+pub const LP_SETUSD_DNAR: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DNAR));
 
 mod prices {
 	pub use super::super::*;
@@ -76,17 +77,36 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+	type OnSetCode = ();
+}
+
+thread_local! {
+	static CHANGED: RefCell<bool> = RefCell::new(false);
+}
+
+pub fn mock_oracle_update() {
+	CHANGED.with(|v| *v.borrow_mut() = true)
 }
 
 pub struct MockDataProvider;
 impl DataProvider<CurrencyId, Price> for MockDataProvider {
 	fn get(currency_id: &CurrencyId) -> Option<Price> {
-		match *currency_id {
-			SETUSD => Some(Price::saturating_from_rational(99, 100)),
-			SETR => Some(Price::saturating_from_rational(99, 100)),
-			DNAR => Some(Price::saturating_from_integer(100)),
-			SETM => Some(Price::zero()),
-			_ => None,
+		if CHANGED.with(|v| *v.borrow_mut()) {
+			match *currency_id {
+				SETUSD => None,
+				SERP => Some(Price::saturating_from_integer(40000)),
+				DNAR => Some(Price::saturating_from_integer(10)),
+				SETM => Some(Price::saturating_from_integer(30)),
+				_ => None,
+			}
+		} else {
+			match *currency_id {
+				SETUSD => Some(Price::saturating_from_rational(99, 100)),
+				SERP => Some(Price::saturating_from_integer(50000)),
+				DNAR => Some(Price::saturating_from_integer(100)),
+				SETM => Some(Price::zero()),
+				_ => None,
+			}
 		}
 	}
 }
@@ -110,17 +130,11 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		unimplemented!()
 	}
 
-	fn get_swap_target_amount(
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-	) -> Option<Balance> {
+	fn get_swap_target_amount(_path: &[CurrencyId], _supply_amount: Balance) -> Option<Balance> {
 		unimplemented!()
 	}
 
-	fn get_swap_supply_amount(
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-	) -> Option<Balance> {
+	fn get_swap_supply_amount(_path: &[CurrencyId], _target_amount: Balance) -> Option<Balance> {
 		unimplemented!()
 	}
 
@@ -195,6 +209,8 @@ impl orml_tokens::Config for Runtime {
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
 }
 
 ord_parameter_types! {
@@ -202,17 +218,17 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetUSDCurrencyId: CurrencyId = SETUSD; // Setter currency ticker is SETUSD.
-	pub const SetterCurrencyId: CurrencyId = SETR; // Setter currency ticker is SETR.
-	pub SetUSDFixedPrice: Price = Price::one(); // Fixed 1 USD Fiat denomination for pricing.
+	pub const GetSetUSDId: CurrencyId = SETUSD;
+	pub const SetterCurrencyId: CurrencyId = SETR;
+	pub SetUSDFixedPrice: Price = Price::one();
 	pub SetterFixedPrice: Price = Price::one();
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Source = MockDataProvider;
-	type GetSetUSDCurrencyId = GetSetUSDCurrencyId;
-	type SetterCurrencyId = GetSetUSDCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type SetUSDFixedPrice = SetUSDFixedPrice;
 	type SetterFixedPrice = SetterFixedPrice;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
@@ -231,9 +247,9 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Module, Call, Config, Storage, Event<T>},
-		PricesModule: prices::{Module, Storage, Call, Event<T>},
-		Tokens: orml_tokens::{Module, Call, Storage, Event<T>},
+		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		PricesModule: prices::{Pallet, Storage, Call, Event<T>},
+		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
 	}
 );
 

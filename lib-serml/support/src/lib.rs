@@ -1,3 +1,22 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+// This file is part of Setheum.
+
+// Copyright (C) 2019-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
@@ -9,7 +28,7 @@ use primitives::{
 };
 use sp_core::H160;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize},
+	traits::{AtLeast32BitUnsigned, CheckedDiv, MaybeSerializeDeserialize},
 	transaction_validity::TransactionValidityError,
 	DispatchError, DispatchResult, FixedU128, RuntimeDebug,
 };
@@ -22,25 +41,9 @@ use sp_std::{
 pub mod mocks;
 
 pub type Price = FixedU128;
+pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
-pub type ExchangeRate = FixedU128;
-
-pub trait AuctionManager<AccountId> {
-	type CurrencyId;
-	type Balance;
-	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
-
-	fn new_collateral_auction(
-		refund_recipient: &AccountId,
-		currency_id: Self::CurrencyId,
-		amount: Self::Balance,
-		target: Self::Balance,
-	) -> DispatchResult;
-	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
-	fn get_total_collateral_in_auction(id: Self::CurrencyId) -> Self::Balance;
-	fn get_total_target_in_auction() -> Self::Balance;
-}
 
 pub trait RiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 	fn get_bad_debt_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
@@ -49,6 +52,7 @@ pub trait RiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 		currency_id: CurrencyId,
 		collateral_balance: Balance,
 		debit_balance: DebitBalance,
+		check_required_ratio: bool,
 	) -> DispatchResult;
 
 	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: DebitBalance) -> DispatchResult;
@@ -65,6 +69,7 @@ impl<AccountId, CurrencyId, Balance: Default, DebitBalance> RiskManager<AccountI
 		_currency_id: CurrencyId,
 		_collateral_balance: Balance,
 		_debit_balance: DebitBalance,
+		_check_required_ratio: bool,
 	) -> DispatchResult {
 		Ok(())
 	}
@@ -72,6 +77,22 @@ impl<AccountId, CurrencyId, Balance: Default, DebitBalance> RiskManager<AccountI
 	fn check_debit_cap(_currency_id: CurrencyId, _total_debit_balance: DebitBalance) -> DispatchResult {
 		Ok(())
 	}
+}
+
+pub trait AuctionManager<AccountId> {
+	type CurrencyId;
+	type Balance;
+	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
+
+	fn new_collateral_auction(
+		refund_recipient: &AccountId,
+		currency_id: Self::CurrencyId,
+		amount: Self::Balance,
+		target: Self::Balance,
+	) -> DispatchResult;
+	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
+	fn get_total_collateral_in_auction(id: Self::CurrencyId) -> Self::Balance;
+	fn get_total_target_in_auction() -> Self::Balance;
 }
 
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
@@ -210,6 +231,10 @@ pub trait SerpTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
 
+	fn calculate_supply_change(numerator: Self::Balance, denominator: Self::Balance, supply: Self::Balance) -> Self::Balance;
+
+	fn serp_tes_now() -> DispatchResult;
+
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult;
 
@@ -227,15 +252,25 @@ pub trait SerpTreasury<AccountId> {
 
 	/// Serplus ratio for Setheum Foundation's Charity Fund
 	fn get_public_fund_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-	
+
+	fn get_alsharif_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	fn get_treasury_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	fn get_alsharif_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	fn get_treasury_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	fn get_cashdrop_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
 	/// issue system surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn on_serplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	pub fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn on_serpup(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	pub fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+	fn on_serpdown(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
 	/// get the minimum supply of a setcurrency - by key
 	fn get_minimum_supply(currency_id: Self::CurrencyId) -> Self::Balance;
@@ -256,7 +291,7 @@ pub trait SerpTreasury<AccountId> {
 	fn deposit_setter(from: &AccountId, amount: Self::Balance) -> DispatchResult;
 
 	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	pub fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
+	fn claim_cashdrop(currency_id: Self::CurrencyId, who: &AccountId, transfer_amount: Self::Balance) -> DispatchResult;
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
@@ -335,7 +370,7 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 	);
 }
 
-/// An abstraction of cdp treasury for SetMint Protocol.
+/// An abstraction of cdp treasury for Setmint Protocol.
 pub trait CDPTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
@@ -381,7 +416,7 @@ pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
 		currency_id: Self::CurrencyId,
 		supply_amount: Self::Balance,
 		min_target_amount: Self::Balance,
-		maybe_path: Option<&[Self::CurrencyId]>,
+		swap_path: &[Self::CurrencyId],
 		collateral_in_auction: bool,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
@@ -389,7 +424,7 @@ pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
 		currency_id: Self::CurrencyId,
 		max_supply_amount: Self::Balance,
 		target_amount: Self::Balance,
-		maybe_path: Option<&[Self::CurrencyId]>,
+		swap_path: &[Self::CurrencyId],
 		collateral_in_auction: bool,
 	) -> sp_std::result::Result<Self::Balance, DispatchError>;
 
@@ -403,10 +438,19 @@ pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
 }
 
 pub trait PriceProvider<CurrencyId> {
-	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price>;
 	fn get_price(currency_id: CurrencyId) -> Option<Price>;
-	fn lock_price(currency_id: CurrencyId);
-	fn unlock_price(currency_id: CurrencyId);
+	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
+		if let (Some(base_price), Some(quote_price)) = (Self::get_price(base), Self::get_price(quote)) {
+			base_price.checked_div(&quote_price)
+		} else {
+			None
+		}
+	}
+}
+
+pub trait LockablePrice<CurrencyId> {
+	fn lock_price(currency_id: CurrencyId) -> DispatchResult;
+	fn unlock_price(currency_id: CurrencyId) -> DispatchResult;
 }
 
 pub trait ExchangeRateProvider {
@@ -661,4 +705,9 @@ impl CurrencyIdMapping for () {
 	fn decode_evm_address(_v: EvmAddress) -> Option<CurrencyId> {
 		None
 	}
+}
+
+/// Used to interface with the Compound's Cash module
+pub trait CompoundCashTrait<Balance, Moment> {
+	fn set_future_yield(next_cash_yield: Balance, yield_index: u128, timestamp_effective: Moment) -> DispatchResult;
 }

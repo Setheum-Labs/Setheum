@@ -1,6 +1,7 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -23,8 +24,9 @@
 use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{
-	alice, bob, deploy_contracts, erc20_address, eva, AccountId, AdaptedBasicCurrency, Currencies, Event, ExtBuilder,
-	NativeCurrency, Origin, PalletBalances, Runtime, Tokens, EVM, ID_1, NATIVE_CURRENCY_ID, X_TOKEN_ID,
+	alice, bob, deploy_contracts, erc20_address, eva, AccountId, AdaptedBasicCurrency, CouncilAccount, Currencies,
+	DustAccount, Event, ExtBuilder, NativeCurrency, Origin, PalletBalances, Runtime, System, Tokens, DNAR, EVM, ID_1,
+	NATIVE_CURRENCY_ID, X_TOKEN_ID,
 };
 use sp_core::H160;
 use sp_runtime::traits::BadOrigin;
@@ -278,27 +280,27 @@ fn call_event_should_work() {
 			assert_ok!(Currencies::transfer(Some(alice()).into(), bob(), X_TOKEN_ID, 50, false));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 50);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 150);
-			Event::currencies(crate::Event::Transferred(
+			System::assert_last_event(Event::Currencies(crate::Event::Transferred(
 				X_TOKEN_ID,
 				alice(),
 				bob(),
 				50,
-			));
+			)));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::transfer(
 				X_TOKEN_ID,
 				&alice(),
 				&bob(),
-				10
+				10,
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 40);
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &bob()), 160);
-			Event::currencies(crate::Event::Transferred(
+			System::assert_last_event(Event::Currencies(crate::Event::Transferred(
 				X_TOKEN_ID,
 				alice(),
 				bob(),
 				10,
-			));
+			)));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::deposit(
 				X_TOKEN_ID,
@@ -306,7 +308,7 @@ fn call_event_should_work() {
 				100
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 140);
-			Event::currencies(crate::Event::Deposited(X_TOKEN_ID, alice(), 100));
+			System::assert_last_event(Event::Currencies(crate::Event::Deposited(X_TOKEN_ID, alice(), 100)));
 
 			assert_ok!(<Currencies as MultiCurrency<AccountId>>::withdraw(
 				X_TOKEN_ID,
@@ -314,7 +316,7 @@ fn call_event_should_work() {
 				20
 			));
 			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &alice()), 120);
-			Event::currencies(crate::Event::Withdrawn(X_TOKEN_ID, alice(), 20));
+			System::assert_last_event(Event::Currencies(crate::Event::Withdrawn(X_TOKEN_ID, alice(), 20)));
 		});
 }
 
@@ -473,29 +475,37 @@ fn erc20_transfer_should_work() {
 		});
 }
 
-#[test]
-fn erc20_transfer_should_fail() {
-	ExtBuilder::default()
-		.balances(vec![
-			(alice(), NATIVE_CURRENCY_ID, 100000),
-			(bob(), NATIVE_CURRENCY_ID, 100000),
-		])
-		.build()
-		.execute_with(|| {
-			deploy_contracts();
-			<EVM as EVMTrait<AccountId>>::set_origin(alice());
-			<EVM as EVMTrait<AccountId>>::set_origin(bob());
-			// empty address
-			assert!(
-				Currencies::transfer(Origin::signed(alice()), bob(), CurrencyId::Erc20(H160::default()), 100, false).is_err()
-			);
+// #[test]
+// fn erc20_transfer_should_fail() {
+// 	ExtBuilder::default()
+// 		.balances(vec![
+// 			(alice(), NATIVE_CURRENCY_ID, 100000),
+// 			(bob(), NATIVE_CURRENCY_ID, 100000),
+// 		])
+// 		.build()
+// 		.execute_with(|| {
+// 			deploy_contracts();
 
-			// bob can't transfer. bob balance 0
-			assert!(
-				Currencies::transfer(Origin::signed(bob()), alice(), CurrencyId::Erc20(erc20_address()), 1, false).is_err()
-			);
-		});
-}
+// 			// Real origin not found
+// 			assert_noop!(
+// 				Currencies::transfer(Origin::signed(alice()), bob(), CurrencyId::Erc20(erc20_address()), 100, false),
+// 				Error::<Runtime>::RealOriginNotFound
+// 			);
+
+// 			<EVM as EVMTrait<AccountId>>::set_origin(alice());
+// 			<EVM as EVMTrait<AccountId>>::set_origin(bob());
+
+// 			// empty address
+// 			assert!(
+// 				Currencies::transfer(Origin::signed(alice()), bob(), CurrencyId::Erc20(H160::default()), 100, false).is_err()
+// 			);
+
+// 			// bob can't transfer. bob balance 0
+// 			assert!(
+// 				Currencies::transfer(Origin::signed(bob()), alice(), CurrencyId::Erc20(erc20_address()), 1, false).is_err()
+// 			);
+// 		});
+// }
 
 #[test]
 fn erc20_can_reserve_should_work() {
@@ -504,10 +514,7 @@ fn erc20_can_reserve_should_work() {
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
-			assert_eq!(
-				Currencies::can_reserve(CurrencyId::Erc20(erc20_address()), &alice(), 1),
-				true
-			);
+			assert!(Currencies::can_reserve(CurrencyId::Erc20(erc20_address()), &alice(), 1),);
 		});
 }
 
@@ -627,10 +634,7 @@ fn erc20_should_not_slash() {
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
-			assert_eq!(
-				Currencies::can_slash(CurrencyId::Erc20(erc20_address()), &alice(), 1),
-				false
-			);
+			assert!(!Currencies::can_slash(CurrencyId::Erc20(erc20_address()), &alice(), 1),);
 			// calling slash will return 0
 			assert_eq!(Currencies::slash(CurrencyId::Erc20(erc20_address()), &alice(), 1), 0);
 		});
@@ -816,4 +820,162 @@ fn erc20_invalid_operation() {
 				Error::<Runtime>::Erc20InvalidOperation,
 			);
 		});
+}
+
+#[test]
+fn sweep_dust_tokens_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		tokens::Accounts::<Runtime>::insert(
+			bob(),
+			DNAR,
+			tokens::AccountData {
+				free: 1,
+				frozen: 0,
+				reserved: 0,
+			},
+		);
+		tokens::Accounts::<Runtime>::insert(
+			eva(),
+			DNAR,
+			tokens::AccountData {
+				free: 2,
+				frozen: 0,
+				reserved: 0,
+			},
+		);
+		tokens::Accounts::<Runtime>::insert(
+			alice(),
+			DNAR,
+			tokens::AccountData {
+				free: 0,
+				frozen: 1,
+				reserved: 0,
+			},
+		);
+		tokens::Accounts::<Runtime>::insert(
+			DustAccount::get(),
+			DNAR,
+			tokens::AccountData {
+				free: 100,
+				frozen: 0,
+				reserved: 0,
+			},
+		);
+		tokens::TotalIssuance::<Runtime>::insert(DNAR, 104);
+
+		let accounts = vec![bob(), eva(), alice()];
+
+		assert_noop!(
+			Currencies::sweep_dust(Origin::signed(bob()), DNAR, accounts.clone()),
+			DispatchError::BadOrigin
+		);
+
+		assert_ok!(Currencies::sweep_dust(
+			Origin::signed(CouncilAccount::get()),
+			DNAR,
+			accounts.clone()
+		));
+		System::assert_last_event(Event::Currencies(crate::Event::DustSwept(DNAR, bob(), 1)));
+
+		// bob's account is gone
+		assert_eq!(tokens::Accounts::<Runtime>::contains_key(bob(), DNAR), false);
+		assert_eq!(Currencies::free_balance(DNAR, &bob()), 0);
+
+		// eva's account remains, not below ED
+		assert_eq!(Currencies::free_balance(DNAR, &eva()), 2);
+
+		// Dust transferred to dust receiver
+		assert_eq!(Currencies::free_balance(DNAR, &DustAccount::get()), 101);
+		// Total issuance remains the same
+		assert_eq!(Currencies::total_issuance(DNAR), 104);
+	});
+}
+
+#[test]
+fn sweep_dust_native_currency_works() {
+	use frame_support::traits::StoredMap;
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(<Runtime as pallet_balances::Config>::AccountStore::insert(
+			&bob(),
+			pallet_balances::AccountData {
+				free: 1,
+				reserved: 0,
+				misc_frozen: 0,
+				fee_frozen: 0,
+			},
+		));
+		assert_ok!(<Runtime as pallet_balances::Config>::AccountStore::insert(
+			&eva(),
+			pallet_balances::AccountData {
+				free: 2,
+				reserved: 0,
+				misc_frozen: 0,
+				fee_frozen: 0,
+			},
+		));
+		assert_ok!(<Runtime as pallet_balances::Config>::AccountStore::insert(
+			&alice(),
+			pallet_balances::AccountData {
+				free: 0,
+				reserved: 0,
+				misc_frozen: 2,
+				fee_frozen: 2,
+			},
+		));
+		assert_ok!(<Runtime as pallet_balances::Config>::AccountStore::insert(
+			&DustAccount::get(),
+			pallet_balances::AccountData {
+				free: 100,
+				reserved: 0,
+				misc_frozen: 0,
+				fee_frozen: 0,
+			},
+		));
+		pallet_balances::TotalIssuance::<Runtime>::put(104);
+
+		assert_eq!(Currencies::free_balance(NATIVE_CURRENCY_ID, &bob()), 1);
+		assert_eq!(Currencies::free_balance(NATIVE_CURRENCY_ID, &eva()), 2);
+		assert_eq!(Currencies::free_balance(NATIVE_CURRENCY_ID, &alice()), 0);
+		assert_eq!(Currencies::free_balance(NATIVE_CURRENCY_ID, &DustAccount::get()), 100);
+
+		let accounts = vec![bob(), eva(), alice()];
+
+		assert_noop!(
+			Currencies::sweep_dust(Origin::signed(bob()), NATIVE_CURRENCY_ID, accounts.clone()),
+			DispatchError::BadOrigin
+		);
+
+		assert_ok!(Currencies::sweep_dust(
+			Origin::signed(CouncilAccount::get()),
+			NATIVE_CURRENCY_ID,
+			accounts.clone()
+		));
+		System::assert_last_event(Event::Currencies(crate::Event::DustSwept(NATIVE_CURRENCY_ID, bob(), 1)));
+
+		// bob's account is gone
+		assert_eq!(System::account_exists(&bob()), false);
+		assert_eq!(Currencies::free_balance(NATIVE_CURRENCY_ID, &bob()), 0);
+
+		// eva's account remains, not below ED
+		assert_eq!(Currencies::free_balance(NATIVE_CURRENCY_ID, &eva()), 2);
+
+		// Dust transferred to dust receiver
+		assert_eq!(Currencies::free_balance(NATIVE_CURRENCY_ID, &DustAccount::get()), 101);
+		// Total issuance remains the same
+		assert_eq!(Currencies::total_issuance(NATIVE_CURRENCY_ID), 104);
+	});
+}
+
+#[test]
+fn sweep_dust_erc20_not_allowed() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_noop!(
+			Currencies::sweep_dust(
+				Origin::signed(CouncilAccount::get()),
+				CurrencyId::Erc20(erc20_address()),
+				vec![]
+			),
+			Error::<Runtime>::Erc20InvalidOperation
+		);
+	});
 }

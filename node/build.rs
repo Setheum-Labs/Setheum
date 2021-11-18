@@ -1,6 +1,7 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,6 +17,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use substrate_build_script_utils::{generate_cargo_keys, rerun_if_git_head_changed};
+
 fn main() {
-	serml_build_script_utils::generate_cargo_keys();
+	generate_cargo_keys();
+
+	rerun_if_git_head_changed();
 }

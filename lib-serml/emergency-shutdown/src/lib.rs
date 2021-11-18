@@ -1,6 +1,7 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
-// Copyright (C) 2020-2021 Setheum Labs.
+// Copyright (C) 2019-2021 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -25,8 +26,8 @@
 //! to shutdown system is made, emergency shutdown module needs to trigger all
 //! related module to halt, and start a series of operations including close
 //! some user entry, freeze feed prices, run offchain worker to settle
-//! CDPs that have debit, cancel all active auctions module. When debits and gaps are
-//! settled, the stable currency holders are allowed to refund a basket of
+//! CDPs has debit, cancel all active auctions module, when debits and gaps are
+//! settled, the stable currency holder are allowed to refund a basket of
 //! remaining collateral assets.
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -37,7 +38,7 @@ use frame_system::{ensure_signed, pallet_prelude::*};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::{traits::Zero, FixedPointNumber};
 use sp_std::prelude::*;
-use support::{AuctionManager, CDPTreasury, EmergencyShutdown, PriceProvider, Ratio};
+use support::{AuctionManager, CDPTreasury, EmergencyShutdown, LockablePrice, Ratio};
 
 mod mock;
 mod tests;
@@ -55,10 +56,11 @@ pub mod module {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// The list of valid collateral currency types
+		#[pallet::constant]
 		type CollateralCurrencyIds: Get<Vec<CurrencyId>>;
 
 		/// Price source to freeze currencies' price
-		type PriceSource: PriceProvider<CurrencyId>;
+		type PriceSource: LockablePrice<CurrencyId>;
 
 		/// CDP treasury to escrow collateral assets after settlement
 		type CDPTreasury: CDPTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
@@ -68,7 +70,7 @@ pub mod module {
 		type AuctionManagerHandler: AuctionManager<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// The origin which may trigger emergency shutdown. Root can always do
-		/// this. Should be `FinancialCouncil` in Setheum.
+		/// this.
 		type ShutdownOrigin: EnsureOrigin<Self::Origin>;
 
 		/// Weight information for the extrinsics in this module.
@@ -91,6 +93,7 @@ pub mod module {
 
 	#[pallet::event]
 	#[pallet::generate_deposit(fn deposit_event)]
+	#[pallet::metadata(T::AccountId = "AccountId", T::BlockNumber = "BlockNumber")]
 	pub enum Event<T: Config> {
 		/// Emergency shutdown occurs. \[block_number\]
 		Shutdown(T::BlockNumber),
@@ -101,17 +104,21 @@ pub mod module {
 	}
 
 	/// Emergency shutdown flag
+	///
+	/// IsShutdown: bool
 	#[pallet::storage]
 	#[pallet::getter(fn is_shutdown)]
 	pub type IsShutdown<T: Config> = StorageValue<_, bool, ValueQuery>;
 
 	/// Open final redemption flag
+	///
+	/// CanRefund: bool
 	#[pallet::storage]
 	#[pallet::getter(fn can_refund)]
 	pub type CanRefund<T: Config> = StorageValue<_, bool, ValueQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -123,7 +130,7 @@ pub mod module {
 		/// The dispatch origin of this call must be `ShutdownOrigin`.
 		#[pallet::weight((T::WeightInfo::emergency_shutdown(T::CollateralCurrencyIds::get().len() as u32), DispatchClass::Operational))]
 		#[transactional]
-		pub fn emergency_shutdown(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn emergency_shutdown(origin: OriginFor<T>) -> DispatchResult {
 			T::ShutdownOrigin::ensure_origin(origin)?;
 			ensure!(!Self::is_shutdown(), Error::<T>::AlreadyShutdown);
 
@@ -132,12 +139,13 @@ pub mod module {
 
 			// lock price for every collateral
 			for currency_id in collateral_currency_ids {
-				<T as Config>::PriceSource::lock_price(currency_id);
+				// TODO: check the results
+				let _ = <T as Config>::PriceSource::lock_price(currency_id);
 			}
 
 			IsShutdown::<T>::put(true);
-			Self::deposit_event(Event::Shutdown(<frame_system::Module<T>>::block_number()));
-			Ok(().into())
+			Self::deposit_event(Event::Shutdown(<frame_system::Pallet<T>>::block_number()));
+			Ok(())
 		}
 
 		/// Open final redemption if settlement is completed.
@@ -145,9 +153,9 @@ pub mod module {
 		/// The dispatch origin of this call must be `ShutdownOrigin`.
 		#[pallet::weight((T::WeightInfo::open_collateral_refund(), DispatchClass::Operational))]
 		#[transactional]
-		pub fn open_collateral_refund(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn open_collateral_refund(origin: OriginFor<T>) -> DispatchResult {
 			T::ShutdownOrigin::ensure_origin(origin)?;
-			ensure!(Self::is_shutdown(), Error::<T>::MustAfterShutdown); // must be after shutdown
+			ensure!(Self::is_shutdown(), Error::<T>::MustAfterShutdown); // must after shutdown
 
 			// Ensure all debits of CDPs have been settled, and all collateral auction has
 			// been done or canceled. Settle all collaterals type CDPs which have debit,
@@ -162,15 +170,15 @@ pub mod module {
 				);
 				// there's on debit in CDP
 				ensure!(
-					<loans::Module<T>>::total_positions(currency_id).debit.is_zero(),
+					<loans::Pallet<T>>::total_positions(currency_id).debit.is_zero(),
 					Error::<T>::ExistUnhandledDebit,
 				);
 			}
 
 			// Open refund stage
 			CanRefund::<T>::put(true);
-			Self::deposit_event(Event::OpenRefund(<frame_system::Module<T>>::block_number()));
-			Ok(().into())
+			Self::deposit_event(Event::OpenRefund(<frame_system::Pallet<T>>::block_number()));
+			Ok(())
 		}
 
 		/// Refund a basket of remaining collateral assets to caller
@@ -178,10 +186,7 @@ pub mod module {
 		/// - `amount`: stable currency amount used to refund.
 		#[pallet::weight(T::WeightInfo::refund_collaterals(T::CollateralCurrencyIds::get().len() as u32))]
 		#[transactional]
-		pub fn refund_collaterals(
-			origin: OriginFor<T>,
-			#[pallet::compact] amount: Balance,
-		) -> DispatchResultWithPostInfo {
+		pub fn refund_collaterals(origin: OriginFor<T>, #[pallet::compact] amount: Balance) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(Self::can_refund(), Error::<T>::CanNotRefund);
 
@@ -204,7 +209,7 @@ pub mod module {
 			}
 
 			Self::deposit_event(Event::Refund(who, amount, refund_assets));
-			Ok(().into())
+			Ok(())
 		}
 	}
 }

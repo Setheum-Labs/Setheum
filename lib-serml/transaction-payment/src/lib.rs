@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -30,27 +31,28 @@ use frame_support::{
 	dispatch::{DispatchResult, Dispatchable},
 	pallet_prelude::*,
 	traits::{
-		Currency, ExistenceRequirement, Imbalance, ReservableCurrency, OnUnbalanced, WithdrawReasons,
+		Currency, ExistenceRequirement, Imbalance, NamedReservableCurrency, OnUnbalanced, SameOrOther, WithdrawReasons,
 	},
 	weights::{DispatchInfo, GetDispatchInfo, Pays, PostDispatchInfo, WeightToFeeCoefficient, WeightToFeePolynomial},
+	BoundedVec,
 };
 use frame_system::pallet_prelude::*;
 use orml_traits::MultiCurrency;
 use pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo;
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, InclusionFee};
-use primitives::{Balance, CurrencyId};
+use primitives::{Balance, CurrencyId, ReserveIdentifier};
 use sp_runtime::{
 	traits::{
-		CheckedSub, Convert, DispatchInfoOf, PostDispatchInfoOf, SaturatedConversion, Saturating, SignedExtension,
-		UniqueSaturatedInto, Zero,
+		Bounded, CheckedSub, Convert, DispatchInfoOf, One, PostDispatchInfoOf, SaturatedConversion, Saturating,
+		SignedExtension, UniqueSaturatedInto, Zero,
 	},
 	transaction_validity::{
 		InvalidTransaction, TransactionPriority, TransactionValidity, TransactionValidityError, ValidTransaction,
 	},
 	FixedPointNumber, FixedPointOperand, FixedU128, Perquintill,
 };
-use sp_std::{prelude::*, vec};
-use support::{DEXManager, TransactionPayment};
+use sp_std::{convert::TryInto, prelude::*, vec};
+use support::{DEXManager, PriceProvider, Ratio, TransactionPayment};
 
 mod mock;
 mod tests;
@@ -215,24 +217,25 @@ where
 pub mod module {
 	use super::*;
 
+	pub const RESERVE_ID: ReserveIdentifier = ReserveIdentifier::TransactionPayment;
+
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		/// All non-native currency ids in Setheum.
-		#[pallet::constant]
-		type AllNonNativeCurrencyIds: Get<Vec<CurrencyId>>;
-
 		/// Native currency id, the actual received currency type as fee for
 		/// treasury. Should be SETM
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 
-		/// Stable currency id, should be SETUSD
+		/// Default fee swap path list
 		#[pallet::constant]
-		type SetUSDCurrencyId: Get<CurrencyId>;
+		type DefaultFeeSwapPathList: Get<Vec<Vec<CurrencyId>>>;
 
 		/// The currency type in which fees will be paid.
-		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId> + Send + Sync;
-		
+		type Currency: Currency<Self::AccountId>
+			+ NamedReservableCurrency<Self::AccountId, ReserveIdentifier = ReserveIdentifier>
+			+ Send
+			+ Sync;
+
 		/// Currency to transfer, reserve/unreserve, lock/unlock assets
 		type MultiCurrency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
@@ -256,6 +259,17 @@ pub mod module {
 		/// DEX to exchange currencies.
 		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
 
+		/// When swap with DEX, the acceptable max slippage for the price from oracle.
+		#[pallet::constant]
+		type MaxSwapSlippageCompareToOracle: Get<Ratio>;
+
+		/// The limit for length of trading path
+		#[pallet::constant]
+		type TradingPathLimit: Get<u32>;
+
+		/// The price source to provider external market price.
+		type PriceSource: PriceProvider<CurrencyId>;
+
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 	}
@@ -275,6 +289,12 @@ pub mod module {
 		Multiplier::saturating_from_integer(1)
 	}
 
+	#[pallet::error]
+	pub enum Error<T> {
+		/// The swap path is invalid
+		InvalidSwapPath,
+	}
+
 	/// The next fee multiplier.
 	///
 	/// NextFeeMultiplier: Multiplier
@@ -282,15 +302,14 @@ pub mod module {
 	#[pallet::getter(fn next_fee_multiplier)]
 	pub type NextFeeMultiplier<T: Config> = StorageValue<_, Multiplier, ValueQuery, DefaultFeeMultiplier>;
 
-	/// The default fee currency for accounts.
-	///
-	/// DefaultFeeCurrencyId: AccountId => Option<CurrencyId>
+	/// The alternative fee swap path of accounts.
 	#[pallet::storage]
-	#[pallet::getter(fn default_fee_currency_id)]
-	pub type DefaultFeeCurrencyId<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, CurrencyId, OptionQuery>;
+	#[pallet::getter(fn alternative_fee_swap_path)]
+	pub type AlternativeFeeSwapPath<T: Config> =
+		StorageMap<_, Twox64Concat, T::AccountId, BoundedVec<CurrencyId, T::TradingPathLimit>, OptionQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
@@ -336,7 +355,7 @@ pub mod module {
 			target += addition;
 
 			sp_io::TestExternalities::new_empty().execute_with(|| {
-				<frame_system::Module<T>>::set_block_consumed_resources(target, 0);
+				<frame_system::Pallet<T>>::set_block_consumed_resources(target, 0);
 				let next = T::FeeMultiplierUpdate::convert(min_value);
 				assert!(
 					next > min_value,
@@ -350,20 +369,28 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(<T as Config>::WeightInfo::set_default_fee_token())]
-		/// Set default fee token
-		pub fn set_default_fee_token(
+		/// Set fee swap path
+		#[pallet::weight(<T as Config>::WeightInfo::set_alternative_fee_swap_path())]
+		pub fn set_alternative_fee_swap_path(
 			origin: OriginFor<T>,
-			fee_token: Option<CurrencyId>,
-		) -> DispatchResultWithPostInfo {
+			fee_swap_path: Option<Vec<CurrencyId>>,
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			if let Some(currency_id) = fee_token {
-				DefaultFeeCurrencyId::<T>::insert(&who, currency_id);
+			if let Some(path) = fee_swap_path {
+				let path: BoundedVec<CurrencyId, T::TradingPathLimit> =
+					path.try_into().map_err(|_| Error::<T>::InvalidSwapPath)?;
+				ensure!(
+					path.len() > 1
+						&& path[0] != T::NativeCurrencyId::get()
+						&& path[path.len() - 1] == T::NativeCurrencyId::get(),
+					Error::<T>::InvalidSwapPath
+				);
+				AlternativeFeeSwapPath::<T>::insert(&who, &path);
 			} else {
-				DefaultFeeCurrencyId::<T>::remove(&who);
+				AlternativeFeeSwapPath::<T>::remove(&who);
 			}
-			Ok(().into())
+			Ok(())
 		}
 	}
 }
@@ -546,57 +573,62 @@ where
 	}
 
 	pub fn ensure_can_charge_fee(who: &T::AccountId, fee: PalletBalanceOf<T>, reason: WithdrawReasons) {
-		let native_currency_id = T::NativeCurrencyId::get();
-		let stable_currency_id = T::SetUSDCurrencyId::get();
-		let other_currency_ids = T::AllNonNativeCurrencyIds::get();
-		let mut charge_fee_order: Vec<CurrencyId> =
-			if let Some(default_fee_currency_id) = DefaultFeeCurrencyId::<T>::get(who) {
-				vec![vec![default_fee_currency_id, native_currency_id], other_currency_ids].concat()
-			} else {
-				vec![vec![native_currency_id], other_currency_ids].concat()
-			};
-		charge_fee_order.dedup();
-
 		let native_existential_deposit = <T as Config>::Currency::minimum_balance();
 		let total_native = <T as Config>::Currency::total_balance(who);
-		// add the gap amount to keep account alive and have enough fee
-		let fee_and_alive_gap = if total_native < native_existential_deposit {
-			fee.saturating_add(native_existential_deposit.saturating_sub(total_native))
-		} else {
-			fee
-		};
 
-		// iterator charge fee order to get enough fee
-		for currency_id in charge_fee_order {
-			if currency_id == native_currency_id {
-				// check native balance if is enough
-				let native_is_enough = <T as Config>::Currency::free_balance(who)
-					.checked_sub(&fee_and_alive_gap)
-					.map_or(false, |new_free_balance| {
-						<T as Config>::Currency::ensure_can_withdraw(who, fee, reason, new_free_balance).is_ok()
-					});
-				if native_is_enough {
-					// native balance is enough, break iteration
-					break;
-				}
-			} else {
-				// try to use non-native currency to swap native currency by exchange with DEX
-				let trading_path = if currency_id == stable_currency_id {
-					vec![stable_currency_id, native_currency_id]
+		// check native balance if is enough
+		let native_is_enough = fee.saturating_add(native_existential_deposit) <= total_native
+			&& <T as Config>::Currency::free_balance(who)
+				.checked_sub(&fee)
+				.map_or(false, |new_free_balance| {
+					<T as Config>::Currency::ensure_can_withdraw(who, fee, reason, new_free_balance).is_ok()
+				});
+
+		// native is not enough, try swap native to pay fee and gap
+		if !native_is_enough {
+			// add extra gap to keep alive after swap
+			let amount = fee.saturating_add(native_existential_deposit.saturating_sub(total_native));
+			let native_currency_id = T::NativeCurrencyId::get();
+			let default_fee_swap_path_list = T::DefaultFeeSwapPathList::get();
+			let fee_swap_path_list: Vec<Vec<CurrencyId>> =
+				if let Some(trading_path) = AlternativeFeeSwapPath::<T>::get(who) {
+					vec![vec![trading_path.into_inner()], default_fee_swap_path_list].concat()
 				} else {
-					vec![currency_id, stable_currency_id, native_currency_id]
+					default_fee_swap_path_list
 				};
 
-				if T::DEX::swap_with_exact_target(
-					who,
-					&trading_path,
-					fee_and_alive_gap.unique_saturated_into(),
-					<T as Config>::MultiCurrency::free_balance(currency_id, who),
-				)
-				.is_ok()
-				{
-					// successfully swap, break iteration
-					break;
+			for trading_path in fee_swap_path_list {
+				match trading_path.last() {
+					Some(target_currency_id) if *target_currency_id == native_currency_id => {
+						let supply_currency_id = *trading_path.first().expect("these's first guaranteed by match");
+						// calculate the supply limit according to oracle price and the slippage limit,
+						// if oracle price is not avalible, do not limit
+						let max_supply_limit = if let Some(target_price) =
+							T::PriceSource::get_relative_price(*target_currency_id, supply_currency_id)
+						{
+							Ratio::one()
+								.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+								.reciprocal()
+								.unwrap_or_else(Ratio::max_value)
+								.saturating_mul_int(target_price.saturating_mul_int(amount))
+						} else {
+							PalletBalanceOf::<T>::max_value()
+						};
+
+						if T::DEX::swap_with_exact_target(
+							who,
+							&trading_path,
+							amount.unique_saturated_into(),
+							<T as Config>::MultiCurrency::free_balance(supply_currency_id, who)
+								.min(max_supply_limit.unique_saturated_into()),
+						)
+						.is_ok()
+						{
+							// successfully swap, break iteration
+							break;
+						}
+					}
+					_ => {}
 				}
 			}
 		}
@@ -622,7 +654,7 @@ where
 /// Require the transactor pay for themselves and maybe include a tip to
 /// gain additional priority in the queue.
 #[derive(Encode, Decode, Clone, Eq, PartialEq)]
-pub struct ChargeTransactionPayment<T: Config + Send + Sync>(#[codec(compact)] PalletBalanceOf<T>);
+pub struct ChargeTransactionPayment<T: Config + Send + Sync>(#[codec(compact)] pub PalletBalanceOf<T>);
 
 impl<T: Config + Send + Sync> sp_std::fmt::Debug for ChargeTransactionPayment<T> {
 	#[cfg(feature = "std")]
@@ -765,8 +797,9 @@ where
 					// The refund cannot be larger than the up front payed max weight.
 					// `PostDispatchInfo::calc_unspent` guards against such a case.
 					match payed.offset(refund_imbalance) {
-						Ok(actual_payment) => actual_payment,
-						Err(_) => return Err(InvalidTransaction::Payment.into()),
+						SameOrOther::Same(actual_payment) => actual_payment,
+						SameOrOther::None => Default::default(),
+						_ => return Err(InvalidTransaction::Payment.into()),
 					}
 				}
 				// We do not recreate the account using the refund. The up front payment
@@ -790,12 +823,12 @@ where
 	fn reserve_fee(who: &T::AccountId, weight: Weight) -> Result<PalletBalanceOf<T>, DispatchError> {
 		let fee = Pallet::<T>::weight_to_fee(weight);
 		Pallet::<T>::ensure_can_charge_fee(who, fee, WithdrawReasons::TRANSACTION_PAYMENT);
-		<T as Config>::Currency::reserve(&who, fee)?;
+		<T as Config>::Currency::reserve_named(&RESERVE_ID, who, fee)?;
 		Ok(fee)
 	}
 
 	fn unreserve_fee(who: &T::AccountId, fee: PalletBalanceOf<T>) {
-		<T as Config>::Currency::unreserve(&who, fee);
+		<T as Config>::Currency::unreserve_named(&RESERVE_ID, who, fee);
 	}
 
 	fn unreserve_and_charge_fee(
@@ -803,7 +836,7 @@ where
 		weight: Weight,
 	) -> Result<(PalletBalanceOf<T>, NegativeImbalanceOf<T>), TransactionValidityError> {
 		let fee = Pallet::<T>::weight_to_fee(weight);
-		<T as Config>::Currency::unreserve(&who, fee);
+		<T as Config>::Currency::unreserve_named(&RESERVE_ID, who, fee);
 
 		match <T as Config>::Currency::withdraw(
 			who,
@@ -822,12 +855,13 @@ where
 		payed: NegativeImbalanceOf<T>,
 	) -> Result<(), TransactionValidityError> {
 		let refund = Pallet::<T>::weight_to_fee(refund_weight);
-		let actual_payment = match <T as Config>::Currency::deposit_into_existing(&who, refund) {
+		let actual_payment = match <T as Config>::Currency::deposit_into_existing(who, refund) {
 			Ok(refund_imbalance) => {
 				// The refund cannot be larger than the up front payed max weight.
 				match payed.offset(refund_imbalance) {
-					Ok(actual_payment) => actual_payment,
-					Err(_) => return Err(InvalidTransaction::Payment.into()),
+					SameOrOther::Same(actual_payment) => actual_payment,
+					SameOrOther::None => Default::default(),
+					_ => return Err(InvalidTransaction::Payment.into()),
 				}
 			}
 			// We do not recreate the account using the refund. The up front payment
