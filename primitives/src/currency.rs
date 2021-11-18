@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -21,7 +22,7 @@
 use crate::{evm::EvmAddress, *};
 use bstringify::bstringify;
 use codec::{Decode, Encode};
-use sp_runtime::{RuntimeDebug};
+use sp_runtime::RuntimeDebug;
 use sp_std::{
 	convert::{Into, TryFrom},
 	prelude::*,
@@ -144,10 +145,6 @@ macro_rules! create_currency_id {
 					symbol: "LP_SETR_SETUSD".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETR), DexShare::Token(SETUSD))).unwrap(),
 				},
-				Token {
-					symbol: "LP_RENBTC_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(RENBTC), DexShare::Token(SETUSD))).unwrap(),
-				},
 			];
 			tokens.append(&mut lp_tokens);
 
@@ -169,8 +166,6 @@ create_currency_id! {
 		// Tier-2 Tokens (StableCurrencies)
 		SETR("Setter", 12) = 3,
 		SETUSD("SetDollar", 12) = 4,
-		// Foreign Currencies 121 - 255
-		RENBTC("renBTC", 8) = 121,
 	}
 }
 
@@ -183,6 +178,7 @@ pub trait TokenInfo {
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
 pub enum DexShare {
 	Token(TokenSymbol),
 	Erc20(EvmAddress),
@@ -190,6 +186,7 @@ pub enum DexShare {
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
 pub enum CurrencyId {
 	Token(TokenSymbol),
 	DexShare(DexShare, DexShare),
@@ -211,27 +208,27 @@ impl CurrencyId {
 
 	pub fn split_dex_share_currency_id(&self) -> Option<(Self, Self)> {
 		match self {
-			CurrencyId::DexShare(token_symbol_0, token_symbol_1) => {
-				let symbol_0: CurrencyId = (*token_symbol_0).into();
-				let symbol_1: CurrencyId = (*token_symbol_1).into();
-				Some((symbol_0, symbol_1))
+			CurrencyId::DexShare(dex_share_0, dex_share_1) => {
+				let currency_id_0: CurrencyId = (*dex_share_0).into();
+				let currency_id_1: CurrencyId = (*dex_share_1).into();
+				Some((currency_id_0, currency_id_1))
 			}
 			_ => None,
 		}
 	}
 
 	pub fn join_dex_share_currency_id(currency_id_0: Self, currency_id_1: Self) -> Option<Self> {
-		let token_symbol_0 = match currency_id_0 {
+		let dex_share_0 = match currency_id_0 {
 			CurrencyId::Token(symbol) => DexShare::Token(symbol),
 			CurrencyId::Erc20(address) => DexShare::Erc20(address),
 			_ => return None,
 		};
-		let token_symbol_1 = match currency_id_1 {
+		let dex_share_1 = match currency_id_1 {
 			CurrencyId::Token(symbol) => DexShare::Token(symbol),
 			CurrencyId::Erc20(address) => DexShare::Erc20(address),
 			_ => return None,
 		};
-		Some(CurrencyId::DexShare(token_symbol_0, token_symbol_1))
+		Some(CurrencyId::DexShare(dex_share_0, dex_share_1))
 	}
 }
 

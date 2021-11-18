@@ -1,11 +1,10 @@
 .PHONY: configure-rust
 configure-rust:
-	rustup install nightly
-	rustup default stable
-	rustup update
-	rustup update nightly
-	rustup toolchain install nightly
-	rustup target add wasm32-unknown-unknown --toolchain nightly
+	rustup install 1.53.0
+	rustup default 1.53.0
+	rustup toolchain install nightly-2021-05-21
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-21
+	rustup component add clippy
 
 .PHONY: init
 init:
@@ -29,10 +28,10 @@ wasm:
 .PHONY: genesis
 genesis:
 	make release
-	./target/release/setheum-node build-spec --chain testnet-new > resources/chain_spec_testnet.json
-	./target/release/setheum-node build-spec --chain mainnet-new > resources/chain_spec_mainnet.json
-	./target/release/setheum-node build-spec --chain testnet-new --raw > resources/chain_spec_testnet_raw.json
-	./target/release/setheum-node build-spec --chain mainnet-new --raw > resources/chain_spec_mainnet_raw.json
+	./target/release/setheum build-spec --chain testnet-new > resources/chain_spec_testnet.json
+	./target/release/setheum build-spec --chain mainnet-new > resources/chain_spec_mainnet.json
+	./target/release/setheum build-spec --chain testnet-new --raw > resources/chain_spec_testnet_raw.json
+	./target/release/setheum build-spec --chain mainnet-new --raw > resources/chain_spec_mainnet_raw.json
 
 .PHONY: check
 check:
@@ -40,7 +39,7 @@ check:
 
 .PHONY: clippy
 clippy:
-	SKIP_WASM_BUILD=1 cargo clippy -- -D warnings -A clippy::from-over-into -A clippy::type-complexity -A clippy::unnecessary-cast -A clippy::identity-op
+	SKIP_WASM_BUILD=1 cargo clippy -- -D warnings -A clippy::from-over-into -A clippy::unnecessary-cast -A clippy::identity-op -A clippy::upper-case-acronyms
 
 .PHONY: watch
 watch:
@@ -58,6 +57,10 @@ debug:
 run:
 	RUST_BACKTRACE=1 cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
 
+.PHONY: run-nightly
+run:
+	RUST_BACKTRACE=1 cargo +nightly run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
+	
 .PHONY: log
 log:
 	RUST_BACKTRACE=1 RUST_LOG=debug cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
@@ -74,11 +77,23 @@ bench:
 doc:
 	SKIP_WASM_BUILD=1 cargo doc --open
 
-.PHONY: update
+.PHONY: cargo-update
 cargo-update:
 	cargo update
 	cargo update --manifest-path node/Cargo.toml
 	make test
+
+.PHONY: fork
+fork:
+	npm i --prefix fork fork
+ifeq (,$(wildcard fork/data))
+	mkdir fork/data
+endif
+	cp target/release/setheum fork/data/binary
+	cp target/release/wbuild/setheum-runtime/setheum_runtime.compact.wasm fork/data/runtime.wasm
+	cp resources/types.json fork/data/schema.json
+	cp resources/chain_spec_$(chain)_raw.json fork/data/genesis.json
+	cd fork && npm start && cd ..
 
 .PHONY: generate-tokens
 generate-tokens:

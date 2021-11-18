@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -27,12 +28,13 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::collapsible_if)]
 
-use frame_support::{debug, pallet_prelude::*, transactional};
+use codec::MaxEncodedLen;
+use frame_support::{log, pallet_prelude::*, transactional, PalletId};
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, Zero},
-	DispatchResult, ModuleId, RuntimeDebug,
+	ArithmeticError, DispatchResult, RuntimeDebug,
 };
 use sp_std::{convert::TryInto, result};
 use support::{CDPTreasury, RiskManager};
@@ -43,7 +45,7 @@ mod tests;
 pub use module::*;
 
 /// A collateralized debit position.
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default)]
+#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default, MaxEncodedLen)]
 pub struct Position {
 	/// The amount of collateral.
 	pub collateral: Balance,
@@ -81,19 +83,12 @@ pub mod module {
 
 		/// The loan's module id, keep all collaterals of CDPs.
 		#[pallet::constant]
-		type ModuleId: Get<ModuleId>;
-
-		/// Event handler which calls when update loan.
-		type OnUpdateLoan: Happened<(Self::AccountId, CurrencyId, Amount, Balance)>;
+		type PalletId: Get<PalletId>;
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
 		AmountConvertFailed,
-		DebitOverflow,
-		DebitTooLow,
-		CollateralOverflow,
-		CollateralTooLow,
 	}
 
 	#[pallet::event]
@@ -129,7 +124,7 @@ pub mod module {
 	pub type TotalPositions<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Position, ValueQuery>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -140,7 +135,7 @@ pub mod module {
 
 impl<T: Config> Pallet<T> {
 	pub fn account_id() -> T::AccountId {
-		T::ModuleId::get().into_account()
+		T::PalletId::get().into_account()
 	}
 
 	/// confiscate collateral and debit to cdp treasury.
@@ -166,7 +161,7 @@ impl<T: Config> Pallet<T> {
 
 		// update loan
 		Self::update_loan(
-			&who,
+			who,
 			currency_id,
 			collateral_adjustment.saturating_neg(),
 			debit_adjustment.saturating_neg(),
@@ -192,6 +187,7 @@ impl<T: Config> Pallet<T> {
 		debit_adjustment: Amount,
 	) -> DispatchResult {
 		// mutate collateral and debit
+		// Note: if a new position, will inc consumer
 		Self::update_loan(who, currency_id, collateral_adjustment, debit_adjustment)?;
 
 		let collateral_balance_adjustment = Self::balance_try_from_amount_abs(collateral_adjustment)?;
@@ -218,7 +214,12 @@ impl<T: Config> Pallet<T> {
 
 		// ensure pass risk check
 		let Position { collateral, debit } = Self::positions(currency_id, who);
-		T::RiskManager::check_position_valid(currency_id, collateral, debit)?;
+		T::RiskManager::check_position_valid(
+			currency_id,
+			collateral,
+			debit,
+			collateral_adjustment.is_negative() || debit_adjustment.is_positive(),
+		)?;
 
 		Self::deposit_event(Event::PositionUpdated(
 			who.clone(),
@@ -246,7 +247,7 @@ impl<T: Config> Pallet<T> {
 			.expect("existing debit balance cannot overflow; qed");
 
 		// check new position
-		T::RiskManager::check_position_valid(currency_id, new_to_collateral_balance, new_to_debit_balance)?;
+		T::RiskManager::check_position_valid(currency_id, new_to_collateral_balance, new_to_debit_balance, true)?;
 
 		// balance -> amount
 		let collateral_adjustment = Self::amount_try_from_balance(collateral)?;
@@ -279,16 +280,16 @@ impl<T: Config> Pallet<T> {
 			let new_collateral = if collateral_adjustment.is_positive() {
 				p.collateral
 					.checked_add(collateral_balance)
-					.ok_or(Error::<T>::CollateralOverflow)
+					.ok_or(ArithmeticError::Overflow)
 			} else {
 				p.collateral
 					.checked_sub(collateral_balance)
-					.ok_or(Error::<T>::CollateralTooLow)
+					.ok_or(ArithmeticError::Underflow)
 			}?;
 			let new_debit = if debit_adjustment.is_positive() {
-				p.debit.checked_add(debit_balance).ok_or(Error::<T>::DebitOverflow)
+				p.debit.checked_add(debit_balance).ok_or(ArithmeticError::Overflow)
 			} else {
-				p.debit.checked_sub(debit_balance).ok_or(Error::<T>::DebitTooLow)
+				p.debit.checked_sub(debit_balance).ok_or(ArithmeticError::Underflow)
 			}?;
 
 			// increase account ref if new position
@@ -297,7 +298,7 @@ impl<T: Config> Pallet<T> {
 					// No providers for the locks. This is impossible under normal circumstances
 					// since the funds that are under the lock will themselves be stored in the
 					// account and therefore will need a reference.
-					debug::warn!(
+					log::warn!(
 						"Warning: Attempt to introduce lock consumer reference, yet no providers. \
 						This is unexpected but should be safe."
 					);
@@ -305,8 +306,6 @@ impl<T: Config> Pallet<T> {
 			}
 
 			p.collateral = new_collateral;
-
-			T::OnUpdateLoan::happened(&(who.clone(), currency_id, debit_adjustment, p.debit));
 			p.debit = new_debit;
 
 			if p.collateral.is_zero() && p.debit.is_zero() {
@@ -327,24 +326,24 @@ impl<T: Config> Pallet<T> {
 				total_positions
 					.collateral
 					.checked_add(collateral_balance)
-					.ok_or(Error::<T>::CollateralOverflow)
+					.ok_or(ArithmeticError::Overflow)
 			} else {
 				total_positions
 					.collateral
 					.checked_sub(collateral_balance)
-					.ok_or(Error::<T>::CollateralTooLow)
+					.ok_or(ArithmeticError::Underflow)
 			}?;
 
 			total_positions.debit = if debit_adjustment.is_positive() {
 				total_positions
 					.debit
 					.checked_add(debit_balance)
-					.ok_or(Error::<T>::DebitOverflow)
+					.ok_or(ArithmeticError::Overflow)
 			} else {
 				total_positions
 					.debit
 					.checked_sub(debit_balance)
-					.ok_or(Error::<T>::DebitTooLow)
+					.ok_or(ArithmeticError::Underflow)
 			}?;
 
 			Ok(())

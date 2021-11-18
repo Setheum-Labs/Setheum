@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -23,19 +24,19 @@ use super::*;
 use crate as nft;
 use codec::{Decode, Encode};
 use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{Filter, InstanceFilter},
+	construct_runtime, ord_parameter_types, parameter_types,
+	traits::{Contains, InstanceFilter},
 	RuntimeDebug,
 };
+use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{evm::EvmAddress, Amount, BlockNumber, CurrencyId, TokenSymbol};
+use primitives::{Amount, Balance, BlockNumber, CurrencyId, ReserveIdentifier, TokenSymbol};
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
-	DispatchError, DispatchResult,
 };
-use support::{mocks::MockAddressMapping, EVMBridge, InvokeContext, SerpTreasury};
+use support::{mocks::MockAddressMapping, SerpTreasury};
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -67,16 +68,20 @@ impl frame_system::Config for Runtime {
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
 	type OnSetCode = ();
-}parameter_types! {
+}
+parameter_types! {
 	pub const ExistentialDeposit: u64 = 1;
+	pub const MaxReserves: u32 = 50;
 }
 impl pallet_balances::Config for Runtime {
 	type Balance = Balance;
 	type Event = Event;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Module<Runtime>;
+	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
 }
 impl pallet_utility::Config for Runtime {
@@ -92,7 +97,7 @@ parameter_types! {
 	pub const AnnouncementDepositBase: u64 = 1;
 	pub const AnnouncementDepositFactor: u64 = 1;
 }
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen)]
 pub enum ProxyType {
 	Any,
 	JustTransfer,
@@ -116,8 +121,8 @@ impl InstanceFilter<Call> for ProxyType {
 	}
 }
 pub struct BaseFilter;
-impl Filter<Call> for BaseFilter {
-	fn filter(c: &Call) -> bool {
+impl Contains<Call> for BaseFilter {
+	fn contains(c: &Call) -> bool {
 		match *c {
 			// Remark is used as a no-op call in the benchmarking
 			Call::System(SystemCall::remark(_)) => true,
@@ -149,6 +154,10 @@ parameter_type_with_key! {
 	};
 }
 
+ord_parameter_types! {
+	pub const One: AccountId = ALICE;
+}
+
 impl orml_tokens::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
@@ -161,47 +170,22 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = ();
 }
 
-pub struct MockEVMBridge;
-impl<AccountId, Balance> EVMBridge<AccountId, Balance> for MockEVMBridge
-where
-	AccountId: Default,
-	Balance: Default,
-{
-	fn name(_context: InvokeContext) -> Result<Vec<u8>, DispatchError> {
-		Ok(Default::default())
-	}
-	
-	fn symbol(_context: InvokeContext) -> Result<Vec<u8>, DispatchError> {
-		Ok(Default::default())
-	}
-	
-	fn decimals(_context: InvokeContext) -> Result<u8, DispatchError> {
-		Ok(Default::default())
-	}
-
-	fn total_supply(_context: InvokeContext) -> Result<Balance, DispatchError> {
-		Ok(Default::default())
-	}
-
-	fn balance_of(_context: InvokeContext, _address: EvmAddress) -> Result<Balance, DispatchError> {
-		Ok(Default::default())
-	}
-
-	fn transfer(_context: InvokeContext, _to: EvmAddress, _value: Balance) -> DispatchResult {
-		Ok(())
-	}
-
-	fn get_origin() -> Option<AccountId> {
-		None
-	}
-
-	fn set_origin(_origin: AccountId) {}
-}
-
 pub struct MockSerpTreasury;
 impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+
+	fn calculate_supply_change(
+		_numerator: Balance,
+		_denominator: Balance,
+		_supply: Balance
+	) -> Self::Balance{
+		unimplemented!()
+	}
+
+	fn serp_tes_now() -> DispatchResult{
+		unimplemented!()
+	}
 
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult {
@@ -248,6 +232,41 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 	
+	fn get_alsharif_fund_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_alsharif_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_cashdrop_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serplus(
 		_currency_id: CurrencyId,
@@ -331,10 +350,20 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 }
 
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETM;
+	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
+}
+
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+
+parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+	];
 }
 
 impl module_currencies::Config for Runtime {
@@ -342,32 +371,45 @@ impl module_currencies::Config for Runtime {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = NativeCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyIds = ();
+	type StableCurrencyIds = StableCurrencyIds;
 	type SerpTreasury = MockSerpTreasury;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
-	type EVMBridge = MockEVMBridge;
+	type EVMBridge = ();
+	type SweepOrigin = EnsureSignedBy<One, AccountId>;
+	type OnDust = ();
 }
 
 parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
-	pub const NftModuleId: ModuleId = ModuleId(*b"set/sNFT");
+	pub const DataDepositPerByte: Balance = 10;
+	pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
+	pub MaxAttributesBytes: u32 = 10;
 }
 impl Config for Runtime {
 	type Event = Event;
+	type Currency = Balances;
 	type CreateClassDeposit = CreateClassDeposit;
 	type CreateTokenDeposit = CreateTokenDeposit;
-	type ModuleId = NftModuleId;
-	type Currency = NativeCurrency;
+	type DataDepositPerByte = DataDepositPerByte;
+	type PalletId = NftPalletId;
+	type MaxAttributesBytes = MaxAttributesBytes;
 	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const MaxClassMetadata: u32 = 1024;
+	pub const MaxTokenMetadata: u32 = 1024;
 }
 
 impl orml_nft::Config for Runtime {
 	type ClassId = u32;
 	type TokenId = u64;
-	type ClassData = ClassData;
-	type TokenData = TokenData;
+	type ClassData = ClassData<Balance>;
+	type TokenData = TokenData<Balance>;
+	type MaxClassMetadata = MaxClassMetadata;
+	type MaxTokenMetadata = MaxTokenMetadata;
 }
 
 use frame_system::Call as SystemCall;
@@ -381,14 +423,14 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Module, Call, Config, Storage, Event<T>},
-		NFTModule: nft::{Module, Call, Event<T>},
-		OrmlNFT: orml_nft::{Module, Storage, Config<T>},
-		Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-		Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
-		Utility: pallet_utility::{Module, Call, Event},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		Currency: module_currencies::{Module, Call, Event<T>},
+		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		NFTModule: nft::{Pallet, Call, Event<T>},
+		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
+		Utility: pallet_utility::{Pallet, Call, Event},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		Currency: module_currencies::{Pallet, Call, Event<T>},
 	}
 );
 
@@ -422,11 +464,4 @@ impl ExtBuilder {
 		ext.execute_with(|| System::set_block_number(1));
 		ext
 	}
-}
-
-pub fn last_event() -> Event {
-	frame_system::Module::<Runtime>::events()
-		.pop()
-		.expect("Event expected")
-		.event
 }

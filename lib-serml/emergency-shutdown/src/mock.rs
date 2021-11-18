@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -21,7 +22,7 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
 use primitives::{Amount, TokenSymbol};
@@ -29,10 +30,9 @@ use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{Convert, IdentityLookup},
-	DispatchResult, ModuleId,
+	DispatchResult,
 };
-use sp_std::cell::RefCell;
-use support::{AuctionManager, Price, PriceProvider, SerpTreasury};
+use support::{AuctionManager, SerpTreasury};
 
 pub type AccountId = u128;
 pub type AuctionId = u32;
@@ -42,8 +42,8 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
 
 mod emergency_shutdown {
 	pub use super::super::*;
@@ -78,6 +78,7 @@ impl frame_system::Config for Runtime {
 	type SS58Prefix = ();
 	type OnSetCode = ();
 }
+
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
@@ -105,8 +106,10 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Module<Runtime>;
+	type AccountStore = frame_system::Pallet<Runtime>;
 	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
@@ -127,12 +130,12 @@ impl orml_currencies::Config for Runtime {
 pub struct MockConvert;
 impl Convert<(CurrencyId, Balance), Balance> for MockConvert {
 	fn convert(a: (CurrencyId, Balance)) -> Balance {
-		a.1.into()
+		a.1
 	}
 }
 
 parameter_types! {
-	pub const LoansModuleId: ModuleId = ModuleId(*b"set/loan");
+	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");
 }
 
 impl loans::Config for Runtime {
@@ -141,57 +144,45 @@ impl loans::Config for Runtime {
 	type Currency = Tokens;
 	type RiskManager = ();
 	type CDPTreasury = CDPTreasuryModule;
-	type ModuleId = LoansModuleId;
-	type OnUpdateLoan = ();
+	type PalletId = LoansPalletId;
 }
 
-pub struct MockPriceSource;
-impl PriceProvider<CurrencyId> for MockPriceSource {
-	fn get_relative_price(_base: CurrencyId, _quote: CurrencyId) -> Option<Price> {
-		Some(Price::one())
+pub struct MockLockablePrice;
+impl LockablePrice<CurrencyId> for MockLockablePrice {
+	fn lock_price(_currency_id: CurrencyId) -> DispatchResult {
+		Ok(())
 	}
 
-	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
-		Some(Price::one())
+	fn unlock_price(_currency_id: CurrencyId) -> DispatchResult {
+		Ok(())
 	}
-
-	fn lock_price(_currency_id: CurrencyId) {}
-
-	fn unlock_price(_currency_id: CurrencyId) {}
-}
-
-thread_local! {
-	pub static TOTAL_COLLATERAL_AUCTION: RefCell<u32> = RefCell::new(0);
-	pub static TOTAL_COLLATERAL_IN_AUCTION: RefCell<Balance> = RefCell::new(0);
 }
 
 pub struct MockAuctionManager;
 impl AuctionManager<AccountId> for MockAuctionManager {
-	type CurrencyId = CurrencyId;
 	type Balance = Balance;
+	type CurrencyId = CurrencyId;
 	type AuctionId = AuctionId;
 
 	fn new_collateral_auction(
 		_refund_recipient: &AccountId,
 		_currency_id: Self::CurrencyId,
-		amount: Self::Balance,
+		_amount: Self::Balance,
 		_target: Self::Balance,
 	) -> DispatchResult {
-		TOTAL_COLLATERAL_AUCTION.with(|v| *v.borrow_mut() += 1);
-		TOTAL_COLLATERAL_IN_AUCTION.with(|v| *v.borrow_mut() += amount);
-		Ok(())
+		unimplemented!()
 	}
 
 	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
 		unimplemented!()
 	}
 
-	fn get_total_collateral_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		TOTAL_COLLATERAL_IN_AUCTION.with(|v| *v.borrow_mut())
-	}
-
 	fn get_total_target_in_auction() -> Self::Balance {
 		unimplemented!()
+	}
+
+	fn get_total_collateral_in_auction(_id: Self::CurrencyId) -> Self::Balance {
+		Default::default()
 	}
 }
 
@@ -199,6 +190,18 @@ pub struct MockSerpTreasury;
 impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+
+	fn calculate_supply_change(
+		_numerator: Balance,
+		_denominator: Balance,
+		_supply: Balance
+	) -> Self::Balance{
+		unimplemented!()
+	}
+
+	fn serp_tes_now() -> DispatchResult{
+		unimplemented!()
+	}
 
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult {
@@ -245,6 +248,41 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 	
+	fn get_alsharif_fund_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_alsharif_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_cashdrop_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serplus(
 		_currency_id: CurrencyId,
@@ -335,7 +373,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
+	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 }
 
 impl cdp_treasury::Config for Runtime {
@@ -346,19 +384,19 @@ impl cdp_treasury::Config for Runtime {
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = ();
 	type MaxAuctionsCount = MaxAuctionsCount;
+	type PalletId = CDPTreasuryPalletId;
 	type SerpTreasury = MockSerpTreasury;
-	type ModuleId = CDPTreasuryModuleId;
 	type WeightInfo = ();
 }
 
 ord_parameter_types! {
-	pub const CollateralCurrencyIds: Vec<CurrencyId> = vec![BTC, DNAR];
+	pub const CollateralCurrencyIds: Vec<CurrencyId> = vec![SERP, DNAR];
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type CollateralCurrencyIds = CollateralCurrencyIds;
-	type PriceSource = MockPriceSource;
+	type PriceSource = MockLockablePrice;
 	type CDPTreasury = CDPTreasuryModule;
 	type AuctionManagerHandler = MockAuctionManager;
 	type ShutdownOrigin = EnsureSignedBy<One, AccountId>;
@@ -374,26 +412,26 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		EmergencyShutdownModule: emergency_shutdown::{Module, Storage, Call, Event<T>},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
-		PalletBalances: pallet_balances::{Module, Call, Storage, Event<T>},
-		Currencies: orml_currencies::{Module, Call, Event<T>},
-		CDPTreasuryModule: cdp_treasury::{Module, Storage, Call, Event<T>},
-		Loans: loans::{Module, Storage, Call, Event<T>},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		EmergencyShutdownModule: emergency_shutdown::{Pallet, Storage, Call, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
+		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
+		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		CDPTreasuryModule: cdp_treasury::{Pallet, Storage, Call, Event<T>},
+		Loans: loans::{Pallet, Storage, Call, Event<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
-				(ALICE, BTC, 1000),
-				(BOB, BTC, 1000),
+			balances: vec![
+				(ALICE, SERP, 1000),
+				(BOB, SERP, 1000),
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
 			],
@@ -408,7 +446,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

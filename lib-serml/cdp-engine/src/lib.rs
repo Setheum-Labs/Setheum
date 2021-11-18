@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -20,7 +21,7 @@
 //!
 //! ## Overview
 //!
-//! The core module of SetMint protocol. CDP engine is responsible for handle
+//! The core module of Setmint protocol. CDP engine is responsible for handle
 //! internal processes about CDPs, including liquidation, settlement and risk
 //! management.
 
@@ -28,7 +29,7 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use frame_support::{log, pallet_prelude::*, traits::UnixTime, transactional};
+use frame_support::{log, pallet_prelude::*, transactional};
 use frame_system::{
 	offchain::{SendTransactionTypes, SubmitTransaction},
 	pallet_prelude::*,
@@ -47,7 +48,7 @@ use sp_runtime::{
 		storage_lock::{StorageLock, Time},
 		Duration,
 	},
-	traits::{Bounded, Convert, One, Saturating, StaticLookup, UniqueSaturatedInto, Zero},
+	traits::{Bounded, Convert, One, Saturating, StaticLookup, Zero},
 	transaction_validity::{
 		InvalidTransaction, TransactionPriority, TransactionSource, TransactionValidity, ValidTransaction,
 	},
@@ -135,26 +136,27 @@ pub mod module {
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		/// The list of valid collateral currency types
+		#[pallet::constant]
 		type CollateralCurrencyIds: Get<Vec<CurrencyId>>;
 
-		#[pallet::constant]
 		/// The default liquidation ratio for all collateral types of CDP
+		#[pallet::constant]
 		type DefaultLiquidationRatio: Get<Ratio>;
 
-		#[pallet::constant]
 		/// The default debit exchange rate for all collateral types
+		#[pallet::constant]
 		type DefaultDebitExchangeRate: Get<ExchangeRate>;
 
-		#[pallet::constant]
 		/// The default liquidation penalty rate when liquidate unsafe CDP
+		#[pallet::constant]
 		type DefaultLiquidationPenalty: Get<Rate>;
 
-		#[pallet::constant]
 		/// The minimum debit value to avoid debit dust
+		#[pallet::constant]
 		type MinimumDebitValue: Get<Balance>;
 
+		/// Stablecoin currency id
 		#[pallet::constant]
-		/// Stablecoin currency id = SETUSD
 		type GetSetUSDId: Get<CurrencyId>;
 
 		/// When swap with DEX, the acceptable max slippage for the price from oracle.
@@ -167,11 +169,11 @@ pub mod module {
 		/// The price source of all types of currencies related to CDP
 		type PriceSource: PriceProvider<CurrencyId>;
 
-		#[pallet::constant]
 		/// A configuration for base priority of unsigned transactions.
 		///
 		/// This is exposed so that it can be tuned for particular runtime, when
 		/// multiple modules send unsigned transactions.
+		#[pallet::constant]
 		type UnsignedPriority: Get<TransactionPriority>;
 
 		/// Emergency shutdown.
@@ -179,7 +181,7 @@ pub mod module {
 
 		/// The default parital path list for CDP engine to swap collateral to stable,
 		/// Note: the path is parital, the whole swap path is collateral currency id concat
-		/// the partial path. And the list is sorted, CDP engine tries to swap stable by order.
+		/// the partial path. And the list is sorted, CDP engine trys to swap stable by order.
 		#[pallet::constant]
 		type DefaultSwapParitalPathList: Get<Vec<Vec<CurrencyId>>>;
 
@@ -218,6 +220,7 @@ pub mod module {
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
+	#[pallet::metadata(T::AccountId = "AccountId", Option<Rate> = "OptionRate", Option<Ratio> = "OptionRatio")]
 	pub enum Event<T: Config> {
 		/// Liquidate the unsafe CDP. \[collateral_type, owner,
 		/// collateral_amount, bad_debt_value, liquidation_strategy\]
@@ -312,14 +315,14 @@ pub mod module {
 		/// submit unsigned tx to trigger liquidation or settlement.
 		fn offchain_worker(now: T::BlockNumber) {
 			if let Err(e) = Self::_offchain_worker() {
-				debug::info!(
+				log::info!(
 					target: "cdp-engine offchain worker",
 					"cannot run offchain worker at {:?}: {:?}",
 					now,
 					e,
 				);
 			} else {
-				debug::debug!(
+				log::debug!(
 					target: "cdp-engine offchain worker",
 					"offchain worker start at block: {:?} already done!",
 					now,
@@ -382,12 +385,12 @@ pub mod module {
 		/// The dispatch origin of this call must be `UpdateOrigin`.
 		///
 		/// - `currency_id`: collateral type.
-		/// - `liquidation_ratio`: liquidation ratio, `None` means do not
-		///   update, `Some(None)` means update it to `None`.
-		/// - `liquidation_penalty`: liquidation penalty, `None` means do not
-		///   update, `Some(None)` means update it to `None`.
-		/// - `required_collateral_ratio`: required collateral ratio, `None`
-		///   means do not update, `Some(None)` means update it to `None`.
+		/// - `liquidation_ratio`: liquidation ratio, `None` means do not update, `Some(None)` means
+		///   update it to `None`.
+		/// - `liquidation_penalty`: liquidation penalty, `None` means do not update, `Some(None)`
+		///   means update it to `None`.
+		/// - `required_collateral_ratio`: required collateral ratio, `None` means do not update,
+		///   `Some(None)` means update it to `None`.
 		/// - `maximum_total_debit_value`: maximum total debit value.
 		#[pallet::weight((<T as Config>::WeightInfo::set_collateral_params(), DispatchClass::Operational))]
 		#[transactional]

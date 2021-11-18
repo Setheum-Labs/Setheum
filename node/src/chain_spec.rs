@@ -1,11 +1,28 @@
 use sp_core::{Pair, Public, sr25519, H160, Bytes};
 use setheum_runtime::{
-	AccountId, AirDropConfig, AirDropCurrencyId, CurrencyId, BabeConfig, Balance, BalancesConfig, BlockNumber, GenesisConfig, GrandpaConfig,
-	SudoConfig, SystemConfig, IndicesConfig, EvmConfig, TradingPair, EnabledTradingPairs, StakingConfig, SessionConfig, AuthorityDiscoveryConfig,
-	WASM_BINARY, dollar, get_all_module_accounts, SS58Prefix, TokenSymbol, TokensConfig, StakerStatus, ImOnlineId, Period, AuthorityDiscoveryId,
-	CdpEngineConfig, CdpTreasuryConfig, SystemConfig, NativeTokenExistentialDeposit, opaque::SessionKeys, RenVmBridgeConfig, SessionManagerConfig,
-	DexConfig, ShuraCouncilMembershipConfig, SudoConfig, OrmlNFTConfig, FinancialCouncilMembershipConfig, PublicFundCouncilMembershipConfig,
-	TechnicalCommitteeMembershipConfig, OperatorMembershipSetheumConfig, SETM, SERP, DNAR, SETR, SETUSD, RENBTC,
+	//
+	AccountId, AirDropConfig, AirDropCurrencyId, CurrencyId,
+	//
+	BabeConfig, BalancesConfig, GenesisConfig, SystemConfig,
+	SS58Prefix, paque::SessionKeys, get_all_module_accounts,
+	ImOnlineId, IndicesConfig, SessionConfig, StakingConfig,
+	AuthorityDiscoveryId, get_all_module_accounts, EVMConfig,
+	AuthorityDiscoveryConfig, StakerStatus, WASM_BINARY,
+	//
+	SudoConfig,
+	ShuraCouncilMembershipConfig,
+	FinancialCouncilMembershipConfig,
+	PublicFundCouncilMembershipConfig,
+	AlSharifFundCouncilMembershipConfig,
+	FoundationFundCouncilMembershipConfig,
+	TechnicalCommitteeMembershipConfig,
+	OperatorMembershipSetheumConfig,
+	//
+	TradingPair, EnabledTradingPairs, DexConfig,
+	TokenSymbol, TokensConfig, OrmlNFTConfig,
+	MaxNativeTokenExistentialDeposit, dollar,
+	//
+	SETM, SERP, DNAR, SETR, SETUSD,
 };
 use primitives::TokenInfo;
 use sp_consensus_babe::AuthorityId as BabeId;
@@ -23,6 +40,7 @@ use hex_literal::hex;
 use sp_core::{crypto::UncheckedInto, bytes::from_hex};
 
 use setheum_primitives::{AccountPublic, Balance, Nonce};
+use setheum_runtime::BABE_GENESIS_EPOCH_CONFIG;
 
 // The URL for the telemetry server.
 const TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -100,10 +118,8 @@ pub fn development_config() -> Result<ChainSpec, String> {
 			vec![
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie"),
 				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
 			],
 			// Multicurrency Pre-funded accounts
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -129,7 +145,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Name
 		"Local Testnet",
 		// ID
-		"setheum_local_testnet",
+		"local_testnet",
 		ChainType::Local,
 		move || testnet_genesis(
 			wasm_binary,
@@ -203,36 +219,51 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 				//Auth1 Validator
 				(
 					// stash 
-					hex!["6c08c1f8e0cf1e200b24b43fca4c4e407b963b6b1e459d1aeff80c566a1da469"].into(),
+					hex!["b2902b07056f7365bc22bf7e69c4e4fdba03e6af9c73ca6eb1703ccbc0248857"].into(),
 					// controller
-					hex!["864eff3160ff8609c030316867630850a9d6e35c47d3efe54de44264fef7665e"].into(),
+					hex!["cc2ea454844cc1a2e821198d9e0ce1de1aee7d014af5dd3404fc8199df89f821"].into(),
 					// grandpa 
-					hex!["dc41d9325da71d90806d727b826d125cd523da28eb39ab048ab983d7bb74fb32"].unchecked_into(),
+					hex!["607712f6581e191b69046427a7e33c4713e96b4ae4654e2467c74279dc20beb2"].unchecked_into(),
 					// babe 
-					hex!["8a688a748fd39bedaa507c942600c40478c2082dee17b8263613fc3c086b0c53"].unchecked_into(),
+					hex!["ba630d2df03743a6441ab9221a25fc00a62e6f3b56c6920634eebb72a15fc90f"].unchecked_into(),
 					// im-online
-					hex!["3a4e80c48718f72326b49c4ae80199d35285643751e75a743f30b7561b538676"].unchecked_into(),
+					hex!["72c0d10c9cd6e44ccf5e7acf0bb1b7c4d6987dda55a36343f3d45b54ad8bfe32"].unchecked_into(),
 					// authority-discovery
-					hex!["68d39d0d386ed4e9dd7e280d62e7dc9cf61dc508ef25efb74b6d740fa4dde463"].unchecked_into(),
+					hex!["f287831caa53bc1dce6f0d676ab43d248921a4c34535be8f7d7d153eda29dc3f"].unchecked_into(),
 				),
-				//Auth1 Validator
+				//Auth2 Validator
 				(
 					// stash 
-					hex!["6c08c1f8e0cf1e200b24b43fca4c4e407b963b6b1e459d1aeff80c566a1da469"].into(),
+					hex!["06ee8fc0e34e40f6f2c98328d70874c6dd7d7989159634c8c87301efbcbe4470"].into(),
 					// controller
-					hex!["864eff3160ff8609c030316867630850a9d6e35c47d3efe54de44264fef7665e"].into(),
+					hex!["9cf9f939c16ef458e677472ff113af53e7fb9139244fcfa6fccb765aa8831019"].into(),
 					// grandpa 
-					hex!["dc41d9325da71d90806d727b826d125cd523da28eb39ab048ab983d7bb74fb32"].unchecked_into(),
+					hex!["db6d2cb33abebdc024a14ef7bfbc68823660be8d1acac66770e406e484de3184"].unchecked_into(),
 					// babe 
-					hex!["8a688a748fd39bedaa507c942600c40478c2082dee17b8263613fc3c086b0c53"].unchecked_into(),
+					hex!["d09f879b3273d2cedab83fa741cdac328679c98914dc8dc07e359e19f0379844"].unchecked_into(),
 					// im-online
-					hex!["3a4e80c48718f72326b49c4ae80199d35285643751e75a743f30b7561b538676"].unchecked_into(),
+					hex!["8c38deff9ab24a8c49e2b4fbdc963af7cbf06f99d6aabfaa6e50bfe6ae0d071d"].unchecked_into(),
 					// authority-discovery
-					hex!["68d39d0d386ed4e9dd7e280d62e7dc9cf61dc508ef25efb74b6d740fa4dde463"].unchecked_into(),
+					hex!["dcc1644697e98d4171a29074a4bfaeb49b39b6ea91a8ec5e049d23ea3c4a4134"].unchecked_into(),
+				),
+				//Auth3 Validator
+				(
+					// stash 
+					hex!["48267bffea5e524f1c0e06cce77f0ef920be7ed9a7dd47705e181edad64f532a"].into(),
+					// controller
+					hex!["38594d7640612c49337f3a0bc7b39232b86f9c9c4fedec3f8b00e45d3f073a2d"].into(),
+					// grandpa 
+					hex!["c8996b17688cab9bcda8dafb4dde9bab4d9b1dc81c71419fca46fedcba74a14e"].unchecked_into(),
+					// babe 
+					hex!["568c17ce5ef308bd9544e7b16f34089a2c2329193f31577a830ffe8a023a6874"].unchecked_into(),
+					// im-online
+					hex!["66db4135f59db92ce98cdd6c29befaf21a93f1a9059adc2326c7d371a214f97d"].unchecked_into(),
+					// authority-discovery
+					hex!["00858734321b53f0987a45906cbb91fe7ce1588fce03758c7c07f09022372c30"].unchecked_into(),
 				),
 			],
-			// Sudo: TODO: Update to multisig
-			hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into(),
+			// Sudo: TODO: Update to multisig account
+			hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
 			// --------------------------------------------------------------------------------------------
 			// Endowed accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
@@ -245,35 +276,29 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
 				// PublicFundTreasury Faucet- TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
 				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
+				// AlSharifFundTreasury Faucet- TODO: Update to `into_account_id` from `AlSharifFundTreasuryModuleId`
+				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
 				// Team and DEX Liquidity Offering Fund Faucet- TODO: Update to multisig
 				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
 				// Advisors and Partners Fund Faucet- Labs - TODO: Update to multisig
 				(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
 				// Labs Faucet- Shura Council Member - TODO: Update to multisig
 				hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
-				// Muhammad-Jibril Bin Abdullah-Bashir Al-Sharif. (Khalifa MBA) Faucet
+				// Founder (Khalifa MBA) Faucet
 				hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
 			],
 			// ----------------------------------------------------------------------------------------
 			// Testnet Council Members vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
-			// Treasury - TODO: Update to `treasury_account`
-			hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into(),
-			// CashDropFund - TODO: Update to `cashdrop_pool_account`
-			hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into(),
-			// PublicFundTreasury - TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
-			hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into(),
-			// Team and DEX Liquidity Offering Fund
-			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
-			// Advisors and Partners Fund
-			hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into(),
 			// Labs - Shura Council Member
 			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
-			// Muhammad-Jibril Bin Abdullah-Bashir Al-Sharif. (Khalifa MBA) - Shura Council Member
+			// Founder (Khalifa MBA) - Shura Council Member
 			hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into(),
 		),
-		// Bootnodes
-		vec![],
+		// Bootnodes - TODO: Update!
+		vec![
+			// "/dns/bootnode-t1.setheumscan.com/tcp/30334/p2p/12D3KooWKmFtS7BFtkkKWrP5ZcCpPFokmST2JFXFSsVBNeW5SXWg".parse().unwrap()
+		],
 		// Telemetry
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		// Protocol ID
@@ -305,12 +330,12 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 		move || mainnet_genesis(
 			wasm_binary,
 			// Initial authorities keys:
-			// stash 
-			// controller 
-			// grandpa 
-			// babe 
-			// im-online 
-			// authority-discovery 
+			// stash
+			// controller
+			// grandpa
+			// babe
+			// im-online
+			// authority-discovery
 			//
 			// for i in 1; do for j in {stash, controller}; do subkey inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in grandpa; do subkey --ed25519 inspect "$SECRET//$i//$j"; done; done
@@ -323,36 +348,51 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 				//Auth1 Validator
 				(
 					// stash 
-					hex!["6c08c1f8e0cf1e200b24b43fca4c4e407b963b6b1e459d1aeff80c566a1da469"].into(),
+					hex!["b2902b07056f7365bc22bf7e69c4e4fdba03e6af9c73ca6eb1703ccbc0248857"].into(),
 					// controller
-					hex!["864eff3160ff8609c030316867630850a9d6e35c47d3efe54de44264fef7665e"].into(),
+					hex!["cc2ea454844cc1a2e821198d9e0ce1de1aee7d014af5dd3404fc8199df89f821"].into(),
 					// grandpa 
-					hex!["dc41d9325da71d90806d727b826d125cd523da28eb39ab048ab983d7bb74fb32"].unchecked_into(),
+					hex!["607712f6581e191b69046427a7e33c4713e96b4ae4654e2467c74279dc20beb2"].unchecked_into(),
 					// babe 
-					hex!["8a688a748fd39bedaa507c942600c40478c2082dee17b8263613fc3c086b0c53"].unchecked_into(),
+					hex!["ba630d2df03743a6441ab9221a25fc00a62e6f3b56c6920634eebb72a15fc90f"].unchecked_into(),
 					// im-online
-					hex!["3a4e80c48718f72326b49c4ae80199d35285643751e75a743f30b7561b538676"].unchecked_into(),
+					hex!["72c0d10c9cd6e44ccf5e7acf0bb1b7c4d6987dda55a36343f3d45b54ad8bfe32"].unchecked_into(),
 					// authority-discovery
-					hex!["68d39d0d386ed4e9dd7e280d62e7dc9cf61dc508ef25efb74b6d740fa4dde463"].unchecked_into(),
+					hex!["f287831caa53bc1dce6f0d676ab43d248921a4c34535be8f7d7d153eda29dc3f"].unchecked_into(),
 				),
-				//Auth1 Validator
+				//Auth2 Validator
 				(
 					// stash 
-					hex!["6c08c1f8e0cf1e200b24b43fca4c4e407b963b6b1e459d1aeff80c566a1da469"].into(),
+					hex!["06ee8fc0e34e40f6f2c98328d70874c6dd7d7989159634c8c87301efbcbe4470"].into(),
 					// controller
-					hex!["864eff3160ff8609c030316867630850a9d6e35c47d3efe54de44264fef7665e"].into(),
+					hex!["9cf9f939c16ef458e677472ff113af53e7fb9139244fcfa6fccb765aa8831019"].into(),
 					// grandpa 
-					hex!["dc41d9325da71d90806d727b826d125cd523da28eb39ab048ab983d7bb74fb32"].unchecked_into(),
+					hex!["db6d2cb33abebdc024a14ef7bfbc68823660be8d1acac66770e406e484de3184"].unchecked_into(),
 					// babe 
-					hex!["8a688a748fd39bedaa507c942600c40478c2082dee17b8263613fc3c086b0c53"].unchecked_into(),
+					hex!["d09f879b3273d2cedab83fa741cdac328679c98914dc8dc07e359e19f0379844"].unchecked_into(),
 					// im-online
-					hex!["3a4e80c48718f72326b49c4ae80199d35285643751e75a743f30b7561b538676"].unchecked_into(),
+					hex!["8c38deff9ab24a8c49e2b4fbdc963af7cbf06f99d6aabfaa6e50bfe6ae0d071d"].unchecked_into(),
 					// authority-discovery
-					hex!["68d39d0d386ed4e9dd7e280d62e7dc9cf61dc508ef25efb74b6d740fa4dde463"].unchecked_into(),
+					hex!["dcc1644697e98d4171a29074a4bfaeb49b39b6ea91a8ec5e049d23ea3c4a4134"].unchecked_into(),
+				),
+				//Auth3 Validator
+				(
+					// stash 
+					hex!["48267bffea5e524f1c0e06cce77f0ef920be7ed9a7dd47705e181edad64f532a"].into(),
+					// controller
+					hex!["38594d7640612c49337f3a0bc7b39232b86f9c9c4fedec3f8b00e45d3f073a2d"].into(),
+					// grandpa 
+					hex!["c8996b17688cab9bcda8dafb4dde9bab4d9b1dc81c71419fca46fedcba74a14e"].unchecked_into(),
+					// babe 
+					hex!["568c17ce5ef308bd9544e7b16f34089a2c2329193f31577a830ffe8a023a6874"].unchecked_into(),
+					// im-online
+					hex!["66db4135f59db92ce98cdd6c29befaf21a93f1a9059adc2326c7d371a214f97d"].unchecked_into(),
+					// authority-discovery
+					hex!["00858734321b53f0987a45906cbb91fe7ce1588fce03758c7c07f09022372c30"].unchecked_into(),
 				),
 			],
-			// Sudo: TODO: Update to multisig
-			hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into(),
+			// Sudo: TODO: Update to multisig account
+			hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
 			// --------------------------------------------------------------------------------------------
 			// Endowed accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
@@ -365,35 +405,46 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
 				// PublicFundTreasury - TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
 				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
+				// AlSharifFundTreasury - TODO: Update to `into_account_id` from `AlSharifFundTreasuryModuleId`
+				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
 				// Team and DEX Liquidity Offering Fund - TODO: Update to multisig
 				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
 				// Advisors and Partners Fund - Labs - TODO: Update to multisig
 				(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
-				// Labs - Shura Council Member - TODO: Update to multisig
-				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
-				// Muhammad-Jibril B.A. (Khalifa) - Shura Council Member
-				(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
+				// Labs - Council Member - TODO: Update to multisig
+				hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
+				// Founder (Khalifa MBA) 
+				hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
 			],
 			// ----------------------------------------------------------------------------------------
-			// Council Members vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+			// Mainnet Council Members and Initial Allocation Accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
+			// Foundation - TODO: Update to multisig
+			(hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into()),
 			// Treasury - TODO: Update to `treasury_account`
-			hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into(),
-			// CashDropFund - TODO: Update to `cashdrop_pool_account`
-			hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into(),
+			(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
+			// CashDropFund - TODO: Update to `into_account_id` from `cashdrop_pool_account`
+			(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
 			// PublicFundTreasury - TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
-			hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into(),
-			// Team and DEX Liquidity Offering Fund
-			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
-			// Advisors and Partners Fund
-			hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into(),
-			// Labs - Shura Council Member
-			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
-			// Muhammad-Jibril Bin Abdullah-Bashir Al-Sharif. (Khalifa MBA) - Shura Council Member
-			hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into(),
+			(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
+			// AlSharifFundTreasury - TODO: Update to `into_account_id` from `AlSharifFundTreasuryModuleId`
+			(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
+			// Team and DEX Liquidity Offering Fund - TODO: Update to multisig
+			(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
+			// Advisors and Partners Fund - Labs - TODO: Update to multisig
+			(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
+			// Labs - Council Member - TODO: Update to multisig
+			hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
+			// Founder (Khalifa MBA) 
+			hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
+		],
 		),
-		// Bootnodes
-		vec![],
+		// Bootnodes - TODO: Update!
+		vec![
+			// "/dns/bootnode.setheumscan.com/tcp/30333/p2p/12D3KooWFHSc9cUcyNtavUkLg4VBAeBnYNgy713BnovUa9WNY5pp".parse().unwrap(),
+			// "/dns/bootnode.setheum.finance/tcp/30333/p2p/12D3KooWAQqcXvcvt4eVEgogpDLAdGWgR5bY1drew44We6FfJAYq".parse().unwrap(),
+			// "/dns/bootnode.setheum-chain.com/tcp/30333/p2p/12D3KooWCT7rnUmEK7anTp7svwr4GTs6k3XXnSjmgTcNvdzWzgWU".parse().unwrap(),
+		],
 		// Telemetry
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		// Protocol ID
@@ -410,12 +461,8 @@ fn testnet_genesis(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	treasury_fund: AccountId,
-	cashdrop_fund: AccountId,
-	spf_fund: AccountId,
-	team_fund: AccountId,
-	advisors_and_partners_fund: AccountId,
-	labs_faucet: AccountId,
+	foundation_fund: AccountId,
+	labs: AccountId,
 	founder_khalifa_faucet: AccountId,
 ) -> GenesisConfig {
 
@@ -451,14 +498,14 @@ fn testnet_genesis(
 		.collect::<Vec<(AccountId, Balance)>>();
 
 	GenesisConfig {
-		frame_system: Some(SystemConfig {
+		system: SystemConfig {
 			// Add Wasm runtime to storage.
 			code: wasm_binary.to_vec(),
 			changes_trie_config: Default::default(),
-		}),
-		pallet_indices: Some(IndicesConfig { indices: vec![] }),
-		pallet_balances: Some(BalancesConfig { balances }),
-		pallet_session: Some(SessionConfig {
+		},
+		indices: IndicesConfig { indices: vec![] },
+		balances: BalancesConfig { balances },
+		session: SessionConfig {
 			keys: initial_authorities
 				.iter()
 				.map(|x| (
@@ -471,87 +518,51 @@ fn testnet_genesis(
 							x.5.clone(), // authority-discovery
 						)))
 				.collect::<Vec<_>>(),
-		}),
-		pallet_staking: Some(StakingConfig {
+		},
+		staking: StakingConfig {
 			validator_count: initial_authorities.len() as u32 * 2,
 			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities
 				.iter()
-				.map(|x| (x.0.clone(), x.1.clone(), initial_staking, StakerStatus::Validator))
+				.map(|x| (x.0.clone(), x.1.clone(), INITIAL_STAKING, StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
 			..Default::default()
-		}),
-		pallet_babe: Some(BabeConfig { authorities: vec![] }),
-		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
-		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
-		pallet_im_online: Default::default(),
-		orml_tokens: Some(TokensConfig {
-			endowed_accounts: vec![
-				// treasury_fund allocation
-				(treasury_fund.clone(), SETM, initial_balance),
-				(treasury_fund.clone(), SERP, initial_balance),
-				(treasury_fund.clone(), DNAR, initial_balance),
-				(treasury_fund.clone(), SETR, initial_balance),
-				(treasury_fund.clone(), SETUSD, initial_balance),
-				(treasury_fund.clone(), RENBTC, initial_balance),
-				// cashdrop_fund allocation
-				(cashdrop_fund.clone(), SETR, initial_balance),
-				(cashdrop_fund.clone(), SETUSD, initial_balance),
-				// spf_fund allocation
-				(spf_fund.clone(), SETM, initial_balance),
-				(spf_fund.clone(), SERP, initial_balance),
-				(spf_fund.clone(), DNAR, initial_balance),
-				(spf_fund.clone(), SETR, initial_balance),
-				(spf_fund.clone(), SETUSD, initial_balance),
-				(spf_fund.clone(), RENBTC, initial_balance),
-				// team_fund allocation
-				(team_fund.clone(), SETM, initial_balance),
-				(team_fund.clone(), SERP, initial_balance),
-				(team_fund.clone(), DNAR, initial_balance),
-				(team_fund.clone(), SETR, initial_balance),
-				(team_fund.clone(), SETUSD, initial_balance),
-				(team_fund.clone(), RENBTC, initial_balance),
-				// advisors_and_partners_fund allocation
-				(advisors_and_partners_fund.clone(), SETM, initial_balance),
-				(advisors_and_partners_fund.clone(), SERP, initial_balance),
-				(advisors_and_partners_fund.clone(), DNAR, initial_balance),
-				(advisors_and_partners_fund.clone(), SETR, initial_balance),
-				(advisors_and_partners_fund.clone(), SETUSD, initial_balance),
-				(advisors_and_partners_fund.clone(), RENBTC, initial_balance),
-				// labs_faucet allocation
-				(labs_faucet.clone(), SETM, initial_balance),
-				(labs_faucet.clone(), SERP, initial_balance),
-				(labs_faucet.clone(), DNAR, initial_balance),
-				(labs_faucet.clone(), SETR, initial_balance),
-				(labs_faucet.clone(), SETUSD, initial_balance),
-				(labs_faucet.clone(), RENBTC, initial_balance),
-				// founder_khalifa_faucet allocation
-				(founder_khalifa_faucet.clone(), SETM, initial_balance),
-				(founder_khalifa_faucet.clone(), SERP, initial_balance),
-				(founder_khalifa_faucet.clone(), DNAR, initial_balance),
-				(founder_khalifa_faucet.clone(), SETR, initial_balance),
-				(founder_khalifa_faucet.clone(), SETUSD, initial_balance),
-				(founder_khalifa_faucet.clone(), RENBTC, initial_balance),
-			],
-		}),
+		},
+		babe: BabeConfig { authorities: Default::default(), epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG) },
+		grandpa: Default::default(),
+		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
+		im_online: Default::default(),
+		tokens: TokensConfig {
+			balances: endowed_accounts
+				.iter()
+				.flat_map(|x| {
+					vec![
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), initial_balance),
+					]
+				})
+				.collect(),
+		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 4_000 * dollar(SETR)), 	  // (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 8_000 * dollar(SETUSD)), // (currency_id, inflation rate of a setcurrency)
+				(SETR, 50_000 * dollar(SETR)), // (currency_id, inflation rate of a setcurrency)
+				(SETUSD, 100_000 * dollar(SETUSD)), // (currency_id, inflation rate of a setcurrency)
 			],
 		},
-		module_cdp_treasury: CdpTreasuryConfig {
+		cdp_treasury: CdpTreasuryConfig {
 			expected_collateral_auction_size: vec![
-				(SETM, dollar(SETM)), 		// (currency_id, max size of a collateral auction)
-				(SERP, dollar(SERP)), 		// (currency_id, max size of a collateral auction)
-				(DNAR, dollar(DNAR)), 		// (currency_id, max size of a collateral auction)
-				(SETR, 5 * dollar(SETR)), 	// (currency_id, max size of a collateral auction)
-				(RENBTC, dollar(RENBTC)), 	// (currency_id, max size of a collateral auction)
+				(SETM, 500 * dollar(SETM)), 		// (currency_id, max size of a collateral auction)
+				(SERP, 300 * dollar(SERP)), 		// (currency_id, max size of a collateral auction)
+				(DNAR, 100 * dollar(DNAR)), 		// (currency_id, max size of a collateral auction)
+				(SETR, 800 * dollar(SETR)), 		// (currency_id, max size of a collateral auction)
 			],
 		},
-		module_cdp_engine: CdpEngineConfig {
+		cdp_engine: CdpEngineConfig {
 			collaterals_params: vec![
 				(
 					SETM,
@@ -581,288 +592,9 @@ fn testnet_genesis(
 					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
 					33_000_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
 				),
-				(
-					RENBTC,
-					Some(FixedU128::saturating_from_rational(115, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(10, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(125, 100)), // required liquidation ratio
-					31_300_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
-				),
 			],
 		},
-		module_airdrop: AirDropConfig {
-			airdrop_accounts: {
-				let setter_airdrop_accounts_json = &include_bytes!("../../../../resources/testnet-airdrop-SETR.json")[..];
-				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-				let setdollar_airdrop_accounts_json = &include_bytes!("../../../../resources/testnet-airdrop-SETUSD.json")[..];
-				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
-
-				setter_airdrop_accounts
-					.iter()
-					.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
-					.chain(
-						setdollar_airdrop_accounts
-							.iter()
-							.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
-					)
-					.collect::<Vec<_>>()
-			},
-		},
-		module_evm: Some(EvmConfig {
-			accounts: evm_genesis_accounts,
-		}),
-		setheum_renvm_bridge: RenVmBridgeConfig {
-			ren_vm_public_key: hex!["4b939fc8ade87cb50b78987b1dda927460dc456a"],
-		},
-		orml_nft: OrmlNFTConfig { tokens: vec![] },
-		module_dex: DexConfig {
-			initial_listing_trading_pairs: vec![],
-			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![],
-		},
-		pallet_treasury_instance1: Default::default(),
-		pallet_treasury_instance2: Default::default(),
-		pallet_sudo: Some(SudoConfig { key: root_key }),
-		pallet_collective_Instance1: Default::default(),
-		pallet_membership_Instance1: ShuraCouncilMembershipConfig {
-			members: vec![root_key.clone()],
-			phantom: Default::default(),
-		},
-		pallet_collective_Instance2: Default::default(),
-		pallet_membership_Instance2: FinancialCouncilMembershipConfig {
-			members: vec![root_key.clone()],
-			phantom: Default::default(),
-		},
-		pallet_collective_Instance3: Default::default(),
-		pallet_membership_Instance3: PublicFundCouncilMembershipConfig {
-			members: vec![root_key.clone()],
-			phantom: Default::default(),
-		},
-		pallet_collective_Instance4: Default::default(),
-		pallet_membership_Instance4: TechnicalCommitteeMembershipConfig {
-			members: vec![root_key.clone()],
-			phantom: Default::default(),
-		},
-		pallet_membership_Instance5: OperatorMembershipSetheumConfig {
-			members: endowed_accounts.clone(),
-			phantom: Default::default(),
-		},
-	}
-}
-
-fn mainnet_genesis(
-	wasm_binary: &[u8],
-	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
-	root_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
-	treasury_fund: AccountId,
-	cashdrop_fund: AccountId,
-	spf_fund: AccountId,
-	team_fund: AccountId,
-	advisors_and_partners_fund: AccountId,
-	labs: AccountId,
-	founder_khalifa: AccountId,
-) -> GenesisConfig {
-
-	let evm_genesis_accounts = evm_genesis();
-
-	let  setm_foundation_alloc: u128 = 626_600_000 * dollar(SETM);
-	let  setm_treasury_alloc: u128 = 313_300_000 * dollar(SETM);
-	let  setm_spf_alloc: u128 = 626_600_000 * dollar(SETM);
-	let  setm_team_alloc: u128 = 1_315_860_000 * dollar(SETM);
-	let  setm_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETM);
-
-	let  serp_foundation_alloc: u128 = 51_600_000 * dollar(SERP);
-	let  serp_treasury_alloc: u128 = 25_800_000 * dollar(SERP);
-	let  serp_spf_alloc: u128 = 51_600_000 * dollar(SERP);
-	let  serp_team_alloc: u128 = 108_360_000 * dollar(SERP);
-	let  serp_advisors_n_partners_alloc: u128 = 20_640_000 * dollar(SERP);
-
-	let  dnar_foundation_alloc: u128 = 14_000_000 * dollar(DNAR);
-	let  dnar_treasury_alloc: u128 = 7_000_000 * dollar(DNAR);
-	let  dnar_spf_alloc: u128 = 14_000_000 * dollar(DNAR);
-	let  dnar_team_alloc: u128 = 29_400_000 * dollar(DNAR);
-	let  dnar_advisors_n_partners_alloc: u128 = 5_600_000 * dollar(DNAR);
-
-	let  setr_foundation_alloc: u128 = 626_600_000 * dollar(SETR);
-	let  setr_treasury_alloc: u128 = 313_300_000 * dollar(SETR);
-	let  setr_cashdrop_alloc: u128 = 1_315_860_000 * dollar(SETR);
-	let  setr_spf_alloc: u128 = 626_600_000 * dollar(SETR);
-	let  setr_team_alloc: u128 = 1_315_860_000 * dollar(SETR);
-	let  setr_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETR);
-
-	let  setusd_foundation_alloc: u128 = 626_600_000 * dollar(SETUSD);
-	let  setusd_treasury_alloc: u128 = 313_300_000 * dollar(SETUSD);
-	let  setusd_cashdrop_alloc: u128 = 1_315_860_000 * dollar(SETUSD);
-	let  setusd_spf_alloc: u128 = 626_600_000 * dollar(SETUSD);
-	let  setusd_team_alloc: u128 = 1_315_860_000 * dollar(SETUSD);
-	let  setusd_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETUSD);
-
-	let initial_staking: u128 = 258_000 * dollar(SETM);
-	let existential_deposit = NativeTokenExistentialDeposit::get();
-	let mut total_allocated: Balance = Zero::zero();
-
-	let balances = initial_authorities
-		.iter()
-		.map(|x| (x.0.clone(), initial_staking + dollar(SETM))) // bit more for fee
-		.chain(endowed_accounts.iter().cloned().map(|x| (x.0.clone(), x.1 * dollar(SETM))))
-		.chain(
-			get_all_module_accounts()
-				.iter()
-				.map(|x| (x.clone(), existential_deposit)),  // add ED for module accounts
-		)
-		.fold(
-			BTreeMap::<AccountId, Balance>::new(),
-			|mut acc, (account_id, amount)| {
-				// merge duplicated accounts
-				if let Some(balance) = acc.get_mut(&account_id) {
-					*balance = balance
-						.checked_add(amount)
-						.expect("balance cannot overflow when building genesis");
-				} else {
-					acc.insert(account_id.clone(), amount);
-				}
-
-				total_allocated = total_allocated
-					.checked_add(amount)
-					.expect("total insurance cannot overflow when building genesis");
-				acc
-			},
-		)
-		.into_iter()
-		.collect::<Vec<(AccountId, Balance)>>();
-
-	GenesisConfig {
-		frame_system: Some(SystemConfig {
-			// Add Wasm runtime to storage.
-			code: wasm_binary.to_vec(),
-			changes_trie_config: Default::default(),
-		}),
-		pallet_indices: Some(IndicesConfig { indices: vec![] }),
-		pallet_balances: Some(BalancesConfig { balances }),
-		pallet_session: Some(SessionConfig {
-			keys: initial_authorities
-				.iter()
-				.map(|x| (
-						x.0.clone(), // stash
-						x.0.clone(), // stash
-						get_session_keys(
-							x.2.clone(), // grandpa
-							x.3.clone(), // babe
-							x.4.clone(), // im-online
-							x.5.clone(), // authority-discovery
-						)))
-				.collect::<Vec<_>>(),
-		}),
-		pallet_staking: Some(StakingConfig {
-			validator_count: initial_authorities.len() as u32 * 2,
-			minimum_validator_count: initial_authorities.len() as u32,
-			stakers: initial_authorities
-				.iter()
-				.map(|x| (x.0.clone(), x.1.clone(), initial_staking, StakerStatus::Validator))
-				.collect(),
-			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
-			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
-			..Default::default()
-		}),
-		pallet_babe: Some(BabeConfig { authorities: vec![] }),
-		pallet_grandpa: Some(GrandpaConfig { authorities: vec![] }),
-		pallet_authority_discovery: Some(AuthorityDiscoveryConfig { keys: vec![] }),
-		pallet_im_online: Default::default(),
-		orml_tokens: Some(TokensConfig {
-			endowed_accounts: vec![
-				// Foundation allocation
-				(root_key.clone(), SETM, setm_foundation_alloc),
-				(root_key.clone(), SERP, serp_foundation_alloc),
-				(root_key.clone(), DNAR, dnar_foundation_alloc),
-				(root_key.clone(), SETR, setr_foundation_alloc),
-				(root_key.clone(), SETUSD, setusd_foundation_alloc),
-				// Treasury allocation
-				(treasury_fund.clone(), SETM, setm_treasury_alloc),
-				(treasury_fund.clone(), SERP, serp_treasury_alloc),
-				(treasury_fund.clone(), DNAR, dnar_treasury_alloc),
-				(treasury_fund.clone(), SETR, setr_treasury_alloc),
-				(treasury_fund.clone(), SETUSD, setusd_treasury_alloc),
-				// CashDropFund allocation - Only `SETR` and `SETUSD
-				(cashdrop_fund.clone(), SETR, setr_spf_alloc),
-				(cashdrop_fund.clone(), SETUSD, setusd_spf_alloc),
-				// SPF - PublicFundTreasury allocation
-				(spf_fund.clone(), SETM, setm_spf_alloc),
-				(spf_fund.clone(), SERP, serp_spf_alloc),
-				(spf_fund.clone(), DNAR, dnar_spf_alloc),
-				(spf_fund.clone(), SETR, setr_spf_alloc),
-				(spf_fund.clone(), SETUSD, setusd_spf_alloc),
-				// Team allocation
-				(team_fund.clone(), SETM, setm_team_alloc),
-				(team_fund.clone(), SERP, serp_team_alloc),
-				(team_fund.clone(), DNAR, dnar_team_alloc),
-				(team_fund.clone(), SETR, setr_team_alloc),
-				(team_fund.clone(), SETUSD, setusd_team_alloc),
-				// Advisors and Partners allocation
-				(advisors_and_partners_fund.clone(), SETM, setm_advisors_n_partners_alloc),
-				(advisors_and_partners_fund.clone(), SERP, serp_advisors_n_partners_alloc),
-				(advisors_and_partners_fund.clone(), DNAR, dnar_advisors_n_partners_alloc),
-				(advisors_and_partners_fund.clone(), SETR, setr_advisors_n_partners_alloc),
-				(advisors_and_partners_fund.clone(), SETUSD, setusd_advisors_n_partners_alloc),
-			],
-		}),
-		serp_treasury: SerpTreasuryConfig {
-			stable_currency_inflation_rate: vec![
-				(SETR, 4_000 * dollar(SETR)), 	  // (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 8_000 * dollar(SETUSD)), // (currency_id, inflation rate of a setcurrency)
-			],
-		},
-		module_cdp_treasury: CdpTreasuryConfig {
-			expected_collateral_auction_size: vec![
-				(SETM, dollar(SETM)), 		// (currency_id, max size of a collateral auction)
-				(SERP, dollar(SERP)), 		// (currency_id, max size of a collateral auction)
-				(DNAR, dollar(DNAR)), 		// (currency_id, max size of a collateral auction)
-				(SETR, 5 * dollar(SETR)), 	// (currency_id, max size of a collateral auction)
-				(RENBTC, dollar(RENBTC)), 	// (currency_id, max size of a collateral auction)
-			],
-		},
-		module_cdp_engine: CdpEngineConfig {
-			collaterals_params: vec![
-				(
-					SETM,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
-				),
-				(
-					SERP,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
-				),
-				(
-					DNAR,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
-				),
-				(
-					SETR,
-					Some(FixedU128::saturating_from_rational(103, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
-					33_000_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
-				),
-				(
-					RENBTC,
-					Some(FixedU128::saturating_from_rational(115, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(10, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(125, 100)), // required liquidation ratio
-					31_300_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
-				),
-			],
-		},
-		module_airdrop: AirDropConfig {
+		airdrop: AirDropConfig {
 			airdrop_accounts: {
 				let setter_airdrop_accounts_json = &include_bytes!("../../../../resources/mainnet-airdrop-SETR.json")[..];
 				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
@@ -882,29 +614,28 @@ fn mainnet_genesis(
 					.collect::<Vec<_>>()
 			},
 		},
-		module_evm: Some(EvmConfig {
-			accounts: evm_genesis_accounts,
-		}),
-		// TODO: Update key for RenVM
-		// setheum_renvm_bridge: RenVmBridgeConfig {
-		// 	ren_vm_public_key: hex!["4b939fc8ade87cb50b78987b1dda927460dc456a"],
-		// },
-		orml_nft: OrmlNFTConfig { tokens: vec![] },
-		module_dex: DexConfig {
+		nft: OrmlNFTConfig { tokens: vec![] },
+		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		pallet_treasury_instance1: Default::default(),
-		pallet_treasury_instance2: Default::default(),
-		pallet_sudo: Some(SudoConfig { key: root_key }),
+
+		evm: EVMConfig {
+			accounts: evm_genesis_accounts,
+		},
+		sudo: SudoConfig { key: root_key },
+		treasury_instance1: Default::default(), // Main Treasury (Setheum Treasury)
+		treasury_instance2: Default::default(), // SPF Treasury  (Setheum Public Fund)
+		treasury_instance3: Default::default(), // ASF Treasury  (Al-Sharif Fund)
+		treasury_instance4: Default::default(), // SFF Treasury  (Setheum Foundation Fund)
+
 		pallet_collective_Instance1: Default::default(),
 		pallet_membership_Instance1: ShuraCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
-				(team_fund.clone()), 		// Slixon Technologies
-				(founder_khalifa.clone()), 	// Muhammad-Jibril Bin Abdullah-Bashir Al-Sharif. (Khalifa MBA)
+				(founder_khalifa.clone()), 	// Founder Benabdolla (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
@@ -913,8 +644,7 @@ fn mainnet_genesis(
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
-				(team_fund.clone()), 		// Slixon Technologies
-				(founder_khalifa.clone()), 	// Muhammad-Jibril Bin Abdullah-Bashir Al-Sharif. (Khalifa MBA)
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
@@ -923,27 +653,322 @@ fn mainnet_genesis(
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
-				(team_fund.clone()), 		// Slixon Technologies
-				(founder_khalifa.clone()), 	// Muhammad-Jibril Bin Abdullah-Bashir Al-Sharif. (Khalifa MBA)
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
 		pallet_collective_Instance4: Default::default(),
-		pallet_membership_Instance4: TechnicalCommitteeMembershipConfig {
+		pallet_membership_Instance4: AlSharifFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
-				(team_fund.clone()), 		// Slixon Technologies
-				(founder_khalifa.clone()), 	// Muhammad-Jibril Bin Abdullah-Bashir Al-Sharif. (Khalifa MBA)
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance5: OperatorMembershipSetheumConfig {
+		pallet_collective_Instance5: Default::default(),
+		pallet_membership_Instance5: FoundationFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
-				(team_fund.clone()), 		// Slixon Technologies
-				(founder_khalifa.clone()), 	// Muhammad-Jibril Bin Abdullah-Bashir Al-Sharif. (Khalifa MBA)
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+		pallet_collective_Instance6: Default::default(),
+		pallet_membership_Instance6: TechnicalCommitteeMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+		pallet_membership_Instance7: OperatorMembershipSetheumConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+	}
+}
+
+fn mainnet_genesis(
+	wasm_binary: &[u8],
+	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
+	root_key: AccountId,
+	endowed_accounts: Vec<AccountId>,
+	foundation: AccountId,
+	treasury_fund: AccountId,
+	cashdrop_fund: AccountId,
+	spf_fund: AccountId,
+	alsharif_fund: AccountId,
+	team_fund: AccountId,
+	advisors_and_partners_fund: AccountId,
+	labs: AccountId,
+	founder_khalifa: AccountId,
+) -> GenesisConfig {
+
+	let evm_genesis_accounts = evm_genesis();
+
+	let  setm_foundation_alloc: u128 = 626_600_000 * dollar(SETM);
+	let  setm_treasury_alloc: u128 = 313_300_000 * dollar(SETM);
+	let  setm_spf_alloc: u128 = 313_300_000 * dollar(SETM);
+	let  setm_asf_alloc: u128 = 375_960_000 * dollar(SETM);
+	let  setm_team_alloc: u128 = 1_253_200_000 * dollar(SETM);
+	let  setm_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETM);
+
+	let  serp_foundation_alloc: u128 = 51_600_000 * dollar(SERP);
+	let  serp_treasury_alloc: u128 = 25_800_000 * dollar(SERP);
+	let  serp_spf_alloc: u128 = 25_800_000 * dollar(SERP);
+	let  serp_asf_alloc: u128 = 30_960_000 * dollar(SERP);
+	let  serp_team_alloc: u128 = 103_200_000 * dollar(SERP);
+	let  serp_advisors_n_partners_alloc: u128 = 20_640_000 * dollar(SERP);
+
+	let  dnar_foundation_alloc: u128 = 14_000_000 * dollar(DNAR);
+	let  dnar_treasury_alloc: u128 = 7_000_000 * dollar(DNAR);
+	let  dnar_spf_alloc: u128 = 7_000_000 * dollar(DNAR);
+	let  dnar_asf_alloc: u128 = 8_400_000 * dollar(DNAR);
+	let  dnar_team_alloc: u128 = 28_000_000 * dollar(DNAR);
+	let  dnar_advisors_n_partners_alloc: u128 = 5_600_000 * dollar(DNAR);
+
+	let  setr_foundation_alloc: u128 = 626_600_000 * dollar(SETR);
+	let  setr_treasury_alloc: u128 = 313_300_000 * dollar(SETR);
+	let  setr_cashdrop_alloc: u128 = 313_300_000 * dollar(SETR);
+	let  setr_spf_alloc: u128 = 375_960_000 * dollar(SETR);
+	let  setr_team_alloc: u128 = 1_253_200_000 * dollar(SETR);
+	let  setr_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETR);
+
+	let  setusd_foundation_alloc: u128 = 1_253_200_000 * dollar(SETUSD);
+	let  setusd_treasury_alloc: u128 = 626_600_000 * dollar(SETUSD);
+	let  setusd_cashdrop_alloc: u128 = 626_600_000 * dollar(SETUSD);
+	let  setusd_spf_alloc: u128 = 626_600_000 * dollar(SETUSD);
+	let  setusd_team_alloc: u128 = 1_315_860_000 * dollar(SETUSD);
+	let  setusd_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETUSD);
+
+	let  initial_balance: u128 = 1_000_000 * SETM;
+	let  initial_staking: u128 =   1_000_000 * SETM;
+	let existential_deposit = NativeTokenExistentialDeposit::get();
+
+	let balances = initial_authorities
+		.iter()
+		.map(|x| (x.0.clone(), initial_staking))
+		.chain(endowed_accounts.iter().cloned().map(|k| (k, initial_balance)))
+		.chain(
+			get_all_module_accounts()
+				.iter()
+				.map(|x| (x.clone(), existential_deposit)),
+		)
+		.fold(
+			BTreeMap::<AccountId, Balance>::new(),
+			|mut acc, (account_id, amount)| {
+				if let Some(balance) = acc.get_mut(&account_id) {
+					*balance = balance
+						.checked_add(amount)
+						.expect("balance cannot overflow when building genesis");
+				} else {
+					acc.insert(account_id.clone(), amount);
+				}
+				acc
+			},
+		)
+		.into_iter()
+		.collect::<Vec<(AccountId, Balance)>>();
+
+	GenesisConfig {
+		system: SystemConfig {
+			// Add Wasm runtime to storage.
+			code: wasm_binary.to_vec(),
+			changes_trie_config: Default::default(),
+		},
+		indices: IndicesConfig { indices: vec![] },
+		balances: BalancesConfig { balances },
+		session: SessionConfig {
+			keys: initial_authorities
+				.iter()
+				.map(|x| (
+						x.0.clone(), // stash
+						x.0.clone(), // stash
+						get_session_keys(
+							x.2.clone(), // grandpa
+							x.3.clone(), // babe
+							x.4.clone(), // im-online
+							x.5.clone(), // authority-discovery
+						)))
+				.collect::<Vec<_>>(),
+		},
+		staking: StakingConfig {
+			validator_count: initial_authorities.len() as u32 * 2,
+			minimum_validator_count: initial_authorities.len() as u32,
+			stakers: initial_authorities
+				.iter()
+				.map(|x| (x.0.clone(), x.1.clone(), INITIAL_STAKING, StakerStatus::Validator))
+				.collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
+			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
+			..Default::default()
+		},
+		babe: BabeConfig { authorities: Default::default(), epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG) },
+		grandpa: Default::default(),
+		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
+		im_online: Default::default(),
+		tokens: TokensConfig {
+			balances: endowed_accounts
+				.iter()
+				.flat_map(|x| {
+					vec![
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), initial_balance),
+					]
+				})
+				.collect(),
+		},
+		serp_treasury: SerpTreasuryConfig {
+			stable_currency_inflation_rate: vec![
+				(SETR, 50_000 * dollar(SETR)), // (currency_id, inflation rate of a setcurrency)
+				(SETUSD, 100_000 * dollar(SETUSD)), // (currency_id, inflation rate of a setcurrency)
+			],
+		},
+		cdp_treasury: CdpTreasuryConfig {
+			expected_collateral_auction_size: vec![
+				(SETM, 500 * dollar(SETM)), 		// (currency_id, max size of a collateral auction)
+				(SERP, 300 * dollar(SERP)), 		// (currency_id, max size of a collateral auction)
+				(DNAR, 100 * dollar(DNAR)), 		// (currency_id, max size of a collateral auction)
+				(SETR, 800 * dollar(SETR)), 		// (currency_id, max size of a collateral auction)
+			],
+		},
+		cdp_engine: CdpEngineConfig {
+			collaterals_params: vec![
+				(
+					SETM,
+					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+					25_800_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
+				),
+				(
+					SERP,
+					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+					25_800_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
+				),
+				(
+					DNAR,
+					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+					25_800_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
+				),
+				(
+					SETR,
+					Some(FixedU128::saturating_from_rational(103, 100)), // liquidation ratio
+					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
+					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
+					33_000_000 * dollar(SETUSD),                         // maximum debit value in SETUSD (cap)
+				),
+			],
+		},
+		airdrop: AirDropConfig {
+			airdrop_accounts: {
+				let setter_airdrop_accounts_json = &include_bytes!("../../../../resources/mainnet-airdrop-SETR.json")[..];
+				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
+					serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
+				let setdollar_airdrop_accounts_json = &include_bytes!("../../../../resources/mainnet-airdrop-SETUSD.json")[..];
+				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
+					serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
+
+				setter_airdrop_accounts
+					.iter()
+					.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
+					.chain(
+						setdollar_airdrop_accounts
+							.iter()
+							.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
+					)
+					.collect::<Vec<_>>()
+			},
+		},
+		nft: OrmlNFTConfig { tokens: vec![] },
+		dex: DexConfig {
+			initial_listing_trading_pairs: vec![],
+			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
+			initial_added_liquidity_pools: vec![],
+		},
+
+		evm: EVMConfig {
+			accounts: evm_genesis_accounts,
+		},
+		sudo: SudoConfig { key: root_key },
+		treasury_instance1: Default::default(), // Main Treasury (Setheum Treasury)
+		treasury_instance2: Default::default(), // SPF Treasury  (Setheum Public Fund)
+		treasury_instance3: Default::default(), // ASF Treasury  (Al-Sharif Fund)
+		treasury_instance4: Default::default(), // SFF Treasury  (Setheum Foundation Fund)
+
+		pallet_collective_Instance1: Default::default(),
+		pallet_membership_Instance1: ShuraCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Benabdolla (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+		pallet_collective_Instance2: Default::default(),
+		pallet_membership_Instance2: FinancialCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+		pallet_collective_Instance3: Default::default(),
+		pallet_membership_Instance3: PublicFundCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+		pallet_collective_Instance4: Default::default(),
+		pallet_membership_Instance4: AlSharifFundCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+		pallet_collective_Instance5: Default::default(),
+		pallet_membership_Instance5: FoundationFundCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+		pallet_collective_Instance6: Default::default(),
+		pallet_membership_Instance6: TechnicalCommitteeMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+			],
+			phantom: Default::default(),
+		},
+		pallet_membership_Instance7: OperatorMembershipSetheumConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+				(labs.clone()), 			// Setheum Labs
+				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
@@ -951,7 +976,7 @@ fn mainnet_genesis(
 }
 
 
-/// Tokens and Currencies Properties
+/// Currencies Properties
 pub fn setheum_properties() -> Properties {
 	let mut properties = Map::new();
 	let mut token_symbol: Vec<String> = vec![];
@@ -970,8 +995,8 @@ pub fn setheum_properties() -> Properties {
 
 /// Predeployed contract addresses
 pub fn evm_genesis() -> BTreeMap<H160, module_evm::GenesisAccount<Balance, Nonce>> {
-	let existential_deposit = NativeTokenExistentialDeposit::get();
-
+	let existential_deposit = MaxNativeTokenExistentialDeposit::get();
+	
 	let contracts_json = &include_bytes!("../../predeploy-contracts/resources/bytecodes.json")[..];
 	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
 	let mut accounts = BTreeMap::new();

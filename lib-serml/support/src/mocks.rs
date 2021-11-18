@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -18,7 +19,7 @@
 
 use crate::{AddressMapping, CurrencyId, CurrencyIdMapping};
 use codec::Encode;
-use sp_runtime::DispatchResult;
+use frame_support::pallet_prelude::DispatchResult;
 use primitives::{currency::TokenInfo, evm::EvmAddress, H160_POSITION_TOKEN, H160_PREFIX_TOKEN};
 use sp_core::{crypto::AccountId32, H160};
 use sp_io::hashing::blake2_256;

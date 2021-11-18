@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -20,7 +21,6 @@
 #![allow(clippy::unnecessary_cast)]
 #![allow(clippy::upper_case_acronyms)]
 
-pub mod constants;
 pub mod currency;
 pub mod evm;
 pub mod signature;
@@ -32,7 +32,7 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
 	RuntimeDebug,
 };
-use sp_std::{prelude::*};
+use sp_std::{convert::Into, prelude::*};
 
 pub use currency::{CurrencyId, DexShare, TokenSymbol};
 
@@ -41,6 +41,53 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 mod tests;
+
+/// Ethereum precompiles
+/// 0 - 0x400
+/// Setheum precompiles
+/// 0x400 - 0x800
+pub const PRECOMPILE_ADDRESS_START: u64 = 0x400;
+/// Predeployed system contracts (except Mirrored ERC20)
+/// 0x800 - 0x1000
+pub const PREDEPLOY_ADDRESS_START: u64 = 0x800;
+/// Mirrored Tokens (ensure length <= 4 bytes, encode to u32 will take the first 4 non-zero bytes)
+/// 0x1000000
+pub const MIRRORED_TOKENS_ADDRESS_START: u64 = 0x1000000;
+/// Mirrored NFT (ensure length <= 4 bytes, encode to u32 will take the first 4 non-zero bytes)
+/// 0x2000000
+pub const MIRRORED_NFT_ADDRESS_START: u64 = 0x2000000;
+/// Mirrored LP Tokens
+/// 0x10000000000000000
+pub const MIRRORED_LP_TOKENS_ADDRESS_START: u128 = 0x10000000000000000;
+/// System contract address prefix
+pub const SYSTEM_CONTRACT_ADDRESS_PREFIX: [u8; 11] = [0u8; 11];
+/// Network contracts
+/// 0x1000 - 0x01000000
+pub const NETWORK_CONTRACT_START: u64 = 0x1000;
+
+/// CurrencyId to H160([u8; 20]) bit encoding rule.
+///
+/// Token
+/// v[16] = 1 // MIRRORED_TOKENS_ADDRESS_START
+/// - v[19] = token(1 byte)
+///
+/// DexShare
+/// v[11] = 1 // MIRRORED_LP_TOKENS_ADDRESS_START
+/// - v[12..16] = dex left(4 bytes)
+/// - v[16..20] = dex right(4 bytes)
+///
+/// Erc20
+/// - v[0..20] = evm address(20 bytes)
+pub const H160_TYPE_TOKEN: u8 = 1;
+pub const H160_TYPE_DEXSHARE: u8 = 1;
+pub const H160_POSITION_TOKEN: usize = 19;
+pub const H160_POSITION_DEXSHARE_LEFT: Range<usize> = 12..16;
+pub const H160_POSITION_DEXSHARE_RIGHT: Range<usize> = 16..20;
+pub const H160_POSITION_ERC20: Range<usize> = 0..20;
+pub const H160_PREFIX_TOKEN: [u8; 19] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
+pub const H160_PREFIX_DEXSHARE: [u8; 12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+
+pub type NFTBalance = u128;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -58,12 +105,12 @@ pub type AccountPublic = <Signature as Verify>::Signer;
 /// `AccountId32`. This is always 32 bytes.
 pub type AccountId = <AccountPublic as IdentifyAccount>::AccountId;
 
-/// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
-
 /// The type for looking up accounts. We don't expect more than 4 billion of
 /// them.
 pub type AccountIndex = u32;
+
+/// The address format for describing accounts.
+pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
 
 /// Index of a transaction in the chain. 32-bit should be plenty.
 pub type Nonce = u32;
@@ -98,21 +145,6 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// Block ID.
 pub type BlockId = generic::BlockId<Block>;
 
-/// Index of a transaction in the chain.
-pub type Index = u32;
-
-/// Digest item type.
-pub type DigestItem = generic::DigestItem<Hash>;
-
-/// The IAS signature type
-pub type IASSig = Vec<u8>;
-
-/// The ISV body type, contains the enclave code and public key
-pub type ISVBody = Vec<u8>;
-
-/// Work report empty workload/storage merkle root
-pub type MerkleRoot = Vec<u8>;
-
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
@@ -123,13 +155,12 @@ pub enum AirDropCurrencyId {
 	SETUSD = 1,
 }
 
-//TODO: Add `AlSharifTreasury` and `FoundationTreasury`
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum AuthoritysOriginId {
 	Root,
-	SetheumTreasury,
-	PublicFund,
+	Treasury,
+	// add `AlSharifTreasury` and `FoundationTreasury`
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
@@ -141,7 +172,7 @@ pub enum DataProviderId {
 
 #[derive(Encode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct TradingPair(pub CurrencyId, pub CurrencyId);
+pub struct TradingPair(CurrencyId, CurrencyId);
 
 impl TradingPair {
 	pub fn from_currency_ids(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<Self> {
@@ -185,52 +216,10 @@ impl Decode for TradingPair {
 pub enum ReserveIdentifier {
 	EvmStorageDeposit,
 	EvmDeveloperDeposit,
+	Setmint,
 	Nft,
 	TransactionPayment,
+
 	// always the last, indicate number of variants
 	Count,
 }
-
-/// Ethereum precompiles
-/// 0 - 0x400
-/// Setheum precompiles
-/// 0x400 - 0x800
-pub const PRECOMPILE_ADDRESS_START: u64 = 0x400;
-/// Predeployed system contracts (except Mirrored ERC20)
-/// 0x800 - 0x1000
-pub const PREDEPLOY_ADDRESS_START: u64 = 0x800;
-/// Mirrored Tokens (ensure length <= 4 bytes, encode to u32 will take the first 4 non-zero bytes)
-/// 0x1000000
-pub const MIRRORED_TOKENS_ADDRESS_START: u64 = 0x1000000;
-/// Mirrored NFT (ensure length <= 4 bytes, encode to u32 will take the first 4 non-zero bytes)
-/// 0x2000000
-pub const MIRRORED_NFT_ADDRESS_START: u64 = 0x2000000;
-/// Mirrored LP Tokens
-/// 0x10000000000000000
-pub const MIRRORED_LP_TOKENS_ADDRESS_START: u128 = 0x10000000000000000;
-/// System contract address prefix
-pub const SYSTEM_CONTRACT_ADDRESS_PREFIX: [u8; 11] = [0u8; 11];
-
-/// CurrencyId to H160([u8; 20]) bit encoding rule.
-///
-/// Token
-/// v[16] = 1 // MIRRORED_TOKENS_ADDRESS_START
-/// - v[19] = token(1 byte)
-///
-/// DexShare
-/// v[11] = 1 // MIRRORED_LP_TOKENS_ADDRESS_START
-/// - v[12..16] = dex left(4 bytes)
-/// - v[16..20] = dex right(4 bytes)
-///
-/// Erc20
-/// - v[0..20] = evm address(20 bytes)
-pub const H160_TYPE_TOKEN: u8 = 1;
-pub const H160_TYPE_DEXSHARE: u8 = 1;
-pub const H160_POSITION_TOKEN: usize = 19;
-pub const H160_POSITION_DEXSHARE_LEFT: Range<usize> = 12..16;
-pub const H160_POSITION_DEXSHARE_RIGHT: Range<usize> = 16..20;
-pub const H160_POSITION_ERC20: Range<usize> = 0..20;
-pub const H160_PREFIX_TOKEN: [u8; 19] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
-pub const H160_PREFIX_DEXSHARE: [u8; 12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
-
-pub type NFTBalance = u128;

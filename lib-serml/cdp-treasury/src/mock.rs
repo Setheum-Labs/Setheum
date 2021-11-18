@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -42,7 +43,7 @@ pub const BUYBACK_POOL: AccountId = 1;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
+pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
 mod cdp_treasury {
@@ -137,11 +138,11 @@ parameter_types! {
 	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, BTC).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-		TradingPair::from_currency_ids(BTC, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SERP, DNAR).unwrap(),
 	];
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
 }
 
 impl module_dex::Config for Runtime {
@@ -150,9 +151,8 @@ impl module_dex::Config for Runtime {
 	type GetExchangeFee = GetExchangeFee;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
-	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = DEXModuleId;
+	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
@@ -197,6 +197,18 @@ pub struct MockSerpTreasury;
 impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+
+	fn calculate_supply_change(
+		_numerator: Balance,
+		_denominator: Balance,
+		_supply: Balance
+	) -> Self::Balance{
+		unimplemented!()
+	}
+
+	fn serp_tes_now() -> DispatchResult{
+		unimplemented!()
+	}
 
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult {
@@ -243,6 +255,41 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 	
+	fn get_alsharif_fund_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_alsharif_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_cashdrop_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serplus(
 		_currency_id: CurrencyId,
@@ -332,7 +379,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const CDPTreasuryModuleId: ModuleId = ModuleId(*b"set/cdpt");
+	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub const TreasuryAccount: AccountId = 10;
 }
 
@@ -351,7 +398,6 @@ impl Config for Runtime {
 	type SerpTreasury = MockSerpTreasury;
 	type UpdateOrigin = EnsureOneOf<AccountId, EnsureRoot<AccountId>, EnsureSignedBy<One, AccountId>>;
 	type WeightInfo = ();
-	type ModuleId = CDPTreasuryModuleId;
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
@@ -382,10 +428,10 @@ impl Default for ExtBuilder {
 			balances: vec![
 				(ALICE, DNAR, 1000),
 				(ALICE, SETUSD, 1000),
-				(ALICE, BTC, 1000),
+				(ALICE, SERP, 1000),
 				(BOB, DNAR, 1000),
 				(BOB, SETUSD, 1000),
-				(BOB, BTC, 1000),
+				(BOB, SERP, 1000),
 			],
 		}
 	}

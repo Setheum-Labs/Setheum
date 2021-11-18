@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -16,11 +17,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # SetMint Module
+//! # Serp Setmint
 //!
 //! ## Overview
 //!
-//! The entry of the SetMint protocol for users, user can manipulate their CDP
+//! The entry of the Setmint protocol for users, user can manipulate their CDP
 //! position to loan/payback, and can also authorize others to manage the their
 //! CDP under specific collateral type.
 //!
@@ -29,9 +30,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, traits::ReservableCurrency, transactional};
+use frame_support::{pallet_prelude::*, traits::NamedReservableCurrency, transactional};
 use frame_system::pallet_prelude::*;
-use primitives::{Amount, Balance, CurrencyId};
+use primitives::{Amount, Balance, CurrencyId, ReserveIdentifier};
 use sp_runtime::{
 	traits::{StaticLookup, Zero},
 	DispatchResult,
@@ -50,14 +51,21 @@ pub use weights::WeightInfo;
 pub mod module {
 	use super::*;
 
+	pub const RESERVE_ID: ReserveIdentifier = ReserveIdentifier::Setmint;
+
 	#[pallet::config]
 	pub trait Config: frame_system::Config + cdp_engine::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// Currency for authorization reserved.
-		type Currency: ReservableCurrency<Self::AccountId, Balance = Balance>;
+		type Currency: NamedReservableCurrency<
+			Self::AccountId,
+			Balance = Balance,
+			ReserveIdentifier = ReserveIdentifier,
+		>;
 
 		/// Reserved amount per authorization.
+		#[pallet::constant]
 		type DepositPerAuthorization: Get<Balance>;
 
 		/// Weight information for the extrinsics in this module.
@@ -66,10 +74,12 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		// No authorization
-		NoAuthorization,
+		// No permisson
+		NoPermission,
 		// The system has been shutdown
 		AlreadyShutdown,
+		// Authorization not exists
+		AuthorizationNotExists,
 		// Have authorized already
 		AlreadyAuthorized,
 	}
@@ -105,7 +115,7 @@ pub mod module {
 	>;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
@@ -128,7 +138,7 @@ pub mod module {
 			currency_id: CurrencyId,
 			collateral_adjustment: Amount,
 			debit_adjustment: Amount,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
 			// not allowed to adjust the debit after system shutdown
@@ -136,9 +146,16 @@ pub mod module {
 				ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
 			}
 			<cdp_engine::Pallet<T>>::adjust_position(&who, currency_id, collateral_adjustment, debit_adjustment)?;
-			Ok(().into())
+			Ok(())
 		}
 
+		/// Close caller's CDP which has debit but still in safe by use collateral to swap
+		/// stable token on DEX for clearing debit.
+		///
+		/// - `currency_id`: collateral currency id.
+		/// - `max_collateral_amount`: the max collateral amount which is used to swap enough
+		/// 	stable token to clear debit.
+		/// - `maybe_path`: the custom swap path.
 		#[pallet::weight(<T as Config>::WeightInfo::close_loan_has_debit_by_dex(
 			maybe_path.clone().map(|p| p.len() as u32).unwrap_or(2)
 		))]
@@ -146,12 +163,18 @@ pub mod module {
 		pub fn close_loan_has_debit_by_dex(
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
+			#[pallet::compact] max_collateral_amount: Balance,
 			maybe_path: Option<Vec<CurrencyId>>,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
-			<cdp_engine::Pallet<T>>::close_cdp_has_debit_by_dex(who, currency_id, maybe_path.as_deref())?;
-			Ok(().into())
+			<cdp_engine::Pallet<T>>::close_cdp_has_debit_by_dex(
+				who,
+				currency_id,
+				max_collateral_amount,
+				maybe_path.as_deref(),
+			)?;
+			Ok(())
 		}
 
 		/// Transfer the whole CDP of `from` under `currency_id` to caller's CDP
@@ -166,13 +189,13 @@ pub mod module {
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			from: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let to = ensure_signed(origin)?;
 			let from = T::Lookup::lookup(from)?;
 			ensure!(!T::EmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
 			Self::check_authorization(&from, &to, currency_id)?;
 			<loans::Pallet<T>>::transfer_loan(&from, &to, currency_id)?;
-			Ok(().into())
+			Ok(())
 		}
 
 		/// Authorize `to` to manipulate the loan under `currency_id`
@@ -185,17 +208,17 @@ pub mod module {
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			to: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
 			if from == to {
-				return Ok(().into());
+				return Ok(());
 			}
 
 			Authorization::<T>::try_mutate_exists(&from, (currency_id, &to), |maybe_reserved| -> DispatchResult {
 				if maybe_reserved.is_none() {
 					let reserve_amount = T::DepositPerAuthorization::get();
-					<T as Config>::Currency::reserve(&from, reserve_amount)?;
+					<T as Config>::Currency::reserve_named(&RESERVE_ID, &from, reserve_amount)?;
 					*maybe_reserved = Some(reserve_amount);
 					Self::deposit_event(Event::Authorization(from.clone(), to.clone(), currency_id));
 					Ok(())
@@ -203,7 +226,7 @@ pub mod module {
 					Err(Error::<T>::AlreadyAuthorized.into())
 				}
 			})?;
-			Ok(().into())
+			Ok(())
 		}
 
 		/// Cancel the authorization for `to` under `currency_id`
@@ -216,28 +239,25 @@ pub mod module {
 			origin: OriginFor<T>,
 			currency_id: CurrencyId,
 			to: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
-			if let Some(reserved) = Authorization::<T>::take(&from, (currency_id, &to)) {
-				<T as Config>::Currency::unreserve(&from, reserved);
-				Self::deposit_event(Event::UnAuthorization(from, to, currency_id));
-			}
-			Ok(().into())
+			let reserved =
+				Authorization::<T>::take(&from, (currency_id, &to)).ok_or(Error::<T>::AuthorizationNotExists)?;
+			<T as Config>::Currency::unreserve_named(&RESERVE_ID, &from, reserved);
+			Self::deposit_event(Event::UnAuthorization(from, to, currency_id));
+			Ok(())
 		}
 
 		/// Cancel all authorization of caller
 		#[pallet::weight(<T as Config>::WeightInfo::unauthorize_all(<T as cdp_engine::Config>::CollateralCurrencyIds::get().len() as u32))]
 		#[transactional]
-		pub fn unauthorize_all(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn unauthorize_all(origin: OriginFor<T>) -> DispatchResult {
 			let from = ensure_signed(origin)?;
-			let total_reserved: Balance = Authorization::<T>::drain_prefix(&from)
-				.fold(Zero::zero(), |total_reserved, (_, reserved)| {
-					total_reserved.saturating_add(reserved)
-				});
-			<T as Config>::Currency::unreserve(&from, total_reserved);
+			Authorization::<T>::remove_prefix(&from, None);
+			<T as Config>::Currency::unreserve_all_named(&RESERVE_ID, &from);
 			Self::deposit_event(Event::UnAuthorizationAll(from));
-			Ok(().into())
+			Ok(())
 		}
 	}
 }
@@ -247,7 +267,7 @@ impl<T: Config> Pallet<T> {
 	fn check_authorization(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		ensure!(
 			from == to || Authorization::<T>::contains_key(from, (currency_id, to)),
-			Error::<T>::NoAuthorization
+			Error::<T>::NoPermission
 		);
 		Ok(())
 	}

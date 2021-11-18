@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -20,17 +21,17 @@
 
 #![cfg(feature = "runtime-benchmarks")]
 
-use sp_std::prelude::*;
 use sp_std::vec;
 
 use frame_benchmarking::{account, benchmarks};
-use frame_support::{traits::Get, weights::DispatchClass};
+use frame_support::{dispatch::DispatchErrorWithPostInfo, traits::Get, weights::DispatchClass};
 use frame_system::RawOrigin;
-use sp_runtime::traits::{ModuleId, AccountIdConversion, StaticLookup, UniqueSaturatedInto};
+use sp_runtime::traits::{AccountIdConversion, StaticLookup, UniqueSaturatedInto};
 
 pub use crate::*;
 use primitives::Balance;
 
+pub struct Module<T: Config>(crate::Pallet<T>);
 
 const SEED: u32 = 0;
 
@@ -39,14 +40,47 @@ fn dollar(d: u32) -> Balance {
 	d.saturating_mul(1_000_000_000_000_000_000)
 }
 
+fn test_attr() -> Attributes {
+	let mut attr: Attributes = BTreeMap::new();
+	for i in 0..30 {
+		attr.insert(vec![i], vec![0; 64]);
+	}
+	attr
+}
+
+fn create_token_class<T: Config>(caller: T::AccountId) -> Result<T::AccountId, DispatchErrorWithPostInfo> {
+	let base_currency_amount = dollar(1000);
+	<T as module::Config>::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
+
+	let module_account: T::AccountId = T::PalletId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
+	crate::Pallet::<T>::create_class(
+		RawOrigin::Signed(caller).into(),
+		vec![1],
+		Properties(
+			ClassProperty::Transferable
+				| ClassProperty::Burnable
+				| ClassProperty::Mintable
+				| ClassProperty::ClassPropertiesMutable,
+		),
+		test_attr(),
+	)?;
+
+	<T as module::Config>::Currency::make_free_balance_be(
+		&module_account,
+		base_currency_amount.unique_saturated_into(),
+	);
+
+	Ok(module_account)
+}
+
 benchmarks! {
 	// create NFT class
 	create_class {
 		let caller: T::AccountId = account("caller", 0, SEED);
 		let base_currency_amount = dollar(1000);
 
-		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
-	}: _(RawOrigin::Signed(caller), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))
+		<T as module::Config>::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
+	}: _(RawOrigin::Signed(caller), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable), test_attr())
 
 	// mint NFT token
 	mint {
@@ -56,13 +90,8 @@ benchmarks! {
 		let to: T::AccountId = account("to", 0, SEED);
 		let to_lookup = T::Lookup::unlookup(to);
 
-		let base_currency_amount = dollar(1000);
-		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
-
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
-		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
-		T::Currency::make_free_balance_be(&module_account, base_currency_amount.unique_saturated_into());
-	}: _(RawOrigin::Signed(module_account), to_lookup, 0u32.into(), vec![1], i)
+		let module_account = create_token_class::<T>(caller)?;
+	}: _(RawOrigin::Signed(module_account), to_lookup, 0u32.into(), vec![1], test_attr(), i)
 
 	// transfer NFT token to another account
 	transfer {
@@ -71,13 +100,9 @@ benchmarks! {
 		let to: T::AccountId = account("to", 0, SEED);
 		let to_lookup = T::Lookup::unlookup(to.clone());
 
-		let base_currency_amount = dollar(1000);
-		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
+		let module_account = create_token_class::<T>(caller)?;
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
-		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
-		T::Currency::make_free_balance_be(&module_account, base_currency_amount.unique_saturated_into());
-		crate::Module::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
+		crate::Pallet::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], test_attr(), 1)?;
 	}: _(RawOrigin::Signed(to), caller_lookup, (0u32.into(), 0u32.into()))
 
 	// burn NFT token
@@ -86,13 +111,9 @@ benchmarks! {
 		let to: T::AccountId = account("to", 0, SEED);
 		let to_lookup = T::Lookup::unlookup(to.clone());
 
-		let base_currency_amount = dollar(1000);
-		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
+		let module_account = create_token_class::<T>(caller)?;
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
-		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
-		T::Currency::make_free_balance_be(&module_account, base_currency_amount.unique_saturated_into());
-		crate::Module::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
+		crate::Pallet::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], test_attr(), 1)?;
 	}: _(RawOrigin::Signed(to), (0u32.into(), 0u32.into()))
 
 	// burn NFT token with remark
@@ -103,13 +124,9 @@ benchmarks! {
 		let to: T::AccountId = account("to", 0, SEED);
 		let to_lookup = T::Lookup::unlookup(to.clone());
 
-		let base_currency_amount = dollar(1000);
-		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
+		let module_account = create_token_class::<T>(caller)?;
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
-		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
-		T::Currency::make_free_balance_be(&module_account, base_currency_amount.unique_saturated_into());
-		crate::Module::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], 1)?;
+		crate::Pallet::<T>::mint(RawOrigin::Signed(module_account).into(), to_lookup, 0u32.into(), vec![1], test_attr(), 1)?;
 	}: _(RawOrigin::Signed(to), (0u32.into(), 0u32.into()), remark_message)
 
 	// destroy NFT class
@@ -119,11 +136,17 @@ benchmarks! {
 
 		let base_currency_amount = dollar(1000);
 
-		T::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
+		let module_account = create_token_class::<T>(caller)?;
 
-		let module_account: T::AccountId = T::ModuleId::get().into_sub_account(orml_nft::Module::<T>::next_class_id());
-		crate::Module::<T>::create_class(RawOrigin::Signed(caller).into(), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable))?;
 	}: _(RawOrigin::Signed(module_account), 0u32.into(), caller_lookup)
+
+	update_class_properties {
+		let caller: T::AccountId = account("caller", 0, SEED);
+		let to: T::AccountId = account("to", 0, SEED);
+		let to_lookup = T::Lookup::unlookup(to);
+
+		let module_account = create_token_class::<T>(caller)?;
+	}: _(RawOrigin::Signed(module_account), 0u32.into(), Properties(ClassProperty::Transferable.into()))
 }
 
 #[cfg(test)]
@@ -134,9 +157,9 @@ mod mock {
 	use codec::{Decode, Encode};
 	use frame_support::{
 		parameter_types,
-		traits::{Filter, InstanceFilter},
+		traits::{Contains, InstanceFilter},
 		weights::Weight,
-		ModuleId, RuntimeDebug,
+		PalletId, RuntimeDebug,
 	};
 	use sp_core::{crypto::AccountId32, H256};
 	use sp_runtime::{
@@ -177,17 +200,21 @@ mod mock {
 		type OnKilledAccount = ();
 		type SystemWeightInfo = ();
 		type SS58Prefix = ();
+		type OnSetCode = ();
 	}
 	parameter_types! {
 		pub const ExistentialDeposit: u64 = 1;
+		pub const MaxReserves: u32 = 50;
 	}
 	impl pallet_balances::Config for Runtime {
 		type Balance = Balance;
 		type Event = ();
 		type DustRemoval = ();
 		type ExistentialDeposit = ExistentialDeposit;
-		type AccountStore = frame_system::Module<Runtime>;
+		type AccountStore = frame_system::Pallet<Runtime>;
 		type MaxLocks = ();
+		type MaxReserves = MaxReserves;
+		type ReserveIdentifier = ReserveIdentifier;
 		type WeightInfo = ();
 	}
 	impl pallet_utility::Config for Runtime {
@@ -203,7 +230,7 @@ mod mock {
 		pub const AnnouncementDepositBase: u64 = 1;
 		pub const AnnouncementDepositFactor: u64 = 1;
 	}
-	#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug)]
+	#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen)]
 	pub enum ProxyType {
 		Any,
 		JustTransfer,
@@ -227,8 +254,8 @@ mod mock {
 		}
 	}
 	pub struct BaseFilter;
-	impl Filter<Call> for BaseFilter {
-		fn filter(c: &Call) -> bool {
+	impl Contains<Call> for BaseFilter {
+		fn contains(c: &Call) -> bool {
 			match *c {
 				// Remark is used as a no-op call in the benchmarking
 				Call::System(SystemCall::remark(_)) => true,
@@ -255,13 +282,19 @@ mod mock {
 	parameter_types! {
 		pub const CreateClassDeposit: Balance = 200;
 		pub const CreateTokenDeposit: Balance = 100;
-		pub const NftModuleId: ModuleId = ModuleId(*b"set/sNFT");
+		pub const DataDepositPerByte: Balance = 10;
+		pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
+		pub MaxAttributesBytes: u32 = 2048;
 	}
+
 	impl crate::Config for Runtime {
 		type Event = ();
+		type Currency = Balances;
 		type CreateClassDeposit = CreateClassDeposit;
 		type CreateTokenDeposit = CreateTokenDeposit;
-		type ModuleId = NftModuleId;
+		type DataDepositPerByte = DataDepositPerByte;
+		type PalletId = NftPalletId;
+		type MaxAttributesBytes = MaxAttributesBytes;
 		type WeightInfo = ();
 	}
 
@@ -288,12 +321,12 @@ mod mock {
 			NodeBlock = Block,
 			UncheckedExtrinsic = UncheckedExtrinsic,
 		{
-			System: frame_system::{Module, Call, Config, Storage, Event<T>},
-			Utility: pallet_utility::{Module, Call, Event},
-			Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-			Proxy: pallet_proxy::{Module, Call, Storage, Event<T>},
-			OrmlNFT: orml_nft::{Module, Storage, Config<T>},
-			NFT: nft::{Module, Call, Event<T>},
+			System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+			Utility: pallet_utility::{Pallet, Call, Event},
+			Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+			Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
+			OrmlNFT: orml_nft::{Pallet, Storage, Config<T>},
+			NFT: nft::{Pallet, Call, Event<T>},
 		}
 	);
 
@@ -312,49 +345,9 @@ mod mock {
 
 #[cfg(test)]
 mod tests {
+	use super::mock::*;
 	use super::*;
-	use frame_support::assert_ok;
-	use mock::{new_test_ext, Runtime};
+	use frame_benchmarking::impl_benchmark_test_suite;
 
-	#[test]
-	fn test_create_class() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_create_class::<Runtime>());
-		});
-	}
-
-	#[test]
-	fn test_mint() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_mint::<Runtime>());
-		});
-	}
-
-	#[test]
-	fn test_transfer() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_transfer::<Runtime>());
-		});
-	}
-
-	#[test]
-	fn test_burn() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_burn::<Runtime>());
-		});
-	}
-
-	#[test]
-	fn test_burn_with_remark() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_burn_with_remark::<Runtime>());
-		});
-	}
-
-	#[test]
-	fn test_destroy_class() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_destroy_class::<Runtime>());
-		});
-	}
+	impl_benchmark_test_suite!(Pallet, super::new_test_ext(), super::Runtime,);
 }

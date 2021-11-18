@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -16,7 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Unit tests for the SerpMint module.
+//! Unit tests for the setmint module.
 
 #![cfg(test)]
 
@@ -32,12 +33,12 @@ fn authorize_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
-		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB));
+		assert_ok!(SerpSetmint::authorize(Origin::signed(ALICE), SERP, BOB));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), DepositPerAuthorization::get());
-		Event::serp_setmint(crate::Event::Authorization(ALICE, BOB, BTC));
-		assert_ok!(SerpMintModule::check_authorization(&ALICE, &BOB, BTC));
+		System::assert_last_event(Event::SerpSetmint(crate::Event::Authorization(ALICE, BOB, SERP)));
+		assert_ok!(SerpSetmint::check_authorization(&ALICE, &BOB, SERP));
 		assert_noop!(
-			SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB),
+			SerpSetmint::authorize(Origin::signed(ALICE), SERP, BOB),
 			Error::<Runtime>::AlreadyAuthorized
 		);
 	});
@@ -47,16 +48,20 @@ fn authorize_should_work() {
 fn unauthorize_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB));
+		assert_ok!(SerpSetmint::authorize(Origin::signed(ALICE), SERP, BOB));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 100);
-		assert_ok!(SerpMintModule::check_authorization(&ALICE, &BOB, BTC));
+		assert_ok!(SerpSetmint::check_authorization(&ALICE, &BOB, SERP));
 
-		assert_ok!(SerpMintModule::unauthorize(Origin::signed(ALICE), BTC, BOB));
+		assert_ok!(SerpSetmint::unauthorize(Origin::signed(ALICE), SERP, BOB));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
-		Event::serp_setmint(crate::Event::UnAuthorization(ALICE, BOB, BTC));
+		System::assert_last_event(Event::SerpSetmint(crate::Event::UnAuthorization(ALICE, BOB, SERP)));
 		assert_noop!(
-			SerpMintModule::check_authorization(&ALICE, &BOB, BTC),
-			Error::<Runtime>::NoAuthorization
+			SerpSetmint::check_authorization(&ALICE, &BOB, SERP),
+			Error::<Runtime>::NoPermission
+		);
+		assert_noop!(
+			SerpSetmint::unauthorize(Origin::signed(ALICE), SERP, BOB),
+			Error::<Runtime>::AuthorizationNotExists
 		);
 	});
 }
@@ -65,20 +70,20 @@ fn unauthorize_should_work() {
 fn unauthorize_all_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB));
-		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), DNAR, CAROL));
+		assert_ok!(SerpSetmint::authorize(Origin::signed(ALICE), SERP, BOB));
+		assert_ok!(SerpSetmint::authorize(Origin::signed(ALICE), DNAR, CAROL));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 200);
-		assert_ok!(SerpMintModule::unauthorize_all(Origin::signed(ALICE)));
+		assert_ok!(SerpSetmint::unauthorize_all(Origin::signed(ALICE)));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
-		Event::serp_setmint(crate::Event::UnAuthorizationAll(ALICE));
+		System::assert_last_event(Event::SerpSetmint(crate::Event::UnAuthorizationAll(ALICE)));
 
 		assert_noop!(
-			SerpMintModule::check_authorization(&ALICE, &BOB, BTC),
-			Error::<Runtime>::NoAuthorization
+			SerpSetmint::check_authorization(&ALICE, &BOB, SERP),
+			Error::<Runtime>::NoPermission
 		);
 		assert_noop!(
-			SerpMintModule::check_authorization(&ALICE, &BOB, DNAR),
-			Error::<Runtime>::NoAuthorization
+			SerpSetmint::check_authorization(&ALICE, &BOB, DNAR),
+			Error::<Runtime>::NoPermission
 		);
 	});
 }
@@ -88,17 +93,17 @@ fn transfer_loan_from_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(CDPEngineModule::set_collateral_params(
 			Origin::signed(1),
-			BTC,
+			SERP,
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
 			Change::NewValue(10000),
 		));
-		assert_ok!(SerpMintModule::adjust_loan(Origin::signed(ALICE), BTC, 100, 50));
-		assert_ok!(SerpMintModule::authorize(Origin::signed(ALICE), BTC, BOB));
-		assert_ok!(SerpMintModule::transfer_loan_from(Origin::signed(BOB), BTC, ALICE));
-		assert_eq!(LoansModule::positions(BTC, BOB).collateral, 100);
-		assert_eq!(LoansModule::positions(BTC, BOB).debit, 50);
+		assert_ok!(SerpSetmint::adjust_loan(Origin::signed(ALICE), SERP, 100, 50));
+		assert_ok!(SerpSetmint::authorize(Origin::signed(ALICE), SERP, BOB));
+		assert_ok!(SerpSetmint::transfer_loan_from(Origin::signed(BOB), SERP, ALICE));
+		assert_eq!(LoansModule::positions(SERP, BOB).collateral, 100);
+		assert_eq!(LoansModule::positions(SERP, BOB).debit, 50);
 	});
 }
 
@@ -106,8 +111,8 @@ fn transfer_loan_from_should_work() {
 fn transfer_unauthorization_loans_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			SerpMintModule::transfer_loan_from(Origin::signed(ALICE), BTC, BOB),
-			Error::<Runtime>::NoAuthorization,
+			SerpSetmint::transfer_loan_from(Origin::signed(ALICE), SERP, BOB),
+			Error::<Runtime>::NoPermission,
 		);
 	});
 }
@@ -117,15 +122,15 @@ fn adjust_loan_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(CDPEngineModule::set_collateral_params(
 			Origin::signed(1),
-			BTC,
+			SERP,
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
 			Change::NewValue(10000),
 		));
-		assert_ok!(SerpMintModule::adjust_loan(Origin::signed(ALICE), BTC, 100, 50));
-		assert_eq!(LoansModule::positions(BTC, ALICE).collateral, 100);
-		assert_eq!(LoansModule::positions(BTC, ALICE).debit, 50);
+		assert_ok!(SerpSetmint::adjust_loan(Origin::signed(ALICE), SERP, 100, 50));
+		assert_eq!(LoansModule::positions(SERP, ALICE).collateral, 100);
+		assert_eq!(LoansModule::positions(SERP, ALICE).debit, 50);
 	});
 }
 
@@ -134,15 +139,15 @@ fn on_emergency_shutdown_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		mock_shutdown();
 		assert_noop!(
-			SerpMintModule::adjust_loan(Origin::signed(ALICE), BTC, 100, 50),
+			SerpSetmint::adjust_loan(Origin::signed(ALICE), SERP, 100, 50),
 			Error::<Runtime>::AlreadyShutdown,
 		);
 		assert_noop!(
-			SerpMintModule::transfer_loan_from(Origin::signed(ALICE), BTC, BOB),
+			SerpSetmint::transfer_loan_from(Origin::signed(ALICE), SERP, BOB),
 			Error::<Runtime>::AlreadyShutdown,
 		);
 		assert_noop!(
-			SerpMintModule::close_loan_has_debit_by_dex(Origin::signed(ALICE), BTC, None),
+			SerpSetmint::close_loan_has_debit_by_dex(Origin::signed(ALICE), SERP, 100, None),
 			Error::<Runtime>::AlreadyShutdown,
 		);
 	});
@@ -153,22 +158,23 @@ fn close_loan_has_debit_by_dex_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(CDPEngineModule::set_collateral_params(
 			Origin::signed(1),
-			BTC,
+			SERP,
 			Change::NewValue(Some(Ratio::saturating_from_rational(3, 2))),
 			Change::NewValue(Some(Rate::saturating_from_rational(2, 10))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(9, 5))),
 			Change::NewValue(10000),
 		));
-		assert_ok!(SerpMintModule::adjust_loan(Origin::signed(ALICE), BTC, 100, 50));
-		assert_eq!(LoansModule::positions(BTC, ALICE).collateral, 100);
-		assert_eq!(LoansModule::positions(BTC, ALICE).debit, 50);
+		assert_ok!(SerpSetmint::adjust_loan(Origin::signed(ALICE), SERP, 100, 50));
+		assert_eq!(LoansModule::positions(SERP, ALICE).collateral, 100);
+		assert_eq!(LoansModule::positions(SERP, ALICE).debit, 50);
 
-		assert_ok!(SerpMintModule::close_loan_has_debit_by_dex(
+		assert_ok!(SerpSetmint::close_loan_has_debit_by_dex(
 			Origin::signed(ALICE),
-			BTC,
+			SERP,
+			100,
 			None
 		));
-		assert_eq!(LoansModule::positions(BTC, ALICE).collateral, 0);
-		assert_eq!(LoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(LoansModule::positions(SERP, ALICE).collateral, 0);
+		assert_eq!(LoansModule::positions(SERP, ALICE).debit, 0);
 	});
 }

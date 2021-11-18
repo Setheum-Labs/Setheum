@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -26,40 +27,40 @@ use std::{
 
 #[test]
 fn trading_pair_works() {
-	let dnar = CurrencyId::Token(TokenSymbol::DNAR);
+	let setm = CurrencyId::Token(TokenSymbol::SETM);
 	let setusd = CurrencyId::Token(TokenSymbol::SETUSD);
 	let erc20 = CurrencyId::Erc20(EvmAddress::from_str("0x0000000000000000000000000000000000000000").unwrap());
-	let dnar_setusd_lp = CurrencyId::DexShare(DexShare::Token(TokenSymbol::DNAR), DexShare::Token(TokenSymbol::SETUSD));
-	let erc20_dnar_lp = CurrencyId::DexShare(
-		DexShare::Token(TokenSymbol::DNAR),
+	let setm_setusd_lp = CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
+	let erc20_setm_lp = CurrencyId::DexShare(
+		DexShare::Token(TokenSymbol::SETM),
 		DexShare::Erc20(EvmAddress::from_str("0x0000000000000000000000000000000000000000").unwrap()),
 	);
 
 	assert_eq!(
-		TradingPair::from_currency_ids(setusd, dnar).unwrap(),
-		TradingPair(dnar, setusd)
+		TradingPair::from_currency_ids(setusd, setm).unwrap(),
+		TradingPair(setm, setusd)
 	);
 	assert_eq!(
-		TradingPair::from_currency_ids(dnar, setusd).unwrap(),
-		TradingPair(dnar, setusd)
+		TradingPair::from_currency_ids(setm, setusd).unwrap(),
+		TradingPair(setm, setusd)
 	);
 	assert_eq!(
-		TradingPair::from_currency_ids(erc20, dnar).unwrap(),
-		TradingPair(dnar, erc20)
+		TradingPair::from_currency_ids(erc20, setm).unwrap(),
+		TradingPair(setm, erc20)
 	);
-	assert_eq!(TradingPair::from_currency_ids(dnar, dnar), None);
+	assert_eq!(TradingPair::from_currency_ids(setm, setm), None);
 
 	assert_eq!(
-		TradingPair::from_currency_ids(setusd, dnar)
+		TradingPair::from_currency_ids(setusd, setm)
 			.unwrap()
 			.dex_share_currency_id(),
-		dnar_setusd_lp
+		setm_setusd_lp
 	);
 	assert_eq!(
-		TradingPair::from_currency_ids(dnar, erc20)
+		TradingPair::from_currency_ids(setm, erc20)
 			.unwrap()
 			.dex_share_currency_id(),
-		erc20_dnar_lp
+		erc20_setm_lp
 	);
 }
 
@@ -77,7 +78,7 @@ fn currency_id_into_u32_works() {
 	assert_eq!(Into::<u32>::into(currency_id), 0x00);
 
 	let currency_id = DexShare::Token(TokenSymbol::SETUSD);
-	assert_eq!(Into::<u32>::into(currency_id), 0x04);
+	assert_eq!(Into::<u32>::into(currency_id), 0x01);
 
 	let currency_id = DexShare::Erc20(EvmAddress::from_str("0x2000000000000000000000000000000000000000").unwrap());
 	assert_eq!(Into::<u32>::into(currency_id), 0x20000000);
@@ -104,7 +105,7 @@ fn currency_id_try_into_evm_address_works() {
 			DexShare::Token(TokenSymbol::SETM),
 			DexShare::Token(TokenSymbol::SETUSD),
 		)),
-		Ok(EvmAddress::from_str("0x0000000000000000000000010000000000000004").unwrap())
+		Ok(EvmAddress::from_str("0x0000000000000000000000010000000000000001").unwrap())
 	);
 
 	assert_eq!(
