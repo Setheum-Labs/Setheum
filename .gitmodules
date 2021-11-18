@@ -1,9 +1,6 @@
 [submodule "predeploy-contracts"]
 	path = predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts.git
-[submodule "lib-serml/serp-treasury/src/open-lib"]
-	path = lib-serml/serp-treasury/src/open-lib
-	url = https://github.com/Slixon-Technologies/open-runtime-module-library.git
 
 [submodule "open-lib"]
 	path = open-lib

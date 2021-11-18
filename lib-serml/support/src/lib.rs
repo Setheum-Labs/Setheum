@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -19,7 +20,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::{Decode, Encode, FullCodec, HasCompact};
+use codec::{Decode, Encode, FullCodec};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
 	evm::{CallInfo, EvmAddress},
@@ -40,25 +41,9 @@ use sp_std::{
 pub mod mocks;
 
 pub type Price = FixedU128;
+pub type ExchangeRate = FixedU128;
 pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
-pub type ExchangeRate = FixedU128;
-
-pub trait AuctionManager<AccountId> {
-	type CurrencyId;
-	type Balance;
-	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
-
-	fn new_collateral_auction(
-		refund_recipient: &AccountId,
-		currency_id: Self::CurrencyId,
-		amount: Self::Balance,
-		target: Self::Balance,
-	) -> DispatchResult;
-	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
-	fn get_total_collateral_in_auction(id: Self::CurrencyId) -> Self::Balance;
-	fn get_total_target_in_auction() -> Self::Balance;
-}
 
 pub trait RiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 	fn get_bad_debt_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
@@ -92,6 +77,22 @@ impl<AccountId, CurrencyId, Balance: Default, DebitBalance> RiskManager<AccountI
 	fn check_debit_cap(_currency_id: CurrencyId, _total_debit_balance: DebitBalance) -> DispatchResult {
 		Ok(())
 	}
+}
+
+pub trait AuctionManager<AccountId> {
+	type CurrencyId;
+	type Balance;
+	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
+
+	fn new_collateral_auction(
+		refund_recipient: &AccountId,
+		currency_id: Self::CurrencyId,
+		amount: Self::Balance,
+		target: Self::Balance,
+	) -> DispatchResult;
+	fn cancel_auction(id: Self::AuctionId) -> DispatchResult;
+	fn get_total_collateral_in_auction(id: Self::CurrencyId) -> Self::Balance;
+	fn get_total_target_in_auction() -> Self::Balance;
 }
 
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
@@ -230,6 +231,10 @@ pub trait SerpTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
 
+	fn calculate_supply_change(numerator: Self::Balance, denominator: Self::Balance, supply: Self::Balance) -> Self::Balance;
+
+	fn serp_tes_now() -> DispatchResult;
+
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult;
 
@@ -247,7 +252,17 @@ pub trait SerpTreasury<AccountId> {
 
 	/// Serplus ratio for Setheum Foundation's Charity Fund
 	fn get_public_fund_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-	
+
+	fn get_alsharif_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	fn get_treasury_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	fn get_alsharif_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	fn get_treasury_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
+	fn get_cashdrop_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
+
 	/// issue system surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serplus(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 
@@ -355,7 +370,7 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 	);
 }
 
-/// An abstraction of cdp treasury for SetMint Protocol.
+/// An abstraction of cdp treasury for Setmint Protocol.
 pub trait CDPTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
@@ -690,4 +705,9 @@ impl CurrencyIdMapping for () {
 	fn decode_evm_address(_v: EvmAddress) -> Option<CurrencyId> {
 		None
 	}
+}
+
+/// Used to interface with the Compound's Cash module
+pub trait CompoundCashTrait<Balance, Moment> {
+	fn set_future_yield(next_cash_yield: Balance, yield_index: u128, timestamp_effective: Moment) -> DispatchResult;
 }

@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -16,6 +17,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use substrate_build_script_utils::{generate_cargo_keys, rerun_if_git_head_changed};
+
 fn main() {
-	serml_build_script_utils::generate_cargo_keys();
+	generate_cargo_keys();
+
+	rerun_if_git_head_changed();
 }

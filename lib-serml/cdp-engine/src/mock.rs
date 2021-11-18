@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -28,10 +29,10 @@ use primitives::{Moment, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
-	traits::{AccountIdConversion, IdentityLookup, One as OneT},
+	traits::{IdentityLookup, One as OneT},
 };
 use sp_std::cell::RefCell;
-use support::{AuctionManager, EmergencyShutdown};
+use support::{AuctionManager, EmergencyShutdown, SerpTreasury};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -40,12 +41,11 @@ pub type AuctionId = u32;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
-pub const BUYBACK_POOL: AccountId = 4;
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::RENBTC);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
 mod cdp_engine {
 	pub use super::super::*;
@@ -118,7 +118,6 @@ pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, P
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub const GetSetUSDId: CurrencyId = SETUSD;
 }
 
 impl orml_currencies::Config for Runtime {
@@ -140,7 +139,6 @@ impl loans::Config for Runtime {
 	type RiskManager = CDPEngineModule;
 	type CDPTreasury = CDPTreasuryModule;
 	type PalletId = LoansPalletId;
-	type OnUpdateLoan = ();
 }
 
 thread_local! {
@@ -156,8 +154,8 @@ impl MockPriceSource {
 impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
 		match (base, quote) {
-			(AUSD, BTC) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(BTC, AUSD) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
+			(SETUSD, SERP) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
+			(SERP, SETUSD) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
 			_ => None,
 		}
 	}
@@ -199,6 +197,18 @@ pub struct MockSerpTreasury;
 impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
+
+	fn calculate_supply_change(
+		_numerator: Balance,
+		_denominator: Balance,
+		_supply: Balance
+	) -> Self::Balance{
+		unimplemented!()
+	}
+
+	fn serp_tes_now() -> DispatchResult{
+		unimplemented!()
+	}
 
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult {
@@ -245,6 +255,41 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 	
+	fn get_alsharif_fund_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_alsharif_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_cashdrop_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
 	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
 	fn on_serplus(
 		_currency_id: CurrencyId,
@@ -329,6 +374,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 }
 
 parameter_types! {
+	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 }
@@ -347,30 +393,31 @@ impl cdp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![SETUSD];
 	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
-	pub const GetExchangeFee: (u32, u32) = (0, 100);
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
-	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+	];
+	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 3;
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, BTC).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETM, BTC).unwrap(),
+		TradingPair::from_currency_ids(SETM, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETM, DNAR).unwrap(),
 		TradingPair::from_currency_ids(SETM, SETUSD).unwrap(),
 	];
 }
 
-impl module_dex::Config for Runtime {
+impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
-	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXMPalletId;
+	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
@@ -407,12 +454,12 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(3, 2);
-	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::one();
+	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(10, 100);
 	pub const MinimumDebitValue: Balance = 2;
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![BTC, DNAR];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SERP, DNAR];
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETUSD],
 		vec![SETM, SETUSD],
@@ -477,13 +524,13 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, BTC, 1000),
-				(BOB, BTC, 1000),
-				(CAROL, BTC, 100),
+				(ALICE, SERP, 1000),
+				(BOB, SERP, 1000),
+				(CAROL, SERP, 10000),
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
 				(CAROL, DNAR, 10000),
-				(CAROL, SETUSD, 1000),
+				(CAROL, SETUSD, 10000),
 			],
 		}
 	}
@@ -522,7 +569,7 @@ impl ExtBuilder {
 		let mut balances = Vec::new();
 		for i in 0..1001 {
 			let account_id: AccountId = i;
-			balances.push((account_id, BTC, 1000));
+			balances.push((account_id, SERP, 1000));
 		}
 		Self { balances }
 	}

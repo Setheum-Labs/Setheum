@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -16,13 +17,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use super::input::{Input, InputT};
-use frame_support::debug;
+use super::input::{Input, InputT, Output};
+use crate::precompile::PrecompileOutput;
+use frame_support::log;
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
 use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, DEXManager};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use primitives::{Balance, CurrencyId};
-use sp_core::{RuntimeDebug, U256};
+use sp_runtime::RuntimeDebug;
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*, result};
 
 /// The `DEX` impl precompile.
@@ -64,11 +66,7 @@ where
 		input: &[u8],
 		_target_gas: Option<u64>,
 		_context: &Context,
-	) -> result::Result<(ExitSucceed, Vec<u8>, u64), ExitError> {
-		//TODO: evaluate cost
-
-		debug::debug!(target: "evm", "dex: input: {:?}", input);
-
+	) -> result::Result<PrecompileOutput, ExitError> {
 		let input = Input::<Action, AccountId, AddressMapping, CurrencyIdMapping>::new(input);
 
 		let action = input.action()?;
@@ -77,7 +75,7 @@ where
 			Action::GetLiquidityPool => {
 				let currency_id_a = input.currency_id_at(1)?;
 				let currency_id_b = input.currency_id_at(2)?;
-				debug::debug!(
+				log::debug!(
 					target: "evm",
 					"dex: get_liquidity_pool currency_id_a: {:?}, currency_id_b: {:?}",
 					currency_id_a, currency_id_b
@@ -85,17 +83,17 @@ where
 
 				let (balance_a, balance_b) = Dex::get_liquidity_pool(currency_id_a, currency_id_b);
 
-				// output
-				let mut be_bytes = [0u8; 64];
-				U256::from(balance_a).to_big_endian(&mut be_bytes[..32]);
-				U256::from(balance_b).to_big_endian(&mut be_bytes[32..64]);
-
-				Ok((ExitSucceed::Returned, be_bytes.to_vec(), 0))
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					cost: 0,
+					output: Output::default().encode_u128_tuple(balance_a, balance_b),
+					logs: Default::default(),
+				})
 			}
 			Action::GetLiquidityTokenAddress => {
 				let currency_id_a = input.currency_id_at(1)?;
 				let currency_id_b = input.currency_id_at(2)?;
-				debug::debug!(
+				log::debug!(
 					target: "evm",
 					"dex: get_liquidity_token address currency_id_a: {:?}, currency_id_b: {:?}",
 					currency_id_a, currency_id_b
@@ -104,11 +102,12 @@ where
 				let value = Dex::get_liquidity_token_address(currency_id_a, currency_id_b)
 					.ok_or_else(|| ExitError::Other("Dex get_liquidity_token_address failed".into()))?;
 
-				// output
-				let mut be_bytes = [0u8; 32];
-				U256::from(value.as_bytes()).to_big_endian(&mut be_bytes[..32]);
-
-				Ok((ExitSucceed::Returned, be_bytes.to_vec(), 0))
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					cost: 0,
+					output: Output::default().encode_address(&value),
+					logs: Default::default(),
+				})
 			}
 			Action::GetSwapTargetAmount => {
 				// solidity abi enocde array will add an offset at input[1]
@@ -118,7 +117,7 @@ where
 				for i in 0..path_len {
 					path.push(input.currency_id_at((4 + i) as usize)?);
 				}
-				debug::debug!(
+				log::debug!(
 					target: "evm",
 					"dex: get_swap_target_amount path: {:?}, supply_amount: {:?}",
 					path, supply_amount
@@ -127,11 +126,12 @@ where
 				let value = Dex::get_swap_target_amount(&path, supply_amount)
 					.ok_or_else(|| ExitError::Other("Dex get_swap_target_amount failed".into()))?;
 
-				// output
-				let mut be_bytes = [0u8; 32];
-				U256::from(value).to_big_endian(&mut be_bytes[..32]);
-
-				Ok((ExitSucceed::Returned, be_bytes.to_vec(), 0))
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					cost: 0,
+					output: Output::default().encode_u128(value),
+					logs: Default::default(),
+				})
 			}
 			Action::GetSwapSupplyAmount => {
 				// solidity abi enocde array will add an offset at input[1]
@@ -141,7 +141,7 @@ where
 				for i in 0..path_len {
 					path.push(input.currency_id_at((4 + i) as usize)?);
 				}
-				debug::debug!(
+				log::debug!(
 					target: "evm",
 					"dex: get_swap_supply_amount path: {:?}, target_amount: {:?}",
 					path, target_amount
@@ -150,11 +150,12 @@ where
 				let value = Dex::get_swap_supply_amount(&path, target_amount)
 					.ok_or_else(|| ExitError::Other("Dex get_swap_supply_amount failed".into()))?;
 
-				// output
-				let mut be_bytes = [0u8; 32];
-				U256::from(value).to_big_endian(&mut be_bytes[..32]);
-
-				Ok((ExitSucceed::Returned, be_bytes.to_vec(), 0))
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					cost: 0,
+					output: Output::default().encode_u128(value),
+					logs: Default::default(),
+				})
 			}
 			Action::SwapWithExactSupply => {
 				let who = input.account_id_at(1)?;
@@ -166,7 +167,7 @@ where
 				for i in 0..path_len {
 					path.push(input.currency_id_at((6 + i) as usize)?);
 				}
-				debug::debug!(
+				log::debug!(
 					target: "evm",
 					"dex: swap_with_exact_supply who: {:?}, path: {:?}, supply_amount: {:?}, min_target_amount: {:?}",
 					who, path, supply_amount, min_target_amount
@@ -178,11 +179,12 @@ where
 						ExitError::Other(err_msg.into())
 					})?;
 
-				// output
-				let mut be_bytes = [0u8; 32];
-				U256::from(value).to_big_endian(&mut be_bytes[..32]);
-
-				Ok((ExitSucceed::Returned, be_bytes.to_vec(), 0))
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					cost: 0,
+					output: Output::default().encode_u128(value),
+					logs: Default::default(),
+				})
 			}
 			Action::SwapWithExactTarget => {
 				let who = input.account_id_at(1)?;
@@ -194,7 +196,7 @@ where
 				for i in 0..path_len {
 					path.push(input.currency_id_at((6 + i) as usize)?);
 				}
-				debug::debug!(
+				log::debug!(
 					target: "evm",
 					"dex: swap_with_exact_target who: {:?}, path: {:?}, target_amount: {:?}, max_supply_amount: {:?}",
 					who, path, target_amount, max_supply_amount
@@ -206,11 +208,12 @@ where
 						ExitError::Other(err_msg.into())
 					})?;
 
-				// output
-				let mut be_bytes = [0u8; 32];
-				U256::from(value).to_big_endian(&mut be_bytes[..32]);
-
-				Ok((ExitSucceed::Returned, be_bytes.to_vec(), 0))
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					cost: 0,
+					output: Output::default().encode_u128(value),
+					logs: Default::default(),
+				})
 			}
 			Action::AddLiquidity => {
 				let who = input.account_id_at(1)?;
@@ -220,7 +223,7 @@ where
 				let max_amount_b = input.balance_at(5)?;
 				let min_share_increment = input.balance_at(6)?;
 
-				debug::debug!(
+				log::debug!(
 					target: "evm",
 					"dex: add_liquidity who: {:?}, currency_id_a: {:?}, currency_id_b: {:?}, max_amount_a: {:?}, max_amount_b: {:?}, min_share_increment: {:?}",
 					who, currency_id_a, currency_id_b, max_amount_a, max_amount_b, min_share_increment,
@@ -239,7 +242,12 @@ where
 					ExitError::Other(err_msg.into())
 				})?;
 
-				Ok((ExitSucceed::Returned, vec![], 0))
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					cost: 0,
+					output: vec![],
+					logs: Default::default(),
+				})
 			}
 			Action::RemoveLiquidity => {
 				let who = input.account_id_at(1)?;
@@ -249,7 +257,7 @@ where
 				let min_withdrawn_a = input.balance_at(5)?;
 				let min_withdrawn_b = input.balance_at(6)?;
 
-				debug::debug!(
+				log::debug!(
 					target: "evm",
 					"dex: remove_liquidity who: {:?}, currency_id_a: {:?}, currency_id_b: {:?}, remove_share: {:?}, min_withdrawn_a: {:?}, min_withdrawn_b: {:?}",
 					who, currency_id_a, currency_id_b, remove_share, min_withdrawn_a, min_withdrawn_b,
@@ -268,65 +276,13 @@ where
 					ExitError::Other(err_msg.into())
 				})?;
 
-				Ok((ExitSucceed::Returned, vec![], 0))
+				Ok(PrecompileOutput {
+					exit_status: ExitSucceed::Returned,
+					cost: 0,
+					output: vec![],
+					logs: Default::default(),
+				})
 			}
 		}
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::precompile::mock::get_function_selector;
-
-	#[test]
-	fn function_selector_match() {
-		assert_eq!(
-			u32::from_be_bytes(get_function_selector("getLiquidityPool(address,address)")),
-			Into::<u32>::into(Action::GetLiquidityPool)
-		);
-
-		assert_eq!(
-			u32::from_be_bytes(get_function_selector("getLiquidityTokenAddress(address,address)")),
-			Into::<u32>::into(Action::GetLiquidityTokenAddress)
-		);
-
-		assert_eq!(
-			u32::from_be_bytes(get_function_selector("getSwapTargetAmount(address[],uint256)")),
-			Into::<u32>::into(Action::GetSwapTargetAmount)
-		);
-
-		assert_eq!(
-			u32::from_be_bytes(get_function_selector("getSwapSupplyAmount(address[],uint256)")),
-			Into::<u32>::into(Action::GetSwapSupplyAmount)
-		);
-
-		assert_eq!(
-			u32::from_be_bytes(get_function_selector(
-				"swapWithExactSupply(address,address[],uint256,uint256)"
-			)),
-			Into::<u32>::into(Action::SwapWithExactSupply)
-		);
-
-		assert_eq!(
-			u32::from_be_bytes(get_function_selector(
-				"swapWithExactTarget(address,address[],uint256,uint256)"
-			)),
-			Into::<u32>::into(Action::SwapWithExactTarget)
-		);
-
-		assert_eq!(
-			u32::from_be_bytes(get_function_selector(
-				"addLiquidity(address,address,address,uint256,uint256,uint256)"
-			)),
-			Into::<u32>::into(Action::AddLiquidity)
-		);
-
-		assert_eq!(
-			u32::from_be_bytes(get_function_selector(
-				"removeLiquidity(address,address,address,uint256,uint256,uint256)"
-			)),
-			Into::<u32>::into(Action::RemoveLiquidity)
-		);
 	}
 }

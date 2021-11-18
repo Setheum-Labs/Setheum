@@ -1,3 +1,4 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -33,18 +34,17 @@ pub type AccountId = u128;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
-pub const BUYBACK_POOL: AccountId = 3;
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
-pub const SETUSD_SETM_PAIR: TradingPair = TradingPair(SETUSD, SETM);
-pub const SETM_SETUSD_PAIR: TradingPair = TradingPair(SETM, SETUSD);
-pub const SETUSD_DNAR_PAIR: TradingPair = TradingPair(SETUSD, DNAR);
-pub const DNAR_SETUSD_PAIR: TradingPair = TradingPair(DNAR, SETUSD);
-pub const DNAR_SETM_PAIR: TradingPair = TradingPair(DNAR, SETM);
-pub const SETM_DNAR_PAIR: TradingPair = TradingPair(SETM, DNAR);
+parameter_types! {
+	pub static SETUSDSERPPair: TradingPair = TradingPair::from_currency_ids(SETUSD, SERP).unwrap();
+	pub static SETUSDDNARPair: TradingPair = TradingPair::from_currency_ids(SETUSD, DNAR).unwrap();
+	pub static DNARSERPPair: TradingPair = TradingPair::from_currency_ids(DNAR, SERP).unwrap();
+}
 
 mod dex {
 	pub use super::super::*;
@@ -79,6 +79,7 @@ impl frame_system::Config for Runtime {
 	type SS58Prefix = ();
 	type OnSetCode = ();
 }
+
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
@@ -109,8 +110,7 @@ parameter_types! {
 	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 3;
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
-	pub const BuyBackPoolAccountId: AccountId = BUYBACK_POOL;
-	pub const DEXModuleId: ModuleId = ModuleId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
 }
 
 impl Config for Runtime {
@@ -119,9 +119,8 @@ impl Config for Runtime {
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
-	type BuyBackPoolAccountId = BuyBackPoolAccountId;
 	type TradingPathLimit = TradingPathLimit;
-	type ModuleId = DEXModuleId;
+	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
@@ -136,14 +135,14 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Storage, Config, Event<T>},
-		DexModule: dex::{Module, Storage, Call, Event<T>, Config<T>},
-		Tokens: orml_tokens::{Module, Storage, Event<T>, Config<T>},
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+		DexModule: dex::{Pallet, Storage, Call, Event<T>, Config<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 	}
 );
 
 pub struct ExtBuilder {
-	endowed_accounts: Vec<(AccountId, CurrencyId, Balance)>,
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 	initial_listing_trading_pairs: Vec<(TradingPair, (Balance, Balance), (Balance, Balance), BlockNumber)>,
 	initial_enabled_trading_pairs: Vec<TradingPair>,
 	initial_added_liquidity_pools: Vec<(AccountId, Vec<(TradingPair, (Balance, Balance))>)>,
@@ -152,16 +151,13 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			endowed_accounts: vec![
+			balances: vec![
 				(ALICE, SETUSD, 1_000_000_000_000_000_000u128),
 				(BOB, SETUSD, 1_000_000_000_000_000_000u128),
-				(BUYBACK_POOL, SETUSD, 1_000_000_000_000_000_000u128),
-				(ALICE, SETM, 1_000_000_000_000_000_000u128),
-				(BOB, SETM, 1_000_000_000_000_000_000u128),
-				(BUYBACK_POOL, SETM, 1_000_000_000_000_000_000u128),
+				(ALICE, SERP, 1_000_000_000_000_000_000u128),
+				(BOB, SERP, 1_000_000_000_000_000_000u128),
 				(ALICE, DNAR, 1_000_000_000_000_000_000u128),
 				(BOB, DNAR, 1_000_000_000_000_000_000u128),
-				(BUYBACK_POOL, DNAR, 1_000_000_000_000_000_000u128),
 			],
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: vec![],
@@ -171,57 +167,8 @@ impl Default for ExtBuilder {
 }
 
 impl ExtBuilder {
-	pub fn initialize_listing_trading_pairs(mut self) -> Self {
-		self.initial_listing_trading_pairs = vec![
-			(
-				SETUSD_DNAR_PAIR,
-				(5_000_000_000_000u128, 1_000_000_000_000u128),
-				(5_000_000_000_000_000u128, 1_000_000_000_000_000u128),
-				10,
-			),
-			(
-				DNAR_SETUSD_PAIR,
-				(5_000_000_000_000u128, 1_000_000_000_000u128),
-				(5_000_000_000_000_000u128, 1_000_000_000_000_000u128),
-				10,
-			),
-			(
-				SETUSD_SETM_PAIR,
-				(20_000_000_000_000u128, 1_000_000_000u128),
-				(20_000_000_000_000_000u128, 1_000_000_000_000u128),
-				10,
-			),
-			(
-				SETM_SETUSD_PAIR,
-				(20_000_000_000_000u128, 1_000_000_000u128),
-				(20_000_000_000_000_000u128, 1_000_000_000_000u128),
-				10,
-			),
-			(
-				DNAR_SETM_PAIR,
-				(4_000_000_000_000u128, 1_000_000_000u128),
-				(4_000_000_000_000_000u128, 1_000_000_000_000u128),
-				20,
-			),
-			(
-				SETM_DNAR_PAIR,
-				(4_000_000_000_000u128, 1_000_000_000u128),
-				(4_000_000_000_000_000u128, 1_000_000_000_000u128),
-				20,
-			),
-		];
-		self
-	}
-
 	pub fn initialize_enabled_trading_pairs(mut self) -> Self {
-		self.initial_enabled_trading_pairs = vec![
-			SETUSD_DNAR_PAIR,
-			DNAR_SETUSD_PAIR,
-			SETUSD_SETM_PAIR,
-			SETM_SETUSD_PAIR,
-			DNAR_SETM_PAIR,
-			SETM_DNAR_PAIR,
-			];
+		self.initial_enabled_trading_pairs = vec![SETUSDDNARPair::get(), SETUSDSERPPair::get(), DNARSERPPair::get()];
 		self
 	}
 
@@ -229,12 +176,9 @@ impl ExtBuilder {
 		self.initial_added_liquidity_pools = vec![(
 			who,
 			vec![
-				(SETUSD_DNAR_PAIR, (1_000_000u128, 2_000_000u128)),
-				(DNAR_SETUSD_PAIR, (1_000_000u128, 2_000_000u128)),
-				(SETUSD_SETM_PAIR, (1_000_000u128, 2_000_000u128)),
-				(SETM_SETUSD_PAIR, (1_000_000u128, 2_000_000u128)),
-				(DNAR_SETM_PAIR, (1_000_000u128, 2_000_000u128)),
-				(SETM_DNAR_PAIR, (1_000_000u128, 2_000_000u128)),
+				(SETUSDDNARPair::get(), (1_000_000u128, 2_000_000u128)),
+				(SETUSDSERPPair::get(), (1_000_000u128, 2_000_000u128)),
+				(DNARSERPPair::get(), (1_000_000u128, 2_000_000u128)),
 			],
 		)];
 		self
@@ -246,7 +190,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		orml_tokens::GenesisConfig::<Runtime> {
-			endowed_accounts: self.endowed_accounts,
+			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

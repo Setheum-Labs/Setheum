@@ -1,10 +1,2 @@
-doc
-**target*
-.idea/
+target/
 Dockerfile
-.dockerignore
-.local
-.git
-audit/
-.vscode/
-.github/
