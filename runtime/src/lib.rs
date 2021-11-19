@@ -218,8 +218,8 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
-	pub const BlockHashCount: BlockNumber = 2400;
-	pub const SS58Prefix: u8 = 42;
+	pub const BlockHashCount: BlockNumber = 2400; // 2 hours
+	pub const SS58Prefix: u8 = 258;
 }
 
 
@@ -932,7 +932,7 @@ impl module_evm_manager::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ChainId: u64 = 595;
+	pub const ChainId: u64 = 258;
 	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
 }
 
