@@ -160,6 +160,9 @@ pub enum AirDropCurrencyId {
 pub enum AuthoritysOriginId {
 	Root,
 	Treasury,
+	PublicFund,
+	AlSharifFund,
+	FoundationFund,
 	// add `AlSharifTreasury` and `FoundationTreasury`
 }
 
