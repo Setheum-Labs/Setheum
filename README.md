@@ -234,8 +234,8 @@ make update
 ### Update ORML
 
 ```bash
-cd open-lib && git checkout master && git pull
-git add open-lib
+cd lib-orml && git checkout master && git pull
+git add lib-orml
 cargo-update check-all
 ```
 

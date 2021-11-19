@@ -11,7 +11,7 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkad
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-orml-traits = { path = "../../open-lib/traits", default-features = false }
+orml-traits = { path = "../../lib-orml/traits", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
@@ -19,10 +19,10 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-currencies = { path = "../../open-lib/currencies" }
-orml-auction = { path = "../../open-lib/auction" }
+orml-currencies = { path = "../../lib-orml/currencies" }
+orml-auction = { path = "../../lib-orml/auction" }
 module-dex = { path = "../dex" }
-orml-tokens = { path = "../../open-lib/tokens" }
+orml-tokens = { path = "../../lib-orml/tokens" }
 
 [features]
 default = ["std"]

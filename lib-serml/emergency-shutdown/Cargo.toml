@@ -19,9 +19,9 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-balances= { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-currencies = { path = "../../open-lib/currencies" }
-orml-traits = { path = "../../open-lib/traits" }
-orml-tokens = { path = "../../open-lib/tokens" }
+orml-currencies = { path = "../../lib-orml/currencies" }
+orml-traits = { path = "../../lib-orml/traits" }
+orml-tokens = { path = "../../lib-orml/tokens" }
 cdp-treasury = { package = "cdp-treasury", path = "../cdp-treasury" }
 
 [features]

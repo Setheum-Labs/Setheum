@@ -17,8 +17,8 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-orml-nft = { path = "../../open-lib/nft", default-features = false }
-orml-traits = { path = "../../open-lib/traits", default-features = false }
+orml-nft = { path = "../../lib-orml/nft", default-features = false }
+orml-traits = { path = "../../lib-orml/traits", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
@@ -26,7 +26,7 @@ sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
-orml-tokens = { path = "../../open-lib/tokens" }
+orml-tokens = { path = "../../lib-orml/tokens" }
 module-currencies = { path = "../currencies" }
 support = { package = "module-support", path = "../support" }
 
