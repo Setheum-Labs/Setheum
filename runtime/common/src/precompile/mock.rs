@@ -506,7 +506,7 @@ impl module_dex::Config for Test {
 	type Currency = Tokens;
 	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
