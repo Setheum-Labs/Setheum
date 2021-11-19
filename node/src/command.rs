@@ -39,7 +39,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn support_url() -> String {
-		"docs.setheum.finance".into()
+		"docs.setheum.xyz".into()
 	}
 
 	fn copyright_start_year() -> i32 {
