@@ -36,4 +36,3 @@ std = [
 	"support/std",
 	"orml-traits/std",
 ]
-try-runtime = ["frame-support/try-runtime"]

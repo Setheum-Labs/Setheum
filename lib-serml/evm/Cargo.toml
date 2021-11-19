@@ -63,7 +63,6 @@ std = [
 	"module-support/std",
 ]
 with-ethereum-compatibility = []
-try-runtime = ["frame-support/try-runtime"]
 tracing = [
 	"evm/tracing",
 	"evm-gasometer/tracing",

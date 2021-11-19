@@ -5,7 +5,7 @@ homepage = 'https://setheum.finance'
 license = 'Unlicense'
 name = 'setheum-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum'
-version = '4.0.0'
+version = '0.9.80'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
@@ -36,7 +36,6 @@ frame-support = { git = "https://github.com/paritytech/substrate", default-featu
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
 frame-system-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10", optional = true }
 frame-system-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
-frame-try-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false, optional = true }
 frame-election-provider-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
 pallet-grandpa = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
@@ -141,7 +140,6 @@ std = [
 	'frame-executive/std',
 	'frame-support/std',
 	'frame-system/std',
-	"frame-try-runtime/std",
 	'frame-system-rpc-runtime-api/std',
 	"frame-benchmarking/std",
 	'frame-election-provider-support/std',
@@ -238,49 +236,4 @@ runtime-benchmarks = [
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
 
-]
-try-runtime = [
-	"frame-try-runtime",
-	"frame-executive/try-runtime",
-	"frame-system/try-runtime",
-
-	"pallet-babe/try-runtime",
-	"pallet-authorship/try-runtime",
-	"pallet-balances/try-runtime",
-	"pallet-bounties/try-runtime",
-	"pallet-collective/try-runtime",
-	"pallet-democracy/try-runtime",
-	"pallet-indices/try-runtime",
-	"pallet-membership/try-runtime",
-	"pallet-multisig/try-runtime",
-	"pallet-proxy/try-runtime",
-	"pallet-recovery/try-runtime",
-	"pallet-scheduler/try-runtime",
-	"pallet-session/try-runtime",
-	"pallet-sudo/try-runtime",
-	"pallet-timestamp/try-runtime",
-	"pallet-tips/try-runtime",
-	"pallet-transaction-payment/try-runtime",
-	"pallet-treasury/try-runtime",
-	"pallet-utility/try-runtime",
-
-	"orml-auction/try-runtime",
-	"orml-authority/try-runtime",
-	"orml-oracle/try-runtime",
-	"orml-tokens/try-runtime",
-	"orml-nft/try-runtime",
-
-	"module-transaction-pause/try-runtime",
-	"module-transaction-payment/try-runtime",
-	"module-airdrop/try-runtime",
-	"auction-manager/try-runtime",
-	"cdp-engine/try-runtime",
-	"cdp-treasury/try-runtime",
-	"module-currencies/try-runtime",
-	"module-dex/try-runtime",
-	"emergency-shutdown/try-runtime",
-	"serp-setmint/try-runtime",
-	"module-loans/try-runtime",
-	"module-nft/try-runtime",
-	"module-prices/try-runtime",
 ]
