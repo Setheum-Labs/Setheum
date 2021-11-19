@@ -442,7 +442,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 		// Bootnodes - TODO: Update!
 		vec![
 			// "/dns/bootnode.setheumscan.com/tcp/30333/p2p/12D3KooWFHSc9cUcyNtavUkLg4VBAeBnYNgy713BnovUa9WNY5pp".parse().unwrap(),
-			// "/dns/bootnode.setheum.finance/tcp/30333/p2p/12D3KooWAQqcXvcvt4eVEgogpDLAdGWgR5bY1drew44We6FfJAYq".parse().unwrap(),
+			// "/dns/bootnode.setheum.xyz/tcp/30333/p2p/12D3KooWAQqcXvcvt4eVEgogpDLAdGWgR5bY1drew44We6FfJAYq".parse().unwrap(),
 			// "/dns/bootnode.setheum-chain.com/tcp/30333/p2p/12D3KooWCT7rnUmEK7anTp7svwr4GTs6k3XXnSjmgTcNvdzWzgWU".parse().unwrap(),
 		],
 		// Telemetry

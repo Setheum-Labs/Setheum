@@ -1,7 +1,7 @@
 [package]
-authors = ['Setheum Finance <https://setheum.finance>']
+authors = ['Setheum Labs <https://setheum.xyz>']
 edition = '2018'
-homepage = 'https://setheum.finance'
+homepage = 'https://setheum.xyz'
 license = 'Unlicense'
 name = 'setheum-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum'
