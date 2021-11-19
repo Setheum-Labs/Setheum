@@ -7,6 +7,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Compact, Decode, Encode};
+use frame_support::instances::{Instance1, Instance2, Instance3, Instance4};
 use frame_support::pallet_prelude::InvalidTransaction;
 pub use frame_support::{
 	construct_runtime, log, parameter_types,
@@ -88,7 +89,7 @@ pub use pallet_staking::StakerStatus;
 
 pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
-use primitives::{evm::EthereumTransactionMessage, currency::*;};
+use primitives::{evm::EthereumTransactionMessage, currency::*};
 pub use primitives::{
 	evm::EstimateResourcesRequest, AccountId, AccountIndex, Address, AirDropCurrencyId, Amount, AuctionId,
 	AuthoritysOriginId, Balance, BlockNumber, CurrencyId, DataProviderId, EraIndex, Hash, Moment, Nonce,
@@ -1611,7 +1612,7 @@ impl pallet_treasury::Config<PublicFundTreasuryInstance> for Runtime {
 	type ApproveOrigin = EnsureRootOrHalfPublicFundCouncil;
 	type RejectOrigin = EnsureRootOrHalfPublicFundCouncil;
 	type Event = Event;
-	type OnSlash = PublicFundTreasury;
+	type OnSlash = PublicFund;
 	type ProposalBond = PublicFundProposalBond;
 	type ProposalBondMinimum = PublicFundProposalBondMinimum;
 	type SpendPeriod = PublicFundSpendPeriod;
@@ -1677,7 +1678,7 @@ impl pallet_treasury::Config<AlSharifFundTreasuryInstance> for Runtime {
 	type ApproveOrigin = EnsureRootOrHalfAlSharifFundCouncil; // TODO: Update to `EnsureAlSharifFoundationOrHalfAlSharifFundCouncil`
 	type RejectOrigin = EnsureRootOrHalfAlSharifFundCouncil;  // TODO: Update to `EnsureAlSharifFoundationOrHalfAlSharifFundCouncil`
 	type Event = Event;
-	type OnSlash = AlSharifFundTreasury;
+	type OnSlash = AlSharifFund;
 	type ProposalBond = AlSharifFundProposalBond;
 	type ProposalBondMinimum = AlSharifFundProposalBondMinimum;
 	type SpendPeriod = AlSharifFundSpendPeriod;
@@ -1743,7 +1744,7 @@ impl pallet_treasury::Config<FoundationFundTreasuryInstance> for Runtime {
 	type ApproveOrigin = EnsureRootOrHalfFoundationFundCouncil; // TODO: Update to `EnsureSetheumFoundationOrHalfFoundationFundCouncil`
 	type RejectOrigin = EnsureRootOrHalfFoundationFundCouncil;  // TODO: Update to `EnsureSetheumFoundationOrHalfFoundationFundCouncil`
 	type Event = Event;
-	type OnSlash = FoundationFundTreasury;
+	type OnSlash = FoundationFund;
 	type ProposalBond = FoundationFundProposalBond;
 	type ProposalBondMinimum = FoundationFundProposalBondMinimum;
 	type SpendPeriod = FoundationFundSpendPeriod;
