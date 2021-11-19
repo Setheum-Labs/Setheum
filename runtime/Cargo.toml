@@ -232,7 +232,6 @@ runtime-benchmarks = [
 	"pallet-collective/runtime-benchmarks",
 
 	"module-nft/runtime-benchmarks",
-	"orml-tokens/runtime-benchmarks",
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
 
