@@ -275,7 +275,7 @@ parameter_type_with_key! {
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
 	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
-	pub const TradingPathLimit: u32 = 3;
+	pub const TradingPathLimit: u32 = 4;
 	pub StableCurrencyInflationPeriod: u64 = 5;
 	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
 	pub SetterMaximumClaimableTransferAmounts: Balance = 200;

@@ -399,7 +399,7 @@ parameter_types! {
 		SETUSD,
 	];
 	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
-	pub const TradingPathLimit: u32 = 3;
+	pub const TradingPathLimit: u32 = 4;
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
