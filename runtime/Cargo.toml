@@ -95,7 +95,6 @@ orml-oracle = { path = "../open-lib/oracle", default-features = false }
 orml-oracle-rpc-runtime-api = { path = "../open-lib/oracle/rpc/runtime-api", default-features = false }
 orml-tokens = { path = "../open-lib/tokens", default-features = false }
 orml-traits = { path = "../open-lib/traits", default-features = false }
-orml-vesting = { path = "../open-lib/vesting", default-features = false }
 orml-nft= { path = "../open-lib/nft", default-features = false }
 
 module-transaction-pause = { path = "../lib-serml/transaction-pause", default-features = false }
@@ -235,7 +234,6 @@ runtime-benchmarks = [
 	"pallet-collective/runtime-benchmarks",
 
 	"module-nft/runtime-benchmarks",
-	"orml-vesting/runtime-benchmarks",
 	"orml-tokens/runtime-benchmarks",
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
@@ -270,7 +268,6 @@ try-runtime = [
 	"orml-authority/try-runtime",
 	"orml-oracle/try-runtime",
 	"orml-tokens/try-runtime",
-	"orml-vesting/try-runtime",
 	"orml-nft/try-runtime",
 
 	"module-transaction-pause/try-runtime",

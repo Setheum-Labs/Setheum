@@ -23,8 +23,5 @@ members = [
 	"open-lib/tokens",
 	"open-lib/traits",
 	"open-lib/utilities",
-	"open-lib/vesting",
-	"open-lib/weight-gen",
-	"open-lib/weight-meter"
 ]
 exclude = ['rpc']

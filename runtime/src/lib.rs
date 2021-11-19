@@ -611,21 +611,6 @@ impl EnsureOrigin<Origin> for EnsureRootOrTreasury {
 }
 
 parameter_types! {
-	pub MinVestedTransfer: Balance = 0;
-	pub const MaxVestingSchedules: u32 = 100;
-}
-
-impl orml_vesting::Config for Runtime {
-	type Event = Event;
-	type Currency = pallet_balances::Pallet<Runtime>;
-	type MinVestedTransfer = MinVestedTransfer;
-	type VestedTransferOrigin = EnsureRootOrTreasury;
-	type WeightInfo = weights::orml_vesting::WeightInfo<Runtime>;
-	type MaxVestingSchedules = MaxVestingSchedules;
-	type BlockNumberProvider = RelayChainBlockNumberProvider<Runtime>;
-}
-
-parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * RuntimeBlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 50;
 }
@@ -1939,7 +1924,6 @@ construct_runtime!(
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 8,
 		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 9,
 		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 3,
-		Vesting: orml_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 13,
 
 		// Authorization
 		Authority: orml_authority::{Pallet, Call, Event<T>, Origin<T>} = 10,
@@ -2426,7 +2410,6 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, module_currencies, benchmarking::currencies);
 
 			orml_list_benchmark!(list, extra, orml_tokens, benchmarking::tokens);
-			orml_list_benchmark!(list, extra, orml_vesting, benchmarking::vesting);
 			orml_list_benchmark!(list, extra, orml_auction, benchmarking::auction);
 
 			orml_list_benchmark!(list, extra, orml_authority, benchmarking::authority);
@@ -2485,7 +2468,6 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, module_currencies, benchmarking::currencies);
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
-			orml_add_benchmark!(params, batches, orml_vesting, benchmarking::vesting);
 			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
 
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);

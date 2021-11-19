@@ -38,13 +38,6 @@
     },
     "DispatchId": "u32",
     "Price": "FixedU128",
-    "OrmlVestingSchedule": {
-        "start": "BlockNumber",
-        "period": "BlockNumber",
-        "periodCount": "u32",
-        "perPeriod": "Compact<Balance>"
-    },
-    "VestingScheduleOf": "OrmlVestingSchedule",
     "PalletBalanceOf": "Balance",
     "ChangeBalance": {
         "_enum": {
@@ -179,7 +172,6 @@
             "Accounts": "Null",
             "Currencies": "Null",
             "Tokens": "Null",
-            "Vesting": "Null",
             "Utility": "Null",
             "Multisig": "Null",
             "Recovery": "Null",
