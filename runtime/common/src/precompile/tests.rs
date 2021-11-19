@@ -23,9 +23,9 @@ use super::*;
 use crate::precompile::{
 	mock::{
 		setm_evm_address, alice, alice_evm_addr, setusd_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
-		get_task_id, lp_setm_setusd_evm_address, new_test_ext, renbtc_evm_address, run_to_block, Balances, DexModule,
+		get_task_id, lp_setm_setusd_evm_address, new_test_ext, serp_evm_address, run_to_block, Balances, DexModule,
 		DexPrecompile, Event as TestEvent, MultiCurrencyPrecompile, Oracle, OraclePrecompile, Origin, Price,
-		ScheduleCallPrecompile, System, Test, ALICE, SETUSD, INITIAL_BALANCE, RENBTC,
+		ScheduleCallPrecompile, System, Test, ALICE, SETUSD, INITIAL_BALANCE, SERP,
 	},
 	schedule_call::TaskInfo,
 };
@@ -315,8 +315,8 @@ fn oracle_precompile_should_work() {
 		let mut input = [0u8; 36];
 		// action
 		input[0..4].copy_from_slice(&Into::<u32>::into(oracle::Action::GetPrice).to_be_bytes());
-		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4..4 + 32]);
+		// SERP
+		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4..4 + 32]);
 
 		// no price yet
 		let resp = OraclePrecompile::execute(&input, None, &context).unwrap();
@@ -324,9 +324,9 @@ fn oracle_precompile_should_work() {
 		assert_eq!(resp.output, [0u8; 32]);
 		assert_eq!(resp.cost, 0);
 
-		assert_ok!(Oracle::feed_value(ALICE, RENBTC, price));
+		assert_ok!(Oracle::feed_value(ALICE, SERP, price));
 		assert_eq!(
-			Oracle::get_no_op(&RENBTC),
+			Oracle::get_no_op(&SERP),
 			Some(orml_oracle::TimestampedValue {
 				value: price,
 				timestamp: 1
@@ -599,12 +599,12 @@ fn schedule_call_precompile_should_handle_invalid_input() {
 #[test]
 fn dex_precompile_get_liquidity_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable RENBTC/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), RENBTC, SETUSD,));
+		// enable SERP/SETUSD
+		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
 
 		assert_ok!(DexModule::add_liquidity(
 			Origin::signed(ALICE),
-			RENBTC,
+			SERP,
 			SETUSD,
 			1_000,
 			1_000_000,
@@ -622,8 +622,8 @@ fn dex_precompile_get_liquidity_should_work() {
 		let mut input = [0u8; 3 * 32];
 		// action
 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityPool).to_be_bytes());
-		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+		// SERP
+		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
 		// SETUSD
 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 
@@ -641,12 +641,12 @@ fn dex_precompile_get_liquidity_should_work() {
 #[test]
 fn dex_precompile_get_liquidity_token_address_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable RENBTC/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), RENBTC, SETUSD,));
+		// enable SERP/SETUSD
+		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
 
 		assert_ok!(DexModule::add_liquidity(
 			Origin::signed(ALICE),
-			RENBTC,
+			SERP,
 			SETUSD,
 			1_000,
 			1_000_000,
@@ -664,8 +664,8 @@ fn dex_precompile_get_liquidity_token_address_should_work() {
 		let mut input = [0u8; 4 * 32];
 		// action
 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityTokenAddress).to_be_bytes());
-		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+		// SERP
+		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
 		// SETUSD
 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 
@@ -692,12 +692,12 @@ fn dex_precompile_get_liquidity_token_address_should_work() {
 #[test]
 fn dex_precompile_get_swap_target_amount_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable RENBTC/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), RENBTC, SETUSD,));
+		// enable SERP/SETUSD
+		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
 
 		assert_ok!(DexModule::add_liquidity(
 			Origin::signed(ALICE),
-			RENBTC,
+			SERP,
 			SETUSD,
 			1_000,
 			1_000_000,
@@ -721,8 +721,8 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 		U256::from(1).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
+		// SERP
+		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// SETUSD
 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 
@@ -739,12 +739,12 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 #[test]
 fn dex_precompile_get_swap_supply_amount_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable RENBTC/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), RENBTC, SETUSD,));
+		// enable SERP/SETUSD
+		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
 
 		assert_ok!(DexModule::add_liquidity(
 			Origin::signed(ALICE),
-			RENBTC,
+			SERP,
 			SETUSD,
 			1_000,
 			1_000_000,
@@ -768,8 +768,8 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 		U256::from(1).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
+		// SERP
+		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// SETUSD
 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 
@@ -786,12 +786,12 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 #[test]
 fn dex_precompile_swap_with_exact_supply_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable RENBTC/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), RENBTC, SETUSD,));
+		// enable SERP/SETUSD
+		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
 
 		assert_ok!(DexModule::add_liquidity(
 			Origin::signed(ALICE),
-			RENBTC,
+			SERP,
 			SETUSD,
 			1_000,
 			1_000_000,
@@ -819,8 +819,8 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 		U256::from(0).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
-		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+		// SERP
+		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 		// SETUSD
 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 
@@ -837,12 +837,12 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 #[test]
 fn dex_precompile_swap_with_exact_target_should_work() {
 	new_test_ext().execute_with(|| {
-		// enable RENBTC/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), RENBTC, SETUSD,));
+		// enable SERP/SETUSD
+		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
 
 		assert_ok!(DexModule::add_liquidity(
 			Origin::signed(ALICE),
-			RENBTC,
+			SERP,
 			SETUSD,
 			1_000,
 			1_000_000,
@@ -870,8 +870,8 @@ fn dex_precompile_swap_with_exact_target_should_work() {
 		U256::from(1).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
 		// path_len
 		U256::from(2).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
-		// RENBTC
-		U256::from_big_endian(renbtc_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+		// SERP
+		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
 		// SETUSD
 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 

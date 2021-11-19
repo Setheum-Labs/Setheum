@@ -29,7 +29,8 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureSignedBy};
 use module_support::{
-	mocks::MockAddressMapping, AddressMapping as AddressMappingT, ExchangeRate, ExchangeRateProvider,
+	mocks::MockAddressMapping, AddressMapping as AddressMappingT,
+	ExchangeRate, ExchangeRateProvider, SerpTreasury,
 };
 use orml_traits::{parameter_type_with_key, MultiReservableCurrency};
 pub use primitives::{
@@ -148,14 +149,200 @@ impl pallet_balances::Config for Test {
 	type WeightInfo = ();
 }
 
+pub struct MockSerpTreasury;
+impl SerpTreasury<AccountId> for MockSerpTreasury {
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+
+	fn calculate_supply_change(
+		_numerator: Balance,
+		_denominator: Balance,
+		_supply: Balance
+	) -> Self::Balance{
+		unimplemented!()
+	}
+
+	fn serp_tes_now() -> DispatchResult{
+		unimplemented!()
+	}
+
+	/// Deliver System StableCurrency Inflation
+	fn issue_stablecurrency_inflation() -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_public_fund_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	/// SerpUp ratio for SetPay Cashdrops
+	fn get_cashdrop_serpup(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for BuyBack Swaps to burn Dinar
+	fn get_buyback_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// SerpUp ratio for Setheum Foundation's Charity Fund
+	fn get_public_fund_serplus(
+		_amount: Balance,
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+	
+	fn get_alsharif_fund_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serpup(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_alsharif_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_treasury_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	fn get_cashdrop_serplus(
+		_amount: Balance, 
+		_currency_id: CurrencyId
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serplus(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
+	fn on_serpup(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// buy back and burn surplus(stable currencies) with swap by DEX.
+	fn on_serpdown(
+		_currency_id: CurrencyId,
+		_amount: Balance,
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// get the minimum supply of a setcurrency - by key
+	fn get_minimum_supply(
+		_currency_id: CurrencyId
+	) -> Balance {
+		unimplemented!()
+	}
+
+	/// issue standard to `who`
+	fn issue_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn standard(stable currency) of `who`
+	fn burn_standard(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_standard: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// issue setter of amount setter to `who`
+	fn issue_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// burn setter of `who`
+	fn burn_setter(
+		_who: &AccountId,
+		_setter: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
+	fn deposit_setter(
+		_from: &AccountId,
+		_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
+	fn claim_cashdrop(
+		_currency_id: CurrencyId,
+		_who: &AccountId,
+		_transfer_amount: Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+}
+
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const LP_SETM_SETUSD: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+	];
 }
 
 impl module_currencies::Config for Test {
@@ -163,6 +350,8 @@ impl module_currencies::Config for Test {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
+	type SerpTreasury = MockSerpTreasury;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
@@ -178,7 +367,7 @@ parameter_types! {
 	pub const CreateClassDeposit: Balance = 200;
 	pub const CreateTokenDeposit: Balance = 100;
 	pub const DataDepositPerByte: Balance = 10;
-	pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
+	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 	pub MaxAttributesBytes: u32 = 2048;
 }
 impl module_nft::Config for Test {
@@ -209,6 +398,7 @@ impl orml_nft::Config for Test {
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
 	pub const GetSetUSDId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![CurrencyId::Token(TokenSymbol::SETUSD), CurrencyId::Token(TokenSymbol::SETM)]];
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
 }
@@ -306,19 +496,21 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 100); // 0%
 	pub const TradingPathLimit: u32 = 3;
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
 
 impl module_dex::Config for Test {
 	type Event = Event;
 	type Currency = Tokens;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
 	type WeightInfo = ();
-	type DEXIncentives = MockDEXIncentives;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 }
 
@@ -411,6 +603,7 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 
 parameter_types! {
 	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	pub SetterFixedPrice: Price = Price::saturating_from_rational(2, 1);
 }
 
 ord_parameter_types! {
@@ -421,9 +614,10 @@ impl module_prices::Config for Test {
 	type Event = Event;
 	type Source = Oracle;
 	type GetSetUSDId = GetSetUSDId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type SetUSDFixedPrice = SetUSDFixedPrice;
+	type SetterFixedPrice = SetterFixedPrice;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type LiquidStakingExchangeRateProvider = MockLiquidStakingExchangeProvider;
 	type DEX = DexModule;
 	type Currency = Currencies;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
@@ -479,8 +673,8 @@ pub fn setusd_evm_address() -> EvmAddress {
 	EvmAddress::try_from(SETUSD).unwrap()
 }
 
-pub fn renbtc_evm_address() -> EvmAddress {
-	EvmAddress::try_from(RENBTC).unwrap()
+pub fn serp_evm_address() -> EvmAddress {
+	EvmAddress::try_from(SERP).unwrap()
 }
 
 pub fn lp_setm_setusd_evm_address() -> EvmAddress {
@@ -567,7 +761,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
 			ALICE,
-			RENBTC,
+			SERP,
 			1_000_000_000_000
 		));
 		assert_ok!(Currencies::update_balance(Origin::root(), ALICE, SETUSD, 1_000_000_000));
@@ -575,7 +769,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
 			MockAddressMapping::get_account_id(&alice_evm_addr()),
-			RENBTC,
+			SERP,
 			1_000
 		));
 	});

@@ -343,7 +343,7 @@ parameter_types! {
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap()
 	];
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
 
 impl module_dex::Config for Runtime {

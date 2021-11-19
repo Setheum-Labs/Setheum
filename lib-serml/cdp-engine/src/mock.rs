@@ -393,7 +393,7 @@ impl cdp_treasury::Config for Runtime {
 }
 
 parameter_types! {
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,

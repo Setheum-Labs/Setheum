@@ -141,10 +141,10 @@ parameter_types! {
 	pub const AlSharifFundTreasuryPalletId: PalletId = PalletId(*b"set/asft");
 	pub const FoundationFundTreasuryPalletId: PalletId = PalletId(*b"set/sfft");
 	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
+	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
@@ -194,10 +194,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("setheum"),
 	impl_name: create_runtime_str!("setheum"),
 	authoring_version: 1,
-	spec_version: 8,
-	impl_version: 8,
+	spec_version: 1,
+	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 2,
+	transaction_version: 1,
 };
 
 /// The version information used to identify this runtime when compiled natively.
@@ -476,7 +476,14 @@ impl pallet_indices::Config for Runtime {
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
+	pub const GetSerpCurrencyId: CurrencyId = SERP;
+	pub const GetDinarCurrencyId: CurrencyId = DNAR;
+	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDId: CurrencyId = SETUSD;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+	];
 }
 
 impl module_currencies::Config for Runtime {
@@ -484,6 +491,8 @@ impl module_currencies::Config for Runtime {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type StableCurrencyIds = StableCurrencyIds;
+	type SerpTreasury = SerpTreasury;
 	type WeightInfo = weights::module_currencies::WeightInfo<Runtime>;
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type EVMBridge = EVMBridge;
@@ -616,16 +625,18 @@ parameter_types! {
 }
 
 parameter_types! {
-	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1);
+	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
+	pub SetterFixedPrice: Price = Price::saturating_from_rational(2, 1); // $2
 }
 
 impl module_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
 	type GetSetUSDId = GetSetUSDId;
+	type SetterCurrencyId = SetterCurrencyId;
 	type SetUSDFixedPrice = SetUSDFixedPrice;
-	type LockOrigin = EnsureRootOrTwoThirdsShuraCouncil;
-	type LiquidStakingExchangeRateProvider = LiquidStakingExchangeRateProvider;
+	type SetterFixedPrice = SetterFixedPrice;
+	type LockOrigin = EnsureRootOrTwoThirdsFinancialCouncil;
 	type DEX = Dex;
 	type Currency = Currencies;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
@@ -634,16 +645,20 @@ impl module_prices::Config for Runtime {
 
 impl module_transaction_pause::Config for Runtime {
 	type Event = Event;
-	type UpdateOrigin = (); // EnsureRootOrThreeFourthsShuraCouncil;
+	type UpdateOrigin = EnsureRootOrThreeFourthsShuraCouncil;
 	type WeightInfo = weights::module_transaction_pause::WeightInfo<Runtime>;
 }
 
 parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100);
+	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100); // 2%
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![GetSetUSDId::get()],
+		vec![SETUSD],
+		vec![SETM, SETUSD],
+		vec![SERP, SETUSD],
+		vec![DNAR, SETUSD],
+		vec![SETR, SETUSD],
 	];
 }
 
@@ -733,7 +748,7 @@ where
 }
 
 parameter_types! {
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![DNAR, RENBTC];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, SETR];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -781,7 +796,8 @@ impl emergency_shutdown::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
+	pub const GetExchangeFee: (u32, u32) = (3, 1000);	// 0.3%
+	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub const TradingPathLimit: u32 = 3;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
@@ -793,7 +809,9 @@ parameter_types! {
 impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
+	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
@@ -808,7 +826,7 @@ impl module_airdrop::Config for Runtime {
 
 parameter_types! {
 	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
-	pub StableCurrencyInflationPeriod: u64 = 5;
+	pub StableCurrencyInflationPeriod: u64 = 200; // Every 10 minutes
 	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
 	pub SetterMaximumClaimableTransferAmounts: Balance = 200;
 	pub SetDollarMinimumClaimableTransferAmounts: Balance = 2;
@@ -1067,9 +1085,22 @@ impl InstanceFilter<Call> for ProxyType {
 						| Call::Democracy(..)
 						| Call::ShuraCouncil(..)
 						| Call::FinancialCouncil(..)
+						| Call::PublicFundCouncil(..)
+						| Call::AlSharifFundCouncil(..)
+						| Call::FoundationFundCouncil(..)
 						| Call::TechnicalCommittee(..)
-						| Call::Treasury(..) | Call::Bounties(..)
-						| Call::Tips(..)
+						| Call::Treasury(..)
+						| Call::TreasuryBounties(..)
+						| Call::TreasuryTips(..)
+						| Call::PublicFund(..)
+						| Call::PublicFundBounties(..)
+						| Call::PublicFundTips(..)
+						| Call::AlSharifFund(..)
+						| Call::AlSharifFundBounties(..)
+						| Call::AlSharifFundTips(..)
+						| Call::FoundationFund(..)
+						| Call::FoundationFundBounties(..)
+						| Call::FoundationFundTips(..)
 				)
 			}
 			ProxyType::Auction => {
@@ -1591,7 +1622,7 @@ impl pallet_treasury::Config<PublicFundTreasuryInstance> for Runtime {
 	type MaxApprovals = PublicFundMaxApprovals;
 }
 
-type PublicFundBountiesInstance = pallet_bounties::Instance1;
+type PublicFundBountiesInstance = pallet_bounties::Instance2;
 impl pallet_bounties::Config<PublicFundBountiesInstance> for Runtime {
 	type Event = Event;
 	type BountyDepositBase = PublicFundBountyDepositBase;
@@ -1604,7 +1635,7 @@ impl pallet_bounties::Config<PublicFundBountiesInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type PublicFundTipsInstance = pallet_tips::Instance1;
+type PublicFundTipsInstance = pallet_tips::Instance2;
 impl pallet_tips::Config<PublicFundTipsInstance> for Runtime {
 	type Event = Event;
 	type DataDepositPerByte = PublicFundDataDepositPerByte;
@@ -1639,7 +1670,7 @@ parameter_types! {
 	pub const AlSharifFundMaxApprovals: u32 = 100;
 }
 
-type AlSharifFundTreasuryInstance = pallet_treasury::Instance2;
+type AlSharifFundTreasuryInstance = pallet_treasury::Instance3;
 impl pallet_treasury::Config<AlSharifFundTreasuryInstance> for Runtime {
 	type PalletId = AlSharifFundTreasuryPalletId;
 	type Currency = Balances;
@@ -1657,7 +1688,7 @@ impl pallet_treasury::Config<AlSharifFundTreasuryInstance> for Runtime {
 	type MaxApprovals = AlSharifFundMaxApprovals;
 }
 
-type AlSharifFundBountiesInstance = pallet_bounties::Instance1;
+type AlSharifFundBountiesInstance = pallet_bounties::Instance3;
 impl pallet_bounties::Config<AlSharifFundBountiesInstance> for Runtime {
 	type Event = Event;
 	type BountyDepositBase = AlSharifFundBountyDepositBase;
@@ -1670,7 +1701,7 @@ impl pallet_bounties::Config<AlSharifFundBountiesInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type AlSharifFundTipsInstance = pallet_tips::Instance1;
+type AlSharifFundTipsInstance = pallet_tips::Instance3;
 impl pallet_tips::Config<AlSharifFundTipsInstance> for Runtime {
 	type Event = Event;
 	type DataDepositPerByte = AlSharifFundDataDepositPerByte;
@@ -1705,7 +1736,7 @@ parameter_types! {
 	pub const FoundationFundMaxApprovals: u32 = 100;
 }
 
-type FoundationFundTreasuryInstance = pallet_treasury::Instance2;
+type FoundationFundTreasuryInstance = pallet_treasury::Instance4;
 impl pallet_treasury::Config<FoundationFundTreasuryInstance> for Runtime {
 	type PalletId = FoundationFundTreasuryPalletId;
 	type Currency = Balances;
@@ -1723,7 +1754,7 @@ impl pallet_treasury::Config<FoundationFundTreasuryInstance> for Runtime {
 	type MaxApprovals = FoundationFundMaxApprovals;
 }
 
-type FoundationFundBountiesInstance = pallet_bounties::Instance1;
+type FoundationFundBountiesInstance = pallet_bounties::Instance4;
 impl pallet_bounties::Config<FoundationFundBountiesInstance> for Runtime {
 	type Event = Event;
 	type BountyDepositBase = FoundationFundBountyDepositBase;
@@ -1736,7 +1767,7 @@ impl pallet_bounties::Config<FoundationFundBountiesInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type FoundationFundTipsInstance = pallet_tips::Instance1;
+type FoundationFundTipsInstance = pallet_tips::Instance4;
 impl pallet_tips::Config<FoundationFundTipsInstance> for Runtime {
 	type Event = Event;
 	type DataDepositPerByte = FoundationFundDataDepositPerByte;
@@ -1808,7 +1839,7 @@ impl pallet_democracy::Config for Runtime {
 	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee;
 	// Any single technical committee member may veto a coming council proposal, however they can
 	// only do it once and it lasts only for the cooloff period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCommitteeInstance>;
+	type VetoOrigin = pallet_collective::EnsureMember<AccountId, ShuraCouncilInstance>;
 	type CooloffPeriod = CooloffPeriod;
 	type PreimageByteDeposit = PreimageByteDeposit;
 	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, ShuraCouncilInstance>;
@@ -1891,6 +1922,7 @@ construct_runtime!(
 		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 120,
 		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 121,
 		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 122,
+		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 123,
 		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 123,
 		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 124,
 		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 125,

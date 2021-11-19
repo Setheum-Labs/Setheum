@@ -142,7 +142,7 @@ parameter_types! {
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
 		TradingPair::from_currency_ids(SERP, DNAR).unwrap(),
 	];
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
 
 impl module_dex::Config for Runtime {

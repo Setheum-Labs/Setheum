@@ -283,7 +283,7 @@ mod mock {
 		pub const CreateClassDeposit: Balance = 200;
 		pub const CreateTokenDeposit: Balance = 100;
 		pub const DataDepositPerByte: Balance = 10;
-		pub const NftPalletId: PalletId = PalletId(*b"set/aNFT");
+		pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 		pub MaxAttributesBytes: u32 = 2048;
 	}
 

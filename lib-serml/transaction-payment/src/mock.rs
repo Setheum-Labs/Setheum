@@ -343,7 +343,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const DEXPalletId: PalletId = PalletId(*b"set/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 3;
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
