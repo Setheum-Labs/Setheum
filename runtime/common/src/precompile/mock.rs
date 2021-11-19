@@ -401,6 +401,7 @@ parameter_types! {
 	pub const SetterCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![CurrencyId::Token(TokenSymbol::SETUSD), CurrencyId::Token(TokenSymbol::SETM)]];
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
+	pub const TradingPathLimit: u32 = 4;
 }
 
 impl module_transaction_payment::Config for Test {
@@ -497,7 +498,6 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 100); // 0%
-	pub const TradingPathLimit: u32 = 3;
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
 

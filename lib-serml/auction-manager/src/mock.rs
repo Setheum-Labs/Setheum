@@ -336,7 +336,7 @@ parameter_types! {
 		SETUSD,
 	];
 	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
-	pub const TradingPathLimit: u32 = 3;
+	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
 		TradingPair::from_currency_ids(DNAR, SERP).unwrap(),
