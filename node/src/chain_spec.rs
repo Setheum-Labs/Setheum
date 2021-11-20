@@ -4,7 +4,7 @@ use setheum_runtime::{
 	AccountId, AirDropConfig, AirDropCurrencyId, CurrencyId,
 	//
 	BabeConfig, BalancesConfig, GenesisConfig, SystemConfig,
-	SS58Prefix, paque::SessionKeys, get_all_module_accounts,
+	SS58Prefix, opaque::SessionKeys, get_all_module_accounts,
 	ImOnlineId, IndicesConfig, SessionConfig, StakingConfig,
 	AuthorityDiscoveryId, get_all_module_accounts, EVMConfig,
 	AuthorityDiscoveryConfig, StakerStatus, WASM_BINARY,
@@ -24,7 +24,6 @@ use setheum_runtime::{
 	//
 	SETM, SERP, DNAR, SETR, SETUSD,
 };
-use primitives::TokenInfo;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount};
@@ -39,7 +38,7 @@ use serde::{Deserialize, Serialize};
 use hex_literal::hex;
 use sp_core::{crypto::UncheckedInto, bytes::from_hex};
 
-use setheum_primitives::{AccountPublic, Balance, Nonce};
+use setheum_primitives::{AccountPublic, Balance, Nonce, currency::TokenInfo};
 use setheum_runtime::BABE_GENESIS_EPOCH_CONFIG;
 
 // The URL for the telemetry server.
@@ -437,7 +436,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
 			// Founder (Khalifa MBA) 
 			hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
-		],
 		),
 		// Bootnodes - TODO: Update!
 		vec![

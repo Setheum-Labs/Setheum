@@ -8068,6 +8068,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serp-setmint",
+ "serp-treasury",
  "setheum-primitives",
  "smallvec 1.7.0",
  "sp-api",

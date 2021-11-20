@@ -24,9 +24,8 @@
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
 	parameter_types,
-	traits::Contains,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS},
 		DispatchClass, Weight,
 	},
 	RuntimeDebug,
@@ -34,14 +33,14 @@ use frame_support::{
 use frame_system::{limits, EnsureOneOf, EnsureRoot};
 pub use module_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{
-	Balance, BlockNumber, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
+	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
 use sp_core::{
 	u32_trait::{_1, _2, _3, _4},
 	H160,
 };
 use sp_runtime::{
-	traits::{BlockNumberProvider, Convert},
+	traits::Convert,
 	transaction_validity::TransactionPriority,
 	Perbill,
 };

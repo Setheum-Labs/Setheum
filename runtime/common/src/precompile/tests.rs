@@ -608,8 +608,7 @@ fn dex_precompile_get_liquidity_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -650,8 +649,7 @@ fn dex_precompile_get_liquidity_token_address_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -701,8 +699,7 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -748,8 +745,7 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -795,8 +791,7 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -846,8 +841,7 @@ fn dex_precompile_swap_with_exact_target_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {

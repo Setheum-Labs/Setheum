@@ -72,7 +72,6 @@ use frame_election_provider_support::onchain;
 pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 
-use evm::Runtime;
 use module_support::TransactionPayment;
 use frame_system::Call;
 use frame_system::Event;
@@ -610,7 +609,7 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * RuntimeBlockWeights::get().max_block;
+	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * BlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 50;
 }
 
@@ -1800,61 +1799,6 @@ impl pallet_recovery::Config for Runtime {
 	type RecoveryDeposit = RecoveryDeposit;
 }
 
-parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 2 * HOURS;
-	pub const VotingPeriod: BlockNumber = HOURS;
-	pub const FastTrackVotingPeriod: BlockNumber = HOURS;
-	pub MinimumDeposit: Balance = 100 * cent(SETM);
-	pub const EnactmentPeriod: BlockNumber = MINUTES;
-	pub const CooloffPeriod: BlockNumber = MINUTES;
-	pub PreimageByteDeposit: Balance = 10 * millicent(SETM);
-	pub const InstantAllowed: bool = true;
-	pub const MaxVotes: u32 = 100;
-	pub const MaxProposals: u32 = 100;
-}
-
-impl pallet_democracy::Config for Runtime {
-	type Proposal = Call;
-	type Event = Event;
-	type Currency = Balances;
-	type EnactmentPeriod = EnactmentPeriod;
-	type LaunchPeriod = LaunchPeriod;
-	type VotingPeriod = VotingPeriod;
-	type MinimumDeposit = MinimumDeposit;
-	/// A straight majority of the council can decide what their next motion is.
-	type ExternalOrigin = EnsureRootOrHalfShuraCouncil;
-	/// A majority can have the next scheduled referendum be a straight majority-carries vote.
-	type ExternalMajorityOrigin = EnsureRootOrHalfShuraCouncil;
-	/// A unanimous council can have the next scheduled referendum be a straight default-carries
-	/// (NTB) vote.
-	type ExternalDefaultOrigin = EnsureRootOrAllShuraCouncil;
-	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
-	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin = EnsureRootOrTwoThirdsTechnicalCommittee;
-	type InstantOrigin = EnsureRootOrAllTechnicalCommittee;
-	type InstantAllowed = InstantAllowed;
-	type FastTrackVotingPeriod = FastTrackVotingPeriod;
-	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-	type CancellationOrigin = EnsureRootOrTwoThirdsShuraCouncil;
-	type BlacklistOrigin = EnsureRootOrAllFoundationFundCouncil;
-	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
-	// Root must agree.
-	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee;
-	// Any single technical committee member may veto a coming council proposal, however they can
-	// only do it once and it lasts only for the cooloff period.
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, ShuraCouncilInstance>;
-	type CooloffPeriod = CooloffPeriod;
-	type PreimageByteDeposit = PreimageByteDeposit;
-	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, ShuraCouncilInstance>;
-	type Slash = Treasury;
-	type Scheduler = Scheduler;
-	type PalletsOrigin = OriginCaller;
-	type MaxVotes = MaxVotes;
-	//TODO: might need to customize weight for Setheum
-	type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
-	type MaxProposals = MaxProposals;
-}
-
 impl orml_auction::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
@@ -1885,103 +1829,99 @@ construct_runtime!(
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 3,
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 4,
-		Prices: module_prices::{Pallet, Storage, Call, Event<T>} = 110,
-		Dex: module_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 111,
+		Prices: module_prices::{Pallet, Storage, Call, Event<T>} = 5,
+		Dex: module_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 6,
 
-		// Utility
-		Utility: pallet_utility::{Pallet, Call, Event} = 30,
-		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 31,
-		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 32,
-		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 33,
+		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 7,
+		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 8,
+		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 9,
 
 		// ORML Core
-		Auction: orml_auction::{Pallet, Storage, Call, Event<T>} = 100,
-		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 102,
+		Auction: orml_auction::{Pallet, Storage, Call, Event<T>} = 10,
+		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 11,
 
 		// Governance
-		ShuraCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 50,
-		ShuraCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 51,
-		FinancialCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 52,
-		FinancialCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 53,
-		PublicFundCouncil: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 52,
-		PublicFundCouncilMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 53,
-		AlSharifFundCouncil: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 52,
-		AlSharifFundCouncilMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 53,
-		FoundationFundCouncil: pallet_collective::<Instance5>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 52,
-		FoundationFundCouncilMembership: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 53,
-		TechnicalCommittee: pallet_collective::<Instance6>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 56,
-		TechnicalCommitteeMembership: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 57,
+		ShuraCouncil: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 12,
+		ShuraCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
+		FinancialCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 14,
+		FinancialCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
+		PublicFundCouncil: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
+		PublicFundCouncilMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 17,
+		AlSharifFundCouncil: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 18,
+		AlSharifFundCouncilMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 19,
+		FoundationFundCouncil: pallet_collective::<Instance5>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 20,
+		FoundationFundCouncilMembership: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
+		TechnicalCommittee: pallet_collective::<Instance6>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 22,
+		TechnicalCommitteeMembership: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 23,
 
-		Authority: orml_authority::{Pallet, Call, Storage, Event<T>, Origin<T>} = 70,
-		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 72,
+		Authority: orml_authority::{Pallet, Call, Storage, Event<T>, Origin<T>} = 24,
+
+		Utility: pallet_utility::{Pallet, Call, Event} = 25,
 
 		// Oracle
 		//
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Event<T>} = 80,
-		OperatorMembershipSetheum: pallet_membership::<Instance7>::{Pallet, Call, Storage, Event<T>, Config<T>} = 82,
+		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Event<T>} = 26,
+		OperatorMembershipSetheum: pallet_membership::<Instance7>::{Pallet, Call, Storage, Event<T>, Config<T>} = 27,
 
 		// SERP
-		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 120,
-		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 121,
-		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 122,
-		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 123,
-		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 123,
-		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 124,
-		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 125,
+		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 28,
+		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 29,
+		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 30,
+		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 31,
+		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 32,
+		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 33,
+		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 34,
 
 		// Treasury
-		Treasury: pallet_treasury::<Instance1>::{Pallet, Call, Storage, Config, Event<T>} = 20,
-		PublicFund: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 20,
-		AlSharifFund: pallet_treasury::<Instance3>::{Pallet, Call, Storage, Config, Event<T>} = 20,
-		FoundationFund: pallet_treasury::<Instance4>::{Pallet, Call, Storage, Config, Event<T>} = 20,
+		Treasury: pallet_treasury::<Instance1>::{Pallet, Call, Storage, Config, Event<T>} = 35,
+		PublicFund: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 36,
+		AlSharifFund: pallet_treasury::<Instance3>::{Pallet, Call, Storage, Config, Event<T>} = 37,
+		FoundationFund: pallet_treasury::<Instance4>::{Pallet, Call, Storage, Config, Event<T>} = 38,
 		// Bounties
-		TreasuryBounties: pallet_bounties::<Instance1>::{Pallet, Call, Storage, Event<T>} = 21,
-		PublicFundBounties: pallet_bounties::<Instance2>::{Pallet, Call, Storage, Event<T>} = 21,
-		AlSharifFundBounties: pallet_bounties::<Instance3>::{Pallet, Call, Storage, Event<T>} = 21,
-		FoundationFundBounties: pallet_bounties::<Instance4>::{Pallet, Call, Storage, Event<T>} = 21,
+		TreasuryBounties: pallet_bounties::<Instance1>::{Pallet, Call, Storage, Event<T>} = 39,
+		PublicFundBounties: pallet_bounties::<Instance2>::{Pallet, Call, Storage, Event<T>} = 40,
+		AlSharifFundBounties: pallet_bounties::<Instance3>::{Pallet, Call, Storage, Event<T>} = 41,
+		FoundationFundBounties: pallet_bounties::<Instance4>::{Pallet, Call, Storage, Event<T>} = 42,
 		// Tips
-		TreasuryTips: pallet_tips::<Instance1>::{Pallet, Call, Storage, Event<T>} = 22,
-		PublicFundTips: pallet_tips::<Instance2>::{Pallet, Call, Storage, Event<T>} = 22,
-		AlSharifFundTips: pallet_tips::<Instance3>::{Pallet, Call, Storage, Event<T>} = 22,
-		FoundationFundTips: pallet_tips::<Instance4>::{Pallet, Call, Storage, Event<T>} = 22,
+		TreasuryTips: pallet_tips::<Instance1>::{Pallet, Call, Storage, Event<T>} = 43,
+		PublicFundTips: pallet_tips::<Instance2>::{Pallet, Call, Storage, Event<T>} = 44,
+		AlSharifFundTips: pallet_tips::<Instance3>::{Pallet, Call, Storage, Event<T>} = 45,
+		FoundationFundTips: pallet_tips::<Instance4>::{Pallet, Call, Storage, Event<T>} = 46,
 
 		// Extras
-		NFT: module_nft::{Pallet, Call, Event<T>} = 141,
-		AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>, Config<T>} = 142,
+		NFT: module_nft::{Pallet, Call, Event<T>} = 47,
+		AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>, Config<T>} = 48,
 
 		// Account lookup
-		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 5,
+		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 49,
 
 		// Tokens & Fees
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 6,
-		Currencies: module_currencies::{Pallet, Call, Event<T>} = 7,
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 8,
-		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 9,
-		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 3,
-
-		// Authorization
-		Authority: orml_authority::{Pallet, Call, Event<T>, Origin<T>} = 10,
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 50,
+		Currencies: module_currencies::{Pallet, Call, Event<T>} = 51,
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 52,
+		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 53,
+		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 54,
 
 		// Identity
-		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 40,
+		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 56,
 
 		// Smart contracts
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 21,
-		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 20,
-		EVMBridge: module_evm_bridge::{Pallet} = 22,
-		EvmManager: module_evm_manager::{Pallet, Storage} = 183,
+		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 57,
+		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 58,
+		EVMBridge: module_evm_bridge::{Pallet} = 59,
+		EvmManager: module_evm_manager::{Pallet, Storage} = 60,
 
 		// Consensus
-		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 30,
-		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 31,
-		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 32,
-		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 33,
-		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 34,
-		Historical: pallet_session_historical::{Pallet} = 35,
-		Offences: pallet_offences::{Pallet, Storage, Event} = 36,
-		ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>} = 37,
-		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 38,
+		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 61,
+		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 62,
+		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 63,
+		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 64,
+		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 65,
+		Historical: pallet_session_historical::{Pallet} = 66,
+		Offences: pallet_offences::{Pallet, Storage, Event} = 67,
+		ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>} = 68,
+		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 69,
 	}
 );
 

@@ -106,6 +106,7 @@ module-evm-bridge = { path = "../lib-serml/evm-bridge", default-features = false
 module-evm-rpc-runtime-api = { path = "../lib-serml/evm/rpc/runtime_api",  default-features = false }
 module-evm-manager = { path = "../lib-serml/evm-manager", default-features = false }
 
+serp-treasury = { path = "../lib-serml/serp-treasury", default-features = false }
 serp-setmint = { path = "../lib-serml/serp-setmint", default-features = false }
 module-loans = { path = "../lib-serml/loans", default-features = false }
 module-nft = { path = "../lib-serml/nft", default-features = false }
@@ -194,6 +195,7 @@ std = [
 	"module-evm-accounts/std",
 	"module-evm-bridge/std",
 	"module-evm-manager/std",
+	"serp-treasury/std",
 	"serp-setmint/std",
 	"module-loans/std",
 	"module-nft/std",
@@ -228,5 +230,4 @@ runtime-benchmarks = [
 	"module-nft/runtime-benchmarks",
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
-
 ]
