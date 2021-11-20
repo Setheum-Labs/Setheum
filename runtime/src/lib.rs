@@ -124,7 +124,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SETM, SETM, SETUSD, DNAR,
+	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, SETR, SETUSD,
 };
 
 
@@ -159,9 +159,7 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		CDPTreasuryPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
 		ZeroAccountId::get(),		 	// ACCOUNT 0
-		BuyBackPoolAccountId::get(), 	// ACCOUNT 1
-		CashDropPoolAccountId::get(), 	// ACCOUNT 2
-		ThreeAccountId::get(),			// ACCOUNT 3
+		CashDropPoolAccountId::get(), 	// ACCOUNT 1
 	]
 }
 
@@ -505,6 +503,7 @@ parameter_types! {
 	pub const MinimumCount: u32 = 1;
 	pub const ExpiresIn: Moment = 1000 * 60 * 60; // 60 mins
 	pub ZeroAccountId: AccountId = AccountId::from([0u8; 32]);
+	pub CashDropPoolAccountId: AccountId = AccountId::from([1u8; 32]);
 	pub const MaxHasDispatchedSize: u32 = 40;
 }
 
@@ -582,6 +581,10 @@ parameter_type_with_key! {
 
 parameter_types! {
 	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
+	pub CDPTreasuryAccount: AccountId = CDPTreasuryPalletId::get().into_account();
+	pub PublicFundTreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
+	pub AlSharifFundTreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
+	pub FoundationFundTreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
 }
 
 impl orml_tokens::Config for Runtime {
@@ -594,30 +597,6 @@ impl orml_tokens::Config for Runtime {
 	type OnDust = orml_tokens::TransferDust<Runtime, TreasuryAccount>;
 	type MaxLocks = MaxLocks;
 	type DustRemovalWhitelist = DustRemovalWhitelist;
-}
-
-pub struct EnsureRootOrTreasury;
-impl EnsureOrigin<Origin> for EnsureRootOrTreasury {
-	type Success = AccountId;
-
-	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
-		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
-			RawOrigin::Root => Ok(TreasuryPalletId::get().into_account()),
-			RawOrigin::Signed(caller) => {
-				if caller == TreasuryPalletId::get().into_account() {
-					Ok(caller)
-				} else {
-					Err(Origin::from(Some(caller)))
-				}
-			}
-			r => Err(Origin::from(r)),
-		})
-	}
-
-	#[cfg(feature = "runtime-benchmarks")]
-	fn successful_origin() -> Origin {
-		Origin::from(RawOrigin::Signed(Default::default()))
-	}
 }
 
 parameter_types! {
@@ -802,8 +781,9 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, RENBTC).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
 	];
 }
 
@@ -816,7 +796,6 @@ impl module_dex::Config for Runtime {
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
-	type DEXIncentives = Incentives;
 	type WeightInfo = weights::module_dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfShuraCouncil;
 }
@@ -846,15 +825,15 @@ impl serp_treasury::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
-	type PublicFundAccountId = PublicFundAccountId;
-	type AlSharifFundAccountId = AlSharifFundAccountId;
-	type CDPTreasuryAccountId = CDPTreasuryAccountId;
-	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
+	type PublicFundAccountId = PublicFundTreasuryAccount;
+	type AlSharifFundAccountId = AlSharifFundTreasuryAccount;
+	type CDPTreasuryAccountId = CDPTreasuryAccount;
+	type SetheumTreasuryAccountId = TreasuryAccount;
 	type DefaultSwapPathList = DefaultSwapPathList;
-	type Dex = MockDEX;
+	type Dex = Dex;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
-	type PriceSource = MockPriceSource;
+	type PriceSource = Prices;
 	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
 	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
 	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
@@ -883,7 +862,12 @@ impl cdp_treasury::Config for Runtime {
 
 parameter_types! {
 	// Sort by fee charge order
-	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETUSD, SETM], vec![SETUSD, DNAR], vec![SETUSD, RENBTC]];
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
+		vec![SETUSD, SETM],
+		vec![SETUSD, SERP],
+		vec![SETUSD, DNAR],
+		vec![SETUSD, SETR],
+	];
 }
 
 type NegativeImbalance = <Balances as PalletCurrency<AccountId>>::NegativeImbalance;
