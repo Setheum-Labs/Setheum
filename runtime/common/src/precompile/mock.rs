@@ -19,7 +19,7 @@
 
 #![cfg(test)]
 
-use crate::{AllPrecompiles, Ratio, BlockWeights, SystemContractsFilter, Weight};
+use crate::{AllPrecompiles, Ratio, BlockWeights, SystemContractsFilter, Weight, dollar};
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
 	assert_ok, ord_parameter_types, parameter_types,
@@ -36,7 +36,7 @@ pub use primitives::{
 	evm::EvmAddress, Amount, BlockNumber, CurrencyId, DexShare, Header, Nonce, ReserveIdentifier, TokenSymbol,
 	TradingPair,
 };
-use sp_core::{crypto::AccountId32, H160, H256};
+use sp_core::{bytes::from_hex, Bytes, crypto::AccountId32, H160, H256};
 use sp_runtime::{
 	traits::{BlakeTwo256, Convert, IdentityLookup, One as OneT},
 	DispatchResult, FixedPointNumber, FixedU128, Perbill,
@@ -53,7 +53,7 @@ parameter_types! {
 }
 impl frame_system::Config for Test {
 	type BaseCallFilter = ();
-	type BlockWeights = RuntimeBlockWeights;
+	type BlockWeights = BlockWeights;
 	type BlockLength = ();
 	type Origin = Origin;
 	type Call = Call;
@@ -78,7 +78,7 @@ impl frame_system::Config for Test {
 }
 
 parameter_types! {
-	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * SETM;
+	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * dollar(SETM);
 }
 
 
@@ -507,7 +507,7 @@ impl pallet_utility::Config for Test {
 }
 
 parameter_types! {
-	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * RuntimeBlockWeights::get().max_block;
+	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * BlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 50;
 }
 
