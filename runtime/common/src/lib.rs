@@ -188,6 +188,9 @@ pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance6;
 pub type OperatorMembershipInstanceSetheum = pallet_membership::Instance7;
 
 // Shura Council
+pub type EnsureRootOrOneShuraCouncil = EnsureOneOf<
+AccountId, EnsureRoot<AccountId>, pallet_collective::EnsureMember<AccountId, ShuraCouncilInstance>>;
+
 pub type EnsureRootOrAllShuraCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,

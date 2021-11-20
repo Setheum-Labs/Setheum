@@ -119,7 +119,7 @@ pub use runtime_common::{
 	Price, Rate, Ratio, SystemContractsFilter, ExchangeRate, TimeStampedPrice,
 	cent, dollar, microcent, millicent, nanocent, deposit, ProxyType,
 
-	EnsureRootOrAllShuraCouncil, EnsureRootOrHalfShuraCouncil,
+	EnsureRootOrOneShuraCouncil, EnsureRootOrAllShuraCouncil, EnsureRootOrHalfShuraCouncil,
 	EnsureRootOrOneThirdsShuraCouncil, EnsureRootOrTwoThirdsShuraCouncil,
 	EnsureRootOrThreeFourthsShuraCouncil, ShuraCouncilInstance, ShuraCouncilMembershipInstance,
 
@@ -240,18 +240,9 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 258;
 }
 
-
-pub struct BaseCallFilter;
-impl Contains<Call> for BaseCallFilter {
-	fn contains(call: &Call) -> bool {
-		!module_transaction_pause::PausedTransactionFilter::<Runtime>::contains(call)
-			&& !matches!(call, Call::Democracy(pallet_democracy::Call::propose(..)),)
-	}
-}
-
 impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = BaseCallFilter;
+	type BaseCallFilter = frame_support::traits::Everything;
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = BlockWeights;
 	/// The maximum length of a block (in bytes).
@@ -356,9 +347,9 @@ impl pallet_staking::Config for Runtime {
 	type Currency = Balances;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = U128CurrencyToVote;
-	type RewardRemainder = SetheumTreasury;
+	type RewardRemainder = Treasury;
 	type Event = Event;
-	type Slash = SetheumTreasury; // send the slashed funds to the Setheum treasury.
+	type Slash = Treasury; // send the slashed funds to the Setheum treasury.
 	type Reward = (); // rewards are minted from the void
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
@@ -816,7 +807,7 @@ impl module_dex::Config for Runtime {
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
 	type WeightInfo = weights::module_dex::WeightInfo<Runtime>;
-	type ListingOrigin = EnsureRootOrHalfShuraCouncil;
+	type ListingOrigin = EnsureRootOrHalfFinancialCouncil;
 }
 
 impl module_airdrop::Config for Runtime {
@@ -824,12 +815,20 @@ impl module_airdrop::Config for Runtime {
 }
 
 parameter_types! {
-	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
+	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![
+		vec![SETUSD, SETM],
+		vec![SETR, SETUSD, SETM],
+		vec![SETUSD, SERP],
+		vec![SETR, SETUSD, SERP],
+		vec![SETUSD, DNAR],
+		vec![SETR, SETUSD, DNAR],
+		vec![SETUSD, SETR],
+	];
 	pub StableCurrencyInflationPeriod: u64 = 200; // Every 10 minutes
-	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
-	pub SetterMaximumClaimableTransferAmounts: Balance = 200;
-	pub SetDollarMinimumClaimableTransferAmounts: Balance = 2;
-	pub SetDollarMaximumClaimableTransferAmounts: Balance = 200;
+	pub SetterMinimumClaimableTransferAmounts: Balance = 1;
+	pub SetterMaximumClaimableTransferAmounts: Balance = 200_000;
+	pub SetDollarMinimumClaimableTransferAmounts: Balance = 10;
+	pub SetDollarMaximumClaimableTransferAmounts: Balance = 20_000_000;
 }
 
 impl serp_treasury::Config for Runtime {
@@ -1542,8 +1541,8 @@ parameter_types! {
 	pub const TreasuryMaxApprovals: u32 = 100;
 }
 
-type SetheumTreasuryInstance = pallet_treasury::Instance1;
-impl pallet_treasury::Config<SetheumTreasuryInstance> for Runtime {
+type TreasuryInstance = pallet_treasury::Instance1;
+impl pallet_treasury::Config<TreasuryInstance> for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
 	type ApproveOrigin = EnsureRootOrHalfShuraCouncil;
@@ -1560,8 +1559,8 @@ impl pallet_treasury::Config<SetheumTreasuryInstance> for Runtime {
 	type MaxApprovals = TreasuryMaxApprovals;
 }
 
-type SetheumTreasuryBountiesInstance = pallet_bounties::Instance1;
-impl pallet_bounties::Config<SetheumTreasuryBountiesInstance> for Runtime {
+type TreasuryBountiesInstance = pallet_bounties::Instance1;
+impl pallet_bounties::Config<TreasuryBountiesInstance> for Runtime {
 	type Event = Event;
 	type BountyDepositBase = TreasuryBountyDepositBase;
 	type BountyDepositPayoutDelay = TreasuryBountyDepositPayoutDelay;
@@ -1573,8 +1572,8 @@ impl pallet_bounties::Config<SetheumTreasuryBountiesInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type SetheumTreasuryTipsInstance = pallet_tips::Instance1;
-impl pallet_tips::Config<SetheumTreasuryTipsInstance> for Runtime {
+type TreasuryTipsInstance = pallet_tips::Instance1;
+impl pallet_tips::Config<TreasuryTipsInstance> for Runtime {
 	type Event = Event;
 	type DataDepositPerByte = TreasuryDataDepositPerByte;
 	type MaximumReasonLength = TreasuryMaximumReasonLength;
@@ -1837,7 +1836,7 @@ impl pallet_democracy::Config for Runtime {
 	type FastTrackVotingPeriod = FastTrackVotingPeriod;
 	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
 	type CancellationOrigin = EnsureRootOrTwoThirdsShuraCouncil;
-	type BlacklistOrigin = EnsureRoot<AccountId>;
+	type BlacklistOrigin = EnsureRootOrAllFoundationFundCouncil;
 	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
 	// Root must agree.
 	type CancelProposalOrigin = EnsureRootOrAllTechnicalCommittee;
