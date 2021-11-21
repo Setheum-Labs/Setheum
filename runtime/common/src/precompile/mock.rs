@@ -19,7 +19,7 @@
 
 #![cfg(test)]
 
-use crate::{AllPrecompiles, Ratio, BlockWeights, SystemContractsFilter, Weight, dollar};
+use crate::{AllPrecompiles, Ratio, BlockWeights, SystemContractsFilter, Weight};
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
 	assert_ok, ord_parameter_types, parameter_types,
@@ -77,8 +77,10 @@ impl frame_system::Config for Test {
 	type OnSetCode = ();
 }
 
+pub const DOLLARS: Balance = 1_000_000_000_000_000_000; // 18 DECIMALS
+
 parameter_types! {
-	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * dollar(SETM);
+	pub const MaxNativeTokenExistentialDeposit: Balance = DOLLARS * 100; // 100 SETM
 }
 
 
@@ -86,7 +88,7 @@ parameter_types! {
 pub fn evm_genesis() -> BTreeMap<H160, module_evm::GenesisAccount<Balance, Nonce>> {
 	let existential_deposit = MaxNativeTokenExistentialDeposit::get();
 	
-	let contracts_json = &include_bytes!("../../../predeploy-contracts/resources/bytecodes.json")[..];
+	let contracts_json = &include_bytes!("../../../../predeploy-contracts/resources/bytecodes.json")[..];
 	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
 	let mut accounts = BTreeMap::new();
 	for (_, address, code_string) in contracts {
@@ -360,7 +362,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const LP_SETM_SETUSD: CurrencyId =
