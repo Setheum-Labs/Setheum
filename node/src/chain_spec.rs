@@ -7,7 +7,7 @@ use setheum_runtime::{
 	SS58Prefix, opaque::SessionKeys, get_all_module_accounts,
 	ImOnlineId, IndicesConfig, SessionConfig, StakingConfig,
 	AuthorityDiscoveryId, get_all_module_accounts, EVMConfig,
-	AuthorityDiscoveryConfig, StakerStatus, WASM_BINARY,
+	AuthorityDiscoveryConfig, StakerStatus,
 	//
 	SudoConfig,
 	ShuraCouncilMembershipConfig,
@@ -98,7 +98,7 @@ pub fn get_authority_keys_from_seed(seed: &str)
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "WASM binary not available".to_string())?;
+	let wasm_binary = setheum_runtime::WASM_BINARY.ok_or_else(|| "WASM binary not available".to_string())?;
 	Ok(ChainSpec::from_genesis(
 		// Name
 		"Development",
@@ -139,7 +139,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 }
 
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "WASM binary not available".to_string())?;
+	let wasm_binary = setheum_runtime::WASM_BINARY.ok_or_else(|| "WASM binary not available".to_string())?;
 	Ok(ChainSpec::from_genesis(
 		// Name
 		"Local Testnet",
@@ -190,7 +190,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 }
 
 pub fn public_testnet_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "WASM binary not available".to_string())?;
+	let wasm_binary = setheum_runtime::WASM_BINARY.ok_or_else(|| "WASM binary not available".to_string())?;
 	Ok(ChainSpec::from_genesis(
 		// Name
 		"Setheum Testnet",
@@ -289,6 +289,8 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 			// ----------------------------------------------------------------------------------------
 			// Testnet Council Members vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
+			// Foundation - Shura Council Member
+			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
 			// Labs - Shura Council Member
 			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
 			// Founder (Khalifa MBA) - Shura Council Member
@@ -319,7 +321,7 @@ pub fn live_testnet_config() -> Result<ChainSpec, String> {
 }
 
 pub fn mainnet_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "WASM binary not available".to_string())?;
+	let wasm_binary = setheum_runtime::WASM_BINARY.ok_or_else(|| "WASM binary not available".to_string())?;
 	Ok(ChainSpec::from_genesis(
 		// Name
 		"Setheum Mainnet",
@@ -592,7 +594,7 @@ fn testnet_genesis(
 				),
 			],
 		},
-		airdrop: AirDropConfig {
+		air_drop: AirDropConfig {
 			airdrop_accounts: {
 				let setter_airdrop_accounts_json = &include_bytes!("../../../../resources/mainnet-airdrop-SETR.json")[..];
 				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
@@ -612,7 +614,7 @@ fn testnet_genesis(
 					.collect::<Vec<_>>()
 			},
 		},
-		nft: OrmlNFTConfig { tokens: vec![] },
+		orml_nft: OrmlNFTConfig { tokens: vec![] },
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
@@ -621,15 +623,16 @@ fn testnet_genesis(
 
 		evm: EVMConfig {
 			accounts: evm_genesis_accounts,
+			treasury: root_key,
 		},
 		sudo: SudoConfig { key: root_key },
-		treasury_instance1: Default::default(), // Main Treasury (Setheum Treasury)
-		treasury_instance2: Default::default(), // SPF Treasury  (Setheum Public Fund)
-		treasury_instance3: Default::default(), // ASF Treasury  (Al-Sharif Fund)
-		treasury_instance4: Default::default(), // SFF Treasury  (Setheum Foundation Fund)
+		treasury: Default::default(), // Main Treasury (Setheum Treasury)
+		public_fund: Default::default(), // SPF Treasury  (Setheum Public Fund)
+		al_sharif_fund: Default::default(), // ASF Treasury  (Al-Sharif Fund)
+		foundation_fund: Default::default(), // SFF Treasury  (Setheum Foundation Fund)
 
-		pallet_collective_Instance1: Default::default(),
-		pallet_membership_Instance1: ShuraCouncilMembershipConfig {
+		shura_council: Default::default(),
+		shura_council_membership: ShuraCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -637,8 +640,8 @@ fn testnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance2: Default::default(),
-		pallet_membership_Instance2: FinancialCouncilMembershipConfig {
+		financial_council: Default::default(),
+		financial_council_membership: FinancialCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -646,8 +649,8 @@ fn testnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance3: Default::default(),
-		pallet_membership_Instance3: PublicFundCouncilMembershipConfig {
+		public_fund_council: Default::default(),
+		public_fund_council_membership: PublicFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -655,8 +658,8 @@ fn testnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance4: Default::default(),
-		pallet_membership_Instance4: AlSharifFundCouncilMembershipConfig {
+		al_sharif_fund_council: Default::default(),
+		al_sharif_fund_council_membership: AlSharifFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -664,8 +667,8 @@ fn testnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance5: Default::default(),
-		pallet_membership_Instance5: FoundationFundCouncilMembershipConfig {
+		foundation_fund_council: Default::default(),
+		foundation_fund_council_membership: FoundationFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -673,8 +676,8 @@ fn testnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance6: Default::default(),
-		pallet_membership_Instance6: TechnicalCommitteeMembershipConfig {
+		technical_committee: Default::default(),
+		technical_committee_membership: TechnicalCommitteeMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -682,7 +685,7 @@ fn testnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance7: OperatorMembershipSetheumConfig {
+		operator_membership_setheum: OperatorMembershipSetheumConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -872,7 +875,7 @@ fn mainnet_genesis(
 				),
 			],
 		},
-		airdrop: AirDropConfig {
+		air_drop: AirDropConfig {
 			airdrop_accounts: {
 				let setter_airdrop_accounts_json = &include_bytes!("../../../../resources/mainnet-airdrop-SETR.json")[..];
 				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
@@ -892,7 +895,7 @@ fn mainnet_genesis(
 					.collect::<Vec<_>>()
 			},
 		},
-		nft: OrmlNFTConfig { tokens: vec![] },
+		orml_nft: OrmlNFTConfig { tokens: vec![] },
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
@@ -901,15 +904,16 @@ fn mainnet_genesis(
 
 		evm: EVMConfig {
 			accounts: evm_genesis_accounts,
+			treasury: root_key,
 		},
 		sudo: SudoConfig { key: root_key },
-		treasury_instance1: Default::default(), // Main Treasury (Setheum Treasury)
-		treasury_instance2: Default::default(), // SPF Treasury  (Setheum Public Fund)
-		treasury_instance3: Default::default(), // ASF Treasury  (Al-Sharif Fund)
-		treasury_instance4: Default::default(), // SFF Treasury  (Setheum Foundation Fund)
+		treasury: Default::default(), // Main Treasury (Setheum Treasury)
+		public_fund: Default::default(), // SPF Treasury  (Setheum Public Fund)
+		al_sharif_fund: Default::default(), // ASF Treasury  (Al-Sharif Fund)
+		foundation_fund: Default::default(), // SFF Treasury  (Setheum Foundation Fund)
 
-		pallet_collective_Instance1: Default::default(),
-		pallet_membership_Instance1: ShuraCouncilMembershipConfig {
+		shura_council: Default::default(),
+		shura_council_membership: ShuraCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -917,8 +921,8 @@ fn mainnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance2: Default::default(),
-		pallet_membership_Instance2: FinancialCouncilMembershipConfig {
+		financial_council: Default::default(),
+		financial_council_membership: FinancialCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -926,8 +930,8 @@ fn mainnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance3: Default::default(),
-		pallet_membership_Instance3: PublicFundCouncilMembershipConfig {
+		public_fund_council: Default::default(),
+		public_fund_council_membership: PublicFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -935,8 +939,8 @@ fn mainnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance4: Default::default(),
-		pallet_membership_Instance4: AlSharifFundCouncilMembershipConfig {
+		al_sharif_fund_council: Default::default(),
+		al_sharif_fund_council_membership: AlSharifFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -944,8 +948,8 @@ fn mainnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance5: Default::default(),
-		pallet_membership_Instance5: FoundationFundCouncilMembershipConfig {
+		foundation_fund_council: Default::default(),
+		foundation_fund_council_membership: FoundationFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -953,8 +957,8 @@ fn mainnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_collective_Instance6: Default::default(),
-		pallet_membership_Instance6: TechnicalCommitteeMembershipConfig {
+		technical_committee: Default::default(),
+		technical_committee_membership: TechnicalCommitteeMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -962,7 +966,7 @@ fn mainnet_genesis(
 			],
 			phantom: Default::default(),
 		},
-		pallet_membership_Instance7: OperatorMembershipSetheumConfig {
+		operator_membership_setheum: OperatorMembershipSetheumConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
