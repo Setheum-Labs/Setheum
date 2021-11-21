@@ -145,7 +145,7 @@ pub fn create_full<C, P, SC, B>(
 		subscription_executor,
 		finality_provider,
 	)));
-	io.extend_with(EVMApiServer::to_delegate(EVMApi::new(client)));
+	io.extend_with(EVMApiServer::to_delegate(EVMApi::new(client, deny_unsafe)));
 
 	Ok(io)
 }
