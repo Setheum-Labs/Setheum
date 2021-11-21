@@ -31,7 +31,7 @@ use frame_system::{EnsureRoot, EnsureSignedBy};
 use module_support::{
 	mocks::MockAddressMapping, AddressMapping as AddressMappingT, ExchangeRate, ExchangeRateProvider, SerpTreasury,
 };
-use orml_traits::{parameter_type_with_key, MultiReservableCurrency};
+use orml_traits::parameter_type_with_key;
 pub use primitives::{
 	evm::EvmAddress, Amount, BlockNumber, CurrencyId, DexShare, Header, Nonce, ReserveIdentifier, TokenSymbol,
 	TradingPair,

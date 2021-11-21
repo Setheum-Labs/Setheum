@@ -1,6 +1,7 @@
 [package]
 authors = ['Setheum Labs <https://setheum.xyz>']
 edition = '2018'
+build = "build.rs"
 homepage = 'https://setheum.xyz'
 license = 'Unlicense'
 name = 'setheum-runtime'
