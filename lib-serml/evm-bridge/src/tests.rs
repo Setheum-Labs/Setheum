@@ -30,7 +30,7 @@ use mock::{
 #[test]
 fn should_read_name() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -51,7 +51,7 @@ fn should_read_name() {
 #[test]
 fn should_read_symbol() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -69,7 +69,7 @@ fn should_read_symbol() {
 #[test]
 fn should_read_decimals() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -87,7 +87,7 @@ fn should_read_decimals() {
 #[test]
 fn should_read_total_supply() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -105,7 +105,7 @@ fn should_read_total_supply() {
 #[test]
 fn should_read_balance_of() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -126,7 +126,7 @@ fn should_read_balance_of() {
 #[test]
 fn should_transfer() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000), (bob(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000), (bob(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();

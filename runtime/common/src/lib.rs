@@ -144,8 +144,9 @@ parameter_types! {
 }
 
 // TODO: make those const fn
+// TODO: Check if this makes sense at 18 decimals;
 pub fn dollar(currency_id: CurrencyId) -> Balance {
-	10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
+	1u128.saturating_pow(currency_id.decimals().expect("__ERC20>?__").into())
 }
 
 pub fn cent(currency_id: CurrencyId) -> Balance {
@@ -160,7 +161,7 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 	millicent(currency_id) / 1000
 }
 
-// The nanoscent is only for currencies that have up to 12 decimals like the SETM
+// The nanoscent is only for currencies that have at least up to 12 decimals like the SETM
 // 12 decimals = 1 Trillion nanocents
 // 1 Trillion NANOCENTS = 1 DOLLAR
 pub fn nanocent(currency_id: CurrencyId) -> Balance {

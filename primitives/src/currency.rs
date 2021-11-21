@@ -160,12 +160,12 @@ create_currency_id! {
 	#[repr(u8)]
 	pub enum TokenSymbol {
 		// Tier-1 Tokens
-		SETM("Setheum", 12) = 0,
-		SERP("Serp", 12) = 1,
-		DNAR("The Dinar", 12) = 2,
+		SETM("Setheum", 18) = 0,
+		SERP("Serp", 18) = 1,
+		DNAR("The Dinar", 18) = 2,
 		// Tier-2 Tokens (StableCurrencies)
-		SETR("Setter", 12) = 3,
-		SETUSD("SetDollar", 12) = 4,
+		SETR("Setter", 18) = 3,
+		SETUSD("SetDollar", 18) = 4,
 	}
 }
 
