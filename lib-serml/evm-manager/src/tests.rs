@@ -1,4 +1,6 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
+
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -32,7 +34,7 @@ use std::str::FromStr;
 #[test]
 fn set_erc20_mapping_works() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -74,7 +76,7 @@ fn set_erc20_mapping_works() {
 #[test]
 fn get_evm_address_works() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -93,7 +95,7 @@ fn get_evm_address_works() {
 #[test]
 fn name_works() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -144,7 +146,7 @@ fn name_works() {
 #[test]
 fn symbol_works() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -210,7 +212,7 @@ fn symbol_works() {
 #[test]
 fn decimals_works() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -219,7 +221,7 @@ fn decimals_works() {
 			}));
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decimals(CurrencyId::Token(TokenSymbol::SETM)),
-				Some(12)
+				Some(18)
 			);
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decimals(CurrencyId::Erc20(erc20_address())),
@@ -236,7 +238,7 @@ fn decimals_works() {
 					DexShare::Token(TokenSymbol::SETM),
 					DexShare::Token(TokenSymbol::SETUSD)
 				)),
-				Some(12)
+				Some(18)
 			);
 
 			assert_eq!(
@@ -268,7 +270,7 @@ fn decimals_works() {
 #[test]
 fn encode_evm_address_works() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -342,7 +344,7 @@ fn encode_evm_address_works() {
 #[test]
 fn decode_evm_address_works() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();

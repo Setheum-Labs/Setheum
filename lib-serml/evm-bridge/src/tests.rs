@@ -1,4 +1,6 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
+
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -30,7 +32,7 @@ use mock::{
 #[test]
 fn should_read_name() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -51,7 +53,7 @@ fn should_read_name() {
 #[test]
 fn should_read_symbol() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -69,7 +71,7 @@ fn should_read_symbol() {
 #[test]
 fn should_read_decimals() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -87,7 +89,7 @@ fn should_read_decimals() {
 #[test]
 fn should_read_total_supply() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -105,7 +107,7 @@ fn should_read_total_supply() {
 #[test]
 fn should_read_balance_of() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();
@@ -126,7 +128,7 @@ fn should_read_balance_of() {
 #[test]
 fn should_transfer() {
 	ExtBuilder::default()
-		.balances(vec![(alice(), 1_000_000_000_000), (bob(), 1_000_000_000_000)])
+		.balances(vec![(alice(), 1_000_000_000_000_000_000), (bob(), 1_000_000_000_000_000_000)])
 		.build()
 		.execute_with(|| {
 			deploy_contracts();

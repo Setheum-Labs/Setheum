@@ -109,7 +109,6 @@ git config --global submodule.recurse true
 Install required tools and install git hooks:
 
 ```bash
-./scripts/init.sh submodule build-full
 git submodule update --init --recursive
 ```
 
@@ -118,13 +117,6 @@ git submodule update --init --recursive
 The `make run` command will launch a temporary node and its state will be discarded after you terminate the process.
 ```bash
 make run
-```
-
-OR
-
-The `make run-nightly` (using cargo nightly) command will launch a temporary node and its state will be discarded after you terminate the process.
-```bash
-make run-nightly
 ```
 
 ### Run a persistent single-node chain

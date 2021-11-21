@@ -1,11 +1,11 @@
 [package]
 authors = ['Setheum Labs <https://setheum.xyz>']
+version = '0.9.80'
 edition = '2018'
+build = "build.rs"
 homepage = 'https://setheum.xyz'
-license = 'Unlicense'
 name = 'setheum-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum'
-version = '0.9.80'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
@@ -13,14 +13,8 @@ targets = ['x86_64-unknown-linux-gnu']
 [build-dependencies]
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
-# alias "parity-scale-code" to "codec"
-[dependencies.codec]
-default-features = false
-features = ['derive']
-package = 'parity-scale-codec'
-version = '2.0.0'
-
 [dependencies]
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ['derive'] }
 smallvec = "1.4.0"
 hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.119' }
@@ -112,6 +106,7 @@ module-evm-bridge = { path = "../lib-serml/evm-bridge", default-features = false
 module-evm-rpc-runtime-api = { path = "../lib-serml/evm/rpc/runtime_api",  default-features = false }
 module-evm-manager = { path = "../lib-serml/evm-manager", default-features = false }
 
+serp-treasury = { path = "../lib-serml/serp-treasury", default-features = false }
 serp-setmint = { path = "../lib-serml/serp-setmint", default-features = false }
 module-loans = { path = "../lib-serml/loans", default-features = false }
 module-nft = { path = "../lib-serml/nft", default-features = false }
@@ -200,6 +195,7 @@ std = [
 	"module-evm-accounts/std",
 	"module-evm-bridge/std",
 	"module-evm-manager/std",
+	"serp-treasury/std",
 	"serp-setmint/std",
 	"module-loans/std",
 	"module-nft/std",
@@ -234,5 +230,4 @@ runtime-benchmarks = [
 	"module-nft/runtime-benchmarks",
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
-
 ]

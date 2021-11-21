@@ -57,10 +57,6 @@ debug:
 run:
 	RUST_BACKTRACE=1 cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
 
-.PHONY: run-nightly
-run:
-	RUST_BACKTRACE=1 cargo +nightly run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
-	
 .PHONY: log
 log:
 	RUST_BACKTRACE=1 RUST_LOG=debug cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp

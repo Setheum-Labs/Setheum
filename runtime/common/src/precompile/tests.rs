@@ -1,4 +1,6 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
+
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -608,8 +610,7 @@ fn dex_precompile_get_liquidity_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -650,8 +651,7 @@ fn dex_precompile_get_liquidity_token_address_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -701,8 +701,7 @@ fn dex_precompile_get_swap_target_amount_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -748,8 +747,7 @@ fn dex_precompile_get_swap_supply_amount_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -795,8 +793,7 @@ fn dex_precompile_swap_with_exact_supply_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {
@@ -846,8 +843,7 @@ fn dex_precompile_swap_with_exact_target_should_work() {
 			SETUSD,
 			1_000,
 			1_000_000,
-			0,
-			true
+			0
 		));
 
 		let context = Context {

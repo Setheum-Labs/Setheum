@@ -1,4 +1,6 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
+
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -17,16 +19,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Common runtime code for Setheum.
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
 	parameter_types,
-	traits::Contains,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_MILLIS},
 		DispatchClass, Weight,
 	},
 	RuntimeDebug,
@@ -34,14 +33,14 @@ use frame_support::{
 use frame_system::{limits, EnsureOneOf, EnsureRoot};
 pub use module_support::{ExchangeRate, PrecompileCallerFilter, Price, Rate, Ratio};
 use primitives::{
-	Balance, BlockNumber, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
+	Balance, CurrencyId, PRECOMPILE_ADDRESS_START, PREDEPLOY_ADDRESS_START, SYSTEM_CONTRACT_ADDRESS_PREFIX,
 };
 use sp_core::{
 	u32_trait::{_1, _2, _3, _4},
 	H160,
 };
 use sp_runtime::{
-	traits::{BlockNumberProvider, Convert},
+	traits::Convert,
 	transaction_validity::TransactionPriority,
 	Perbill,
 };
@@ -96,14 +95,23 @@ impl Convert<u64, Weight> for GasToWeight {
 	}
 }
 
-// TODO: somehow estimate this value. Start from a conservative value.
-pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(25);
+/// We assume that ~4% of the block weight is consumed by `on_initialize` handlers.
+/// This is used to limit the maximal weight of a single extrinsic.
+pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(4);
 /// The ratio that `Normal` extrinsics should occupy. Start from a conservative value.
-/// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
+/// We allow `Normal` extrinsics to fill up the block up to 92%, the rest can be
 /// used by  Operational  extrinsics.
-const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-/// We allow for 1 second of compute with a 3 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 1000 * WEIGHT_PER_MILLIS;
+const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(92);
+/// We allow for 1.1 second of compute with a 3 second average block time.
+//
+// (Numbers 1:1) "And the Lord spoke unto Moses in the Wilderness of Sinai,
+// in the tabernacle of the congregation, on the first day of the second month,
+// in the second year after they had come out of the land of Egypt, saying,"
+// "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم(Qur'an 1:1)"
+//
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 1100 * WEIGHT_PER_MILLIS;
 
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
 
@@ -145,8 +153,9 @@ parameter_types! {
 }
 
 // TODO: make those const fn
+// TODO: Check if this makes sense at 18 decimals;
 pub fn dollar(currency_id: CurrencyId) -> Balance {
-	10u128.saturating_pow(currency_id.decimals().expect("Not support Erc20 decimals").into())
+	1u128.saturating_pow(currency_id.decimals().expect("__ERC20>?__").into())
 }
 
 pub fn cent(currency_id: CurrencyId) -> Balance {
@@ -161,7 +170,7 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 	millicent(currency_id) / 1000
 }
 
-// The nanoscent is only for currencies that have up to 12 decimals like the SETM
+// The nanoscent is only for currencies that have at least up to 12 decimals like the SETM
 // 12 decimals = 1 Trillion nanocents
 // 1 Trillion NANOCENTS = 1 DOLLAR
 pub fn nanocent(currency_id: CurrencyId) -> Balance {
@@ -188,6 +197,9 @@ pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance6;
 pub type OperatorMembershipInstanceSetheum = pallet_membership::Instance7;
 
 // Shura Council
+pub type EnsureRootOrOneShuraCouncil = EnsureOneOf<
+AccountId, EnsureRoot<AccountId>, pallet_collective::EnsureMember<AccountId, ShuraCouncilInstance>>;
+
 pub type EnsureRootOrAllShuraCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
