@@ -640,7 +640,7 @@ parameter_type_with_key! {
 				// TokenSymbol::SETM => cent(*currency_id),
 
 				TokenSymbol::SETUSD => dollar(*currency_id),
-				TokenSymbol::SETR => 1 * millicent(*currency_id),
+				TokenSymbol::SETR => 50 * cent(*currency_id),
 				TokenSymbol::SERP => 1 * dollar(*currency_id),
 				TokenSymbol::DNAR => 1 * dollar(*currency_id),
 				TokenSymbol::SETM => 1 * dollar(*currency_id),
@@ -957,9 +957,9 @@ parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETUSD, SETM],
-		vec![SETUSD, SERP],
-		vec![SETUSD, DNAR],
-		vec![SETUSD, SETR],
+		vec![SERP, SETUSD, SETM],
+		vec![DNAR, SETUSD, SETM],
+		vec![SETR, SETUSD, SETM],
 	];
 }
 
@@ -1009,13 +1009,13 @@ impl module_evm_manager::Config for Runtime {
 	type EVMBridge = EVMBridge;
 }
 
-parameter_types! {
-	pub const ChainId: u64 = 258;
-	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
-}
-
 #[cfg(feature = "with-ethereum-compatibility")]
 static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
+
+parameter_types! {
+	pub const ChainId: u64 = 25888;
+	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
+}
 
 parameter_types! {
 	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETM);
