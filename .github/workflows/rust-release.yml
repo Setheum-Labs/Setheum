@@ -11,18 +11,6 @@ jobs:
     needs: clean-up-actions
     steps:
     - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Install toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: nightly-2021-06-17
-        components: rustfmt
-        target: wasm32-unknown-unknown
-        default: true
-    - name: Check format
-      run: cargo fmt --all -- --check
     - name: Init
       run: make init
     - name: Build
