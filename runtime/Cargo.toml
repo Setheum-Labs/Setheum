@@ -1,12 +1,11 @@
 [package]
 authors = ['Setheum Labs <https://setheum.xyz>']
+version = '0.9.80'
 edition = '2018'
 build = "build.rs"
 homepage = 'https://setheum.xyz'
-license = 'Unlicense'
 name = 'setheum-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum'
-version = '0.9.80'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
@@ -15,7 +14,7 @@ targets = ['x86_64-unknown-linux-gnu']
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ['derive'] }
 smallvec = "1.4.0"
 hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.119' }

@@ -1,4 +1,6 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
+
 // This file is part of Setheum.
 
 // Copyright (C) 2019-2021 Setheum Labs.
@@ -149,7 +151,6 @@ pub use runtime_common::{
 mod weights;
 
 mod authority;
-#[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 pub mod constants;
 
@@ -180,6 +181,75 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		CashDropPoolAccountId::get(), 	// ACCOUNT 1
 	]
 }
+
+// TODO: Update the accounts and uncomment
+// // Enable when we add FoundationAccount to governance
+// parameter_types! {
+// 	pub SetheumFoundationAccounts: Vec<AccountId> = vec![
+// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
+// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
+// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
+// 		FoundationTreasuryPalletId::get().into_account(),
+// 	];
+// }
+
+// pub struct EnsureSetheumFoundation;
+// impl EnsureOrigin<Origin> for EnsureSetheumFoundation {
+// 	type Success = AccountId;
+
+// 	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
+// 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
+// 			RawOrigin::Signed(caller) => {
+// 				if SetheumFoundationAccounts::get().contains(&caller) {
+// 					Ok(caller)
+// 				} else {
+// 					Err(Origin::from(Some(caller)))
+// 				}
+// 			}
+// 			r => Err(Origin::from(r)),
+// 		})
+// 	}
+
+// 	#[cfg(feature = "runtime-benchmarks")]
+// 	fn successful_origin() -> Origin {
+// 		Origin::from(RawOrigin::Signed(Default::default()))
+// 	}
+// }
+
+
+// TODO: Update the accounts and uncomment
+// // Enable when we add AlSharifFoundationAccount to governance
+// parameter_types! {
+// 	pub AlSharifFoundationAccounts: Vec<AccountId> = vec![
+// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
+// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
+// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
+// 		FoundationTreasuryPalletId::get().into_account(),
+// 	];
+// }
+
+// pub struct EnsureAlSharifFoundation;
+// impl EnsureOrigin<Origin> for EnsureAlSharifFoundation {
+// 	type Success = AccountId;
+
+// 	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
+// 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
+// 			RawOrigin::Signed(caller) => {
+// 				if AlSharifFoundationAccounts::get().contains(&caller) {
+// 					Ok(caller)
+// 				} else {
+// 					Err(Origin::from(Some(caller)))
+// 				}
+// 			}
+// 			r => Err(Origin::from(r)),
+// 		})
+// 	}
+
+// 	#[cfg(feature = "runtime-benchmarks")]
+// 	fn successful_origin() -> Origin {
+// 		Origin::from(RawOrigin::Signed(Default::default()))
+// 	}
+// }
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -939,15 +1009,8 @@ parameter_types! {
 }
 
 #[cfg(feature = "with-ethereum-compatibility")]
-parameter_types! {
-	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETM);
-	pub const NewContractExtraBytes: u32 = 0;
-	pub const StorageDepositPerByte: Balance = 0;
-	pub const DeveloperDeposit: Balance = 0;
-	pub const DeploymentFee: Balance = 0;
-}
+static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
-#[cfg(not(feature = "with-ethereum-compatibility"))]
 parameter_types! {
 	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETM);
 	pub const NewContractExtraBytes: u32 = 10_000;
@@ -986,9 +1049,6 @@ pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
 >;
 pub type DexPrecompile =
 	runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, Dex>;
-
-#[cfg(feature = "with-ethereum-compatibility")]
-static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
 impl module_evm::Config for Runtime {
 	type AddressMapping = EvmAddressMapping<Runtime>;
@@ -1517,6 +1577,28 @@ impl ContainsLengthBound for FoundationFundCouncilProvider {
 	}
 }
 
+
+parameter_types! {
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub ProposalBondMinimum: Balance = dollar(SETM);
+	pub const SpendPeriod: BlockNumber = 21 * DAYS;
+	pub const Burn: Permill = Permill::from_percent(0);
+
+	pub const TipCountdown: BlockNumber = DAYS;
+	pub const TipFindersFee: Percent = Percent::from_percent(10);
+	pub TipReportDepositBase: Balance = deposit(1, 0);
+	pub const SevenDays: BlockNumber = 7 * DAYS;
+	pub const ZeroDay: BlockNumber = 0;
+	pub const OneDay: BlockNumber = DAYS;
+	pub BountyDepositBase: Balance = dollar(SETM);
+	pub const BountyDepositPayoutDelay: BlockNumber = DAYS;
+	pub const BountyUpdatePeriod: BlockNumber = 21 * DAYS;
+	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
+	pub BountyValueMinimum: Balance = 5 * dollar(SETM);
+	pub DataDepositPerByte: Balance = deposit(0, 1);
+	pub const MaximumReasonLength: u32 = 16384;
+	pub const MaxApprovals: u32 = 100;
+}
 
 parameter_types! {
 	pub const TreasuryProposalBond: Permill = Permill::from_percent(5);
