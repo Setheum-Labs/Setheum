@@ -34,7 +34,6 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Compact, Decode, Encode};
-use frame_support::instances::{Instance1, Instance2, Instance3, Instance4};
 use frame_support::pallet_prelude::InvalidTransaction;
 pub use frame_support::{
 	construct_runtime, log, parameter_types,
@@ -1589,6 +1588,7 @@ parameter_types! {
 	pub ProposalBondMinimum: Balance = dollar(SETM);
 	pub const SpendPeriod: BlockNumber = 21 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(0);
+	pub const MaxApprovals: u32 = 100;
 
 	pub const TipCountdown: BlockNumber = DAYS;
 	pub const TipFindersFee: Percent = Percent::from_percent(10);
@@ -1603,29 +1603,6 @@ parameter_types! {
 	pub BountyValueMinimum: Balance = 5 * dollar(SETM);
 	pub DataDepositPerByte: Balance = deposit(0, 1);
 	pub const MaximumReasonLength: u32 = 16384;
-	pub const MaxApprovals: u32 = 100;
-}
-
-parameter_types! {
-	pub const TreasuryProposalBond: Permill = Permill::from_percent(5);
-	pub TreasuryProposalBondMinimum: Balance = dollar(SETM);
-	pub const TreasurySpendPeriod: BlockNumber = 21 * DAYS;
-	pub const TreasuryBurn: Permill = Permill::from_percent(0);
-
-	pub const TreasuryTipCountdown: BlockNumber = DAYS;
-	pub const TreasuryTipFindersFee: Percent = Percent::from_percent(10);
-	pub TreasuryTipReportDepositBase: Balance = deposit(1, 0);
-	pub const TreasurySevenDays: BlockNumber = 7 * DAYS;
-	pub const TreasuryZeroDay: BlockNumber = 0;
-	pub const OneDay: BlockNumber = DAYS;
-	pub TreasuryBountyDepositBase: Balance = dollar(SETM);
-	pub const TreasuryBountyDepositPayoutDelay: BlockNumber = DAYS;
-	pub const TreasuryBountyUpdatePeriod: BlockNumber = 21 * DAYS;
-	pub const TreasuryBountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub TreasuryBountyValueMinimum: Balance = 5 * dollar(SETM);
-	pub TreasuryDataDepositPerByte: Balance = deposit(0, 1);
-	pub const TreasuryMaximumReasonLength: u32 = 16384;
-	pub const TreasuryMaxApprovals: u32 = 100;
 }
 
 type TreasuryInstance = pallet_treasury::Instance1;
@@ -1646,8 +1623,7 @@ impl pallet_treasury::Config<TreasuryInstance> for Runtime {
 	type MaxApprovals = TreasuryMaxApprovals;
 }
 
-type TreasuryBountiesInstance = pallet_bounties::Instance1;
-impl pallet_bounties::Config<TreasuryBountiesInstance> for Runtime {
+impl pallet_bounties::Config for Runtime {
 	type Event = Event;
 	type BountyDepositBase = TreasuryBountyDepositBase;
 	type BountyDepositPayoutDelay = TreasuryBountyDepositPayoutDelay;
@@ -1659,8 +1635,7 @@ impl pallet_bounties::Config<TreasuryBountiesInstance> for Runtime {
 	type WeightInfo = ();
 }
 
-type TreasuryTipsInstance = pallet_tips::Instance1;
-impl pallet_tips::Config<TreasuryTipsInstance> for Runtime {
+impl pallet_tips::Config for Runtime {
 	type Event = Event;
 	type DataDepositPerByte = TreasuryDataDepositPerByte;
 	type MaximumReasonLength = TreasuryMaximumReasonLength;
@@ -1677,20 +1652,6 @@ parameter_types! {
 	pub PublicFundProposalBondMinimum: Balance = dollar(SETM);
 	pub const PublicFundSpendPeriod: BlockNumber = 21 * DAYS;
 	pub const PublicFundBurn: Permill = Permill::from_percent(0);
-
-	pub const PublicFundTipCountdown: BlockNumber = DAYS;
-	pub const PublicFundTipFindersFee: Percent = Percent::from_percent(10);
-	pub PublicFundTipReportDepositBase: Balance = deposit(1, 0);
-	pub const PublicFundSevenDays: BlockNumber = 7 * DAYS;
-	pub const PublicFundZeroDay: BlockNumber = 0;
-	pub const OneDay: BlockNumber = DAYS;
-	pub PublicFundBountyDepositBase: Balance = dollar(SETM);
-	pub const PublicFundBountyDepositPayoutDelay: BlockNumber = DAYS;
-	pub const PublicFundBountyUpdatePeriod: BlockNumber = 21 * DAYS;
-	pub const PublicFundBountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub PublicFundBountyValueMinimum: Balance = 5 * dollar(SETM);
-	pub PublicFundDataDepositPerByte: Balance = deposit(0, 1);
-	pub const PublicFundMaximumReasonLength: u32 = 16384;
 	pub const PublicFundMaxApprovals: u32 = 100;
 }
 
@@ -1712,51 +1673,11 @@ impl pallet_treasury::Config<PublicFundTreasuryInstance> for Runtime {
 	type MaxApprovals = PublicFundMaxApprovals;
 }
 
-type PublicFundBountiesInstance = pallet_bounties::Instance2;
-impl pallet_bounties::Config<PublicFundBountiesInstance> for Runtime {
-	type Event = Event;
-	type BountyDepositBase = PublicFundBountyDepositBase;
-	type BountyDepositPayoutDelay = PublicFundBountyDepositPayoutDelay;
-	type BountyUpdatePeriod = PublicFundBountyUpdatePeriod;
-	type BountyCuratorDeposit = PublicFundBountyCuratorDeposit;
-	type BountyValueMinimum = PublicFundBountyValueMinimum;
-	type DataDepositPerByte = PublicFundDataDepositPerByte;
-	type MaximumReasonLength = PublicFundMaximumReasonLength;
-	type WeightInfo = ();
-}
-
-type PublicFundTipsInstance = pallet_tips::Instance2;
-impl pallet_tips::Config<PublicFundTipsInstance> for Runtime {
-	type Event = Event;
-	type DataDepositPerByte = PublicFundDataDepositPerByte;
-	type MaximumReasonLength = PublicFundMaximumReasonLength;
-	type Tippers = PublicFundCouncilProvider;
-	type TipCountdown = PublicFundTipCountdown;
-	type TipFindersFee = PublicFundTipFindersFee;
-	type TipReportDepositBase = PublicFundTipReportDepositBase;
-	type WeightInfo = ();
-}
-
-
 parameter_types! {
 	pub const AlSharifFundProposalBond: Permill = Permill::from_percent(5);
 	pub AlSharifFundProposalBondMinimum: Balance = dollar(SETM);
 	pub const AlSharifFundSpendPeriod: BlockNumber = 21 * DAYS;
 	pub const AlSharifFundBurn: Permill = Permill::from_percent(0);
-
-	pub const AlSharifFundTipCountdown: BlockNumber = DAYS;
-	pub const AlSharifFundTipFindersFee: Percent = Percent::from_percent(10);
-	pub AlSharifFundTipReportDepositBase: Balance = deposit(1, 0);
-	pub const AlSharifFundSevenDays: BlockNumber = 7 * DAYS;
-	pub const AlSharifFundZeroDay: BlockNumber = 0;
-	pub const OneDay: BlockNumber = DAYS;
-	pub AlSharifFundBountyDepositBase: Balance = dollar(SETM);
-	pub const AlSharifFundBountyDepositPayoutDelay: BlockNumber = DAYS;
-	pub const AlSharifFundBountyUpdatePeriod: BlockNumber = 21 * DAYS;
-	pub const AlSharifFundBountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub AlSharifFundBountyValueMinimum: Balance = 5 * dollar(SETM);
-	pub AlSharifFundDataDepositPerByte: Balance = deposit(0, 1);
-	pub const AlSharifFundMaximumReasonLength: u32 = 16384;
 	pub const AlSharifFundMaxApprovals: u32 = 100;
 }
 
@@ -1778,51 +1699,11 @@ impl pallet_treasury::Config<AlSharifFundTreasuryInstance> for Runtime {
 	type MaxApprovals = AlSharifFundMaxApprovals;
 }
 
-type AlSharifFundBountiesInstance = pallet_bounties::Instance3;
-impl pallet_bounties::Config<AlSharifFundBountiesInstance> for Runtime {
-	type Event = Event;
-	type BountyDepositBase = AlSharifFundBountyDepositBase;
-	type BountyDepositPayoutDelay = AlSharifFundBountyDepositPayoutDelay;
-	type BountyUpdatePeriod = AlSharifFundBountyUpdatePeriod;
-	type BountyCuratorDeposit = AlSharifFundBountyCuratorDeposit;
-	type BountyValueMinimum = AlSharifFundBountyValueMinimum;
-	type DataDepositPerByte = AlSharifFundDataDepositPerByte;
-	type MaximumReasonLength = AlSharifFundMaximumReasonLength;
-	type WeightInfo = ();
-}
-
-type AlSharifFundTipsInstance = pallet_tips::Instance3;
-impl pallet_tips::Config<AlSharifFundTipsInstance> for Runtime {
-	type Event = Event;
-	type DataDepositPerByte = AlSharifFundDataDepositPerByte;
-	type MaximumReasonLength = AlSharifFundMaximumReasonLength;
-	type Tippers = AlSharifFundCouncilProvider;
-	type TipCountdown = AlSharifFundTipCountdown;
-	type TipFindersFee = AlSharifFundTipFindersFee;
-	type TipReportDepositBase = AlSharifFundTipReportDepositBase;
-	type WeightInfo = ();
-}
-
-
 parameter_types! {
 	pub const FoundationFundProposalBond: Permill = Permill::from_percent(5);
 	pub FoundationFundProposalBondMinimum: Balance = dollar(SETM);
 	pub const FoundationFundSpendPeriod: BlockNumber = 21 * DAYS;
 	pub const FoundationFundBurn: Permill = Permill::from_percent(0);
-
-	pub const FoundationFundTipCountdown: BlockNumber = DAYS;
-	pub const FoundationFundTipFindersFee: Percent = Percent::from_percent(10);
-	pub FoundationFundTipReportDepositBase: Balance = deposit(1, 0);
-	pub const FoundationFundSevenDays: BlockNumber = 7 * DAYS;
-	pub const FoundationFundZeroDay: BlockNumber = 0;
-	pub const OneDay: BlockNumber = DAYS;
-	pub FoundationFundBountyDepositBase: Balance = dollar(SETM);
-	pub const FoundationFundBountyDepositPayoutDelay: BlockNumber = DAYS;
-	pub const FoundationFundBountyUpdatePeriod: BlockNumber = 21 * DAYS;
-	pub const FoundationFundBountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub FoundationFundBountyValueMinimum: Balance = 5 * dollar(SETM);
-	pub FoundationFundDataDepositPerByte: Balance = deposit(0, 1);
-	pub const FoundationFundMaximumReasonLength: u32 = 16384;
 	pub const FoundationFundMaxApprovals: u32 = 100;
 }
 
@@ -1843,32 +1724,6 @@ impl pallet_treasury::Config<FoundationFundTreasuryInstance> for Runtime {
 	type WeightInfo = ();
 	type MaxApprovals = FoundationFundMaxApprovals;
 }
-
-type FoundationFundBountiesInstance = pallet_bounties::Instance4;
-impl pallet_bounties::Config<FoundationFundBountiesInstance> for Runtime {
-	type Event = Event;
-	type BountyDepositBase = FoundationFundBountyDepositBase;
-	type BountyDepositPayoutDelay = AFoundationFundBountyDepositPayoutDelay;
-	type BountyUpdatePeriod = FoundationFundBountyUpdatePeriod;
-	type BountyCuratorDeposit = FoundationFundBountyCuratorDeposit;
-	type BountyValueMinimum = FoundationFundBountyValueMinimum;
-	type DataDepositPerByte = FoundationFundDataDepositPerByte;
-	type MaximumReasonLength = FoundationFundMaximumReasonLength;
-	type WeightInfo = ();
-}
-
-type FoundationFundTipsInstance = pallet_tips::Instance4;
-impl pallet_tips::Config<FoundationFundTipsInstance> for Runtime {
-	type Event = Event;
-	type DataDepositPerByte = FoundationFundDataDepositPerByte;
-	type MaximumReasonLength = FoundationFundMaximumReasonLength;
-	type Tippers = FoundationFundCouncilProvider;
-	type TipCountdown = FoundationFundTipCountdown;
-	type TipFindersFee = FoundationFundTipFindersFee;
-	type TipReportDepositBase = FoundationFundTipReportDepositBase;
-	type WeightInfo = ();
-}
-
 
 parameter_types! {
 	pub ConfigDepositBase: Balance = 10 * cent(SETM);
@@ -1896,7 +1751,6 @@ impl orml_auction::Config for Runtime {
 }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
-
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 
