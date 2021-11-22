@@ -65,10 +65,6 @@ pub fn feed_price(prices: Vec<(CurrencyId, Price)>) -> DispatchResult {
 	Ok(())
 }
 
-pub fn set_setheum_balance(who: &AccountId, balance: Balance) {
-	set_balance(CurrencyId::Token(TokenSymbol::SETM), who, balance)
-}
-
 pub fn set_balance_fungibles(currency_id: CurrencyId, who: &AccountId, balance: Balance) {
 	assert_ok!(<orml_tokens::Pallet<Runtime> as fungibles::Mutate<AccountId>>::mint_into(currency_id, who, balance));
 }
