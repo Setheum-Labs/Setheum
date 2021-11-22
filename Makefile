@@ -11,7 +11,7 @@ toolchain:
 	./scripts/init.sh
 
 .PHONY: init
-init: toolchain submodule build-full
+init: toolchain submodule build
 
 .PHONY: submodule
 submodule:
