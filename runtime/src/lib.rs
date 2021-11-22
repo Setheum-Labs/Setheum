@@ -52,7 +52,7 @@ use sp_std::prelude::*;
 use sp_core::{
 	crypto::KeyTypeId,
 	u32_trait::{_2, _3, _4},
-	H160, OpaqueMetadata, Decode,
+	H160, OpaqueMetadata,
 };
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
@@ -65,12 +65,10 @@ use sp_runtime::{
 use sp_runtime::traits::{
 	NumberFor,
 	Zero,
-	SaturatedConversion,
 	OpaqueKeys,
 };
 pub use sp_runtime::{
 	Perbill, Percent, Permill, Perquintill,
-	DispatchResult,
 };
 use sp_api::impl_runtime_apis;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
@@ -79,7 +77,7 @@ use frame_election_provider_support::onchain;
 pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 
-use module_support::TransactionPayment;
+// use module_support::TransactionPayment;
 use frame_system::Call;
 use frame_system::Event;
 
@@ -396,6 +394,8 @@ impl pallet_session::historical::Config for Runtime {
 	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
 }
 
+pub const DOLLARS: Balance = 1_000_000_000_000_000_000; // 18 DECIMALS
+
 pallet_staking_reward_curve::build! {
 	// 2.58% min, 25.8% max, 50% ideal stake
 	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
@@ -638,11 +638,11 @@ parameter_type_with_key! {
 				// TokenSymbol::DNAR => cent(*currency_id),
 				// TokenSymbol::SETM => cent(*currency_id),
 
-				TokenSymbol::SETUSD => dollar(*currency_id),
-				TokenSymbol::SETR => 50 * cent(*currency_id),
-				TokenSymbol::SERP => 1 * dollar(*currency_id),
-				TokenSymbol::DNAR => 1 * dollar(*currency_id),
-				TokenSymbol::SETM => 1 * dollar(*currency_id),
+				TokenSymbol::SETUSD => 10 * cent(*currency_id),
+				TokenSymbol::SETR => 10 * cent(*currency_id),
+				TokenSymbol::SERP => 10 * cent(*currency_id),
+				TokenSymbol::DNAR => 10 * cent(*currency_id),
+				TokenSymbol::SETM => 10 * cent(*currency_id),
 			},
 			CurrencyId::DexShare(dex_share_0, _) => {
 				let currency_id_0: CurrencyId = (*dex_share_0).into();
@@ -681,11 +681,6 @@ impl orml_tokens::Config for Runtime {
 	type OnDust = orml_tokens::TransferDust<Runtime, TreasuryAccount>;
 	type MaxLocks = MaxLocks;
 	type DustRemovalWhitelist = DustRemovalWhitelist;
-}
-
-parameter_types! {
-	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * BlockWeights::get().max_block;
-	pub const MaxScheduledPerBlock: u32 = 50;
 }
 
 parameter_types! {
@@ -930,7 +925,7 @@ impl serp_treasury::Config for Runtime {
 	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
 	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
 	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
-	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
+	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type PalletId = SerpTreasuryPalletId;
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
@@ -949,7 +944,7 @@ impl cdp_treasury::Config for Runtime {
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = CDPTreasuryPalletId;
 	type SerpTreasury = SerpTreasury;
-	type WeightInfo = weights::cdp_treasury::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_cdp_treasury::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -1024,7 +1019,6 @@ parameter_types! {
 }
 
 parameter_types! {
-	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETM);
 	pub const NewContractExtraBytes: u32 = 10_000;
 	pub StorageDepositPerByte: Balance = deposit(0, 1);
 	pub DeveloperDeposit: Balance = dollar(SETM);
@@ -1230,7 +1224,7 @@ parameter_types! {
 parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
-	pub const NativeTokenExistentialDeposit: Balance =       1 * SETM;
+	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETM);
 	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * SETM;
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = 50;
@@ -1620,36 +1614,36 @@ impl pallet_treasury::Config<TreasuryInstance> for Runtime {
 	type RejectOrigin = EnsureRootOrHalfShuraCouncil;
 	type Event = Event;
 	type OnSlash = Treasury;
-	type ProposalBond = TreasuryProposalBond;
-	type ProposalBondMinimum = TreasuryProposalBondMinimum;
-	type SpendPeriod = TreasurySpendPeriod;
-	type Burn = TreasuryBurn;
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = ProposalBondMinimum;
+	type SpendPeriod = SpendPeriod;
+	type Burn = Burn;
 	type BurnDestination = ();
-	type SpendFunds = TreasuryBounties;
+	type SpendFunds = Bounties;
 	type WeightInfo = ();
-	type MaxApprovals = TreasuryMaxApprovals;
+	type MaxApprovals = MaxApprovals;
 }
 
 impl pallet_bounties::Config for Runtime {
 	type Event = Event;
-	type BountyDepositBase = TreasuryBountyDepositBase;
-	type BountyDepositPayoutDelay = TreasuryBountyDepositPayoutDelay;
-	type BountyUpdatePeriod = TreasuryBountyUpdatePeriod;
-	type BountyCuratorDeposit = TreasuryBountyCuratorDeposit;
-	type BountyValueMinimum = TreasuryBountyValueMinimum;
-	type DataDepositPerByte = TreasuryDataDepositPerByte;
-	type MaximumReasonLength = TreasuryMaximumReasonLength;
+	type BountyDepositBase = BountyDepositBase;
+	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
+	type BountyUpdatePeriod = BountyUpdatePeriod;
+	type BountyCuratorDeposit = BountyCuratorDeposit;
+	type BountyValueMinimum = BountyValueMinimum;
+	type DataDepositPerByte = DataDepositPerByte;
+	type MaximumReasonLength = MaximumReasonLength;
 	type WeightInfo = ();
 }
 
 impl pallet_tips::Config for Runtime {
 	type Event = Event;
-	type DataDepositPerByte = TreasuryDataDepositPerByte;
-	type MaximumReasonLength = TreasuryMaximumReasonLength;
+	type DataDepositPerByte = DataDepositPerByte;
+	type MaximumReasonLength = MaximumReasonLength;
 	type Tippers = ShuraCouncilProvider;
-	type TipCountdown = TreasuryTipCountdown;
-	type TipFindersFee = TreasuryTipFindersFee;
-	type TipReportDepositBase = TreasuryTipReportDepositBase;
+	type TipCountdown = TipCountdown;
+	type TipFindersFee = TipFindersFee;
+	type TipReportDepositBase = TipReportDepositBase;
 	type WeightInfo = ();
 }
 
@@ -1829,14 +1823,8 @@ construct_runtime!(
 		FoundationFund: pallet_treasury::<Instance4>::{Pallet, Call, Storage, Config, Event<T>} = 38,
 		// Bounties
 		TreasuryBounties: pallet_bounties::<Instance1>::{Pallet, Call, Storage, Event<T>} = 39,
-		PublicFundBounties: pallet_bounties::<Instance2>::{Pallet, Call, Storage, Event<T>} = 40,
-		AlSharifFundBounties: pallet_bounties::<Instance3>::{Pallet, Call, Storage, Event<T>} = 41,
-		FoundationFundBounties: pallet_bounties::<Instance4>::{Pallet, Call, Storage, Event<T>} = 42,
 		// Tips
 		TreasuryTips: pallet_tips::<Instance1>::{Pallet, Call, Storage, Event<T>} = 43,
-		PublicFundTips: pallet_tips::<Instance2>::{Pallet, Call, Storage, Event<T>} = 44,
-		AlSharifFundTips: pallet_tips::<Instance3>::{Pallet, Call, Storage, Event<T>} = 45,
-		FoundationFundTips: pallet_tips::<Instance4>::{Pallet, Call, Storage, Event<T>} = 46,
 
 		// Extras
 		NFT: module_nft::{Pallet, Call, Event<T>} = 47,

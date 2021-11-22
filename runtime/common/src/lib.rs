@@ -56,6 +56,8 @@ pub use primitives::{
 	AccountId,
 };
 
+pub const DOLLARS: Balance = 1_000_000_000_000_000_000; // 18 DECIMALS
+
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
 
 // Priority of unsigned transactions
