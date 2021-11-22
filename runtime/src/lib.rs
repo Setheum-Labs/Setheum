@@ -310,7 +310,7 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
-	pub const BlockHashCount: BlockNumber = 2400; // 2 hours
+	pub const BlockHashCount: BlockNumber = 2400; // 80 minutes (1hr:20m)
 	pub const SS58Prefix: u8 = 258;
 }
 
@@ -967,16 +967,23 @@ pub struct DealWithFees;
 impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
 		if let Some(fees) = fees_then_tips.next() {
-            // for fees, 50% to treasury, 50% to author
-            let mut split = fees.ration(50, 50);
+            // for fees, 80% to treasury, 20% to author
+            let mut split = fees.ration(80, 20);
             if let Some(tips) = fees_then_tips.next() {
-                // for tips, if any, 60% to treasury, 40% to author (though this can be anything)
-                tips.ration_merge_into(60, 40, &mut split);
+                // for tips, if any, 70% to treasury, 30% to author (though this can be anything)
+                tips.ration_merge_into(70, 30, &mut split);
             }
             Treasury::on_unbalanced(split.0);
             Author::on_unbalanced(split.1);
         }
 	}
+}
+
+parameter_types! {
+	pub TransactionByteFee: Balance = 10 * millicent(SETM);
+	pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
+	pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(1, 100_000);
+	pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000_000u128);
 }
 
 impl module_transaction_payment::Config for Runtime {
@@ -1081,7 +1088,7 @@ impl module_evm::Config for Runtime {
 	type TreasuryAccount = TreasuryAccount;
 	type FreeDeploymentOrigin = EnsureRootOrHalfShuraCouncil;
 	type Runner = module_evm::runner::stack::Runner<Self>;
-	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
+	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Babe>;
 	type WeightInfo = weights::module_evm::WeightInfo<Runtime>;
 
 	#[cfg(feature = "with-ethereum-compatibility")]

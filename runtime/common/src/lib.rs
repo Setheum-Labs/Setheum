@@ -95,30 +95,22 @@ impl Convert<u64, Weight> for GasToWeight {
 	}
 }
 
-/// We assume that ~4% of the block weight is consumed by `on_initialize` handlers.
+/// We assume that this part of the block weight is consumed by `on_initialize` handlers.
 /// This is used to limit the maximal weight of a single extrinsic.
-pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(4);
+pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 /// The ratio that `Normal` extrinsics should occupy. Start from a conservative value.
-/// We allow `Normal` extrinsics to fill up the block up to 92%, the rest can be
+/// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
 /// used by  Operational  extrinsics.
-const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(92);
-/// We allow for 1.1 second of compute with a 3 second average block time.
-//
-// (Numbers 1:1) "And the Lord spoke unto Moses in the Wilderness of Sinai,
-// in the tabernacle of the congregation, on the first day of the second month,
-// in the second year after they had come out of the land of Egypt, saying,"
-// "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم(Qur'an 1:1)"
-//
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v v
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 1100 * WEIGHT_PER_MILLIS;
+const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+/// We allow for 0.8 second of compute with a 2 second average block time.
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 800 * WEIGHT_PER_MILLIS;
 
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
 
 parameter_types! {
-	/// Maximum length of block. Up to 33MB.
+	/// Maximum length of block. Up to 5MB.
 	pub BlockLength: limits::BlockLength =
-		limits::BlockLength::max_with_normal_ratio(33 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	/// Block weights base values and limits.
 	pub BlockWeights: limits::BlockWeights = limits::BlockWeights::builder()
 		.base_block(BlockExecutionWeight::get())
