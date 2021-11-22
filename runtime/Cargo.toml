@@ -214,7 +214,6 @@ with-ethereum-compatibility = [
 	"runtime-common/with-ethereum-compatibility",
 ]
 runtime-benchmarks = [
-	'hex-literal',
 	"libsecp256k1/hmac",
 
 	'frame-benchmarking',
