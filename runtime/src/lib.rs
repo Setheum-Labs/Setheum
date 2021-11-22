@@ -78,8 +78,8 @@ pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 
 // use module_support::TransactionPayment;
-use frame_system::Call;
-use frame_system::Event;
+// use frame_system::Call;
+// use frame_system::Event;
 
 use sp_version::RuntimeVersion;
 #[cfg(feature = "std")]
@@ -114,7 +114,7 @@ pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
 use primitives::{evm::EthereumTransactionMessage, currency::*};
 pub use primitives::{
-	evm::EstimateResourcesRequest, AccountId, AccountIndex, Address, AirDropCurrencyId, Amount, AuctionId,
+	evm::EstimateResourcesRequest, AccountId, AccountIndex, AirDropCurrencyId, Amount, AuctionId,
 	AuthoritysOriginId, Balance, BlockNumber, CurrencyId, DataProviderId, EraIndex, Hash, Moment, Nonce,
 	ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair,
 };
@@ -629,8 +629,8 @@ impl Contains<AccountId> for DustRemovalWhitelist {
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&SETR => 10 * cent(*currency_id),
-			&SETUSD => 10 * cent(*currency_id),
+			&SETR => 1_000_000_000 * dollar(*currency_id),
+			&SETUSD => 1_000_000_000 * dollar(*currency_id),
 			_ => 0,
 		}
 	};
@@ -737,7 +737,7 @@ impl auction_manager::Config for Runtime {
 	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
 	type EmergencyShutdown = EmergencyShutdown;
 	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
-	type WeightInfo = weights::auction_manager::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_auction_manager::WeightInfo<Runtime>;
 }
 
 impl module_loans::Config for Runtime {
@@ -832,7 +832,7 @@ impl cdp_engine::Config for Runtime {
 	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
 	type EmergencyShutdown = EmergencyShutdown;
 	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
-	type WeightInfo = weights::cdp_engine::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_cdp_engine::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -853,7 +853,7 @@ impl emergency_shutdown::Config for Runtime {
 	type CDPTreasury = CdpTreasury;
 	type AuctionManagerHandler = AuctionManager;
 	type ShutdownOrigin = EnsureRootOrHalfShuraCouncil;
-	type WeightInfo = weights::emergency_shutdown::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_emergency_shutdown::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -1152,7 +1152,6 @@ impl InstanceFilter<Call> for ProxyType {
 				matches!(
 					c,
 					Call::Authority(..)
-						| Call::Democracy(..)
 						| Call::ShuraCouncil(..)
 						| Call::FinancialCouncil(..)
 						| Call::PublicFundCouncil(..)
@@ -1160,17 +1159,11 @@ impl InstanceFilter<Call> for ProxyType {
 						| Call::FoundationFundCouncil(..)
 						| Call::TechnicalCommittee(..)
 						| Call::Treasury(..)
-						| Call::TreasuryBounties(..)
-						| Call::TreasuryTips(..)
+						| Call::Bounties(..)
+						| Call::Tips(..)
 						| Call::PublicFund(..)
-						| Call::PublicFundBounties(..)
-						| Call::PublicFundTips(..)
 						| Call::AlSharifFund(..)
-						| Call::AlSharifFundBounties(..)
-						| Call::AlSharifFundTips(..)
 						| Call::FoundationFund(..)
-						| Call::FoundationFundBounties(..)
-						| Call::FoundationFundTips(..)
 				)
 			}
 			ProxyType::Auction => {
@@ -1671,7 +1664,7 @@ impl pallet_treasury::Config<PublicFundTreasuryInstance> for Runtime {
 	type SpendPeriod = PublicFundSpendPeriod;
 	type Burn = PublicFundBurn;
 	type BurnDestination = ();
-	type SpendFunds = PublicFundBounties;
+	type SpendFunds = ();
 	type WeightInfo = ();
 	type MaxApprovals = PublicFundMaxApprovals;
 }
@@ -1697,7 +1690,7 @@ impl pallet_treasury::Config<AlSharifFundTreasuryInstance> for Runtime {
 	type SpendPeriod = AlSharifFundSpendPeriod;
 	type Burn = AlSharifFundBurn;
 	type BurnDestination = ();
-	type SpendFunds = AlSharifFundBounties;
+	type SpendFunds = ();
 	type WeightInfo = ();
 	type MaxApprovals = AlSharifFundMaxApprovals;
 }
@@ -1723,7 +1716,7 @@ impl pallet_treasury::Config<FoundationFundTreasuryInstance> for Runtime {
 	type SpendPeriod = FoundationFundSpendPeriod;
 	type Burn = FoundationFundBurn;
 	type BurnDestination = ();
-	type SpendFunds = FoundationFundBounties;
+	type SpendFunds = ();
 	type WeightInfo = ();
 	type MaxApprovals = FoundationFundMaxApprovals;
 }
@@ -1824,9 +1817,9 @@ construct_runtime!(
 		AlSharifFund: pallet_treasury::<Instance3>::{Pallet, Call, Storage, Config, Event<T>} = 37,
 		FoundationFund: pallet_treasury::<Instance4>::{Pallet, Call, Storage, Config, Event<T>} = 38,
 		// Bounties
-		TreasuryBounties: pallet_bounties::<Instance1>::{Pallet, Call, Storage, Event<T>} = 39,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 39,
 		// Tips
-		TreasuryTips: pallet_tips::<Instance1>::{Pallet, Call, Storage, Event<T>} = 43,
+		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 43,
 
 		// Extras
 		NFT: module_nft::{Pallet, Call, Event<T>} = 47,
