@@ -627,17 +627,19 @@ impl Contains<AccountId> for DustRemovalWhitelist {
 }
 
 parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETR => 10 * cent(*currency_id),
+			&SETUSD => 10 * cent(*currency_id),
+			_ => 0,
+		}
+	};
+}
+
+parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
-				// TODO: Update to lower amounts when prices increase to a reasonable rate.
-				// ...aavvvvVVVVVVVVV
-				// TokenSymbol::SETUSD => cent(*currency_id),
-				// TokenSymbol::SETR => cent(*currency_id),
-				// TokenSymbol::SERP => cent(*currency_id),
-				// TokenSymbol::DNAR => cent(*currency_id),
-				// TokenSymbol::SETM => cent(*currency_id),
-
 				TokenSymbol::SETUSD => 10 * cent(*currency_id),
 				TokenSymbol::SETR => 10 * cent(*currency_id),
 				TokenSymbol::SERP => 10 * cent(*currency_id),

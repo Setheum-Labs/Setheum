@@ -37,6 +37,7 @@ use orml_traits::MultiCurrency;
 const SEED: u32 = 0;
 
 const NATIVE: CurrencyId = GetNativeCurrencyId::get();
+const STAKING: CurrencyId = GetNativeCurrencyId::get();
 
 runtime_benchmarks! {
 	{ Runtime, module_currencies }
