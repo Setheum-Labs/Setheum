@@ -783,8 +783,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						dinar_currency_id,
 						&Self::account_id(),
 						max_supply_limit.unique_saturated_into()
-					).is_ok() {
-						if T::Dex::buyback_swap_with_exact_target(
+					).is_ok() && T::Dex::buyback_swap_with_exact_target(
 							&Self::account_id(),
 							&path,
 							target_amount.unique_saturated_into(),
@@ -794,7 +793,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration
 							break;
 						}
-					}
 				}
 				_ => {}
 			}
@@ -834,8 +832,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						serptoken_currency_id,
 						&Self::account_id(),
 						max_supply_limit.unique_saturated_into()
-					).is_ok() {
-						if T::Dex::buyback_swap_with_exact_target(
+					).is_ok() && T::Dex::buyback_swap_with_exact_target(
 							&Self::account_id(),
 							&path,
 							target_amount.unique_saturated_into(),
@@ -845,7 +842,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration
 							break;
 						}
-					}
 				}
 				_ => {}
 			}
@@ -885,8 +881,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						dinar_currency_id,
 						&Self::account_id(),
 						max_supply_limit.unique_saturated_into()
-					).is_ok() {
-						if T::Dex::buyback_swap_with_exact_target(
+					).is_ok() && T::Dex::buyback_swap_with_exact_target(
 							&Self::account_id(),
 							&path,
 							target_amount.unique_saturated_into(),
@@ -896,7 +891,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration
 							break;
 						}
-					}
 				}
 				_ => {}
 			}
@@ -940,8 +934,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						setter_currency_id,
 						&Self::account_id(),
 						max_supply_limit.unique_saturated_into()
-					).is_ok() {
-						if T::Dex::buyback_swap_with_exact_target(
+					).is_ok() && T::Dex::buyback_swap_with_exact_target(
 							&Self::account_id(),
 							&path,
 							target_amount.unique_saturated_into(),
@@ -951,7 +944,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration
 							break;
 						}
-					}
 				}
 				_ => {}
 			}
@@ -995,8 +987,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						serp_currency_id,
 						&Self::account_id(),
 						max_supply_limit.unique_saturated_into()
-					).is_ok() {
-						if T::Dex::buyback_swap_with_exact_target(
+					).is_ok() && T::Dex::buyback_swap_with_exact_target(
 							&Self::account_id(),
 							&path,
 							target_amount.unique_saturated_into(),
@@ -1006,7 +997,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration
 							break;
 						}
-					}
 				}
 				_ => {}
 			}
@@ -1049,9 +1039,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						currency_id,
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
-					).is_ok() {
-						// Swap and burn Native Reserve asset (Dinar (DNAR))
-						if T::Dex::buyback_swap_with_exact_supply(
+					).is_ok() && T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
 							&path,
 							supply_amount.unique_saturated_into(),
@@ -1062,7 +1050,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration.
 							break;
 						}
-					}
 			// 	}
 			// 	_ => {}
 			// }
@@ -1105,9 +1092,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						currency_id,
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
-					).is_ok() {
-						// Swap and burn Native Reserve asset (Serp (SERP))
-						if T::Dex::buyback_swap_with_exact_supply(
+					).is_ok() && T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
 							&path,
 							supply_amount.unique_saturated_into(),
@@ -1118,7 +1103,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration.
 							break;
 						}
-					}
 			// 	}
 			// 	_ => {}
 			// }
@@ -1161,9 +1145,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						currency_id,
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
-					).is_ok() {
-						// Swap and burn The Dinar Reserve asset (Dinar (DNAR))
-						if T::Dex::buyback_swap_with_exact_supply(
+					).is_ok() && T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
 							&path,
 							supply_amount.unique_saturated_into(),
@@ -1174,7 +1156,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration.
 							break;
 						}
-					}
 			// 	}
 			// 	_ => {}
 			// }
@@ -1217,8 +1198,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						currency_id,
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
-					).is_ok() {
-						if T::Dex::buyback_swap_with_exact_supply(
+					).is_ok() && T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
 							&path,
 							supply_amount.unique_saturated_into(),
@@ -1229,7 +1209,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration
 							break;
 						}
-					}
 			// 	}
 			// 	_ => {}
 			// }
@@ -1384,9 +1363,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						currency_id,
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
-					).is_ok() {
-						// Swap and burn Native Currency (Setheum (SETM))
-						if T::Dex::buyback_swap_with_exact_supply(
+					).is_ok() && T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
 							&path,
 							supply_amount.unique_saturated_into(),
@@ -1397,7 +1374,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration
 							break;
 						}
-					}
 			// 	}
 			// 	_ => {}
 			// }
@@ -1440,9 +1416,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 						currency_id,
 						&Self::account_id(),
 						supply_amount.unique_saturated_into()
-					).is_ok() {
-						// Swap and burn Serp Reserve asset (Serp (SERP))
-						if T::Dex::buyback_swap_with_exact_supply(
+					).is_ok() && T::Dex::buyback_swap_with_exact_supply(
 							&Self::account_id(),
 							&path,
 							supply_amount.unique_saturated_into(),
@@ -1453,7 +1427,6 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 							// successfully swap, break iteration.
 							break;
 						}
-					}
 			// 	}
 			// 	_ => {}
 			// }
