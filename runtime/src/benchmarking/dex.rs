@@ -264,7 +264,7 @@ runtime_benchmarks! {
 
 		let maker: AccountId = account("maker", 0, SEED);
 		let taker: AccountId = whitelisted_caller();
-		inject_liquidity(maker, trading_pair.first(), trading_pair.second(), 10_000 * dollar(trading_pair.first()), 10_000 * dollar(trading_pair.second()), false)?;
+		inject_liquidity(maker, trading_pair.first(), trading_pair.second(), 10_000 * dollar(trading_pair.first()), 10_000 * dollar(trading_pair.second()))?;
 
 		<Currencies as MultiCurrencyExtended<_>>::update_balance(path[0], &taker, (10_000 * dollar(path[0])).unique_saturated_into())?;
 	}: swap_with_exact_supply(RawOrigin::Signed(taker), path.clone(), 100 * dollar(path[0]), 0)

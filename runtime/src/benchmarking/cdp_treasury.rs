@@ -39,7 +39,7 @@ runtime_benchmarks! {
 	set_expected_collateral_auction_size {
 	}: _(RawOrigin::Root, STAKING, 200 * dollar(STAKING))
 
-	extract_surplus_to_treasury {
+	extract_surplus_to_serp {
 		CdpTreasury::on_system_surplus(1_000 * dollar(STABLECOIN))?;
 	}: _(RawOrigin::Root, 200 * dollar(STABLECOIN))
 }

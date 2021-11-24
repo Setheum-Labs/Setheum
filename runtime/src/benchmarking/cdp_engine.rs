@@ -138,9 +138,6 @@ runtime_benchmarks! {
 		Change::NewValue(100_000 * dollar(STABLECOIN))
 	)
 
-	set_global_params {
-	}: _(RawOrigin::Root, Rate::saturating_from_rational(1, 1000000))
-
 	// `liquidate` by_auction
 	liquidate_by_auction {
 		let owner: AccountId = account("owner", 0, SEED);
