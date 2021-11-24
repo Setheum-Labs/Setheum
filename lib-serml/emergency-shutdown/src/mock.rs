@@ -218,14 +218,6 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_public_fund_serpup(
-		_amount: Balance,
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-	
 	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(
 		_amount: Balance,
@@ -242,29 +234,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_public_fund_serplus(
-		_amount: Balance,
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-	
-	fn get_alsharif_fund_serpup(
-		_amount: Balance, 
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
 	fn get_treasury_serpup(
-		_amount: Balance, 
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn get_alsharif_serplus(
 		_amount: Balance, 
 		_currency_id: CurrencyId
 	) -> DispatchResult {

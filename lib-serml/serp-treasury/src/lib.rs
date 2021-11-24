@@ -106,16 +106,6 @@ pub mod module {
 		#[pallet::constant]
 		type CashDropPoolAccountId: Get<Self::AccountId>;
 
-		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
-		/// PublicFund account.
-		#[pallet::constant]
-		type PublicFundAccountId: Get<Self::AccountId>;
-
-		/// SerpUp pool/account for receiving funds Setheum Foundation's Charity Fund
-		/// PublicFund account.
-		#[pallet::constant]
-		type AlSharifFundAccountId: Get<Self::AccountId>;
-
 		/// CDP-Treasury account for processing serplus funds 
 		/// CDPTreasury account.
 		#[pallet::constant]
@@ -383,8 +373,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 		// the inflation receiving accounts.
 		let cashdrop_account = &T::CashDropPoolAccountId::get();
-		let public_fund_account = T::PublicFundAccountId::get();
-		let alsharif_fund_account = T::AlSharifFundAccountId::get();
 		let treasury_account = T::SetheumTreasuryAccountId::get();
 
 		for currency_id in T::StableCurrencyIds::get() {
@@ -420,16 +408,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				setheum_buyback_amount,
 			);
 
-			// Public Fund Distribution - 15%
-			let public_fund_amount: Balance = three.saturating_mul(inflation_amount / 5);
-			// Deposit inflation
-			T::Currency::deposit(currency_id, &public_fund_account, public_fund_amount)?;
-	
-			// AlSharif Fund Distribution - 15%
-			let alsharif_fund_amount: Balance = three.saturating_mul(inflation_amount / 5);
-			// Deposit inflation
-			T::Currency::deposit(currency_id, &alsharif_fund_account, alsharif_fund_amount)?;
-	
 			// Setheum Treasury Distribution - 10%
 			let treasury_amount: Balance = one.saturating_mul(inflation_amount / 10);
 			// Deposit inflation
@@ -457,18 +435,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			currency_id,
 			serping_amount_10percent,
 		);
-
-		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
-		Ok(())
-	}
-
-	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_public_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let public_fund_account = T::PublicFundAccountId::get();
-		let one: Balance = 1;
-		let serping_amount: Balance = one.saturating_mul(amount / 5);
-		// Issue the SerpUp propper
-		Self::issue_standard(currency_id, &public_fund_account, serping_amount)?;
 
 		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -506,31 +472,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	/// Serplus ratio for Setheum Foundation's Charity Fund
-	fn get_public_fund_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let public_fund = T::PublicFundAccountId::get();
-		let cdp_treasury = T::CDPTreasuryAccountId::get();
-		// Public Fund Pool - 20%
-		let one: Balance = 1;
-		// Serplus Pool - 20%
-		let serping_amount_20percent: Balance = one.saturating_mul(amount / 5);
-		// Transfer the Serplus propper
-		T::Currency::transfer(currency_id, &cdp_treasury, &public_fund, serping_amount_20percent)?;
-		Ok(())
-	}
-
-	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_alsharif_fund_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let alsharif_fund_account = T::PublicFundAccountId::get();
-		let one: Balance = 1;
-		let serping_amount: Balance = one.saturating_mul(amount / 5);
-		// Issue the SerpUp propper
-		Self::issue_standard(currency_id, &alsharif_fund_account, serping_amount)?;
-
-		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
-		Ok(())
-	}
-
 	/// SerpUp ratio for Setheum Foundation's Charity Fund
 	fn get_treasury_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		let treasury_account = T::SetheumTreasuryAccountId::get();
@@ -540,19 +481,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::issue_standard(currency_id, &treasury_account, serping_amount)?;
 
 		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
-		Ok(())
-	}
-
-	/// Serplus ratio for Setheum Foundation's Charity Fund
-	fn get_alsharif_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let alsharif_fund = T::AlSharifFundAccountId::get();
-		let cdp_treasury = T::CDPTreasuryAccountId::get();
-		// Alsharif Fund Pool - 20%
-		let one: Balance = 1;
-		// Serplus Pool - 20%
-		let serping_amount_20percent: Balance = one.saturating_mul(amount / 5);
-		// Transfer the Serplus propper
-		T::Currency::transfer(currency_id, &cdp_treasury, &alsharif_fund, serping_amount_20percent)?;
 		Ok(())
 	}
 
@@ -596,8 +524,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		);
 		
 		Self::get_buyback_serplus(amount, currency_id).unwrap();
-		Self::get_public_fund_serplus(amount, currency_id).unwrap();
-		Self::get_alsharif_serplus(amount, currency_id).unwrap();
 		Self::get_treasury_serplus(amount, currency_id).unwrap();
 		Self::get_cashdrop_serplus(amount, currency_id).unwrap();
 
@@ -617,8 +543,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			!amount.is_zero(),
 			Error::<T>::InvalidAmount,
 		);
-		Self::get_public_fund_serpup(amount, currency_id).unwrap();
-		Self::get_alsharif_fund_serpup(amount, currency_id).unwrap();
 		Self::get_treasury_serpup(amount, currency_id).unwrap();
 		Self::get_cashdrop_serpup(amount, currency_id).unwrap();
 		Self::get_buyback_serpup(amount, currency_id).unwrap();

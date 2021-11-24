@@ -33,9 +33,6 @@ use setheum_runtime::{
 	SudoConfig,
 	ShuraCouncilMembershipConfig,
 	FinancialCouncilMembershipConfig,
-	PublicFundCouncilMembershipConfig,
-	AlSharifFundCouncilMembershipConfig,
-	FoundationFundCouncilMembershipConfig,
 	TechnicalCommitteeMembershipConfig,
 	OperatorMembershipSetheumConfig,
 	//
@@ -294,16 +291,12 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
 				// CashDropFund Faucet- TODO: Update to `into_account_id` from `cashdrop_pool_account`
 				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
-				// PublicFundTreasury Faucet- TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
-				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
-				// AlSharifFundTreasury Faucet- TODO: Update to `into_account_id` from `AlSharifFundTreasuryModuleId`
+				// PublicFund Faucet- TODO: Update
 				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
 				// Team and DEX Liquidity Offering Fund Faucet- TODO: Update to multisig
 				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
 				// Advisors and Partners Fund Faucet- Labs - TODO: Update to multisig
 				(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
-				// Labs Faucet- Shura Council Member - TODO: Update to multisig
-				hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
 				// Founder (Khalifa MBA) Faucet
 				hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
 			],
@@ -425,17 +418,13 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
 				// CashDropFund - TODO: Update to `into_account_id` from `cashdrop_pool_account`
 				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
-				// PublicFundTreasury - TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
-				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
-				// AlSharifFundTreasury - TODO: Update to `into_account_id` from `AlSharifFundTreasuryModuleId`
+				// PublicFund - TODO: Update
 				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
 				// Team and DEX Liquidity Offering Fund - TODO: Update to multisig
 				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
 				// Advisors and Partners Fund - Labs - TODO: Update to multisig
 				(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
-				// Labs - Council Member - TODO: Update to multisig
-				hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
-				// Founder (Khalifa MBA) 
+				// Founder (Khalifa MBA) - TODO: Update
 				hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
 			],
 			// ----------------------------------------------------------------------------------------
@@ -449,10 +438,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
 			// PublicFundTreasury - TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
 			(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
-			// AlSharifFundTreasury - TODO: Update to `into_account_id` from `AlSharifFundTreasuryModuleId`
-			(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
-			// Team and DEX Liquidity Offering Fund - TODO: Update to multisig
-			(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
 			// Advisors and Partners Fund - Labs - TODO: Update to multisig
 			(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
 			// Labs - Council Member - TODO: Update to multisig
@@ -648,9 +633,6 @@ fn testnet_genesis(
 		},
 		sudo: SudoConfig { key: root_key },
 		treasury: Default::default(), // Main Treasury (Setheum Treasury)
-		public_fund: Default::default(), // SPF Treasury  (Setheum Public Fund)
-		al_sharif_fund: Default::default(), // ASF Treasury  (Al-Sharif Fund)
-		foundation_fund: Default::default(), // SFF Treasury  (Setheum Foundation Fund)
 
 		shura_council: Default::default(),
 		shura_council_membership: ShuraCouncilMembershipConfig {
@@ -663,33 +645,6 @@ fn testnet_genesis(
 		},
 		financial_council: Default::default(),
 		financial_council_membership: FinancialCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
-			],
-			phantom: Default::default(),
-		},
-		public_fund_council: Default::default(),
-		public_fund_council_membership: PublicFundCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
-			],
-			phantom: Default::default(),
-		},
-		al_sharif_fund_council: Default::default(),
-		al_sharif_fund_council_membership: AlSharifFundCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
-			],
-			phantom: Default::default(),
-		},
-		foundation_fund_council: Default::default(),
-		foundation_fund_council_membership: FoundationFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs
@@ -726,8 +681,6 @@ fn mainnet_genesis(
 	treasury_fund: AccountId,
 	cashdrop_fund: AccountId,
 	spf_fund: AccountId,
-	alsharif_fund: AccountId,
-	team_fund: AccountId,
 	advisors_and_partners_fund: AccountId,
 	labs: AccountId,
 	founder_khalifa: AccountId,
@@ -770,8 +723,8 @@ fn mainnet_genesis(
 	let  setusd_team_alloc: u128 = 1_315_860_000 * dollar(SETUSD);
 	let  setusd_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETUSD);
 
-	let  initial_balance: u128 = 1_000_000 * SETM;
-	let  initial_staking: u128 =   1_000_000 * SETM;
+	let  initial_balance: u128 = 100_000 * SETM;
+	let  initial_staking: u128 =   100_000 * SETM;
 	let existential_deposit = NativeTokenExistentialDeposit::get();
 
 	let balances = initial_authorities
@@ -928,11 +881,7 @@ fn mainnet_genesis(
 			treasury: root_key,
 		},
 		sudo: SudoConfig { key: root_key },
-		treasury: Default::default(), // Main Treasury (Setheum Treasury)
-		public_fund: Default::default(), // SPF Treasury  (Setheum Public Fund)
-		al_sharif_fund: Default::default(), // ASF Treasury  (Al-Sharif Fund)
-		foundation_fund: Default::default(), // SFF Treasury  (Setheum Foundation Fund)
-
+		treasury: Default::default(), // Setheum Treasury
 		shura_council: Default::default(),
 		shura_council_membership: ShuraCouncilMembershipConfig {
 			members: vec![
@@ -944,33 +893,6 @@ fn mainnet_genesis(
 		},
 		financial_council: Default::default(),
 		financial_council_membership: FinancialCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
-			],
-			phantom: Default::default(),
-		},
-		public_fund_council: Default::default(),
-		public_fund_council_membership: PublicFundCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
-			],
-			phantom: Default::default(),
-		},
-		al_sharif_fund_council: Default::default(),
-		al_sharif_fund_council_membership: AlSharifFundCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
-			],
-			phantom: Default::default(),
-		},
-		foundation_fund_council: Default::default(),
-		foundation_fund_council_membership: FoundationFundCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
 				(labs.clone()), 			// Setheum Labs

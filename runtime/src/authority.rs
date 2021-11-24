@@ -24,10 +24,8 @@
 use crate::{
 	AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, DispatchResult, EnsureRoot,
 	EnsureRootOrHalfShuraCouncil, EnsureRootOrThreeFourthsShuraCouncil, EnsureRootOrHalfFinancialCouncil,
-	EnsureRootOrHalfPublicFundCouncil, EnsureRootOrHalfAlSharifFundCouncil, EnsureRootOrHalfFoundationFundCouncil,
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee, OneDay, Origin, SevenDays,
-	TreasuryPalletId, PublicFundTreasuryPalletId, AlSharifFundTreasuryPalletId, FoundationFundTreasuryPalletId,
-	OriginCaller, ZeroDay, HOURS, 
+	TreasuryPalletId, OriginCaller, ZeroDay, HOURS, 
 };
 pub use frame_support::traits::{schedule::Priority, EnsureOrigin, OriginTrait};
 use frame_system::ensure_root;
@@ -39,9 +37,6 @@ impl orml_authority::AuthorityConfig<Origin, OriginCaller, BlockNumber> for Auth
 		EnsureRoot::<AccountId>::try_origin(origin)
 			.or_else(|o| EnsureRootOrHalfShuraCouncil::try_origin(o).map(|_| ()))
 			.or_else(|o| EnsureRootOrHalfFinancialCouncil::try_origin(o).map(|_| ()))
-			.or_else(|o| EnsureRootOrHalfPublicFundCouncil::try_origin(o).map(|_| ()))
-			.or_else(|o| EnsureRootOrHalfAlSharifFundCouncil::try_origin(o).map(|_| ()))
-			.or_else(|o| EnsureRootOrHalfFoundationFundCouncil::try_origin(o).map(|_| ()))
 			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
 	}
 
@@ -85,9 +80,6 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 		match self {
 			AuthoritysOriginId::Root => Origin::root().caller().clone(),
 			AuthoritysOriginId::Treasury => Origin::signed(TreasuryPalletId::get().into_account()).caller().clone(),
-			AuthoritysOriginId::PublicFundTreasury => Origin::signed(PublicFundTreasuryPalletId::get().into_account()).caller().clone(),
-			AuthoritysOriginId::AlSharifFundTreasury => Origin::signed(AlSharifFundTreasuryPalletId::get().into_account()).caller().clone(),
-			AuthoritysOriginId::FoundationFundTreasury => Origin::signed(FoundationFundTreasuryPalletId::get().into_account()).caller().clone(),
 		}
 	}
 
@@ -102,24 +94,6 @@ impl orml_authority::AsOriginId<Origin, OriginCaller> for AuthoritysOriginId {
 			.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(())),
 			AuthoritysOriginId::Treasury => {
 				<EnsureDelayed<OneDay, EnsureRootOrHalfShuraCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
-					Origin,
-				>>::ensure_origin(origin)
-				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
-			},
-			AuthoritysOriginId::PublicFund => {
-				<EnsureDelayed<OneDay, EnsureRootOrHalfPublicFundCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
-					Origin,
-				>>::ensure_origin(origin)
-				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
-			},
-			AuthoritysOriginId::AlSharifFund => {
-				<EnsureDelayed<OneDay, EnsureRootOrHalfAlSharifFundCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
-					Origin,
-				>>::ensure_origin(origin)
-				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))
-			},
-			AuthoritysOriginId::FoundationFund => {
-				<EnsureDelayed<OneDay, EnsureRootOrHalfFoundationFundCouncil, BlockNumber, OriginCaller> as EnsureOrigin<
 					Origin,
 				>>::ensure_origin(origin)
 				.map_or_else(|_| Err(BadOrigin.into()), |_| Ok(()))

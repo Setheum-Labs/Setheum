@@ -41,8 +41,6 @@ pub type BlockNumber = u64;
 
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
-pub const CHARITY_FUND: AccountId = 2;
-pub const AL_SHARIF_FUND: AccountId = 4;
 pub const TREASURY: AccountId = 3;
 pub const CDP_TREASURY: AccountId = 5;
 pub const SETRPAY: AccountId = 9;
@@ -147,8 +145,6 @@ parameter_types! {
 	pub const GetSetUSDId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const PublicFundAccountId: AccountId = CHARITY_FUND;
-	pub const AlSharifFundAccountId: AccountId = AL_SHARIF_FUND;
 	pub const CDPTreasuryAccountId: AccountId = CDP_TREASURY;
 	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
 	pub const CashDropPoolAccountId: AccountId = VAULT;
@@ -301,8 +297,6 @@ impl Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
-	type PublicFundAccountId = PublicFundAccountId;
-	type AlSharifFundAccountId = AlSharifFundAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;
 	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
 	type DefaultSwapPathList = DefaultSwapPathList;
@@ -352,14 +346,6 @@ impl Default for ExtBuilder {
 				(BOB, SETR, 1000),
 				(BOB, DNAR, 1000),
 				(BOB, SETM, 1000),
-				(CHARITY_FUND, SETUSD, 1000),
-				(CHARITY_FUND, SETR, 1000),
-				(CHARITY_FUND, DNAR, 1000),
-				(CHARITY_FUND, SETM, 1000),
-				(AL_SHARIF_FUND, SETUSD, 1000),
-				(AL_SHARIF_FUND, SETR, 1000),
-				(AL_SHARIF_FUND, DNAR, 1000),
-				(AL_SHARIF_FUND, SETM, 1000),
 				(TREASURY, SETUSD, 1000),
 				(TREASURY, SETR, 1000),
 				(TREASURY, DNAR, 1000),
