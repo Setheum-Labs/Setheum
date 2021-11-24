@@ -22,32 +22,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit="256"]
-// The `large_enum_variant` warning originates from `construct_runtime` macro.
-#![allow(clippy::large_enum_variant)]
-#![allow(clippy::unnecessary_mut_passed)]
-#![allow(clippy::or_fun_call)]
-#![allow(clippy::from_over_into)]
-#![allow(clippy::upper_case_acronyms)]
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Compact, Decode, Encode};
-use frame_support::pallet_prelude::InvalidTransaction;
-pub use frame_support::{
-	construct_runtime, log, parameter_types,
-	traits::{
-		Contains, ContainsLengthBound, Currency as PalletCurrency, EnsureOrigin, Everything, Get, Imbalance,
-		InstanceFilter, IsSubType, IsType, KeyOwnerProofSystem, LockIdentifier, Nothing, OnUnbalanced, Randomness,
-		SortedMembers, U128CurrencyToVote, WithdrawReasons,
-	},
-	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-		DispatchClass, IdentityFee, Weight,
-	},
-	PalletId, RuntimeDebug, StorageValue,
-};
 use sp_std::prelude::*;
 use sp_core::{
 	crypto::KeyTypeId,
@@ -77,10 +57,6 @@ use frame_election_provider_support::onchain;
 pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 
-// use module_support::TransactionPayment;
-// use frame_system::Call;
-// use frame_system::Event;
-
 use sp_version::RuntimeVersion;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -89,7 +65,20 @@ use sp_version::NativeVersion;
 #[cfg(any(feature = "std", test))]
 pub use pallet_timestamp::Call as TimestampCall;
 pub use pallet_balances::Call as BalancesCall;
-
+use frame_support::pallet_prelude::InvalidTransaction;
+pub use frame_support::{
+	construct_runtime, log, parameter_types,
+	traits::{
+		Contains, ContainsLengthBound, Currency as PalletCurrency, EnsureOrigin, Everything, Get, Imbalance,
+		InstanceFilter, IsSubType, IsType, KeyOwnerProofSystem, LockIdentifier, Nothing, OnUnbalanced, Randomness,
+		SortedMembers, U128CurrencyToVote, WithdrawReasons,
+	},
+	weights::{
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+		DispatchClass, IdentityFee, Weight,
+	},
+	PalletId, RuntimeDebug, StorageValue,
+};
 pub use frame_system::{ensure_root, EnsureOneOf, EnsureRoot, RawOrigin};
 use orml_traits::{
 	create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended, MultiCurrency,
@@ -152,10 +141,11 @@ pub use runtime_common::{
 
 
 mod weights;
-
 mod authority;
-mod benchmarking;
 pub mod constants;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 // Pallet accounts of runtime
 parameter_types! {
@@ -710,44 +700,45 @@ impl module_transaction_pause::Config for Runtime {
 	type WeightInfo = weights::module_transaction_pause::WeightInfo<Runtime>;
 }
 
-parameter_types! {
-	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100); // 2%
-	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
-	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
-	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETUSD],
-		vec![SETM, SETUSD],
-		vec![SERP, SETUSD],
-		vec![DNAR, SETUSD],
-		vec![SETR, SETUSD],
-	];
-}
+// TODO: Enable in Setheum 1.0.0
+// parameter_types! {
+// 	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100); // 2%
+// 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
+// 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
+// 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
+// 		vec![SETUSD],
+// 		vec![SETM, SETUSD],
+// 		vec![SERP, SETUSD],
+// 		vec![DNAR, SETUSD],
+// 		vec![SETR, SETUSD],
+// 	];
+// }
 
-impl auction_manager::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type Auction = Auction;
-	type MinimumIncrementSize = MinimumIncrementSize;
-	type AuctionTimeToClose = AuctionTimeToClose;
-	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetSetUSDId = GetSetUSDId;
-	type CDPTreasury = CdpTreasury;
-	type DEX = Dex;
-	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
-	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
-	type EmergencyShutdown = EmergencyShutdown;
-	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
-	type WeightInfo = weights::module_auction_manager::WeightInfo<Runtime>;
-}
+// impl auction_manager::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Currencies;
+// 	type Auction = Auction;
+// 	type MinimumIncrementSize = MinimumIncrementSize;
+// 	type AuctionTimeToClose = AuctionTimeToClose;
+// 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
+// 	type GetSetUSDId = GetSetUSDId;
+// 	type CDPTreasury = CdpTreasury;
+// 	type DEX = Dex;
+// 	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
+// 	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
+// 	type EmergencyShutdown = EmergencyShutdown;
+// 	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
+// 	type WeightInfo = weights::module_auction_manager::WeightInfo<Runtime>;
+// }
 
-impl module_loans::Config for Runtime {
-	type Event = Event;
-	type Convert = cdp_engine::DebitExchangeRateConvertor<Runtime>;
-	type Currency = Currencies;
-	type RiskManager = CdpEngine;
-	type CDPTreasury = CdpTreasury;
-	type PalletId = LoansPalletId;
-}
+// impl module_loans::Config for Runtime {
+// 	type Event = Event;
+// 	type Convert = cdp_engine::DebitExchangeRateConvertor<Runtime>;
+// 	type Currency = Currencies;
+// 	type RiskManager = CdpEngine;
+// 	type CDPTreasury = CdpTreasury;
+// 	type PalletId = LoansPalletId;
+// }
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
 where
@@ -803,53 +794,54 @@ where
 	type Extrinsic = UncheckedExtrinsic;
 }
 
-parameter_types! {
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, SETR];
-	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
-	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
-	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
-	pub MinimumDebitValue: Balance = dollar(SETUSD);
-	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(15, 100);
-}
+// TODO: Enable in Setheum 1.0.0
+// parameter_types! {
+// 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, SETR];
+// 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
+// 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
+// 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
+// 	pub MinimumDebitValue: Balance = dollar(SETUSD);
+// 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(15, 100);
+// }
 
-impl cdp_engine::Config for Runtime {
-	type Event = Event;
-	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
-	type CollateralCurrencyIds = CollateralCurrencyIds;
-	type DefaultLiquidationRatio = DefaultLiquidationRatio;
-	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
-	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
-	type MinimumDebitValue = MinimumDebitValue;
-	type GetSetUSDId = GetSetUSDId;
-	type CDPTreasury = CdpTreasury;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
-	type EmergencyShutdown = EmergencyShutdown;
-	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
-	type WeightInfo = weights::module_cdp_engine::WeightInfo<Runtime>;
-}
+// impl cdp_engine::Config for Runtime {
+// 	type Event = Event;
+// 	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
+// 	type CollateralCurrencyIds = CollateralCurrencyIds;
+// 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
+// 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
+// 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
+// 	type MinimumDebitValue = MinimumDebitValue;
+// 	type GetSetUSDId = GetSetUSDId;
+// 	type CDPTreasury = CdpTreasury;
+// 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+// 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+// 	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
+// 	type EmergencyShutdown = EmergencyShutdown;
+// 	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
+// 	type WeightInfo = weights::module_cdp_engine::WeightInfo<Runtime>;
+// }
 
-parameter_types! {
-	pub DepositPerAuthorization: Balance = dollar(SETM);
-}
+// parameter_types! {
+// 	pub DepositPerAuthorization: Balance = dollar(SETM);
+// }
 
-impl serp_setmint::Config for Runtime {
-	type Event = Event;
-	type Currency = Balances;
-	type DepositPerAuthorization = DepositPerAuthorization;
-	type WeightInfo = weights::serp_setmint::WeightInfo<Runtime>;
-}
+// impl serp_setmint::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Balances;
+// 	type DepositPerAuthorization = DepositPerAuthorization;
+// 	type WeightInfo = weights::serp_setmint::WeightInfo<Runtime>;
+// }
 
-impl emergency_shutdown::Config for Runtime {
-	type Event = Event;
-	type CollateralCurrencyIds = CollateralCurrencyIds;
-	type PriceSource = Prices;
-	type CDPTreasury = CdpTreasury;
-	type AuctionManagerHandler = AuctionManager;
-	type ShutdownOrigin = EnsureRootOrHalfShuraCouncil;
-	type WeightInfo = weights::module_emergency_shutdown::WeightInfo<Runtime>;
-}
+// impl emergency_shutdown::Config for Runtime {
+// 	type Event = Event;
+// 	type CollateralCurrencyIds = CollateralCurrencyIds;
+// 	type PriceSource = Prices;
+// 	type CDPTreasury = CdpTreasury;
+// 	type AuctionManagerHandler = AuctionManager;
+// 	type ShutdownOrigin = EnsureRootOrHalfShuraCouncil;
+// 	type WeightInfo = weights::module_emergency_shutdown::WeightInfo<Runtime>;
+// }
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (3, 1000);	// 0.3%
@@ -927,22 +919,23 @@ impl serp_treasury::Config for Runtime {
 	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
 }
 
-parameter_types! {
-	pub const MaxAuctionsCount: u32 = 100;
-}
+// TODO: Enable in Setheum 1.0.0
+// parameter_types! {
+// 	pub const MaxAuctionsCount: u32 = 100;
+// }
 
-impl cdp_treasury::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type GetSetUSDId = GetSetUSDId;
-	type AuctionManagerHandler = AuctionManager;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type DEX = Dex;
-	type MaxAuctionsCount = MaxAuctionsCount;
-	type PalletId = CDPTreasuryPalletId;
-	type SerpTreasury = SerpTreasury;
-	type WeightInfo = weights::module_cdp_treasury::WeightInfo<Runtime>;
-}
+// impl cdp_treasury::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Currencies;
+// 	type GetSetUSDId = GetSetUSDId;
+// 	type AuctionManagerHandler = AuctionManager;
+// 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+// 	type DEX = Dex;
+// 	type MaxAuctionsCount = MaxAuctionsCount;
+// 	type PalletId = CDPTreasuryPalletId;
+// 	type SerpTreasury = SerpTreasury;
+// 	type WeightInfo = weights::module_cdp_treasury::WeightInfo<Runtime>;
+// }
 
 parameter_types! {
 	// Sort by fee charge order
@@ -1733,13 +1726,14 @@ impl pallet_recovery::Config for Runtime {
 	type RecoveryDeposit = RecoveryDeposit;
 }
 
-impl orml_auction::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type AuctionId = AuctionId;
-	type Handler = AuctionManager;
-	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
-}
+// TODO: Enable in Setheum 1.0.0
+// impl orml_auction::Config for Runtime {
+// 	type Event = Event;
+// 	type Balance = Balance;
+// 	type AuctionId = AuctionId;
+// 	type Handler = AuctionManager;
+// 	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
+// }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
