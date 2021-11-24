@@ -50,6 +50,12 @@ use sp_std::marker::PhantomData;
 /// Weight functions for serp_treasury.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> serp_treasury::WeightInfo for WeightInfo<T> {
+	fn on_initialize(c: u32) -> Weight {
+		(33_360_000 as Weight)
+			.saturating_add((23_139_000 as Weight).saturating_mul(c as Weight))
+			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
+	}
 	fn set_stable_currency_inflation_rate() -> Weight {
 		(24_330_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))

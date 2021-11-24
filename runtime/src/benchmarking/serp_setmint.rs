@@ -113,7 +113,6 @@ runtime_benchmarks! {
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
 			currency_id,
-			Change::NoChange,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
@@ -146,7 +145,6 @@ runtime_benchmarks! {
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
 			currency_id,
-			Change::NoChange,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
@@ -208,7 +206,6 @@ runtime_benchmarks! {
 			collateral_amount,
 			debit_value * 100,
 			Default::default(),
-			false,
 		)?;
 		Dex::add_liquidity(
 			RawOrigin::Signed(maker.clone()).into(),
@@ -217,7 +214,6 @@ runtime_benchmarks! {
 			collateral_amount,
 			collateral_amount,
 			Default::default(),
-			false,
 		)?;
 		Dex::add_liquidity(
 			RawOrigin::Signed(maker.clone()).into(),
@@ -226,7 +222,6 @@ runtime_benchmarks! {
 			collateral_amount,
 			debit_value * 100,
 			Default::default(),
-			false,
 		)?;
 
 		let mut path = vec![currency_id];
@@ -246,7 +241,6 @@ runtime_benchmarks! {
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
 			currency_id,
-			Change::NoChange,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),

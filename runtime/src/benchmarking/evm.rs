@@ -19,19 +19,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{AccountId, Balance, Event, EvmAccounts, Origin, Runtime, System, DOLLARS, EVM};
+use crate::{dollar, AccountId, CurrencyId, Event, EvmAccounts, GetNativeCurrencyId, Origin, Runtime, System, EVM};
 
-use super::utils::set_setheum_balance;
+use super::utils::set_balance;
 use frame_support::dispatch::DispatchError;
 use frame_system::RawOrigin;
-use orml_benchmarking::runtime_benchmarks;
+use module_support::AddressMapping;
+use orml_benchmarking::{runtime_benchmarks, whitelist_account};
 use sp_core::H160;
 use sp_io::hashing::keccak_256;
-use sp_std::{prelude::*, vec};
+use sp_std::{str::FromStr, vec};
 
-fn dollar(d: u32) -> Balance {
-	let d: Balance = d.into();
-	DOLLARS.saturating_mul(d)
+const NATIVE: CurrencyId = GetNativeCurrencyId::get();
+
+fn contract_addr() -> H160 {
+	H160::from_str("0x5e0b4bfa0b55932a3587e648c3552a6515ba56b1").unwrap()
 }
 
 fn alice() -> secp256k1::SecretKey {
@@ -58,14 +60,15 @@ fn deploy_contract(caller: AccountId) -> Result<H160, DispatchError> {
 	let contract = hex_literal::hex!("608060405234801561001057600080fd5b5061016f806100206000396000f3fe608060405260043610610041576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063412a5a6d14610046575b600080fd5b61004e610050565b005b600061005a6100e2565b604051809103906000f080158015610076573d6000803e3d6000fd5b50905060008190806001815401808255809150509060018203906000526020600020016000909192909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050565b6040516052806100f28339019056fe6080604052348015600f57600080fd5b50603580601d6000396000f3fe6080604052600080fdfea165627a7a7230582092dc1966a8880ddf11e067f9dd56a632c11a78a4afd4a9f05924d427367958cc0029a165627a7a723058202b2cc7384e11c452cdbf39b68dada2d5e10a632cc0174a354b8b8c83237e28a40029").to_vec();
 
 	System::set_block_number(1);
-	EVM::create(Origin::signed(caller), contract, 0, 1000000000, 1000000000)
+	EVM::create(Origin::signed(caller.clone()), contract, 0, 1000000000, 1000000000)
 		.map_or_else(|e| Err(e.error), |_| Ok(()))?;
 
-	if let Event::EVM(module_evm::Event::Created(address)) = System::events().iter().last().unwrap().event {
-		Ok(address)
-	} else {
-		Err("deploy_contract failed".into())
-	}
+	System::assert_last_event(Event::EVM(module_evm::Event::Created(
+		module_evm_accounts::EvmAddressMapping::<Runtime>::get_evm_address(&caller).unwrap(),
+		contract_addr(),
+		vec![],
+	)));
+	Ok(contract_addr())
 }
 
 pub fn alice_account_id() -> AccountId {
@@ -88,108 +91,77 @@ runtime_benchmarks! {
 	{ Runtime, module_evm }
 
 	transfer_maintainer {
-		set_setheum_balance(&alice_account_id(), dollar(1000));
-		set_setheum_balance(&bob_account_id(), dollar(1000));
+		let alice_account = alice_account_id();
+
+		set_balance(NATIVE, &alice_account, 1_000_000 * dollar(NATIVE));
+		set_balance(NATIVE, &bob_account_id(), 1_000 * dollar(NATIVE));
 		let contract = deploy_contract(alice_account_id())?;
 		let bob_address = EvmAccounts::eth_address(&bob());
+
+		whitelist_account!(alice_account);
 	}: _(RawOrigin::Signed(alice_account_id()), contract, bob_address)
 
 	deploy {
-		set_setheum_balance(&alice_account_id(), dollar(1000));
-		set_setheum_balance(&bob_account_id(), dollar(1000));
+		let alice_account = alice_account_id();
+
+		set_balance(NATIVE, &alice_account, 1_000_000 * dollar(NATIVE));
+		set_balance(NATIVE, &bob_account_id(), 1_000 * dollar(NATIVE));
 		let contract = deploy_contract(alice_account_id())?;
+
+		whitelist_account!(alice_account);
 	}: _(RawOrigin::Signed(alice_account_id()), contract)
 
 	deploy_free {
-		set_setheum_balance(&alice_account_id(), dollar(1000));
-		set_setheum_balance(&bob_account_id(), dollar(1000));
+		let alice_account = alice_account_id();
+
+		set_balance(NATIVE, &alice_account, 1_000_000 * dollar(NATIVE));
+		set_balance(NATIVE, &bob_account_id(), 1_000 * dollar(NATIVE));
 		let contract = deploy_contract(alice_account_id())?;
 	}: _(RawOrigin::Root, contract)
 
 	enable_contract_development {
-		set_setheum_balance(&alice_account_id(), dollar(1000));
+		let alice_account = alice_account_id();
+
+		set_balance(NATIVE, &alice_account, 1_000 * dollar(NATIVE));
+
+		whitelist_account!(alice_account);
 	}: _(RawOrigin::Signed(alice_account_id()))
 
 	disable_contract_development {
-		set_setheum_balance(&alice_account_id(), dollar(1000));
+		let alice_account = alice_account_id();
+
+		set_balance(NATIVE, &alice_account, 1_000 * dollar(NATIVE));
 		EVM::enable_contract_development(Origin::signed(alice_account_id()))?;
+
+		whitelist_account!(alice_account);
 	}: _(RawOrigin::Signed(alice_account_id()))
 
 	set_code {
-		set_setheum_balance(&alice_account_id(), dollar(1000));
+		let alice_account = alice_account_id();
+
+		set_balance(NATIVE, &alice_account, 1_000_000 * dollar(NATIVE));
 		let contract = deploy_contract(alice_account_id())?;
 
 		let new_contract = hex_literal::hex!("608060405234801561001057600080fd5b5061016f806100206000396000f3fe608060405260043610610041576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063412a5a6d14610046575b600080fd5b61004e610050565b005b600061005a6100e2565b604051809103906000f080158015610076573d6000803e3d6000fd5b50905060008190806001815401808255809150509060018203906000526020600020016000909192909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050565b6040516052806100f28339019056fe6080604052348015600f57600080fd5b50603580601d6000396000f3fe6080604052600080fdfea165627a7a7230582092dc1966a8880ddf11e067f9dd56a632c11a78a4afd4a9f05924d427367958cc0029a165627a7a723058202b2cc7384e11c452cdbf39b68dada2d5e10a632cc0174a354b8b8c83237e28a400291234").to_vec();
 
+		whitelist_account!(alice_account);
 	}: _(RawOrigin::Signed(alice_account_id()), contract, new_contract)
 
 	selfdestruct {
-		set_setheum_balance(&alice_account_id(), dollar(1000));
+		let alice_account = alice_account_id();
+
+		set_balance(NATIVE, &alice_account, 1_000_000 * dollar(NATIVE));
 		let contract = deploy_contract(alice_account_id())?;
+
+		whitelist_account!(alice_account);
 	}: _(RawOrigin::Signed(alice_account_id()), contract)
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use frame_support::assert_ok;
+	use crate::benchmarking::utils::tests::new_test_ext;
+	use orml_benchmarking::impl_benchmark_test_suite;
 
-	fn new_test_ext() -> sp_io::TestExternalities {
-		let t = frame_system::GenesisConfig::default()
-			.build_storage::<Runtime>()
-			.unwrap();
-
-		let mut ext = sp_io::TestExternalities::new(t);
-		ext.execute_with(|| System::set_block_number(1));
-		ext
-	}
-
-	#[test]
-	fn test_transfer_maintainer() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_transfer_maintainer());
-		});
-	}
-
-	#[test]
-	fn test_deploy() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_deploy());
-		});
-	}
-
-	#[test]
-	fn test_deploy_free() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_deploy_free());
-		});
-	}
-
-	#[test]
-	fn test_enable_contract_development() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_enable_contract_development());
-		});
-	}
-
-	#[test]
-	fn test_disable_contract_development() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_disable_contract_development());
-		});
-	}
-
-	#[test]
-	fn test_set_code() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_set_code());
-		});
-	}
-
-	#[test]
-	fn test_selfdestruct() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_selfdestruct());
-		});
-	}
+	impl_benchmark_test_suite!(new_test_ext(),);
 }

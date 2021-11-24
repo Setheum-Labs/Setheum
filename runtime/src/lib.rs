@@ -245,7 +245,7 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
-	pub const BlockHashCount: BlockNumber = 2400; // 80 minutes (1hr:20m)
+	pub const BlockHashCount: BlockNumber = 80 * MINUTES;
 	pub const SS58Prefix: u8 = 258;
 }
 
@@ -458,9 +458,9 @@ impl pallet_im_online::Config for Runtime {
 }
 
 parameter_types! {
-	pub const BasicDeposit: Balance =      100 * SETM;
-	pub const FieldDeposit: Balance =        1 * SETM;
-	pub const SubAccountDeposit: Balance =  20 * SETM;
+	pub const BasicDeposit: Balance =      100 * dollar(SETM);
+	pub const FieldDeposit: Balance =        1 * dollar(SETM);
+	pub const SubAccountDeposit: Balance =  20 * dollar(SETM);
 	pub const MaxSubAccounts: u32 = 100;
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 20;
@@ -483,7 +483,7 @@ impl pallet_identity::Config for Runtime {
 
 
 parameter_types! {
-	pub const IndexDeposit: Balance = 1 * SETM;
+	pub const IndexDeposit: Balance = 1 * dollar(SETM);
 }
 
 impl pallet_indices::Config for Runtime {
@@ -782,7 +782,7 @@ impl emergency_shutdown::Config for Runtime {
 	type CDPTreasury = CdpTreasury;
 	type AuctionManagerHandler = AuctionManager;
 	type ShutdownOrigin = EnsureRootOrHalfShuraCouncil;
-	type WeightInfo = weights::module_emergency_shutdown::WeightInfo<Runtime>;
+	type WeightInfo = weights::emergency_shutdown::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -824,11 +824,11 @@ parameter_types! {
 		vec![SETR, SETUSD, DNAR],
 		vec![SETUSD, SETR],
 	];
-	pub StableCurrencyInflationPeriod: u64 = 200; // Every 10 minutes
-	pub SetterMinimumClaimableTransferAmounts: Balance = 1;
-	pub SetterMaximumClaimableTransferAmounts: Balance = 200_000;
-	pub SetDollarMinimumClaimableTransferAmounts: Balance = 10;
-	pub SetDollarMaximumClaimableTransferAmounts: Balance = 20_000_000;
+	pub StableCurrencyInflationPeriod: BlockNumber = 10 * MINUTES;
+	pub SetterMinimumClaimableTransferAmounts: Balance = 1 * dollar(SETR);
+	pub SetterMaximumClaimableTransferAmounts: Balance = 200_000 * dollar(SETR);
+	pub SetDollarMinimumClaimableTransferAmounts: Balance = 10 * dollar(SETUSD);
+	pub SetDollarMaximumClaimableTransferAmounts: Balance = 700_000 * dollar(SETUSD);
 }
 
 impl serp_treasury::Config for Runtime {
@@ -849,7 +849,7 @@ impl serp_treasury::Config for Runtime {
 	type Dex = Dex;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
-	type PriceSource = Prices;
+	type PriceSource = module_prices::RealTimePriceProvider<Runtime>;
 	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
 	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
 	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
@@ -1135,9 +1135,9 @@ parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
 	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETM);
-	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * SETM;
+	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * dollar(SETM);
 	pub const MaxLocks: u32 = 50;
-	pub const MaxReserves: u32 = 50;
+	pub const MaxReserves: u32 = ReserveIdentifier::Count as u32;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -1150,7 +1150,7 @@ impl pallet_balances::Config for Runtime {
 	type AccountStore = frame_system::Pallet<Runtime>;
 	type WeightInfo = ();
 	type MaxReserves = MaxReserves;
-	type ReserveIdentifier = [u8; 8];
+	type ReserveIdentifier = ReserveIdentifier;
 }
 
 
@@ -1371,7 +1371,7 @@ impl pallet_treasury::Config for Runtime {
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 	type BurnDestination = ();
-	type SpendFunds = ();
+	type SpendFunds = Bounties;
 	type WeightInfo = ();
 	type MaxApprovals = MaxApprovals;
 }
@@ -1461,8 +1461,8 @@ construct_runtime!(
 		ShuraCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
 		FinancialCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 14,
 		FinancialCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
-		TechnicalCommittee: pallet_collective::<Instance6>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 22,
-		TechnicalCommitteeMembership: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 23,
+		TechnicalCommittee: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 22,
+		TechnicalCommitteeMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 23,
 
 		Authority: orml_authority::{Pallet, Call, Storage, Event<T>, Origin<T>} = 24,
 
@@ -1472,7 +1472,7 @@ construct_runtime!(
 		//
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
 		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Event<T>} = 26,
-		OperatorMembershipSetheum: pallet_membership::<Instance7>::{Pallet, Call, Storage, Event<T>, Config<T>} = 27,
+		OperatorMembershipSetheum: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 27,
 
 		// SERP
 		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 28,
@@ -1484,7 +1484,7 @@ construct_runtime!(
 		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 34,
 
 		// Treasury
-		Treasury: pallet_treasury::<Instance1>::{Pallet, Call, Storage, Config, Event<T>} = 35,
+		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 35,
 		// Bounties
 		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 39,
 		// Tips
@@ -1807,6 +1807,27 @@ impl_runtime_apis! {
 			None
 		}
 	}
+	
+	impl orml_oracle_rpc_runtime_api::OracleApi<
+		Block,
+		DataProviderId,
+		CurrencyId,
+		TimeStampedPrice,
+	> for Runtime {
+		fn get_value(provider_id: DataProviderId ,key: CurrencyId) -> Option<TimeStampedPrice> {
+			match provider_id {
+				DataProviderId::Setheum => SetheumOracle::get_no_op(&key),
+				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_no_op(&key)
+			}
+		}
+
+		fn get_all_values(provider_id: DataProviderId) -> Vec<(CurrencyId, Option<TimeStampedPrice>)> {
+			match provider_id {
+				DataProviderId::Setheum => SetheumOracle::get_all_values(),
+				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_all_values()
+			}
+		}
+	}
 
 	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
 		fn account_nonce(account: AccountId) -> Nonce {
@@ -1826,27 +1847,6 @@ impl_runtime_apis! {
 			len: u32,
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
-		}
-	}
-
-	impl orml_oracle_rpc_runtime_api::OracleApi<
-		Block,
-		DataProviderId,
-		CurrencyId,
-		TimeStampedPrice,
-	> for Runtime {
-		fn get_value(provider_id: DataProviderId ,key: CurrencyId) -> Option<TimeStampedPrice> {
-			match provider_id {
-				DataProviderId::Setheum => SetheumOracle::get_no_op(&key),
-				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_no_op(&key)
-			}
-		}
-
-		fn get_all_values(provider_id: DataProviderId) -> Vec<(CurrencyId, Option<TimeStampedPrice>)> {
-			match provider_id {
-				DataProviderId::Setheum => SetheumOracle::get_all_values(),
-				DataProviderId::Aggregated => <AggregatedDataProvider as DataProviderExtended<_, _>>::get_all_values()
-			}
 		}
 	}
 
@@ -1910,7 +1910,7 @@ impl_runtime_apis! {
 			let utx = UncheckedExtrinsic::decode(&mut &*extrinsic)
 				.map_err(|_| sp_runtime::DispatchError::Other("Invalid parameter extrinsic, decode failed"))?;
 
-			let request = match utx.0.function {
+			let request = match utx.function {
 				Call::EVM(module_evm::Call::call(to, data, value, gas_limit, storage_limit)) => {
 					Some(EstimateResourcesRequest {
 						from: None,

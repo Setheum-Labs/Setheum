@@ -19,22 +19,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{AccountId, Balance, EvmAccounts, Runtime, DOLLARS};
+use crate::{dollar, AccountId, CurrencyId, EvmAccounts, GetNativeCurrencyId, Runtime};
 
-use super::utils::set_setheum_balance;
+use super::utils::set_balance;
 use codec::Encode;
 use frame_benchmarking::{account, whitelisted_caller};
 use frame_system::RawOrigin;
 use orml_benchmarking::runtime_benchmarks;
 use sp_io::hashing::keccak_256;
-use sp_std::prelude::*;
 
 const SEED: u32 = 0;
 
-fn dollar(d: u32) -> Balance {
-	let d: Balance = d.into();
-	DOLLARS.saturating_mul(d)
-}
+const NATIVE: CurrencyId = GetNativeCurrencyId::get();
 
 fn alice() -> secp256k1::SecretKey {
 	secp256k1::SecretKey::parse(&keccak_256(b"Alice")).unwrap()
@@ -56,39 +52,21 @@ runtime_benchmarks! {
 	{ Runtime, module_evm_accounts }
 
 	claim_account {
-		let caller: AccountId = account("caller", 0, SEED);
+		let caller: AccountId = whitelisted_caller();
 		let eth: AccountId = account("eth", 0, SEED);
-		set_setheum_balance(&bob_account_id(), dollar(1000));
-	}: _(RawOrigin::Signed(caller), EvmAccounts::eth_address(&alice()), EvmAccounts::eth_sign(&alice(), &caller.encode(), &[][..]).unwrap())
+		set_balance(NATIVE, &bob_account_id(), 1_000 * dollar(NATIVE));
+	}: _(RawOrigin::Signed(caller), EvmAccounts::eth_address(&alice()), EvmAccounts::eth_sign(&alice(), &caller.encode(), &[][..]))
 
 	claim_default_account {
 		let caller = whitelisted_caller();
-  }: _(RawOrigin::Signed(caller))
+	}: _(RawOrigin::Signed(caller))
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use frame_support::assert_ok;
+	use crate::benchmarking::utils::tests::new_test_ext;
+	use orml_benchmarking::impl_benchmark_test_suite;
 
-	fn new_test_ext() -> sp_io::TestExternalities {
-		frame_system::GenesisConfig::default()
-			.build_storage::<Runtime>()
-			.unwrap()
-			.into()
-	}
-
-	#[test]
-	fn test_claim_account() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_claim_account());
-		});
-	}
-
-	#[test]
-	fn test_claim_default_account() {
-		new_test_ext().execute_with(|| {
-			assert_ok!(test_benchmark_claim_account());
-		});
-	}
+	impl_benchmark_test_suite!(new_test_ext(),);
 }
