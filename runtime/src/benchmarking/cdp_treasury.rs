@@ -19,7 +19,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, CdpTreasury, Currencies, CurrencyId, GetSetUSDId, Runtime};
+use crate::{dollar, CdpTreasury, Currencies, CurrencyId, GetNativeCurrencyId, GetSetUSDId, Runtime};
 
 use frame_system::RawOrigin;
 use module_support::CDPTreasury;
@@ -27,6 +27,7 @@ use orml_benchmarking::runtime_benchmarks;
 use orml_traits::MultiCurrency;
 
 const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STAKING: CurrencyId = GetNativeCurrencyId::get();
 
 runtime_benchmarks! {
 	{ Runtime, cdp_treasury }

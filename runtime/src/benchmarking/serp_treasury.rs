@@ -22,7 +22,6 @@
 use crate::{dollar, SerpTreasury, Currencies, CurrencyId, GetSetUSDId, Runtime};
 
 use frame_system::RawOrigin;
-use module_support::SerpTreasury;
 use orml_benchmarking::runtime_benchmarks;
 use orml_traits::MultiCurrency;
 

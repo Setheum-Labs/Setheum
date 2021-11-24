@@ -243,23 +243,13 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar or Setter
 	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
-	/// SerpUp ratio for Setheum Foundation's Charity Fund
-	fn get_public_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-	
 	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// Serplus ratio for BuyBack Swaps to burn Setter
 	fn get_buyback_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
-	/// Serplus ratio for Setheum Foundation's Charity Fund
-	fn get_public_fund_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
-	fn get_alsharif_fund_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
 	fn get_treasury_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
-	fn get_alsharif_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	fn get_treasury_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 

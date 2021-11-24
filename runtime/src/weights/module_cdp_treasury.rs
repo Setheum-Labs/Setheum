@@ -59,7 +59,7 @@ impl<T: frame_system::Config> cdp_treasury::WeightInfo for WeightInfo<T> {
 		(24_330_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn extract_surplus_to_treasury() -> Weight {
+	fn extract_surplus_to_serp() -> Weight {
 		(77_917_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))

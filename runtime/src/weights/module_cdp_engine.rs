@@ -50,22 +50,9 @@ use sp_std::marker::PhantomData;
 /// Weight functions for cdp_engine.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> cdp_engine::WeightInfo for WeightInfo<T> {
-	fn on_initialize(c: u32, ) -> Weight {
-		(56_096_000 as Weight)
-			// Standard Error: 1_019_000
-			.saturating_add((48_350_000 as Weight).saturating_mul(c as Weight))
-			.saturating_add(T::DbWeight::get().reads(9 as Weight))
-			.saturating_add(T::DbWeight::get().reads((2 as Weight).saturating_mul(c as Weight)))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
-			.saturating_add(T::DbWeight::get().writes((2 as Weight).saturating_mul(c as Weight)))
-	}
 	fn set_collateral_params() -> Weight {
 		(73_258_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
-	fn set_global_params() -> Weight {
-		(22_422_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 	fn liquidate_by_auction() -> Weight {

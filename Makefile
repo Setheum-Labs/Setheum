@@ -1,19 +1,25 @@
 .PHONY: configure-rust
 configure-rust:
-	rustup install 1.53.0
-	rustup default 1.53.0
-	rustup toolchain install nightly-2021-05-21
-	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-21
+	rustup install
+	rustup default
+	rustup toolchain install nightly-2021-06-17
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-06-17
 	rustup component add clippy
 
+.PHONY: toolchain
+toolchain:
+	./scripts/init.sh
+
 .PHONY: init
-init:
-	make configure-rust
+init: toolchain submodule build
+
+.PHONY: submodule
+submodule:
 	git submodule update --init --recursive
 
 .PHONY: release
 release:
-	make configure-rust
+	make init
 	rm -rf target/
 	cargo build --manifest-path node/Cargo.toml --features with-ethereum-compatibility --release
 

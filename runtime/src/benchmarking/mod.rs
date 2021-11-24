@@ -34,6 +34,7 @@ pub mod emergency_shutdown;
 pub mod evm;
 pub mod evm_accounts;
 pub mod serp_setmint;
+pub mod serp_treasury;
 pub mod prices;
 pub mod transaction_pause;
 pub mod transaction_payment;

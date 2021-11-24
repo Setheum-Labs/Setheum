@@ -177,18 +177,12 @@ pub fn deposit(items: u32, bytes: u32) -> Balance {
 
 pub type ShuraCouncilInstance = pallet_collective::Instance1;
 pub type FinancialCouncilInstance = pallet_collective::Instance2;
-pub type PublicFundCouncilInstance = pallet_collective::Instance3;
-pub type AlSharifFundCouncilInstance = pallet_collective::Instance4;
-pub type FoundationFundCouncilInstance = pallet_collective::Instance5;
-pub type TechnicalCommitteeInstance = pallet_collective::Instance6;
+pub type TechnicalCommitteeInstance = pallet_collective::Instance3;
 
 pub type ShuraCouncilMembershipInstance = pallet_membership::Instance1;
 pub type FinancialCouncilMembershipInstance = pallet_membership::Instance2;
-pub type PublicFundCouncilMembershipInstance = pallet_membership::Instance3;
-pub type AlSharifFundCouncilMembershipInstance = pallet_membership::Instance4;
-pub type FoundationFundCouncilMembershipInstance = pallet_membership::Instance5;
-pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance6;
-pub type OperatorMembershipInstanceSetheum = pallet_membership::Instance7;
+pub type TechnicalCommitteeMembershipInstance = pallet_membership::Instance3;
+pub type OperatorMembershipInstanceSetheum = pallet_membership::Instance4;
 
 // Shura Council
 pub type EnsureRootOrOneShuraCouncil = EnsureOneOf<
@@ -253,99 +247,6 @@ pub type EnsureRootOrThreeFourthsFinancialCouncil = EnsureOneOf<
 	AccountId,
 	EnsureRoot<AccountId>,
 	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, FinancialCouncilInstance>,
->;
-
-// SPF (Setheum Public Fund) Council
-pub type EnsureRootOrAllPublicFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, PublicFundCouncilInstance>,
->;
-
-pub type EnsureRootOrHalfPublicFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, PublicFundCouncilInstance>,
->;
-
-pub type EnsureRootOrOneThirdsPublicFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, PublicFundCouncilInstance>,
->;
-
-pub type EnsureRootOrTwoThirdsPublicFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, PublicFundCouncilInstance>,
->;
-
-pub type EnsureRootOrThreeFourthsPublicFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, PublicFundCouncilInstance>,
->;
-
-// ASF (Al-Sharif Fund) Council
-pub type EnsureRootOrAllAlSharifFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, AlSharifFundCouncilInstance>,
->;
-
-pub type EnsureRootOrHalfAlSharifFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, AlSharifFundCouncilInstance>,
->;
-
-pub type EnsureRootOrOneThirdsAlSharifFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, AlSharifFundCouncilInstance>,
->;
-
-pub type EnsureRootOrTwoThirdsAlSharifFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, AlSharifFundCouncilInstance>,
->;
-
-pub type EnsureRootOrThreeFourthsAlSharifFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, AlSharifFundCouncilInstance>,
->;
-
-// SFF (Setheum Foundation Fund) Council
-pub type EnsureRootOrAllFoundationFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, FoundationFundCouncilInstance>,
->;
-
-pub type EnsureRootOrHalfFoundationFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, FoundationFundCouncilInstance>,
->;
-
-pub type EnsureRootOrOneThirdsFoundationFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_1, _3, AccountId, FoundationFundCouncilInstance>,
->;
-
-pub type EnsureRootOrTwoThirdsFoundationFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, FoundationFundCouncilInstance>,
->;
-
-pub type EnsureRootOrThreeFourthsFoundationFundCouncil = EnsureOneOf<
-	AccountId,
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, FoundationFundCouncilInstance>,
 >;
 
 // Technical Committee Council

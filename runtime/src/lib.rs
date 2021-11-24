@@ -22,32 +22,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit="256"]
-// The `large_enum_variant` warning originates from `construct_runtime` macro.
-#![allow(clippy::large_enum_variant)]
-#![allow(clippy::unnecessary_mut_passed)]
-#![allow(clippy::or_fun_call)]
-#![allow(clippy::from_over_into)]
-#![allow(clippy::upper_case_acronyms)]
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Compact, Decode, Encode};
-use frame_support::pallet_prelude::InvalidTransaction;
-pub use frame_support::{
-	construct_runtime, log, parameter_types,
-	traits::{
-		Contains, ContainsLengthBound, Currency as PalletCurrency, EnsureOrigin, Everything, Get, Imbalance,
-		InstanceFilter, IsSubType, IsType, KeyOwnerProofSystem, LockIdentifier, Nothing, OnUnbalanced, Randomness,
-		SortedMembers, U128CurrencyToVote, WithdrawReasons,
-	},
-	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-		DispatchClass, IdentityFee, Weight,
-	},
-	PalletId, RuntimeDebug, StorageValue,
-};
 use sp_std::prelude::*;
 use sp_core::{
 	crypto::KeyTypeId,
@@ -77,10 +57,6 @@ use frame_election_provider_support::onchain;
 pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 
-// use module_support::TransactionPayment;
-use frame_system::Call;
-use frame_system::Event;
-
 use sp_version::RuntimeVersion;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -89,7 +65,20 @@ use sp_version::NativeVersion;
 #[cfg(any(feature = "std", test))]
 pub use pallet_timestamp::Call as TimestampCall;
 pub use pallet_balances::Call as BalancesCall;
-
+use frame_support::pallet_prelude::InvalidTransaction;
+pub use frame_support::{
+	construct_runtime, log, parameter_types,
+	traits::{
+		Contains, ContainsLengthBound, Currency as PalletCurrency, EnsureOrigin, Everything, Get, Imbalance,
+		InstanceFilter, IsSubType, IsType, KeyOwnerProofSystem, LockIdentifier, Nothing, OnUnbalanced, Randomness,
+		SortedMembers, U128CurrencyToVote, WithdrawReasons,
+	},
+	weights::{
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+		DispatchClass, IdentityFee, Weight,
+	},
+	PalletId, RuntimeDebug, StorageValue,
+};
 pub use frame_system::{ensure_root, EnsureOneOf, EnsureRoot, RawOrigin};
 use orml_traits::{
 	create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended, MultiCurrency,
@@ -114,7 +103,7 @@ pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
 use primitives::{evm::EthereumTransactionMessage, currency::*};
 pub use primitives::{
-	evm::EstimateResourcesRequest, AccountId, AccountIndex, Address, AirDropCurrencyId, Amount, AuctionId,
+	evm::EstimateResourcesRequest, AccountId, AccountIndex, AirDropCurrencyId, Amount, AuctionId,
 	AuthoritysOriginId, Balance, BlockNumber, CurrencyId, DataProviderId, EraIndex, Hash, Moment, Nonce,
 	ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair,
 };
@@ -131,18 +120,6 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsFinancialCouncil, EnsureRootOrTwoThirdsFinancialCouncil,
 	EnsureRootOrThreeFourthsFinancialCouncil, FinancialCouncilInstance, FinancialCouncilMembershipInstance,
 
-	EnsureRootOrAllPublicFundCouncil, EnsureRootOrHalfPublicFundCouncil,
-	EnsureRootOrOneThirdsPublicFundCouncil, EnsureRootOrTwoThirdsPublicFundCouncil,
-	EnsureRootOrThreeFourthsPublicFundCouncil, PublicFundCouncilInstance, PublicFundCouncilMembershipInstance,
-
-	EnsureRootOrAllAlSharifFundCouncil, EnsureRootOrHalfAlSharifFundCouncil,
-	EnsureRootOrOneThirdsAlSharifFundCouncil, EnsureRootOrTwoThirdsAlSharifFundCouncil,
-	EnsureRootOrThreeFourthsAlSharifFundCouncil, AlSharifFundCouncilInstance, AlSharifFundCouncilMembershipInstance,
-
-	EnsureRootOrAllFoundationFundCouncil, EnsureRootOrHalfFoundationFundCouncil,
-	EnsureRootOrOneThirdsFoundationFundCouncil, EnsureRootOrTwoThirdsFoundationFundCouncil,
-	EnsureRootOrThreeFourthsFoundationFundCouncil, FoundationFundCouncilInstance, FoundationFundCouncilMembershipInstance,
-
 	EnsureRootOrAllTechnicalCommittee, EnsureRootOrHalfTechnicalCommittee,
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
@@ -152,17 +129,15 @@ pub use runtime_common::{
 
 
 mod weights;
-
 mod authority;
-mod benchmarking;
 pub mod constants;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 // Pallet accounts of runtime
 parameter_types! {
 	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
-	pub const PublicFundTreasuryPalletId: PalletId = PalletId(*b"set/spft");
-	pub const AlSharifFundTreasuryPalletId: PalletId = PalletId(*b"set/asft");
-	pub const FoundationFundTreasuryPalletId: PalletId = PalletId(*b"set/sfft");
 	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
@@ -173,9 +148,6 @@ parameter_types! {
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
 		TreasuryPalletId::get().into_account(),
-		PublicFundTreasuryPalletId::get().into_account(),
-		AlSharifFundTreasuryPalletId::get().into_account(),
-		FoundationFundTreasuryPalletId::get().into_account(),
 		LoansPalletId::get().into_account(),
 		DEXPalletId::get().into_account(),
 		CDPTreasuryPalletId::get().into_account(),
@@ -204,41 +176,6 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 // 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
 // 			RawOrigin::Signed(caller) => {
 // 				if SetheumFoundationAccounts::get().contains(&caller) {
-// 					Ok(caller)
-// 				} else {
-// 					Err(Origin::from(Some(caller)))
-// 				}
-// 			}
-// 			r => Err(Origin::from(r)),
-// 		})
-// 	}
-
-// 	#[cfg(feature = "runtime-benchmarks")]
-// 	fn successful_origin() -> Origin {
-// 		Origin::from(RawOrigin::Signed(Default::default()))
-// 	}
-// }
-
-
-// TODO: Update the accounts and uncomment
-// // Enable when we add AlSharifFoundationAccount to governance
-// parameter_types! {
-// 	pub AlSharifFoundationAccounts: Vec<AccountId> = vec![
-// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
-// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
-// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
-// 		FoundationTreasuryPalletId::get().into_account(),
-// 	];
-// }
-
-// pub struct EnsureAlSharifFoundation;
-// impl EnsureOrigin<Origin> for EnsureAlSharifFoundation {
-// 	type Success = AccountId;
-
-// 	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
-// 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
-// 			RawOrigin::Signed(caller) => {
-// 				if AlSharifFoundationAccounts::get().contains(&caller) {
 // 					Ok(caller)
 // 				} else {
 // 					Err(Origin::from(Some(caller)))
@@ -627,17 +564,19 @@ impl Contains<AccountId> for DustRemovalWhitelist {
 }
 
 parameter_type_with_key! {
+	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETR => 1_000_000_000 * dollar(*currency_id),
+			&SETUSD => 1_000_000_000 * dollar(*currency_id),
+			_ => 0,
+		}
+	};
+}
+
+parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
-				// TODO: Update to lower amounts when prices increase to a reasonable rate.
-				// ...aavvvvVVVVVVVVV
-				// TokenSymbol::SETUSD => cent(*currency_id),
-				// TokenSymbol::SETR => cent(*currency_id),
-				// TokenSymbol::SERP => cent(*currency_id),
-				// TokenSymbol::DNAR => cent(*currency_id),
-				// TokenSymbol::SETM => cent(*currency_id),
-
 				TokenSymbol::SETUSD => 10 * cent(*currency_id),
 				TokenSymbol::SETR => 10 * cent(*currency_id),
 				TokenSymbol::SERP => 10 * cent(*currency_id),
@@ -666,9 +605,6 @@ parameter_type_with_key! {
 parameter_types! {
 	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
 	pub CDPTreasuryAccount: AccountId = CDPTreasuryPalletId::get().into_account();
-	pub PublicFundTreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
-	pub AlSharifFundTreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
-	pub FoundationFundTreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
 }
 
 impl orml_tokens::Config for Runtime {
@@ -735,7 +671,7 @@ impl auction_manager::Config for Runtime {
 	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
 	type EmergencyShutdown = EmergencyShutdown;
 	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
-	type WeightInfo = weights::auction_manager::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_auction_manager::WeightInfo<Runtime>;
 }
 
 impl module_loans::Config for Runtime {
@@ -793,11 +729,6 @@ where
 	}
 }
 
-impl frame_system::offchain::SigningTypes for Runtime {
-	type Public = <Signature as sp_runtime::traits::Verify>::Signer;
-	type Signature = Signature;
-}
-
 impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
 where
 	Call: From<C>,
@@ -830,7 +761,7 @@ impl cdp_engine::Config for Runtime {
 	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
 	type EmergencyShutdown = EmergencyShutdown;
 	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
-	type WeightInfo = weights::cdp_engine::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_cdp_engine::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -851,7 +782,7 @@ impl emergency_shutdown::Config for Runtime {
 	type CDPTreasury = CdpTreasury;
 	type AuctionManagerHandler = AuctionManager;
 	type ShutdownOrigin = EnsureRootOrHalfShuraCouncil;
-	type WeightInfo = weights::emergency_shutdown::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_emergency_shutdown::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -912,8 +843,6 @@ impl serp_treasury::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CashDropPoolAccountId = CashDropPoolAccountId;
-	type PublicFundAccountId = PublicFundTreasuryAccount;
-	type AlSharifFundAccountId = AlSharifFundTreasuryAccount;
 	type CDPTreasuryAccountId = CDPTreasuryAccount;
 	type SetheumTreasuryAccountId = TreasuryAccount;
 	type DefaultSwapPathList = DefaultSwapPathList;
@@ -969,7 +898,7 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
                 tips.ration_merge_into(70, 30, &mut split);
             }
             Treasury::on_unbalanced(split.0);
-            Author::on_unbalanced(split.1);
+			Balances::resolve_creating(&Authorship::author(), split.1);
         }
 	}
 }
@@ -1150,25 +1079,12 @@ impl InstanceFilter<Call> for ProxyType {
 				matches!(
 					c,
 					Call::Authority(..)
-						| Call::Democracy(..)
 						| Call::ShuraCouncil(..)
 						| Call::FinancialCouncil(..)
-						| Call::PublicFundCouncil(..)
-						| Call::AlSharifFundCouncil(..)
-						| Call::FoundationFundCouncil(..)
 						| Call::TechnicalCommittee(..)
 						| Call::Treasury(..)
-						| Call::TreasuryBounties(..)
-						| Call::TreasuryTips(..)
-						| Call::PublicFund(..)
-						| Call::PublicFundBounties(..)
-						| Call::PublicFundTips(..)
-						| Call::AlSharifFund(..)
-						| Call::AlSharifFundBounties(..)
-						| Call::AlSharifFundTips(..)
-						| Call::FoundationFund(..)
-						| Call::FoundationFundBounties(..)
-						| Call::FoundationFundTips(..)
+						| Call::Bounties(..)
+						| Call::Tips(..)
 				)
 			}
 			ProxyType::Auction => {
@@ -1216,12 +1132,6 @@ impl pallet_proxy::Config for Runtime {
 }
 
 parameter_types! {
-	pub const CashCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::CASH);
-	pub const MaxGatewayAuthorityCount: u32 = 8;
-	pub const PercentThresholdForGatewayAuthoritySignature: Perbill = Perbill::from_percent(50);
-}
-
-parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
 	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETM);
@@ -1238,7 +1148,7 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = (); // burn
 	type ExistentialDeposit = NativeTokenExistentialDeposit;
 	type AccountStore = frame_system::Pallet<Runtime>;
-	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = ();
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
 }
@@ -1338,96 +1248,6 @@ impl pallet_membership::Config<FinancialCouncilMembershipInstance> for Runtime {
 }
 
 parameter_types! {
-	pub const PublicFundCouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const PublicFundCouncilMaxProposals: u32 = 100;
-	pub const PublicFundCouncilMaxMembers: u32 = 100;
-}
-
-impl pallet_collective::Config<PublicFundCouncilInstance> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-	type MotionDuration = PublicFundCouncilMotionDuration;
-	type MaxProposals = PublicFundCouncilMaxProposals;
-	type MaxMembers = PublicFundCouncilMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = ();
-}
-
-impl pallet_membership::Config<PublicFundCouncilMembershipInstance> for Runtime {
-	type Event = Event;
-	type AddOrigin = EnsureRootOrThreeFourthsPublicFundCouncil;
-	type RemoveOrigin = EnsureRootOrThreeFourthsPublicFundCouncil;
-	type SwapOrigin = EnsureRootOrThreeFourthsPublicFundCouncil;
-	type ResetOrigin = EnsureRootOrThreeFourthsPublicFundCouncil;
-	type PrimeOrigin = EnsureRootOrThreeFourthsPublicFundCouncil;
-	type MembershipInitialized = PublicFundCouncil;
-	type MembershipChanged = PublicFundCouncil;
-	type MaxMembers = PublicFundCouncilMaxMembers;
-	type WeightInfo = ();
-}
-
-parameter_types! {
-	pub const AlSharifFundCouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const AlSharifFundCouncilMaxProposals: u32 = 100;
-	pub const AlSharifFundCouncilMaxMembers: u32 = 100;
-}
-
-impl pallet_collective::Config<AlSharifFundCouncilInstance> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-	type MotionDuration = AlSharifFundCouncilMotionDuration;
-	type MaxProposals = AlSharifFundCouncilMaxProposals;
-	type MaxMembers = AlSharifFundCouncilMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = ();
-}
-
-impl pallet_membership::Config<AlSharifFundCouncilMembershipInstance> for Runtime {
-	type Event = Event;
-	type AddOrigin = EnsureRootOrThreeFourthsAlSharifFundCouncil;
-	type RemoveOrigin = EnsureRootOrThreeFourthsAlSharifFundCouncil;
-	type SwapOrigin = EnsureRootOrThreeFourthsAlSharifFundCouncil;
-	type ResetOrigin = EnsureRootOrThreeFourthsAlSharifFundCouncil;
-	type PrimeOrigin = EnsureRootOrThreeFourthsAlSharifFundCouncil;
-	type MembershipInitialized = AlSharifFundCouncil;
-	type MembershipChanged = AlSharifFundCouncil;
-	type MaxMembers = AlSharifFundCouncilMaxMembers;
-	type WeightInfo = ();
-}
-
-parameter_types! {
-	pub const FoundationFundCouncilMotionDuration: BlockNumber = 7 * DAYS;
-	pub const FoundationFundCouncilMaxProposals: u32 = 100;
-	pub const FoundationFundCouncilMaxMembers: u32 = 100;
-}
-
-impl pallet_collective::Config<FoundationFundCouncilInstance> for Runtime {
-	type Origin = Origin;
-	type Proposal = Call;
-	type Event = Event;
-	type MotionDuration = FoundationFundCouncilMotionDuration;
-	type MaxProposals = FoundationFundCouncilMaxProposals;
-	type MaxMembers = FoundationFundCouncilMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = ();
-}
-
-impl pallet_membership::Config<FoundationFundCouncilMembershipInstance> for Runtime {
-	type Event = Event;
-	type AddOrigin = EnsureRootOrThreeFourthsFoundationFundCouncil;
-	type RemoveOrigin = EnsureRootOrThreeFourthsFoundationFundCouncil;
-	type SwapOrigin = EnsureRootOrThreeFourthsFoundationFundCouncil;
-	type ResetOrigin = EnsureRootOrThreeFourthsFoundationFundCouncil;
-	type PrimeOrigin = EnsureRootOrThreeFourthsFoundationFundCouncil;
-	type MembershipInitialized = FoundationFundCouncil;
-	type MembershipChanged = FoundationFundCouncil;
-	type MaxMembers = FoundationFundCouncilMaxMembers;
-	type WeightInfo = ();
-}
-
-parameter_types! {
 	pub const TechnicalCommitteeMotionDuration: BlockNumber = 7 * DAYS;
 	pub const TechnicalCommitteeMaxProposals: u32 = 100;
 	pub const TechnicalCouncilMaxMembers: u32 = 100;
@@ -1517,73 +1337,6 @@ impl ContainsLengthBound for ShuraCouncilProvider {
 	}
 }
 
-
-pub struct PublicFundCouncilProvider;
-impl SortedMembers<AccountId> for PublicFundCouncilProvider {
-	fn sorted_members() -> Vec<AccountId> {
-		PublicFundCouncil::members()
-	}
-
-	#[cfg(feature = "runtime-benchmarks")]
-	fn add(_: &AccountId) {
-		todo!()
-	}
-}
-
-impl ContainsLengthBound for PublicFundCouncilProvider {
-	fn max_len() -> usize {
-		100
-	}
-	fn min_len() -> usize {
-		0
-	}
-}
-
-
-pub struct AlSharifFundCouncilProvider;
-impl SortedMembers<AccountId> for AlSharifFundCouncilProvider {
-	fn sorted_members() -> Vec<AccountId> {
-		AlSharifFundCouncil::members()
-	}
-
-	#[cfg(feature = "runtime-benchmarks")]
-	fn add(_: &AccountId) {
-		todo!()
-	}
-}
-
-impl ContainsLengthBound for AlSharifFundCouncilProvider {
-	fn max_len() -> usize {
-		100
-	}
-	fn min_len() -> usize {
-		0
-	}
-}
-
-
-pub struct FoundationFundCouncilProvider;
-impl SortedMembers<AccountId> for FoundationFundCouncilProvider {
-	fn sorted_members() -> Vec<AccountId> {
-		FoundationFundCouncil::members()
-	}
-
-	#[cfg(feature = "runtime-benchmarks")]
-	fn add(_: &AccountId) {
-		todo!()
-	}
-}
-
-impl ContainsLengthBound for FoundationFundCouncilProvider {
-	fn max_len() -> usize {
-		100
-	}
-	fn min_len() -> usize {
-		0
-	}
-}
-
-
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub ProposalBondMinimum: Balance = dollar(SETM);
@@ -1606,8 +1359,7 @@ parameter_types! {
 	pub const MaximumReasonLength: u32 = 16384;
 }
 
-type TreasuryInstance = pallet_treasury::Instance1;
-impl pallet_treasury::Config<TreasuryInstance> for Runtime {
+impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
 	type ApproveOrigin = EnsureRootOrHalfShuraCouncil;
@@ -1619,7 +1371,7 @@ impl pallet_treasury::Config<TreasuryInstance> for Runtime {
 	type SpendPeriod = SpendPeriod;
 	type Burn = Burn;
 	type BurnDestination = ();
-	type SpendFunds = Bounties;
+	type SpendFunds = ();
 	type WeightInfo = ();
 	type MaxApprovals = MaxApprovals;
 }
@@ -1645,85 +1397,6 @@ impl pallet_tips::Config for Runtime {
 	type TipFindersFee = TipFindersFee;
 	type TipReportDepositBase = TipReportDepositBase;
 	type WeightInfo = ();
-}
-
-
-parameter_types! {
-	pub const PublicFundProposalBond: Permill = Permill::from_percent(5);
-	pub PublicFundProposalBondMinimum: Balance = dollar(SETM);
-	pub const PublicFundSpendPeriod: BlockNumber = 21 * DAYS;
-	pub const PublicFundBurn: Permill = Permill::from_percent(0);
-	pub const PublicFundMaxApprovals: u32 = 100;
-}
-
-type PublicFundTreasuryInstance = pallet_treasury::Instance2;
-impl pallet_treasury::Config<PublicFundTreasuryInstance> for Runtime {
-	type PalletId = PublicFundTreasuryPalletId;
-	type Currency = Balances;
-	type ApproveOrigin = EnsureRootOrHalfPublicFundCouncil;
-	type RejectOrigin = EnsureRootOrHalfPublicFundCouncil;
-	type Event = Event;
-	type OnSlash = PublicFund;
-	type ProposalBond = PublicFundProposalBond;
-	type ProposalBondMinimum = PublicFundProposalBondMinimum;
-	type SpendPeriod = PublicFundSpendPeriod;
-	type Burn = PublicFundBurn;
-	type BurnDestination = ();
-	type SpendFunds = PublicFundBounties;
-	type WeightInfo = ();
-	type MaxApprovals = PublicFundMaxApprovals;
-}
-
-parameter_types! {
-	pub const AlSharifFundProposalBond: Permill = Permill::from_percent(5);
-	pub AlSharifFundProposalBondMinimum: Balance = dollar(SETM);
-	pub const AlSharifFundSpendPeriod: BlockNumber = 21 * DAYS;
-	pub const AlSharifFundBurn: Permill = Permill::from_percent(0);
-	pub const AlSharifFundMaxApprovals: u32 = 100;
-}
-
-type AlSharifFundTreasuryInstance = pallet_treasury::Instance3;
-impl pallet_treasury::Config<AlSharifFundTreasuryInstance> for Runtime {
-	type PalletId = AlSharifFundTreasuryPalletId;
-	type Currency = Balances;
-	type ApproveOrigin = EnsureRootOrHalfAlSharifFundCouncil; // TODO: Update to `EnsureAlSharifFoundationOrHalfAlSharifFundCouncil`
-	type RejectOrigin = EnsureRootOrHalfAlSharifFundCouncil;  // TODO: Update to `EnsureAlSharifFoundationOrHalfAlSharifFundCouncil`
-	type Event = Event;
-	type OnSlash = AlSharifFund;
-	type ProposalBond = AlSharifFundProposalBond;
-	type ProposalBondMinimum = AlSharifFundProposalBondMinimum;
-	type SpendPeriod = AlSharifFundSpendPeriod;
-	type Burn = AlSharifFundBurn;
-	type BurnDestination = ();
-	type SpendFunds = AlSharifFundBounties;
-	type WeightInfo = ();
-	type MaxApprovals = AlSharifFundMaxApprovals;
-}
-
-parameter_types! {
-	pub const FoundationFundProposalBond: Permill = Permill::from_percent(5);
-	pub FoundationFundProposalBondMinimum: Balance = dollar(SETM);
-	pub const FoundationFundSpendPeriod: BlockNumber = 21 * DAYS;
-	pub const FoundationFundBurn: Permill = Permill::from_percent(0);
-	pub const FoundationFundMaxApprovals: u32 = 100;
-}
-
-type FoundationFundTreasuryInstance = pallet_treasury::Instance4;
-impl pallet_treasury::Config<FoundationFundTreasuryInstance> for Runtime {
-	type PalletId = FoundationFundTreasuryPalletId;
-	type Currency = Balances;
-	type ApproveOrigin = EnsureRootOrHalfFoundationFundCouncil; // TODO: Update to `EnsureSetheumFoundationOrHalfFoundationFundCouncil`
-	type RejectOrigin = EnsureRootOrHalfFoundationFundCouncil;  // TODO: Update to `EnsureSetheumFoundationOrHalfFoundationFundCouncil`
-	type Event = Event;
-	type OnSlash = FoundationFund;
-	type ProposalBond = FoundationFundProposalBond;
-	type ProposalBondMinimum = FoundationFundProposalBondMinimum;
-	type SpendPeriod = FoundationFundSpendPeriod;
-	type Burn = FoundationFundBurn;
-	type BurnDestination = ();
-	type SpendFunds = FoundationFundBounties;
-	type WeightInfo = ();
-	type MaxApprovals = FoundationFundMaxApprovals;
 }
 
 parameter_types! {
@@ -1788,12 +1461,6 @@ construct_runtime!(
 		ShuraCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
 		FinancialCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 14,
 		FinancialCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
-		PublicFundCouncil: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
-		PublicFundCouncilMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 17,
-		AlSharifFundCouncil: pallet_collective::<Instance4>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 18,
-		AlSharifFundCouncilMembership: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 19,
-		FoundationFundCouncil: pallet_collective::<Instance5>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 20,
-		FoundationFundCouncilMembership: pallet_membership::<Instance5>::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
 		TechnicalCommittee: pallet_collective::<Instance6>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 22,
 		TechnicalCommitteeMembership: pallet_membership::<Instance6>::{Pallet, Call, Storage, Event<T>, Config<T>} = 23,
 
@@ -1818,13 +1485,10 @@ construct_runtime!(
 
 		// Treasury
 		Treasury: pallet_treasury::<Instance1>::{Pallet, Call, Storage, Config, Event<T>} = 35,
-		PublicFund: pallet_treasury::<Instance2>::{Pallet, Call, Storage, Config, Event<T>} = 36,
-		AlSharifFund: pallet_treasury::<Instance3>::{Pallet, Call, Storage, Config, Event<T>} = 37,
-		FoundationFund: pallet_treasury::<Instance4>::{Pallet, Call, Storage, Config, Event<T>} = 38,
 		// Bounties
-		TreasuryBounties: pallet_bounties::<Instance1>::{Pallet, Call, Storage, Event<T>} = 39,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 39,
 		// Tips
-		TreasuryTips: pallet_tips::<Instance1>::{Pallet, Call, Storage, Event<T>} = 43,
+		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 43,
 
 		// Extras
 		NFT: module_nft::{Pallet, Call, Event<T>} = 47,
@@ -1988,14 +1652,6 @@ pub type Executive = frame_executive::Executive<
 impl frame_system::offchain::SigningTypes for Runtime {
 	type Public = <Signature as sp_runtime::traits::Verify>::Signer;
 	type Signature = Signature;
-}
-
-impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
-where
-	Call: From<C>,
-{
-	type OverarchingCall = Call;
-	type Extrinsic = UncheckedExtrinsic;
 }
 
 impl_runtime_apis! {
@@ -2290,7 +1946,6 @@ impl_runtime_apis! {
 		) {
 			use frame_benchmarking::{list_benchmark, Benchmarking, BenchmarkList};
 			use frame_support::traits::StorageInfoTrait;
-			use frame_system_benchmarking::Pallet as SystemBench;
 			use orml_benchmarking::{list_benchmark as orml_list_benchmark};
 
 			use module_nft::benchmarking::Pallet as NftBench;
@@ -2306,6 +1961,7 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, emergency_shutdown, benchmarking::emergency_shutdown);
 			orml_list_benchmark!(list, extra, module_evm, benchmarking::evm);
 			orml_list_benchmark!(list, extra, serp_setmint, benchmarking::serp_setmint);
+			orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
 			orml_list_benchmark!(list, extra, cdp_treasury, benchmarking::cdp_treasury);
 			orml_list_benchmark!(list, extra, module_transaction_pause, benchmarking::transaction_pause);
 			orml_list_benchmark!(list, extra, module_transaction_payment, benchmarking::transaction_payment);
@@ -2330,7 +1986,6 @@ impl_runtime_apis! {
 			use frame_benchmarking::{Benchmarking, BenchmarkBatch, add_benchmark, TrackedStorageKey};
 			use orml_benchmarking::{add_benchmark as orml_add_benchmark};
 
-			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {}
 
 			use module_nft::benchmarking::Pallet as NftBench;
@@ -2353,10 +2008,6 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 
-			add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
-			add_benchmark!(params, batches, pallet_balances, Balances);
-			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
-
 			add_benchmark!(params, batches, module_nft, NftBench::<Runtime>);
 			orml_add_benchmark!(params, batches, module_dex, benchmarking::dex);
 			orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);
@@ -2364,6 +2015,7 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, emergency_shutdown, benchmarking::emergency_shutdown);
 			orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, serp_setmint, benchmarking::serp_setmint);
+			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			orml_add_benchmark!(params, batches, cdp_treasury, benchmarking::cdp_treasury);
 			orml_add_benchmark!(params, batches, module_transaction_pause, benchmarking::transaction_pause);
 			orml_add_benchmark!(params, batches, module_transaction_payment, benchmarking::transaction_payment);

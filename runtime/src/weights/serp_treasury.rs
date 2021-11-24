@@ -47,9 +47,9 @@
 use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
-/// Weight functions for cdp_treasury.
+/// Weight functions for serp_treasury.
 pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Config> cdp_treasury::WeightInfo for WeightInfo<T> {
+impl<T: frame_system::Config> serp_treasury::WeightInfo for WeightInfo<T> {
 	fn set_stable_currency_inflation_rate() -> Weight {
 		(24_330_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
