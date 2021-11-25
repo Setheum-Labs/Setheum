@@ -25,7 +25,7 @@ use crate::{
 	AccountId, AccountIdConversion, AuthoritysOriginId, BadOrigin, BlockNumber, DispatchResult, EnsureRoot,
 	EnsureRootOrHalfShuraCouncil, EnsureRootOrThreeFourthsShuraCouncil, EnsureRootOrHalfFinancialCouncil,
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee, OneDay, Origin, SevenDays,
-	TreasuryPalletId, OriginCaller, ZeroDay, HOURS, 
+	TreasuryPalletId, OriginCaller, HOURS, 
 };
 pub use frame_support::traits::{schedule::Priority, EnsureOrigin, OriginTrait};
 use frame_system::ensure_root;

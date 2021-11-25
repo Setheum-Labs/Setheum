@@ -2,8 +2,8 @@
 configure-rust:
 	rustup install
 	rustup default
-	rustup toolchain install nightly-2021-06-17
-	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-06-17
+	rustup toolchain install nightly-2021-05-09
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
 	rustup component add clippy
 
 .PHONY: toolchain
