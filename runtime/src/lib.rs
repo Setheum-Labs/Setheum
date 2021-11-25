@@ -2011,7 +2011,7 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, module_dex, benchmarking::dex);
 			orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);
 			orml_add_benchmark!(params, batches, cdp_engine, benchmarking::cdp_engine);
-			orml_add_benchmark!(params, batches, emergency_shutdown, benchmarking::emergency_shutdown);
+			// orml_add_benchmark!(params, batches, emergency_shutdown, benchmarking::emergency_shutdown);
 			// orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, serp_setmint, benchmarking::serp_setmint);
 			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
