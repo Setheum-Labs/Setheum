@@ -40,7 +40,7 @@ use setheum_runtime::{
 	CdpEngineConfig,
 
 	//
-	TradingPair, EnabledTradingPairs, DexConfig,
+	EnabledTradingPairs, DexConfig,
 	TokenSymbol, TokensConfig, OrmlNFTConfig,
 	NativeTokenExistentialDeposit, dollar,
 	MaxNativeTokenExistentialDeposit,
@@ -148,7 +148,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
 			// Multicurrency Pre-funded accounts
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie"),
 		),
 		// Bootnodes
 		vec![],
@@ -198,7 +197,6 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 			// Multicurrency Pre-funded accounts
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie"),
 		),
 		// Bootnodes
 		vec![],
@@ -309,9 +307,6 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 			],
 			// ----------------------------------------------------------------------------------------
 			// Testnet Council Members vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-			//
-			// Foundation - Shura Council Member
-			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
 			// Labs - Shura Council Member
 			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
 			// Founder (Khalifa MBA) - Shura Council Member
@@ -474,7 +469,6 @@ fn testnet_genesis(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	foundation_fund: AccountId,
 	labs: AccountId,
 	founder_khalifa_faucet: AccountId,
 ) -> GenesisConfig {
