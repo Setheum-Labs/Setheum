@@ -59,7 +59,7 @@ pub mod time {
 /// Fee-related
 pub mod fee {
 	use frame_support::weights::{
-		constants::{ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+		constants::ExtrinsicBaseWeight,
 		WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	};
 	use primitives::Balance;
