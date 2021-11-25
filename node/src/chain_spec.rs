@@ -974,7 +974,11 @@ pub fn evm_genesis() -> BTreeMap<H160, module_evm::GenesisAccount<Balance, Nonce
 			nonce: 0,
 			balance: existential_deposit,
 			storage: Default::default(),
-			code: Bytes::from_str(&code_string).unwrap().0,
+			code: if code_string.len().is_zero() {
+				vec![]
+			} else {
+				Bytes::from_str(&code_string).unwrap().0
+			},
 		};
 		let addr = H160::from_slice(
 			from_hex(address.as_str())

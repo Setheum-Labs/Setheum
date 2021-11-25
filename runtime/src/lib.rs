@@ -83,15 +83,11 @@ pub use frame_system::{ensure_root, EnsureOneOf, EnsureRoot, RawOrigin};
 use orml_traits::{
 	create_median_value_data_provider, parameter_type_with_key, DataFeeder, DataProviderExtended, MultiCurrency,
 };
-use orml_tokens::CurrencyAdapter;
-use orml_authority::EnsureDelayed;
-use pallet_transaction_payment::{FeeDetails, RuntimeDispatchInfo};
-
 use module_evm::Runner;
 use module_evm::{CallInfo, CreateInfo};
 use module_evm_accounts::EvmAddressMapping;
 pub use module_evm_manager::EvmCurrencyIdMapping;
-use module_currencies::{BasicCurrencyAdapter, Currency};
+use module_currencies::BasicCurrencyAdapter;
 use module_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 
 // re-exports
@@ -100,7 +96,7 @@ pub use pallet_staking::StakerStatus;
 
 pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
-use primitives::{evm::EthereumTransactionMessage, currency::*};
+use primitives::evm::EthereumTransactionMessage;
 pub use primitives::{
 	evm::EstimateResourcesRequest, AccountId, AccountIndex, AirDropCurrencyId, Amount, AuctionId,
 	AuthoritysOriginId, Balance, BlockNumber, CurrencyId, DataProviderId, EraIndex, Hash, Moment, Nonce,
