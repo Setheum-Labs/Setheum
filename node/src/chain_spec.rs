@@ -691,36 +691,33 @@ fn mainnet_genesis(
 	let  setm_foundation_alloc: u128 = 626_600_000 * dollar(SETM);
 	let  setm_treasury_alloc: u128 = 313_300_000 * dollar(SETM);
 	let  setm_spf_alloc: u128 = 313_300_000 * dollar(SETM);
-	let  setm_asf_alloc: u128 = 375_960_000 * dollar(SETM);
-	let  setm_team_alloc: u128 = 1_253_200_000 * dollar(SETM);
+	let  setm_team_alloc: u128 = 1_660_490_000 * dollar(SETM);
 	let  setm_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETM);
 
 	let  serp_foundation_alloc: u128 = 51_600_000 * dollar(SERP);
 	let  serp_treasury_alloc: u128 = 25_800_000 * dollar(SERP);
 	let  serp_spf_alloc: u128 = 25_800_000 * dollar(SERP);
-	let  serp_asf_alloc: u128 = 30_960_000 * dollar(SERP);
 	let  serp_team_alloc: u128 = 103_200_000 * dollar(SERP);
 	let  serp_advisors_n_partners_alloc: u128 = 20_640_000 * dollar(SERP);
 
 	let  dnar_foundation_alloc: u128 = 14_000_000 * dollar(DNAR);
 	let  dnar_treasury_alloc: u128 = 7_000_000 * dollar(DNAR);
 	let  dnar_spf_alloc: u128 = 7_000_000 * dollar(DNAR);
-	let  dnar_asf_alloc: u128 = 8_400_000 * dollar(DNAR);
 	let  dnar_team_alloc: u128 = 28_000_000 * dollar(DNAR);
 	let  dnar_advisors_n_partners_alloc: u128 = 5_600_000 * dollar(DNAR);
 
 	let  setr_foundation_alloc: u128 = 626_600_000 * dollar(SETR);
 	let  setr_treasury_alloc: u128 = 313_300_000 * dollar(SETR);
 	let  setr_cashdrop_alloc: u128 = 313_300_000 * dollar(SETR);
-	let  setr_spf_alloc: u128 = 375_960_000 * dollar(SETR);
-	let  setr_team_alloc: u128 = 1_253_200_000 * dollar(SETR);
+	let  setr_spf_alloc: u128 = 313_300_000 * dollar(SETR);
+	let  setr_team_alloc: u128 = 830_245_000 * dollar(SETR);
 	let  setr_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETR);
 
 	let  setusd_foundation_alloc: u128 = 1_253_200_000 * dollar(SETUSD);
 	let  setusd_treasury_alloc: u128 = 626_600_000 * dollar(SETUSD);
 	let  setusd_cashdrop_alloc: u128 = 626_600_000 * dollar(SETUSD);
 	let  setusd_spf_alloc: u128 = 626_600_000 * dollar(SETUSD);
-	let  setusd_team_alloc: u128 = 1_315_860_000 * dollar(SETUSD);
+	let  setusd_team_alloc: u128 = 1_660_490_000 * dollar(SETUSD);
 	let  setusd_advisors_n_partners_alloc: u128 = 250_640_000 * dollar(SETUSD);
 
 	let  initial_balance: u128 = 100_000 * SETM;
@@ -790,18 +787,41 @@ fn mainnet_genesis(
 		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 		im_online: Default::default(),
 		tokens: TokensConfig {
-			balances: endowed_accounts
-				.iter()
-				.flat_map(|x| {
-					vec![
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), initial_balance),
-					]
-				})
-				.collect(),
+			balances:
+				vec![
+					// SETM allocations
+					(foundation.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_foundation_alloc),
+					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_treasury_alloc),
+					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_spf_alloc),
+					(labs.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_team_alloc),
+					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_advisors_n_partners_alloc),
+					// SERP allocations
+					(foundation.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_foundation_alloc),
+					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_treasury_alloc),
+					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_spf_alloc),
+					(labs.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_team_alloc),
+					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_advisors_n_partners_alloc),
+					// DNAR allocations
+					(foundation.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_foundation_alloc),
+					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_treasury_alloc),
+					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_spf_alloc),
+					(labs.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_team_alloc),
+					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_advisors_n_partners_alloc),
+					// SETR allocations
+					(foundation.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_foundation_alloc),
+					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_treasury_alloc),
+					(cashdrop_fund.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_cashdrop_alloc),
+					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_spf_alloc),
+					(labs.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_team_alloc),
+					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_advisors_n_partners_alloc),
+					// SETUSD allocations
+					(foundation.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_foundation_alloc),
+					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_treasury_alloc),
+					(cashdrop_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_cashdrop_alloc),
+					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_spf_alloc),
+					(labs.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_team_alloc),
+					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_advisors_n_partners_alloc),
+				]
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
