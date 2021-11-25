@@ -87,7 +87,6 @@ use orml_tokens::CurrencyAdapter;
 use orml_authority::EnsureDelayed;
 use pallet_transaction_payment::{FeeDetails, RuntimeDispatchInfo};
 
-use hex_literal::hex;
 use module_evm::Runner;
 use module_evm::{CallInfo, CreateInfo};
 use module_evm_accounts::EvmAddressMapping;
@@ -246,7 +245,7 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 80 * MINUTES;
-	pub const SS58Prefix: u8 = 258;
+	pub const SS58Prefix: u8 = 25;
 }
 
 impl frame_system::Config for Runtime {
@@ -458,9 +457,9 @@ impl pallet_im_online::Config for Runtime {
 }
 
 parameter_types! {
-	pub const BasicDeposit: Balance =      100 * dollar(SETM);
-	pub const FieldDeposit: Balance =        1 * dollar(SETM);
-	pub const SubAccountDeposit: Balance =  20 * dollar(SETM);
+	pub BasicDeposit: Balance =      100 * dollar(SETM);
+	pub FieldDeposit: Balance =        1 * dollar(SETM);
+	pub SubAccountDeposit: Balance =  20 * dollar(SETM);
 	pub const MaxSubAccounts: u32 = 100;
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 20;
@@ -483,7 +482,7 @@ impl pallet_identity::Config for Runtime {
 
 
 parameter_types! {
-	pub const IndexDeposit: Balance = 1 * dollar(SETM);
+	pub IndexDeposit: Balance = 1 * dollar(SETM);
 }
 
 impl pallet_indices::Config for Runtime {
@@ -1135,7 +1134,7 @@ parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
 	pub NativeTokenExistentialDeposit: Balance = 10 * cent(SETM);
-	pub const MaxNativeTokenExistentialDeposit: Balance = 1000 * dollar(SETM);
+	pub MaxNativeTokenExistentialDeposit: Balance = 1000 * dollar(SETM);
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = ReserveIdentifier::Count as u32;
 }
