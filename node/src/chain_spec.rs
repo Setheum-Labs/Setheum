@@ -268,21 +268,6 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 					// authority-discovery
 					hex!["dcc1644697e98d4171a29074a4bfaeb49b39b6ea91a8ec5e049d23ea3c4a4134"].unchecked_into(),
 				),
-				//Auth3 Validator
-				(
-					// stash 
-					hex!["48267bffea5e524f1c0e06cce77f0ef920be7ed9a7dd47705e181edad64f532a"].into(),
-					// controller
-					hex!["38594d7640612c49337f3a0bc7b39232b86f9c9c4fedec3f8b00e45d3f073a2d"].into(),
-					// grandpa 
-					hex!["c8996b17688cab9bcda8dafb4dde9bab4d9b1dc81c71419fca46fedcba74a14e"].unchecked_into(),
-					// babe 
-					hex!["568c17ce5ef308bd9544e7b16f34089a2c2329193f31577a830ffe8a023a6874"].unchecked_into(),
-					// im-online
-					hex!["66db4135f59db92ce98cdd6c29befaf21a93f1a9059adc2326c7d371a214f97d"].unchecked_into(),
-					// authority-discovery
-					hex!["00858734321b53f0987a45906cbb91fe7ce1588fce03758c7c07f09022372c30"].unchecked_into(),
-				),
 			],
 			// Sudo: TODO: Update to multisig account
 			hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
@@ -293,7 +278,7 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 				// Foundation Faucet - TODO: Update to multisig
 				(hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into()),
 				// Treasury Faucet- TODO: Update to `treasury_account`
-				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
+				(hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into()),
 				// CashDropFund Faucet- TODO: Update to `into_account_id` from `cashdrop_pool_account`
 				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
 				// PublicFund Faucet- TODO: Update
@@ -392,21 +377,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 					// authority-discovery
 					hex!["dcc1644697e98d4171a29074a4bfaeb49b39b6ea91a8ec5e049d23ea3c4a4134"].unchecked_into(),
 				),
-				//Auth3 Validator
-				(
-					// stash 
-					hex!["48267bffea5e524f1c0e06cce77f0ef920be7ed9a7dd47705e181edad64f532a"].into(),
-					// controller
-					hex!["38594d7640612c49337f3a0bc7b39232b86f9c9c4fedec3f8b00e45d3f073a2d"].into(),
-					// grandpa 
-					hex!["c8996b17688cab9bcda8dafb4dde9bab4d9b1dc81c71419fca46fedcba74a14e"].unchecked_into(),
-					// babe 
-					hex!["568c17ce5ef308bd9544e7b16f34089a2c2329193f31577a830ffe8a023a6874"].unchecked_into(),
-					// im-online
-					hex!["66db4135f59db92ce98cdd6c29befaf21a93f1a9059adc2326c7d371a214f97d"].unchecked_into(),
-					// authority-discovery
-					hex!["00858734321b53f0987a45906cbb91fe7ce1588fce03758c7c07f09022372c30"].unchecked_into(),
-				),
 			],
 			// Sudo: TODO: Update to multisig account
 			hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
@@ -417,7 +387,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 				// Foundation - TODO: Update to multisig
 				(hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into()),
 				// Treasury - TODO: Update to `treasury_account`
-				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
+				(hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into()),
 				// CashDropFund - TODO: Update to `into_account_id` from `cashdrop_pool_account`
 				(hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
 				// PublicFund - TODO: Update
@@ -437,13 +407,13 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			// Treasury - TODO: Update to `treasury_account`
 			hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into(),
 			// CashDropFund - TODO: Update to `into_account_id` from `cashdrop_pool_account`
-			hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into(),
+			hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
 			// PublicFundTreasury - TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
 			hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into(),
 			// Advisors and Partners Fund - Labs - TODO: Update to multisig
 			hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into(),
 			// Labs - Council Member - TODO: Update to multisig
-			hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
+			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(),
 			// Founder (Khalifa MBA) 
 			hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
 		),
