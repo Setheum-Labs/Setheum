@@ -600,6 +600,7 @@ parameter_type_with_key! {
 parameter_types! {
 	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
 	pub CDPTreasuryAccount: AccountId = CDPTreasuryPalletId::get().into_account();
+	// pub SerpTreasuryAccount: AccountId = SerpTreasuryPalletId::get().into_account();
 }
 
 impl orml_tokens::Config for Runtime {
