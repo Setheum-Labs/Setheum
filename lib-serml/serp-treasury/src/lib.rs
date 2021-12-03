@@ -197,7 +197,7 @@ pub mod module {
 		CashDropToVault(Balance, CurrencyId),
 		/// Stable Currency Inflation Rate Updated
 		StableCurrencyInflationRateUpdated(CurrencyId, Balance),
-		/// Stable Currency Inflation Rate Delivered
+		/// SERP-TES is Triggered
 		SerpTesNow(),
 		/// Stable Currency Inflation Rate Delivered
 		InflationDelivery(CurrencyId, Balance),
