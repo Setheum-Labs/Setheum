@@ -603,8 +603,8 @@ fn testnet_genesis(
 		shura_council_membership: ShuraCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa_faucet.clone()), 	// Founder Benabdolla (Khalifa MBA)
+				// (labs.clone()), 			// Setheum Labs
+				// (founder_khalifa_faucet.clone()), 	// Founder Benabdolla (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
@@ -612,8 +612,8 @@ fn testnet_genesis(
 		financial_council_membership: FinancialCouncilMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa_faucet.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+				// (labs.clone()), 			// Setheum Labs
+				// (founder_khalifa_faucet.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
@@ -621,16 +621,16 @@ fn testnet_genesis(
 		technical_committee_membership: TechnicalCommitteeMembershipConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa_faucet.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+				// (labs.clone()), 			// Setheum Labs
+				// (founder_khalifa_faucet.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
 		operator_membership_setheum: OperatorMembershipSetheumConfig {
 			members: vec![
 				(root_key.clone()), 		// Setheum Foundation
-				(labs.clone()), 			// Setheum Labs
-				(founder_khalifa_faucet.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
+				// (labs.clone()), 			// Setheum Labs
+				// (founder_khalifa_faucet.clone()), 	// Founder Ben-Abdolla Muhammad-Jibril (Khalifa MBA)
 			],
 			phantom: Default::default(),
 		},
