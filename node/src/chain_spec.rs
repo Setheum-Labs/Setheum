@@ -407,6 +407,33 @@ fn dev_genesis(
 		indices: IndicesConfig { indices: vec![] },
 		balances: BalancesConfig { balances },
 		sudo: SudoConfig { key: root_key.clone() },
+		shura_council: Default::default(),
+		shura_council_membership: ShuraCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		financial_council: Default::default(),
+		financial_council_membership: FinancialCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		technical_committee: Default::default(),
+		technical_committee_membership: TechnicalCommitteeMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		operator_membership_setheum: OperatorMembershipSetheumConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
 		session: SessionConfig {
 			keys: initial_authorities
 				.iter()
@@ -436,19 +463,24 @@ fn dev_genesis(
 		grandpa: Default::default(),
 		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 		im_online: Default::default(),
+		treasury: Default::default(), // Main Treasury (Setheum Treasury)
 		tokens: TokensConfig {
 			balances: endowed_accounts
 				.iter()
 				.flat_map(|x| {
 					vec![
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), 100_000 * dollar(SETM)),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), 100_000 * dollar(SERP)),
+						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), 100_000 * dollar(DNAR)),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), 100_000 * dollar(SETR)),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), 100_000 * dollar(SETUSD))
 					]
 				})
 				.collect(),
+		},
+		evm: EVMConfig {
+			accounts: evm_genesis_accounts,
+			treasury: root_key,
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
@@ -516,44 +548,12 @@ fn dev_genesis(
 					.collect::<Vec<_>>()
 			},
 		},
-		orml_nft: OrmlNFTConfig { tokens: vec![] },
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		treasury: Default::default(), // Main Treasury (Setheum Treasury)
-		shura_council: Default::default(),
-		shura_council_membership: ShuraCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		financial_council: Default::default(),
-		financial_council_membership: FinancialCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		technical_committee: Default::default(),
-		technical_committee_membership: TechnicalCommitteeMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		operator_membership_setheum: OperatorMembershipSetheumConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		evm: EVMConfig {
-			accounts: evm_genesis_accounts,
-			treasury: root_key,
-		},
+		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
 }
 
@@ -605,6 +605,33 @@ fn testnet_genesis(
 		indices: IndicesConfig { indices: vec![] },
 		balances: BalancesConfig { balances },
 		sudo: SudoConfig { key: root_key.clone() },
+		shura_council: Default::default(),
+		shura_council_membership: ShuraCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		financial_council: Default::default(),
+		financial_council_membership: FinancialCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		technical_committee: Default::default(),
+		technical_committee_membership: TechnicalCommitteeMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		operator_membership_setheum: OperatorMembershipSetheumConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
 		session: SessionConfig {
 			keys: initial_authorities
 				.iter()
@@ -634,19 +661,24 @@ fn testnet_genesis(
 		grandpa: Default::default(),
 		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 		im_online: Default::default(),
+		treasury: Default::default(), // Main Treasury (Setheum Treasury)
 		tokens: TokensConfig {
 			balances: endowed_accounts
 				.iter()
 				.flat_map(|x| {
 					vec![
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), initial_balance),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), initial_balance),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), 100_000 * dollar(SETM)),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), 100_000 * dollar(SERP)),
+						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), 100_000 * dollar(DNAR)),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), 100_000 * dollar(SETR)),
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), 100_000 * dollar(SETUSD))
 					]
 				})
 				.collect(),
+		},
+		evm: EVMConfig {
+			accounts: evm_genesis_accounts,
+			treasury: root_key,
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
@@ -714,44 +746,12 @@ fn testnet_genesis(
 					.collect::<Vec<_>>()
 			},
 		},
-		orml_nft: OrmlNFTConfig { tokens: vec![] },
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		treasury: Default::default(), // Main Treasury (Setheum Treasury)
-		shura_council: Default::default(),
-		shura_council_membership: ShuraCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		financial_council: Default::default(),
-		financial_council_membership: FinancialCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		technical_committee: Default::default(),
-		technical_committee_membership: TechnicalCommitteeMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		operator_membership_setheum: OperatorMembershipSetheumConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		evm: EVMConfig {
-			accounts: evm_genesis_accounts,
-			treasury: root_key,
-		},
+		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
 }
 
@@ -840,6 +840,33 @@ fn mainnet_genesis(
 		indices: IndicesConfig { indices: vec![] },
 		balances: BalancesConfig { balances },
 		sudo: SudoConfig { key: root_key.clone() },
+		shura_council: Default::default(),
+		shura_council_membership: ShuraCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		financial_council: Default::default(),
+		financial_council_membership: FinancialCouncilMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		technical_committee: Default::default(),
+		technical_committee_membership: TechnicalCommitteeMembershipConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
+		operator_membership_setheum: OperatorMembershipSetheumConfig {
+			members: vec![
+				(root_key.clone()), 		// Setheum Foundation
+			],
+			phantom: Default::default(),
+		},
 		session: SessionConfig {
 			keys: initial_authorities
 				.iter()
@@ -869,6 +896,7 @@ fn mainnet_genesis(
 		grandpa: Default::default(),
 		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 		im_online: Default::default(),
+		treasury: Default::default(), // Setheum Treasury
 		tokens: TokensConfig {
 			balances:
 				vec![
@@ -905,6 +933,10 @@ fn mainnet_genesis(
 					(labs.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_team_alloc),
 					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_advisors_n_partners_alloc),
 				]
+		},
+		evm: EVMConfig {
+			accounts: evm_genesis_accounts,
+			treasury: root_key,
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
@@ -972,44 +1004,12 @@ fn mainnet_genesis(
 					.collect::<Vec<_>>()
 			},
 		},
-		orml_nft: OrmlNFTConfig { tokens: vec![] },
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		treasury: Default::default(), // Setheum Treasury
-		shura_council: Default::default(),
-		shura_council_membership: ShuraCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		financial_council: Default::default(),
-		financial_council_membership: FinancialCouncilMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		technical_committee: Default::default(),
-		technical_committee_membership: TechnicalCommitteeMembershipConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		operator_membership_setheum: OperatorMembershipSetheumConfig {
-			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
-			],
-			phantom: Default::default(),
-		},
-		evm: EVMConfig {
-			accounts: evm_genesis_accounts,
-			treasury: root_key,
-		},
+		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
 }
 
