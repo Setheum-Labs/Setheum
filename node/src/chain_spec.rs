@@ -520,27 +520,7 @@ fn dev_genesis(
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![(
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				vec![
-					(
-						TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
-						(20 * dollar(SETUSD), 200 * dollar(SETM)),
-					),
-					(
-						TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
-						(10 * dollar(SETUSD), 20 * dollar(SERP)),
-					),
-					(
-						TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-						(9 * dollar(SETUSD), 10 * dollar(DNAR)),
-					),
-					(
-						TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
-						(200 * dollar(SETUSD), 100 * dollar(SETR)),
-					),
-				],
-			)],
+			initial_added_liquidity_pools: vec![],
 		},
 		treasury: Default::default(), // Main Treasury (Setheum Treasury)
 		shura_council: Default::default(),
