@@ -600,6 +600,7 @@ parameter_type_with_key! {
 parameter_types! {
 	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
 	pub CDPTreasuryAccount: AccountId = CDPTreasuryPalletId::get().into_account();
+	// pub SerpTreasuryAccount: AccountId = SerpTreasuryPalletId::get().into_account();
 }
 
 impl orml_tokens::Config for Runtime {
@@ -1954,14 +1955,14 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, auction_manager, benchmarking::auction_manager);
 			orml_list_benchmark!(list, extra, cdp_engine, benchmarking::cdp_engine);
 			// orml_list_benchmark!(list, extra, emergency_shutdown, benchmarking::emergency_shutdown);
-			// orml_list_benchmark!(list, extra, module_evm, benchmarking::evm);
+			orml_list_benchmark!(list, extra, module_evm, benchmarking::evm);
 			orml_list_benchmark!(list, extra, serp_setmint, benchmarking::serp_setmint);
 			orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
 			orml_list_benchmark!(list, extra, cdp_treasury, benchmarking::cdp_treasury);
 			orml_list_benchmark!(list, extra, module_transaction_pause, benchmarking::transaction_pause);
 			orml_list_benchmark!(list, extra, module_transaction_payment, benchmarking::transaction_payment);
 			orml_list_benchmark!(list, extra, module_prices, benchmarking::prices);
-			// orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
+			orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
 			orml_list_benchmark!(list, extra, module_currencies, benchmarking::currencies);
 
 			orml_list_benchmark!(list, extra, orml_tokens, benchmarking::tokens);
@@ -2008,14 +2009,14 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);
 			orml_add_benchmark!(params, batches, cdp_engine, benchmarking::cdp_engine);
 			// orml_add_benchmark!(params, batches, emergency_shutdown, benchmarking::emergency_shutdown);
-			// orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
+			orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
 			orml_add_benchmark!(params, batches, serp_setmint, benchmarking::serp_setmint);
 			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			orml_add_benchmark!(params, batches, cdp_treasury, benchmarking::cdp_treasury);
 			orml_add_benchmark!(params, batches, module_transaction_pause, benchmarking::transaction_pause);
 			orml_add_benchmark!(params, batches, module_transaction_payment, benchmarking::transaction_payment);
 			orml_add_benchmark!(params, batches, module_prices, benchmarking::prices);
-			// orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
+			orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
 			orml_add_benchmark!(params, batches, module_currencies, benchmarking::currencies);
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);

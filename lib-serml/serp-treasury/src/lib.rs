@@ -197,6 +197,8 @@ pub mod module {
 		CashDropToVault(Balance, CurrencyId),
 		/// Stable Currency Inflation Rate Updated
 		StableCurrencyInflationRateUpdated(CurrencyId, Balance),
+		/// SERP-TES is Triggered
+		SerpTesNow(),
 		/// Stable Currency Inflation Rate Delivered
 		InflationDelivery(CurrencyId, Balance),
 	}
@@ -365,6 +367,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			}
 			_ => {}
 		}
+		Self::deposit_event(Event::SerpTesNow());
 		Ok(())
 	}
 
@@ -376,8 +379,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let treasury_account = T::SetheumTreasuryAccountId::get();
 
 		for currency_id in T::StableCurrencyIds::get() {
-
-
 			// Amounts are 20% of the inflation rate amount for each distro.
 			let two: Balance = 2;
 			let inflation_amount = Self::stable_currency_inflation_rate(currency_id);
