@@ -24,7 +24,10 @@
 /// Time and blocks.
 pub mod time {
 	use primitives::{Balance, BlockNumber, Moment};
-	use runtime_common::{dollar, millicent, SETM};
+	use runtime_common::{
+		// dollar,
+		// millicent,
+		SETM};
 
 	pub const SECS_PER_BLOCK: Moment = 2; // 2 seconds blocktime
 	pub const MILLISECS_PER_BLOCK: Moment = SECS_PER_BLOCK * 1000;
@@ -52,7 +55,8 @@ pub mod time {
 	};
 	
 	pub fn deposit(items: u32, bytes: u32) -> Balance {
-		items as Balance * 2 * dollar(SETM) + (bytes as Balance) * 10 * millicent(SETM)
+		// 2_000_000_000_000_000_000 = 2 dollars; 100_000_000_000_000 = 10 millicents;
+		items as Balance * 2_000_000_000_000_000_000 + (bytes as Balance) * 100_000_000_000_000
 	}
 }
 
