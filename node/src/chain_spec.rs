@@ -40,8 +40,8 @@ use setheum_runtime::{
 	CdpEngineConfig,
 
 	//
+	DexConfig, EnabledTradingPairs,
 	TokenSymbol, TokensConfig, OrmlNFTConfig,
-	DexConfig, EnabledTradingPairs, TradingPair,
 	NativeTokenExistentialDeposit, MaxNativeTokenExistentialDeposit,
 	//
 	SETM, SERP, DNAR, SETR, SETUSD,
@@ -551,27 +551,7 @@ fn dev_genesis(
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![(
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				vec![
-					(
-						TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
-						(2000 * 1_000_000_000_000_000_000, 200 * 1_000_000_000_000_000_000),
-					),
-					(
-						TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
-						(10 * 1_000_000_000_000_000_000, 20 * 1_000_000_000_000_000_000),
-					),
-					(
-						TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-						(9 * 1_000_000_000_000_000_000, 10 * 1_000_000_000_000_000_000),
-					),
-					(
-						TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
-						(200 * 1_000_000_000_000_000_000, 100 * 1_000_000_000_000_000_000),
-					),
-				],
-			)],
+			initial_added_liquidity_pools: vec![],
 		},
 		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
