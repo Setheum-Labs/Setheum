@@ -64,17 +64,17 @@ runtime_benchmarks! {
 		for i in 0 .. c {
 			let currency_id = currency_ids[i as usize];
 			values.push((currency_id, Price::one()));
-			set_balance(currency_id, &funder, 100 * dollar(currency_id));
-			CdpTreasury::deposit_collateral(&funder, currency_id, 100 * dollar(currency_id))?;
+			set_balance(currency_id, &funder, 100 * 1_000_000_000_000_000_000);
+			CdpTreasury::deposit_collateral(&funder, currency_id, 100 * 1_000_000_000_000_000_000)?;
 		}
 		feed_price(values)?;
 
-		CdpTreasury::issue_debit(&caller, 1_000 * dollar(STABLECOIN), true)?;
-		CdpTreasury::issue_debit(&funder, 1_000 * dollar(STABLECOIN), true)?;
+		CdpTreasury::issue_debit(&caller, 1_000 * 1_000_000_000_000_000_000, true)?;
+		CdpTreasury::issue_debit(&funder, 1_000 * 1_000_000_000_000_000_000, true)?;
 
 		EmergencyShutdown::emergency_shutdown(RawOrigin::Root.into())?;
 		EmergencyShutdown::open_collateral_refund(RawOrigin::Root.into())?;
-	}: _(RawOrigin::Signed(caller),  1_000 * dollar(STABLECOIN))
+	}: _(RawOrigin::Signed(caller),  1_000 * 1_000_000_000_000_000_000)
 }
 
 #[cfg(test)]
