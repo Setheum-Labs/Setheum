@@ -371,7 +371,7 @@ fn dev_genesis(
 	let evm_genesis_accounts = evm_genesis();
 
 	let initial_balance: u128 = 100_000_000_000_000_000_000_000; // 100,000 SETM
-	let initial_staking: u128 =   100_000_000_000_000_000_000_000; // 100,000 SETM
+	let initial_staking: u128 = 100_000_000_000_000_000_000_000; // 100,000 SETM
 
 	let balances = initial_authorities
 		.iter()
@@ -469,10 +469,10 @@ fn dev_genesis(
 				.iter()
 				.flat_map(|x| {
 					vec![
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), 100_000_000_000_000_000_000_000), // 100,000 SETM
-						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), 100_000_000_000_000_000_000_000), // 100,000 SERP
-						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), 100_000_000_000_000_000_000_000), // 100,000 DNAR
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), 100_000_000_000_000_000_000_000), // 100,000 SETR
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), 100_000_000_000_000_000_000_000),  // 100,000 SETM
+						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), 100_000_000_000_000_000_000_000),  // 100,000 SERP
+						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), 100_000_000_000_000_000_000_000),  // 100,000 DNAR
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), 100_000_000_000_000_000_000_000),  // 100,000 SETR
 						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), 100_000_000_000_000_000_000_000) // 100,000 SETUSD
 					]
 				})
@@ -484,8 +484,8 @@ fn dev_genesis(
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 50_000 * 1_000_000_000_000_000_000), // (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 100_000 * 1_000_000_000_000_000_000), // (currency_id, inflation rate of a setcurrency)
+				(SETR, 50_000 * 1_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
+				(SETUSD, 100_000 * 1_000_000_000_000_000_000),  // (currency_id, inflation rate of a setcurrency)
 			],
 		},
 		cdp_treasury: CdpTreasuryConfig {
@@ -503,28 +503,28 @@ fn dev_genesis(
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					SERP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					DNAR,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					SETR,
 					Some(FixedU128::saturating_from_rational(103, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
-					33_000_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					33_000_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 			],
 		},
@@ -569,7 +569,7 @@ fn testnet_genesis(
 	let evm_genesis_accounts = evm_genesis();
 
 	let  initial_balance: u128 = 100_000 * 1_000_000_000_000_000_000;
-	let  initial_staking: u128 =   100_000 * 1_000_000_000_000_000_000;
+	let  initial_staking: u128 = 100_000 * 1_000_000_000_000_000_000;
 
 	let balances = initial_authorities
 		.iter()
@@ -682,8 +682,8 @@ fn testnet_genesis(
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 50_000 * 1_000_000_000_000_000_000), // (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 100_000 * 1_000_000_000_000_000_000), // (currency_id, inflation rate of a setcurrency)
+				(SETR, 50_000 * 1_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
+				(SETUSD, 100_000 * 1_000_000_000_000_000_000),  // (currency_id, inflation rate of a setcurrency)
 			],
 		},
 		cdp_treasury: CdpTreasuryConfig {
@@ -701,28 +701,28 @@ fn testnet_genesis(
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					SERP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					DNAR,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					SETR,
 					Some(FixedU128::saturating_from_rational(103, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
-					33_000_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					33_000_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 			],
 		},
@@ -940,8 +940,8 @@ fn mainnet_genesis(
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 50_000 * 1_000_000_000_000_000_000), // (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 100_000 * 1_000_000_000_000_000_000), // (currency_id, inflation rate of a setcurrency)
+				(SETR, 50_000 * 1_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
+				(SETUSD, 100_000 * 1_000_000_000_000_000_000),  // (currency_id, inflation rate of a setcurrency)
 			],
 		},
 		cdp_treasury: CdpTreasuryConfig {
@@ -959,28 +959,28 @@ fn mainnet_genesis(
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					SERP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					DNAR,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 				(
 					SETR,
 					Some(FixedU128::saturating_from_rational(103, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
-					33_000_000 * 1_000_000_000_000_000_000,                         // maximum debit value in SETUSD (cap)
+					33_000_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 			],
 		},

@@ -1524,46 +1524,54 @@ construct_runtime!(
 	}
 );
 
-// Storage migrations required for runtime upgrade v7 -> v8
-/// Babe config migration
-impl pallet_babe::migrations::BabePalletPrefix for Runtime {
-	fn pallet_prefix() -> &'static str {
-		"Babe"
+pub struct OnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for OnRuntimeUpgrade {
+	fn on_runtime_upgrade() -> u64 {
+		// no migration
+		0
 	}
 }
 
-pub struct BabeEpochConfigMigrations;
-impl frame_support::traits::OnRuntimeUpgrade for BabeEpochConfigMigrations {
-	fn on_runtime_upgrade() -> Weight {
-		log::info!("Migrating Babe pallet - adding epoch config");
-		pallet_babe::migrations::add_epoch_configuration::<Runtime>(
-			BABE_GENESIS_EPOCH_CONFIG
-		)
-	}
-}
+// // Storage migrations required for runtime upgrade v7 -> v8
+// /// Babe config migration
+// impl pallet_babe::migrations::BabePalletPrefix for Runtime {
+// 	fn pallet_prefix() -> &'static str {
+// 		"Babe"
+// 	}
+// }
 
-/// Migrate from `PalletVersion` to the new `StorageVersion`
-pub struct MigratePalletVersionToStorageVersion;
-impl frame_support::traits::OnRuntimeUpgrade for MigratePalletVersionToStorageVersion {
-	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-		log::info!("Migrating PalletVersion to new StorageVersion pattern");
-		frame_support::migrations::migrate_from_pallet_version_to_storage_version::<AllPalletsWithSystem>(
-				&RocksDbWeight::get()
-		)
-	}
-}
+// pub struct BabeEpochConfigMigrations;
+// impl frame_support::traits::OnRuntimeUpgrade for BabeEpochConfigMigrations {
+// 	fn on_runtime_upgrade() -> Weight {
+// 		log::info!("Migrating Babe pallet - adding epoch config");
+// 		pallet_babe::migrations::add_epoch_configuration::<Runtime>(
+// 			BABE_GENESIS_EPOCH_CONFIG
+// 		)
+// 	}
+// }
 
-/// Migrate staking
-pub struct MigratePalletStakingV5toV7;
-impl frame_support::traits::OnRuntimeUpgrade for MigratePalletStakingV5toV7 {
-	fn on_runtime_upgrade() -> Weight {
-		log::info!("Migrating staking from V5 to V7");
-		let mut weight = 0;
-		weight += pallet_staking::migrations::v6::migrate::<Runtime>();
-		weight += pallet_staking::migrations::v7::migrate::<Runtime>();
-		weight
-	}
-}
+// /// Migrate from `PalletVersion` to the new `StorageVersion`
+// pub struct MigratePalletVersionToStorageVersion;
+// impl frame_support::traits::OnRuntimeUpgrade for MigratePalletVersionToStorageVersion {
+// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
+// 		log::info!("Migrating PalletVersion to new StorageVersion pattern");
+// 		frame_support::migrations::migrate_from_pallet_version_to_storage_version::<AllPalletsWithSystem>(
+// 				&RocksDbWeight::get()
+// 		)
+// 	}
+// }
+
+// /// Migrate staking
+// pub struct MigratePalletStakingV5toV7;
+// impl frame_support::traits::OnRuntimeUpgrade for MigratePalletStakingV5toV7 {
+// 	fn on_runtime_upgrade() -> Weight {
+// 		log::info!("Migrating staking from V5 to V7");
+// 		let mut weight = 0;
+// 		weight += pallet_staking::migrations::v6::migrate::<Runtime>();
+// 		weight += pallet_staking::migrations::v7::migrate::<Runtime>();
+// 		weight
+// 	}
+// }
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, RuntimeDebug)]
 pub struct ConvertEthereumTx;
@@ -1644,7 +1652,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPallets,
-	(BabeEpochConfigMigrations, MigratePalletVersionToStorageVersion, MigratePalletStakingV5toV7)
+	OnRuntimeUpgrade,
 >;
 
 impl frame_system::offchain::SigningTypes for Runtime {
