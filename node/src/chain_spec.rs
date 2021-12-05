@@ -530,10 +530,10 @@ fn dev_genesis(
 		},
 		air_drop: AirDropConfig {
 			airdrop_accounts: {
-				let setter_airdrop_accounts_json = &include_bytes!("../../resources/mainnet-airdrop-SETR.json")[..];
+				let setter_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETR.json")[..];
 				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/mainnet-airdrop-SETUSD.json")[..];
+				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETUSD.json")[..];
 				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
 
@@ -728,10 +728,10 @@ fn testnet_genesis(
 		},
 		air_drop: AirDropConfig {
 			airdrop_accounts: {
-				let setter_airdrop_accounts_json = &include_bytes!("../../resources/mainnet-airdrop-SETR.json")[..];
+				let setter_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETR.json")[..];
 				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/mainnet-airdrop-SETUSD.json")[..];
+				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETUSD.json")[..];
 				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
 					serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
 
