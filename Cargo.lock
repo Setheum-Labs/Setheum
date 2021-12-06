@@ -108,18 +108,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "airdrop-json"
-version = "0.9.80"
-dependencies = [
- "frame-system",
- "module-support",
- "serde",
- "serde_json",
- "setheum-primitives",
- "sp-runtime",
-]
-
-[[package]]
 name = "ansi_term"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
