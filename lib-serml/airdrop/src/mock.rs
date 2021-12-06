@@ -24,18 +24,23 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, parameter_types};
+use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
+use frame_system::EnsureSignedBy;
+use orml_traits::parameter_type_with_key;
+use primitives::{Amount, TokenSymbol};
 use sp_core::H256;
-use sp_runtime::{testing::Header, traits::IdentityLookup};
+use sp_runtime::{
+	testing::Header,
+	traits::{IdentityLookup},
+};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
 pub const ALICE: AccountId = 0;
-pub const BOB: AccountId = 1;
-pub const CHARLIE: AccountId = 2;
-pub const SETR: AirDropCurrencyId = AirDropCurrencyId::SETR;
-pub const SETUSD: AirDropCurrencyId = AirDropCurrencyId::SETUSD;
+pub const BOB: AccountId = 2;
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
 mod airdrop {
 	pub use super::super::*;
@@ -71,8 +76,43 @@ impl frame_system::Config for Runtime {
 	type OnSetCode = ();
 }
 
+parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+
+impl orml_tokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = ();
+	type MaxLocks = ();
+	type DustRemovalWhitelist = ();
+}
+
+parameter_types! {
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+	];
+	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
+	pub const GetSetUSDId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+}
+
+ord_parameter_types! {
+	pub const One: AccountId = 1;}
+
 impl Config for Runtime {
 	type Event = Event;
+	type Currency = Tokens;
+	type StableCurrencyIds = StableCurrencyIds;
+	type SetterCurrencyId = SetterCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
+	type DropOrigin = EnsureSignedBy<One, AccountId>;
 }
 
 pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
@@ -84,32 +124,25 @@ construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		AirDrop: airdrop::{Pallet, Call, Storage, Event<T>, Config<T>},
+		System: frame_system::{Pallet, Storage, Call, Config, Event<T>},
+		AirDrop: airdrop::{Pallet, Storage, Call, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>},
 	}
 );
 
-pub type Airdrop = Pallet<Runtime>;
-
-pub struct ExtBuilder();
+pub struct ExtBuilder {
+	_balances: Vec<(AccountId, CurrencyId, Balance)>,
+}
 
 impl Default for ExtBuilder {
 	fn default() -> Self {
-		Self()
-	}
-}
-
-impl ExtBuilder {
-	pub fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default()
-			.build_storage::<Runtime>()
-			.unwrap();
-
-		airdrop::GenesisConfig::<Runtime> {
-			airdrop_accounts: vec![(CHARLIE, SETUSD, 100), (CHARLIE, SETUSD, 50), (CHARLIE, SETR, 80)],
+		Self {
+			_balances: vec![
+				(ALICE, SETR, 1000),
+				(BOB, SETR, 1000),
+				(ALICE, SETUSD, 1000),
+				(BOB, SETUSD, 1000),
+			],
 		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-		t.into()
 	}
 }

@@ -810,6 +810,11 @@ impl module_dex::Config for Runtime {
 
 impl module_airdrop::Config for Runtime {
 	type Event = Event;
+	type Currency = Currencies;
+	type StableCurrencyIds = StableCurrencyIds;
+	type SetterCurrencyId = SetterCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
+	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
 }
 
 parameter_types! {
@@ -1490,7 +1495,7 @@ construct_runtime!(
 
 		// Extras
 		NFT: module_nft::{Pallet, Call, Event<T>} = 47,
-		AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>, Config<T>} = 48,
+		AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>} = 48,
 
 		// Account lookup
 		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 49,

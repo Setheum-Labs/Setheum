@@ -19,80 +19,99 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+//! # Airdrop Module
+//!
+//! ## Overview
+//!
+//! This module creates airdrops and distributes airdrops to the -
+//! acccounts in the airdrops from an update origin. 
+//! The module for distributing Setheum Airdrops,
+//! it will be used for the Setheum IAE (Initial Airdrop Event).
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{decl_event, decl_module, decl_storage, transactional};
-use frame_system::{self as system, ensure_root};
-use primitives::{AirDropCurrencyId, Balance};
-use sp_runtime::traits::StaticLookup;
+use frame_support::{pallet_prelude::*, transactional, traits::Get};
+use frame_system::pallet_prelude::*;
+use orml_traits::MultiCurrency;
+use primitives::{AirDropCurrencyId, Balance, CurrencyId};
 
 mod mock;
-mod tests;
 
-pub trait Config: system::Config {
-	type Event: From<Event<Self>> + Into<<Self as system::Config>::Event>;
-}
+pub use module::*;
 
-decl_storage! {
-	trait Store for Module<T: Config> as AirDrop {
-		AirDrops get(fn airdrops): double_map hasher(twox_64_concat) T::AccountId, hasher(twox_64_concat) AirDropCurrencyId => Balance;
+#[frame_support::pallet]
+pub mod module {
+	use super::*;
+
+	#[pallet::config]
+	pub trait Config: frame_system::Config {
+		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+		/// Currency provide the total insurance of LPToken.
+		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
+
+		#[pallet::constant]
+		/// Setter (SETR) currency id
+		/// 
+		type SetterCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The SetUSD currency id, it should be SETUSD in Setheum.
+		type GetSetUSDId: Get<CurrencyId>;
+
+		/// The origin which may lock and unlock prices feed to system.
+		type DropOrigin: EnsureOrigin<Self::Origin>;
 	}
 
-	add_extra_genesis {
-		config(airdrop_accounts): Vec<(T::AccountId, AirDropCurrencyId, Balance)>;
-
-		build(|config: &GenesisConfig<T>| {
-			config.airdrop_accounts.iter().for_each(|(account_id, airdrop_currency_id, initial_balance)| {
-				<AirDrops<T>>::mutate(account_id, airdrop_currency_id, | amount | *amount += *initial_balance)
-			})
-		})
+	#[pallet::error]
+	pub enum Error<T> {
+		/// Invalid AirDrop Currency Type
+		InvalidCurrencyType,
 	}
-}
 
-decl_event!(
-	pub enum Event<T> where
-		<T as system::Config>::AccountId,
-		AirDropCurrencyId = AirDropCurrencyId,
-		Balance = Balance,
-	{
-		/// \[to, currency_id, amount\]
-		Airdrop(AccountId, AirDropCurrencyId, Balance),
-		/// \[to, currency_id, amount\]
-		UpdateAirdrop(AccountId, AirDropCurrencyId, Balance),
+	#[pallet::event]
+	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
+	pub enum Event<T: Config> {
+		/// Drop Airdrop \[currency_id\]
+		Airdrop(AirDropCurrencyId)
 	}
-);
 
-decl_module! {
-	pub struct Module<T: Config> for enum Call where origin: T::Origin {
-		fn deposit_event() = default;
+	#[pallet::pallet]
+	pub struct Pallet<T>(_);
 
-		#[weight = 10_000]
+	#[pallet::hooks]
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
+
+	#[pallet::call]
+	impl<T: Config> Pallet<T> {
+		/// Update the storeed Airdrop details in the AirDrops storage map.
+		/// Once an Airdrop is delivered, the entire AirDrops storage map will be cleared.
+		///
+		/// The dispatch origin of this call must be `DropOrigin`.
+		///
+		/// - `currency_id`: `CurrencyId` currency type.
+		/// - `amount`: airdrop amount.
+		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
 		#[transactional]
 		pub fn airdrop(
-			origin,
-			to: <T::Lookup as StaticLookup>::Source,
+			origin: OriginFor<T>,
 			currency_id: AirDropCurrencyId,
-			amount: Balance,
-		) {
-			ensure_root(origin)?;
-			let to = T::Lookup::lookup(to)?;
-			<AirDrops<T>>::mutate(&to, currency_id, |balance| *balance += amount);
-			Self::deposit_event(RawEvent::Airdrop(to, currency_id, amount));
-		}
-
-		#[weight = 10_000]
-		#[transactional]
-		pub fn update_airdrop(
-			origin,
-			to: <T::Lookup as StaticLookup>::Source,
-			currency_id: AirDropCurrencyId,
-			amount: Balance,
-		) {
-			ensure_root(origin)?;
-			let to = T::Lookup::lookup(to)?;
-			<AirDrops<T>>::insert(&to, currency_id, amount);
-			Self::deposit_event(RawEvent::UpdateAirdrop(to, currency_id, amount));
+			beneficiaries: Vec<(T::AccountId, Balance)>,
+		) -> DispatchResult {
+			T::DropOrigin::ensure_origin(origin)?;
+			if currency_id == AirDropCurrencyId::SETR {
+				for (account, balance) in beneficiaries {
+					T::Currency::deposit(T::SetterCurrencyId::get(), &account, balance)?;
+				}
+			} else if currency_id == AirDropCurrencyId::SETUSD {
+				for (account, balance) in beneficiaries {
+					T::Currency::deposit(T::GetSetUSDId::get(), &account, balance)?;
+				}
+			}
+			
+			Self::deposit_event(Event::Airdrop(currency_id));
+			Ok(())
 		}
 	}
 }
