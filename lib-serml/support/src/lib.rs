@@ -312,16 +312,6 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		target_amount: Self::Balance,
 	);
 
-	/// When Setter gets SerpUp
-	fn swap_exact_setter_to_dinar(
-		supply_amount: Self::Balance,
-	);
-
-	/// When Setter gets SerpUp
-	fn swap_exact_setter_to_serp(
-		supply_amount: Self::Balance,
-	);
-
 	/// When SetCurrency gets SerpUp
 	fn swap_exact_setcurrency_to_dinar(
 		currency_id: Self::CurrencyId,

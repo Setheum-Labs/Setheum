@@ -821,11 +821,17 @@ parameter_types! {
 	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETUSD, SETM],
 		vec![SETR, SETUSD, SETM],
+		vec![SETM, SETUSD, SETR],
 		vec![SETUSD, SERP],
+		vec![SERP, SETUSD],
 		vec![SETR, SETUSD, SERP],
+		vec![SERP, SETUSD, SETR],
 		vec![SETUSD, DNAR],
+		vec![DNAR, SETUSD],
 		vec![SETR, SETUSD, DNAR],
+		vec![DNAR, SETUSD, SETR],
 		vec![SETUSD, SETR],
+		vec![SETR, SETUSD],
 	];
 	pub StableCurrencyInflationPeriod: BlockNumber = 10 * MINUTES;
 	pub SetterMinimumClaimableTransferAmounts: Balance = 1 * 1_000_000_000_000_000_000;
