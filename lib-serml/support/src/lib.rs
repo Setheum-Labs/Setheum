@@ -24,10 +24,7 @@
 
 use codec::{Decode, Encode, FullCodec};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
-use primitives::{
-	evm::{CallInfo, EvmAddress},
-	CurrencyId,
-};
+use primitives::{CurrencyId, evm::{CallInfo, EvmAddress}};
 use sp_core::H160;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, CheckedDiv, MaybeSerializeDeserialize},

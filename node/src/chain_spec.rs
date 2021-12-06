@@ -22,7 +22,7 @@
 use sp_core::{Pair, Public, sr25519, H160, Bytes};
 use setheum_runtime::{
 	//
-	AccountId, AirDropConfig, AirDropCurrencyId, CurrencyId,
+	AccountId, CurrencyId,
 	//
 	BabeConfig, BalancesConfig, GenesisConfig, SystemConfig,
 	SS58Prefix, opaque::SessionKeys, get_all_module_accounts,
@@ -528,26 +528,26 @@ fn dev_genesis(
 				),
 			],
 		},
-		air_drop: AirDropConfig {
-			airdrop_accounts: {
-				let setter_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETR.json")[..];
-				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETUSD.json")[..];
-				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
+		// air_drop: AirDropConfig {
+		// 	airdrop_accounts: {
+		// 		let setter_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETR.json")[..];
+		// 		let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
+		// 			serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
+		// 		let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETUSD.json")[..];
+		// 		let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
+		// 			serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
 
-				setter_airdrop_accounts
-					.iter()
-					.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
-					.chain(
-						setdollar_airdrop_accounts
-							.iter()
-							.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
-					)
-					.collect::<Vec<_>>()
-			},
-		},
+		// 		setter_airdrop_accounts
+		// 			.iter()
+		// 			.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
+		// 			.chain(
+		// 				setdollar_airdrop_accounts
+		// 					.iter()
+		// 					.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
+		// 			)
+		// 			.collect::<Vec<_>>()
+		// 	},
+		// },
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
@@ -725,26 +725,6 @@ fn testnet_genesis(
 					33_000_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 			],
-		},
-		air_drop: AirDropConfig {
-			airdrop_accounts: {
-				let setter_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETR.json")[..];
-				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETUSD.json")[..];
-				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
-
-				setter_airdrop_accounts
-					.iter()
-					.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
-					.chain(
-						setdollar_airdrop_accounts
-							.iter()
-							.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
-					)
-					.collect::<Vec<_>>()
-			},
 		},
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
@@ -983,26 +963,6 @@ fn mainnet_genesis(
 					33_000_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 			],
-		},
-		air_drop: AirDropConfig {
-			airdrop_accounts: {
-				let setter_airdrop_accounts_json = &include_bytes!("../../resources/mainnet-airdrop-SETR.json")[..];
-				let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-				let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/mainnet-airdrop-SETUSD.json")[..];
-				let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
-					serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
-
-				setter_airdrop_accounts
-					.iter()
-					.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
-					.chain(
-						setdollar_airdrop_accounts
-							.iter()
-							.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
-					)
-					.collect::<Vec<_>>()
-			},
 		},
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],

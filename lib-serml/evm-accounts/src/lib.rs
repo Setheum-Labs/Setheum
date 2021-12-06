@@ -252,7 +252,7 @@ impl<T: Config> AddressMapping<T::AccountId> for EvmAddressMapping<T>
 where
 	T::AccountId: IsType<AccountId32>,
 {
-	// Returns the AccountId used go generate the given EvmAddress.
+	// Returns the AccountId used to generate the given EvmAddress.
 	fn get_account_id(address: &EvmAddress) -> T::AccountId {
 		if let Some(acc) = Accounts::<T>::get(address) {
 			acc
