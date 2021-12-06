@@ -370,8 +370,8 @@ fn dev_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let initial_balance: u128 = 100_000_000_000_000_000_000_000; // 100,000 SETM
-	let initial_staking: u128 = 100_000_000_000_000_000_000_000; // 100,000 SETM
+	let initial_balance: u128 = 25_000_000_000_000_000_000_000; // 25,000 SETM
+	let initial_staking: u128 = 25_000_000_000_000_000_000_000; // 25,000 SETM
 
 	let balances = initial_authorities
 		.iter()
@@ -469,11 +469,11 @@ fn dev_genesis(
 				.iter()
 				.flat_map(|x| {
 					vec![
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), 100_000_000_000_000_000_000_000),  // 100,000 SETM
-						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), 100_000_000_000_000_000_000_000),  // 100,000 SERP
-						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), 100_000_000_000_000_000_000_000),  // 100,000 DNAR
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), 100_000_000_000_000_000_000_000),  // 100,000 SETR
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), 100_000_000_000_000_000_000_000) // 100,000 SETUSD
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), 1_000_000_000_000_000_000_000_000),  // 1,000,000 SETM
+						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), 1_000_000_000_000_000_000_000_000),  // 1,000,000 SERP
+						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), 1_000_000_000_000_000_000_000_000),  // 1,000,000 DNAR
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), 1_000_000_000_000_000_000_000_000),  // 1,000,000 SETR
+						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), 1_000_000_000_000_000_000_000_000) // 1,000,000 SETUSD
 					]
 				})
 				.collect(),
