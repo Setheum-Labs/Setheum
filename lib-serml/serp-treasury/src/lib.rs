@@ -117,7 +117,7 @@ pub mod module {
 		type SetheumTreasuryAccountId: Get<Self::AccountId>;
 
 		/// Default fee swap path list
-		type DefaultSwapPathList: Get<Vec<Vec<CurrencyId>>>;
+		type DefaultSwapParitalPathList: Get<Vec<Vec<CurrencyId>>>;
 
 		/// When swap with DEX, the acceptable max slippage for the price from oracle.
 		type MaxSwapSlippageCompareToOracle: Get<Ratio>;
@@ -211,7 +211,7 @@ pub mod module {
 		SerplusSwapExactStableToSetter(CurrencyId, CurrencyId, Balance),
 		SerplusSwapExactStableToNative(CurrencyId, CurrencyId, Balance),
 		SerpSwapExactStableToNative(CurrencyId, CurrencyId, Balance),
-		SerpSwapExactStableToSerp(CurrencyId, CurrencyId, Balance),
+		SerpSwapExactStableToSerpToken(CurrencyId, CurrencyId, Balance)
 	}
 
 	/// Mapping to Minimum Claimable Transfer.
@@ -692,12 +692,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 
 		// calculate the supply limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*setter_currency_id, dinar_currency_id)
+			T::PriceSource::get_relative_price(setter_currency_id, dinar_currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -712,9 +712,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+			// check currency_id and partial_path can form a valid swap path.
+			if partial_path_len > 0 && dinar_currency_id != partial_path[0] {
+				let mut swap_path = vec![dinar_currency_id, setter_currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -745,12 +745,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let serptoken_currency_id = T::GetSerpCurrencyId::get();
 		let setter_currency_id = T::SetterCurrencyId::get();
 		
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 
 		// calculate the supply limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*setter_currency_id, serptoken_currency_id)
+			T::PriceSource::get_relative_price(setter_currency_id, serptoken_currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -765,9 +765,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+			// check currency_id and partial_path can form a valid swap path.
+			if partial_path_len > 0 && serptoken_currency_id != partial_path[0] {
+				let mut swap_path = vec![serptoken_currency_id, setter_currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -798,12 +798,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 		
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 
 		// calculate the supply limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*currency_id, dinar_currency_id)
+			T::PriceSource::get_relative_price(currency_id, dinar_currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -818,9 +818,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+			// check currency_id and partial_path can form a valid swap path.
+			if partial_path_len > 0 && dinar_currency_id != partial_path[0] {
+				let mut swap_path = vec![dinar_currency_id, currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -855,12 +855,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 
 		// calculate the supply limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*currency_id, setter_currency_id)
+			T::PriceSource::get_relative_price(currency_id, setter_currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -875,9 +875,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+			// check currency_id and partial_path can form a valid swap path.
+			if partial_path_len > 0 && setter_currency_id != partial_path[0] {
+				let mut swap_path = vec![setter_currency_id, currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -912,12 +912,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let serp_currency_id  = T::GetSerpCurrencyId::get();
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 
 		// calculate the supply limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*currency_id, serp_currency_id)
+			T::PriceSource::get_relative_price(currency_id, serp_currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -932,9 +932,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+			// check currency_id and partial_path can form a valid swap path.
+			if partial_path_len > 0 && serp_currency_id != partial_path[0] {
+				let mut swap_path = vec![serp_currency_id, currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -969,12 +969,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		let dinar_currency_id = T::GetDinarCurrencyId::get();
 		let currency_id = T::SetterCurrencyId::get();
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 		
 		// calculate the target limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*dinar_currency_id, currency_id)
+			T::PriceSource::get_relative_price(dinar_currency_id, currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -989,9 +989,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
+			// check currency_id and partial_path can form a valid swap path.
 			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+				let mut swap_path = vec![currency_id, dinar_currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -1026,12 +1026,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 		
 		// calculate the target limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*setter_currency_id, currency_id)
+			T::PriceSource::get_relative_price(setter_currency_id, currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -1046,9 +1046,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
+			// check currency_id and partial_path can form a valid swap path.
 			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+				let mut swap_path = vec![currency_id, setter_currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -1083,12 +1083,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let setter_currency_id = T::SetterCurrencyId::get();
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 		
 		// calculate the target limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*setter_currency_id, currency_id)
+			T::PriceSource::get_relative_price(setter_currency_id, currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -1103,9 +1103,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
+			// check currency_id and partial_path can form a valid swap path.
 			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+				let mut swap_path = vec![currency_id, setter_currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -1140,12 +1140,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let setm_currency_id = T::GetNativeCurrencyId::get();
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 		
 		// calculate the target limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*setm_currency_id, currency_id)
+			T::PriceSource::get_relative_price(setm_currency_id, currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -1160,9 +1160,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
+			// check currency_id and partial_path can form a valid swap path.
 			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+				let mut swap_path = vec![currency_id, setm_currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -1197,12 +1197,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let native_currency_id = T::GetNativeCurrencyId::get();
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 		
 		// calculate the target limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*setm_currency_id, currency_id)
+			T::PriceSource::get_relative_price(native_currency_id, currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -1217,9 +1217,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
+			// check currency_id and partial_path can form a valid swap path.
 			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+				let mut swap_path = vec![currency_id, native_currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -1254,12 +1254,12 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 	) {
 		let serptoken_currency_id = T::GetSerpCurrencyId::get(); 
 
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapPathList::get();
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
 		
 		// calculate the target limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
 		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(*serptoken_currency_id, currency_id)
+			T::PriceSource::get_relative_price(serptoken_currency_id, currency_id)
 		{
 			Ratio::one()
 				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
@@ -1274,9 +1274,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		for partial_path in default_swap_parital_path_list {
 			let partial_path_len = partial_path.len();
 
-			// check collateral currency_id and partial_path can form a valid swap path.
+			// check currency_id and partial_path can form a valid swap path.
 			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id];
+				let mut swap_path = vec![currency_id, serptoken_currency_id];
 				swap_path.extend(partial_path);
 
 				if T::Currency::deposit(
@@ -1296,8 +1296,9 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpDinarForExactSetter(currency_id, serptoken_currency_id, supply_amount));
+		Self::deposit_event(Event::SerpSwapExactStableToSerpToken(currency_id, serptoken_currency_id, supply_amount));
 	}
+}
 
 #[cfg(feature = "std")]
 impl GenesisConfig {

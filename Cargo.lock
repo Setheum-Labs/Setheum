@@ -3873,8 +3873,6 @@ dependencies = [
  "orml-tokens",
  "orml-traits",
  "parity-scale-codec",
- "serde",
- "serde_json",
  "setheum-primitives",
  "sp-core",
  "sp-runtime",

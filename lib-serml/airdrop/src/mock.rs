@@ -109,7 +109,6 @@ ord_parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type StableCurrencyIds = StableCurrencyIds;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type DropOrigin = EnsureSignedBy<One, AccountId>;

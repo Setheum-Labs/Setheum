@@ -272,7 +272,10 @@ parameter_type_with_key! {
 
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
-	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETR, DNAR], vec![SETUSD, SETR, DNAR]];
+	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
+		vec![SETR, DNAR],
+		vec![SETUSD, SETR, DNAR]
+	];
 	pub const TradingPathLimit: u32 = 4;
 	pub StableCurrencyInflationPeriod: u64 = 5;
 	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
@@ -299,7 +302,7 @@ impl Config for Runtime {
 	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;
 	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
-	type DefaultSwapPathList = DefaultSwapPathList;
+	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
 	type Dex = MockDEX;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
