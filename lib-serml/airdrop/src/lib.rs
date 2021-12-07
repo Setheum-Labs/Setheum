@@ -35,6 +35,7 @@ use frame_support::{pallet_prelude::*, transactional, traits::Get};
 use frame_system::pallet_prelude::*;
 use orml_traits::MultiCurrency;
 use primitives::{AirDropCurrencyId, Balance, CurrencyId};
+use sp_std::vec::Vec;
 
 mod mock;
 

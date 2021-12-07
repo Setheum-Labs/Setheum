@@ -811,24 +811,30 @@ impl module_dex::Config for Runtime {
 impl module_airdrop::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
 }
 
 parameter_types! {
-	pub DefaultSwapPathList: Vec<Vec<CurrencyId>> = vec![
+	pub SerpDefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETUSD, SETM],
+		vec![SETM, SETUSD],
 		vec![SETR, SETUSD, SETM],
+		vec![SETR, SETM, SETUSD],
+		vec![SETM, SETR, SETUSD],
 		vec![SETM, SETUSD, SETR],
 		vec![SETUSD, SERP],
 		vec![SERP, SETUSD],
 		vec![SETR, SETUSD, SERP],
+		vec![SETR, SERP, SETUSD],
+		vec![SERP, SETR, SETUSD],
 		vec![SERP, SETUSD, SETR],
 		vec![SETUSD, DNAR],
 		vec![DNAR, SETUSD],
 		vec![SETR, SETUSD, DNAR],
+		vec![SETR, DNAR, SETUSD],
+		vec![DNAR, SETR, SETUSD],
 		vec![DNAR, SETUSD, SETR],
 		vec![SETUSD, SETR],
 		vec![SETR, SETUSD],
@@ -854,7 +860,7 @@ impl serp_treasury::Config for Runtime {
 	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccount;
 	type SetheumTreasuryAccountId = TreasuryAccount;
-	type DefaultSwapPathList = DefaultSwapPathList;
+	type DefaultSwapParitalPathList = SerpDefaultSwapParitalPathList;
 	type Dex = Dex;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type TradingPathLimit = TradingPathLimit;
