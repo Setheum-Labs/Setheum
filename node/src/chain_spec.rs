@@ -464,20 +464,7 @@ fn dev_genesis(
 		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 		im_online: Default::default(),
 		treasury: Default::default(), // Main Treasury (Setheum Treasury)
-		tokens: TokensConfig {
-			balances: endowed_accounts
-				.iter()
-				.flat_map(|x| {
-					vec![
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), 1_000_000_000_000_000_000_000_000),  // 1,000,000 SETM
-						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), 1_000_000_000_000_000_000_000_000),  // 1,000,000 SERP
-						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), 1_000_000_000_000_000_000_000_000),  // 1,000,000 DNAR
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), 1_000_000_000_000_000_000_000_000),  // 1,000,000 SETR
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), 1_000_000_000_000_000_000_000_000) // 1,000,000 SETUSD
-					]
-				})
-				.collect(),
-		},
+		tokens: TokensConfig { balances: vec![] },
 		evm: EVMConfig {
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
@@ -528,6 +515,12 @@ fn dev_genesis(
 				),
 			],
 		},
+		dex: DexConfig {
+			initial_listing_trading_pairs: vec![],
+			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
+			initial_added_liquidity_pools: vec![],
+		},
+		orml_nft: OrmlNFTConfig { tokens: vec![] },
 		// air_drop: AirDropConfig {
 		// 	airdrop_accounts: {
 		// 		let setter_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETR.json")[..];
@@ -548,12 +541,6 @@ fn dev_genesis(
 		// 			.collect::<Vec<_>>()
 		// 	},
 		// },
-		dex: DexConfig {
-			initial_listing_trading_pairs: vec![],
-			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![],
-		},
-		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
 }
 

@@ -37,7 +37,7 @@ use frame_system::pallet_prelude::*;
 use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
 use primitives::{Balance, CurrencyId};
 use sp_core::U256;
-use sp_runtime::FixedPointNumber;
+use sp_runtime::{FixedPointNumber, traits::CheckedDiv};
 use sp_std::{convert::TryInto, marker::PhantomData};
 use support::{CurrencyIdMapping, DEXManager, LockablePrice, Price, PriceProvider};
 
@@ -106,6 +106,10 @@ pub mod module {
 		LockPrice(CurrencyId, Price),
 		/// Unlock price. \[currency_id\]
 		UnlockPrice(CurrencyId),
+		/// Unlock price. \[relative_price\]
+		FetchPrice(CurrencyId, Option<Price>),
+		/// Unlock price. \[relative_price\]
+		RelativePrice(CurrencyId, CurrencyId, Option<Price>),
 	}
 
 	/// Mapping from currency id to it's locked price
@@ -187,6 +191,14 @@ impl<T: Config> Pallet<T> {
 		if let (Some(price), Some(adjustment_multiplier)) = (maybe_price, maybe_adjustment_multiplier) {
 			// return the price for 1 basic unit
 			Price::checked_from_rational(price.into_inner(), adjustment_multiplier)
+		} else {
+			None
+		}
+	}
+
+	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
+		if let (Some(base_price), Some(quote_price)) = (Self::access_price(base), Self::access_price(quote)) {
+			base_price.checked_div(&quote_price)
 		} else {
 			None
 		}

@@ -201,17 +201,17 @@ pub mod module {
 		SerpTesNow(),
 		/// Stable Currency Inflation Rate Delivered
 		InflationDelivery(CurrencyId, Balance),
-		SerpSwapDinarToExactSetter(CurrencyId, CurrencyId, Balance),
-		SerpSwapSerpToExactSetter(CurrencyId, CurrencyId, Balance),
-		SerpSwapDinarToExactStable(CurrencyId, CurrencyId, Balance),
-		SerpSwapSetterToExactSetDollar(CurrencyId, CurrencyId, Balance),
-		SerpSwapSerpToExactStable(CurrencyId, CurrencyId, Balance),
-		SerpSwapExactStableToDinar(CurrencyId, CurrencyId, Balance),
-		SerpSwapExactStableToSetter(CurrencyId, CurrencyId, Balance),
-		SerplusSwapExactStableToSetter(CurrencyId, CurrencyId, Balance),
-		SerplusSwapExactStableToNative(CurrencyId, CurrencyId, Balance),
-		SerpSwapExactStableToNative(CurrencyId, CurrencyId, Balance),
-		SerpSwapExactStableToSerpToken(CurrencyId, CurrencyId, Balance)
+		SerpSwapDinarToExactSetter(CurrencyId, CurrencyId, Balance, Balance),
+		SerpSwapSerpToExactSetter(CurrencyId, CurrencyId, Balance, Balance),
+		SerpSwapDinarToExactStable(CurrencyId, CurrencyId, Balance, Balance),
+		SerpSwapSetterToExactSetDollar(CurrencyId, CurrencyId, Balance, Balance),
+		SerpSwapSerpToExactStable(CurrencyId, CurrencyId, Balance, Balance),
+		SerpSwapExactStableToDinar(CurrencyId, CurrencyId, Balance, Balance),
+		SerpSwapExactStableToSetter(CurrencyId, CurrencyId, Balance, Balance),
+		SerplusSwapExactStableToSetter(CurrencyId, CurrencyId, Balance, Balance),
+		SerplusSwapExactStableToNative(CurrencyId, CurrencyId, Balance, Balance),
+		SerpSwapExactStableToNative(CurrencyId, CurrencyId, Balance, Balance),
+		SerpSwapExactStableToSerpToken(CurrencyId, CurrencyId, Balance, Balance)
 	}
 
 	/// Mapping to Minimum Claimable Transfer.
@@ -733,7 +733,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapDinarToExactSetter(dinar_currency_id, setter_currency_id, target_amount));
+		Self::deposit_event(Event::SerpSwapDinarToExactSetter(dinar_currency_id, setter_currency_id, max_supply_limit, target_amount));
 	}
 
 	/// swap Serp to get exact Setter,
@@ -786,7 +786,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapSerpToExactSetter(serptoken_currency_id, setter_currency_id, target_amount));
+		Self::deposit_event(Event::SerpSwapSerpToExactSetter(serptoken_currency_id, setter_currency_id, max_supply_limit, target_amount));
 	}
 
 	/// swap Dinar to get exact Setter,
@@ -839,7 +839,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapDinarToExactStable(dinar_currency_id, currency_id, target_amount));
+		Self::deposit_event(Event::SerpSwapDinarToExactStable(dinar_currency_id, currency_id, max_supply_limit, target_amount));
 	}
 
 	/// Swap exact amount of Setter to SetCurrency,
@@ -896,7 +896,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapSetterToExactSetDollar(setter_currency_id, currency_id, target_amount));
+		Self::deposit_event(Event::SerpSwapSetterToExactSetDollar(setter_currency_id, currency_id, max_supply_limit, target_amount));
 	}
 
 	/// Swap exact amount of Serp currrency to SetCurrency,
@@ -953,7 +953,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapSerpToExactStable(serp_currency_id, currency_id, target_amount));
+		Self::deposit_event(Event::SerpSwapSerpToExactStable(serp_currency_id, currency_id, max_supply_limit, target_amount));
 	}
 
 	/// Swap exact amount of Setter to Dinar,
@@ -1011,7 +1011,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapExactStableToDinar(currency_id, dinar_currency_id, supply_amount));
+		Self::deposit_event(Event::SerpSwapExactStableToDinar(currency_id, dinar_currency_id, min_target_limit, supply_amount));
 	}
 
 	/// Swap exact amount of SetCurrency to Setter,
@@ -1068,7 +1068,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapExactStableToSetter(currency_id, setter_currency_id, supply_amount));
+		Self::deposit_event(Event::SerpSwapExactStableToSetter(currency_id, setter_currency_id, min_target_limit, supply_amount));
 	}
 
 	/// Swap exact amount of SetCurrency to Setter,
@@ -1125,7 +1125,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerplusSwapExactStableToSetter(currency_id, setter_currency_id, supply_amount));
+		Self::deposit_event(Event::SerplusSwapExactStableToSetter(currency_id, setter_currency_id, min_target_limit, supply_amount));
 	}
 
 	/// Swap exact amount of SetCurrency to Setter,
@@ -1182,7 +1182,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerplusSwapExactStableToNative(currency_id, setm_currency_id, supply_amount));
+		Self::deposit_event(Event::SerplusSwapExactStableToNative(currency_id, setm_currency_id, min_target_limit, supply_amount));
 	}
 
 	/// Swap exact amount of SetCurrency to Setheum,
@@ -1239,7 +1239,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapExactStableToNative(currency_id, native_currency_id, supply_amount));
+		Self::deposit_event(Event::SerpSwapExactStableToNative(currency_id, native_currency_id, min_target_limit, supply_amount));
 	}
 	
 	/// Swap exact amount of Setter to Serp,
@@ -1296,7 +1296,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				}
 			}
 		}
-		Self::deposit_event(Event::SerpSwapExactStableToSerpToken(currency_id, serptoken_currency_id, supply_amount));
+		Self::deposit_event(Event::SerpSwapExactStableToSerpToken(currency_id, serptoken_currency_id, min_target_limit, supply_amount));
 	}
 }
 
