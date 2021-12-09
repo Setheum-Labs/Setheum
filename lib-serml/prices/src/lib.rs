@@ -107,7 +107,9 @@ pub mod module {
 		/// Unlock price. \[currency_id\]
 		UnlockPrice(CurrencyId),
 		/// Unlock price. \[relative_price\]
-		RelativePrice(Option<Price>),
+		FetchPrice(CurrencyId, Option<Price>),
+		/// Unlock price. \[relative_price\]
+		RelativePrice(CurrencyId, CurrencyId, Option<Price>),
 	}
 
 	/// Mapping from currency id to it's locked price
@@ -149,30 +151,6 @@ pub mod module {
 			T::LockOrigin::ensure_origin(origin)?;
 			<Pallet<T> as LockablePrice<CurrencyId>>::unlock_price(currency_id)?;
 			Ok(())
-		}
-
-		/// access the exchange rate of specific currency to USD,
-		/// it always access the real-time price directly.
-		///
-		/// Note: this returns the price for 1 basic unit
-		#[pallet::weight((T::WeightInfo::lock_price(), DispatchClass::Operational))]
-		#[transactional]
-		pub fn fetch_price(origin: OriginFor<T>, currency_id: CurrencyId) -> DispatchResultWithPostInfo {
-			Self::access_price(currency_id);
-			Pallet::<T>::deposit_event(Event::UnlockPrice(currency_id));
-			Ok(().into())
-		}
-
-		/// access the exchange rate of specific currency to USD,
-		/// it always access the real-time price directly.
-		///
-		/// Note: this returns the price for 1 basic unit
-		#[pallet::weight((T::WeightInfo::lock_price(), DispatchClass::Operational))]
-		#[transactional]
-		pub fn fetch_relative_price(origin: OriginFor<T>, base_currency_id: CurrencyId, quote_currency_id: CurrencyId) -> DispatchResultWithPostInfo {
-			let price = Self::get_relative_price(base_currency_id, quote_currency_id);
-			Pallet::<T>::deposit_event(Event::RelativePrice(price));
-			Ok(().into())
 		}
 	}
 }
