@@ -147,7 +147,6 @@ parameter_types! {
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const CDPTreasuryAccountId: AccountId = CDP_TREASURY;
 	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
-	pub const CashDropPoolAccountId: AccountId = VAULT;
 }
 
 pub struct MockDEX;
@@ -299,7 +298,6 @@ impl Config for Runtime {
 	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
-	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;
 	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
 	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;

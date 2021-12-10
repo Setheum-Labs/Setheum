@@ -102,10 +102,6 @@ pub mod module {
 		// The ideal period is after every `24 hours`.
 		// type CashDropPeriod: Get<Self::BlockNumber>;
 
-		/// The vault account to keep the Cashdrops for claiming.
-		#[pallet::constant]
-		type CashDropPoolAccountId: Get<Self::AccountId>;
-
 		/// CDP-Treasury account for processing serplus funds 
 		/// CDPTreasury account.
 		#[pallet::constant]
@@ -201,17 +197,32 @@ pub mod module {
 		SerpTesNow(),
 		/// Stable Currency Inflation Rate Delivered
 		InflationDelivery(CurrencyId, Balance),
+		/// SerpSwapDinarToExactSetter
 		SerpSwapDinarToExactSetter(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapSerpToExactSetter
 		SerpSwapSerpToExactSetter(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapDinarToExactStable
 		SerpSwapDinarToExactStable(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapSetterToExactSetDollar
 		SerpSwapSetterToExactSetDollar(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapSerpToExactStable
 		SerpSwapSerpToExactStable(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapExactStableToDinar
 		SerpSwapExactStableToDinar(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapExactStableToSetter
 		SerpSwapExactStableToSetter(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerplusSwapExactStableToSetter
 		SerplusSwapExactStableToSetter(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerplusSwapExactStableToNative
 		SerplusSwapExactStableToNative(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapExactStableToNative
 		SerpSwapExactStableToNative(CurrencyId, CurrencyId, Balance, Balance),
-		SerpSwapExactStableToSerpToken(CurrencyId, CurrencyId, Balance, Balance)
+		/// SerpSwapExactStableToSerpToken
+		SerpSwapExactStableToSerpToken(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapExactStableToNative
+		TopUpCashDropPool(CurrencyId, Balance),
+		/// SerpSwapExactStableToSerpToken
+		IssueCashDropFromPool(T::AccountId, CurrencyId, Balance)
 	}
 
 	/// Mapping to Minimum Claimable Transfer.
@@ -219,11 +230,12 @@ pub mod module {
 	#[pallet::getter(fn minimum_claimable_transfer)]
 	pub type MinimumClaimableTransfer<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, OptionQuery>;
 
-	/// The alternative fee swap path of accounts.
+	/// The CashDrop Pool
+	///
+	/// CashDropPool: map CurrencyId => Balance
 	#[pallet::storage]
-	#[pallet::getter(fn alternative_fee_swap_path)]
-	pub type AlternativeSwapPath<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, Vec<CurrencyId>, OptionQuery>;
+	#[pallet::getter(fn cashdrop_pool)]
+	pub type CashDropPool<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
 	/// The inflation rate amount per StableCurrencyInflationPeriod of specific
 	/// stable currency type.
@@ -386,7 +398,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn issue_stablecurrency_inflation() -> DispatchResult {
 
 		// the inflation receiving accounts.
-		let cashdrop_account = &T::CashDropPoolAccountId::get();
 		let treasury_account = T::SetheumTreasuryAccountId::get();
 
 		for currency_id in T::StableCurrencyIds::get() {
@@ -397,7 +408,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 			// inflation distros
 			// 1
-			T::Currency::deposit(currency_id, &cashdrop_account, inflamounts)?;
+			Self::add_cashdrop_to_pool(currency_id, inflamounts)?;
 			// 2
 			T::Currency::deposit(currency_id, &treasury_account, inflamounts)?;
 			// 3
@@ -443,15 +454,34 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
+	/// Add CashDrop to the pool
+	fn add_cashdrop_to_pool(currency_id: Self::CurrencyId, amount: Balance) -> DispatchResult {
+		let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
+		let updated_cashdrop_pool_balance = cashdrop_pool_balance + amount;
+
+		CashDropPool::<T>::insert(currency_id, updated_cashdrop_pool_balance);
+		Self::deposit_event(Event::TopUpCashDropPool(currency_id, amount));
+		Ok(())
+	}
+
+	/// Issue CashDrop from the pool to the claimant account
+	fn issue_cashdrop_from_pool(claimant_id: &T::AccountId, currency_id: Self::CurrencyId, amount: Balance) -> DispatchResult {
+		Self::issue_standard(currency_id, &claimant_id, amount)?;
+		let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
+		let updated_cashdrop_pool_balance = cashdrop_pool_balance.saturating_sub(amount);
+
+		CashDropPool::<T>::insert(currency_id, updated_cashdrop_pool_balance);
+		Self::deposit_event(Event::IssueCashDropFromPool(claimant_id.clone(), currency_id, amount));
+		Ok(())
+	}
+
 	/// SerpUp ratio for cashDrop Cashdrops
 	fn get_cashdrop_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let cashdrop_pool_account = &T::CashDropPoolAccountId::get();
-
 		// CashDrop SerpUp Pool - 30%
 		let three: Balance = 3;
 		let serping_amount: Balance = three.saturating_mul(amount / 10);
-		// Issue the SerpUp propper
-		Self::issue_standard(currency_id, &cashdrop_pool_account, serping_amount)?;
+		// Add the SerpUp propper to CashDropPool
+		Self::add_cashdrop_to_pool(currency_id, serping_amount)?;
 
 		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -509,13 +539,15 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 	/// Serplus ratio for Setheum Foundation's Charity Fund
 	fn get_cashdrop_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
-		let setpay_account = &T::CashDropPoolAccountId::get();
 		let cdp_treasury = T::CDPTreasuryAccountId::get();
 		// CashDrop Pool - 30%
 		let three: Balance = 3;
 		let serplus_amount: Balance = three.saturating_mul(amount / 10);
-		// Transfer the Serplus propper
-		T::Currency::transfer(currency_id, &cdp_treasury, &setpay_account, serplus_amount)?;
+
+		// Add the SerpUp propper to CashDropPool
+		Self::add_cashdrop_to_pool(currency_id, serplus_amount)?;
+		// Withdraw the Serplus propper from CDPTreasury
+		T::Currency::withdraw(currency_id, &cdp_treasury, serplus_amount)?;
 		Ok(())
 	}
 
@@ -646,14 +678,18 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
 			let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop_pool_reward
-			let serp_balance = T::Currency::free_balance(currency_id, &T::CashDropPoolAccountId::get());
+			let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 			ensure!(
-				balance_cashdrop_amount <= serp_balance,
+				balance_cashdrop_amount <= cashdrop_pool_balance,
 				Error::<T>::CashdropNotAvailable,
 			);
 
-			T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
-			T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
+			// Issue the CashDrop claim from the CashDropPool
+			Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
+			// Add the system CashDrop reward to the CashDropPool
+			Self::add_cashdrop_to_pool(currency_id, cashdrop_pool_reward)?;
+
+			Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 		} else {
 			// for the SetDollar ---vvvvvvvvv---
 			let minimum_claimable_transfer = T::SetDollarMinimumClaimableTransferAmounts::get();
@@ -666,14 +702,16 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
 			let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
-			let serp_balance = T::Currency::free_balance(currency_id, &T::CashDropPoolAccountId::get());
+			let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 			ensure!(
-				balance_cashdrop_amount <= serp_balance,
+				balance_cashdrop_amount <= cashdrop_pool_balance,
 				Error::<T>::CashdropNotAvailable,
 			);
 
-			T::Currency::transfer(currency_id, &T::CashDropPoolAccountId::get(), who, balance_cashdrop_amount)?;
-			T::Currency::deposit(currency_id, &T::CashDropPoolAccountId::get(), cashdrop_pool_reward)?;
+			// Issue the CashDrop claim from the CashDropPool
+			Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
+			// Add the system CashDrop reward to the CashDropPool
+			Self::add_cashdrop_to_pool(currency_id, cashdrop_pool_reward)?;
 
 			Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 		}

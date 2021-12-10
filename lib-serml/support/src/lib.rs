@@ -240,6 +240,16 @@ pub trait SerpTreasury<AccountId> {
 	/// SerpUp ratio for BuyBack Swaps to burn Dinar or Setter
 	fn get_buyback_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
+	/// Add CashDrop to the pool
+	fn add_cashdrop_to_pool(currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
+
+	/// Issue CashDrop from the pool to the claimant account
+	fn issue_cashdrop_from_pool(
+		claimant_id: &AccountId,
+		currency_id: Self::CurrencyId,
+		amount: Self::Balance
+	) -> DispatchResult;
+
 	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
