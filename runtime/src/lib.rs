@@ -133,12 +133,12 @@ mod benchmarking;
 
 // Pallet accounts of runtime
 parameter_types! {
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
-	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
-	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");		// 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
+	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 3Y9ymmssnjtYtFUzi9GQnpn3yxheQjSN7a8vJZSbiwVaJR5M
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 3Y9ymmssnjtYtTqe2maPGPCgruSW6sbMc9biwoPD8AqSeDZc
+	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");	// 3Y9ymmssnjtYsyRWeDAo7XuSnXQqhxMcmefhqbubtbWdVxHP
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");	// 3Y9ymmssnjtYtTr4Ywm8vFwf5K2SJc3RTWxGWw5Gc6dttfJ8
+	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");			// 3Y9ymmssnjtYtTgjkqqj1mQyQUmUUfWps8UEgZHZiDkh9dUy
 }
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
@@ -149,7 +149,6 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		CDPTreasuryPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
 		ZeroAccountId::get(),		 	// ACCOUNT 0
-		CashDropPoolAccountId::get(), 	// ACCOUNT 1
 	]
 }
 
@@ -160,7 +159,6 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 // 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
 // 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
 // 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
-// 		FoundationTreasuryPalletId::get().into_account(),
 // 	];
 // }
 
@@ -521,7 +519,6 @@ parameter_types! {
 	pub const MinimumCount: u32 = 1;
 	pub const ExpiresIn: Moment = 1000 * 60 * 60; // 60 mins
 	pub ZeroAccountId: AccountId = AccountId::from([0u8; 32]);
-	pub CashDropPoolAccountId: AccountId = AccountId::from([1u8; 32]);
 	pub const MaxHasDispatchedSize: u32 = 40;
 }
 
@@ -857,7 +854,6 @@ impl serp_treasury::Config for Runtime {
 	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
-	type CashDropPoolAccountId = CashDropPoolAccountId;
 	type CDPTreasuryAccountId = CDPTreasuryAccount;
 	type SetheumTreasuryAccountId = TreasuryAccount;
 	type DefaultSwapParitalPathList = SerpDefaultSwapParitalPathList;

@@ -210,6 +210,23 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
+	/// Add CashDrop to the pool
+	fn add_cashdrop_to_pool(
+		_currency_id: Self::CurrencyId,
+		_amount: Self::Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
+	/// Issue CashDrop from the pool to the claimant account
+	fn issue_cashdrop_from_pool(
+		_claimant_id: &AccountId,
+		_currency_id: Self::CurrencyId,
+		_amount: Self::Balance
+	) -> DispatchResult {
+		unimplemented!()
+	}
+
 	/// SerpUp ratio for SetPay Cashdrops
 	fn get_cashdrop_serpup(
 		_amount: Balance,
