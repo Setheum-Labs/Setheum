@@ -44,11 +44,11 @@ impl SubstrateCli for Cli {
 	}
 
 	fn support_url() -> String {
-		"wiki.setheum.xyz".into()
+		"https://github.com/Setheum-Labs/Setheum/issues".into()
 	}
 
 	fn copyright_start_year() -> i32 {
-		2021
+		2019
 	}
 
 	fn load_spec(&self, id: &str) -> Result<Box<dyn sc_service::ChainSpec>, String> {
