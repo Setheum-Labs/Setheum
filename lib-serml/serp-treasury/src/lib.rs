@@ -677,7 +677,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			);
 
 			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
-			let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop_pool_reward
+			let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
 			let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 			ensure!(
 				balance_cashdrop_amount <= cashdrop_pool_balance,
@@ -701,7 +701,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			);
 
 			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
-			let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
+			let cashdrop_pool_reward = transfer_amount / 200; // 0.5% cashdrop_pool_reward
 			let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 			ensure!(
 				balance_cashdrop_amount <= cashdrop_pool_balance,
