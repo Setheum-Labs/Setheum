@@ -257,18 +257,18 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 					hex!["7a0caeb50fbcd657b8388adfaeca41a2ae3e85b8916a2ce92761ce1a4db89035"].unchecked_into(),
 				),
 			],
-			// Sudo
+			// Sudo: 3X3eCQohujSih311akE6rtA7WsBRTbUVu2PV5zKiCKkrnrR8
 			hex!["3c5dca516188b2ac077e33a886ac1ea2c03d2a157f56b70ca182c9f7fe5f9055"].into(),
 			// --------------------------------------------------------------------------------------------
 			// Endowed accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
 			vec![
-				// Foundation
-				(hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into(), 626_600_000 as u128),
-				// Treasury
-				(hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(), 313_300_000 as u128),
-				// Team and DEX Liquidity Offering Fund
-				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(), 1_660_490_000 as u128),
+				// Foundation: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
+				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 626_600_000 as u128),
+				// Treasury: 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
+				(hex!["6d6f646c7365742f747273790000000000000000000000000000000000000000"].into(), 313_300_000 as u128),
+				// Team and DEX Liquidity Offering Fund: 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
+				(hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(), 1_660_490_000 as u128),
 			],
 		),
 		// Bootnodes - TODO: Update!
@@ -347,22 +347,22 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 					hex!["7a0caeb50fbcd657b8388adfaeca41a2ae3e85b8916a2ce92761ce1a4db89035"].unchecked_into(),
 				),
 			],
-			// Sudo:
-			hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
+			// Sudo: 3X3eCQohujSih311akE6rtA7WsBRTbUVu2PV5zKiCKkrnrR8
+			hex!["3c5dca516188b2ac077e33a886ac1ea2c03d2a157f56b70ca182c9f7fe5f9055"].into(),
 			// --------------------------------------------------------------------------------------------
 			// Endowed accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
 			vec![
-				// Foundation
-				(hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into(), 626_600_000 as u128),
-				// Treasury
-				(hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(), 313_300_000 as u128),
-				// PublicFund
-				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into(), 313_300_000 as u128),
-				// Team and DEX Liquidity Offering Fund
-				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(), 1_660_490_000 as u128),
-				// Advisors and Partners Fund
-				(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into(), 250_640_000 as u128),
+				// Foundation: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
+				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 626_600_000 as u128),
+				// Treasury: 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
+				(hex!["6d6f646c7365742f747273790000000000000000000000000000000000000000"].into(), 313_300_000 as u128),
+				// Setheum Public Fund (SPF): 3YQuJToGJv2Gwu2puFbamNTDhQnKP1xU1zf6TiCHe8Ty2om3
+				(hex!["78d105e22be9735d200591ebe506fbc0d0be3f18afa5f5b2fbdb370ee4c2fd47"].into(), 313_300_000 as u128),
+				// Team and DEX Liquidity Offering Fund: 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
+				(hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(), 1_660_490_000 as u128),
+				// Advisors and Partners Fund: 3WjNzpGY2WnsV9JPZdUHcDf8fZ6Jh9YMCQKRUU6SBNwn1PAj
+				(hex!["2e70349d7140ec49b7cf1ae03b6ae3405103dab86c5a463ceef77ffb4a769868"].into(), 250_640_000 as u128),
 			],
 		),
 		// Bootnodes - TODO: Update!
@@ -738,31 +738,35 @@ fn mainnet_genesis(
 	endowed_accounts: Vec<(AccountId, Balance)>
 ) -> GenesisConfig {
 
+	// TODO: Issue these via AirDrop
+	// and update AirDropCurrencyId enum to remove T1 tokens
+	// [Ref](https://github.com/Setheum-Labs/Setheum/issues/667)
+	//
 	// let  setm_foundation_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
 	// let  setm_treasury_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	// let  setm_spf_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	// let  setm_team_alloc: u128 = 1_660_490_000 * 1_000_000_000_000_000_000;
 	// let  setm_advisors_n_partners_alloc: u128 = 250_640_000 * 1_000_000_000_000_000_000;
-
+	//
 	// let  serp_foundation_alloc: u128 = 51_600_000 * 1_000_000_000_000_000_000;
 	// let  serp_treasury_alloc: u128 = 25_800_000 * 1_000_000_000_000_000_000;
 	// let  serp_spf_alloc: u128 = 25_800_000 * 1_000_000_000_000_000_000;
 	// let  serp_team_alloc: u128 = 103_200_000 * 1_000_000_000_000_000_000;
 	// let  serp_advisors_n_partners_alloc: u128 = 20_640_000 * 1_000_000_000_000_000_000;
-
+	//
 	// let  dnar_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
 	// let  dnar_treasury_alloc: u128 = 7_000_000 * 1_000_000_000_000_000_000;
 	// let  dnar_spf_alloc: u128 = 7_000_000 * 1_000_000_000_000_000_000;
 	// let  dnar_team_alloc: u128 = 28_000_000 * 1_000_000_000_000_000_000;
 	// let  dnar_advisors_n_partners_alloc: u128 = 5_600_000 * 1_000_000_000_000_000_000;
-
+	//
 	// let  setr_foundation_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
 	// let  setr_treasury_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	// let  setr_cashdrop_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	// let  setr_spf_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	// let  setr_team_alloc: u128 = 830_245_000 * 1_000_000_000_000_000_000;
 	// let  setr_advisors_n_partners_alloc: u128 = 250_640_000 * 1_000_000_000_000_000_000;
-
+	//
 	// let  setusd_foundation_alloc: u128 = 1_253_200_000 * 1_000_000_000_000_000_000;
 	// let  setusd_treasury_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
 	// let  setusd_cashdrop_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
