@@ -223,36 +223,53 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 			// im-online
 			// authority-discovery
 			//
-			// for i in 1; do for j in {stash, controller}; do subkey inspect "$SECRET//$i//$j"; done; done
+			// for i in 1; do for j in stash; do subkey inspect "$SECRET//$i//$j"; done; done
+			// for i in 1; do for j in controller; do subkey inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in grandpa; do subkey --ed25519 inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in babe; do subkey --sr25519 inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in im_online; do subkey --sr25519 inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in authority_discovery; do subkey --sr25519 inspect "$SECRET//$i//$j"; done; done
 			//
 			// TODO: Update!
-			vec![],
-			// Sudo: TODO: Update to multisig account
-			// hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			vec![
+				(
+					hex!["6c08c1f8e0cf1e200b24b43fca4c4e407b963b6b1e459d1aeff80c566a1da469"].into(),
+					hex!["864eff3160ff8609c030316867630850a9d6e35c47d3efe54de44264fef7665e"].into(),
+					hex!["dc41d9325da71d90806d727b826d125cd523da28eb39ab048ab983d7bb74fb32"].unchecked_into(),
+					hex!["8a688a748fd39bedaa507c942600c40478c2082dee17b8263613fc3c086b0c53"].unchecked_into(),
+					hex!["3a4e80c48718f72326b49c4ae80199d35285643751e75a743f30b7561b538676"].unchecked_into(),
+					hex!["68d39d0d386ed4e9dd7e280d62e7dc9cf61dc508ef25efb74b6d740fa4dde463"].unchecked_into(),
+				),
+				(
+					hex!["5c22097b5c8b5912ce28b72ba4de52c3da8aca9379c748c1356a6642107d4c4a"].into(),
+					hex!["543fd4fd9a284c0f955bb083ae6e0fe7a584eb6f6e72b386071a250b94f99a59"].into(),
+					hex!["f15a651be0ea0afcfe691a118ee7acfa114d11a27cf10991ee91ea97942d2135"].unchecked_into(),
+					hex!["70e74bed02b733e47bc044da80418fd287bb2b7a0c032bd211d7956c68c9561b"].unchecked_into(),
+					hex!["724cefffeaa10a44935a973511b9427a8c3c4fb08582afc4af8bf110fe4aac4b"].unchecked_into(),
+					hex!["a068435c438ddc61b1b656e3f61c876e109706383cf4e27309cc1e308f88b86f"].unchecked_into(),
+				),
+				(
+					hex!["a67f388c1b8d68287fb3288b5aa36f069875c15ebcb9b1e4e62678aad6b24b44"].into(),
+					hex!["ec912201d98911842b1a8e82983f71f2116dd8b898798ece4e1d210590de7d60"].into(),
+					hex!["347f5342875b9847ec089ca723c1c09cc532e53dca4b940a6138040025d94eb9"].unchecked_into(),
+					hex!["64841d2d124e1b1dd5485a58908ab244b296b184ae645a0c103adcbcc565f070"].unchecked_into(),
+					hex!["50a3452ca93800a8b660d624521c240e5cb20a47a33d23174bb7681811950646"].unchecked_into(),
+					hex!["7a0caeb50fbcd657b8388adfaeca41a2ae3e85b8916a2ce92761ce1a4db89035"].unchecked_into(),
+				),
+			],
+			// Sudo
+			hex!["3c5dca516188b2ac077e33a886ac1ea2c03d2a157f56b70ca182c9f7fe5f9055"].into(),
 			// --------------------------------------------------------------------------------------------
 			// Endowed accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
 			vec![
-				// // Foundation Faucet - TODO: Update to multisig
-				// (hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into()),
-				// // Treasury Faucet- TODO: Update to `treasury_account`
-				// (hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into()),
-				// // CashDropFund Faucet- TODO: Update to `into_account_id` from `cashdrop_pool_account`
-				// (hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
-				// // PublicFund Faucet- TODO: Update
-				// (hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
-				// // Team and DEX Liquidity Offering Fund Faucet- TODO: Update to multisig
-				// (hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
-				// // Advisors and Partners Fund Faucet- Labs - TODO: Update to multisig
-				// (hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
-				// // Founder (Khalifa MBA) Faucet
-				// hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
-			]
+				// Foundation
+				(hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into(), 626_600_000 as u128),
+				// Treasury
+				(hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(), 313_300_000 as u128),
+				// Team and DEX Liquidity Offering Fund
+				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(), 1_660_490_000 as u128),
+			],
 		),
 		// Bootnodes - TODO: Update!
 		vec![
@@ -296,51 +313,57 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			// im-online
 			// authority-discovery
 			//
-			// for i in 1; do for j in {stash, controller}; do subkey inspect "$SECRET//$i//$j"; done; done
+			// for i in 1; do for j in stash; do subkey inspect "$SECRET//$i//$j"; done; done
+			// for i in 1; do for j in controller; do subkey inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in grandpa; do subkey --ed25519 inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in babe; do subkey --sr25519 inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in im_online; do subkey --sr25519 inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in authority_discovery; do subkey --sr25519 inspect "$SECRET//$i//$j"; done; done
 			//
 			// TODO: Update!
-			vec![],
-			// Sudo: TODO: Update to multisig account
-			// hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			vec![
+				(
+					hex!["6c08c1f8e0cf1e200b24b43fca4c4e407b963b6b1e459d1aeff80c566a1da469"].into(),
+					hex!["864eff3160ff8609c030316867630850a9d6e35c47d3efe54de44264fef7665e"].into(),
+					hex!["dc41d9325da71d90806d727b826d125cd523da28eb39ab048ab983d7bb74fb32"].unchecked_into(),
+					hex!["8a688a748fd39bedaa507c942600c40478c2082dee17b8263613fc3c086b0c53"].unchecked_into(),
+					hex!["3a4e80c48718f72326b49c4ae80199d35285643751e75a743f30b7561b538676"].unchecked_into(),
+					hex!["68d39d0d386ed4e9dd7e280d62e7dc9cf61dc508ef25efb74b6d740fa4dde463"].unchecked_into(),
+				),
+				(
+					hex!["5c22097b5c8b5912ce28b72ba4de52c3da8aca9379c748c1356a6642107d4c4a"].into(),
+					hex!["543fd4fd9a284c0f955bb083ae6e0fe7a584eb6f6e72b386071a250b94f99a59"].into(),
+					hex!["f15a651be0ea0afcfe691a118ee7acfa114d11a27cf10991ee91ea97942d2135"].unchecked_into(),
+					hex!["70e74bed02b733e47bc044da80418fd287bb2b7a0c032bd211d7956c68c9561b"].unchecked_into(),
+					hex!["724cefffeaa10a44935a973511b9427a8c3c4fb08582afc4af8bf110fe4aac4b"].unchecked_into(),
+					hex!["a068435c438ddc61b1b656e3f61c876e109706383cf4e27309cc1e308f88b86f"].unchecked_into(),
+				),
+				(
+					hex!["a67f388c1b8d68287fb3288b5aa36f069875c15ebcb9b1e4e62678aad6b24b44"].into(),
+					hex!["ec912201d98911842b1a8e82983f71f2116dd8b898798ece4e1d210590de7d60"].into(),
+					hex!["347f5342875b9847ec089ca723c1c09cc532e53dca4b940a6138040025d94eb9"].unchecked_into(),
+					hex!["64841d2d124e1b1dd5485a58908ab244b296b184ae645a0c103adcbcc565f070"].unchecked_into(),
+					hex!["50a3452ca93800a8b660d624521c240e5cb20a47a33d23174bb7681811950646"].unchecked_into(),
+					hex!["7a0caeb50fbcd657b8388adfaeca41a2ae3e85b8916a2ce92761ce1a4db89035"].unchecked_into(),
+				),
+			],
+			// Sudo:
+			hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
 			// --------------------------------------------------------------------------------------------
 			// Endowed accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
 			vec![
-				// // Foundation - TODO: Update to multisig
-				// (hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into()),
-				// // Treasury - TODO: Update to `treasury_account`
-				// (hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into()),
-				// // CashDropFund - TODO: Update to `into_account_id` from `cashdrop_pool_account`
-				// (hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into()),
-				// // PublicFund - TODO: Update
-				// (hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into()),
-				// // Team and DEX Liquidity Offering Fund - TODO: Update to multisig
-				// (hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()),
-				// // Advisors and Partners Fund - Labs - TODO: Update to multisig
-				// (hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into()),
-				// // Founder (Khalifa MBA) - TODO: Update
-				// hex!["6c1371ce4b06b8d191d6f552d716c00da31aca08a291ccbdeaf0f7aeae51201b"].into(),
+				// Foundation
+				(hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into(), 626_600_000 as u128),
+				// Treasury
+				(hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(), 313_300_000 as u128),
+				// PublicFund
+				(hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into(), 313_300_000 as u128),
+				// Team and DEX Liquidity Offering Fund
+				(hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into(), 1_660_490_000 as u128),
+				// Advisors and Partners Fund
+				(hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into(), 250_640_000 as u128),
 			],
-			// ----------------------------------------------------------------------------------------
-			// Mainnet Council Members and Initial Allocation Accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-			//
-			// Foundation - TODO: Update to multisig
-			hex!["9c48c0498bdf1d716f4544fc21f050963409f2db8154ba21e5233001202cbf08"].into(),
-			// Treasury - TODO: Update to `treasury_account`
-			hex!["3c483acc759b79f8b12fa177e4bdfa0448a6ea03c389cf4db2b4325f0fc8f84a"].into(),
-			// CashDropFund - TODO: Update to `into_account_id` from `cashdrop_pool_account`
-			hex!["0c994e7589709a85128a6695254af16227f7873816ae0269aa705861c315ba1e"].into(),
-			// PublicFundTreasury - TODO: Update to `into_account_id` from `PublicFundTreasuryModuleId`
-			hex!["5adebb35eb317412b58672db0434e4b112fcd27abaf28039f07c0db155b26650"].into(),
-			// Advisors and Partners Fund - Labs - TODO: Update to multisig
-			hex!["746db342d3981b230804d1a187245e565f8eb3a2897f83d0d841cc52282e324c"].into(),
-			// Labs - Council Member - TODO: Update to multisig
-			hex!["da512d1335a62ad6f79baecfe87578c5d829113dc85dbb984d90a83f50680145"].into()
 		),
 		// Bootnodes - TODO: Update!
 		vec![
@@ -471,8 +494,8 @@ fn dev_genesis(
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 50_000 * 1_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 100_000 * 1_000_000_000_000_000_000),  // (currency_id, inflation rate of a setcurrency)
+				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency)
+				(SETUSD, 0),  // (currency_id, inflation rate of a setcurrency)
 			],
 		},
 		cdp_treasury: CdpTreasuryConfig {
@@ -548,20 +571,19 @@ fn testnet_genesis(
 	wasm_binary: &[u8],
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
 	root_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
+	endowed_accounts: Vec<(AccountId, Balance)>,
 ) -> GenesisConfig {
 
 	let existential_deposit = NativeTokenExistentialDeposit::get();
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let  initial_balance: u128 = 100_000 * 1_000_000_000_000_000_000;
 	let  initial_staking: u128 = 100_000 * 1_000_000_000_000_000_000;
 
 	let balances = initial_authorities
 		.iter()
-		.map(|x| (x.0.clone(), initial_staking + 1_000_000_000_000_000_000)) // bit more for fee
-		.chain(endowed_accounts.iter().cloned().map(|k| (k, initial_balance)))
+		.map(|x| (x.0.clone(), initial_staking + 1_000_000_000_000_000_000)) // bit more for fees
+		.chain(endowed_accounts.iter().cloned().map(|x| (x.0.clone(), x.1 * 1_000_000_000_000_000_000)))
 		.chain(
 			get_all_module_accounts()
 				.iter()
@@ -649,28 +671,15 @@ fn testnet_genesis(
 		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 		im_online: Default::default(),
 		treasury: Default::default(), // Main Treasury (Setheum Treasury)
-		tokens: TokensConfig {
-			balances: endowed_accounts
-				.iter()
-				.flat_map(|x| {
-					vec![
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETM), 100_000 * 1_000_000_000_000_000_000),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SERP), 100_000 * 1_000_000_000_000_000_000),
-						(x.clone(), CurrencyId::Token(TokenSymbol::DNAR), 100_000 * 1_000_000_000_000_000_000),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETR), 100_000 * 1_000_000_000_000_000_000),
-						(x.clone(), CurrencyId::Token(TokenSymbol::SETUSD), 100_000 * 1_000_000_000_000_000_000)
-					]
-				})
-				.collect(),
-		},
+		tokens: TokensConfig { balances: vec![] },
 		evm: EVMConfig {
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 50_000 * 1_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 100_000 * 1_000_000_000_000_000_000),  // (currency_id, inflation rate of a setcurrency)
+				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency)
+				(SETUSD, 0),  // (currency_id, inflation rate of a setcurrency)
 			],
 		},
 		cdp_treasury: CdpTreasuryConfig {
@@ -726,57 +735,50 @@ fn mainnet_genesis(
 	wasm_binary: &[u8],
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
 	root_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
-	foundation: AccountId,
-	treasury_fund: AccountId,
-	cashdrop_fund: AccountId,
-	spf_fund: AccountId,
-	advisors_and_partners_fund: AccountId,
-	labs: AccountId
+	endowed_accounts: Vec<(AccountId, Balance)>
 ) -> GenesisConfig {
+
+	// let  setm_foundation_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
+	// let  setm_treasury_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
+	// let  setm_spf_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
+	// let  setm_team_alloc: u128 = 1_660_490_000 * 1_000_000_000_000_000_000;
+	// let  setm_advisors_n_partners_alloc: u128 = 250_640_000 * 1_000_000_000_000_000_000;
+
+	// let  serp_foundation_alloc: u128 = 51_600_000 * 1_000_000_000_000_000_000;
+	// let  serp_treasury_alloc: u128 = 25_800_000 * 1_000_000_000_000_000_000;
+	// let  serp_spf_alloc: u128 = 25_800_000 * 1_000_000_000_000_000_000;
+	// let  serp_team_alloc: u128 = 103_200_000 * 1_000_000_000_000_000_000;
+	// let  serp_advisors_n_partners_alloc: u128 = 20_640_000 * 1_000_000_000_000_000_000;
+
+	// let  dnar_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
+	// let  dnar_treasury_alloc: u128 = 7_000_000 * 1_000_000_000_000_000_000;
+	// let  dnar_spf_alloc: u128 = 7_000_000 * 1_000_000_000_000_000_000;
+	// let  dnar_team_alloc: u128 = 28_000_000 * 1_000_000_000_000_000_000;
+	// let  dnar_advisors_n_partners_alloc: u128 = 5_600_000 * 1_000_000_000_000_000_000;
+
+	// let  setr_foundation_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
+	// let  setr_treasury_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
+	// let  setr_cashdrop_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
+	// let  setr_spf_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
+	// let  setr_team_alloc: u128 = 830_245_000 * 1_000_000_000_000_000_000;
+	// let  setr_advisors_n_partners_alloc: u128 = 250_640_000 * 1_000_000_000_000_000_000;
+
+	// let  setusd_foundation_alloc: u128 = 1_253_200_000 * 1_000_000_000_000_000_000;
+	// let  setusd_treasury_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
+	// let  setusd_cashdrop_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
+	// let  setusd_spf_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
+	// let  setusd_team_alloc: u128 = 1_660_490_000 * 1_000_000_000_000_000_000;
+	// let  setusd_advisors_n_partners_alloc: u128 = 250_640_000 * 1_000_000_000_000_000_000;
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let  setm_foundation_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
-	let  setm_treasury_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
-	let  setm_spf_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
-	let  setm_team_alloc: u128 = 1_660_490_000 * 1_000_000_000_000_000_000;
-	let  setm_advisors_n_partners_alloc: u128 = 250_640_000 * 1_000_000_000_000_000_000;
-
-	let  serp_foundation_alloc: u128 = 51_600_000 * 1_000_000_000_000_000_000;
-	let  serp_treasury_alloc: u128 = 25_800_000 * 1_000_000_000_000_000_000;
-	let  serp_spf_alloc: u128 = 25_800_000 * 1_000_000_000_000_000_000;
-	let  serp_team_alloc: u128 = 103_200_000 * 1_000_000_000_000_000_000;
-	let  serp_advisors_n_partners_alloc: u128 = 20_640_000 * 1_000_000_000_000_000_000;
-
-	let  dnar_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
-	let  dnar_treasury_alloc: u128 = 7_000_000 * 1_000_000_000_000_000_000;
-	let  dnar_spf_alloc: u128 = 7_000_000 * 1_000_000_000_000_000_000;
-	let  dnar_team_alloc: u128 = 28_000_000 * 1_000_000_000_000_000_000;
-	let  dnar_advisors_n_partners_alloc: u128 = 5_600_000 * 1_000_000_000_000_000_000;
-
-	let  setr_foundation_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
-	let  setr_treasury_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
-	let  setr_cashdrop_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
-	let  setr_spf_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
-	let  setr_team_alloc: u128 = 830_245_000 * 1_000_000_000_000_000_000;
-	let  setr_advisors_n_partners_alloc: u128 = 250_640_000 * 1_000_000_000_000_000_000;
-
-	let  setusd_foundation_alloc: u128 = 1_253_200_000 * 1_000_000_000_000_000_000;
-	let  setusd_treasury_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
-	let  setusd_cashdrop_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
-	let  setusd_spf_alloc: u128 = 626_600_000 * 1_000_000_000_000_000_000;
-	let  setusd_team_alloc: u128 = 1_660_490_000 * 1_000_000_000_000_000_000;
-	let  setusd_advisors_n_partners_alloc: u128 = 250_640_000 * 1_000_000_000_000_000_000;
-
-	let  initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;
 	let  initial_staking: u128 =   10_000 * 1_000_000_000_000_000_000;
 	let existential_deposit = NativeTokenExistentialDeposit::get();
 
 	let balances = initial_authorities
 		.iter()
-		.map(|x| (x.0.clone(), initial_staking))
-		.chain(endowed_accounts.iter().cloned().map(|k| (k, initial_balance)))
+		.map(|x| (x.0.clone(), initial_staking + 1_000_000_000_000_000_000)) // bit more for fees
+		.chain(endowed_accounts.iter().cloned().map(|x| (x.0.clone(), x.1 * 1_000_000_000_000_000_000)))
 		.chain(
 			get_all_module_accounts()
 				.iter()
@@ -810,27 +812,27 @@ fn mainnet_genesis(
 		shura_council: Default::default(),
 		shura_council_membership: ShuraCouncilMembershipConfig {
 			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
+				(root_key.clone()),
 			],
 			phantom: Default::default(),
 		},
 		financial_council: Default::default(),
 		financial_council_membership: FinancialCouncilMembershipConfig {
 			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
+				(root_key.clone()),
 			],
 			phantom: Default::default(),
 		},
 		technical_committee: Default::default(),
 		technical_committee_membership: TechnicalCommitteeMembershipConfig {
 			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
+				(root_key.clone()),
 			],
 			phantom: Default::default(),
 		},
 		operator_membership_setheum: OperatorMembershipSetheumConfig {
 			members: vec![
-				(root_key.clone()), 		// Setheum Foundation
+				(root_key.clone()),
 			],
 			phantom: Default::default(),
 		},
@@ -864,51 +866,15 @@ fn mainnet_genesis(
 		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 		im_online: Default::default(),
 		treasury: Default::default(), // Setheum Treasury
-		tokens: TokensConfig {
-			balances:
-				vec![
-					// SETM allocations
-					(foundation.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_foundation_alloc),
-					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_treasury_alloc),
-					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_spf_alloc),
-					(labs.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_team_alloc),
-					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SETM), setm_advisors_n_partners_alloc),
-					// SERP allocations
-					(foundation.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_foundation_alloc),
-					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_treasury_alloc),
-					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_spf_alloc),
-					(labs.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_team_alloc),
-					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SERP), serp_advisors_n_partners_alloc),
-					// DNAR allocations
-					(foundation.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_foundation_alloc),
-					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_treasury_alloc),
-					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_spf_alloc),
-					(labs.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_team_alloc),
-					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::DNAR), dnar_advisors_n_partners_alloc),
-					// SETR allocations
-					(foundation.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_foundation_alloc),
-					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_treasury_alloc),
-					(cashdrop_fund.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_cashdrop_alloc),
-					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_spf_alloc),
-					(labs.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_team_alloc),
-					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SETR), setr_advisors_n_partners_alloc),
-					// SETUSD allocations
-					(foundation.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_foundation_alloc),
-					(treasury_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_treasury_alloc),
-					(cashdrop_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_cashdrop_alloc),
-					(spf_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_spf_alloc),
-					(labs.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_team_alloc),
-					(advisors_and_partners_fund.clone(), CurrencyId::Token(TokenSymbol::SETUSD), setusd_advisors_n_partners_alloc),
-				]
-		},
+		tokens: TokensConfig { balances: vec![] },
 		evm: EVMConfig {
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 50_000 * 1_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 100_000 * 1_000_000_000_000_000_000),  // (currency_id, inflation rate of a setcurrency)
+				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency)
+				(SETUSD, 0),  // (currency_id, inflation rate of a setcurrency)
 			],
 		},
 		cdp_treasury: CdpTreasuryConfig {
