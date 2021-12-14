@@ -810,6 +810,9 @@ impl module_airdrop::Config for Runtime {
 	type Currency = Currencies;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type GetSerpCurrencyId = GetSerpCurrencyId;
+	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
 }
 

@@ -41,6 +41,9 @@ pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 2;
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
 mod airdrop {
 	pub use super::super::*;
@@ -100,7 +103,10 @@ parameter_types! {
 		SETUSD,
 	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const GetSetUSDId: CurrencyId = SETUSD;  // SetDollar currency ticker is SETUSD/
+	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
+	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
+	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
 }
 
 ord_parameter_types! {
@@ -111,6 +117,9 @@ impl Config for Runtime {
 	type Currency = Tokens;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type GetSerpCurrencyId = GetSerpCurrencyId;
+	type GetDinarCurrencyId = GetDinarCurrencyId;
 	type DropOrigin = EnsureSignedBy<One, AccountId>;
 }
 
