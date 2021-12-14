@@ -82,6 +82,15 @@
     "AirDropCurrencyId": {
         "_enum": [
             "SETR",
+            "SETUSD",
+            "SETM",
+            "SERP",
+            "DNAR"
+        ]
+    },
+    "SerpStableCurrencyId": {
+        "_enum": [
+            "SETR",
             "SETUSD"
         ]
     },

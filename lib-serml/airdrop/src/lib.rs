@@ -61,6 +61,21 @@ pub mod module {
 		/// The SetUSD currency id, it should be SETUSD in Setheum.
 		type GetSetUSDId: Get<CurrencyId>;
 
+		#[pallet::constant]
+		/// Native Setheum (SETM) currency id. [P]Pronounced "set M" or "setem"
+		/// 
+		type GetNativeCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// Serp (SERP) currency id.
+		/// 
+		type GetSerpCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
+		/// The Dinar (DNAR) currency id.
+		/// 
+		type GetDinarCurrencyId: Get<CurrencyId>;
+
 		/// The origin which may lock and unlock prices feed to system.
 		type DropOrigin: EnsureOrigin<Self::Origin>;
 	}
@@ -108,6 +123,21 @@ pub mod module {
 			} else if currency_id == AirDropCurrencyId::SETUSD {
 				for (account, balance) in beneficiaries {
 					T::Currency::deposit(T::GetSetUSDId::get(), &account, balance)?;
+				}
+			} 
+			// VVV remove after IAE (Initial Airdrop Offering)
+			// vvv AND MultiCurrency INITIAL ALLOCATIONS vvv
+			else if currency_id == AirDropCurrencyId::SETM {
+				for (account, balance) in beneficiaries {
+					T::Currency::deposit(T::GetNativeCurrencyId::get(), &account, balance)?;
+				}
+			} else if currency_id == AirDropCurrencyId::SERP {
+				for (account, balance) in beneficiaries {
+					T::Currency::deposit(T::GetSerpCurrencyId::get(), &account, balance)?;
+				}
+			} else if currency_id == AirDropCurrencyId::DNAR {
+				for (account, balance) in beneficiaries {
+					T::Currency::deposit(T::GetDinarCurrencyId::get(), &account, balance)?;
 				}
 			}
 			

@@ -33,7 +33,7 @@
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
-use primitives::{Balance, CurrencyId};
+use primitives::{Balance, CurrencyId, SerpStableCurrencyId};
 use sp_core::U256;
 use sp_runtime::{
 	DispatchResult, 
@@ -192,7 +192,7 @@ pub mod module {
 		/// CashDrop has been deposited to vault successfully.
 		CashDropToVault(Balance, CurrencyId),
 		/// Stable Currency Inflation Rate Updated
-		StableCurrencyInflationRateUpdated(CurrencyId, Balance),
+		StableCurrencyInflationRateUpdated(SerpStableCurrencyId, Balance),
 		/// SERP-TES is Triggered
 		SerpTesNow(),
 		/// Stable Currency Inflation Rate Delivered
@@ -319,11 +319,15 @@ pub mod module {
 		#[transactional]
 		pub fn set_stable_currency_inflation_rate(
 			origin: OriginFor<T>,
-			currency_id: CurrencyId,
+			currency_id: SerpStableCurrencyId,
 			size: Balance,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			StableCurrencyInflationRate::<T>::insert(currency_id, size);
+			if currency_id == SerpStableCurrencyId::SETR {
+				StableCurrencyInflationRate::<T>::insert(T::SetterCurrencyId::get(), size);
+			} else if currency_id == SerpStableCurrencyId::SETUSD {
+				StableCurrencyInflationRate::<T>::insert(T::GetSetUSDId::get(), size);
+			}
 			Self::deposit_event(Event::StableCurrencyInflationRateUpdated(currency_id, size));
 			Ok(().into())
 		}
@@ -677,7 +681,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			);
 
 			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
-			let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop_pool_reward
+			let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
 			let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 			ensure!(
 				balance_cashdrop_amount <= cashdrop_pool_balance,
@@ -701,7 +705,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			);
 
 			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
-			let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
+			let cashdrop_pool_reward = transfer_amount / 200; // 0.5% cashdrop_pool_reward
 			let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 			ensure!(
 				balance_cashdrop_amount <= cashdrop_pool_balance,
