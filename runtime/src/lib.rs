@@ -2025,6 +2025,8 @@ impl_runtime_apis! {
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850").to_vec().into(),
 				// System Events
 				hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7").to_vec().into(),
+				// Treasury
+				hex_literal::hex!("6d6f646c7365742f747273790000000000000000000000000000000000000000").to_vec().into(),
 			];
 
 			let mut batches = Vec::<BenchmarkBatch>::new();
