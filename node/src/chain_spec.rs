@@ -288,7 +288,7 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 		),
 		// Bootnodes - TODO: Update!
 		vec![
-			// "/dns/bootnode-t1.setheumscan.com/tcp/30334/p2p/12D3KooWKmFtS7BFtkkKWrP5ZcCpPFokmST2JFXFSsVBNeW5SXWg".parse().unwrap()
+			// "/dns/bootnode-newrome.setheum.xyz/tcp/30334/p2p/12D3KooWKmFtS7BFtkkKWrP5ZcCpPFokmST2JFXFSsVBNeW5SXWg".parse().unwrap()
 		],
 		// Telemetry
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
@@ -397,9 +397,9 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 		),
 		// Bootnodes - TODO: Update!
 		vec![
-			// "/dns/bootnode.setheumscan.com/tcp/30333/p2p/12D3KooWFHSc9cUcyNtavUkLg4VBAeBnYNgy713BnovUa9WNY5pp".parse().unwrap(),
-			// "/dns/bootnode.setheum.xyz/tcp/30333/p2p/12D3KooWAQqcXvcvt4eVEgogpDLAdGWgR5bY1drew44We6FfJAYq".parse().unwrap(),
-			// "/dns/bootnode.setheum-chain.com/tcp/30333/p2p/12D3KooWCT7rnUmEK7anTp7svwr4GTs6k3XXnSjmgTcNvdzWzgWU".parse().unwrap(),
+			// "/dns/bootnode1.setheum.xyz/tcp/30333/p2p/12D3KooWFHSc9cUcyNtavUkLg4VBAeBnYNgy713BnovUa9WNY5pp".parse().unwrap(),
+			// "/dns/bootnode2.setheum.xyz/tcp/30333/p2p/12D3KooWAQqcXvcvt4eVEgogpDLAdGWgR5bY1drew44We6FfJAYq".parse().unwrap(),
+			// "/dns/bootnode3.setheum.xyz/tcp/30333/p2p/12D3KooWCT7rnUmEK7anTp7svwr4GTs6k3XXnSjmgTcNvdzWzgWU".parse().unwrap(),
 		],
 		// Telemetry
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
@@ -573,27 +573,7 @@ fn dev_genesis(
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		orml_nft: OrmlNFTConfig { tokens: vec![] },
-		// air_drop: AirDropConfig {
-		// 	airdrop_accounts: {
-		// 		let setter_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETR.json")[..];
-		// 		let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
-		// 			serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-		// 		let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETUSD.json")[..];
-		// 		let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
-		// 			serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
-
-		// 		setter_airdrop_accounts
-		// 			.iter()
-		// 			.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
-		// 			.chain(
-		// 				setdollar_airdrop_accounts
-		// 					.iter()
-		// 					.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
-		// 			)
-		// 			.collect::<Vec<_>>()
-		// 	},
-		// },
+		orml_nft: OrmlNFTConfig { tokens: vec![] }
 	}
 }
 

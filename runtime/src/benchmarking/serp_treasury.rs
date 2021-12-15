@@ -19,19 +19,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, SerpTreasury, Currencies, CurrencyId, GetSetUSDId, Runtime};
+use crate::{dollar, SerpTreasury, Currencies, CurrencyId, GetSetUSDId, Runtime, SerpStableCurrencyId};
 
 use frame_system::RawOrigin;
 use orml_benchmarking::runtime_benchmarks;
 use orml_traits::MultiCurrency;
 
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
-
 runtime_benchmarks! {
 	{ Runtime, serp_treasury }
 
 	set_stable_currency_inflation_rate {
-	}: _(RawOrigin::Root, STABLECOIN, 200 * dollar(STABLECOIN))
+	}: _(RawOrigin::Root, crate::SerpStableCurrencyId::SETR, 200 * 1_000_000_000_000_000_000)
 }
 
 #[cfg(test)]

@@ -9,5 +9,5 @@ RUN make release
 
 FROM debian:buster
 
-COPY --from=build /build/target/release/setheum /usr/local/bin
+COPY --from=build /build/target/release/setheum-node /usr/local/bin
 ENTRYPOINT ["setheum-node"]

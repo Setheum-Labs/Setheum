@@ -127,19 +127,19 @@ make build
 This command will start the single-node development chain with persistent state:
 
 ```bash
-./target/release/setheum --dev
+./target/release/setheum-node --dev
 ```
 
 Purge the development chain's state:
 
 ```bash
-./target/release/setheum purge-chain --dev
+./target/release/setheum-node purge-chain --dev
 ```
 
 Start the development chain with detailed logging:
 
 ```bash
-RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum -lruntime=debug --dev
+RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum-node -lruntime=debug --dev
 ```
 
 ### Run tests
@@ -162,11 +162,11 @@ cargo test -p module-poc --all-features
 
 Run the module benchmarks and generate the weights file:
 ```
-./target/release/setheum benchmark \
+./target/release/setheum-node benchmark \
     --chain=dev \
     --steps=50 \
     --repeat=20 \
-    --pallet=module_airdrop \
+    --pallet=module_currencies \
     --extrinsic='*'  \
     --execution=wasm \
     --wasm-execution=compiled \
@@ -185,7 +185,7 @@ make debug
 Once the project has been built, the following command can be used to explore all parameters and subcommands:
 
 ```bash
-./target/release/setheum -h
+./target/release/setheum-node -h
 ```
 
 ### Release builds

@@ -20,7 +20,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 // Executed Command:
-// target/release/setheum
+// target/release/setheum-node
 // benchmark
 // --chain=dev
 // --steps=50

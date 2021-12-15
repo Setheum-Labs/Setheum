@@ -21,7 +21,7 @@
 
 
 // Executed Command:
-// target/release/setheum
+// target/release/setheum-node
 // benchmark
 // --chain=dev
 // --steps=50
