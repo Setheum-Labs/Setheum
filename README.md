@@ -166,7 +166,7 @@ Run the module benchmarks and generate the weights file:
     --chain=dev \
     --steps=50 \
     --repeat=20 \
-    --pallet=module_airdrop \
+    --pallet=module_currencies \
     --extrinsic='*'  \
     --execution=wasm \
     --wasm-execution=compiled \
