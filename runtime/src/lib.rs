@@ -1829,8 +1829,8 @@ impl_runtime_apis! {
 			None
 		}
 	}
-	
-	impl orml_oracle_rpc_runtime_api::OracleApi<
+
+	impl primitives::OracleApi<
 		Block,
 		DataProviderId,
 		CurrencyId,
