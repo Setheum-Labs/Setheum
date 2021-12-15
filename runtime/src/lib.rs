@@ -239,7 +239,7 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
-	pub const BlockHashCount: BlockNumber = 80 * MINUTES;
+	pub const BlockHashCount: BlockNumber = 2400; // 4hrs
 	pub const SS58Prefix: u8 = 25;
 }
 
@@ -340,9 +340,9 @@ pallet_staking_reward_curve::build! {
 }
 
 parameter_types! {
-	pub const SessionsPerEra: sp_staking::SessionIndex = 2; // 2 hours
-	pub const BondingDuration: pallet_staking::EraIndex = 4; // 8 hours
-	pub const SlashDeferDuration: pallet_staking::EraIndex = 2; // 4 hours
+	pub const SessionsPerEra: sp_staking::SessionIndex = 2; // 2 hours (20 mins in test)
+	pub const BondingDuration: pallet_staking::EraIndex = 4; // 8 hours (80 mins in test)
+	pub const SlashDeferDuration: pallet_staking::EraIndex = 2; // 4 hours (40 mins in test)
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 	pub const MaxNominatorRewardedPerValidator: u32 = 64;
 }
