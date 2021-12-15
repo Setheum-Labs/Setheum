@@ -4,7 +4,8 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: "**"
+    branches:
+    - '*'
 
 env:
   CARGO_TERM_COLOR: always
@@ -44,20 +45,3 @@ jobs:
       run: make init
     - name: Test
       run: make test
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: clippy-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Init
-      run: make init
-    - name: Clippy
-      run: make clippy
