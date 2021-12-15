@@ -34,10 +34,10 @@ wasm:
 .PHONY: genesis
 genesis:
 	make release
-	./target/release/setheum build-spec --chain testnet-new > resources/chain_spec_testnet.json
-	./target/release/setheum build-spec --chain mainnet-new > resources/chain_spec_mainnet.json
-	./target/release/setheum build-spec --chain testnet-new --raw > resources/chain_spec_testnet_raw.json
-	./target/release/setheum build-spec --chain mainnet-new --raw > resources/chain_spec_mainnet_raw.json
+	./target/release/setheum-node build-spec --chain testnet-new > resources/chain_spec_testnet.json
+	./target/release/setheum-node build-spec --chain mainnet-new > resources/chain_spec_mainnet.json
+	./target/release/setheum-node build-spec --chain testnet-new --raw > resources/chain_spec_testnet_raw.json
+	./target/release/setheum-node build-spec --chain mainnet-new --raw > resources/chain_spec_mainnet_raw.json
 
 .PHONY: check
 check:
@@ -91,7 +91,7 @@ fork:
 ifeq (,$(wildcard fork/data))
 	mkdir fork/data
 endif
-	cp target/release/setheum fork/data/binary
+	cp target/release/setheum-node fork/data/binary
 	cp target/release/wbuild/setheum-runtime/setheum_runtime.compact.wasm fork/data/runtime.wasm
 	cp resources/types.json fork/data/schema.json
 	cp resources/chain_spec_$(chain)_raw.json fork/data/genesis.json

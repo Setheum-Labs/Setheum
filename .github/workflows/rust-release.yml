@@ -19,7 +19,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          target/release/setheum
+          target/release/setheum-node
           LICENSE
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

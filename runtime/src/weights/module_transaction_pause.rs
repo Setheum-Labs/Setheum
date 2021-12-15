@@ -26,7 +26,7 @@
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("setheum-latest"), DB CACHE: 128
 
 // Executed Command:
-// target/release/setheum
+// target/release/setheum-node
 // benchmark
 // --chain=setheum-latest
 // --steps=50
