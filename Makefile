@@ -1,16 +1,10 @@
-.PHONY: configure-rust
-configure-rust:
-	sudo apt install make clang pkg-config libssl-dev build-essential curl
-	curl https://sh.rustup.rs -sSf | sh
-	rustup install
-	rustup default
+.PHONY: toolchain
+toolchain:
+	rustup install nightly
+	rustup default nightly
 	rustup toolchain install nightly-2021-05-09
 	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
 	rustup component add clippy
-
-.PHONY: toolchain
-toolchain:
-	configure-rust
 
 .PHONY: init
 init: toolchain submodule build
