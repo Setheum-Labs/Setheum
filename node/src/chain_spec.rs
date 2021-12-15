@@ -573,27 +573,7 @@ fn dev_genesis(
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],
 		},
-		orml_nft: OrmlNFTConfig { tokens: vec![] },
-		// air_drop: AirDropConfig {
-		// 	airdrop_accounts: {
-		// 		let setter_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETR.json")[..];
-		// 		let setter_airdrop_accounts: Vec<(AccountId, Balance)> =
-		// 			serde_json::from_slice(setter_airdrop_accounts_json).unwrap();
-		// 		let setdollar_airdrop_accounts_json = &include_bytes!("../../resources/testnet-airdrop-SETUSD.json")[..];
-		// 		let setdollar_airdrop_accounts: Vec<(AccountId, Balance)> =
-		// 			serde_json::from_slice(setdollar_airdrop_accounts_json).unwrap();
-
-		// 		setter_airdrop_accounts
-		// 			.iter()
-		// 			.map(|(account_id, setter_amount)| (account_id.clone(), AirDropCurrencyId::SETR, *setter_amount))
-		// 			.chain(
-		// 				setdollar_airdrop_accounts
-		// 					.iter()
-		// 					.map(|(account_id, setdollar_amount)| (account_id.clone(), AirDropCurrencyId::SETUSD, *setdollar_amount)),
-		// 			)
-		// 			.collect::<Vec<_>>()
-		// 	},
-		// },
+		orml_nft: OrmlNFTConfig { tokens: vec![] }
 	}
 }
 
