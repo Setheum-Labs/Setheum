@@ -38,9 +38,15 @@ pub mod serp_treasury;
 pub mod prices;
 pub mod transaction_pause;
 pub mod transaction_payment;
+// pub mod vesting;
 
 // orml benchmarking
 pub mod auction;
 pub mod authority;
 pub mod oracle;
 pub mod tokens;
+
+
+// pub fn get_vesting_account() -> super::AccountId {
+// 	super::Web3SettersClubAccounts::get()[0].clone()
+// }

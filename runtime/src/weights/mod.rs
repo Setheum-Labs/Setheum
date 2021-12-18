@@ -36,6 +36,7 @@ pub mod module_nft;
 pub mod module_prices;
 pub mod module_transaction_pause;
 pub mod module_transaction_payment;
+pub mod module_vesting;
 
 pub mod orml_auction;
 pub mod orml_authority;
