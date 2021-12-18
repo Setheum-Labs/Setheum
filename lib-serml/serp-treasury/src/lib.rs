@@ -70,6 +70,7 @@ pub mod module {
 		/// The stable currency ids
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
+		#[pallet::constant]
 		/// A duration period of inflation injection.
 		type StableCurrencyInflationPeriod: Get<Self::BlockNumber>;
 
@@ -167,11 +168,7 @@ pub mod module {
 		/// Dinar is not enough
 		DinarNotEnough,
 		/// Swap Path is invalid
-		InvalidSwapPath,
-		/// CashDrop is not available.
-		CashdropNotAvailable,
-		/// Transfer is too low or too high for CashDrop.
-		TransferNotEligibleForCashDrop,
+		InvalidSwapPath
 	}
 
 	#[pallet::event]
@@ -675,49 +672,65 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			let minimum_claimable_transfer = T::SetterMinimumClaimableTransferAmounts::get();
 			let maximum_claimable_transfer = T::SetterMaximumClaimableTransferAmounts::get();
 
-			ensure!(
-				transfer_amount <= minimum_claimable_transfer || transfer_amount >= maximum_claimable_transfer,
-				Error::<T>::TransferNotEligibleForCashDrop,
-			);
-
-			let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop
-			let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop_pool_reward
-			let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
-			ensure!(
-				balance_cashdrop_amount <= cashdrop_pool_balance,
-				Error::<T>::CashdropNotAvailable,
-			);
-
-			// Issue the CashDrop claim from the CashDropPool
-			Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
-			// Add the system CashDrop reward to the CashDropPool
-			Self::add_cashdrop_to_pool(currency_id, cashdrop_pool_reward)?;
-
-			Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
+			if transfer_amount >= minimum_claimable_transfer && transfer_amount <= maximum_claimable_transfer {
+				let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop claim reward
+				let buyback_cashdrop_amount = transfer_amount / 25; // 4% cashdrop serp buyback
+				let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop pool topup reward
+				let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
+				if balance_cashdrop_amount <= cashdrop_pool_balance {
+					// Issue the CashDrop claim from the CashDropPool
+					Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
+					// Add the system CashDrop reward to the CashDropPool
+					Self::add_cashdrop_to_pool(currency_id, cashdrop_pool_reward)?;
+		
+					// buyback for 50:50 of DNAR:SERP
+					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
+						currency_id,
+						buyback_cashdrop_amount / 2,
+					);
+					// 4
+					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
+						currency_id,
+						buyback_cashdrop_amount / 2,
+					);
+		
+					Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
+				}
+			} else {
+				return Ok(())
+			}
 		} else {
 			// for the SetDollar ---vvvvvvvvv---
 			let minimum_claimable_transfer = T::SetDollarMinimumClaimableTransferAmounts::get();
 			let maximum_claimable_transfer = T::SetDollarMaximumClaimableTransferAmounts::get();
 
-			ensure!(
-				transfer_amount <= minimum_claimable_transfer || transfer_amount >= maximum_claimable_transfer,
-				Error::<T>::TransferNotEligibleForCashDrop,
-			);
-
-			let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop
-			let cashdrop_pool_reward = transfer_amount / 200; // 0.5% cashdrop_pool_reward
-			let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
-			ensure!(
-				balance_cashdrop_amount <= cashdrop_pool_balance,
-				Error::<T>::CashdropNotAvailable,
-			);
-
-			// Issue the CashDrop claim from the CashDropPool
-			Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
-			// Add the system CashDrop reward to the CashDropPool
-			Self::add_cashdrop_to_pool(currency_id, cashdrop_pool_reward)?;
-
-			Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
+			if transfer_amount >= minimum_claimable_transfer && transfer_amount <= maximum_claimable_transfer {
+				let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop claim reward
+				let buyback_cashdrop_amount = transfer_amount / 14; // 7.14285714% cashdrop serp buyback
+				let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop pool topup reward
+				let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
+				if balance_cashdrop_amount <= cashdrop_pool_balance {
+					// Issue the CashDrop claim from the CashDropPool
+					Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
+					// Add the system CashDrop reward to the CashDropPool
+					Self::add_cashdrop_to_pool(currency_id, cashdrop_pool_reward)?;
+		
+					// buyback for 50:50 of DNAR:SERP
+					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
+						currency_id,
+						buyback_cashdrop_amount / 2,
+					);
+					// 4
+					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
+						currency_id,
+						buyback_cashdrop_amount / 2,
+					);
+		
+					Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
+				}
+			} else {
+				return Ok(())
+			}
 		}
 
 		Ok(())
