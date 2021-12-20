@@ -1202,27 +1202,14 @@ impl pallet_balances::Config for Runtime {
 
 parameter_types! {
 	pub MinVestedTransfer: Balance = 0;
-	pub const MaxNativeVestingSchedules: u32 = 70;
-	pub const MaxSerpVestingSchedules: u32 = 70;
-	pub const MaxDinarVestingSchedules: u32 = 70;
-	pub const MaxSetterVestingSchedules: u32 = 70;
-	pub const MaxSetUSDVestingSchedules: u32 = 70;
+	pub const MaxVestingSchedules: u32 = 500;
 }
 
 impl module_vesting::Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Currencies;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
-	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
-	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
-	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;
-	type MaxSetterVestingSchedules = MaxSetterVestingSchedules;
-	type MaxSetUSDVestingSchedules = MaxSetUSDVestingSchedules;
+	type MaxVestingSchedules = MaxVestingSchedules;
 	type VestedTransferOrigin = EnsureWeb3SettersClub;
 	type WeightInfo = weights::module_vesting::WeightInfo<Runtime>;
 }

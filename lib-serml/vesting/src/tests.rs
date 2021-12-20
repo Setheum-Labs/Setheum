@@ -16,7 +16,7 @@ fn vesting_from_chain_spec_works() {
 		));
 
 		assert_eq!(
-			Vesting::native_vesting_schedules(&CHARLIE),
+			Vesting::vesting_schedules(&CHARLIE, SETM),
 			vec![VestingSchedule {
 				start: 2u64,
 				period: 3u64,
@@ -59,7 +59,7 @@ fn vested_transfer_works() {
 			per_period: 100u64,
 		};
 		assert_ok!(Vesting::vested_transfer(Origin::signed(ALICE), SETM, BOB, schedule.clone()));
-		assert_eq!(Vesting::native_vesting_schedules(&BOB), vec![schedule.clone()]);
+		assert_eq!(Vesting::vesting_schedules(&BOB, SETM), vec![schedule.clone()]);
 		System::assert_last_event(Event::Vesting(crate::Event::VestingScheduleAdded(SETM, ALICE, BOB, schedule)));
 	});
 }
@@ -187,7 +187,7 @@ fn claim_works() {
 		assert!(Tokens::transfer(Origin::signed(BOB), ALICE, SETM, 10).is_err());
 		// unlocked after claiming
 		assert_ok!(Vesting::claim(Origin::signed(BOB), SETM));
-		assert!(NativeVestingSchedules::<Runtime>::contains_key(BOB));
+		assert!(VestingSchedules::<Runtime>::contains_key(BOB, SETM));
 		assert_ok!(Tokens::transfer(Origin::signed(BOB), ALICE, SETM, 10));
 		// more are still locked
 		assert!(Tokens::transfer(Origin::signed(BOB), ALICE, SETM, 1).is_err());
@@ -195,7 +195,7 @@ fn claim_works() {
 		System::set_block_number(21);
 		// claim more
 		assert_ok!(Vesting::claim(Origin::signed(BOB), SETM));
-		assert!(!NativeVestingSchedules::<Runtime>::contains_key(BOB));
+		assert!(!VestingSchedules::<Runtime>::contains_key(BOB, SETM));
 		assert_ok!(Tokens::transfer(Origin::signed(BOB), ALICE, SETM, 10));
 		// all used up
 		assert_eq!(Tokens::free_balance(SETM, &BOB), 0);
@@ -219,7 +219,7 @@ fn claim_for_works() {
 
 		assert_ok!(Vesting::claim_for(Origin::signed(ALICE), SETM, BOB));
 
-		assert!(NativeVestingSchedules::<Runtime>::contains_key(&BOB));
+		assert!(VestingSchedules::<Runtime>::contains_key(&BOB, SETM));
 
 		System::set_block_number(21);
 
@@ -227,7 +227,7 @@ fn claim_for_works() {
 
 		// no locks anymore
 		assert_eq!(PalletBalances::locks(&BOB), vec![]);
-		assert!(!NativeVestingSchedules::<Runtime>::contains_key(&BOB));
+		assert!(!VestingSchedules::<Runtime>::contains_key(&BOB, SETM));
 	});
 }
 
@@ -264,10 +264,10 @@ fn update_vesting_schedules_works() {
 		assert_ok!(Tokens::transfer(Origin::signed(BOB), ALICE, SETM, 10));
 
 		// empty vesting schedules cleanup the storage and unlock the fund
-		assert!(NativeVestingSchedules::<Runtime>::contains_key(BOB));
+		assert!(VestingSchedules::<Runtime>::contains_key(BOB, SETM));
 
 		assert_ok!(Vesting::update_vesting_schedules(Origin::root(), SETM, BOB, vec![]));
-		assert!(!NativeVestingSchedules::<Runtime>::contains_key(BOB));
+		assert!(!VestingSchedules::<Runtime>::contains_key(BOB, SETM));
 		assert_eq!(PalletBalances::locks(&BOB), vec![]);
 	});
 }
@@ -315,19 +315,19 @@ fn multiple_vesting_schedule_claim_works() {
 		};
 		assert_ok!(Vesting::vested_transfer(Origin::signed(ALICE), SETM, BOB, schedule2.clone()));
 
-		assert_eq!(Vesting::native_vesting_schedules(&BOB), vec![schedule, schedule2.clone()]);
+		assert_eq!(Vesting::vesting_schedules(&BOB, SETM), vec![schedule, schedule2.clone()]);
 
 		System::set_block_number(21);
 
 		assert_ok!(Vesting::claim(Origin::signed(BOB), SETM));
 
-		assert_eq!(Vesting::native_vesting_schedules(&BOB), vec![schedule2]);
+		assert_eq!(Vesting::vesting_schedules(&BOB, SETM), vec![schedule2]);
 
 		System::set_block_number(31);
 
 		assert_ok!(Vesting::claim(Origin::signed(BOB), SETM));
 
-		assert!(!NativeVestingSchedules::<Runtime>::contains_key(&BOB));
+		assert!(!VestingSchedules::<Runtime>::contains_key(&BOB, SETM));
 
 		assert_eq!(PalletBalances::locks(&BOB), vec![]);
 	});

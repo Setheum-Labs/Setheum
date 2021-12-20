@@ -113,11 +113,6 @@ parameter_types! {
 		SETR,
 		SETUSD,
 	];
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDId: CurrencyId = SETUSD;  // SetDollar currency ticker is SETUSD/
-	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
-	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
-	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
 	pub static MockBlockNumberProvider: u64 = 0;
 }
 
@@ -130,30 +125,17 @@ impl BlockNumberProvider for MockBlockNumberProvider {
 }
 
 parameter_types! {
-	pub const MaxNativeVestingSchedules: u32 = 2;
-	pub const MaxSerpVestingSchedules: u32 = 2;
-	pub const MaxDinarVestingSchedules: u32 = 2;
-	pub const MaxSetterVestingSchedules: u32 = 2;
-	pub const MaxSetUSDVestingSchedules: u32 = 2;
+	pub const MaxVestingSchedules: u32 = 2;
 	pub const MinVestedTransfer: u64 = 5;
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
 	type VestedTransferOrigin = EnsureAliceOrBob;
 	type WeightInfo = ();
-	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
-	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
-	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;
-	type MaxSetterVestingSchedules = MaxSetterVestingSchedules;
-	type MaxSetUSDVestingSchedules = MaxSetUSDVestingSchedules;
+	type MaxVestingSchedules = MaxVestingSchedules;
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
