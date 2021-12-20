@@ -28,7 +28,7 @@ use setheum_runtime::{
 	SS58Prefix, opaque::SessionKeys, get_all_module_accounts,
 	ImOnlineId, IndicesConfig, SessionConfig, StakingConfig,
 	AuthorityDiscoveryId, EVMConfig, AuthorityDiscoveryConfig,
-	StakerStatus,
+	StakerStatus,  VestingConfig,
 	//
 	SudoConfig,
 	ShuraCouncilMembershipConfig,
@@ -522,6 +522,7 @@ fn dev_genesis(
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
 		},
+		vesting: VestingConfig { vesting: vec![] },
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
 				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency)
@@ -686,6 +687,7 @@ fn testnet_genesis(
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
 		},
+		vesting: VestingConfig { vesting: vec![] },
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
 				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency)
@@ -885,6 +887,7 @@ fn mainnet_genesis(
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
 		},
+		vesting: VestingConfig { vesting: vec![] },
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
 				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency)

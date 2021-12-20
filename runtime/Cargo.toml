@@ -113,6 +113,7 @@ module-nft = { path = "../lib-serml/nft", default-features = false }
 module-prices = { path = "../lib-serml/prices", default-features = false }
 
 module-support = { path = "../lib-serml/support", default-features = false }
+module-vesting = { path = "../lib-serml/vesting", default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
 runtime-common = { path = "common", default-features = false }
@@ -202,6 +203,7 @@ std = [
 	"module-prices/std",
 	"module-support/std",
 	"module-transaction-pause/std",
+	"module-vesting/std",
 
 	"primitives/std",
 
@@ -230,4 +232,5 @@ runtime-benchmarks = [
 	"module-nft/runtime-benchmarks",
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
+	"module-vesting/runtime-benchmarks",
 ]

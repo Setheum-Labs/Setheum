@@ -31,7 +31,7 @@ use codec::{Compact, Decode, Encode};
 use sp_std::prelude::*;
 use sp_core::{
 	crypto::KeyTypeId,
-	// u32_trait::{_2, _3, _4},
+	u32_trait::{_2, _3, _4},
 	H160, OpaqueMetadata,
 };
 use sp_runtime::{
@@ -103,6 +103,7 @@ pub use primitives::{
 	AuthoritysOriginId, Balance, BlockNumber, CurrencyId, DataProviderId, EraIndex, Hash, Moment, Nonce,
 	ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair, SerpStableCurrencyId,
 };
+// use module_support::Web3SettersClubAccounts;
 pub use runtime_common::{
 	BlockLength, BlockWeights, GasToWeight, OffchainSolutionWeightLimit,
 	Price, Rate, Ratio, SystemContractsFilter, ExchangeRate, TimeStampedPrice,
@@ -152,38 +153,68 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 	]
 }
 
-// TODO: Update the accounts and uncomment
-// // Enable when we add FoundationAccount to governance
-// parameter_types! {
-// 	pub SetheumFoundationAccounts: Vec<AccountId> = vec![
-// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
-// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
-// 		hex_literal::hex!["26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac"].into(),	// blabla
-// 	];
-// }
+parameter_types! {
+	pub Web3SettersClubAccounts: Vec<AccountId> = vec![
+		// hex_literal::hex!["608fbd3f7ec6a45fb6d5b2967f54da4713c21d75efcc715544e091fa63c1fd0e"].into(),	// 3Xs6kzepJsQc3jFoBeUm8WUnf2wtvdYPqdNNjmTXijbDAb4N
+		// hex_literal::hex!["3c5dca516188b2ac077e33a886ac1ea2c03d2a157f56b70ca182c9f7fe5f9055"].into(),	// 3X3eCQohujSih311akE6rtA7WsBRTbUVu2PV5zKiCKkrnrR8
+		// hex_literal::hex!["2e70349d7140ec49b7cf1ae03b6ae3405103dab86c5a463ceef77ffb4a769868"].into(),	// 3WjNzpGY2WnsV9JPZdUHcDf8fZ6Jh9YMCQKRUU6SBNwn1PAj
+		// hex_literal::hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(),	// 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
+		// hex_literal::hex!["78d105e22be9735d200591ebe506fbc0d0be3f18afa5f5b2fbdb370ee4c2fd47"].into(),	// 3YQuJToGJv2Gwu2puFbamNTDhQnKP1xU1zf6TiCHe8Ty2om3
+		TreasuryPalletId::get().into_account(),
+	];
+}
 
-// pub struct EnsureSetheumFoundation;
-// impl EnsureOrigin<Origin> for EnsureSetheumFoundation {
-// 	type Success = AccountId;
+pub struct EnsureWeb3SettersClub;
+impl EnsureOrigin<Origin> for EnsureWeb3SettersClub {
+	type Success = AccountId;
 
-// 	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
-// 		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
-// 			RawOrigin::Signed(caller) => {
-// 				if SetheumFoundationAccounts::get().contains(&caller) {
-// 					Ok(caller)
-// 				} else {
-// 					Err(Origin::from(Some(caller)))
-// 				}
-// 			}
-// 			r => Err(Origin::from(r)),
-// 		})
-// 	}
+	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
+		Into::<Result<RawOrigin<AccountId>, Origin>>::into(o).and_then(|o| match o {
+			RawOrigin::Signed(caller) => {
+				if Web3SettersClubAccounts::get().contains(&caller) {
+					Ok(caller)
+				} else {
+					Err(Origin::from(Some(caller)))
+				}
+			}
+			r => Err(Origin::from(r)),
+		})
+	}
 
-// 	#[cfg(feature = "runtime-benchmarks")]
-// 	fn successful_origin() -> Origin {
-// 		Origin::from(RawOrigin::Signed(Default::default()))
-// 	}
-// }
+	#[cfg(feature = "runtime-benchmarks")]
+	fn successful_origin() -> Origin {
+		Origin::from(RawOrigin::Signed(Default::default()))
+	}
+}
+
+// /// Ensures for SetheumFoundation collectives: 
+// // Shura Council
+// pub type EnsureRootOrOneShuraCouncil = EnsureOneOf<
+// AccountId, EnsureWeb3SettersClub, pallet_collective::EnsureMember<AccountId, ShuraCouncilInstance>>;
+
+// pub type EnsureRootOrTwoThirdsShuraCouncil = EnsureOneOf<
+// 	AccountId,
+// 	EnsureWeb3SettersClub,
+// 	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, ShuraCouncilInstance>,
+// >;
+
+// pub type EnsureRootOrThreeFourthsShuraCouncil = EnsureOneOf<
+// 	AccountId,
+// 	EnsureWeb3SettersClub,
+// 	pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, ShuraCouncilInstance>,
+// >;
+
+// pub type EnsureRootOrTwoThirdsFinancialCouncil = EnsureOneOf<
+// 	AccountId,
+// 	EnsureWeb3SettersClub,
+// 	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, FinancialCouncilInstance>,
+// >;
+
+// pub type EnsureRootOrTwoThirdsTechnicalCommittee = EnsureOneOf<
+// 	AccountId,
+// 	EnsureWeb3SettersClub,
+// 	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCommitteeInstance>,
+// >;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -839,7 +870,9 @@ parameter_types! {
 		vec![SETUSD, SETR],
 		vec![SETR, SETUSD],
 	];
-	pub StableCurrencyInflationPeriod: BlockNumber = 10 * MINUTES;
+	
+    pub const StableCurrencyInflationPeriod: BlockNumber = 1 * HOURS;
+    
 	pub SetterMinimumClaimableTransferAmounts: Balance = 1 * 1_000_000_000_000_000_000;
 	pub SetterMaximumClaimableTransferAmounts: Balance = 200_000 * 1_000_000_000_000_000_000;
 	pub SetDollarMinimumClaimableTransferAmounts: Balance = 10 * 1_000_000_000_000_000_000;
@@ -1167,6 +1200,19 @@ impl pallet_balances::Config for Runtime {
 	type ReserveIdentifier = ReserveIdentifier;
 }
 
+parameter_types! {
+	pub MinVestedTransfer: Balance = 0;
+	pub const MaxVestingSchedules: u32 = 500;
+}
+
+impl module_vesting::Config for Runtime {
+	type Event = Event;
+	type MultiCurrency = Currencies;
+	type MinVestedTransfer = MinVestedTransfer;
+	type MaxVestingSchedules = MaxVestingSchedules;
+	type VestedTransferOrigin = EnsureWeb3SettersClub;
+	type WeightInfo = weights::module_vesting::WeightInfo<Runtime>;
+}
 
 parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * BlockWeights::get().max_block;
@@ -1475,68 +1521,69 @@ construct_runtime!(
 		ShuraCouncilMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
 		FinancialCouncil: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 14,
 		FinancialCouncilMembership: pallet_membership::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
-		TechnicalCommittee: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 22,
-		TechnicalCommitteeMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 23,
+		TechnicalCommittee: pallet_collective::<Instance3>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
+		TechnicalCommitteeMembership: pallet_membership::<Instance3>::{Pallet, Call, Storage, Event<T>, Config<T>} = 17,
 
-		Authority: orml_authority::{Pallet, Call, Storage, Event<T>, Origin<T>} = 24,
+		Authority: orml_authority::{Pallet, Call, Storage, Event<T>, Origin<T>} = 18,
 
-		Utility: pallet_utility::{Pallet, Call, Event} = 25,
+		Utility: pallet_utility::{Pallet, Call, Event} = 19,
 
 		// Oracle
 		//
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Event<T>} = 26,
-		OperatorMembershipSetheum: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 27,
+		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Event<T>} = 20,
+		OperatorMembershipSetheum: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
 
 		// SERP
-		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 28,
-		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 29,
-		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 30,
-		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 31,
-		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 32,
-		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 33,
-		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 34,
+		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 22,
+		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 23,
+		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 24,
+		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 25,
+		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 26,
+		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 27,
+		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 28,
 
 		// Treasury
-		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 35,
+		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 29,
 		// Bounties
-		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 39,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 30,
 		// Tips
-		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 43,
+		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 31,
 
 		// Extras
-		NFT: module_nft::{Pallet, Call, Event<T>} = 47,
-		AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>} = 48,
+		NFT: module_nft::{Pallet, Call, Event<T>} = 32,
+		AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>} = 33,
 
 		// Account lookup
-		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 49,
+		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 34,
 
-		// Tokens & Fees
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 50,
-		Currencies: module_currencies::{Pallet, Call, Event<T>} = 51,
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 52,
-		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 53,
-		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 54,
+		// Tokens, Fees & Related
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 35,
+		Currencies: module_currencies::{Pallet, Call, Event<T>} = 36,
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 37,
+		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 38,
+		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 39,
+		Vesting: module_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 40,
 
 		// Identity
-		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 56,
+		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 41,
 
 		// Smart contracts
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 57,
-		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 58,
-		EVMBridge: module_evm_bridge::{Pallet} = 59,
-		EvmManager: module_evm_manager::{Pallet, Storage} = 60,
+		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 42,
+		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 43,
+		EVMBridge: module_evm_bridge::{Pallet} = 44,
+		EvmManager: module_evm_manager::{Pallet, Storage} = 45,
 
 		// Consensus
-		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 61,
-		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 62,
-		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 63,
-		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 64,
-		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 65,
-		Historical: pallet_session_historical::{Pallet} = 66,
-		Offences: pallet_offences::{Pallet, Storage, Event} = 67,
-		ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>} = 68,
-		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 69,
+		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 46,
+		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 47,
+		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 48,
+		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 49,
+		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 50,
+		Historical: pallet_session_historical::{Pallet} = 51,
+		Offences: pallet_offences::{Pallet, Storage, Event} = 52,
+		ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>} = 53,
+		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 54,
 	}
 );
 
@@ -1990,6 +2037,7 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, module_prices, benchmarking::prices);
 			// orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
 			orml_list_benchmark!(list, extra, module_currencies, benchmarking::currencies);
+			// orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
 
 			orml_list_benchmark!(list, extra, orml_tokens, benchmarking::tokens);
 			orml_list_benchmark!(list, extra, orml_auction, benchmarking::auction);
@@ -2049,6 +2097,7 @@ impl_runtime_apis! {
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
+			// orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
 
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);

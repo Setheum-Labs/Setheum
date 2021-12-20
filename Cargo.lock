@@ -4171,6 +4171,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "module-vesting"
+version = "0.9.80"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "module-support",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "setheum-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "more-asserts"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6477,7 +6496,7 @@ dependencies = [
 
 [[package]]
 name = "runtime-common"
-version = "0.7.3"
+version = "0.9.80"
 dependencies = [
  "ethabi",
  "frame-support",
@@ -7936,6 +7955,7 @@ dependencies = [
  "module-support",
  "module-transaction-pause",
  "module-transaction-payment",
+ "module-vesting",
  "orml-auction",
  "orml-authority",
  "orml-benchmarking",
