@@ -4721,21 +4721,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "orml-vesting"
-version = "0.4.1-dev"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "owning_ref"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7969,6 +7954,7 @@ dependencies = [
  "module-support",
  "module-transaction-pause",
  "module-transaction-payment",
+ "module-vesting",
  "orml-auction",
  "orml-authority",
  "orml-benchmarking",
@@ -7977,7 +7963,6 @@ dependencies = [
  "orml-oracle-rpc-runtime-api",
  "orml-tokens",
  "orml-traits",
- "orml-vesting",
  "pallet-authority-discovery",
  "pallet-authorship",
  "pallet-babe",

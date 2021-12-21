@@ -28,7 +28,7 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for orml_vesting.
+/// Weight functions needed for module_vesting.
 pub trait WeightInfo {
 	fn vested_transfer() -> Weight;
 	fn claim(i: u32, ) -> Weight;
