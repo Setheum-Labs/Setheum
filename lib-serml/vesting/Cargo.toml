@@ -20,7 +20,6 @@ orml-traits = { path = "../../lib-orml/traits", default-features = false }
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate" , branch = "polkadot-v0.9.10" }
 pallet-balances = { git = "https://github.com/paritytech/substrate" , branch = "polkadot-v0.9.10" }
-orml-tokens = { path = "../../lib-orml/tokens" }
 
 [features]
 default = ["std"]

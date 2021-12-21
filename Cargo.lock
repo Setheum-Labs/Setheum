@@ -4177,7 +4177,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "module-support",
- "orml-tokens",
  "orml-traits",
  "pallet-balances",
  "parity-scale-codec",
@@ -4716,6 +4715,21 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "serde_json",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "orml-vesting"
+version = "0.4.1-dev"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
@@ -7955,7 +7969,6 @@ dependencies = [
  "module-support",
  "module-transaction-pause",
  "module-transaction-payment",
- "module-vesting",
  "orml-auction",
  "orml-authority",
  "orml-benchmarking",
@@ -7964,6 +7977,7 @@ dependencies = [
  "orml-oracle-rpc-runtime-api",
  "orml-tokens",
  "orml-traits",
+ "orml-vesting",
  "pallet-authority-discovery",
  "pallet-authorship",
  "pallet-babe",
