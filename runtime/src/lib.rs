@@ -1207,7 +1207,7 @@ parameter_types! {
 
 impl module_vesting::Config for Runtime {
 	type Event = Event;
-	type MultiCurrency = Currencies;
+	type Currency = pallet_balances::Pallet<Runtime>;
 	type MinVestedTransfer = MinVestedTransfer;
 	type MaxVestingSchedules = MaxVestingSchedules;
 	type VestedTransferOrigin = EnsureWeb3SettersClub;
@@ -2037,7 +2037,7 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, module_prices, benchmarking::prices);
 			// orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
 			orml_list_benchmark!(list, extra, module_currencies, benchmarking::currencies);
-			// orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
+			orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
 
 			orml_list_benchmark!(list, extra, orml_tokens, benchmarking::tokens);
 			orml_list_benchmark!(list, extra, orml_auction, benchmarking::auction);
@@ -2097,7 +2097,7 @@ impl_runtime_apis! {
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
-			// orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
+			orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
 
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);

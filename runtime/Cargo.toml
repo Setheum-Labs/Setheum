@@ -184,6 +184,7 @@ std = [
 	"orml-tokens/std",
 	"orml-authority/std",
 	"orml-benchmarking/std",
+	"module-vesting/std",
 
 	"module-airdrop/std",
 	"auction-manager/std",
