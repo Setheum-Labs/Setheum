@@ -29,11 +29,7 @@ runtime_benchmarks! {
 	{ Runtime, serp_treasury }
 
 	set_stable_currency_inflation_rate {
-	}: _(RawOrigin::Root, crate::SerpStableCurrencyId::SETR, 200 * 1_000_000_000_000_000_000);
-
-	force_serpdown {
-		SerpTreasury::on_serpdown(crate::CurrencyId::SETR, 1_000 * 1_000_000_000_000_000_000)?;
-	}: _(RawOrigin::Root, crate::CurrencyId::SETR, 200 * 1_000_000_000_000_000_000);
+	}: _(RawOrigin::Root, crate::SerpStableCurrencyId::SETR, 200 * 1_000_000_000_000_000_000)
 }
 
 #[cfg(test)]

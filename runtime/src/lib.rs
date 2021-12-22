@@ -902,7 +902,7 @@ impl serp_treasury::Config for Runtime {
 	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type PalletId = SerpTreasuryPalletId;
-	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -2042,7 +2042,7 @@ impl_runtime_apis! {
 			// orml_list_benchmark!(list, extra, emergency_shutdown, benchmarking::emergency_shutdown);
 			// orml_list_benchmark!(list, extra, module_evm, benchmarking::evm);
 			orml_list_benchmark!(list, extra, serp_setmint, benchmarking::serp_setmint);
-			orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
+			// orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
 			orml_list_benchmark!(list, extra, cdp_treasury, benchmarking::cdp_treasury);
 			orml_list_benchmark!(list, extra, module_transaction_pause, benchmarking::transaction_pause);
 			orml_list_benchmark!(list, extra, module_transaction_payment, benchmarking::transaction_payment);
