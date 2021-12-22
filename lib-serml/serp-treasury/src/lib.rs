@@ -240,6 +240,8 @@ pub mod module {
 	#[pallet::genesis_config]
 	pub struct GenesisConfig {
 		pub stable_currency_inflation_rate: Vec<(CurrencyId, Balance)>,
+		pub setter_cashdrop: Balance,
+		pub setusd_cashdrop: Balance,
 	}
 
 	#[cfg(feature = "std")]
@@ -247,6 +249,8 @@ pub mod module {
 		fn default() -> Self {
 			GenesisConfig {
 				stable_currency_inflation_rate: vec![],
+				setter_cashdrop: Balance,
+				setusd_cashdrop: Balance,
 			}
 		}
 	}
@@ -258,6 +262,16 @@ pub mod module {
 				.iter()
 				.for_each(|(currency_id, size)| {
 					StableCurrencyInflationRate::<T>::insert(currency_id, size);
+				});
+			self.setter_cashdrop
+				.iter()
+				.for_each(|(drop_balance)| {
+					CashDropPool::<T>::insert(T::SetterCurrencyId::get(), drop_balance);
+				});
+			self.setusd_cashdrop
+				.iter()
+				.for_each(|(drop_balance)| {
+					CashDropPool::<T>::insert(T::GetSetUSDId::get(), drop_balance);
 				});
 		}
 	}
