@@ -214,7 +214,9 @@ pub mod module {
 		/// SerpSwapExactStableToNative
 		TopUpCashDropPool(CurrencyId, Balance),
 		/// SerpSwapExactStableToSerpToken
-		IssueCashDropFromPool(T::AccountId, CurrencyId, Balance)
+		IssueCashDropFromPool(T::AccountId, CurrencyId, Balance),
+		/// Force SerpDown Risk Management
+		ForceSerpDown(CurrencyId, Balance)
 	}
 
 	/// Mapping to Minimum Claimable Transfer.
@@ -331,6 +333,25 @@ pub mod module {
 				StableCurrencyInflationRate::<T>::insert(T::GetSetUSDId::get(), size);
 			}
 			Self::deposit_event(Event::StableCurrencyInflationRateUpdated(currency_id, size));
+			Ok(().into())
+		}
+		/// Update parameters related to stable currency serpdown for specific
+		/// stable currency type
+		///
+		/// The dispatch origin of this call must be `UpdateOrigin`.
+		///
+		/// - `currency_id`: stable currency type
+		/// - `amount`: serpdown contraction amount size
+		#[pallet::weight((T::WeightInfo::force_serpdown(), DispatchClass::Operational))]
+		#[transactional]
+		pub fn force_serpdown(
+			origin: OriginFor<T>,
+			currency_id: CurrencyId,
+			size: Balance,
+		) -> DispatchResultWithPostInfo {
+			T::UpdateOrigin::ensure_origin(origin)?;
+			<Self as SerpTreasury<T::AccountId>>::on_serpdown(currency_id, size)?;
+			Self::deposit_event(Event::ForceSerpDown(currency_id, size));
 			Ok(().into())
 		}
 	}
