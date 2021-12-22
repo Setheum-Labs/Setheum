@@ -444,7 +444,7 @@ pub mod module {
 			dest: <T::Lookup as StaticLookup>::Source,
 			schedule: VestingScheduleOf<T>
 		) -> DispatchResult {
-			let from = ensure_signed(origin)?;
+			let from = ensure_root(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			Self::do_vested_transfer(currency_id, &from, &to, schedule.clone())?;
 
