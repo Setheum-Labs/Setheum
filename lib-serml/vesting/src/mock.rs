@@ -147,7 +147,6 @@ impl Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
-	type VestedTransferOrigin = EnsureAliceOrBob;
 	type WeightInfo = ();
 	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
 	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;

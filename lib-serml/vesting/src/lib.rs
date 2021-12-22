@@ -180,9 +180,6 @@ pub mod module {
 		/// The minimum amount transferred to call `vested_transfer`.
 		type MinVestedTransfer: Get<BalanceOf<Self>>;
 
-		/// Required origin for vested transfer.
-		type VestedTransferOrigin: EnsureOrigin<Self::Origin, Success = Self::AccountId>;
-
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
@@ -447,7 +444,7 @@ pub mod module {
 			dest: <T::Lookup as StaticLookup>::Source,
 			schedule: VestingScheduleOf<T>
 		) -> DispatchResult {
-			let from = T::VestedTransferOrigin::ensure_origin(origin)?;
+			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 			Self::do_vested_transfer(currency_id, &from, &to, schedule.clone())?;
 

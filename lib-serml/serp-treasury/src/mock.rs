@@ -41,7 +41,6 @@ pub type BlockNumber = u64;
 
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
-pub const TREASURY: AccountId = 3;
 pub const CDP_TREASURY: AccountId = 5;
 pub const SETRPAY: AccountId = 9;
 pub const VAULT: AccountId = 10;
@@ -146,7 +145,6 @@ parameter_types! {
 
 	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub const CDPTreasuryAccountId: AccountId = CDP_TREASURY;
-	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
 }
 
 pub struct MockDEX;
@@ -299,7 +297,6 @@ impl Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;
-	type SetheumTreasuryAccountId = SetheumTreasuryAccountId;
 	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
 	type Dex = MockDEX;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
@@ -347,10 +344,6 @@ impl Default for ExtBuilder {
 				(BOB, SETR, 1000),
 				(BOB, DNAR, 1000),
 				(BOB, SETM, 1000),
-				(TREASURY, SETUSD, 1000),
-				(TREASURY, SETR, 1000),
-				(TREASURY, DNAR, 1000),
-				(TREASURY, SETM, 1000),
 				(CDP_TREASURY, SETUSD, 1000),
 				(CDP_TREASURY, SETR, 1000),
 				(CDP_TREASURY, DNAR, 1000),
