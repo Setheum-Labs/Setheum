@@ -22,7 +22,7 @@
 use sp_core::{Pair, Public, sr25519, H160, Bytes};
 use setheum_runtime::{
 	//
-	AccountId, CurrencyId,
+	AccountId,
 	//
 	BabeConfig, BalancesConfig, GenesisConfig, SystemConfig,
 	SS58Prefix, opaque::SessionKeys, get_all_module_accounts,
@@ -41,7 +41,7 @@ use setheum_runtime::{
 
 	//
 	DexConfig, EnabledTradingPairs,
-	TokenSymbol, TokensConfig, OrmlNFTConfig,
+	TokensConfig, OrmlNFTConfig,
 	NativeTokenExistentialDeposit, MaxNativeTokenExistentialDeposit,
 	//
 	SETM, SERP, DNAR, SETR, SETUSD,
@@ -761,7 +761,21 @@ fn testnet_genesis(
 		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 		im_online: Default::default(),
 		treasury: Default::default(), // Main Treasury (Setheum Treasury)
-		tokens: TokensConfig { balances: vec![] },
+		tokens: TokensConfig {
+			balances: vec![
+				(foundation.clone(), SETM, setm_foundation_alloc),
+				(treasury.clone(), SETM, setm_treasury_alloc),
+				(team.clone(), SETM, setm_team_alloc),
+				(foundation.clone(), SERP, serp_foundation_alloc),
+				(team.clone(), SERP, serp_team_alloc),
+				(foundation.clone(), DNAR, dnar_foundation_alloc),
+				(team.clone(), DNAR, dnar_team_alloc),
+				(foundation.clone(), SETR, setr_foundation_alloc),
+				(team.clone(), SETR, setr_team_alloc),
+				(foundation.clone(), SETUSD, setusd_foundation_alloc),
+				(team.clone(), SETUSD, setusd_team_alloc),
+			]
+		},
 		evm: EVMConfig {
 			accounts: evm_genesis_accounts,
 			treasury: root_key,
