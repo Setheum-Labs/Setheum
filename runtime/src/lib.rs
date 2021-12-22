@@ -1216,6 +1216,8 @@ impl module_vesting::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
+	type TreasuryAccount = TreasuryAccount;
+	type UpdateOrigin = EnsureRootOrTwoThirdsShuraCouncil;
 	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
 	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
 	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;

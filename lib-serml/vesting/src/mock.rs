@@ -119,6 +119,7 @@ parameter_types! {
 	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
 	pub static MockBlockNumberProvider: u64 = 0;
+	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
 }
 
 impl BlockNumberProvider for MockBlockNumberProvider {
@@ -147,6 +148,8 @@ impl Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
+	type TreasuryAccount = TreasuryAccount;
+	type UpdateOrigin = EnsureAliceOrBob;
 	type WeightInfo = ();
 	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
 	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
@@ -174,6 +177,7 @@ construct_runtime!(
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CHARLIE: AccountId = 3;
+pub const TREASURY: AccountId = 4;
 
 pub struct ExtBuilder {
 	balances: Vec<(AccountId, CurrencyId, Balance)>,
@@ -193,6 +197,11 @@ impl Default for ExtBuilder {
 				(CHARLIE, DNAR, 1000),
 				(CHARLIE, SETR, 1000),
 				(CHARLIE, SETUSD, 1000)
+				(TREASURY, SETM, 10000),
+				(TREASURY, SERP, 1000),
+				(TREASURY, DNAR, 1000),
+				(TREASURY, SETR, 1000),
+				(TREASURY, SETUSD, 1000)
 			],
 		}
 	}
