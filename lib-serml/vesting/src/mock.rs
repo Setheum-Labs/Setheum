@@ -196,7 +196,7 @@ impl Default for ExtBuilder {
 				(CHARLIE, SERP, 1000),
 				(CHARLIE, DNAR, 1000),
 				(CHARLIE, SETR, 1000),
-				(CHARLIE, SETUSD, 1000)
+				(CHARLIE, SETUSD, 1000),
 				(TREASURY, SETM, 10000),
 				(TREASURY, SERP, 1000),
 				(TREASURY, DNAR, 1000),
