@@ -119,7 +119,7 @@ parameter_types! {
 	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
 	pub static MockBlockNumberProvider: u64 = 0;
-	pub const SetheumTreasuryAccountId: AccountId = TREASURY;
+	pub const TreasuryAccount: AccountId = TREASURY;
 }
 
 impl BlockNumberProvider for MockBlockNumberProvider {
