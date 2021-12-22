@@ -938,14 +938,13 @@ pub struct DealWithFees;
 impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
 		if let Some(fees) = fees_then_tips.next() {
-            // for fees, 80% to treasury, 20% to author
-            let mut split = fees.ration(80, 20);
+            // for fees, 50% to treasury, 50% burn
+            let mut split = fees.ration(50, 50);
             if let Some(tips) = fees_then_tips.next() {
-                // for tips, if any, 70% to treasury, 30% to author (though this can be anything)
-                tips.ration_merge_into(70, 30, &mut split);
+                // for tips, if any, 50% to treasury, 50% burn (though this can be anything)
+                tips.ration_merge_into(50, 50, &mut split);
             }
             Treasury::on_unbalanced(split.0);
-			Balances::resolve_creating(&Authorship::author(), split.1);
         }
 	}
 }
@@ -1202,14 +1201,27 @@ impl pallet_balances::Config for Runtime {
 
 parameter_types! {
 	pub MinVestedTransfer: Balance = 0;
-	pub const MaxVestingSchedules: u32 = 500;
+	pub const MaxNativeVestingSchedules: u32 = 70;
+	pub const MaxSerpVestingSchedules: u32 = 70;
+	pub const MaxDinarVestingSchedules: u32 = 70;
+	pub const MaxSetterVestingSchedules: u32 = 70;
+	pub const MaxSetUSDVestingSchedules: u32 = 70;
 }
 
 impl module_vesting::Config for Runtime {
 	type Event = Event;
-	type Currency = pallet_balances::Pallet<Runtime>;
+	type MultiCurrency = Currencies;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type GetSerpCurrencyId = GetSerpCurrencyId;
+	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
-	type MaxVestingSchedules = MaxVestingSchedules;
+	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
+	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
+	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;
+	type MaxSetterVestingSchedules = MaxSetterVestingSchedules;
+	type MaxSetUSDVestingSchedules = MaxSetUSDVestingSchedules;
 	type VestedTransferOrigin = EnsureWeb3SettersClub;
 	type WeightInfo = weights::module_vesting::WeightInfo<Runtime>;
 }
@@ -2037,7 +2049,7 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, module_prices, benchmarking::prices);
 			// orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
 			orml_list_benchmark!(list, extra, module_currencies, benchmarking::currencies);
-			orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
+			// orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
 
 			orml_list_benchmark!(list, extra, orml_tokens, benchmarking::tokens);
 			orml_list_benchmark!(list, extra, orml_auction, benchmarking::auction);
@@ -2097,7 +2109,7 @@ impl_runtime_apis! {
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
-			orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
+			// orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
 
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);

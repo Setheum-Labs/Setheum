@@ -21,6 +21,12 @@ parameter_types! {
 
 pub type AccountId = u128;
 
+pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+
 impl frame_system::Config for Runtime {
 	type Origin = Origin;
 	type Call = Call;
@@ -84,18 +90,70 @@ impl EnsureOrigin<Origin> for EnsureAliceOrBob {
 	}
 }
 
+parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+
+impl orml_tokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = ();
+	type MaxLocks = MaxLocks;
+	type DustRemovalWhitelist = ();
+}
+
 parameter_types! {
-	pub const MaxVestingSchedule: u32 = 2;
+	pub StableCurrencyIds: Vec<CurrencyId> = vec![
+		SETR,
+		SETUSD,
+	];
+	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
+	pub const GetSetUSDId: CurrencyId = SETUSD;  // SetDollar currency ticker is SETUSD/
+	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
+	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
+	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
+	pub static MockBlockNumberProvider: u64 = 0;
+}
+
+impl BlockNumberProvider for MockBlockNumberProvider {
+	type BlockNumber = u64;
+
+	fn current_block_number() -> Self::BlockNumber {
+		Self::get()
+	}
+}
+
+parameter_types! {
+	pub const MaxNativeVestingSchedules: u32 = 2;
+	pub const MaxSerpVestingSchedules: u32 = 2;
+	pub const MaxDinarVestingSchedules: u32 = 2;
+	pub const MaxSetterVestingSchedules: u32 = 2;
+	pub const MaxSetUSDVestingSchedules: u32 = 2;
 	pub const MinVestedTransfer: u64 = 5;
 }
 
 impl Config for Runtime {
 	type Event = Event;
-	type Currency = PalletBalances;
+	type MultiCurrency = Tokens;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type GetSerpCurrencyId = GetSerpCurrencyId;
+	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type SetterCurrencyId = SetterCurrencyId;
+	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
 	type VestedTransferOrigin = EnsureAliceOrBob;
 	type WeightInfo = ();
-	type MaxVestingSchedules = MaxVestingSchedule;
+	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
+	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
+	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;
+	type MaxSetterVestingSchedules = MaxSetterVestingSchedules;
+	type MaxSetUSDVestingSchedules = MaxSetUSDVestingSchedules;
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
@@ -110,6 +168,7 @@ construct_runtime!(
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
 		Vesting: vesting::{Pallet, Storage, Call, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>}
 	}
 );
 
@@ -117,23 +176,44 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CHARLIE: AccountId = 3;
 
-#[derive(Default)]
-pub struct ExtBuilder;
+pub struct ExtBuilder {
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
+}
+
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		Self {
+			balances: vec![
+				(ALICE, SETM, 10000),
+				(ALICE, SERP, 1000),
+				(ALICE, DNAR, 1000),
+				(ALICE, SETR, 1000),
+				(ALICE, SETUSD, 1000),
+				(CHARLIE, SETM, 10000),
+				(CHARLIE, SERP, 1000),
+				(CHARLIE, DNAR, 1000),
+				(CHARLIE, SETR, 1000),
+				(CHARLIE, SETUSD, 1000)
+			],
+		}
+	}
+}
 
 impl ExtBuilder {
-	pub fn build() -> sp_io::TestExternalities {
+	pub fn build(self) -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::default()
 			.build_storage::<Runtime>()
 			.unwrap();
 
-		pallet_balances::GenesisConfig::<Runtime> {
-			balances: vec![(ALICE, 100), (CHARLIE, 30)],
+		orml_tokens::GenesisConfig::<Runtime> {
+			balances: self.balances,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
 
 		vesting::GenesisConfig::<Runtime> {
-			vesting: vec![(CHARLIE, 2, 3, 4, 5)], // who, start, period, period_count, per_period
+			// who, start, period, period_count, per_period
+			vesting: vec![(CHARLIE, SETM, 2, 3, 4, 5)],
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
