@@ -256,10 +256,6 @@ pub trait SerpTreasury<AccountId> {
 	/// Serplus ratio for BuyBack Swaps to burn Setter
 	fn get_buyback_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
-	fn get_treasury_serpup(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
-	fn get_treasury_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
-
 	fn get_cashdrop_serplus(amount: Self::Balance, currency_id: Self::CurrencyId) -> DispatchResult;
 
 	/// issue system surplus(stable currencies) to their destinations according to the serpup_ratio.

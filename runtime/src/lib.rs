@@ -31,7 +31,7 @@ use codec::{Compact, Decode, Encode};
 use sp_std::prelude::*;
 use sp_core::{
 	crypto::KeyTypeId,
-	u32_trait::{_2, _3, _4},
+	// u32_trait::{_2, _3, _4},
 	H160, OpaqueMetadata,
 };
 use sp_runtime::{
@@ -155,11 +155,11 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 
 parameter_types! {
 	pub Web3SettersClubAccounts: Vec<AccountId> = vec![
-		// hex_literal::hex!["608fbd3f7ec6a45fb6d5b2967f54da4713c21d75efcc715544e091fa63c1fd0e"].into(),	// 3Xs6kzepJsQc3jFoBeUm8WUnf2wtvdYPqdNNjmTXijbDAb4N
-		// hex_literal::hex!["3c5dca516188b2ac077e33a886ac1ea2c03d2a157f56b70ca182c9f7fe5f9055"].into(),	// 3X3eCQohujSih311akE6rtA7WsBRTbUVu2PV5zKiCKkrnrR8
-		// hex_literal::hex!["2e70349d7140ec49b7cf1ae03b6ae3405103dab86c5a463ceef77ffb4a769868"].into(),	// 3WjNzpGY2WnsV9JPZdUHcDf8fZ6Jh9YMCQKRUU6SBNwn1PAj
-		// hex_literal::hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(),	// 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
-		// hex_literal::hex!["78d105e22be9735d200591ebe506fbc0d0be3f18afa5f5b2fbdb370ee4c2fd47"].into(),	// 3YQuJToGJv2Gwu2puFbamNTDhQnKP1xU1zf6TiCHe8Ty2om3
+		// hex_literal::hex!("608fbd3f7ec6a45fb6d5b2967f54da4713c21d75efcc715544e091fa63c1fd0e").into(),	// 3Xs6kzepJsQc3jFoBeUm8WUnf2wtvdYPqdNNjmTXijbDAb4N
+		// hex_literal::hex!("3c5dca516188b2ac077e33a886ac1ea2c03d2a157f56b70ca182c9f7fe5f9055").into(),	// 3X3eCQohujSih311akE6rtA7WsBRTbUVu2PV5zKiCKkrnrR8
+		// hex_literal::hex!("2e70349d7140ec49b7cf1ae03b6ae3405103dab86c5a463ceef77ffb4a769868").into(),	// 3WjNzpGY2WnsV9JPZdUHcDf8fZ6Jh9YMCQKRUU6SBNwn1PAj
+		// hex_literal::hex!("22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009").into(),	// 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
+		// hex_literal::hex!("78d105e22be9735d200591ebe506fbc0d0be3f18afa5f5b2fbdb370ee4c2fd47").into(),	// 3YQuJToGJv2Gwu2puFbamNTDhQnKP1xU1zf6TiCHe8Ty2om3
 		TreasuryPalletId::get().into_account(),
 	];
 }
@@ -246,7 +246,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("setheum"),
 	impl_name: create_runtime_str!("setheum"),
 	authoring_version: 1,
-	spec_version: 101,
+	spec_version: 1,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -891,7 +891,6 @@ impl serp_treasury::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasuryAccountId = CDPTreasuryAccount;
-	type SetheumTreasuryAccountId = TreasuryAccount;
 	type DefaultSwapParitalPathList = SerpDefaultSwapParitalPathList;
 	type Dex = Dex;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
@@ -903,7 +902,7 @@ impl serp_treasury::Config for Runtime {
 	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type PalletId = SerpTreasuryPalletId;
-	type WeightInfo = weights::serp_treasury::WeightInfo<Runtime>;
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -1217,12 +1216,13 @@ impl module_vesting::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
+	type TreasuryAccount = TreasuryAccount;
+	type UpdateOrigin = EnsureRootOrTwoThirdsShuraCouncil;
 	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
 	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
 	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;
 	type MaxSetterVestingSchedules = MaxSetterVestingSchedules;
 	type MaxSetUSDVestingSchedules = MaxSetUSDVestingSchedules;
-	type VestedTransferOrigin = EnsureWeb3SettersClub;
 	type WeightInfo = weights::module_vesting::WeightInfo<Runtime>;
 }
 
@@ -2042,7 +2042,7 @@ impl_runtime_apis! {
 			// orml_list_benchmark!(list, extra, emergency_shutdown, benchmarking::emergency_shutdown);
 			// orml_list_benchmark!(list, extra, module_evm, benchmarking::evm);
 			orml_list_benchmark!(list, extra, serp_setmint, benchmarking::serp_setmint);
-			orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
+			// orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
 			orml_list_benchmark!(list, extra, cdp_treasury, benchmarking::cdp_treasury);
 			orml_list_benchmark!(list, extra, module_transaction_pause, benchmarking::transaction_pause);
 			orml_list_benchmark!(list, extra, module_transaction_payment, benchmarking::transaction_payment);

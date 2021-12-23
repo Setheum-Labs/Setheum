@@ -60,4 +60,10 @@ impl<T: frame_system::Config> serp_treasury::WeightInfo for WeightInfo<T> {
 		(24_330_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
+	fn force_serpdown() -> Weight {
+		(33_360_000 as Weight)
+			.saturating_add((23_139_000 as Weight).saturating_mul(1 as Weight))
+			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(1 as Weight)))
+	}
 }

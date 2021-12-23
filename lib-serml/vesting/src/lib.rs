@@ -55,7 +55,7 @@ use frame_support::{
 	traits::{EnsureOrigin, Get},
 	transactional, BoundedVec,
 };
-use frame_system::{ensure_root, ensure_signed, pallet_prelude::*};
+use frame_system::{ensure_signed, pallet_prelude::*};
 use sp_runtime::{
 	traits::{AtLeast32Bit, BlockNumberProvider, CheckedAdd, Saturating, StaticLookup, Zero},
 	ArithmeticError, DispatchResult, RuntimeDebug,
@@ -180,8 +180,12 @@ pub mod module {
 		/// The minimum amount transferred to call `vested_transfer`.
 		type MinVestedTransfer: Get<BalanceOf<Self>>;
 
-		/// Required origin for vested transfer.
-		type VestedTransferOrigin: EnsureOrigin<Self::Origin, Success = Self::AccountId>;
+		/// SetheumTreasury account. For Vested Transfer
+		#[pallet::constant]
+		type TreasuryAccount: Get<Self::AccountId>;
+
+		/// The origin which may update inflation related params
+		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -447,7 +451,8 @@ pub mod module {
 			dest: <T::Lookup as StaticLookup>::Source,
 			schedule: VestingScheduleOf<T>
 		) -> DispatchResult {
-			let from = T::VestedTransferOrigin::ensure_origin(origin)?;
+			T::UpdateOrigin::ensure_origin(origin)?;
+			let from = T::TreasuryAccount::get();
 			let to = T::Lookup::lookup(dest)?;
 			Self::do_vested_transfer(currency_id, &from, &to, schedule.clone())?;
 
@@ -462,7 +467,7 @@ pub mod module {
 			who: <T::Lookup as StaticLookup>::Source,
 			vesting_schedules: Vec<VestingScheduleOf<T>>,
 		) -> DispatchResult {
-			ensure_root(origin)?;
+			T::UpdateOrigin::ensure_origin(origin)?;
 
 			let account = T::Lookup::lookup(who)?;
 			Self::do_update_vesting_schedules(currency_id, &account, vesting_schedules)?;
