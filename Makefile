@@ -15,7 +15,7 @@ submodule:
 
 .PHONY: release
 release:
-	make init
+	make toolchain
 	rm -rf target/
 	cargo build --manifest-path node/Cargo.toml --features with-ethereum-compatibility --release
 
