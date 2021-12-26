@@ -7,6 +7,9 @@ toolchain:
 	rustup component add clippy
 
 .PHONY: init
+init: toolchain
+
+.PHONY: subm
 init: toolchain submodule build
 
 .PHONY: submodule
