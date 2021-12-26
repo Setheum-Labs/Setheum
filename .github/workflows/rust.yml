@@ -24,8 +24,6 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: build-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Init
-      run: make init
     - name: Build
       run: make build
   test:
