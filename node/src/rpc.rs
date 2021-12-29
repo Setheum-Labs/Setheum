@@ -19,8 +19,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#![warn(missing_docs)]
-
+#![cfg_attr(rustfmt, rustfmt_skip)]
+#![allow(unused_parens)]
+#![allow(unused_imports)]
 use std::sync::Arc;
 
 use sp_api::ProvideRuntimeApi;
