@@ -19,6 +19,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#![cfg_attr(rustfmt, rustfmt_skip)]
+#![allow(unused_parens)]
+#![allow(unused_imports)]
 use crate::{
 	SetheumOracle, AccountId, Balance, Currencies,
 	CurrencyId, MinimumCount, OperatorMembershipSetheum,

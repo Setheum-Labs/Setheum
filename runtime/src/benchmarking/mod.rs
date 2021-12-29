@@ -21,7 +21,6 @@
 
 #![cfg(feature = "runtime-benchmarks")]
 
-use sp_runtime::traits::AccountIdConversion;
 pub mod utils;
 
 // module benchmarking

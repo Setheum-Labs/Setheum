@@ -19,11 +19,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#![cfg_attr(rustfmt, rustfmt_skip)]
+#![allow(unused_parens)]
+#![allow(unused_imports)]
 use crate::{dollar, SerpTreasury, Currencies, CurrencyId, GetSetUSDId, Runtime, SerpStableCurrencyId};
 
 use frame_system::RawOrigin;
 use orml_benchmarking::runtime_benchmarks;
-use orml_traits::MultiCurrency;
 
 runtime_benchmarks! {
 	{ Runtime, serp_treasury }
