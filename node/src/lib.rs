@@ -19,6 +19,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#![allow(clippy::unused_unit)]
+#![allow(unused_parens)]
+#![allow(unused_imports)]
+
 pub mod chain_spec;
 pub mod service;
 pub mod rpc;

@@ -751,7 +751,6 @@ fn create_predeploy_contract_works() {
 }
 
 #[test]
-#[test]
 fn should_transfer_maintainer() {
 	// pragma solidity ^0.5.0;
 	//

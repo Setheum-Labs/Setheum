@@ -272,13 +272,13 @@ fn update_vesting_schedules_works() {
 	});
 }
 
-#[test]
-fn update_vesting_schedules_fails_if_unexpected_existing_locks() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Tokens::transfer(Origin::signed(ALICE), BOB, SETM, 1));
-		Tokens::set_lock(*b"prelocks", SETM, &BOB, 0u64);
-	});
-}
+// #[test]
+// fn update_vesting_schedules_fails_if_unexpected_existing_locks() {
+// 	ExtBuilder::default().build().execute_with(|| {
+// 		assert_ok!(Tokens::transfer(Origin::signed(ALICE), BOB, SETM, 1));
+// 		Tokens::set_lock(*b"prelocks", SETM, &BOB, 0u64);
+// 	});
+// }
 
 #[test]
 fn vested_transfer_check_for_min() {
