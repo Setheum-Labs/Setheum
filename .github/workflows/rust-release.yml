@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Init
+      run: make init
     - name: Build
       run: make release
     - name: Release

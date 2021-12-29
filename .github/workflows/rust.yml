@@ -24,6 +24,12 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: build-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    - name: Init
+      run: rustup install nightly
+           rustup default nightly
+           rustup toolchain install nightly-2021-05-09
+           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
+           rustup component add clippy
     - name: Build
       run: make build
   test:

@@ -7,6 +7,14 @@ toolchain:
 	rustup component add clippy
 
 .PHONY: init
+init:
+	rustup install nightly
+	rustup default nightly
+	rustup toolchain install nightly-2021-05-09
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
+	rustup component add clippy
+
+.PHONY: subm
 init: toolchain submodule build
 
 .PHONY: submodule

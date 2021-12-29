@@ -180,6 +180,10 @@ Run the module benchmarks and generate the weights file:
 make debug
 ```
 
+### Nodes
+
+For Docs on running nodes, check [./docs/nodes.md](./docs/nodes.md)
+
 ### Embedded docs
 
 Once the project has been built, the following command can be used to explore all parameters and subcommands:
