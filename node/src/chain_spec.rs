@@ -293,9 +293,7 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 			hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(),
 		),
 		// Bootnodes - TODO: Update!
-		vec![
-			// "/dns/bootnode-newrome.setheum.xyz/tcp/30333/p2p/12D3KooWHPCz9sqowJvAGpkWTXj9Hk5nwzizZzoCUjtonjaPWHkF".parse().unwrap()
-		],
+		vec![],
 		// Telemetry
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		// Protocol ID
@@ -412,11 +410,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			hex!["2e70349d7140ec49b7cf1ae03b6ae3405103dab86c5a463ceef77ffb4a769868"].into(),
 		),
 		// Bootnodes - TODO: Update!
-		vec![
-			// "/dns/bootnode1.setheum.xyz/tcp/30333/p2p/12D3KooWF9PveZqgymSDJ4xhYnTZU6Txgz5oqwY2Sj2nCj6iaSBA".parse().unwrap(),
-			// "/dns/bootnode2.setheum.xyz/tcp/30333/p2p/12D3KooWAQqcXvcvt4eVEgogpDLAdGWgR5bY1drew44We6FfJAYq".parse().unwrap(),
-			// "/dns/bootnode3.setheum.xyz/tcp/30333/p2p/12D3KooWCT7rnUmEK7anTp7svwr4GTs6k3XXnSjmgTcNvdzWzgWU".parse().unwrap(),
-		],
+		vec![],
 		// Telemetry
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
 		// Protocol ID
@@ -518,7 +512,7 @@ fn dev_genesis(
 				.collect::<Vec<_>>(),
 		},
 		staking: StakingConfig {
-			validator_count: initial_authorities.len() as u32 * 2,
+			validator_count: initial_authorities.len() as u32 + 2,
 			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities
 				.iter()
@@ -746,7 +740,7 @@ fn testnet_genesis(
 				.collect::<Vec<_>>(),
 		},
 		staking: StakingConfig {
-			validator_count: initial_authorities.len() as u32 * 2,
+			validator_count: initial_authorities.len() as u32 + 2,
 			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities
 				.iter()
@@ -1005,7 +999,7 @@ fn mainnet_genesis(
 				.collect::<Vec<_>>(),
 		},
 		staking: StakingConfig {
-			validator_count: initial_authorities.len() as u32 * 2,
+			validator_count: initial_authorities.len() as u32 + 2,
 			minimum_validator_count: initial_authorities.len() as u32,
 			stakers: initial_authorities
 				.iter()

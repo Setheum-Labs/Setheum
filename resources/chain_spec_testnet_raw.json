@@ -3,7 +3,7 @@
   "id": "setheum_testnet",
   "chainType": "Live",
   "bootNodes": [
-    "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWHPCz9sqowJvAGpkWTXj9Hk5nwzizZzoCUjtonjaPWHkF"
+    "/ip4/127.0.0.1/tcp/30334/p2p/12D3KooWLV2ZuQB6o3Tmau9LqrLxeY3oHXoPY6pjbHQRnj1RbdqW"
   ],
   "telemetryEndpoints": [
     [
