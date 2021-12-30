@@ -619,17 +619,7 @@ fn dev_genesis(
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![
-				(
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					vec![
-						(TradingPair::from_currency_ids(SETUSD, SETM).unwrap(), (100_000u128 * 1_000_000_000_000_000_000u128, 1_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, SERP).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 2_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 2_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, SETR).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 10_000u128 * 1_000_000_000_000_000_000u128)),
-					],
-				),
-			],
+			initial_added_liquidity_pools: vec![],
 		},
 		orml_nft: OrmlNFTConfig { tokens: vec![] }
 	}
@@ -877,17 +867,7 @@ fn testnet_genesis(
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![
-				(
-					team,
-					vec![
-						(TradingPair::from_currency_ids(SETUSD, SETM).unwrap(), (100_000u128 * 1_000_000_000_000_000_000u128, 1_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, SERP).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 2_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 2_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, SETR).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 10_000u128 * 1_000_000_000_000_000_000u128)),
-					],
-				),
-			],
+			initial_added_liquidity_pools: vec![],
 		},
 		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
@@ -1174,17 +1154,7 @@ fn mainnet_genesis(
 		dex: DexConfig {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![
-				(
-					team,
-					vec![
-						(TradingPair::from_currency_ids(SETUSD, SETM).unwrap(), (100_000u128 * 1_000_000_000_000_000_000u128, 1_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, SERP).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 2_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 2_000u128 * 1_000_000_000_000_000_000u128)),
-						(TradingPair::from_currency_ids(SETUSD, SETR).unwrap(), (1_000u128 * 1_000_000_000_000_000_000u128, 10_000u128 * 1_000_000_000_000_000_000u128)),
-					],
-				),
-			],
+			initial_added_liquidity_pools: vec![],
 		},
 		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
