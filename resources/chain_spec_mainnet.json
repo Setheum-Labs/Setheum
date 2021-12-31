@@ -2,9 +2,7 @@
   "name": "Setheum Mainnet",
   "id": "setheum_mainnet",
   "chainType": "Live",
-  "bootNodes": [
-    "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWF9PveZqgymSDJ4xhYnTZU6Txgz5oqwY2Sj2nCj6iaSBA"
-  ],
+  "bootNodes": [],
   "telemetryEndpoints": [
     [
       "/dns/telemetry.polkadot.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
