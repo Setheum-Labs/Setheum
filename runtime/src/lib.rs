@@ -647,7 +647,7 @@ impl orml_tokens::Config for Runtime {
 
 parameter_types! {
 	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
-	pub SetterFixedPrice: Price = Price::saturating_from_rational(2, 1); // $2
+	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 10); // $0.1(10 cents)
 }
 
 impl module_prices::Config for Runtime {
@@ -873,9 +873,9 @@ parameter_types! {
 	
     pub const StableCurrencyInflationPeriod: BlockNumber = 1 * HOURS;
     
-	pub SetterMinimumClaimableTransferAmounts: Balance = 1 * 1_000_000_000_000_000_000;
-	pub SetterMaximumClaimableTransferAmounts: Balance = 200_000 * 1_000_000_000_000_000_000;
-	pub SetDollarMinimumClaimableTransferAmounts: Balance = 10 * 1_000_000_000_000_000_000;
+	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * 1_000_000_000_000_000_000;
+	pub SetterMaximumClaimableTransferAmounts: Balance = 10_000_000 * 1_000_000_000_000_000_000;
+	pub SetDollarMinimumClaimableTransferAmounts: Balance = 4 * 1_000_000_000_000_000_000;
 	pub SetDollarMaximumClaimableTransferAmounts: Balance = 700_000 * 1_000_000_000_000_000_000;
 }
 

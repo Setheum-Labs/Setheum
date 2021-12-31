@@ -611,7 +611,7 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 
 parameter_types! {
 	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
-	pub SetterFixedPrice: Price = Price::saturating_from_rational(2, 1); // $2
+	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 10); // $0.1(10 cents)
 	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 }
