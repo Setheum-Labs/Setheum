@@ -134,12 +134,13 @@ mod benchmarking;
 
 // Pallet accounts of runtime
 parameter_types! {
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");		// 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
-	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 3Y9ymmssnjtYtFUzi9GQnpn3yxheQjSN7a8vJZSbiwVaJR5M
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 3Y9ymmssnjtYtTqe2maPGPCgruSW6sbMc9biwoPD8AqSeDZc
+	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");		// 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");	// 3Y9ymmssnjtYsyRWeDAo7XuSnXQqhxMcmefhqbubtbWdVxHP
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");	// 3Y9ymmssnjtYtTr4Ywm8vFwf5K2SJc3RTWxGWw5Gc6dttfJ8
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 3Y9ymmssnjtYtTqe2maPGPCgruSW6sbMc9biwoPD8AqSeDZc
+	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 3Y9ymmssnjtYtFUzi9GQnpn3yxheQjSN7a8vJZSbiwVaJR5M
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");			// 3Y9ymmssnjtYtTgjkqqj1mQyQUmUUfWps8UEgZHZiDkh9dUy
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");	// 3Y9ymmssnjtYtTr4Ywm8vFwf5K2SJc3RTWxGWw5Gc6dttfJ8
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");		// 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
 }
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
@@ -844,7 +845,9 @@ impl module_airdrop::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
+	type PalletId = AirdropPalletId;
 }
 
 parameter_types! {

@@ -31,15 +31,19 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional, traits::Get};
+use frame_support::{pallet_prelude::*, transactional, PalletId, traits::Get};
 use frame_system::pallet_prelude::*;
-use orml_traits::MultiCurrency;
+use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{AirDropCurrencyId, Balance, CurrencyId};
 use sp_std::vec::Vec;
+use sp_runtime::traits::AccountIdConversion;
 
 mod mock;
 
 pub use module::*;
+
+type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[frame_support::pallet]
 pub mod module {
@@ -49,8 +53,8 @@ pub mod module {
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		/// Currency provide the total insurance of LPToken.
-		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
+		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
+		type MultiCurrency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		#[pallet::constant]
 		/// Setter (SETR) currency id
@@ -76,75 +80,200 @@ pub mod module {
 		/// 
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
+		#[pallet::constant]
+		/// The Airdrop module pallet id, keeps airdrop funds.
+		type FundingOrigin: Get<Self::AccountId>;
+
 		/// The origin which may lock and unlock prices feed to system.
 		type DropOrigin: EnsureOrigin<Self::Origin>;
+		
+		#[pallet::constant]
+		/// The Airdrop module pallet id, keeps airdrop funds.
+		type PalletId: Get<PalletId>;
+
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Invalid AirDrop Currency Type
-		InvalidCurrencyType,
+		// Duplicate Airdrop Account
+		DuplicateAccounts,
 	}
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
+	#[pallet::metadata(T::AccountId = "AccountId", BalanceOf<T> = "Balance", AirDropCurrencyId = "AirDropCurrencyId")]
 	pub enum Event<T: Config> {
 		/// Drop Airdrop \[currency_id\]
-		Airdrop(AirDropCurrencyId)
+		Airdrop(AirDropCurrencyId),
+		/// Donate to Airdrop Treasury \[from, currency_id, amount\]
+		DonateToAirdropTreasury(T::AccountId, AirDropCurrencyId, BalanceOf<T>),
+		/// Fund the Airdrop Treasury from `FundingOrigin` \[from, currency_id, amount\]
+		FundAirdropTreasury(T::AccountId, AirDropCurrencyId, BalanceOf<T>)
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(_);
+	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Update the storeed Airdrop details in the AirDrops storage map.
-		/// Once an Airdrop is delivered, the entire AirDrops storage map will be cleared.
+		/// Fund Airdrop Treasury from deposit creation.
 		///
 		/// The dispatch origin of this call must be `DropOrigin`.
 		///
-		/// - `currency_id`: `CurrencyId` currency type.
-		/// - `amount`: airdrop amount.
-		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
+		/// - `currency_id`: `AirDropCurrencyId` funding currency type.
+		/// - `amount`: `BalanceOf<T>` funding amounts.
+		#[pallet::weight((100_000_000_000_000 as Weight, DispatchClass::Operational))]
 		#[transactional]
-		pub fn airdrop(
+		pub fn fund_airdrop_treasury(
 			origin: OriginFor<T>,
 			currency_id: AirDropCurrencyId,
-			beneficiaries: Vec<(T::AccountId, Balance)>,
+			amount: BalanceOf<T>,
 		) -> DispatchResult {
 			T::DropOrigin::ensure_origin(origin)?;
+
 			if currency_id == AirDropCurrencyId::SETR {
-				for (account, balance) in beneficiaries {
-					T::Currency::deposit(T::SetterCurrencyId::get(), &account, balance)?;
-				}
+				T::MultiCurrency::transfer(T::SetterCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			} else if currency_id == AirDropCurrencyId::SETUSD {
-				for (account, balance) in beneficiaries {
-					T::Currency::deposit(T::GetSetUSDId::get(), &account, balance)?;
-				}
-			} 
-			// VVV remove after IAE (Initial Airdrop Offering)
-			// vvv AND MultiCurrency INITIAL ALLOCATIONS vvv
-			else if currency_id == AirDropCurrencyId::SETM {
-				for (account, balance) in beneficiaries {
-					T::Currency::deposit(T::GetNativeCurrencyId::get(), &account, balance)?;
-				}
+				T::MultiCurrency::transfer(T::GetSetUSDId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
+			} else if currency_id == AirDropCurrencyId::SETM {
+				T::MultiCurrency::transfer(T::GetNativeCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			} else if currency_id == AirDropCurrencyId::SERP {
-				for (account, balance) in beneficiaries {
-					T::Currency::deposit(T::GetSerpCurrencyId::get(), &account, balance)?;
-				}
+				T::MultiCurrency::transfer(T::GetSerpCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			} else if currency_id == AirDropCurrencyId::DNAR {
-				for (account, balance) in beneficiaries {
-					T::Currency::deposit(T::GetDinarCurrencyId::get(), &account, balance)?;
-				}
+				T::MultiCurrency::transfer(T::GetDinarCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			}
 			
-			Self::deposit_event(Event::Airdrop(currency_id));
+			Self::deposit_event(Event::FundAirdropTreasury(T::FundingOrigin::get(), currency_id, amount));
+			Ok(())
+		}
+
+		/// Donate Funds to the Airdrop Treasury.
+		///
+		/// - `currency_id`: `AirDropCurrencyId` funding currency type.
+		/// - `amount`: `BalanceOf<T>` funding amounts.
+		#[pallet::weight((100_000_000_000_000 as Weight, DispatchClass::Operational))]
+		#[transactional]
+		pub fn donate_to_airdrop_treasury(
+			origin: OriginFor<T>,
+			currency_id: AirDropCurrencyId,
+			amount: BalanceOf<T>,
+		) -> DispatchResult {
+			let from = ensure_signed(origin)?;
+
+			match currency_id {
+				AirDropCurrencyId::SETR => {
+					T::MultiCurrency::transfer(T::SetterCurrencyId::get(), &from, &Self::account_id(), amount)?;
+				}
+				id if id == AirDropCurrencyId::SETUSD => {
+					T::MultiCurrency::transfer(T::GetSetUSDId::get(), &from, &Self::account_id(), amount)?;
+				}
+				id if id == AirDropCurrencyId::SETM => {
+					T::MultiCurrency::transfer(T::GetNativeCurrencyId::get(), &from, &Self::account_id(), amount)?;
+				}
+				id if id == AirDropCurrencyId::SERP => {
+					T::MultiCurrency::transfer(T::GetSerpCurrencyId::get(), &from, &Self::account_id(), amount)?;
+				}
+				id if id == AirDropCurrencyId::DNAR => {
+					T::MultiCurrency::transfer(T::GetDinarCurrencyId::get(), &from, &Self::account_id(), amount)?;
+				} _ => {}
+			}
+
+			Self::deposit_event(Event::DonateToAirdropTreasury(from, currency_id, amount));
+			Ok(())
+		}
+
+		/// Make Airdrop to beneficiaries.
+		///
+		/// The dispatch origin of this call must be `DropOrigin`.
+		///
+		/// - `currency_id`: `AirDropCurrencyId` airdrop currency type.
+		/// - `airdrop_list_json`: airdrop accounts and respective amounts in json format.
+		#[pallet::weight((100_000_000_000_000 as Weight, DispatchClass::Operational))]
+		#[transactional]
+		pub fn make_airdrop(
+			origin: OriginFor<T>,
+			currency_id: AirDropCurrencyId,
+			airdrop_list: Vec<(AccountIdOf::<T>, BalanceOf::<T>)>,
+		) -> DispatchResult {
+			T::DropOrigin::ensure_origin(origin)?;
+
+			Self::do_make_airdrop(currency_id, airdrop_list)?;
 			Ok(())
 		}
 	}
 }
 
-impl<T: Config> Pallet<T> {}
+impl<T: Config> Pallet<T> {
+	/// Get account of SERP Treasury module.
+	pub fn account_id() -> T::AccountId {
+		T::PalletId::get().into_account()
+	}
+
+	fn do_make_airdrop(currency_id: AirDropCurrencyId, airdrop_list: Vec<(AccountIdOf::<T>, BalanceOf::<T>)>) -> DispatchResult {
+
+		// Make sure only unique accounts receive Airdrop
+        let unique_accounts = airdrop_list
+		.iter()
+		.map(|(x,_)| x)
+		.cloned()
+		.collect::<std::collections::BTreeSet<_>>();
+        ensure!(
+            unique_accounts.len() == airdrop_list.len(),
+            Error::<T>::DuplicateAccounts,
+        );
+
+		match currency_id {
+			AirDropCurrencyId::SETR => {
+				for (beneficiary, amount) in airdrop_list.iter() {
+					T::MultiCurrency::transfer(T::SetterCurrencyId::get(), &Self::account_id(), beneficiary, *amount)?;
+				}
+			}
+			id if id == AirDropCurrencyId::SETUSD => {
+				for (beneficiary, amount) in  airdrop_list.iter() {
+					T::MultiCurrency::transfer(T::GetSetUSDId::get(), &Self::account_id(), beneficiary, *amount)?;
+				}
+			}
+			id if id == AirDropCurrencyId::SETM => {
+				for (beneficiary, amount) in  airdrop_list.iter() {
+					T::MultiCurrency::transfer(T::GetNativeCurrencyId::get(), &Self::account_id(), beneficiary, *amount)?;
+				}
+			}
+			id if id == AirDropCurrencyId::SERP => {
+				for (beneficiary, amount) in  airdrop_list.iter() {
+					T::MultiCurrency::transfer(T::GetSerpCurrencyId::get(), &Self::account_id(), beneficiary, *amount)?;
+				}
+			}
+			id if id == AirDropCurrencyId::DNAR => {
+				for (beneficiary, amount) in  airdrop_list.iter() {
+					T::MultiCurrency::transfer(T::GetDinarCurrencyId::get(), &Self::account_id(), beneficiary, *amount)?;
+				}
+			} _ => {}
+		}
+		
+		Self::deposit_event(Event::Airdrop(currency_id));
+		Ok(())
+	}
+}
+
+// /* AccountId to Hex */
+// pub fn account_to_hex(account: AccountIdOf<T>) -> AccountId {
+// 	let account_id = account.as_bytes();
+// 	let mut account_id_hex = AccountId::default();
+// 	for i in 0..account_id.len() {
+// 		account_id_hex[i] = account_id[i];
+// 	}
+// 	account_id_hex
+// }
+
+
+// /* Hex to AccountId */
+// pub fn hex_to_account(account: AccountId) -> AccountIdOf<T> {
+// 	let account_id = H256::from(account).as_bytes();
+// 	let account_id_hex = account_id.to_vec().as_slice();
+// 	let account_id_hex2 = AccountId::encode(account_id_hex);
+// 	let account_id_hex3 = account_id_hex2.unwrap();
+// 	account_id_hex3.into_iter().collect::<Vec<u8>>()
+// }
