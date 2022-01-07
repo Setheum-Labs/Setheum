@@ -345,7 +345,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			// for i in 1; do for j in im_online; do subkey --sr25519 inspect "$SECRET//$i//$j"; done; done
 			// for i in 1; do for j in authority_discovery; do subkey --sr25519 inspect "$SECRET//$i//$j"; done; done
 			//
-			// TODO: Update!
 			vec![
 				(	// v1 stash: 3WZ6yyZPwc1Zw2qBtrNj3URG7gfNQ9NVaZMYJqDsVZ1xfJ7H
 					hex!["2699d78960802127b10ebbd092039bbbe11383c66ab10c7413bb5f712f695c3c"].into(),

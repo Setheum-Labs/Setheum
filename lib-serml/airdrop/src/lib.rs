@@ -42,7 +42,6 @@ mod mock;
 
 pub use module::*;
 
-type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[frame_support::pallet]
@@ -125,7 +124,7 @@ pub mod module {
 		///
 		/// - `currency_id`: `AirDropCurrencyId` funding currency type.
 		/// - `amount`: `BalanceOf<T>` funding amounts.
-		#[pallet::weight((100_000_000_000_000 as Weight, DispatchClass::Operational))]
+		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
 		#[transactional]
 		pub fn fund_airdrop_treasury(
 			origin: OriginFor<T>,
@@ -154,7 +153,7 @@ pub mod module {
 		///
 		/// - `currency_id`: `AirDropCurrencyId` funding currency type.
 		/// - `amount`: `BalanceOf<T>` funding amounts.
-		#[pallet::weight((100_000_000_000_000 as Weight, DispatchClass::Operational))]
+		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
 		#[transactional]
 		pub fn donate_to_airdrop_treasury(
 			origin: OriginFor<T>,
@@ -191,12 +190,12 @@ pub mod module {
 		///
 		/// - `currency_id`: `AirDropCurrencyId` airdrop currency type.
 		/// - `airdrop_list_json`: airdrop accounts and respective amounts in json format.
-		#[pallet::weight((100_000_000_000_000 as Weight, DispatchClass::Operational))]
+		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
 		#[transactional]
 		pub fn make_airdrop(
 			origin: OriginFor<T>,
 			currency_id: AirDropCurrencyId,
-			airdrop_list: Vec<(AccountIdOf::<T>, BalanceOf::<T>)>,
+			airdrop_list: Vec<(T::AccountId, Balance)>,
 		) -> DispatchResult {
 			T::DropOrigin::ensure_origin(origin)?;
 
@@ -212,7 +211,7 @@ impl<T: Config> Pallet<T> {
 		T::PalletId::get().into_account()
 	}
 
-	fn do_make_airdrop(currency_id: AirDropCurrencyId, airdrop_list: Vec<(AccountIdOf::<T>, BalanceOf::<T>)>) -> DispatchResult {
+	fn do_make_airdrop(currency_id: AirDropCurrencyId, airdrop_list: Vec<(T::AccountId, Balance)>) -> DispatchResult {
 
 		// Make sure only unique accounts receive Airdrop
         let unique_accounts = airdrop_list
