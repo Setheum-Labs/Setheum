@@ -839,7 +839,7 @@ impl module_dex::Config for Runtime {
 
 impl module_airdrop::Config for Runtime {
 	type Event = Event;
-	type Currency = Currencies;
+	type MultiCurrency = Currencies;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type GetNativeCurrencyId = GetNativeCurrencyId;

@@ -218,8 +218,7 @@ impl<T: Config> Pallet<T> {
         let unique_accounts = airdrop_list
 		.iter()
 		.map(|(x,_)| x)
-		.cloned()
-		.collect::<std::collections::BTreeSet<_>>();
+		.cloned();
         ensure!(
             unique_accounts.len() == airdrop_list.len(),
             Error::<T>::DuplicateAccounts,
