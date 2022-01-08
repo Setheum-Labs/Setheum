@@ -380,7 +380,7 @@ parameter_types! {
 }
 
 impl pallet_staking::Config for Runtime {
-	const MAX_NOMINATIONS: u32 = 16;
+	const MAX_NOMINATIONS: u32 = 16; // The maximum number of Validators a nominator can choose to nominate.
 	type Currency = Balances;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = U128CurrencyToVote;
