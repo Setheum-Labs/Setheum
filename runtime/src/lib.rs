@@ -852,26 +852,18 @@ impl module_airdrop::Config for Runtime {
 
 parameter_types! {
 	pub SerpDefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETUSD, SETM],
-		vec![SETM, SETUSD],
-		vec![SETR, SETUSD, SETM],
-		vec![SETR, SETM, SETUSD],
-		vec![SETM, SETR, SETUSD],
-		vec![SETM, SETUSD, SETR],
-		vec![SETUSD, SERP],
-		vec![SERP, SETUSD],
-		vec![SETR, SETUSD, SERP],
-		vec![SETR, SERP, SETUSD],
-		vec![SERP, SETR, SETUSD],
-		vec![SERP, SETUSD, SETR],
-		vec![SETUSD, DNAR],
-		vec![DNAR, SETUSD],
-		vec![SETR, SETUSD, DNAR],
-		vec![SETR, DNAR, SETUSD],
-		vec![DNAR, SETR, SETUSD],
-		vec![DNAR, SETUSD, SETR],
+		vec![SETR],
+		vec![SETUSD],
 		vec![SETUSD, SETR],
-		vec![SETR, SETUSD],
+		vec![SETM, SETUSD, SETR],
+		vec![SETUSD, SETM],
+		vec![SERP, SETUSD, SETR],
+		vec![SETUSD, SERP],
+		vec![DNAR, SETUSD, SETR],
+		vec![SETUSD, DNAR],
+		vec![SETM],
+		vec![SERP],
+		vec![DNAR],
 	];
 	
     pub const StableCurrencyInflationPeriod: BlockNumber = 1 * HOURS;
