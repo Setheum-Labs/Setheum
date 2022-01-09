@@ -149,41 +149,6 @@ pub mod module {
 			Ok(())
 		}
 
-		/// Donate Funds to the Airdrop Treasury.
-		///
-		/// - `currency_id`: `AirDropCurrencyId` funding currency type.
-		/// - `amount`: `BalanceOf<T>` funding amounts.
-		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
-		#[transactional]
-		pub fn donate_to_airdrop_treasury(
-			origin: OriginFor<T>,
-			currency_id: AirDropCurrencyId,
-			amount: BalanceOf<T>,
-		) -> DispatchResult {
-			let from = ensure_signed(origin)?;
-
-			match currency_id {
-				AirDropCurrencyId::SETR => {
-					T::MultiCurrency::transfer(T::SetterCurrencyId::get(), &from, &Self::account_id(), amount)?;
-				}
-				id if id == AirDropCurrencyId::SETUSD => {
-					T::MultiCurrency::transfer(T::GetSetUSDId::get(), &from, &Self::account_id(), amount)?;
-				}
-				id if id == AirDropCurrencyId::SETM => {
-					T::MultiCurrency::transfer(T::GetNativeCurrencyId::get(), &from, &Self::account_id(), amount)?;
-				}
-				id if id == AirDropCurrencyId::SERP => {
-					T::MultiCurrency::transfer(T::GetSerpCurrencyId::get(), &from, &Self::account_id(), amount)?;
-				}
-				id if id == AirDropCurrencyId::DNAR => {
-					T::MultiCurrency::transfer(T::GetDinarCurrencyId::get(), &from, &Self::account_id(), amount)?;
-				} _ => {}
-			}
-
-			Self::deposit_event(Event::DonateToAirdropTreasury(from, currency_id, amount));
-			Ok(())
-		}
-
 		/// Make Airdrop to beneficiaries.
 		///
 		/// The dispatch origin of this call must be `DropOrigin`.

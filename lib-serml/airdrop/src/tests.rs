@@ -39,16 +39,6 @@
 // }
 
 // #[test]
-// fn donate_to_airdrop_treasury_works() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_noop!(Airdrop::make_airdrop(Origin::signed(BOB), ALICE, SETUSD, 10000), BadOrigin,);
-// 		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETUSD, 10000));
-// 		System::assert_last_event(Event::AirDrop(RawEvent::Airdrop(ALICE, SETUSD, 10000)));
-// 		assert_eq!(Airdrop::airdrops(ALICE, SETUSD), 10000);
-// 	});
-// }
-
-// #[test]
 // fn make_airdrop_works() {
 // 	ExtBuilder::default().build().execute_with(|| {
 // 		assert_noop!(Airdrop::make_airdrop(Origin::signed(BOB), SETUSD, 10000), BadOrigin,);
