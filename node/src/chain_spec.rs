@@ -767,12 +767,16 @@ fn testnet_genesis(
 			balances: vec![
 				(foundation.clone(), SERP, serp_foundation_alloc),
 				(team.clone(), SERP, serp_team_alloc),
+				(airdrop.clone(), SERP, serp_airdrops_alloc),
 				(foundation.clone(), DNAR, dnar_foundation_alloc),
 				(team.clone(), DNAR, dnar_team_alloc),
+				(airdrop.clone(), DNAR, dnar_airdrop_alloc),
 				(foundation.clone(), SETR, setr_foundation_alloc),
 				(team.clone(), SETR, setr_team_alloc),
+				(airdrop.clone(), SETR, setr_airdrop_alloc),
 				(foundation.clone(), SETUSD, setusd_foundation_alloc),
 				(team.clone(), SETUSD, setusd_team_alloc),
+				(airdrop.clone(), SETUSD, setusd_airdrop_alloc),
 			]
 		},
 		evm: EVMConfig {
@@ -1024,21 +1028,25 @@ fn mainnet_genesis(
 				(spf.clone(), SERP, serp_spf_alloc),
 				(team.clone(), SERP, serp_team_alloc),
 				(advisors_n_partners.clone(), SERP, serp_advisors_n_partners_alloc),
+				(airdrop.clone(), SERP, serp_airdrops_alloc),
 
 				(foundation.clone(), DNAR, dnar_foundation_alloc),
 				(spf.clone(), DNAR, dnar_spf_alloc),
 				(team.clone(), DNAR, dnar_team_alloc),
 				(advisors_n_partners.clone(), DNAR, dnar_advisors_n_partners_alloc),
+				(airdrop.clone(), DNAR, dnar_airdrop_alloc),
 
 				(foundation.clone(), SETR, setr_foundation_alloc),
 				(spf.clone(), SETR, setr_spf_alloc),
 				(team.clone(), SETR, setr_team_alloc),
 				(advisors_n_partners.clone(), SETR, setr_advisors_n_partners_alloc),
+				(airdrop.clone(), SETR, setr_airdrop_alloc),
 
 				(foundation.clone(), SETUSD, setusd_foundation_alloc),
 				(spf.clone(), SETUSD, setusd_spf_alloc),
 				(team.clone(), SETUSD, setusd_team_alloc),
 				(advisors_n_partners.clone(), SETUSD, setusd_advisors_n_partners_alloc),
+				(airdrop.clone(), SETUSD, setusd_airdrop_alloc),
 			]
 		},
 		evm: EVMConfig {
