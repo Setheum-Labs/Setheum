@@ -287,8 +287,6 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 				// Team and DEX Liquidity Offering Fund: 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
 				(hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(), 15_665_000_000 as u128),
 			],
-			// Treasury: 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
-			hex!["6d6f646c7365742f747273790000000000000000000000000000000000000000"].into(),
 			// Airdrop: 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
 			hex!["6d6f646c7365742f64726f700000000000000000000000000000000000000000"].into(),
 			// Foundation: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
@@ -405,8 +403,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			],
 			// Foundation: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
 			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
-			// Treasury: 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
-			hex!["6d6f646c7365742f747273790000000000000000000000000000000000000000"].into(),
 			// Airdrop: 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
 			hex!["6d6f646c7365742f64726f700000000000000000000000000000000000000000"].into(),
 			// Setheum Public Fund (SPF): 3YQuJToGJv2Gwu2puFbamNTDhQnKP1xU1zf6TiCHe8Ty2om3
@@ -625,7 +621,6 @@ fn testnet_genesis(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<(AccountId, Balance)>,
-	treasury: AccountId,
 	airdrop: AccountId,
 	foundation: AccountId,
 	team: AccountId,
@@ -867,7 +862,6 @@ fn mainnet_genesis(
 	root_key: AccountId,
 	endowed_accounts: Vec<(AccountId, Balance)>,
 	foundation: AccountId,
-	treasury: AccountId,
 	airdrop: AccountId,
 	spf: AccountId,
 	team: AccountId,
