@@ -145,11 +145,12 @@ parameter_types! {
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
-		TreasuryPalletId::get().into_account(),
-		LoansPalletId::get().into_account(),
-		DEXPalletId::get().into_account(),
+		AirdropPalletId::get().into_account(),
 		CDPTreasuryPalletId::get().into_account(),
+		DEXPalletId::get().into_account(),
+		LoansPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
+		TreasuryPalletId::get().into_account(),
 		ZeroAccountId::get(),		 	// ACCOUNT 0
 	]
 }
@@ -866,7 +867,7 @@ parameter_types! {
 		vec![DNAR],
 	];
 	
-    pub const StableCurrencyInflationPeriod: BlockNumber = 1 * HOURS;
+    pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
     
 	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * 1_000_000_000_000_000_000;
 	pub SetterMaximumClaimableTransferAmounts: Balance = 10_000_000 * 1_000_000_000_000_000_000;
@@ -1174,7 +1175,7 @@ impl pallet_proxy::Config for Runtime {
 parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
-	pub NativeTokenExistentialDeposit: Balance = 100_000_000_000_000_000; // 10 cents
+	pub NativeTokenExistentialDeposit: Balance = 1_000_000_000_000_000_000; // 1 SETM
 	pub MaxNativeTokenExistentialDeposit: Balance = 1000 * 1_000_000_000_000_000_000;
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = ReserveIdentifier::Count as u32;
