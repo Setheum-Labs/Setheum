@@ -7,7 +7,7 @@ homepage = 'https://setheum.xyz'
 license = 'Unlicense'
 name = 'setheum-node'
 repository = 'https://github.com/Setheum-Labs/Setheum'
-version = '0.9.80'
+version = '1.0.0'
 
 [[bin]]
 name = 'setheum-node'
@@ -79,7 +79,7 @@ evm-rpc = { path = "../lib-serml/evm/rpc" }
 setheum-primitives = { path = "../primitives" }
 
 # runtime
-setheum-runtime = { path = '../runtime', version = '0.9.80' }
+setheum-runtime = { path = '../runtime', version = '1.0.0' }
 
 [features]
 default = []

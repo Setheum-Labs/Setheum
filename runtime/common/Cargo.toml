@@ -1,6 +1,6 @@
 [package]
 name = "runtime-common"
-version = "0.9.80"
+version = "1.0.0"
 authors = ["Setheum Developers"]
 edition = "2018"
 

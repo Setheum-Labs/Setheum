@@ -6,7 +6,7 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 
 <div align="center">
 	
-[![Setheum version](https://img.shields.io/badge/Setheum-0.9.80-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
+[![Setheum version](https://img.shields.io/badge/Setheum-1.0.0-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
 [![Substrate version](https://img.shields.io/badge/Substrate-4.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
 [![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=green)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
  <br />
@@ -22,7 +22,7 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 Setheum is founded and initiated and fascilitated by Setheum Labs, Setheum Foundation and Slixon Technologies to steward and support the development and advancement of the Network, its ecosystem and its community to foster the development and adoption of decentralised finance by building and supporting cross-chain open finance infrastructure such as the SERP (Setheum Elastic Reserve Protocol) stablecoin system, the SetMint stablecoin minting system and Setheum's built-in payment system SetPay(CashDrops) that lets traders and transactors claim cashback (what we call CashDrop) on their transactions to speak of a few. 
 Setheum also deploys Advanced Incentivization mechanisms and economic models modeled under the Jurisdiction of Islamic Finance.
 
-### Founder:
+### Founder/Developer:
 
 * [Muhammad-Jibril B.A.](https://github.com/JBA-Khalifa)
 
