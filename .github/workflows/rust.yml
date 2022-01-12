@@ -25,10 +25,16 @@ jobs:
           target/
         key: build-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Init
-      run: rustup install nightly
+      run: sudo apt update && sudo apt install -y git clang curl libssl-dev llvm libudev-dev make
+           curl https://sh.rustup.rs -sSf | sh
+           source ~/.cargo/env
+           rustup install nightly
            rustup default nightly
+           rustup update
            rustup toolchain install nightly-2021-05-09
            rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
+           rustup update nightly
+           rustup target add wasm32-unknown-unknown --toolchain nightly
            rustup component add clippy
     - name: Build
       run: make build
