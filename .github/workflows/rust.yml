@@ -27,23 +27,23 @@ jobs:
       run: make init
     - name: Build
       run: make build
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: test-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Init
-      run: make init
-    - name: Test
-      run: make test
+  # test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - uses: actions/cache@v2
+  #     with:
+  #       path: |
+  #         ~/.cargo/bin/
+  #         ~/.cargo/registry/index/
+  #         ~/.cargo/registry/cache/
+  #         ~/.cargo/git/db/
+  #         target/
+  #       key: test-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+  #   - name: Init
+  #     run: make init
+  #   - name: Test
+  #     run: make test
   clippy:
     runs-on: ubuntu-latest
     steps:
