@@ -45,8 +45,6 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: test-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Init
-      run: make init
     - name: Test
       run: make test
   clippy:
@@ -63,6 +61,6 @@ jobs:
           target/
         key: clippy-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Init
-      run: make init
+      run: make toolchain
     - name: Clippy
       run: make clippy

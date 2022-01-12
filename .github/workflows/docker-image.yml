@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Init
-      run: make init
+      run: make toolchain
     - name: Build
       run: make release
     - name: Build the Docker image
