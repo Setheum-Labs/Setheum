@@ -870,9 +870,9 @@ parameter_types! {
     pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
     
 	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * 1_000_000_000_000_000_000;
-	pub SetterMaximumClaimableTransferAmounts: Balance = 10_000_000 * 1_000_000_000_000_000_000;
+	pub SetterMaximumClaimableTransferAmounts: Balance = 2_000_000 * 1_000_000_000_000_000_000;
 	pub SetDollarMinimumClaimableTransferAmounts: Balance = 4 * 1_000_000_000_000_000_000;
-	pub SetDollarMaximumClaimableTransferAmounts: Balance = 700_000 * 1_000_000_000_000_000_000;
+	pub SetDollarMaximumClaimableTransferAmounts: Balance = 100_000 * 1_000_000_000_000_000_000;
 }
 
 impl serp_treasury::Config for Runtime {
