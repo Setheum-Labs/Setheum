@@ -19,7 +19,11 @@ submodule:
 
 .PHONY: release
 release:
-	make init
+	rustup install nightly
+	rustup default nightly
+	rustup toolchain install nightly-2021-05-09
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
+	rustup component add clippy
 	rm -rf target/
 	cargo build --manifest-path node/Cargo.toml --features with-ethereum-compatibility --release
 
