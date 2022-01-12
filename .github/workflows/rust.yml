@@ -4,8 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches:
-    - '**'
+    branches: [ master ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -25,16 +24,23 @@ jobs:
           target/
         key: build-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Init
-      run: sudo apt update && sudo apt install -y git clang curl libssl-dev llvm libudev-dev make
-           curl https://sh.rustup.rs -sSf | sh
-           source ~/.cargo/env
-           rustup install nightly
-           rustup default nightly
-           rustup update
-           rustup toolchain install nightly-2021-05-09
-           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-09
-           rustup update nightly
-           rustup target add wasm32-unknown-unknown --toolchain nightly
-           rustup component add clippy
+      run: make init
     - name: Build
       run: make build
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: clippy-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    - name: Init
+      run: make init
+    - name: Clippy
+      run: make clippy
