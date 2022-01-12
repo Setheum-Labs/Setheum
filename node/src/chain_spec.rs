@@ -799,8 +799,8 @@ fn testnet_genesis(
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 10_000 * 1_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 1_000 * 1_000_000_000_000_000_000),	// (currency_id, inflation rate of a setcurrency)
+				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
+				(SETUSD, 0),	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
 			],
 			stable_currency_cashdrop: vec![
 				(SETR,  setr_cashdrop_alloc), 	// (currency_id, cashdrop pool balance of a setcurrency)
@@ -1077,8 +1077,8 @@ fn mainnet_genesis(
 		},
 		serp_treasury: SerpTreasuryConfig {
 			stable_currency_inflation_rate: vec![
-				(SETR, 10_000 * 1_000_000_000_000_000_000),		// (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 1_000 * 1_000_000_000_000_000_000),	// (currency_id, inflation rate of a setcurrency)
+				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
+				(SETUSD, 0),	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
 			],
 			stable_currency_cashdrop: vec![
 				(SETR,  setr_cashdrop_alloc), 	// (currency_id, cashdrop pool balance of a setcurrency)
