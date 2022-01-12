@@ -219,11 +219,6 @@ pub mod module {
 		ForceSerpDown(CurrencyId, Balance)
 	}
 
-	/// Mapping to Minimum Claimable Transfer.
-	#[pallet::storage]
-	#[pallet::getter(fn minimum_claimable_transfer)]
-	pub type MinimumClaimableTransfer<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, OptionQuery>;
-
 	/// The CashDrop Pool
 	///
 	/// CashDropPool: map CurrencyId => Balance
