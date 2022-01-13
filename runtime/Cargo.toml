@@ -1,6 +1,6 @@
 [package]
 authors = ['Setheum Labs <https://setheum.xyz>']
-version = '0.9.80'
+version = '1.0.0'
 edition = '2018'
 build = "build.rs"
 homepage = 'https://setheum.xyz'

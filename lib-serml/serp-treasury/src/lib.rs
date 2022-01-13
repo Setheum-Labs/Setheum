@@ -219,11 +219,6 @@ pub mod module {
 		ForceSerpDown(CurrencyId, Balance)
 	}
 
-	/// Mapping to Minimum Claimable Transfer.
-	#[pallet::storage]
-	#[pallet::getter(fn minimum_claimable_transfer)]
-	pub type MinimumClaimableTransfer<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, OptionQuery>;
-
 	/// The CashDrop Pool
 	///
 	/// CashDropPool: map CurrencyId => Balance
@@ -291,16 +286,22 @@ pub mod module {
 			// Schedule for when to trigger SERP-TES and SERP-Inflation
 			// (Blocktime/BlockNumber - every blabla block)
 			if now % T::StableCurrencyInflationPeriod::get() == Zero::zero() {
-				// SERP TES (Token Elasticity of Supply).
-				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
 				let mut count: u32 = 0;
+				count += 1;
+				
 				if Self::issue_stablecurrency_inflation().is_ok() {
 					count += 1;
 				};
-
 				if Self::serp_tes_now().is_ok() {
 					count += 1;
-				};
+				}
+
+				T::WeightInfo::on_initialize(count)
+			} else if Self::serp_tes_now().is_ok() {
+				// SERP TES (Token Elasticity of Supply).
+				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
+				let mut count: u32 = 0;
+				count += 1;
 
 				T::WeightInfo::on_initialize(count)
 			} else {
@@ -394,7 +395,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let setter_token: CurrencyId = setter_token.into();
 		let setdollar_token: CurrencyId = setter_token.into();
 		
-		// TODO: Check if this matches with our initialized pool
 		let (setter_pool, setdollar_pool) = T::Dex::get_liquidity_pool(setter_token, setdollar_token);
 
 		let two: Balance = 2;
@@ -425,31 +425,32 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn issue_stablecurrency_inflation() -> DispatchResult {
 
 		for currency_id in T::StableCurrencyIds::get() {
-			// Amounts are 20% of the inflation rate amount for each distro.
+			// Amounts are 25% of the inflation rate amount for each distro.
 			let one: Balance = 1;
 			let inflation_amount = Self::stable_currency_inflation_rate(currency_id);
 			let inflamounts: Balance = one.saturating_mul(inflation_amount / 4);
 
-			// inflation distros
-			// 1
-			Self::add_cashdrop_to_pool(currency_id, inflamounts)?;
-			// 2
-			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
-				currency_id,
-				inflamounts,
-			);
-			// 3
-			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
-				currency_id,
-				inflamounts,
-			);
-			// 4
-			<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_native(
-				currency_id,
-				inflamounts,
-			);
-
-			Self::deposit_event(Event::InflationDelivery(currency_id, inflation_amount));
+			if inflation_amount != 0 {
+				// inflation distros
+				// 1
+				Self::add_cashdrop_to_pool(currency_id, inflamounts)?;
+				// 2
+				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
+					currency_id,
+					inflamounts,
+				);
+				// 3
+				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
+					currency_id,
+					inflamounts,
+				);
+				// 4
+				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_native(
+					currency_id,
+					inflamounts,
+				);
+				Self::deposit_event(Event::InflationDelivery(currency_id, inflation_amount));
+			};
 		}
 		Ok(())
 	}
@@ -661,14 +662,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			if transfer_amount >= minimum_claimable_transfer && transfer_amount <= maximum_claimable_transfer {
 				let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop claim reward
 				let buyback_cashdrop_amount = transfer_amount / 25; // 4% cashdrop serp buyback
-				let cashdrop_pool_reward = transfer_amount / 50; // 2% cashdrop pool topup reward
 				let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 				if balance_cashdrop_amount <= cashdrop_pool_balance {
 					// Issue the CashDrop claim from the CashDropPool
 					Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
-					// Add the system CashDrop reward to the CashDropPool
-					Self::add_cashdrop_to_pool(currency_id, cashdrop_pool_reward)?;
-		
+					
 					// buyback for 50:50 of DNAR:SERP
 					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
 						currency_id,
@@ -693,14 +691,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			if transfer_amount >= minimum_claimable_transfer && transfer_amount <= maximum_claimable_transfer {
 				let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop claim reward
 				let buyback_cashdrop_amount = transfer_amount / 14; // 7.14285714% cashdrop serp buyback
-				let cashdrop_pool_reward = transfer_amount / 100; // 1% cashdrop pool topup reward
 				let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 				if balance_cashdrop_amount <= cashdrop_pool_balance {
 					// Issue the CashDrop claim from the CashDropPool
 					Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
-					// Add the system CashDrop reward to the CashDropPool
-					Self::add_cashdrop_to_pool(currency_id, cashdrop_pool_reward)?;
-		
+					
 					// buyback for 50:50 of DNAR:SERP
 					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
 						currency_id,

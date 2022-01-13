@@ -27,6 +27,7 @@ pub mod currency;
 pub mod evm;
 pub mod signature;
 
+use sp_std::vec::Vec;
 use codec::{Codec, Decode, Encode, MaxEncodedLen};
 use core::ops::Range;
 use sp_runtime::{
@@ -34,7 +35,6 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
 	RuntimeDebug,
 };
-use sp_std::prelude::*;
 
 pub use currency::{CurrencyId, DexShare, TokenSymbol};
 
@@ -89,6 +89,7 @@ pub const H160_POSITION_ERC20: Range<usize> = 0..20;
 pub const H160_PREFIX_TOKEN: [u8; 19] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
 pub const H160_PREFIX_DEXSHARE: [u8; 12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
 
+/// NFT Balance type
 pub type NFTBalance = u128;
 
 /// An index to a block.

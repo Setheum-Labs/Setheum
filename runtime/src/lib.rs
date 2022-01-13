@@ -134,21 +134,23 @@ mod benchmarking;
 
 // Pallet accounts of runtime
 parameter_types! {
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");		// 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
-	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 3Y9ymmssnjtYtFUzi9GQnpn3yxheQjSN7a8vJZSbiwVaJR5M
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 3Y9ymmssnjtYtTqe2maPGPCgruSW6sbMc9biwoPD8AqSeDZc
+	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");		// 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");	// 3Y9ymmssnjtYsyRWeDAo7XuSnXQqhxMcmefhqbubtbWdVxHP
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");	// 3Y9ymmssnjtYtTr4Ywm8vFwf5K2SJc3RTWxGWw5Gc6dttfJ8
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 3Y9ymmssnjtYtTqe2maPGPCgruSW6sbMc9biwoPD8AqSeDZc
+	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 3Y9ymmssnjtYtFUzi9GQnpn3yxheQjSN7a8vJZSbiwVaJR5M
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");			// 3Y9ymmssnjtYtTgjkqqj1mQyQUmUUfWps8UEgZHZiDkh9dUy
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");	// 3Y9ymmssnjtYtTr4Ywm8vFwf5K2SJc3RTWxGWw5Gc6dttfJ8
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");		// 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
 }
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
-		TreasuryPalletId::get().into_account(),
-		LoansPalletId::get().into_account(),
-		DEXPalletId::get().into_account(),
+		AirdropPalletId::get().into_account(),
 		CDPTreasuryPalletId::get().into_account(),
+		DEXPalletId::get().into_account(),
+		LoansPalletId::get().into_account(),
 		SerpTreasuryPalletId::get().into_account(),
+		TreasuryPalletId::get().into_account(),
 		ZeroAccountId::get(),		 	// ACCOUNT 0
 	]
 }
@@ -379,7 +381,7 @@ parameter_types! {
 }
 
 impl pallet_staking::Config for Runtime {
-	const MAX_NOMINATIONS: u32 = 16;
+	const MAX_NOMINATIONS: u32 = 16; // The maximum number of Validators a nominator can choose to nominate.
 	type Currency = Balances;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = U128CurrencyToVote;
@@ -838,45 +840,39 @@ impl module_dex::Config for Runtime {
 
 impl module_airdrop::Config for Runtime {
 	type Event = Event;
-	type Currency = Currencies;
+	type MultiCurrency = Currencies;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
+	type PalletId = AirdropPalletId;
 }
 
 parameter_types! {
 	pub SerpDefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETUSD, SETM],
-		vec![SETM, SETUSD],
-		vec![SETR, SETUSD, SETM],
-		vec![SETR, SETM, SETUSD],
-		vec![SETM, SETR, SETUSD],
-		vec![SETM, SETUSD, SETR],
-		vec![SETUSD, SERP],
-		vec![SERP, SETUSD],
-		vec![SETR, SETUSD, SERP],
-		vec![SETR, SERP, SETUSD],
-		vec![SERP, SETR, SETUSD],
-		vec![SERP, SETUSD, SETR],
-		vec![SETUSD, DNAR],
-		vec![DNAR, SETUSD],
-		vec![SETR, SETUSD, DNAR],
-		vec![SETR, DNAR, SETUSD],
-		vec![DNAR, SETR, SETUSD],
-		vec![DNAR, SETUSD, SETR],
+		vec![SETR],
+		vec![SETUSD],
 		vec![SETUSD, SETR],
-		vec![SETR, SETUSD],
+		vec![SETM, SETUSD, SETR],
+		vec![SETUSD, SETM],
+		vec![SERP, SETUSD, SETR],
+		vec![SETUSD, SERP],
+		vec![DNAR, SETUSD, SETR],
+		vec![SETUSD, DNAR],
+		vec![SETM],
+		vec![SERP],
+		vec![DNAR],
 	];
 	
-    pub const StableCurrencyInflationPeriod: BlockNumber = 1 * HOURS;
+    pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
     
 	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * 1_000_000_000_000_000_000;
-	pub SetterMaximumClaimableTransferAmounts: Balance = 10_000_000 * 1_000_000_000_000_000_000;
+	pub SetterMaximumClaimableTransferAmounts: Balance = 2_000_000 * 1_000_000_000_000_000_000;
 	pub SetDollarMinimumClaimableTransferAmounts: Balance = 4 * 1_000_000_000_000_000_000;
-	pub SetDollarMaximumClaimableTransferAmounts: Balance = 700_000 * 1_000_000_000_000_000_000;
+	pub SetDollarMaximumClaimableTransferAmounts: Balance = 100_000 * 1_000_000_000_000_000_000;
 }
 
 impl serp_treasury::Config for Runtime {
@@ -1179,7 +1175,7 @@ impl pallet_proxy::Config for Runtime {
 parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
-	pub NativeTokenExistentialDeposit: Balance = 100_000_000_000_000_000; // 10 cents
+	pub NativeTokenExistentialDeposit: Balance = 1_000_000_000_000_000_000; // 1 SETM
 	pub MaxNativeTokenExistentialDeposit: Balance = 1000 * 1_000_000_000_000_000_000;
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = ReserveIdentifier::Count as u32;

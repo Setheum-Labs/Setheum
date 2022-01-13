@@ -1,6 +1,6 @@
 [package]
 name = "emergency-shutdown"
-version = "0.9.80"
+version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
 

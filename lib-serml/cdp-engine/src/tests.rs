@@ -229,7 +229,7 @@ fn calculate_collateral_ratio_work() {
 			Change::NewValue(10000),
 		));
 		assert_eq!(
-			CDPEngineModule::calculate_collateral_ratio(SERP, 100, 50, Price::saturating_from_rational(1, 1)),
+			CDPEngineModule::calculate_collateral_ratio(SERP, 1000, 50, Price::saturating_from_rational(1, 1)),
 			Ratio::saturating_from_rational(100, 50)
 		);
 	});

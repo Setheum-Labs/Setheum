@@ -27,18 +27,19 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, TokenSymbol};
+use primitives::{Amount, AccountId as AccId, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
-	testing::Header,
+	testing::Header, AccountId32,
 	traits::{IdentityLookup},
 };
 
-pub type AccountId = u128;
+pub type AccountId = AccId;
 pub type BlockNumber = u64;
 
-pub const ALICE: AccountId = 0;
-pub const BOB: AccountId = 2;
+pub const TREASURY: AccountId = AccountId32::new([0u8; 32]);
+pub const ALICE: AccountId = AccountId32::new([2u8; 32]);
+pub const BOB: AccountId = AccountId32::new([3u8; 32]);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
@@ -107,20 +108,24 @@ parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
 	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
+	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");
 }
 
 ord_parameter_types! {
-	pub const One: AccountId = 1;}
-
+	pub const TreasuryAccount: AccountId = TREASURY;
+	pub const One: AccountId = AccountId32::new([1u8; 32]);
+}
 impl Config for Runtime {
 	type Event = Event;
-	type Currency = Tokens;
+	type MultiCurrency = Tokens;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureSignedBy<One, AccountId>;
+	type PalletId = AirdropPalletId;
 }
 
 pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
@@ -148,8 +153,19 @@ impl Default for ExtBuilder {
 			_balances: vec![
 				(ALICE, SETR, 1000),
 				(BOB, SETR, 1000),
+				(TREASURY, SETR, 1000),
 				(ALICE, SETUSD, 1000),
 				(BOB, SETUSD, 1000),
+				(TREASURY, SETUSD, 1000),
+				(ALICE, SETM, 1000),
+				(BOB, SETM, 1000),
+				(TREASURY, SETM, 1000),
+				(ALICE, SERP, 1000),
+				(BOB, SERP, 1000),
+				(TREASURY, SERP, 1000),
+				(ALICE, DNAR, 1000),
+				(BOB, DNAR, 1000),
+				(TREASURY, DNAR, 1000),
 			],
 		}
 	}
