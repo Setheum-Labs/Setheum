@@ -4,8 +4,8 @@ import json
 types = json.load(open("../resources/types.json", "r"))
 
 # url = "http://127.0.0.1:9933"
-url = "https://rpc-testnet.setheumscan.com"
-# url = "https://rpc.setheumscan.com"
+url = "https://rpc-newrome.setheum.xyz"
+# url = "https://rpc.setheum.xyz"
 
 s = SubstrateInterface(
     url=url,
