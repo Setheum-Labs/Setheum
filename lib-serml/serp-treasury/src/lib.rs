@@ -680,7 +680,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 			if transfer_amount >= minimum_claimable_transfer && transfer_amount <= maximum_claimable_transfer {
 				let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop claim reward
-				let buyback_cashdrop_amount = transfer_amount / 25; // 4% cashdrop serp buyback
 				let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 				if balance_cashdrop_amount <= cashdrop_pool_balance {
 					// Issue the CashDrop claim from the CashDropPool
@@ -698,7 +697,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 
 			if transfer_amount >= minimum_claimable_transfer && transfer_amount <= maximum_claimable_transfer {
 				let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop claim reward
-				let buyback_cashdrop_amount = transfer_amount / 14; // 7.14285714% cashdrop serp buyback
 				let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 				if balance_cashdrop_amount <= cashdrop_pool_balance {
 					// Issue the CashDrop claim from the CashDropPool
