@@ -32,62 +32,16 @@
 #![allow(clippy::unused_unit)]
 
 use frame_support::{
-	pallet_prelude::*, transactional, PalletId, traits::Get, codec::{Decode, Encode}, storage::child,
+	pallet_prelude::*, transactional, PalletId, traits::Get, codec::{Decode, Encode}, ensure, storage::child,
 };
-use frame_system::pallet_prelude::*;
-use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended, MultiReservableCurrency};
-use primitives::{AccountId, Balance, CurrencyId};
+use frame_system::{pallet_prelude::*, ensure_signed};
+use orml_traits::{GetByKey, Get, MultiCurrency, MultiCurrencyExtended, MultiReservableCurrency};
+use primitives::{AccountId, Balance, CampaignId, CurrencyId};
 use sp_std::vec::Vec;
 use sp_runtime::{traits::{AccountIdConversion, Saturating, Zero, Hash}};
 mod mock;
 
 pub use module::*;
-
-/// Simple index for identifying a fund.
-pub type FundIndex = u32;
-pub type ProjectIndex = u32;
-pub type RoundIndex = u32;
-
-type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-type AllocationOf<T> = Allocation<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
-type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
-type CampaignOf<T> = Campaign<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
-type CurrencyIdOf<T> =
-	<<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::CurrencyId;
-type FundOf<T> = Fund<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
-type ProjectOf<T> = Project<AccountIdOf<T>, <T as frame_system::Config>::BlockNumber>;
-type FundInfoOf<T> =
-		FundInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
-
-#[derive(Encode, Decode, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Debug))]
-pub struct FundInfo<AccountId, Balance, BlockNumber> {
-	/// The account that will recieve the funds if the campaign is successful
-	beneficiary: AccountId,
-	/// The currency of raise for the campaign
-	currency: CurrencyId,
-	/// The amount of deposit placed
-	deposit: Balance,
-	/// The total amount raised
-	raised: Balance,
-	/// Block number after which funding must have succeeded
-	end: BlockNumber,
-	/// Upper bound on `raised`
-	goal: Balance,
-}
-
-/// Project struct
-#[derive(Encode, Decode, Default, PartialEq, Eq, Clone, Debug)]
-#[cfg_attr(feature = "std", derive(serde::Serialize))]
-pub struct Project<AccountId, BlockNumber> {
-	name: Vec<u8>,
-	logo: Vec<u8>,
-	description: Vec<u8>,
-	website: Vec<u8>,
-	/// The account that will receive the funds if the campaign is successful
-	owner: AccountId,
-	create_block_number: BlockNumber,
-}
 
 #[frame_support::pallet]
 pub mod module {
@@ -125,16 +79,19 @@ pub mod module {
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// High-End LaunchPad (HELP) currency id. (LaunchPad Token)
+		/// HighEnd LaunchPad (HELP) currency id. (LaunchPad Token)
 		/// 
 		type GetHelpCurrencyId: Get<CurrencyId>;
 
+		/// Campaign to manage the LaunchPad Campaign process
+		type Campaign: Campaign<Self::AccountId, Self::BlockNumber, CampaignId = CampaignId, Balance = Balance>;
+
 		/// The amount to be held on deposit by the owner of a crowdfund
+		/// - in HighEnd LaunchPad (HELP) currency id. (LaunchPad Token)
 		type SubmissionDeposit: Get<BalanceOf<Self>>;
 
-		/// The minimum Setheum Currency amount to be deposited in a bootstrap pair
-		/// by the owner of a crowdfund Bootstrap, get by currency_id.
-		type MinBootstrapDeposit: GetByKey<CurrencyId, Balance>;
+		/// The Currency amount to be deposited in a bootstrap pair from the LaunchPool get by currency_id.
+		type BootstrapDeposit: GetByKey<CurrencyId, Balance>;
 
 		/// The minimum amount that may be contributed into a crowdfund. Should almost certainly be at
 		/// least ExistentialDeposit.
@@ -179,25 +136,85 @@ pub mod module {
 	#[pallet::metadata(T::AccountId = "AccountId", BalanceOf<T> = "Balance", AirDropCurrencyId = "AirDropCurrencyId")]
 	pub enum Event<T: Config> {
 		/// Drop Airdrop \[currency_id\]
-		Created(FundIndex, <T as frame_system::Config>::BlockNumber),
-		Contributed(<T as frame_system::Config>::AccountId, FundIndex, BalanceOf<T>, <T as frame_system::Config>::BlockNumber),
-		Withdrew(<T as frame_system::Config>::AccountId, FundIndex, BalanceOf<T>, <T as frame_system::Config>::BlockNumber),
-		Retiring(FundIndex, <T as frame_system::Config>::BlockNumber),
-		Dissolved(FundIndex, <T as frame_system::Config>::BlockNumber, <T as frame_system::Config>::AccountId),
-		Dispensed(FundIndex, <T as frame_system::Config>::BlockNumber, <T as frame_system::Config>::AccountId),
+		Created(CampaignIndex, <T as frame_system::Config>::BlockNumber),
+		Contributed(<T as frame_system::Config>::AccountId, CampaignIndex, BalanceOf<T>, <T as frame_system::Config>::BlockNumber),
+		Withdrew(<T as frame_system::Config>::AccountId, CampaignIndex, BalanceOf<T>, <T as frame_system::Config>::BlockNumber),
+		Retiring(CampaignIndex, <T as frame_system::Config>::BlockNumber),
+		Dissolved(CampaignIndex, <T as frame_system::Config>::BlockNumber, <T as frame_system::Config>::AccountId),
+		Dispensed(CampaignIndex, <T as frame_system::Config>::BlockNumber, <T as frame_system::Config>::AccountId),
+	}
+
+	/// Simple index for identifying a fund.
+	pub type FundIndex = u32;
+	pub type CampaignIndex = u32;
+
+	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+	type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
+	type CurrencyIdOf<T> =
+		<<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::CurrencyId;
+	type CampaignInfoOf<T> =
+		CampaignInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
+	type CampaignInfoOf<T> =
+		CampaignInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
+	#[derive(Encode, Decode, Default, PartialEq, Eq)]
+	#[cfg_attr(feature = "std", derive(Debug))]
+	pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
+		/// The name of the Project that will recieve the funds if the campaign is successful
+		project_name: Vec<u8>,
+		/// The account that will recieve the funds if the campaign is successful
+		project_logo: Vec<u8>,
+		/// The account that will recieve the funds if the campaign is successful
+		project_description: Vec<u8>,
+		/// The account that will recieve the funds if the campaign is successful
+		project_website: Vec<u8>,
+		/// The account that will recieve the funds if the campaign is successful
+		beneficiary: AccountId,
+		/// The currency to raise for the campaign
+		raise_currency: CurrencyId,
+		/// The projects ERC20 token contract address
+		erc20_token: CurrencyId,
+		/// The amount of project tokens (ERC20)
+		/// allocated to the crowdfund campaign contributors
+		crowd_allocation: Balance,
+		/// The amount of project tokens (ERC20)
+		/// allocated to the DEX for bootstrap
+		bootstrap_allocation: Balance,
+		/// The amount of deposit placed
+		submission_deposit: Balance,
+		/// The total amount raised
+		raised: Balance,
+		/// Block number after which funding must have succeeded
+		end: BlockNumber,
+		/// Success bound on `raised` - Soft Cap for the campaign.
+		soft_goal: Balance,
+		/// Upper bound on `raised` - Hard Cap for the campaign.
+		hard_goal: Balance,
+	}
+
+	/// Project struct
+	#[derive(Encode, Decode, Default, PartialEq, Eq, Clone, Debug)]
+	#[cfg_attr(feature = "std", derive(serde::Serialize))]
+	pub struct Project<AccountId, BlockNumber> {
+		name: Vec<u8>,
+		logo: Vec<u8>,
+		description: Vec<u8>,
+		website: Vec<u8>,
+		/// The account that will receive the funds if the campaign is successful
+		owner: AccountId,
+		create_block_number: BlockNumber,
 	}
 
 	/// Info on all of the funds.
 	///
-	/// map CurrencyId => FundInfoOf<T>
+	/// map CurrencyId => CampaignInfoOf<T>
 	#[pallet::storage]
 	#[pallet::getter(fn funds)]
-	pub type Funds<T: Config> = StorageMap<_, Blake2_128Concat, FundIndex, FundInfoOf<T>, OptionQuery>;
+	pub type Funds<T: Config> = StorageMap<_, Blake2_128Concat, CampaignIndex, CampaignInfoOf<T>, OptionQuery>;
 	
 	/// The total number of funds that have so far been allocated.
 	#[pallet::storage]
 	#[pallet::getter(fn fund_count)]
-	pub type FundCount<T: Config> = StorageValue<_, FundIndex, ValueQuery>;
+	pub type FundCount<T: Config> = StorageValue<_, CampaignIndex, ValueQuery>;
 	
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
@@ -211,6 +228,10 @@ pub mod module {
 		#[pallet::weight(10_000)]
 		pub fn create(
 			origin: OriginFor<T>,
+			name: Vec<u8>,
+			logo: Vec<u8>,
+			description: Vec<u8>,
+			website: Vec<u8>,
 			currency_id: CurrencyIdOf<T>,
 			beneficiary: AccountIdOf<T>,
 			goal: BalanceOf<T>,
@@ -220,20 +241,18 @@ pub mod module {
 			let now = <frame_system::Pallet<T>>::block_number();
 				ensure!(end > now, Error::<T>::EndTooEarly);
 				let deposit = T::SubmissionDeposit::get();
-			let imb = T::MultiCurrency::transfer(
+			T::MultiCurrency::transfer(
 				currency_id,
 				&creator,
+				&Self::account_id(),
 				deposit,
 			)?;
 				
 			let index = <FundCount<T>>::get();
 			// not protected against overflow, see safemath section
 			<FundCount<T>>::put(index + 1);
-			// No fees are paid here if we need to create this account; that's why we don't just
-			// use the stock `transfer`.
-			T::MultiCurrency::resolve_creating(&Self::fund_account_id(index), imb);
 
-			<Funds<T>>::insert(index, FundInfo{
+			<Funds<T>>::insert(index, CampaignInfo{
 				beneficiary,
 				deposit,
 				raised: Zero::zero(),
@@ -249,7 +268,7 @@ pub mod module {
 		#[pallet::weight(10_000)]
 		pub fn contribute(
 			origin: OriginFor<T>, 
-			index: FundIndex, 
+			index: CampaignIndex, 
 			value: BalanceOf<T>) -> DispatchResultWithPostInfo {
 
 			let who = ensure_signed(origin)?;
@@ -284,7 +303,7 @@ pub mod module {
 		#[pallet::weight(10_000)]
 		pub fn withdraw(
 			origin: OriginFor<T>,
-			#[pallet::compact] index: FundIndex) -> DispatchResultWithPostInfo {
+			#[pallet::compact] index: CampaignIndex) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
 			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
@@ -318,7 +337,7 @@ pub mod module {
 		#[pallet::weight(10_000)]
 		pub fn dissolve(
 			origin: OriginFor<T>, 
-			index: FundIndex) -> DispatchResultWithPostInfo {
+			index: CampaignIndex) -> DispatchResultWithPostInfo {
 			let reporter = ensure_signed(origin)?;
 
 			let fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
@@ -354,7 +373,7 @@ pub mod module {
 		#[pallet::weight(10_000)]
 		pub fn dispense(
 			origin: OriginFor<T>, 
-			index: FundIndex) -> DispatchResultWithPostInfo {
+			index: CampaignIndex) -> DispatchResultWithPostInfo {
 			let caller = ensure_signed(origin)?;
 
 			let fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
@@ -398,9 +417,17 @@ pub mod module {
 }
 
 impl<T: Config> Pallet<T> {
-	/// Get account of SERP Treasury module.
-	pub fn account_id() -> T::AccountId {
+	/// Get account of HELP Treasury module Account.
+	pub fn treasury_account_id() -> T::AccountId {
 		T::PalletId::get().into_account()
+	}
+
+	/// The account ID of the fund pot.
+	///
+	/// This actually does computation. If you need to keep using it, then make sure you cache the
+	/// value and only call this once.
+	pub fn campaign_account_id(index: CampaignIndex) -> T::AccountId {
+		T::PalletId::get().into_sub_account(index)
 	}
 
 
@@ -408,7 +435,7 @@ impl<T: Config> Pallet<T> {
 	///
 	/// Each fund stores information about its contributors and their contributions in a child trie
 	/// This helper function calculates the id of the associated child trie.
-	pub fn id_from_index(index: FundIndex) -> child::ChildInfo {
+	pub fn id_from_index(index: CampaignIndex) -> child::ChildInfo {
 		let mut buf = Vec::new();
 		buf.extend_from_slice(b"crowdfnd");
 		buf.extend_from_slice(&index.to_le_bytes()[..]);
@@ -417,26 +444,26 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Record a contribution in the associated child trie.
-	pub fn contribution_put(index: FundIndex, who: &T::AccountId, balance: &BalanceOf<T>) {
+	pub fn contribution_put(index: CampaignIndex, who: &T::AccountId, balance: &BalanceOf<T>) {
 		let id = Self::id_from_index(index);
 		who.using_encoded(|b| child::put(&id, b, &balance));
 	}
 
 	/// Lookup a contribution in the associated child trie.
-	pub fn contribution_get(index: FundIndex, who: &T::AccountId) -> BalanceOf<T> {
+	pub fn contribution_get(index: CampaignIndex, who: &T::AccountId) -> BalanceOf<T> {
 		let id = Self::id_from_index(index);
 		who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
 	}
 
 	/// Remove a contribution from an associated child trie.
-	pub fn contribution_kill(index: FundIndex, who: &T::AccountId) {
+	pub fn contribution_kill(index: CampaignIndex, who: &T::AccountId) {
 		let id = Self::id_from_index(index);
 		who.using_encoded(|b| child::kill(&id, b));
 	}
 
 	/// Remove the entire record of contributions in the associated child trie in a single
 	/// storage write.
-	pub fn crowdfund_kill(index: FundIndex) {
+	pub fn crowdfund_kill(index: CampaignIndex) {
 		let id = Self::id_from_index(index);
 		// The None here means we aren't setting a limit to how many keys to delete.
 		// Limiting can be useful, but is beyond the scope of this recipe. For more info, see
