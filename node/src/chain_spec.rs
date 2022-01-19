@@ -648,11 +648,11 @@ fn testnet_genesis(
 	let  help_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
 	let  help_team_alloc: u128 = 42_000_000 * 1_000_000_000_000_000_000;
 	let  help_airdrop_alloc: u128 = 3_500_000 * 1_000_000_000_000_000_000;
-	
-	let  setr_foundation_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_team_alloc: u128 = 5_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_cashdrop_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_airdrop_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
+
+	let  setr_foundation_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_team_alloc: u128 = 10_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_cashdrop_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_airdrop_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
 	
 	let  setusd_foundation_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	let  setusd_team_alloc: u128 = 1_566_500_000 * 1_000_000_000_000_000_000;
@@ -672,9 +672,9 @@ fn testnet_genesis(
 	let  help_foundation_vesting: u128 = 7_495_263_981_550_100_000;
 	let  help_team_vesting: u128 = 11_242_895_972_325_200_000;
 
-	let  setr_foundation_vesting: u128 = 19_561_815_336_463_220_000;
-	let  setr_team_vesting: u128 = 58_685_446_009_389_670_000;
-
+	let  setr_foundation_vesting: u128 = 39_123_630_672_926_440_000;
+	let  setr_team_vesting: u128 = 117_370_892_018_779_300_000;
+	
 	let  setusd_foundation_vesting: u128 = 7_660_895_931_142_410_000;
 	let  setusd_team_vesting: u128 = 22_982_687_793_427_230_000;
 
@@ -917,12 +917,12 @@ fn mainnet_genesis(
 	let  help_advisors_n_partners_alloc: u128 = 350_000_000 * 1_000_000_000_000_000_000;
 	let  help_airdrop_alloc: u128 = 350_000_000 * 1_000_000_000_000_000_000;
 	
-	let  setr_foundation_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_spf_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_team_alloc: u128 = 5_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_foundation_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_spf_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_team_alloc: u128 = 10_000_000_000 * 1_000_000_000_000_000_000;
 	let  setr_advisors_n_partners_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_cashdrop_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_airdrop_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_cashdrop_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_airdrop_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
 	
 	let  setusd_foundation_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	let  setusd_spf_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
@@ -952,10 +952,10 @@ fn mainnet_genesis(
 	let  help_team_vesting: u128 = 11_242_895_972_325_200_000;
 	let  help_advisors_n_partners_vesting: u128 = 7_120_500_782_472_600_000;
 	
-	let  setr_foundation_vesting: u128 = 19_561_815_336_463_220_000;
-	let  setr_spf_vesting: u128 = 19_561_815_336_463_220_000;
-	let  setr_team_vesting: u128 = 58_685_446_009_389_670_000;
-	let  setr_advisors_n_partners_vesting: u128 = 19_561_815_336_463_220_000;
+	let  setr_foundation_vesting: u128 = 39_123_630_672_926_440_000;
+	let  setr_spf_vesting: u128 = 39_123_630_672_926_440_000;
+	let  setr_team_vesting: u128 = 117_370_892_018_779_300_000;
+	let  setr_advisors_n_partners_vesting: u128 = 39_123_630_672_926_440_000;
 	
 	let  setusd_foundation_vesting: u128 = 7_660_895_931_142_410_000;
 	let  setusd_spf_vesting: u128 = 7_660_895_931_142_410_000;

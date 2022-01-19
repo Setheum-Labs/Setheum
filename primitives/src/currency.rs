@@ -165,12 +165,12 @@ create_currency_id! {
 	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		SETM("Setheum", 18) = 0, 		// Tier-1
-		SERP("Serp", 18) = 1, 			// Tier-1
-		DNAR("The Dinar", 18) = 2, 		// Tier-1
-		HELP("HighEnd LaunchPad", 18) = 3, 		// Tier-1
-		SETR("Setter", 18) = 4,			// Tier-2
-		SETUSD("SetDollar", 18) = 5,	// Tier-2
+		SETM("Setheum", 18) = 0, 			// Tier-1
+		SERP("Serp", 18) = 1, 				// Tier-1
+		DNAR("The Dinar", 18) = 2, 			// Tier-1
+		HELP("HighEnd LaunchPad", 18) = 3, 	// Tier-1
+		SETR("Setter", 18) = 4,				// Tier-2
+		SETUSD("SetDollar", 18) = 5,		// Tier-2
 	}
 }
 
