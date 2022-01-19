@@ -160,7 +160,8 @@ pub enum AirDropCurrencyId {
 	// vvv AND MultiCurrency INITIAL ALLOCATIONS vvv
 	SETM = 2,
 	SERP = 3,
-	DNAR = 4
+	DNAR = 4,
+	HELP = 5,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]

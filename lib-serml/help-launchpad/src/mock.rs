@@ -45,7 +45,6 @@ pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const HELP: CurrencyId = CurrencyId::Token(TokenSymbol::HELP);
 
 mod airdrop {
 	pub use super::super::*;
@@ -109,7 +108,6 @@ parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
 	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
-	pub const GetHelpCurrencyId: CurrencyId = HELP;  // Setheum native currency ticker is SETM/
 	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");
 }
 
@@ -125,7 +123,6 @@ impl Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureSignedBy<One, AccountId>;
 	type PalletId = AirdropPalletId;
@@ -169,9 +166,6 @@ impl Default for ExtBuilder {
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
 				(TREASURY, DNAR, 1000),
-				(ALICE, HELP, 1000),
-				(BOB, HELP, 1000),
-				(TREASURY, HELP, 1000),
 			],
 		}
 	}

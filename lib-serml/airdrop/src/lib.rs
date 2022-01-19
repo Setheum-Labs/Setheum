@@ -80,6 +80,11 @@ pub mod module {
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
+		/// High-End LaunchPad (HELP) currency id. (LaunchPad Token)
+		/// 
+		type GetHelpCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
 		/// The Airdrop module pallet id, keeps airdrop funds.
 		type FundingOrigin: Get<Self::AccountId>;
 
@@ -143,6 +148,8 @@ pub mod module {
 				T::MultiCurrency::transfer(T::GetSerpCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			} else if currency_id == AirDropCurrencyId::DNAR {
 				T::MultiCurrency::transfer(T::GetDinarCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
+			} else if currency_id == AirDropCurrencyId::HELP {
+				T::MultiCurrency::transfer(T::GetHelpCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			}
 			
 			Self::deposit_event(Event::FundAirdropTreasury(T::FundingOrigin::get(), currency_id, amount));
@@ -212,6 +219,11 @@ impl<T: Config> Pallet<T> {
 			id if id == AirDropCurrencyId::DNAR => {
 				for (beneficiary, amount) in  airdrop_list.iter() {
 					T::MultiCurrency::transfer(T::GetDinarCurrencyId::get(), &Self::account_id(), beneficiary, *amount)?;
+				}
+			}
+			id if id == AirDropCurrencyId::HELP => {
+				for (beneficiary, amount) in  airdrop_list.iter() {
+					T::MultiCurrency::transfer(T::GetHelpCurrencyId::get(), &Self::account_id(), beneficiary, *amount)?;
 				}
 			} _ => {}
 		}

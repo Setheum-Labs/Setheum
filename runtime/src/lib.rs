@@ -121,7 +121,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, SETR, SETUSD,
+	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, HELP, SETR, SETUSD,
 };
 
 
@@ -526,6 +526,7 @@ parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
 	pub const GetSerpCurrencyId: CurrencyId = SERP;
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
+	pub const GetHelpCurrencyId: CurrencyId = HELP;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
@@ -607,6 +608,7 @@ parameter_type_with_key! {
 				TokenSymbol::SETUSD => 100_000_000_000_000_000, // 10 cents
 				TokenSymbol::SETR => 100_000_000_000_000_000, // 10 cents
 				TokenSymbol::SERP => 100_000_000_000_000_000, // 10 cents
+				TokenSymbol::HELP => 100_000_000_000_000_000, // 10 cents
 				TokenSymbol::DNAR => 100_000_000_000_000_000, // 10 cents
 				TokenSymbol::SETM => 100_000_000_000_000_000, // 10 cents
 			},
@@ -681,6 +683,7 @@ parameter_types! {
 		vec![SETM, SETUSD],
 		vec![SERP, SETUSD],
 		vec![DNAR, SETUSD],
+		vec![HELP, SETUSD],
 		vec![SETR, SETUSD],
 	];
 }
@@ -766,7 +769,7 @@ where
 }
 
 parameter_types! {
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, SETR];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, HELP, SETR];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -821,6 +824,7 @@ parameter_types! {
 		TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, HELP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
 	];
 }
@@ -862,9 +866,12 @@ parameter_types! {
 		vec![SETUSD, SERP],
 		vec![DNAR, SETUSD, SETR],
 		vec![SETUSD, DNAR],
+		vec![HELP, SETUSD, SETR],
+		vec![SETUSD, HELP],
 		vec![SETM],
 		vec![SERP],
 		vec![DNAR],
+		vec![HELP],
 	];
 	
     pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
@@ -924,6 +931,7 @@ parameter_types! {
 		vec![SETUSD, SETM],
 		vec![SERP, SETUSD, SETM],
 		vec![DNAR, SETUSD, SETM],
+		vec![HELP, SETUSD, SETM],
 		vec![SETR, SETUSD, SETM],
 	];
 }

@@ -348,6 +348,18 @@ pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
 		supply_amount: Self::Balance,
 	);
 	
+	/// When SetCurrency gets serplus deposit
+	fn serplus_swap_exact_setcurrency_to_help(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+	);
+
+	/// When SetCurrency gets inflation deposit
+	fn swap_exact_setcurrency_to_help(
+		currency_id: Self::CurrencyId,
+		supply_amount: Self::Balance,
+	);
+	
 	/// When SetCurrency gets inflation deposit
 	fn swap_exact_setcurrency_to_serp(
 		currency_id: Self::CurrencyId,

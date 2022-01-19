@@ -91,6 +91,11 @@ pub mod module {
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
+		/// High-End LaunchPad (HELP) currency id. (LaunchPad Token)
+		/// 
+		type GetHelpCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
 		/// Setter (SETR) currency id
 		/// 
 		type SetterCurrencyId: Get<CurrencyId>;
@@ -209,6 +214,10 @@ pub mod module {
 		SerplusSwapExactStableToNative(CurrencyId, CurrencyId, Balance, Balance),
 		/// SerpSwapExactStableToNative
 		SerpSwapExactStableToNative(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerplusSwapExactStableToHelp
+		SerplusSwapExactStableToHelp(CurrencyId, CurrencyId, Balance, Balance),
+		/// SerpSwapExactStableToHelp
+		SerpSwapExactStableToHelp(CurrencyId, CurrencyId, Balance, Balance),
 		/// SerpSwapExactStableToSerpToken
 		SerpSwapExactStableToSerpToken(CurrencyId, CurrencyId, Balance, Balance),
 		/// SerpSwapExactStableToNative
@@ -425,10 +434,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn issue_stablecurrency_inflation() -> DispatchResult {
 
 		for currency_id in T::StableCurrencyIds::get() {
-			// Amounts are 25% of the inflation rate amount for each distro.
+			// Amounts are 20% of the inflation rate amount for each distro.
+			// (CashDropPool, DNAR, SERP, SETM, HELP)
 			let one: Balance = 1;
 			let inflation_amount = Self::stable_currency_inflation_rate(currency_id);
-			let inflamounts: Balance = one.saturating_mul(inflation_amount / 4);
+			let inflamounts: Balance = one.saturating_mul(inflation_amount / 5);
 
 			if inflation_amount != 0 {
 				// inflation distros
@@ -446,6 +456,11 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				);
 				// 4
 				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_native(
+					currency_id,
+					inflamounts,
+				);
+				// 5
+				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_help(
 					currency_id,
 					inflamounts,
 				);
@@ -508,25 +523,29 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// Serplus ratio for BuyBack Swaps to burn Setter and Setheum (SETR:SETM)
 	fn get_buyback_serplus(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// BuyBack Pool - 50%
-		// Buyback with 25:25:25:25 with SETR:DNAR:SERP:SETM
+		// Buyback with 20:20:20:20:20 with SETR:DNAR:SERP:SETM:HELP
 		let one: Balance = 1;
-		let amount_25percent: Balance = one.saturating_mul(amount / 4);
+		let amount_20percent: Balance = one.saturating_mul(amount / 5);
 		
 		<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_setter(
 			currency_id,
-			amount_25percent,
+			amount_20percent,
 		);
 		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
 			currency_id,
-			amount_25percent,
+			amount_20percent,
 		);
 		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
 			currency_id,
-			amount_25percent,
+			amount_20percent,
 		);
 		<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_native(
 			currency_id,
-			amount_25percent,
+			amount_20percent,
+		);
+		<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_help(
+			currency_id,
+			amount_20percent,
 		);
 		Ok(())
 	}
@@ -667,17 +686,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 					// Issue the CashDrop claim from the CashDropPool
 					Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
 					
-					// buyback for 50:50 of DNAR:SERP
-					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
-						currency_id,
-						buyback_cashdrop_amount / 2,
-					);
-					// 4
-					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
-						currency_id,
-						buyback_cashdrop_amount / 2,
-					);
-		
 					Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 				}
 			} else {
@@ -696,17 +704,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 					// Issue the CashDrop claim from the CashDropPool
 					Self::issue_cashdrop_from_pool(who, currency_id, balance_cashdrop_amount)?;
 					
-					// buyback for 50:50 of DNAR:SERP
-					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
-						currency_id,
-						buyback_cashdrop_amount / 2,
-					);
-					// 4
-					<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
-						currency_id,
-						buyback_cashdrop_amount / 2,
-					);
-		
 					Self::deposit_event(Event::CashDropClaim(currency_id, who.clone(), balance_cashdrop_amount.clone()));
 				}
 			} else {
@@ -1164,7 +1161,7 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		Self::deposit_event(Event::SerplusSwapExactStableToSetter(currency_id, setter_currency_id, min_target_limit, supply_amount));
 	}
 
-	/// Swap exact amount of SetCurrency to Setter,
+	/// Swap exact amount of SetCurrency to Setheum,
 	/// return actual supply SetCurrency amount
 	///
 	/// 
@@ -1276,6 +1273,120 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			}
 		}
 		Self::deposit_event(Event::SerpSwapExactStableToNative(currency_id, native_currency_id, min_target_limit, supply_amount));
+	}
+	
+	/// Swap exact amount of SetCurrency to HELP,
+	/// return actual supply SetCurrency amount
+	///
+	/// 
+	/// When SetCurrency gets serplus deposit
+	#[allow(unused_variables)]
+	fn serplus_swap_exact_setcurrency_to_help(
+		currency_id: CurrencyId,
+		supply_amount: Balance,
+	) {
+		let help_currency_id = T::GetHelpCurrencyId::get();
+
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
+		
+		// calculate the target limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit
+		let min_target_limit = if let Some(target_price) =
+			T::PriceSource::get_relative_price(help_currency_id, currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+
+		// iterate default_swap_parital_path_list to try swap until swap succeeds.
+		for partial_path in default_swap_parital_path_list {
+			let partial_path_len = partial_path.len();
+
+			// check currency_id and partial_path can form a valid swap path.
+			if partial_path_len > 0 && currency_id != partial_path[0] {
+				let mut swap_path = vec![currency_id, help_currency_id];
+				swap_path.extend(partial_path);
+
+				if T::Currency::deposit(
+					currency_id,
+					&Self::account_id(),
+					supply_amount.unique_saturated_into()
+				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+					&Self::account_id(),
+					&swap_path,
+					supply_amount.unique_saturated_into(),
+					// min_target_limit.unique_saturated_into(),
+				)
+				.is_ok()
+				{
+					// successfully swap, break iteration.
+					break;
+				}
+			}
+		}
+		Self::deposit_event(Event::SerplusSwapExactStableToHelp(currency_id, help_currency_id, min_target_limit, supply_amount));
+	}
+
+	/// Swap exact amount of SetCurrency to HELP,
+	/// return actual supply SetCurrency amount
+	///
+	/// 
+	/// When SetCurrency gets inflation deposit
+	#[allow(unused_variables)]
+	fn swap_exact_setcurrency_to_help(
+		currency_id: CurrencyId,
+		supply_amount: Balance,
+	) {
+		let help_currency_id = T::GetHelpCurrencyId::get();
+
+		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
+		
+		// calculate the target limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit
+		let min_target_limit = if let Some(target_price) =
+			T::PriceSource::get_relative_price(help_currency_id, currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+
+		// iterate default_swap_parital_path_list to try swap until swap succeeds.
+		for partial_path in default_swap_parital_path_list {
+			let partial_path_len = partial_path.len();
+
+			// check currency_id and partial_path can form a valid swap path.
+			if partial_path_len > 0 && currency_id != partial_path[0] {
+				let mut swap_path = vec![currency_id, help_currency_id];
+				swap_path.extend(partial_path);
+
+				if T::Currency::deposit(
+					currency_id,
+					&Self::account_id(),
+					supply_amount.unique_saturated_into()
+				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+					&Self::account_id(),
+					&swap_path,
+					supply_amount.unique_saturated_into(),
+					// min_target_limit.unique_saturated_into(),
+				)
+				.is_ok()
+				{
+					// successfully swap, break iteration.
+					break;
+				}
+			}
+		}
+		Self::deposit_event(Event::SerpSwapExactStableToHelp(currency_id, help_currency_id, min_target_limit, supply_amount));
 	}
 	
 	/// Swap exact amount of Setter to Serp,
