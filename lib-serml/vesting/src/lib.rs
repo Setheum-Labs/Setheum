@@ -168,7 +168,7 @@ pub mod module {
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// High-End LaunchPad (HELP) currency id. (LaunchPad Token)
+		/// HighEnd LaunchPad (HELP) currency id. (LaunchPad Token)
 		/// 
 		type GetHelpCurrencyId: Get<CurrencyId>;
 

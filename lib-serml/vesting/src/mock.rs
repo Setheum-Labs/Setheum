@@ -114,12 +114,12 @@ parameter_types! {
 		SETR,
 		SETUSD,
 	];
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDId: CurrencyId = SETUSD;  // SetDollar currency ticker is SETUSD/
-	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
-	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Serp currency ticker is SERP/
-	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // The Dinar currency ticker is DNAR/
-	pub const GetHelpCurrencyId: CurrencyId = HELP;  // High-End LaunchPad currency ticker is HELP/
+	pub const SetterCurrencyId: CurrencyId = SETR;  	// Setter  currency ticker is SETR/
+	pub const GetSetUSDId: CurrencyId = SETUSD;  		// SetDollar currency ticker is SETUSD/
+	pub const GetNativeCurrencyId: CurrencyId = SETM;  	// Setheum native currency ticker is SETM/
+	pub const GetSerpCurrencyId: CurrencyId = SERP;  	// Serp currency ticker is SERP/
+	pub const GetDinarCurrencyId: CurrencyId = DNAR;  	// The Dinar currency ticker is DNAR/
+	pub const GetHelpCurrencyId: CurrencyId = HELP;  	// HighEnd LaunchPad currency ticker is HELP/
 	pub static MockBlockNumberProvider: u64 = 0;
 	pub const TreasuryAccount: AccountId = TREASURY;
 }

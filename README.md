@@ -36,7 +36,7 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
     SETM("Setheum", 12) = 0,
     SERP("Serp", 12) = 1,
     DNAR("The Dinar", 12) = 2,
-    HELP("High-End LaunchPad", 12) = 3,
+    HELP("HighEnd LaunchPad", 12) = 3,
     // Tier-2 Tokens (StableCurrencies)
     SETR("Setter", 12) = 4,
     SETUSD("SetDollar", 12) = 5,

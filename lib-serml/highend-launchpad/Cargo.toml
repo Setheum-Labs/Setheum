@@ -1,5 +1,5 @@
 [package]
-name = "high-end-launchpad"
+name = "highend-launchpad"
 version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
