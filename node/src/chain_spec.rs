@@ -637,10 +637,10 @@ fn testnet_genesis(
 ) -> GenesisConfig {
 
 	// Allocations Endowment
-	let  serp_foundation_alloc: u128 = 51_600_000 * 1_000_000_000_000_000_000;
-	let  serp_team_alloc: u128 = 154_800_000 * 1_000_000_000_000_000_000;
-	let  serp_airdrops_alloc: u128 = 12_900_000 * 1_000_000_000_000_000_000;
-	
+	let  serp_foundation_alloc: u128 = 516_000_000 * 1_000_000_000_000_000_000;
+	let  serp_team_alloc: u128 = 1_548_000_000 * 1_000_000_000_000_000_000;
+	let  serp_airdrops_alloc: u128 = 129_000_000 * 1_000_000_000_000_000_000;
+
 	let  dnar_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
 	let  dnar_team_alloc: u128 = 42_000_000 * 1_000_000_000_000_000_000;
 	let  dnar_airdrop_alloc: u128 = 3_500_000 * 1_000_000_000_000_000_000;
@@ -663,9 +663,9 @@ fn testnet_genesis(
 	let  setm_foundation_vesting: u128 = 26_646_594_543_104_030_000;
 	let  setm_team_vesting: u128 = 39_969_891_814_656_050_000;
 
-	let  serp_foundation_vesting: u128 = 276_254_015_319_990_000;
-	let  serp_team_vesting: u128 = 414_381_022_979_985_000;
-	
+	let  serp_foundation_vesting: u128 = 2_762_540_153_199_900_000;
+	let  serp_team_vesting: u128 = 4_143_810_229_799_850_000;
+
 	let  dnar_foundation_vesting: u128 = 74_952_639_815_501_000;
 	let  dnar_team_vesting: u128 = 112_428_959_723_252_000;
 
@@ -899,11 +899,11 @@ fn mainnet_genesis(
 	advisors_n_partners: AccountId,
 ) -> GenesisConfig {
 	// Allocations Endowment
-	let  serp_foundation_alloc: u128 = 51_600_000 * 1_000_000_000_000_000_000;
-	let  serp_spf_alloc: u128 = 25_800_000 * 1_000_000_000_000_000_000;
-	let  serp_team_alloc: u128 = 154_800_000 * 1_000_000_000_000_000_000;
-	let  serp_advisors_n_partners_alloc: u128 = 12_900_000 * 1_000_000_000_000_000_000;
-	let  serp_airdrops_alloc: u128 = 12_900_000 * 1_000_000_000_000_000_000;
+	let  serp_foundation_alloc: u128 = 516_000_000 * 1_000_000_000_000_000_000;
+	let  serp_spf_alloc: u128 = 258_000_000 * 1_000_000_000_000_000_000;
+	let  serp_team_alloc: u128 = 1_548_000_000 * 1_000_000_000_000_000_000;
+	let  serp_advisors_n_partners_alloc: u128 = 129_000_000 * 1_000_000_000_000_000_000;
+	let  serp_airdrops_alloc: u128 = 129_000_000 * 1_000_000_000_000_000_000;
 	
 	let  dnar_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
 	let  dnar_spf_alloc: u128 = 7_000_000 * 1_000_000_000_000_000_000;
@@ -937,10 +937,10 @@ fn mainnet_genesis(
 	let  setm_team_vesting: u128 = 39_969_891_814_656_050_000;
 	let  setm_advisors_n_partners_vesting: u128 = 21_888_274_088_978_310_000;
 	
-	let  serp_foundation_vesting: u128 = 276_254_015_319_990_000;
-	let  serp_spf_vesting: u128 = 374_916_163_648_558_000;
-	let  serp_team_vesting: u128 = 414_381_022_979_985_000;
-	let  serp_advisors_n_partners_vesting: u128 = 262_441_314_553_991_000;
+	let  serp_foundation_vesting: u128 = 2_762_540_153_199_900_000;
+	let  serp_spf_vesting: u128 = 3_749_161_636_485_580_000;
+	let  serp_team_vesting: u128 = 4_143_810_229_799_850_000;
+	let  serp_advisors_n_partners_vesting: u128 = 2_624_413_145_539_910_000;
 	
 	let  dnar_foundation_vesting: u128 = 74_952_639_815_501_000;
 	let  dnar_spf_vesting: u128 = 101_721_439_749_609_000;
