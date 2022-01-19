@@ -154,7 +154,7 @@ pub mod module {
 		/// Currency to transfer assets
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		/// Auction to manager the auction process
+		/// Auction to manage the auction process
 		type Auction: Auction<Self::AccountId, Self::BlockNumber, AuctionId = AuctionId, Balance = Balance>;
 
 		/// CDP treasury to escrow assets related to auction
