@@ -88,7 +88,7 @@ pub mod module {
 		/// The Airdrop module pallet id, keeps airdrop funds.
 		type FundingOrigin: Get<Self::AccountId>;
 
-		/// The origin which may lock and unlock prices feed to system.
+		/// The origin which may update and fund the Airdrop Treasury.
 		type DropOrigin: EnsureOrigin<Self::Origin>;
 		
 		#[pallet::constant]
