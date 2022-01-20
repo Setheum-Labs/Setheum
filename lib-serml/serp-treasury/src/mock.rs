@@ -50,6 +50,7 @@ pub const ROOT: AccountId = 11;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const HELP: CurrencyId = CurrencyId::Token(TokenSymbol::HELP);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
@@ -140,6 +141,7 @@ parameter_types! {
 	];
 	pub const GetSerpCurrencyId: CurrencyId = SERP;
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
+	pub const GetHelpCurrencyId: CurrencyId = HELP;
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
 	pub const GetSetUSDId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
 
@@ -294,6 +296,7 @@ impl Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;

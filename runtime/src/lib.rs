@@ -850,6 +850,7 @@ impl module_airdrop::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
 	type PalletId = AirdropPalletId;
@@ -891,6 +892,7 @@ impl serp_treasury::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasuryAccountId = CDPTreasuryAccount;
@@ -1217,6 +1219,7 @@ impl module_vesting::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
