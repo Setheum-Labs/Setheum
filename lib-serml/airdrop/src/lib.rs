@@ -178,7 +178,7 @@ pub mod module {
 }
 
 impl<T: Config> Pallet<T> {
-	/// Get account of SERP Treasury module.
+	/// Get account of Airdrop module.
 	pub fn account_id() -> T::AccountId {
 		T::PalletId::get().into_account()
 	}
