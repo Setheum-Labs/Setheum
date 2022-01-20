@@ -83,11 +83,36 @@ pub mod module {
 		/// 
 		type GetHelpCurrencyId: Get<CurrencyId>;
 
-		/// Campaign to manage the LaunchPad Campaign process
-		type Campaign: Campaign<Self::AccountId, Self::BlockNumber, CampaignId = CampaignId, Balance = Balance>;
+		/// The Campaign Commission rate taken from successful campaigns.
+		/// The Buyback Commission is used to buy back and burn the HELP tokens.
+		/// The first item of the tuple is the numerator of the commission rate, second
+		/// item is the denominator, fee_rate = numerator / denominator,
+		/// use (u32, u32) over `Rate` type to minimize internal division
+		/// operation.
+		#[pallet::constant]
+		type GetBuyBackCommission: Get<(u32, u32)>;
+
+		/// The Campaign Commission rate taken from successful campaigns
+		/// The QMA-FlashLoans Commission is transferred to the Flashloans QMATreasury account.
+		/// The first item of the tuple is the numerator of the commission rate, second
+		/// item is the denominator, fee_rate = numerator / denominator,
+		/// use (u32, u32) over `Rate` type to minimize internal division
+		/// operation.
+		#[pallet::constant]
+		type GetQMACommission: Get<(u32, u32)>;
+
+		/// The Campaign Commission rate taken from successful campaigns
+		/// The Bootstrap Commission is transferred to the LaunchPool account
+		/// for the Liquidity Providers (LPs) to claim.
+		/// The first item of the tuple is the numerator of the commission rate, second
+		/// item is the denominator, fee_rate = numerator / denominator,
+		/// use (u32, u32) over `Rate` type to minimize internal division
+		/// operation.
+		#[pallet::constant]
+		type GetLaunchPoolCommission: Get<(u32, u32)>;
 
 		/// The amount to be held on deposit by the owner of a crowdfund
-		/// - in HighEnd LaunchPad (HELP) currency id. (LaunchPad Token)
+		/// - in HighEnd LaunchPad (HELP) currency id. (LaunchPad Token)  
 		type SubmissionDeposit: Get<BalanceOf<Self>>;
 
 		/// The Currency amount to be deposited in a bootstrap pair from the LaunchPool get by currency_id.
@@ -97,24 +122,37 @@ pub mod module {
 		/// least ExistentialDeposit.
 		type MinContribution: Get<BalanceOf<Self>>;
 
+		/// The maximum number of proposals that could be running at any given time.
+		type MaxProposals: Get<Self::BlockNumber>;
+
+		/// The maximum number of campaigns that could be running at any given time.
+		type MaxCampaigns: Get<Self::BlockNumber>;
+
+		/// The maximum number of campaigns that could be waiting at any given time.
+		type MaxWaitingCampaigns: Get<Self::BlockNumber>;
+
+		/// The maximum period of time (in blocks) that a crowdfund campaign clould be active.
+		type MaxCampaignPeriod: Get<Self::BlockNumber>;
+
 		/// The period of time (in blocks) after an unsuccessful crowdfund ending during which
 		/// contributors are able to withdraw their funds. After this period, their funds are lost.
-		type RetirementPeriod: Get<Self::BlockNumber>;
+		type CampaignRetirementPeriod: Get<Self::BlockNumber>;
+
+		/// The origin which may update, approve or reject campaign proposals.
+		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		#[pallet::constant]
 		/// The Airdrop module pallet id, keeps airdrop funds.
-		type UpdateOrigin: Get<Self::AccountId>;
-		
-		#[pallet::constant]
-		/// The Airdrop module pallet id, keeps airdrop funds.
-		type PalletId: Get<PalletId>;
+		type PalletId: Get<PalletId>;                                                                                                                              
 
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Crowdfund must end after it starts
-		EndTooEarly,
+		/// Crowdfund period is too long.
+		PeriodTooLong,
+		/// Crowdfund period is too short.
+		ZeroPeriod,
 		/// Must contribute at least the minimum amount of funds
 		ContributionTooSmall,
 		/// The fund index specified does not exist
@@ -129,6 +167,10 @@ pub mod module {
 		FundNotRetired,
 		/// Cannot dispense funds from an unsuccessful fund
 		UnsuccessfulFund,
+		/// The Currency is not Correct
+		InvalidCurrencyType,
+		/// The EVM Contract Address is not Correct
+		InvalidEvmContractAddress,
 	}
 
 	#[pallet::event]
@@ -146,6 +188,7 @@ pub mod module {
 
 	/// Simple index for identifying a fund.
 	pub type FundIndex = u32;
+	pub type ProposalIndex = u32;
 	pub type CampaignIndex = u32;
 
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
@@ -172,7 +215,7 @@ pub mod module {
 		/// The currency to raise for the campaign
 		raise_currency: CurrencyId,
 		/// The projects ERC20 token contract address
-		erc20_token: CurrencyId,
+		erc20_contract: CurrencyId,
 		/// The amount of project tokens (ERC20)
 		/// allocated to the crowdfund campaign contributors
 		crowd_allocation: Balance,
@@ -183,35 +226,33 @@ pub mod module {
 		submission_deposit: Balance,
 		/// The total amount raised
 		raised: Balance,
-		/// Block number after which funding must have succeeded
-		end: BlockNumber,
 		/// Success bound on `raised` - Soft Cap for the campaign.
 		soft_goal: Balance,
 		/// Upper bound on `raised` - Hard Cap for the campaign.
 		hard_goal: Balance,
+		/// The number of blocks that the campaign will last.
+		period: BlockNumber,
 	}
-
-	/// Project struct
-	#[derive(Encode, Decode, Default, PartialEq, Eq, Clone, Debug)]
-	#[cfg_attr(feature = "std", derive(serde::Serialize))]
-	pub struct Project<AccountId, BlockNumber> {
-		name: Vec<u8>,
-		logo: Vec<u8>,
-		description: Vec<u8>,
-		website: Vec<u8>,
-		/// The account that will receive the funds if the campaign is successful
-		owner: AccountId,
-		create_block_number: BlockNumber,
-	}
-
-	/// Info on all of the funds.
+	/// Info on all of the proposed campaigns.
 	///
-	/// map CurrencyId => CampaignInfoOf<T>
+	/// map ProposalIndex => CampaignInfoOf<T>
 	#[pallet::storage]
-	#[pallet::getter(fn funds)]
-	pub type Funds<T: Config> = StorageMap<_, Blake2_128Concat, CampaignIndex, CampaignInfoOf<T>, OptionQuery>;
+	#[pallet::getter(fn proposals)]
+	pub type Proposals<T: Config> = StorageMap<_, Blake2_128Concat, ProposalIndex, CampaignInfoOf<T>, OptionQuery>;
 	
-	/// The total number of funds that have so far been allocated.
+	/// Info on all of the approved campaigns.
+	///
+	/// map CampaignIndex => CampaignInfoOf<T>
+	#[pallet::storage]
+	#[pallet::getter(fn campaigns)]
+	pub type Campaigns<T: Config> = StorageMap<_, Blake2_128Concat, CampaignIndex, CampaignInfoOf<T>, OptionQuery>;
+	
+	/// The total number of proposals that have so far been allocated.
+	#[pallet::storage]
+	#[pallet::getter(fn proposal_count)]
+	pub type ProposalCount<T: Config> = StorageValue<_, ProposalIndex, ValueQuery>;
+	
+	/// The total number of campaigns that have so far been allocated.
 	#[pallet::storage]
 	#[pallet::getter(fn fund_count)]
 	pub type FundCount<T: Config> = StorageValue<_, CampaignIndex, ValueQuery>;
@@ -224,41 +265,176 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Create a new fund
+		/// Create a new Campaign Proposal
 		#[pallet::weight(10_000)]
-		pub fn create(
+		pub fn propose_campaign(
 			origin: OriginFor<T>,
-			name: Vec<u8>,
-			logo: Vec<u8>,
-			description: Vec<u8>,
-			website: Vec<u8>,
-			currency_id: CurrencyIdOf<T>,
+			project_name: Vec<u8>,
+			project_logo: Vec<u8>,
+			project_description: Vec<u8>,
+			project_website: Vec<u8>,
 			beneficiary: AccountIdOf<T>,
-			goal: BalanceOf<T>,
-			end: T::BlockNumber,
+			raise_currency: CurrencyIdOf<T>,
+			erc20_contract: CurrencyIdOf<T>,
+			crowd_allocation: BalanceOf<T>,
+			bootstrap_allocation: BalanceOf<T>,
+			soft_goal: BalanceOf<T>,
+			hard_goal: BalanceOf<T>,
+			period: T::BlockNumber,
 		)-> DispatchResultWithPostInfo {
 			let creator = ensure_signed(origin)?;
-			let now = <frame_system::Pallet<T>>::block_number();
-				ensure!(end > now, Error::<T>::EndTooEarly);
-				let deposit = T::SubmissionDeposit::get();
+
+			// Ensure that the period is not zero
+			ensure!(period > T::BlockNumber::zero(), Error::<T>::ZeroPeriod);
+			// Ensure that the period is not too long
+			ensure!(period <= T::MaxCampaignPeriod::get(), Error::<T>::PeriodTooLong);
+
+			// Ensure that the erc20 contract is a valid ERC20 token contract
+			ensure!(
+				erc20_contract == CurrencyId::Erc20(contract),
+				Error::<T>::InvalidEvmContractAddress
+			);
+			if erc20_contract == CurrencyId::Erc20(contract) {
+				// Transfer the crowd allocation to the CrowdfundPool account
+				T::MultiCurrency::transfer(
+					&erc20_contract,
+					&creator,
+					&Self::account_id(),
+					crowd_allocation,
+				)?;
+				// Transfer the bootstrap allocation to the BootstrapPool account
+				T::MultiCurrency::transfer(
+					&erc20_contract,
+					&creator,
+					&Self::account_id(),
+					bootstrap_allocation,
+				)?;
+			};
+			
+			// Transfer the submission deposit to the CrowdfundTreasury account
+			let submission_deposit = T::SubmissionDeposit::get();
 			T::MultiCurrency::transfer(
-				currency_id,
+				T::GetHelpCurrencyId::get(),
 				&creator,
 				&Self::account_id(),
-				deposit,
+				submission_deposit,
 			)?;
-				
+
 			let index = <FundCount<T>>::get();
 			// not protected against overflow, see safemath section
 			<FundCount<T>>::put(index + 1);
 
-			<Funds<T>>::insert(index, CampaignInfo{
+			// Create the campaign info and add it to the proposals storage
+			<Proposals<T>>::insert(index, CampaignInfo{
+				project_name,
+				project_logo,
+				project_description,
+				project_website,
 				beneficiary,
-				deposit,
+				raise_currency,
+				erc20_contract,
+				crowd_allocation,
+				bootstrap_allocation,
+				submission_deposit,
 				raised: Zero::zero(),
+				soft_goal,
+				hard_goal,
 				end,
-				goal,
 			});
+
+			Self::deposit_event(Event::Created(index, now));
+			Ok(().into())
+		}
+
+		/// Approve a campaign proposal
+		#[pallet::weight(10_000)]
+		pub fn approve_campaign(
+			origin: OriginFor<T>,
+			index: ProposalIndex,
+		)-> DispatchResultWithPostInfo {
+			// Ensure that the origin is the UpdateOrigin (i.e. the Launchpad Council)
+			T::UpdateOrigin::ensure_origin(origin)?;
+
+			// Ensure that the proposal exists
+			let proposal = Self::proposals(index).ok_or(Error::<T>::InvalidIndex)?;
+
+			// Remove the proposal from the proposals storage
+			<Proposals<T>>::take(index).ok_or(Error::<T>::InvalidIndex)?;
+			// Create the Approved campaign info and add it to the `Campaigns` storage
+			<Campaigns<T>>::insert(index, CampaignInfo{
+				proposal.project_name,
+				proposal.project_logo,
+				proposal.project_description,
+				proposal.project_website,
+				proposal.beneficiary,
+				proposal.raise_currency,
+				proposal.erc20_contract,
+				proposal.crowd_allocation,
+				proposal.bootstrap_allocation,
+				proposal.submission_deposit,
+				proposal.raised: Zero::zero(),
+				proposal.soft_goal,
+				proposal.hard_goal,
+				proposal.end,
+			});
+
+			Self::deposit_event(Event::Created(index, now));
+			Ok(().into())
+		}
+
+		/// Approve a campaign proposal
+		#[pallet::weight(10_000)]
+		pub fn reject_campaign(
+			origin: OriginFor<T>,
+			index: ProposalIndex,
+		)-> DispatchResultWithPostInfo {
+			T::UpdateOrigin::ensure_origin(origin)?;
+
+			// Create the campaign info and add it to the proposals storage
+			<Campaigns<T>>::take(index, CampaignInfo{
+				project_name,
+				project_logo,
+				project_description,
+				project_website,
+				beneficiary,
+				raise_currency,
+				erc20_contract,
+				crowd_allocation,
+				bootstrap_allocation,
+				submission_deposit,
+				raised: Zero::zero(),
+				soft_goal,
+				hard_goal,
+				end,
+			});
+
+			// Transfer the crowd allocation to the CrowdfundPool account
+			T::MultiCurrency::transfer(
+				&erc20_contract,
+				&creator,
+				&Self::account_id(),
+				crowd_allocation,
+			)?;
+			// Transfer the bootstrap allocation to the BootstrapPool account
+			T::MultiCurrency::transfer(
+				&erc20_contract,
+				&creator,
+				&Self::account_id(),
+				bootstrap_allocation,
+			)?;
+			
+			// Transfer the submission deposit to the CrowdfundTreasury account
+			let submission_deposit = T::SubmissionDeposit::get();
+			T::MultiCurrency::transfer(
+				T::GetHelpCurrencyId::get(),
+				&creator,
+				&Self::account_id(),
+				submission_deposit,
+			)?;
+
+			let index = <FundCount<T>>::get();
+			// not protected against overflow, see safemath section
+			<FundCount<T>>::put(index + 1);
 
 			Self::deposit_event(Event::Created(index, now));
 			Ok(().into())
@@ -268,27 +444,30 @@ pub mod module {
 		#[pallet::weight(10_000)]
 		pub fn contribute(
 			origin: OriginFor<T>, 
-			index: CampaignIndex, 
-			value: BalanceOf<T>) -> DispatchResultWithPostInfo {
+			index: CampaignIndex,
+			currency_id: CurrencyIdOf<T>,
+			value: BalanceOf<T>
+		) -> DispatchResultWithPostInfo {
 
 			let who = ensure_signed(origin)?;
 
 			ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
+			ensure!(currency_id == fund.raise_currency, Error::<T>::InvalidCurrencyType);
 
 			// Make sure crowdfund has not ended
 			let now = <frame_system::Pallet<T>>::block_number();
 			ensure!(fund.end > now, Error::<T>::ContributionPeriodOver);
 
 			// Add contribution to the fund
-			T::Currency::transfer(
+			T::MultiCurrency::transfer(
 				&who,
 				&Self::fund_account_id(index),
 				value,
 				ExistenceRequirement::AllowDeath
 			)?;
 			fund.raised += value;
-			Funds::<T>::insert(index, &fund);
+			Campaigns::<T>::insert(index, &fund);
 
 			let balance = Self::contribution_get(index, &who);
 			let balance = balance.saturating_add(value);
@@ -300,6 +479,7 @@ pub mod module {
 		}
 
 		/// Withdraw full balance of a contributor to a fund
+		/// TODO: Transfer instead of resolve into existence
 		#[pallet::weight(10_000)]
 		pub fn withdraw(
 			origin: OriginFor<T>,
@@ -314,7 +494,7 @@ pub mod module {
 			ensure!(balance > Zero::zero(), Error::<T>::NoContribution);
 
 			// Return funds to caller without charging a transfer fee
-			let _ = T::Currency::resolve_into_existing(&who, T::Currency::withdraw(
+			let _ = T::MultiCurrency::resolve_into_existing(&who, T::MultiCurrency::withdraw(
 				&Self::fund_account_id(index),
 				balance,
 				WithdrawReasons::TRANSFER,
@@ -324,7 +504,7 @@ pub mod module {
 			// Update storage
 			Self::contribution_kill(index, &who);
 			fund.raised = fund.raised.saturating_sub(balance);
-			<Funds<T>>::insert(index, &fund);
+			<Campaigns<T>>::insert(index, &fund);
 
 			Self::deposit_event(Event::Withdrew(who, index, balance, now));
 
@@ -344,12 +524,12 @@ pub mod module {
 
 			// Check that enough time has passed to remove from storage
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(now >= fund.end + T::RetirementPeriod::get(), Error::<T>::FundNotRetired);
+			ensure!(now >= fund.end + T::CampaignRetirementPeriod::get(), Error::<T>::FundNotRetired);
 
 			let account = Self::fund_account_id(index);
 
 			// Dissolver collects the deposit and any remaining funds
-			let _ = T::Currency::resolve_creating(&reporter, T::Currency::withdraw(
+			let _ = T::MultiCurrency::resolve_creating(&reporter, T::MultiCurrency::withdraw(
 				&account,
 				fund.deposit + fund.raised,
 				WithdrawReasons::TRANSFER,
@@ -357,7 +537,7 @@ pub mod module {
 			)?);
 
 			// Remove the fund info from storage
-			<Funds<T>>::remove(index);
+			<Campaigns<T>>::remove(index);
 			// Remove all the contributor info from storage in a single write.
 			// This is possible thanks to the use of a child tree.
 			Self::crowdfund_kill(index);
@@ -370,6 +550,7 @@ pub mod module {
 		/// Dispense a payment to the beneficiary of a successful crowdfund.
 		/// The beneficiary receives the contributed funds and the caller receives
 		/// the deposit as a reward to incentivize clearing settled crowdfunds out of storage.
+		/// TODO: Transfer instead of resolve into creating
 		#[pallet::weight(10_000)]
 		pub fn dispense(
 			origin: OriginFor<T>, 
@@ -389,7 +570,7 @@ pub mod module {
 			let account = Self::fund_account_id(index);
 
 			// Beneficiary collects the contributed funds
-			let _ = T::Currency::resolve_creating(&fund.beneficiary, T::Currency::withdraw(
+			let _ = T::MultiCurrency::resolve_creating(&fund.beneficiary, T::MultiCurrency::withdraw(
 				&account,
 				fund.raised,
 				WithdrawReasons::TRANSFER,
@@ -397,7 +578,7 @@ pub mod module {
 			)?);
 
 			// Caller collects the deposit
-			let _ = T::Currency::resolve_creating(&caller, T::Currency::withdraw(
+			let _ = T::MultiCurrency::resolve_creating(&caller, T::MultiCurrency::withdraw(
 				&account,
 				fund.deposit,
 				WithdrawReasons::TRANSFER,
@@ -405,7 +586,7 @@ pub mod module {
 			)?);
 
 			// Remove the fund info from storage
-			<Funds<T>>::remove(index);
+			<Campaigns<T>>::remove(index);
 			// Remove all the contributor info from storage in a single write.
 			// This is possible thanks to the use of a child tree.
 			Self::crowdfund_kill(index);
