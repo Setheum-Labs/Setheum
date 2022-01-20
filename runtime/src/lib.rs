@@ -1209,6 +1209,7 @@ parameter_types! {
 	pub const MaxNativeVestingSchedules: u32 = 70;
 	pub const MaxSerpVestingSchedules: u32 = 70;
 	pub const MaxDinarVestingSchedules: u32 = 70;
+	pub const MaxHelpVestingSchedules: u32 = 70;
 	pub const MaxSetterVestingSchedules: u32 = 70;
 	pub const MaxSetUSDVestingSchedules: u32 = 70;
 }
@@ -1228,6 +1229,7 @@ impl module_vesting::Config for Runtime {
 	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
 	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
 	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;
+	type MaxHelpVestingSchedules = MaxHelpVestingSchedules;
 	type MaxSetterVestingSchedules = MaxSetterVestingSchedules;
 	type MaxSetUSDVestingSchedules = MaxSetUSDVestingSchedules;
 	type WeightInfo = weights::module_vesting::WeightInfo<Runtime>;
