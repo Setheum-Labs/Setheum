@@ -1,0 +1,35 @@
+[package]
+name = "open-grant-runtime-api"
+version = "0.0.1"
+authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
+edition = "2018"
+license = "GPL-3.0-or-later"
+
+[dependencies]
+sp-api = { version = '3.0.0', default-features = false}
+frame-system = { version = '3.0.0', default-features = false }
+sp-std = { default-features = false, version = '3.0.0' }
+
+# local packages
+pallet-open-grant = { version = "0.0.1", path = "../", default-features = false }
+
+[dependencies.codec]
+version = "2.0.0"
+features = ["derive"]
+default-features = false
+package = "parity-scale-codec"
+
+[dependencies.sp-runtime]
+version = "3.0.0"
+default-features = false
+
+
+[dev-dependencies]
+serde_json = "1.0"
+
+[features]
+default = ["std"]
+std = [
+	"sp-api/std",
+    "pallet-open-grant/std",
+]
