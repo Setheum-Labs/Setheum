@@ -43,6 +43,20 @@ mod mock;
 
 pub use module::*;
 
+/// Simple index for identifying a fund.
+pub type FundIndex = u32;
+pub type ProposalIndex = u32;
+pub type CampaignIndex = u32;
+
+type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
+type CurrencyIdOf<T> =
+	<<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::CurrencyId;
+type CampaignInfoOf<T> =
+	CampaignInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
+type CampaignInfoOf<T> =
+	CampaignInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
+
 #[frame_support::pallet]
 pub mod module {
 	use super::*;
@@ -185,20 +199,6 @@ pub mod module {
 		Dissolved(CampaignIndex, <T as frame_system::Config>::BlockNumber, <T as frame_system::Config>::AccountId),
 		Dispensed(CampaignIndex, <T as frame_system::Config>::BlockNumber, <T as frame_system::Config>::AccountId),
 	}
-
-	/// Simple index for identifying a fund.
-	pub type FundIndex = u32;
-	pub type ProposalIndex = u32;
-	pub type CampaignIndex = u32;
-
-	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-	type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
-	type CurrencyIdOf<T> =
-		<<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::CurrencyId;
-	type CampaignInfoOf<T> =
-		CampaignInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
-	type CampaignInfoOf<T> =
-		CampaignInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
 	#[derive(Encode, Decode, Default, PartialEq, Eq)]
 	#[cfg_attr(feature = "std", derive(Debug))]
 	pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
@@ -289,6 +289,9 @@ pub mod module {
 			// Ensure that the period is not too long
 			ensure!(period <= T::MaxCampaignPeriod::get(), Error::<T>::PeriodTooLong);
 
+			// Tag the time of the proposal
+			let now = <frame_system::Pallet<T>>::block_number();
+
 			// Ensure that the erc20 contract is a valid ERC20 token contract
 			ensure!(
 				erc20_contract == CurrencyId::Erc20(contract),
@@ -339,7 +342,7 @@ pub mod module {
 				raised: Zero::zero(),
 				soft_goal,
 				hard_goal,
-				end,
+				period,
 			});
 
 			Self::deposit_event(Event::Created(index, now));
@@ -358,24 +361,27 @@ pub mod module {
 			// Ensure that the proposal exists
 			let proposal = Self::proposals(index).ok_or(Error::<T>::InvalidIndex)?;
 
+			// Tag the time of approval
+			let now = <frame_system::Pallet<T>>::block_number();
+
 			// Remove the proposal from the proposals storage
 			<Proposals<T>>::take(index).ok_or(Error::<T>::InvalidIndex)?;
 			// Create the Approved campaign info and add it to the `Campaigns` storage
 			<Campaigns<T>>::insert(index, CampaignInfo{
-				proposal.project_name,
-				proposal.project_logo,
-				proposal.project_description,
-				proposal.project_website,
-				proposal.beneficiary,
-				proposal.raise_currency,
-				proposal.erc20_contract,
-				proposal.crowd_allocation,
-				proposal.bootstrap_allocation,
-				proposal.submission_deposit,
-				proposal.raised: Zero::zero(),
-				proposal.soft_goal,
-				proposal.hard_goal,
-				proposal.end,
+				project_name: proposal.project_name,
+				project_logo: proposal.project_logo,
+				project_description: proposal.project_description,
+				project_website: proposal.project_website,
+				beneficiary: proposal.beneficiary,
+				raise_currency: proposal.raise_currency,
+				erc20_contract: proposal.erc20_contract,
+				crowd_allocation: proposal.crowd_allocation,
+				bootstrap_allocation: proposal.bootstrap_allocation,
+				submission_deposit: proposal.submission_deposit,
+				raised: Zero::zero(),
+				soft_goal: proposal.soft_goal,
+				hard_goal: proposal.hard_goal,
+				period: proposal.period,
 			});
 
 			Self::deposit_event(Event::Created(index, now));
@@ -391,22 +397,7 @@ pub mod module {
 			T::UpdateOrigin::ensure_origin(origin)?;
 
 			// Create the campaign info and add it to the proposals storage
-			<Campaigns<T>>::take(index, CampaignInfo{
-				project_name,
-				project_logo,
-				project_description,
-				project_website,
-				beneficiary,
-				raise_currency,
-				erc20_contract,
-				crowd_allocation,
-				bootstrap_allocation,
-				submission_deposit,
-				raised: Zero::zero(),
-				soft_goal,
-				hard_goal,
-				end,
-			});
+			<Campaigns<T>>::take(index).ok_or(Error::<T>::InvalidIndex)?;
 
 			// Transfer the crowd allocation to the CrowdfundPool account
 			T::MultiCurrency::transfer(
@@ -452,22 +443,22 @@ pub mod module {
 			let who = ensure_signed(origin)?;
 
 			ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
-			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
-			ensure!(currency_id == fund.raise_currency, Error::<T>::InvalidCurrencyType);
+			let mut campaign = Self::campaigns(index).ok_or(Error::<T>::InvalidIndex)?;
+			ensure!(currency_id == campaign.raise_currency, Error::<T>::InvalidCurrencyType);
 
 			// Make sure crowdfund has not ended
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(fund.end > now, Error::<T>::ContributionPeriodOver);
+			ensure!(campaign.period > now, Error::<T>::ContributionPeriodOver);
 
-			// Add contribution to the fund
+			// Add contribution to the campaign
 			T::MultiCurrency::transfer(
 				&who,
 				&Self::fund_account_id(index),
 				value,
 				ExistenceRequirement::AllowDeath
 			)?;
-			fund.raised += value;
-			Campaigns::<T>::insert(index, &fund);
+			campaign.raised += value;
+			Campaigns::<T>::insert(index, &campaign);
 
 			let balance = Self::contribution_get(index, &who);
 			let balance = balance.saturating_add(value);
@@ -478,7 +469,7 @@ pub mod module {
 			Ok(().into())
 		}
 
-		/// Withdraw full balance of a contributor to a fund
+		/// Withdraw full balance of a contributor to a campaign
 		/// TODO: Transfer instead of resolve into existence
 		#[pallet::weight(10_000)]
 		pub fn withdraw(
@@ -486,25 +477,24 @@ pub mod module {
 			#[pallet::compact] index: CampaignIndex) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
-			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
+			let mut campaign = Self::campaigns(index).ok_or(Error::<T>::InvalidIndex)?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(fund.end < now, Error::<T>::FundStillActive);
+			ensure!(campaign.period < now, Error::<T>::FundStillActive);
 
 			let balance = Self::contribution_get(index, &who);
 			ensure!(balance > Zero::zero(), Error::<T>::NoContribution);
 
 			// Return funds to caller without charging a transfer fee
 			let _ = T::MultiCurrency::resolve_into_existing(&who, T::MultiCurrency::withdraw(
+				campaign.raise_currency,
 				&Self::fund_account_id(index),
 				balance,
-				WithdrawReasons::TRANSFER,
-				ExistenceRequirement::AllowDeath
 			)?);
 
 			// Update storage
 			Self::contribution_kill(index, &who);
-			fund.raised = fund.raised.saturating_sub(balance);
-			<Campaigns<T>>::insert(index, &fund);
+			campaign.raised = campaign.raised.saturating_sub(balance);
+			<Campaigns<T>>::insert(index, &campaign);
 
 			Self::deposit_event(Event::Withdrew(who, index, balance, now));
 
@@ -520,23 +510,22 @@ pub mod module {
 			index: CampaignIndex) -> DispatchResultWithPostInfo {
 			let reporter = ensure_signed(origin)?;
 
-			let fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
+			let campaign = Self::campaigns(index).ok_or(Error::<T>::InvalidIndex)?;
 
 			// Check that enough time has passed to remove from storage
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(now >= fund.end + T::CampaignRetirementPeriod::get(), Error::<T>::FundNotRetired);
+			ensure!(now >= campaign.period + T::CampaignRetirementPeriod::get(), Error::<T>::FundNotRetired);
 
 			let account = Self::fund_account_id(index);
 
 			// Dissolver collects the deposit and any remaining funds
 			let _ = T::MultiCurrency::resolve_creating(&reporter, T::MultiCurrency::withdraw(
+				campaign.raise_currency,
 				&account,
-				fund.deposit + fund.raised,
-				WithdrawReasons::TRANSFER,
-				ExistenceRequirement::AllowDeath,
+				campaign.deposit + campaign.raised,
 			)?);
 
-			// Remove the fund info from storage
+			// Remove the campaign info from storage
 			<Campaigns<T>>::remove(index);
 			// Remove all the contributor info from storage in a single write.
 			// This is possible thanks to the use of a child tree.
@@ -557,35 +546,33 @@ pub mod module {
 			index: CampaignIndex) -> DispatchResultWithPostInfo {
 			let caller = ensure_signed(origin)?;
 
-			let fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
+			let campaign = Self::campaigns(index).ok_or(Error::<T>::InvalidIndex)?;
 
 			// Check that enough time has passed to remove from storage
 			let now = <frame_system::MoPalletdule<T>>::block_number();
 
-			ensure!(now >= fund.end, Error::<T>::FundStillActive);
+			ensure!(now >= campaign.period, Error::<T>::FundStillActive);
 
-			// Check that the fund was actually successful
-			ensure!(fund.raised >= fund.goal, Error::<T>::UnsuccessfulFund);
+			// Check that the campaign was actually successful
+			ensure!(campaign.raised >= campaign.goal, Error::<T>::UnsuccessfulFund);
 
 			let account = Self::fund_account_id(index);
 
 			// Beneficiary collects the contributed funds
-			let _ = T::MultiCurrency::resolve_creating(&fund.beneficiary, T::MultiCurrency::withdraw(
+			let _ = T::MultiCurrency::resolve_creating(&campaign.beneficiary, T::MultiCurrency::withdraw(
+				campaign.raise_currency,
 				&account,
-				fund.raised,
-				WithdrawReasons::TRANSFER,
-				ExistenceRequirement::AllowDeath,
+				campaign.raised,
 			)?);
 
 			// Caller collects the deposit
 			let _ = T::MultiCurrency::resolve_creating(&caller, T::MultiCurrency::withdraw(
+				campaign.raise_currency,
 				&account,
-				fund.deposit,
-				WithdrawReasons::TRANSFER,
-				ExistenceRequirement::AllowDeath,
+				campaign.deposit,
 			)?);
 
-			// Remove the fund info from storage
+			// Remove the campaign info from storage
 			<Campaigns<T>>::remove(index);
 			// Remove all the contributor info from storage in a single write.
 			// This is possible thanks to the use of a child tree.
@@ -610,7 +597,6 @@ impl<T: Config> Pallet<T> {
 	pub fn campaign_account_id(index: CampaignIndex) -> T::AccountId {
 		T::PalletId::get().into_sub_account(index)
 	}
-
 
 	/// Find the ID associated with the fund
 	///
