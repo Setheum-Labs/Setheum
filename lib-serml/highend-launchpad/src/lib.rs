@@ -226,10 +226,8 @@ pub mod module {
 		submission_deposit: Balance,
 		/// The total amount raised
 		raised: Balance,
-		/// Success bound on `raised` - Soft Cap for the campaign.
-		soft_goal: Balance,
-		/// Upper bound on `raised` - Hard Cap for the campaign.
-		hard_goal: Balance,
+		/// Upper bound on `raised` - HardCap/Goal for the campaign to be Successful.
+		goal: Balance,
 		/// The number of blocks that the campaign will last.
 		period: BlockNumber,
 	}
@@ -278,8 +276,7 @@ pub mod module {
 			erc20_contract: CurrencyIdOf<T>,
 			crowd_allocation: BalanceOf<T>,
 			bootstrap_allocation: BalanceOf<T>,
-			soft_goal: BalanceOf<T>,
-			hard_goal: BalanceOf<T>,
+			goal: BalanceOf<T>,
 			period: T::BlockNumber,
 		)-> DispatchResultWithPostInfo {
 			let creator = ensure_signed(origin)?;
@@ -340,8 +337,7 @@ pub mod module {
 				bootstrap_allocation,
 				submission_deposit,
 				raised: Zero::zero(),
-				soft_goal,
-				hard_goal,
+				goal,
 				period,
 			});
 
@@ -379,8 +375,7 @@ pub mod module {
 				bootstrap_allocation: proposal.bootstrap_allocation,
 				submission_deposit: proposal.submission_deposit,
 				raised: Zero::zero(),
-				soft_goal: proposal.soft_goal,
-				hard_goal: proposal.hard_goal,
+				goal: proposal.goal,
 				period: proposal.period,
 			});
 
