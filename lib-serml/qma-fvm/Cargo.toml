@@ -1,5 +1,5 @@
 [package]
-name = "module-example"
+name = "qma-flashloans-virtual-machine"
 version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
