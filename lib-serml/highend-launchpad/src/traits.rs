@@ -78,8 +78,6 @@ pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
 
 /// Abstraction over th Launchpad Proposal system.
 pub trait Proposal<AccountId, BlockNumber> {
-	/// Called in on_initialize() to eventuate campaigns;
-	fn on_proposals() -> DispatchResult;
 	/// The Campaign Proposal info of `id`
 	fn proposal_info(id: CampaignId) -> Option<CampaignInfo<AccountId, Balance, BlockNumber>>;
 	/// Create new Campaign Proposal with specific `CampaignInfo`, return the `id` of the Campaign
@@ -109,8 +107,6 @@ pub trait Proposal<AccountId, BlockNumber> {
 
 /// Abstraction over the Launchpad Campaign system.
 pub trait CampaignManager<AccountId, BlockNumber> {
-	/// Called in on_initialize() to eventuate campaigns;
-	fn on_campaigns() -> DispatchResult;
 	/// The Campaign info of `id`
 	fn campaign_info(id: CampaignId) -> Option<CampaignInfo<AccountId, Balance, BlockNumber>>;
 	/// Called when a contribution is received.

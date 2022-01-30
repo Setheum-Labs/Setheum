@@ -176,7 +176,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Storage, Call, Config, Event<T>},
-		Crowdsales: crowdsales::{Pallet, Storage, Call, Event<T>},
+		LaunchPadCrowdsales: crowdsales::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>},
 	}
 );
