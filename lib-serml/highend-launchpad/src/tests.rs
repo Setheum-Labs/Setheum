@@ -19,31 +19,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Unit tests for the airdrop module.
+//! Unit tests for the Launchpad Crowdsales Pallet.
 
-// #![cfg(test)]
-
-// use super::*;
-// use frame_support::{assert_noop, assert_ok};
-// use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETR, ALICE, BOB, CHARLIE, TREASURY, SETUSD};
-// use sp_runtime::traits::BadOrigin;
-
-// #[test]
-// fn fund_airdrop_treasury_works() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_noop!(Airdrop::make_airdrop(Origin::signed(BOB), ALICE, SETUSD, 10000), BadOrigin,);
-// 		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETUSD, 10000));
-// 		System::assert_last_event(Event::AirDrop(RawEvent::Airdrop(ALICE, SETUSD, 10000)));
-// 		assert_eq!(Airdrop::airdrops(ALICE, SETUSD), 10000);
-// 	});
-// }
-
-// #[test]
-// fn make_airdrop_works() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_noop!(Airdrop::make_airdrop(Origin::signed(BOB), SETUSD, 10000), BadOrigin,);
-// 		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETUSD, 10000));
-// 		System::assert_last_event(Event::AirDrop(RawEvent::Airdrop(ALICE, SETUSD, 10000)));
-// 		assert_eq!(Airdrop::airdrops(ALICE, SETUSD), 10000);
-// 	});
-// }
+#![cfg(test)]

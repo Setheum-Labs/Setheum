@@ -19,7 +19,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the airdrop module.
+//! Mocks for the Launchpad Crowdsales Pallet.
 
 #![cfg(test)]
 
@@ -27,26 +27,38 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, AccountId as AccId, TokenSymbol};
 use sp_core::H256;
 use sp_runtime::{
-	testing::Header, AccountId32,
+	testing::Header,
 	traits::{IdentityLookup},
 };
 
-pub type AccountId = AccId;
+pub type AccountId = u128;
+pub type Amount = i128;
+pub type Balance = u32;
 pub type BlockNumber = u64;
+pub type CurrencyId = u32;
 
-pub const TREASURY: AccountId = AccountId32::new([0u8; 32]);
-pub const ALICE: AccountId = AccountId32::new([2u8; 32]);
-pub const BOB: AccountId = AccountId32::new([3u8; 32]);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+// The network Treasury account.
+pub const TREASURY: AccountId = 0;
+// Mock accounts.
+pub const ALICE: AccountId = 1;
+pub const BOB: AccountId = 2;
+pub const CHARLIE: AccountId = 3;
+pub const DAVE: AccountId = 4;
+pub const EVE: AccountId = 5;
+pub const FRED: AccountId = 6;
+pub const GREG: AccountId = 7;
+pub const HANA: AccountId = 8;
+pub const IGOR: AccountId = 9;
+pub const JOHN: AccountId = 10;
 
-mod airdrop {
+pub const SETM: CurrencyId = 1;
+pub const SETUSD: CurrencyId = 2;
+pub const TEST: CurrencyId = 3;
+pub const DOT: CurrencyId = 4;
+
+mod crowdsales {
 	pub use super::super::*;
 }
 
@@ -98,34 +110,60 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = ();
 }
 
+parameter_type_with_key! {
+	pub MinRaise: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETUSD => 100,
+			&SETM => 100,
+			&DOT => 100,
+			_ => 0,
+		}
+	};
+}
+
+parameter_type_with_key! {
+	pub MinContribution: |currency_id: CurrencyId| -> Balance {
+		match currency_id {
+			&SETUSD => 100,
+			&SETM => 100,
+			&DOT => 100,
+			_ => 0,
+		}
+	};
+}
+
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETUSD,
-	];
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDId: CurrencyId = SETUSD;  // SetDollar currency ticker is SETUSD/
 	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
-	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
-	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
-	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");
+	pub const GetCommission: (u32, u32) = (10, 100); // 10%
+	pub const SubmissionDeposit: Balance = 20;
+	pub const MaxProposalsCount: u32 = 3;
+	pub const MaxCampaignsCount: u32 = 3;
+	pub const MaxActivePeriod: BlockNumber = 20;
+	pub const CampaignStartDelay: BlockNumber = 5;
+	pub const RetirementPeriod: BlockNumber = 20;
+	pub const CrowdsalesPalletId: PalletId = PalletId(*b"set/help");
 }
 
 ord_parameter_types! {
 	pub const TreasuryAccount: AccountId = TREASURY;
-	pub const One: AccountId = AccountId32::new([1u8; 32]);
+	pub const Eleven: AccountId = 11;
 }
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type FundingOrigin = TreasuryAccount;
-	type DropOrigin = EnsureSignedBy<One, AccountId>;
-	type PalletId = AirdropPalletId;
+	type GetCommission = GetCommission;
+	type SubmissionDeposit = SubmissionDeposit;
+	type MinRaise = MinRaise;
+	type MinContribution = MinContribution;
+	type MaxProposalsCount = MaxProposalsCount;
+	type MaxCampaignsCount = MaxCampaignsCount;
+	type MaxActivePeriod = MaxActivePeriod;
+	type CampaignStartDelay = CampaignStartDelay;
+	type CampaignRetirementPeriod = RetirementPeriod;
+	type ProposalRetirementPeriod = RetirementPeriod;
+	type UpdateOrigin = EnsureSignedBy<Eleven, AccountId>;
+	type PalletId = CrowdsalesPalletId;
 }
 
 pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
@@ -138,7 +176,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
 		System: frame_system::{Pallet, Storage, Call, Config, Event<T>},
-		AirDrop: airdrop::{Pallet, Storage, Call, Event<T>},
+		Crowdsales: crowdsales::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>},
 	}
 );
@@ -151,21 +189,20 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			_balances: vec![
-				(ALICE, SETR, 1000),
-				(BOB, SETR, 1000),
-				(TREASURY, SETR, 1000),
-				(ALICE, SETUSD, 1000),
-				(BOB, SETUSD, 1000),
-				(TREASURY, SETUSD, 1000),
-				(ALICE, SETM, 1000),
-				(BOB, SETM, 1000),
-				(TREASURY, SETM, 1000),
-				(ALICE, SERP, 1000),
-				(BOB, SERP, 1000),
-				(TREASURY, SERP, 1000),
-				(ALICE, DNAR, 1000),
-				(BOB, DNAR, 1000),
-				(TREASURY, DNAR, 1000),
+				(ALICE, DOT, 100_000),
+				(ALICE, TEST, 10_000_000),
+				(BOB, DOT, 100_000),
+				(BOB, TEST, 1_000_000),
+				(CHARLIE, SETUSD, 100_000),
+				(DAVE, SETUSD, 100_000),
+				(EVE, SETUSD, 100_000),
+				(FRED, SETUSD, 100_000),
+				(GREG, SETUSD, 100_000),
+				(HANA, SETUSD, 100_000),
+				(IGOR, SETUSD, 100_000),
+				(JOHN, SETUSD, 100_000),
+				(TREASURY, DOT, 100_000),
+				(TREASURY, SETUSD, 100_000),
 			],
 		}
 	}
