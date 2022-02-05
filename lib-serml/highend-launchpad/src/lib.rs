@@ -358,6 +358,18 @@ pub mod module {
 			)?;
 			Ok(())
 		}
+
+		/// Make a contribution
+		
+		/// Claim a contribution
+		
+		/// Claim an allocation
+		
+		/// Claim a campaign
+		
+		/// Approve a proposal - origin must be `UpdateOrigin`
+		
+		/// Reject a proposal - origin must be `UpdateOrigin`
 	}
 }
 
