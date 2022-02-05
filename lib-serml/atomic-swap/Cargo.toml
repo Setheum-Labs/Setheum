@@ -1,0 +1,37 @@
+[package]
+name = "pallet-atomic-swap"
+version = "1.0.0"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+scale-info = { version = "1.0", default-features = false, features = ["derive"] }
+frame-support = { version = "4.0.0-dev", default-features = false, path = "../support" }
+frame-system = { version = "4.0.0-dev", default-features = false, path = "../system" }
+sp-runtime = { version = "5.0.0", default-features = false, path = "../../primitives/runtime" }
+sp-std = { version = "4.0.0", default-features = false, path = "../../primitives/std" }
+sp-io = { version = "5.0.0", default-features = false, path = "../../primitives/io" }
+sp-core = { version = "5.0.0", default-features = false, path = "../../primitives/core" }
+
+orml-traits = { package = "orml-traits", path = "../../lib-orml/traits", default-features = false }
+support = { package = "module-support", path = "../support", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+
+[dev-dependencies]
+pallet-balances = { version = "4.0.0-dev", path = "../balances" }
+orml-tokens = { path = "../../lib-orml/tokens" }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"scale-info/std",
+	"frame-support/std",
+	"frame-system/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"sp-io/std",
+	"sp-core/std",
+]
+try-runtime = ["frame-support/try-runtime"]
