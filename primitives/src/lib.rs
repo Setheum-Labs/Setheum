@@ -135,6 +135,9 @@ pub type Amount = i128;
 /// Auction ID
 pub type AuctionId = u32;
 
+/// Launchpad Campaign ID
+pub type CampaignId = u32;
+
 /// Share type
 pub type Share = u128;
 
