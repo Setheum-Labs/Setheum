@@ -1,5 +1,4 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
-// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
 
 // This file is part of Setheum.
 
@@ -121,7 +120,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, SETR, SETUSD,
+	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, HELP, SETR, SETUSD,
 };
 
 
@@ -526,6 +525,7 @@ parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
 	pub const GetSerpCurrencyId: CurrencyId = SERP;
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
+	pub const GetHelpCurrencyId: CurrencyId = HELP;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
@@ -607,6 +607,7 @@ parameter_type_with_key! {
 				TokenSymbol::SETUSD => 100_000_000_000_000_000, // 10 cents
 				TokenSymbol::SETR => 100_000_000_000_000_000, // 10 cents
 				TokenSymbol::SERP => 100_000_000_000_000_000, // 10 cents
+				TokenSymbol::HELP => 100_000_000_000_000_000, // 10 cents
 				TokenSymbol::DNAR => 100_000_000_000_000_000, // 10 cents
 				TokenSymbol::SETM => 100_000_000_000_000_000, // 10 cents
 			},
@@ -681,6 +682,7 @@ parameter_types! {
 		vec![SETM, SETUSD],
 		vec![SERP, SETUSD],
 		vec![DNAR, SETUSD],
+		vec![HELP, SETUSD],
 		vec![SETR, SETUSD],
 	];
 }
@@ -766,7 +768,7 @@ where
 }
 
 parameter_types! {
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, SETR];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, HELP, SETR];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -821,6 +823,7 @@ parameter_types! {
 		TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, HELP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
 	];
 }
@@ -846,6 +849,7 @@ impl module_airdrop::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
 	type PalletId = AirdropPalletId;
@@ -862,9 +866,12 @@ parameter_types! {
 		vec![SETUSD, SERP],
 		vec![DNAR, SETUSD, SETR],
 		vec![SETUSD, DNAR],
+		vec![HELP, SETUSD, SETR],
+		vec![SETUSD, HELP],
 		vec![SETM],
 		vec![SERP],
 		vec![DNAR],
+		vec![HELP],
 	];
 	
     pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
@@ -884,6 +891,7 @@ impl serp_treasury::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasuryAccountId = CDPTreasuryAccount;
@@ -924,6 +932,7 @@ parameter_types! {
 		vec![SETUSD, SETM],
 		vec![SERP, SETUSD, SETM],
 		vec![DNAR, SETUSD, SETM],
+		vec![HELP, SETUSD, SETM],
 		vec![SETR, SETUSD, SETM],
 	];
 }
@@ -1199,6 +1208,7 @@ parameter_types! {
 	pub const MaxNativeVestingSchedules: u32 = 70;
 	pub const MaxSerpVestingSchedules: u32 = 70;
 	pub const MaxDinarVestingSchedules: u32 = 70;
+	pub const MaxHelpVestingSchedules: u32 = 70;
 	pub const MaxSetterVestingSchedules: u32 = 70;
 	pub const MaxSetUSDVestingSchedules: u32 = 70;
 }
@@ -1209,6 +1219,7 @@ impl module_vesting::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;
 	type GetDinarCurrencyId = GetDinarCurrencyId;
+	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type MinVestedTransfer = MinVestedTransfer;
@@ -1217,6 +1228,7 @@ impl module_vesting::Config for Runtime {
 	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
 	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
 	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;
+	type MaxHelpVestingSchedules = MaxHelpVestingSchedules;
 	type MaxSetterVestingSchedules = MaxSetterVestingSchedules;
 	type MaxSetUSDVestingSchedules = MaxSetUSDVestingSchedules;
 	type WeightInfo = weights::module_vesting::WeightInfo<Runtime>;

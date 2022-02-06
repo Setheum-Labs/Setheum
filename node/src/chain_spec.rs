@@ -1,5 +1,4 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
-// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
 
 // This file is part of Setheum.
 
@@ -44,7 +43,7 @@ use setheum_runtime::{
 	TokensConfig, OrmlNFTConfig,
 	NativeTokenExistentialDeposit, MaxNativeTokenExistentialDeposit,
 	//
-	SETM, SERP, DNAR, SETR, SETUSD,
+	SETM, SERP, DNAR, HELP, SETR, SETUSD,
 };
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
@@ -436,8 +435,8 @@ fn dev_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;	// 1,000,000 SETM/SERP/DNAR/SETR/SETUSD
-	let initial_staking: u128 = 2_000 * 1_000_000_000_000_000_000; 	// 258,000 SETM/SERP/DNAR/SETR/SETUSD
+	let initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;	// 1,000,000 SETM/SERP/DNAR/HELP/SETR/SETUSD
+	let initial_staking: u128 = 2_000 * 1_000_000_000_000_000_000; 	// 258,000 SETM/SERP/DNAR/HELP/SETR/SETUSD
 
 	let balances = initial_authorities
 		.iter()
@@ -536,6 +535,7 @@ fn dev_genesis(
 				.flat_map(|x| vec![
 					(x.clone(), SERP, initial_balance),
 					(x.clone(), DNAR, initial_balance),
+					(x.clone(), HELP, initial_balance),
 					(x.clone(), SETR, initial_balance),
 					(x.clone(), SETUSD, initial_balance),
 					])
@@ -552,6 +552,7 @@ fn dev_genesis(
 				(x.clone(), SETM, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), SERP, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), DNAR, 10, 1, 3600, 100_000_000_000_000_000),
+				(x.clone(), HELP, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), SETR, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), SETUSD, 10, 1, 3600, 100_000_000_000_000_000),
 				])
@@ -572,6 +573,7 @@ fn dev_genesis(
 				(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(SETR, 800 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 			],
 		},
@@ -593,6 +595,13 @@ fn dev_genesis(
 				),
 				(
 					DNAR,
+					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+				),
+				(
+					HELP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
@@ -627,18 +636,22 @@ fn testnet_genesis(
 ) -> GenesisConfig {
 
 	// Allocations Endowment
-	let  serp_foundation_alloc: u128 = 51_600_000 * 1_000_000_000_000_000_000;
-	let  serp_team_alloc: u128 = 154_800_000 * 1_000_000_000_000_000_000;
-	let  serp_airdrops_alloc: u128 = 12_900_000 * 1_000_000_000_000_000_000;
-	
+	let  serp_foundation_alloc: u128 = 516_000_000 * 1_000_000_000_000_000_000;
+	let  serp_team_alloc: u128 = 1_548_000_000 * 1_000_000_000_000_000_000;
+	let  serp_airdrops_alloc: u128 = 129_000_000 * 1_000_000_000_000_000_000;
+
 	let  dnar_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
 	let  dnar_team_alloc: u128 = 42_000_000 * 1_000_000_000_000_000_000;
 	let  dnar_airdrop_alloc: u128 = 3_500_000 * 1_000_000_000_000_000_000;
 	
-	let  setr_foundation_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_team_alloc: u128 = 5_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_cashdrop_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_airdrop_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
+	let  help_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
+	let  help_team_alloc: u128 = 42_000_000 * 1_000_000_000_000_000_000;
+	let  help_airdrop_alloc: u128 = 3_500_000 * 1_000_000_000_000_000_000;
+
+	let  setr_foundation_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_team_alloc: u128 = 10_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_cashdrop_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_airdrop_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
 	
 	let  setusd_foundation_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	let  setusd_team_alloc: u128 = 1_566_500_000 * 1_000_000_000_000_000_000;
@@ -649,15 +662,18 @@ fn testnet_genesis(
 	let  setm_foundation_vesting: u128 = 26_646_594_543_104_030_000;
 	let  setm_team_vesting: u128 = 39_969_891_814_656_050_000;
 
-	let  serp_foundation_vesting: u128 = 276_254_015_319_990_000;
-	let  serp_team_vesting: u128 = 414_381_022_979_985_000;
-	
+	let  serp_foundation_vesting: u128 = 2_762_540_153_199_900_000;
+	let  serp_team_vesting: u128 = 4_143_810_229_799_850_000;
+
 	let  dnar_foundation_vesting: u128 = 74_952_639_815_501_000;
 	let  dnar_team_vesting: u128 = 112_428_959_723_252_000;
 
-	let  setr_foundation_vesting: u128 = 19_561_815_336_463_220_000;
-	let  setr_team_vesting: u128 = 58_685_446_009_389_670_000;
+	let  help_foundation_vesting: u128 = 7_495_263_981_550_100_000;
+	let  help_team_vesting: u128 = 11_242_895_972_325_200_000;
 
+	let  setr_foundation_vesting: u128 = 39_123_630_672_926_440_000;
+	let  setr_team_vesting: u128 = 117_370_892_018_779_300_000;
+	
 	let  setusd_foundation_vesting: u128 = 7_660_895_931_142_410_000;
 	let  setusd_team_vesting: u128 = 22_982_687_793_427_230_000;
 
@@ -766,6 +782,9 @@ fn testnet_genesis(
 				(foundation.clone(), DNAR, dnar_foundation_alloc),
 				(team.clone(), DNAR, dnar_team_alloc),
 				(airdrop.clone(), DNAR, dnar_airdrop_alloc),
+				(foundation.clone(), HELP, help_foundation_alloc),
+				(team.clone(), HELP, help_team_alloc),
+				(airdrop.clone(), HELP, help_airdrop_alloc),
 				(foundation.clone(), SETR, setr_foundation_alloc),
 				(team.clone(), SETR, setr_team_alloc),
 				(airdrop.clone(), SETR, setr_airdrop_alloc),
@@ -790,6 +809,9 @@ fn testnet_genesis(
 				(foundation.clone(), DNAR, 258, 1, 5_112_000, dnar_foundation_vesting),
 				(team.clone(), DNAR, 258, 1, 5_112_000, dnar_team_vesting),
 
+				(foundation.clone(), HELP, 258, 1, 5_112_000, help_foundation_vesting),
+				(team.clone(), HELP, 258, 1, 5_112_000, help_team_vesting),
+
 				(foundation.clone(), SETR, 258, 1, 5_112_000, setr_foundation_vesting),
 				(team.clone(), SETR, 258, 1, 5_112_000, setr_team_vesting),
 
@@ -812,6 +834,7 @@ fn testnet_genesis(
 				(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(SETR, 800 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 			],
 		},
@@ -833,6 +856,13 @@ fn testnet_genesis(
 				),
 				(
 					DNAR,
+					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+				),
+				(
+					HELP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
@@ -868,11 +898,11 @@ fn mainnet_genesis(
 	advisors_n_partners: AccountId,
 ) -> GenesisConfig {
 	// Allocations Endowment
-	let  serp_foundation_alloc: u128 = 51_600_000 * 1_000_000_000_000_000_000;
-	let  serp_spf_alloc: u128 = 25_800_000 * 1_000_000_000_000_000_000;
-	let  serp_team_alloc: u128 = 154_800_000 * 1_000_000_000_000_000_000;
-	let  serp_advisors_n_partners_alloc: u128 = 12_900_000 * 1_000_000_000_000_000_000;
-	let  serp_airdrops_alloc: u128 = 12_900_000 * 1_000_000_000_000_000_000;
+	let  serp_foundation_alloc: u128 = 516_000_000 * 1_000_000_000_000_000_000;
+	let  serp_spf_alloc: u128 = 258_000_000 * 1_000_000_000_000_000_000;
+	let  serp_team_alloc: u128 = 1_548_000_000 * 1_000_000_000_000_000_000;
+	let  serp_advisors_n_partners_alloc: u128 = 129_000_000 * 1_000_000_000_000_000_000;
+	let  serp_airdrops_alloc: u128 = 129_000_000 * 1_000_000_000_000_000_000;
 	
 	let  dnar_foundation_alloc: u128 = 14_000_000 * 1_000_000_000_000_000_000;
 	let  dnar_spf_alloc: u128 = 7_000_000 * 1_000_000_000_000_000_000;
@@ -880,12 +910,18 @@ fn mainnet_genesis(
 	let  dnar_advisors_n_partners_alloc: u128 = 3_500_000 * 1_000_000_000_000_000_000;
 	let  dnar_airdrop_alloc: u128 = 3_500_000 * 1_000_000_000_000_000_000;
 	
-	let  setr_foundation_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_spf_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_team_alloc: u128 = 5_000_000_000 * 1_000_000_000_000_000_000;
+	let  help_foundation_alloc: u128 = 1_400_000_000 * 1_000_000_000_000_000_000;
+	let  help_spf_alloc: u128 = 700_000_000 * 1_000_000_000_000_000_000;
+	let  help_team_alloc: u128 = 4_200_000_000 * 1_000_000_000_000_000_000;
+	let  help_advisors_n_partners_alloc: u128 = 350_000_000 * 1_000_000_000_000_000_000;
+	let  help_airdrop_alloc: u128 = 350_000_000 * 1_000_000_000_000_000_000;
+	
+	let  setr_foundation_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_spf_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_team_alloc: u128 = 10_000_000_000 * 1_000_000_000_000_000_000;
 	let  setr_advisors_n_partners_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_cashdrop_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
-	let  setr_airdrop_alloc: u128 = 1_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_cashdrop_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
+	let  setr_airdrop_alloc: u128 = 2_000_000_000 * 1_000_000_000_000_000_000;
 	
 	let  setusd_foundation_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
 	let  setusd_spf_alloc: u128 = 313_300_000 * 1_000_000_000_000_000_000;
@@ -900,20 +936,25 @@ fn mainnet_genesis(
 	let  setm_team_vesting: u128 = 39_969_891_814_656_050_000;
 	let  setm_advisors_n_partners_vesting: u128 = 21_888_274_088_978_310_000;
 	
-	let  serp_foundation_vesting: u128 = 276_254_015_319_990_000;
-	let  serp_spf_vesting: u128 = 374_916_163_648_558_000;
-	let  serp_team_vesting: u128 = 414_381_022_979_985_000;
-	let  serp_advisors_n_partners_vesting: u128 = 262_441_314_553_991_000;
+	let  serp_foundation_vesting: u128 = 2_762_540_153_199_900_000;
+	let  serp_spf_vesting: u128 = 3_749_161_636_485_580_000;
+	let  serp_team_vesting: u128 = 4_143_810_229_799_850_000;
+	let  serp_advisors_n_partners_vesting: u128 = 2_624_413_145_539_910_000;
 	
 	let  dnar_foundation_vesting: u128 = 74_952_639_815_501_000;
 	let  dnar_spf_vesting: u128 = 101_721_439_749_609_000;
 	let  dnar_team_vesting: u128 = 112_428_959_723_252_000;
 	let  dnar_advisors_n_partners_vesting: u128 = 71_205_007_824_726_000;
 	
-	let  setr_foundation_vesting: u128 = 19_561_815_336_463_220_000;
-	let  setr_spf_vesting: u128 = 19_561_815_336_463_220_000;
-	let  setr_team_vesting: u128 = 58_685_446_009_389_670_000;
-	let  setr_advisors_n_partners_vesting: u128 = 19_561_815_336_463_220_000;
+	let  help_foundation_vesting: u128 = 7_495_263_981_550_100_000;
+	let  help_spf_vesting: u128 = 10_172_143_974_960_900_000;
+	let  help_team_vesting: u128 = 11_242_895_972_325_200_000;
+	let  help_advisors_n_partners_vesting: u128 = 7_120_500_782_472_600_000;
+	
+	let  setr_foundation_vesting: u128 = 39_123_630_672_926_440_000;
+	let  setr_spf_vesting: u128 = 39_123_630_672_926_440_000;
+	let  setr_team_vesting: u128 = 117_370_892_018_779_300_000;
+	let  setr_advisors_n_partners_vesting: u128 = 39_123_630_672_926_440_000;
 	
 	let  setusd_foundation_vesting: u128 = 7_660_895_931_142_410_000;
 	let  setusd_spf_vesting: u128 = 7_660_895_931_142_410_000;
@@ -1030,6 +1071,12 @@ fn mainnet_genesis(
 				(advisors_n_partners.clone(), DNAR, dnar_advisors_n_partners_alloc),
 				(airdrop.clone(), DNAR, dnar_airdrop_alloc),
 
+				(foundation.clone(), HELP, help_foundation_alloc),
+				(spf.clone(), HELP, help_spf_alloc),
+				(team.clone(), HELP, help_team_alloc),
+				(advisors_n_partners.clone(), HELP, help_advisors_n_partners_alloc),
+				(airdrop.clone(), HELP, help_airdrop_alloc),
+
 				(foundation.clone(), SETR, setr_foundation_alloc),
 				(spf.clone(), SETR, setr_spf_alloc),
 				(team.clone(), SETR, setr_team_alloc),
@@ -1064,6 +1111,11 @@ fn mainnet_genesis(
 				(team.clone(), DNAR, 313, 1, 97_128_000, dnar_team_vesting),
 				(advisors_n_partners.clone(), DNAR, 313, 1, 25_560_000, dnar_advisors_n_partners_vesting),
 				
+				(foundation.clone(), HELP, 313, 1, 97_128_000, help_foundation_vesting),
+				(spf.clone(), HELP, 313, 1, 35_784_000, help_spf_vesting),
+				(team.clone(), HELP, 313, 1, 97_128_000, help_team_vesting),
+				(advisors_n_partners.clone(), HELP, 313, 1, 25_560_000, help_advisors_n_partners_vesting),
+				
 				(foundation.clone(), SETR, 313, 1, 15_336_000, setr_foundation_vesting),
 				(spf.clone(), SETR, 313, 1, 15_336_000, setr_spf_vesting),
 				(team.clone(), SETR, 313, 1, 15_336_000, setr_team_vesting),
@@ -1090,6 +1142,7 @@ fn mainnet_genesis(
 				(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(SETR, 800 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 			],
 		},
@@ -1111,6 +1164,13 @@ fn mainnet_genesis(
 				),
 				(
 					DNAR,
+					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+				),
+				(
+					HELP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
@@ -1140,7 +1200,7 @@ pub fn setheum_properties() -> Properties {
 	let mut properties = Map::new();
 	let mut token_symbol: Vec<String> = vec![];
 	let mut token_decimals: Vec<u32> = vec![];
-	[SETM, SERP, DNAR, SETR, SETUSD].iter().for_each(|token| {
+	[SETM, SERP, DNAR, HELP, SETR, SETUSD].iter().for_each(|token| {
 		token_symbol.push(token.symbol().unwrap().to_string());
 		token_decimals.push(token.decimals().unwrap() as u32);
 	});

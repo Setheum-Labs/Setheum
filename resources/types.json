@@ -57,10 +57,10 @@
     "AuctionId": "u32",
     "AuctionIdOf": "AuctionId",
     "VestingSchedule": {
-      "start": "BlockNumber",
-      "period": "BlockNumber",
-      "periodCount": "u32",
-      "perPeriod": "Compact<Balance>"
+        "start": "BlockNumber",
+        "period": "BlockNumber",
+        "periodCount": "u32",
+        "perPeriod": "Compact<Balance>"
     },
     "VestingScheduleOf": "VestingSchedule",
     "TokenSymbol": {
@@ -68,8 +68,9 @@
             "SETM": 0,
             "SERP": 1,
             "DNAR": 2,
-            "SETR": 3,
-            "SETUSD": 4
+            "HELP": 3,
+            "SETR": 4,
+            "SETUSD": 5
         }
     },
     "DexShare": {
@@ -77,6 +78,12 @@
             "Token": "TokenSymbol",
             "Erc20": "EvmAddress"
         }
+    },
+    "TokenInfo": {
+        "currency_id": "Option<u8>",
+        "name": "Vec<&str>",
+        "symbol": "Vec<&str>",
+        "decimals": "Option<u8>"
     },
     "CurrencyId": {
         "_enum": {
@@ -92,7 +99,8 @@
             "SETUSD",
             "SETM",
             "SERP",
-            "DNAR"
+            "DNAR",
+            "HELP"
         ]
     },
     "SerpStableCurrencyId": {

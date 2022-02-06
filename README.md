@@ -36,9 +36,10 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
     SETM("Setheum", 12) = 0,
     SERP("Serp", 12) = 1,
     DNAR("The Dinar", 12) = 2,
+    HELP("HighEnd LaunchPad", 12) = 3,
     // Tier-2 Tokens (StableCurrencies)
-    SETR("Setter", 12) = 3,
-    SETUSD("SetDollar", 12) = 4,
+    SETR("Setter", 12) = 4,
+    SETUSD("SetDollar", 12) = 5,
 ```
 
 1. [The Setter](./primitives/src/currency.rs#:~:text=SETR(%22Setter%22%2C%2012)%20%3D%203%2C) - The Setter is a stable currency pegged to the US dollar at a ratio of 1:10, where 1 SETR = $0.1 USD (10 cents or $1 USD = 10 SETR).
@@ -62,6 +63,8 @@ The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, 
 6. [The SetMint](./lib-serml/serp-setmint) - Inspired by MakerDAO Protocol, the CDP (Collateralized Debt Position) protocol on Ethereum. The Setheum CDP has zero interest rates, zero stability fees, and is fully halal and collateralized. This differentiates SetMint from any other CDP Protocol, making it by far the only halal loan protocol in the entire industry. And it is Multi-Collateral.
 Just reserve some collateral to mint some SETUSD, when returning the loan just return exactly what was loaned and unreserve the collateral with no fees and no interest.
 This lets the muslim world also participate in the industry and take part in trading and yield making strategies that are within their dome of principles, for me this is a gamechanger that I wished was there for me, therefore I am building it for people like me who need it but haven’t been given the chance to be pleased by it, and also non-muslims that want to break-free from the interest-based alternatives to a more efficient system based on truth, fairness and equality.
+
+6. [The HELP (High Engagement LaunchPad)](./lib-serml/help-launchpad) - The Setheum Help LaunchPad is a crowdfunding protocol for teams & projects to raise soney and launch their tokens to the public and add their tokens to the Setheum DEX (SetSwap). It provides halal incentives to LPs to provide liquidity for token launches to bootstrap on the SetSwap and lets the teams/projects raise funds while getting help listing bootstrap pool on DEX. Governed by the` LaunchPadCouncil`
 
 For all the SERML (Setheum Runtime Module Library) modules Check the [lib-serml](./lib-serml)
 

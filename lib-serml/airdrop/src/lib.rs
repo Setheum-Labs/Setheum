@@ -1,5 +1,4 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
-// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
 
 // This file is part of Setheum.
 
@@ -80,10 +79,15 @@ pub mod module {
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
+		/// HighEnd LaunchPad (HELP) currency id. (LaunchPad Token)
+		/// 
+		type GetHelpCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
 		/// The Airdrop module pallet id, keeps airdrop funds.
 		type FundingOrigin: Get<Self::AccountId>;
 
-		/// The origin which may lock and unlock prices feed to system.
+		/// The origin which may update and fund the Airdrop Treasury.
 		type DropOrigin: EnsureOrigin<Self::Origin>;
 		
 		#[pallet::constant]
@@ -143,6 +147,8 @@ pub mod module {
 				T::MultiCurrency::transfer(T::GetSerpCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			} else if currency_id == AirDropCurrencyId::DNAR {
 				T::MultiCurrency::transfer(T::GetDinarCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
+			} else if currency_id == AirDropCurrencyId::HELP {
+				T::MultiCurrency::transfer(T::GetHelpCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			}
 			
 			Self::deposit_event(Event::FundAirdropTreasury(T::FundingOrigin::get(), currency_id, amount));
@@ -171,7 +177,7 @@ pub mod module {
 }
 
 impl<T: Config> Pallet<T> {
-	/// Get account of SERP Treasury module.
+	/// Get account of Airdrop module.
 	pub fn account_id() -> T::AccountId {
 		T::PalletId::get().into_account()
 	}
@@ -212,6 +218,11 @@ impl<T: Config> Pallet<T> {
 			id if id == AirDropCurrencyId::DNAR => {
 				for (beneficiary, amount) in  airdrop_list.iter() {
 					T::MultiCurrency::transfer(T::GetDinarCurrencyId::get(), &Self::account_id(), beneficiary, *amount)?;
+				}
+			}
+			id if id == AirDropCurrencyId::HELP => {
+				for (beneficiary, amount) in  airdrop_list.iter() {
+					T::MultiCurrency::transfer(T::GetHelpCurrencyId::get(), &Self::account_id(), beneficiary, *amount)?;
 				}
 			} _ => {}
 		}

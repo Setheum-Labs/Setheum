@@ -1,5 +1,4 @@
 // بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
-// ٱلَّذِينَ يَأْكُلُونَ ٱلرِّبَوٰا۟ لَا يَقُومُونَ إِلَّا كَمَا يَقُومُ ٱلَّذِى يَتَخَبَّطُهُ ٱلشَّيْطَـٰنُ مِنَ ٱلْمَسِّ ۚ ذَٰلِكَ بِأَنَّهُمْ قَالُوٓا۟ إِنَّمَا ٱلْبَيْعُ مِثْلُ ٱلرِّبَوٰا۟ ۗ وَأَحَلَّ ٱللَّهُ ٱلْبَيْعَ وَحَرَّمَ ٱلرِّبَوٰا۟ ۚ فَمَن جَآءَهُۥ مَوْعِظَةٌ مِّن رَّبِّهِۦ فَٱنتَهَىٰ فَلَهُۥ مَا سَلَفَ وَأَمْرُهُۥٓ إِلَى ٱللَّهِ ۖ وَمَنْ عَادَ فَأُو۟لَـٰٓئِكَ أَصْحَـٰبُ ٱلنَّارِ ۖ هُمْ فِيهَا خَـٰلِدُونَ
 
 // This file is part of Setheum.
 
@@ -168,6 +167,11 @@ pub mod module {
 		type GetDinarCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
+		/// HighEnd LaunchPad (HELP) currency id. (LaunchPad Token)
+		/// 
+		type GetHelpCurrencyId: Get<CurrencyId>;
+
+		#[pallet::constant]
 		/// Setter (SETR) currency id
 		/// 
 		type SetterCurrencyId: Get<CurrencyId>;
@@ -198,6 +202,9 @@ pub mod module {
 
 		/// The maximum vesting schedules for DNAR
 		type MaxDinarVestingSchedules: Get<u32>;
+
+		/// The maximum vesting schedules for HELP
+		type MaxHelpVestingSchedules: Get<u32>;
 
 		/// The maximum vesting schedules for SETR
 		type MaxSetterVestingSchedules: Get<u32>;
@@ -270,6 +277,19 @@ pub mod module {
 		Blake2_128Concat,
 		T::AccountId,
 		BoundedVec<VestingScheduleOf<T>, T::MaxDinarVestingSchedules>,
+		ValueQuery,
+	>;
+
+	/// Vesting schedules of an account under HELP currency.
+	///
+	/// HelpVestingSchedules: map AccountId => Vec<VestingSchedule>
+	#[pallet::storage]
+	#[pallet::getter(fn help_vesting_schedules)]
+	pub type HelpVestingSchedules<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		BoundedVec<VestingScheduleOf<T>, T::MaxHelpVestingSchedules>,
 		ValueQuery,
 	>;
 
@@ -379,6 +399,27 @@ pub mod module {
 	
 						if T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetDinarCurrencyId::get(), who, total).is_ok() {
 							DinarVestingSchedules::<T>::insert(who, bounded_schedule)
+						}
+					} else if currency_id == &T::GetHelpCurrencyId::get() {
+						let total = *per_period * Into::<BalanceOf<T>>::into(*period_count);
+	
+						let bounded_schedule: BoundedVec<VestingScheduleOf<T>, T::MaxHelpVestingSchedules> =
+							vec![VestingSchedule {
+								start: *start,
+								period: *period,
+								period_count: *period_count,
+								per_period: *per_period,
+							}]
+							.try_into()
+							.expect("Max vesting schedules exceeded");
+	
+						assert!(
+							T::MultiCurrency::free_balance(T::GetHelpCurrencyId::get(), who) >= total,
+							"Account do not have enough balance"
+						);
+	
+						if T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetHelpCurrencyId::get(), who, total).is_ok() {
+							HelpVestingSchedules::<T>::insert(who, bounded_schedule)
 						}
 					} else if currency_id == &T::SetterCurrencyId::get() {
 						let total = *per_period * Into::<BalanceOf<T>>::into(*period_count);
@@ -516,6 +557,10 @@ impl<T: Config> Pallet<T> {
 				// cleanup the storage and unlock the fund
 				<DinarVestingSchedules<T>>::remove(who);
 				T::MultiCurrency::remove_lock(VESTING_LOCK_ID, currency_id, who).unwrap();
+			} else if currency_id == T::GetHelpCurrencyId::get() {
+				// cleanup the storage and unlock the fund
+				<HelpVestingSchedules<T>>::remove(who);
+				T::MultiCurrency::remove_lock(VESTING_LOCK_ID, currency_id, who).unwrap();
 			} else if currency_id == T::SetterCurrencyId::get() {
 				// cleanup the storage and unlock the fund
 				<SetterVestingSchedules<T>>::remove(who);
@@ -575,6 +620,25 @@ impl<T: Config> Pallet<T> {
 		} else if currency_id == T::GetDinarCurrencyId::get() {
 			// cleanup the storage and unlock the fund
 			<DinarVestingSchedules<T>>::mutate_exists(who, |maybe_schedules| {
+				let total = if let Some(schedules) = maybe_schedules.as_mut() {
+					let mut total: BalanceOf<T> = Zero::zero();
+					schedules.retain(|s| {
+						let amount = s.locked_amount(now);
+						total = total.saturating_add(amount);
+						!amount.is_zero()
+					});
+					total
+				} else {
+					Zero::zero()
+				};
+				if total.is_zero() {
+					*maybe_schedules = None;
+				}
+				return total
+			})
+		} else if currency_id == T::GetHelpCurrencyId::get() {
+			// cleanup the storage and unlock the fund
+			<HelpVestingSchedules<T>>::mutate_exists(who, |maybe_schedules| {
 				let total = if let Some(schedules) = maybe_schedules.as_mut() {
 					let mut total: BalanceOf<T> = Zero::zero();
 					schedules.retain(|s| {
@@ -659,6 +723,10 @@ impl<T: Config> Pallet<T> {
 			T::MultiCurrency::transfer(currency_id, from, to, schedule_amount)?;
 			T::MultiCurrency::set_lock(VESTING_LOCK_ID, currency_id, to, total_amount)?;
 			<DinarVestingSchedules<T>>::try_append(to, schedule).map_err(|_| Error::<T>::MaxVestingSchedulesExceeded)?;
+		} else if currency_id == T::GetHelpCurrencyId::get() {
+			T::MultiCurrency::transfer(currency_id, from, to, schedule_amount)?;
+			T::MultiCurrency::set_lock(VESTING_LOCK_ID, currency_id, to, total_amount)?;
+			<HelpVestingSchedules<T>>::try_append(to, schedule).map_err(|_| Error::<T>::MaxVestingSchedulesExceeded)?;
 		} else if currency_id == T::SetterCurrencyId::get() {
 			T::MultiCurrency::transfer(currency_id, from, to, schedule_amount)?;
 			T::MultiCurrency::set_lock(VESTING_LOCK_ID, currency_id, to, total_amount)?;
@@ -751,6 +819,31 @@ impl<T: Config> Pallet<T> {
 	
 			T::MultiCurrency::set_lock(VESTING_LOCK_ID, currency_id, who, total_amount)?;
 			<DinarVestingSchedules<T>>::insert(who, bounded_schedules);
+		} else if currency_id == T::GetHelpCurrencyId::get() {
+			let bounded_schedules: BoundedVec<VestingScheduleOf<T>, T::MaxHelpVestingSchedules> = schedules
+				.try_into()
+				.map_err(|_| Error::<T>::MaxVestingSchedulesExceeded)?;
+	
+			// empty vesting schedules cleanup the storage and unlock the fund
+			if bounded_schedules.len().is_zero() {
+				<HelpVestingSchedules<T>>::remove(who);
+				T::MultiCurrency::remove_lock(VESTING_LOCK_ID, currency_id, who).unwrap();
+				return Ok(());
+			}
+	
+			let total_amount = bounded_schedules
+				.iter()
+				.try_fold::<_, _, Result<BalanceOf<T>, DispatchError>>(Zero::zero(), |acc_amount, schedule| {
+					let amount = Self::ensure_valid_vesting_schedule(schedule)?;
+					Ok(acc_amount + amount)
+				})?;
+			ensure!(
+				T::MultiCurrency::free_balance(currency_id, who) >= total_amount,
+				Error::<T>::InsufficientBalanceToLock,
+			);
+	
+			T::MultiCurrency::set_lock(VESTING_LOCK_ID, currency_id, who, total_amount)?;
+			<HelpVestingSchedules<T>>::insert(who, bounded_schedules);
 		} else if currency_id == T::SetterCurrencyId::get() {
 			let bounded_schedules: BoundedVec<VestingScheduleOf<T>, T::MaxSetterVestingSchedules> = schedules
 				.try_into()
