@@ -1,5 +1,5 @@
 [package]
-name = "pallet-atomic-swap"
+name = "atomic-swap"
 version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
