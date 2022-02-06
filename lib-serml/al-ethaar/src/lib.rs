@@ -6,13 +6,12 @@
 
 use frame_support::{
 	decl_module, decl_storage, decl_event, decl_error, ensure, traits::Get,
-	codec::{Decode, Encode},
+	codec::{Decode, Encode}, PalletId,
 	traits::{ReservableCurrency, ExistenceRequirement, Currency, WithdrawReasons}
 };
 
 use sp_runtime::{
 	traits::{AccountIdConversion},
-	ModuleId,
 };
 
 use frame_system::{ensure_signed, ensure_root};
@@ -24,7 +23,7 @@ use integer_sqrt::IntegerSquareRoot;
 pub trait Config: frame_system::Config + pallet_identity::Config {
 	// used to generate sovereign account
 	// refer: https://github.com/paritytech/substrate/blob/743accbe3256de2fc615adcaa3ab03ebdbbb4dbd/frame/treasury/src/lib.rs#L92
-	type ModuleId: Get<ModuleId>;
+	type PalletId: Get<PalletId>;
 
 	/// The currency in which the crowdfunds will be denominated
 	type Currency: ReservableCurrency<Self::AccountId>;
@@ -640,11 +639,11 @@ impl<T: Config> Module<T> {
 	/// This actually does computation. If you need to keep using it, then make sure you cache the
 	/// value and only call this once.
 	pub fn account_id() -> T::AccountId {
-		return T::ModuleId::get().into_account();
+		return T::PalletId::get().into_account();
 	}
 
 	pub fn project_account_id(index: ProjectIndex) -> T::AccountId {
-		T::ModuleId::get().into_sub_account(index)
+		T::PalletId::get().into_sub_account(index)
 	}
 
 	/// Get all projects

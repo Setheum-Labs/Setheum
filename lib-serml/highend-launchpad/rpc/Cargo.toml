@@ -1,0 +1,21 @@
+[package]
+name = "launchpad-crowdsales-rpc"
+version = "0.1.0"
+authors = ["Setheum Labs"]
+edition = "2018"
+description = "RPC module for launchpad-crowdsales."
+homepage = 'https://setheum.xyz'
+license = 'Apache-2.0'
+repository = 'https://github.com/Setheum-Labs/launchpad-crowdsales/'
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.2.0" }
+jsonrpc-core = "15.0.0"
+jsonrpc-core-client = "15.0.0"
+jsonrpc-derive = "15.0.0"
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+
+launchpad-crowdsales = {version = "0.1.0", path =  "../../", default-features = false}
+launchpad-crowdsales-rpc-runtime-api = { path = "runtime-api", version = "0.1.0" }
