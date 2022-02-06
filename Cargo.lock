@@ -387,6 +387,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "atomic-swap"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "module-support",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "setheum-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "atomic-waker"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3971,6 +3990,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "module-dex-oracle"
+version = "1.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "module-support",
+ "orml-traits",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "setheum-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "module-evm"
 version = "1.0.0"
 dependencies = [
@@ -4094,6 +4133,23 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+]
+
+[[package]]
+name = "module-idle-scheduler"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "module-support",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "setheum-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -7989,6 +8045,7 @@ dependencies = [
  "num_enum",
  "parity-scale-codec",
  "primitives-proc-macro",
+ "scale-info",
  "serde",
  "serde_json",
  "sp-api",
