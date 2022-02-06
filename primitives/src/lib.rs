@@ -25,9 +25,11 @@
 pub mod currency;
 pub mod evm;
 pub mod signature;
+pub mod task;
 
 use sp_std::vec::Vec;
 use codec::{Codec, Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
 use core::ops::Range;
 use sp_runtime::{
 	generic,
