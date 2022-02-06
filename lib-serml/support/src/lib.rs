@@ -23,7 +23,12 @@
 
 use codec::{Decode, Encode, FullCodec};
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
-use primitives::{Balance as AsBalance, CampaignId, CurrencyId, evm::{CallInfo, EvmAddress}};
+use primitives::{
+	Balance as AsBalance,
+	CampaignId, CurrencyId,
+	evm::{CallInfo, EvmAddress},
+	task::TaskResult
+};
 use sp_core::H160;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, CheckedDiv, MaybeSerializeDeserialize},
@@ -572,6 +577,10 @@ pub trait PriceProvider<CurrencyId> {
 	}
 }
 
+pub trait DEXPriceProvider<CurrencyId> {
+	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<ExchangeRate>;
+}
+
 pub trait LockablePrice<CurrencyId> {
 	fn lock_price(currency_id: CurrencyId) -> DispatchResult;
 	fn unlock_price(currency_id: CurrencyId) -> DispatchResult;
@@ -579,6 +588,30 @@ pub trait LockablePrice<CurrencyId> {
 
 pub trait ExchangeRateProvider {
 	fn get_exchange_rate() -> ExchangeRate;
+}
+
+/// Dispatchable tasks
+pub trait DispatchableTask {
+	fn dispatch(self, weight: Weight) -> TaskResult;
+}
+
+/// Idle scheduler trait
+pub trait IdleScheduler<Task> {
+	fn schedule(task: Task) -> DispatchResult;
+}
+
+#[cfg(feature = "std")]
+impl DispatchableTask for () {
+	fn dispatch(self, _weight: Weight) -> TaskResult {
+		unimplemented!()
+	}
+}
+
+#[cfg(feature = "std")]
+impl<Task> IdleScheduler<Task> for () {
+	fn schedule(_task: Task) -> DispatchResult {
+		unimplemented!()
+	}
 }
 
 pub trait EmergencyShutdown {
