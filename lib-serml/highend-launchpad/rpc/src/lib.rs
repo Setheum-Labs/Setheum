@@ -8,7 +8,7 @@ use sp_blockchain::HeaderBackend;
 use sp_runtime::{generic::BlockId, traits::Block as BlockT};
 
 pub use self::gen_client::Client as LaunchpadCrowdsalesClient;
-pub use launchpad_crowdsales_rpc_runtime_api::LaunchpadCrowdsalesApi as LaunchpadCrowdsalesRuntimeApi;
+pub use highend_launchpad_rpc_runtime_api::LaunchpadCrowdsalesApi as LaunchpadCrowdsalesRuntimeApi;
 
 #[rpc]
 pub trait LaunchpadCrowdsalesApi<BlockHash, ResponseType> {

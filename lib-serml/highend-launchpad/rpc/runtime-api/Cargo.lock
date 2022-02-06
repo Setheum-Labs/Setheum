@@ -843,8 +843,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67c21572b4949434e4fc1e1978b99c5f77064153c59d998bf13ecd96fb5ecba7"
 
 [[package]]
-name = "launchpad-crowdsales"
-version = "0.1.0"
+name = "highend-launchpad"
+version = "1.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -857,10 +857,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "launchpad-crowdsales-rpc-runtime-api"
-version = "0.1.0"
+name = "highend-launchpad-rpc-runtime-api"
+version = "1.0.0"
 dependencies = [
- "launchpad-crowdsales",
+ "highend-launchpad",
  "parity-scale-codec",
  "sp-api",
  "sp-std",

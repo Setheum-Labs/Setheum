@@ -9,7 +9,7 @@
 use codec::Codec;
 use sp_runtime::traits::MaybeDisplay;
 use sp_std::prelude::*;
-use launchpad_crowdsales::traits::CampaignInfo;
+use highend_launchpad::traits::CampaignInfo;
 
 // Here we declare the runtime API. It is implemented it the `impl` block in
 // runtime amalgamator file (the `runtime/src/lib.rs`)

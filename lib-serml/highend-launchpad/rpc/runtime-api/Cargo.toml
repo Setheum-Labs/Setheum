@@ -1,9 +1,9 @@
 [package]
-name = "launchpad-crowdsales-rpc-runtime-api"
-version = "0.1.0"
+name = "highend-launchpad-rpc-runtime-api"
+version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
-description = "Runtime API module for launchpad-crowdsales-rpc."
+description = "Runtime API module for highend-launchpad-rpc."
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0'
 repository = 'https://github.com/Setheum-Labs/launchpad-crowdsales/'
@@ -13,7 +13,7 @@ codec = { package = "parity-scale-codec", version = "2.2.0", default-features = 
 sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-launchpad-crowdsales = {version = "0.1.0", path =  "../../", default-features = false}
+highend-launchpad = {version = "1.0.0", path =  "../../", default-features = false}
 
 [features]
 default = ["std"]

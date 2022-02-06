@@ -1,9 +1,9 @@
 [package]
-name = "launchpad-crowdsales-rpc"
-version = "0.1.0"
+name = "highend-launchpad-rpc"
+version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
-description = "RPC module for launchpad-crowdsales."
+description = "RPC module for highend-launchpad."
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0'
 repository = 'https://github.com/Setheum-Labs/launchpad-crowdsales/'
@@ -17,5 +17,5 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkad
 sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
-launchpad-crowdsales = {version = "0.1.0", path =  "../../", default-features = false}
-launchpad-crowdsales-rpc-runtime-api = { path = "runtime-api", version = "0.1.0" }
+highend-launchpad = {version = "1.0.0", path =  "../../", default-features = false}
+highend-launchpad-rpc-runtime-api = { path = "runtime-api", version = "1.0.0" }
