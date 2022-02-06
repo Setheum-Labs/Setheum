@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: "**"
+    branches: [ master ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -60,4 +60,4 @@ jobs:
   #   - name: Init
   #     run: make init
   #   - name: Clippy
-      run: make clippy
+  
