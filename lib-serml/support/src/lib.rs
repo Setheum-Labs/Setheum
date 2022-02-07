@@ -101,6 +101,8 @@ pub trait AuctionManager<AccountId> {
 /// The Structure of a Campaign info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq, Encode, Decode))]
 pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
+	/// The Campaign Id
+	pub id: CampaignId,
 	/// Campaign Creator
 	pub origin: AccountId,
 	/// Project Name
@@ -162,6 +164,8 @@ pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
 
 /// Abstraction over th Launchpad Proposal system.
 pub trait Proposal<AccountId, BlockNumber> {
+	/// Get all proposals
+	fn all_proposals() -> Vec<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
 	/// The Campaign Proposal info of `id`
 	fn proposal_info(id: CampaignId) -> Option<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
 	/// Create new Campaign Proposal with specific `CampaignInfo`, return the `id` of the Campaign
@@ -180,9 +184,9 @@ pub trait Proposal<AccountId, BlockNumber> {
 		period: BlockNumber,
 	) -> DispatchResult;
     /// Approve Proposal by `id` at `now`.
-    fn approve_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
+    fn on_approve_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
 	/// Reject Proposal by `id` and update storage
-	fn reject_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
+	fn on_reject_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
 	/// Remove Proposal by `id` from storage
 	fn remove_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
 }
@@ -224,6 +228,8 @@ pub trait CampaignManager<AccountId, BlockNumber> {
 	fn on_retire(id: CampaignId)-> DispatchResult;
 	/// Get amount of contributors in a campaign
 	fn get_contributors_count(id: CampaignId) -> u32;
+	/// Get the total amounts raised in protocol
+	fn get_total_amounts_raised() -> Vec<(CurrencyId, AsBalance)>;
 }
 
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
