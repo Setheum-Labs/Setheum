@@ -293,21 +293,28 @@ pub mod module {
 			// SERP-TES Adjustment Frequency and SetCurrency Inflation frequency.
 			// Schedule for when to trigger SERP-TES and SERP-Inflation
 			// (Blocktime/BlockNumber - every blabla block)
+
+			let serp_tes_now = Self::serp_tes_now().is_ok();
+
 			if now % T::StableCurrencyInflationPeriod::get() == Zero::zero() {
 				let mut count: u32 = 0;
 				count += 1;
 				
-				if Self::issue_stablecurrency_inflation().is_ok() {
+				let issue_stablecurrency_inflation = Self::issue_stablecurrency_inflation().is_ok();
+				if issue_stablecurrency_inflation {
+					Self::issue_stablecurrency_inflation().unwrap();
 					count += 1;
 				};
-				if Self::serp_tes_now().is_ok() {
+				if serp_tes_now {
+					Self::serp_tes_now().unwrap();
 					count += 1;
 				}
 
 				T::WeightInfo::on_initialize(count)
-			} else if Self::serp_tes_now().is_ok() {
+			} else if serp_tes_now {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
+				Self::serp_tes_now().unwrap();
 				let mut count: u32 = 0;
 				count += 1;
 
@@ -747,18 +754,29 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![dinar_currency_id, setter_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					dinar_currency_id,
 					&Self::account_id(),
 					max_supply_limit.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_target(
+				).is_ok();
+				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
+					&Self::account_id(),
+					&swap_path,
+					target_amount.unique_saturated_into(),
+				).is_ok();
+				if deposit && buyback_swap_with_exact_target {
+					// successfully swap, break iteration
+					T::Currency::deposit(
+						dinar_currency_id,
+						&Self::account_id(),
+						max_supply_limit.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_target(
 						&Self::account_id(),
 						&swap_path,
 						target_amount.unique_saturated_into(),
-				)
-				.is_ok()
-				{
-					// successfully swap, break iteration
+					).unwrap();
+					
 					break;
 				}
 			}
@@ -800,18 +818,30 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![serptoken_currency_id, setter_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					serptoken_currency_id,
 					&Self::account_id(),
 					max_supply_limit.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_target(
+				).is_ok();
+				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
+					&Self::account_id(),
+					&swap_path,
+					target_amount.unique_saturated_into(),
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_target {
+					// successfully swap, break iteration
+					T::Currency::deposit(
+						serptoken_currency_id,
+						&Self::account_id(),
+						max_supply_limit.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_target(
 						&Self::account_id(),
 						&swap_path,
 						target_amount.unique_saturated_into(),
-				)
-				.is_ok()
-				{
-					// successfully swap, break iteration
+					).unwrap();
+
 					break;
 				}
 			}
@@ -853,18 +883,30 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![dinar_currency_id, currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					dinar_currency_id,
 					&Self::account_id(),
 					max_supply_limit.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_target(
+				).is_ok();
+				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
+					&Self::account_id(),
+					&swap_path,
+					target_amount.unique_saturated_into(),
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_target {
+					// successfully swap, break iteration
+					T::Currency::deposit(
+						dinar_currency_id,
+						&Self::account_id(),
+						max_supply_limit.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_target(
 						&Self::account_id(),
 						&swap_path,
 						target_amount.unique_saturated_into(),
-				)
-				.is_ok()
-				{
-					// successfully swap, break iteration
+					).unwrap();
+
 					break;
 				}
 			}
@@ -910,18 +952,30 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![setter_currency_id, currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					setter_currency_id,
 					&Self::account_id(),
 					max_supply_limit.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_target(
+				).is_ok();
+				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
+					&Self::account_id(),
+					&swap_path,
+					target_amount.unique_saturated_into(),
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_target {
+					// successfully swap, break iteration
+					T::Currency::deposit(
+					setter_currency_id,
+					&Self::account_id(),
+					max_supply_limit.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_target(
 						&Self::account_id(),
 						&swap_path,
 						target_amount.unique_saturated_into(),
-				)
-				.is_ok()
-				{
-					// successfully swap, break iteration
+					).unwrap();
+
 					break;
 				}
 			}
@@ -967,18 +1021,30 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![serp_currency_id, currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					serp_currency_id,
 					&Self::account_id(),
 					max_supply_limit.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_target(
+				).is_ok();
+				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
+					&Self::account_id(),
+					&swap_path,
+					target_amount.unique_saturated_into(),
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_target {
+					// successfully swap, break iteration
+					T::Currency::deposit(
+						serp_currency_id,
+						&Self::account_id(),
+						max_supply_limit.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_target(
 						&Self::account_id(),
 						&swap_path,
 						target_amount.unique_saturated_into(),
-				)
-				.is_ok()
-				{
-					// successfully swap, break iteration
+					).unwrap();
+
 					break;
 				}
 			}
@@ -1024,19 +1090,31 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![currency_id, dinar_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					currency_id,
 					&Self::account_id(),
 					supply_amount.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+				).is_ok();
+				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
 					&Self::account_id(),
 					&swap_path,
 					supply_amount.unique_saturated_into(),
-					// min_target_limit.unique_saturated_into(),
-				)
-				.is_ok()
-				{
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_supply {
 					// successfully swap, break iteration.
+					T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_supply(
+						&Self::account_id(),
+						&swap_path,
+						supply_amount.unique_saturated_into(),
+						// min_target_limit.unique_saturated_into(),
+					).unwrap();
+					
 					break;
 				}
 			}
@@ -1081,19 +1159,31 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![currency_id, setter_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					currency_id,
 					&Self::account_id(),
 					supply_amount.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+				).is_ok();
+				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
 					&Self::account_id(),
 					&swap_path,
 					supply_amount.unique_saturated_into(),
-					// min_target_limit.unique_saturated_into(),
-				)
-				.is_ok()
-				{
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_supply {
 					// successfully swap, break iteration.
+					T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_supply(
+						&Self::account_id(),
+						&swap_path,
+						supply_amount.unique_saturated_into(),
+						// min_target_limit.unique_saturated_into(),
+					).unwrap();
+
 					break;
 				}
 			}
@@ -1138,19 +1228,31 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![currency_id, setter_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					currency_id,
 					&Self::account_id(),
 					supply_amount.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+				).is_ok();
+				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
 					&Self::account_id(),
 					&swap_path,
 					supply_amount.unique_saturated_into(),
-					// min_target_limit.unique_saturated_into(),
-				)
-				.is_ok()
-				{
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_supply {
 					// successfully swap, break iteration.
+					T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_supply(
+						&Self::account_id(),
+						&swap_path,
+						supply_amount.unique_saturated_into(),
+						// min_target_limit.unique_saturated_into(),
+					).unwrap();
+
 					break;
 				}
 			}
@@ -1195,19 +1297,31 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![currency_id, setm_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					currency_id,
 					&Self::account_id(),
 					supply_amount.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+				).is_ok();
+				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
 					&Self::account_id(),
 					&swap_path,
 					supply_amount.unique_saturated_into(),
-					// min_target_limit.unique_saturated_into(),
-				)
-				.is_ok()
-				{
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_supply {
 					// successfully swap, break iteration.
+					T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_supply(
+						&Self::account_id(),
+						&swap_path,
+						supply_amount.unique_saturated_into(),
+						// min_target_limit.unique_saturated_into(),
+					).unwrap();
+
 					break;
 				}
 			}
@@ -1252,19 +1366,31 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![currency_id, native_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					currency_id,
 					&Self::account_id(),
 					supply_amount.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+				).is_ok();
+				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
 					&Self::account_id(),
 					&swap_path,
 					supply_amount.unique_saturated_into(),
-					// min_target_limit.unique_saturated_into(),
-				)
-				.is_ok()
-				{
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_supply {
 					// successfully swap, break iteration.
+					T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_supply(
+						&Self::account_id(),
+						&swap_path,
+						supply_amount.unique_saturated_into(),
+						// min_target_limit.unique_saturated_into(),
+					).unwrap();
+
 					break;
 				}
 			}
@@ -1309,19 +1435,31 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![currency_id, help_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					currency_id,
 					&Self::account_id(),
 					supply_amount.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+				).is_ok();
+				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
 					&Self::account_id(),
 					&swap_path,
 					supply_amount.unique_saturated_into(),
-					// min_target_limit.unique_saturated_into(),
-				)
-				.is_ok()
-				{
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_supply {
 					// successfully swap, break iteration.
+					T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_supply(
+						&Self::account_id(),
+						&swap_path,
+						supply_amount.unique_saturated_into(),
+						// min_target_limit.unique_saturated_into(),
+					).unwrap();
+
 					break;
 				}
 			}
@@ -1366,19 +1504,31 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![currency_id, help_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					currency_id,
 					&Self::account_id(),
 					supply_amount.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+				).is_ok();
+				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
 					&Self::account_id(),
 					&swap_path,
 					supply_amount.unique_saturated_into(),
-					// min_target_limit.unique_saturated_into(),
-				)
-				.is_ok()
-				{
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_supply {
 					// successfully swap, break iteration.
+					T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_supply(
+						&Self::account_id(),
+						&swap_path,
+						supply_amount.unique_saturated_into(),
+						// min_target_limit.unique_saturated_into(),
+					).unwrap();
+
 					break;
 				}
 			}
@@ -1423,19 +1573,31 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 				let mut swap_path = vec![currency_id, serptoken_currency_id];
 				swap_path.extend(partial_path);
 
-				if T::Currency::deposit(
+				let deposit = T::Currency::deposit(
 					currency_id,
 					&Self::account_id(),
 					supply_amount.unique_saturated_into()
-				).is_ok() && T::Dex::buyback_swap_with_exact_supply(
+				).is_ok();
+				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
 					&Self::account_id(),
 					&swap_path,
 					supply_amount.unique_saturated_into(),
-					// min_target_limit.unique_saturated_into(),
-				)
-				.is_ok()
-				{
+				).is_ok();
+
+				if deposit && buyback_swap_with_exact_supply {
 					// successfully swap, break iteration.
+					T::Currency::deposit(
+						currency_id,
+						&Self::account_id(),
+						supply_amount.unique_saturated_into()
+					).unwrap();
+					T::Dex::buyback_swap_with_exact_supply(
+						&Self::account_id(),
+						&swap_path,
+						supply_amount.unique_saturated_into(),
+						// min_target_limit.unique_saturated_into(),
+					).unwrap();
+
 					break;
 				}
 			}

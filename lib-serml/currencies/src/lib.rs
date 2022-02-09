@@ -160,13 +160,15 @@ pub mod module {
 		) -> DispatchResult {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
-			if <Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount).is_ok() {
-				if claim && T::StableCurrencyIds::get().contains(&currency_id) {
-					T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)?
-				} else if claim && !T::StableCurrencyIds::get().contains(&currency_id) {
-					return Ok(())
+			if <Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount).is_ok() &&
+				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount).is_ok() {
+					if claim && T::StableCurrencyIds::get().contains(&currency_id) {
+						<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
+						T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)?
+					} else {
+						<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
+					}
 				}
-			}
 			Ok(())
 		}
 
