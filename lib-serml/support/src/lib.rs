@@ -99,7 +99,7 @@ pub trait AuctionManager<AccountId> {
 }
 
 /// The Structure of a Campaign info.
-#[cfg_attr(feature = "std", derive(PartialEq, Eq, Encode, Decode))]
+#[cfg_attr(feature = "std", derive(PartialEq, Eq, Encode, Decode, Debug, Clone))]
 pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
 	/// The Campaign Id
 	pub id: CampaignId,
@@ -195,6 +195,8 @@ pub trait Proposal<AccountId, BlockNumber> {
 pub trait CampaignManager<AccountId, BlockNumber> {
 	/// The Campaign info of `id`
 	fn campaign_info(id: CampaignId) -> Option<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
+	/// Get all proposals
+	fn all_campaigns() -> Vec<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
 	/// Called when a contribution is received.
 	fn on_contribution(
 		who: AccountId,
