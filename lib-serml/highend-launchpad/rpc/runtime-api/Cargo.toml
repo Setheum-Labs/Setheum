@@ -13,7 +13,7 @@ codec = { package = "parity-scale-codec", version = "2.2.0", default-features = 
 sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-highend-launchpad = {version = "1.0.0", path =  "../../", default-features = false}
+support = { package = "module-support", path = "../support", default-features = false }
 
 [features]
 default = ["std"]

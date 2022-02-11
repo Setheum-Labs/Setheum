@@ -17,5 +17,4 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkad
 sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
-highend-launchpad = {version = "1.0.0", path =  "../../", default-features = false}
 highend-launchpad-rpc-runtime-api = { path = "runtime-api", version = "1.0.0" }
