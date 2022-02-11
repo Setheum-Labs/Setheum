@@ -100,7 +100,7 @@ use primitives::evm::EthereumTransactionMessage;
 pub use primitives::{
 	evm::EstimateResourcesRequest, AccountId, AccountIndex, AirDropCurrencyId, Amount, AuctionId,
 	AuthoritysOriginId, Balance, BlockNumber, CurrencyId, DataProviderId, EraIndex, Hash, Moment, Nonce,
-	ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair,
+	ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair, SerpStableCurrencyId,
 };
 // use module_support::Web3SettersClubAccounts;
 pub use runtime_common::{
