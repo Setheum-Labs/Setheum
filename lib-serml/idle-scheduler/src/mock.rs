@@ -23,7 +23,7 @@
 #![cfg(test)]
 
 use crate as module_idle_scheduler;
-use setheum_primitives::{define_combined_task, task::TaskResult};
+use acala_primitives::{define_combined_task, task::TaskResult};
 use frame_support::weights::Weight;
 use frame_support::{construct_runtime, parameter_types, traits::Everything};
 use module_support::DispatchableTask;
@@ -91,10 +91,26 @@ impl DispatchableTask for BalancesTask {
 	}
 }
 
+#[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
+pub enum HomaLiteTask {
+	#[codec(index = 0)]
+	OnIdle,
+}
+impl DispatchableTask for HomaLiteTask {
+	fn dispatch(self, weight: Weight) -> TaskResult {
+		TaskResult {
+			result: Ok(()),
+			used_weight: BASE_WEIGHT,
+			finished: weight >= BASE_WEIGHT,
+		}
+	}
+}
+
 define_combined_task! {
 	#[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
 	pub enum ScheduledTasks {
 		BalancesTask(BalancesTask),
+		HomaLiteTask(HomaLiteTask),
 	}
 }
 

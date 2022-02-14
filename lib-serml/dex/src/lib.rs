@@ -40,13 +40,14 @@ use frame_support::{log, pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, TradingPair};
+use scale_info::TypeInfo;
 use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	ArithmeticError, DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug, SaturatedConversion,
 };
-use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{CurrencyIdMapping, DEXManager, ExchangeRate, Ratio};
+use sp_std::{prelude::*, vec};
+use support::{DEXManager, Erc20InfoMapping, ExchangeRate, Ratio, SwapLimit};
 
 mod mock;
 mod tests;
@@ -128,7 +129,7 @@ pub mod module {
 
 		/// Mapping between CurrencyId and ERC20 address so user can use Erc20
 		/// address as LP token.
-		type CurrencyIdMapping: CurrencyIdMapping;
+		type Erc20InfoMapping: Erc20InfoMapping;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -177,37 +178,65 @@ pub mod module {
 		UnqualifiedProvision,
 		/// Trading pair is still provisioning
 		StillProvisioning,
+		/// The Asset unregistered.
+		AssetUnregistered,
 	}
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
-		/// add provision success \[who, currency_id_0, contribution_0,
-		/// currency_id_1, contribution_1\]
-		AddProvision(T::AccountId, CurrencyId, Balance, CurrencyId, Balance),
-		/// Add liquidity success. \[who, currency_id_0, pool_0_increment,
-		/// currency_id_1, pool_1_increment, share_increment\]
-		AddLiquidity(T::AccountId, CurrencyId, Balance, CurrencyId, Balance, Balance),
-		/// Remove liquidity from the trading pool success. \[who,
-		/// currency_id_0, pool_0_decrement, currency_id_1, pool_1_decrement,
-		/// share_decrement\]
-		RemoveLiquidity(T::AccountId, CurrencyId, Balance, CurrencyId, Balance, Balance),
-		/// Use supply currency to swap target currency. \[trader, trading_path,
-		/// liquidity_change_list\]
-		Swap(T::AccountId, Vec<CurrencyId>, Vec<Balance>),
-		/// Use supply currency to swap target currency for buyback. \[trader, trading_path,
-		/// supply_currency_amount, target_currency_amount\]
-		BuyBackSwap(T::AccountId, Vec<CurrencyId>, Vec<Balance>),
-		/// Enable trading pair. \[trading_pair\]
-		EnableTradingPair(TradingPair),
-		/// List provisioning trading pair. \[trading_pair\]
-		ListProvisioning(TradingPair),
-		/// Disable trading pair. \[trading_pair\]
-		DisableTradingPair(TradingPair),
-		/// Provisioning trading pair convert to Enabled. \[trading_pair,
-		/// pool_0_amount, pool_1_amount, total_share_amount\]
-		ProvisioningToEnabled(TradingPair, Balance, Balance, Balance),
+		/// add provision success
+		AddProvision {
+			who: T::AccountId,
+			currency_0: CurrencyId,
+			contribution_0: Balance,
+			currency_1: CurrencyId,
+			contribution_1: Balance,
+		},
+		/// Add liquidity success.
+		AddLiquidity {
+			who: T::AccountId,
+			currency_0: CurrencyId,
+			pool_0: Balance,
+			currency_1: CurrencyId,
+			pool_1: Balance,
+			share_increment: Balance,
+		},
+		/// Remove liquidity from the trading pool success.
+		RemoveLiquidity {
+			who: T::AccountId,
+			currency_0: CurrencyId,
+			pool_0: Balance,
+			currency_1: CurrencyId,
+			pool_1: Balance,
+			share_decrement: Balance,
+		},
+		/// Use supply currency to swap target currency.
+		Swap {
+			trader: T::AccountId,
+			path: Vec<CurrencyId>,
+			liquidity_changes: Vec<Balance>,
+		},
+		/// Use supply currency to swap target currency for buyback..
+		BuyBackSwap {
+			trader: T::AccountId,
+			path: Vec<CurrencyId>,
+			liquidity_changes: Vec<Balance>,
+		},
+		/// Enable trading pair.
+		EnableTradingPair { trading_pair: TradingPair },
+		/// List provisioning trading pair.
+		ListProvisioning { trading_pair: TradingPair },
+		/// Disable trading pair.
+		DisableTradingPair { trading_pair: TradingPair },
+		/// Provisioning trading pair convert to Enabled.
+		ProvisioningToEnabled {
+			trading_pair: TradingPair,
+			pool_0: Balance,
+			pool_1: Balance,
+			share_amount: Balance,
+		},
 	}
 
 	/// Liquidity pool for TradingPair.

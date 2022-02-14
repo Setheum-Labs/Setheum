@@ -261,7 +261,28 @@ Comment on a PR `/bench runtime module <setheum_name>` i.e.: `serp_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
 
-### Fork setheum-chain
+# 8. Migration testing runtime
+If modify the storage, should test the data migration before upgrade the runtime.
+
+## Try testing runtime
+
+```bash
+# Use a live chain to run the migration test and save state snapshot to file `snapshot.bin`.
+# Add `-m module_name` can specify the module.
+cargo run --features with-ethereum-compatibility --features try-runtime -- try-runtime --wasm-execution=compiled --block-at=0x9def608d5674f6d16574f53849218fe13d80ec1042ef7c2d4de7d4c50abab806 --url="wss://setheum.api.onfinality.io/public-ws" on-runtime-upgrade live -s snapshot.bin
+
+ # Use a state snapshot to run the migration test.
+cargo run --features with-ethereum-compatibility --features try-runtime -- try-runtime --wasm-execution=compiled --block-at=0x9def608d5674f6d16574f53849218fe13d80ec1042ef7c2d4de7d4c50abab806 on-runtime-upgrade snap -s snapshot.bin
+
+# Off-Chain worker
+# Use a live chain to run the off-chain migration test and save state snapshot to file `snapshot.bin`.
+cargo run --features with-ethereum-compatibility --features try-runtime -- try-runtime --wasm-execution=compiled --block-at=0x9def608d5674f6d16574f53849218fe13d80ec1042ef7c2d4de7d4c50abab806 --url="wss://setheum.api.onfinality.io/public-ws" offchain-worker live -s snapshot.bin
+
+ # Use a state snapshot to run the offchain migration test.
+cargo run --features with-ethereum-compatibility --features try-runtime -- try-runtime --wasm-execution=compiled --block-at=0x9def608d5674f6d16574f53849218fe13d80ec1042ef7c2d4de7d4c50abab806 --url="wss://setheum.api.onfinality.io/public-ws" offchain-worker snap -s snapshot.bin
+```
+
+### Fork chain
 
 You can create a fork of a live chain (testnet / mainnet) for development purposes.
 

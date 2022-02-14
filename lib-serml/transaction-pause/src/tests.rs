@@ -28,9 +28,12 @@ use mock::{Event, *};
 use sp_runtime::traits::BadOrigin;
 
 const BALANCE_TRANSFER: &<Runtime as frame_system::Config>::Call =
-	&mock::Call::Balances(pallet_balances::Call::transfer(ALICE, 10));
-const TOKENS_TRANSFER: &<Runtime as frame_system::Config>::Call =
-	&mock::Call::Tokens(orml_tokens::Call::transfer(ALICE, SETUSD, 10));
+	&mock::Call::Balances(pallet_balances::Call::transfer { dest: ALICE, value: 10 });
+const TOKENS_TRANSFER: &<Runtime as frame_system::Config>::Call = &mock::Call::Tokens(orml_tokens::Call::transfer {
+	dest: ALICE,
+	currency_id: SETUSD,
+	amount: 10,
+});
 
 #[test]
 fn pause_transaction_work() {
@@ -51,10 +54,10 @@ fn pause_transaction_work() {
 			b"Balances".to_vec(),
 			b"transfer".to_vec()
 		));
-		System::assert_last_event(Event::TransactionPause(crate::Event::TransactionPaused(
-			b"Balances".to_vec(),
-			b"transfer".to_vec(),
-		)));
+		System::assert_last_event(Event::TransactionPause(crate::Event::TransactionPaused {
+			pallet_name_bytes: b"Balances".to_vec(),
+			function_name_bytes: b"transfer".to_vec(),
+		}));
 		assert_eq!(
 			TransactionPause::paused_transactions((b"Balances".to_vec(), b"transfer".to_vec())),
 			Some(())
@@ -109,10 +112,10 @@ fn unpause_transaction_work() {
 			b"Balances".to_vec(),
 			b"transfer".to_vec()
 		));
-		System::assert_last_event(Event::TransactionPause(crate::Event::TransactionUnpaused(
-			b"Balances".to_vec(),
-			b"transfer".to_vec(),
-		)));
+		System::assert_last_event(Event::TransactionPause(crate::Event::TransactionUnpaused {
+			pallet_name_bytes: b"Balances".to_vec(),
+			function_name_bytes: b"transfer".to_vec(),
+		}));
 		assert_eq!(
 			TransactionPause::paused_transactions((b"Balances".to_vec(), b"transfer".to_vec())),
 			None

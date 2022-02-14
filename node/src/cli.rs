@@ -36,12 +36,17 @@ pub enum Subcommand {
 	/// Key management cli utilities
 	Key(sc_cli::KeySubcommand),
 
-	// /// The custom inspect subcommmand for decoding blocks and extrinsics.
-	// #[structopt(
-	// 	name = "inspect",
-	// 	about = "Decode given block or extrinsic using current native runtime."
-	// )]
-	// Inspect(inspect::cli::InspectCmd),
+	/// The custom inspect subcommmand for decoding blocks and extrinsics.
+	#[structopt(
+		name = "inspect",
+		about = "Decode given block or extrinsic using current native runtime."
+	)]
+	Inspect(inspect::cli::InspectCmd),
+
+	/// Try some experimental command on the runtime. This includes migration and runtime-upgrade
+	/// testing.
+	#[cfg(feature = "try-runtime")]
+	TryRuntime(try_runtime_cli::TryRuntimeCmd),
 
 	/// Verify a signature for a message, provided on STDIN, with a given
 	/// (public or secret) key.

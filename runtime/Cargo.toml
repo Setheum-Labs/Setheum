@@ -30,6 +30,7 @@ frame-support = { git = "https://github.com/paritytech/substrate", default-featu
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
 frame-system-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10", optional = true }
 frame-system-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
+frame-try-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false, optional = true }
 frame-election-provider-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
 pallet-grandpa = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
@@ -37,7 +38,6 @@ pallet-indices = { git = "https://github.com/paritytech/substrate", default-feat
 pallet-bounties = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 pallet-randomness-collective-flip = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.10" }
-pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features =false }
 pallet-membership = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 pallet-multisig = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
@@ -89,6 +89,7 @@ orml-oracle-rpc-runtime-api = { path = "../lib-orml/oracle/rpc/runtime-api", def
 orml-tokens = { path = "../lib-orml/tokens", default-features = false }
 orml-traits = { path = "../lib-orml/traits", default-features = false }
 orml-nft= { path = "../lib-orml/nft", default-features = false }
+orml-vesting = { path = "../lib-orml/vesting", default-features = false }
 
 module-transaction-pause = { path = "../lib-serml/transaction-pause", default-features = false }
 module-transaction-payment = { path = "../lib-serml/transaction-payment", default-features = false }
@@ -137,12 +138,12 @@ std = [
 	'frame-support/std',
 	'frame-system/std',
 	'frame-system-rpc-runtime-api/std',
+	"frame-try-runtime/std",
 	"frame-benchmarking/std",
 	'frame-election-provider-support/std',
 	'pallet-balances/std',
 	"pallet-bounties/std",
 	"pallet-collective/std",
-	"pallet-democracy/std",
 	'pallet-grandpa/std',
 	"pallet-indices/std",
 	"pallet-membership/std",
@@ -180,11 +181,12 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 
+	"orml-auction/std",
 	"orml-traits/std",
 	"orml-tokens/std",
 	"orml-authority/std",
 	"orml-benchmarking/std",
-	"module-vesting/std",
+	"orml-vesting/std",
 
 	"module-airdrop/std",
 	"auction-manager/std",
@@ -197,13 +199,14 @@ std = [
 	"module-evm-accounts/std",
 	"module-evm-bridge/std",
 	"module-evm-manager/std",
-	"serp-treasury/std",
-	"serp-setmint/std",
 	"module-loans/std",
 	"module-nft/std",
 	"module-prices/std",
+	"serp-treasury/std",
+	"serp-setmint/std",
 	"module-support/std",
 	"module-transaction-pause/std",
+	"module-transaction-payment/std",
 	"module-vesting/std",
 
 	"primitives/std",
@@ -234,4 +237,57 @@ runtime-benchmarks = [
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
 	"module-vesting/runtime-benchmarks",
+]
+try-runtime = [
+	"frame-try-runtime",
+	"frame-executive/try-runtime",
+	"frame-system/try-runtime",
+
+	"pallet-babe/try-runtime",
+	"pallet-authorship/try-runtime",
+	"pallet-balances/try-runtime",
+	"pallet-bounties/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-membership/try-runtime",
+	"pallet-multisig/try-runtime",
+	"pallet-proxy/try-runtime",
+	"pallet-scheduler/try-runtime",
+	"pallet-session/try-runtime",
+	"pallet-staking/try-runtime",
+	"pallet-sudo/try-runtime",
+	"pallet-timestamp/try-runtime",
+	"pallet-tips/try-runtime",
+	"pallet-transaction-payment/try-runtime",
+	"pallet-treasury/try-runtime",
+	"pallet-utility/try-runtime",
+	"pallet-bounties/try-runtime",
+	"pallet-tips/try-runtime",
+
+	"orml-auction/try-runtime",
+	"orml-authority/try-runtime",
+	"orml-oracle/try-runtime",
+	"orml-tokens/try-runtime",
+	"orml-vesting/try-runtime",
+	"orml-nft/try-runtime",
+
+	
+	"module-airdrop/try-runtime",
+	"auction-manager/try-runtime",
+	"cdp-engine/try-runtime",
+	"cdp-treasury/try-runtime",
+	"module-currencies/try-runtime",
+	"module-dex/try-runtime",
+	"emergency-shutdown/try-runtime",
+	"module-evm/try-runtime",
+	"module-evm-accounts/try-runtime",
+	"module-evm-bridge/try-runtime",
+	"module-evm-manager/try-runtime",
+	"module-loans/try-runtime",
+	"module-nft/try-runtime",
+	"module-prices/try-runtime",
+	"serp-treasury/try-runtime",
+	"serp-setmint/try-runtime",
+	"module-transaction-pause/try-runtime",
+	"module-transaction-payment/try-runtime",
+	"module-vesting/try-runtime",
 ]

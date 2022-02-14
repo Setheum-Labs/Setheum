@@ -19,6 +19,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use codec::{Decode, Encode};
+use scale_info::TypeInfo;
 use sp_runtime::{
 	traits::{Lazy, Verify},
 	AccountId32, MultiSigner, RuntimeDebug,
@@ -26,9 +27,9 @@ use sp_runtime::{
 
 use sp_core::{crypto::Public, ecdsa, ed25519, sr25519};
 
-use sp_std::{convert::TryFrom, prelude::*};
+use sp_std::prelude::*;
 
-#[derive(Eq, PartialEq, Clone, Encode, Decode, RuntimeDebug)]
+#[derive(Eq, PartialEq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub enum SetheumMultiSignature {
 	/// An Ed25519 signature.
 	Ed25519(ed25519::Signature),
@@ -38,6 +39,8 @@ pub enum SetheumMultiSignature {
 	Ecdsa(ecdsa::Signature),
 	// An Ethereum compatible SECP256k1 signature.
 	Ethereum([u8; 65]),
+	// An Ethereum SECP256k1 signature using Eip1559 for message encoding.
+	Eip1559([u8; 65]),
 	// An Ethereum SECP256k1 signature using Eip712 for message encoding.
 	SetheumEip712([u8; 65]),
 }

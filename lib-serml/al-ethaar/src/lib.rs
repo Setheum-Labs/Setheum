@@ -1,3 +1,23 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+
+// This file is part of Setheum.
+
+// Copyright (C) 2019-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 /// Edit this file to define custom logic or remove it if it is not needed.
@@ -6,12 +26,13 @@
 
 use frame_support::{
 	decl_module, decl_storage, decl_event, decl_error, ensure, traits::Get,
-	codec::{Decode, Encode}, PalletId,
+	codec::{Decode, Encode},
 	traits::{ReservableCurrency, ExistenceRequirement, Currency, WithdrawReasons}
 };
 
 use sp_runtime::{
 	traits::{AccountIdConversion},
+	ModuleId,
 };
 
 use frame_system::{ensure_signed, ensure_root};
@@ -23,7 +44,7 @@ use integer_sqrt::IntegerSquareRoot;
 pub trait Config: frame_system::Config + pallet_identity::Config {
 	// used to generate sovereign account
 	// refer: https://github.com/paritytech/substrate/blob/743accbe3256de2fc615adcaa3ab03ebdbbb4dbd/frame/treasury/src/lib.rs#L92
-	type PalletId: Get<PalletId>;
+	type ModuleId: Get<ModuleId>;
 
 	/// The currency in which the crowdfunds will be denominated
 	type Currency: ReservableCurrency<Self::AccountId>;
@@ -639,11 +660,11 @@ impl<T: Config> Module<T> {
 	/// This actually does computation. If you need to keep using it, then make sure you cache the
 	/// value and only call this once.
 	pub fn account_id() -> T::AccountId {
-		return T::PalletId::get().into_account();
+		return T::ModuleId::get().into_account();
 	}
 
 	pub fn project_account_id(index: ProjectIndex) -> T::AccountId {
-		T::PalletId::get().into_sub_account(index)
+		T::ModuleId::get().into_sub_account(index)
 	}
 
 	/// Get all projects

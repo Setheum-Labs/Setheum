@@ -18,23 +18,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{Balance, BlockNumber, Nonce};
+use crate::{
+	currency::{CurrencyId, CurrencyIdType, DexShareType},
+	Balance, BlockNumber, Nonce,
+};
 use codec::{Decode, Encode};
-use evm::ExitReason;
+use core::ops::Range;
+use module_evm_utiltity::{
+	ethereum::{Log, TransactionAction},
+	evm::ExitReason,
+};
+use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_core::{H160, H256, U256};
 use sp_runtime::RuntimeDebug;
 use sp_std::vec::Vec;
 
-pub use ethereum::TransactionAction;
-pub use evm::backend::{Basic as Account, Log};
-pub use evm::Config;
-
 /// Evm Address.
 pub type EvmAddress = sp_core::H160;
 
-#[derive(Clone, Eq, PartialEq, Encode, Decode, Default, RuntimeDebug)]
+#[derive(Clone, Eq, PartialEq, Encode, Decode, Default, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 /// External input from the transaction.
 pub struct Vicinity {
@@ -42,9 +46,15 @@ pub struct Vicinity {
 	pub gas_price: U256,
 	/// Origin of the transaction.
 	pub origin: EvmAddress,
+	/// Environmental coinbase.
+	pub block_coinbase: Option<EvmAddress>,
+	/// Environmental block gas limit. Used only for testing
+	pub block_gas_limit: Option<U256>,
+	/// Environmental block difficulty. Used only for testing
+	pub block_difficulty: Option<U256>,
 }
 
-#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct ExecutionInfo<T> {
 	pub exit_reason: ExitReason,
@@ -57,16 +67,7 @@ pub struct ExecutionInfo<T> {
 pub type CallInfo = ExecutionInfo<Vec<u8>>;
 pub type CreateInfo = ExecutionInfo<H160>;
 
-#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct Erc20Info {
-	pub address: EvmAddress,
-	pub name: Vec<u8>,
-	pub symbol: Vec<u8>,
-	pub decimals: u8,
-}
-
-#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct EstimateResourcesRequest {
 	/// From
@@ -83,9 +84,11 @@ pub struct EstimateResourcesRequest {
 	pub data: Option<Vec<u8>>,
 }
 
-#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct EthereumTransactionMessage {
+	pub chain_id: u64,
+	pub genesis: H256,
 	pub nonce: Nonce,
 	pub tip: Balance,
 	pub gas_limit: u64,
@@ -93,26 +96,89 @@ pub struct EthereumTransactionMessage {
 	pub action: TransactionAction,
 	pub value: Balance,
 	pub input: Vec<u8>,
-	pub chain_id: u64,
-	pub genesis: H256,
 	pub valid_until: BlockNumber,
 }
 
-/// A mapping between `AccountId` and `EvmAddress`.
-pub trait AddressMapping<AccountId> {
-	/// Returns the AccountId used go generate the given EvmAddress.
-	fn get_account_id(evm: &EvmAddress) -> AccountId;
-	/// Returns the EvmAddress associated with a given AccountId or the
-	/// underlying EvmAddress of the AccountId.
-	/// Returns None if there is no EvmAddress associated with the AccountId
-	/// and there is no underlying EvmAddress in the AccountId.
-	fn get_evm_address(account_id: &AccountId) -> Option<EvmAddress>;
-	/// Returns the EVM address associated with an account ID and generates an
-	/// account mapping if no association exists.
-	fn get_or_create_evm_address(account_id: &AccountId) -> EvmAddress;
-	/// Returns the default EVM address associated with an account ID.
-	fn get_default_evm_address(account_id: &AccountId) -> EvmAddress;
-	/// Returns true if a given AccountId is associated with a given EvmAddress
-	/// and false if is not.
-	fn is_linked(account_id: &AccountId, evm: &EvmAddress) -> bool;
+/// Ethereum precompiles
+/// 0 - 0x0000000000000000000000000000000000000400
+/// Setheum precompiles
+/// 0x0000000000000000000000000000000000000400 - 0x0000000000000000000000000000000000000800
+pub const PRECOMPILE_ADDRESS_START: EvmAddress = H160([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0]);
+/// Predeployed system contracts (except Mirrored ERC20)
+/// 0x0000000000000000000000000000000000000800 - 0x0000000000000000000000000000000000001000
+pub const PREDEPLOY_ADDRESS_START: EvmAddress = H160([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0]);
+pub const MIRRORED_TOKENS_ADDRESS_START: EvmAddress =
+	H160([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+pub const MIRRORED_NFT_ADDRESS_START: u64 = 0x2000000;
+/// System contract address prefix
+pub const SYSTEM_CONTRACT_ADDRESS_PREFIX: [u8; 9] = [0u8; 9];
+
+#[rustfmt::skip]
+/// CurrencyId to H160([u8; 20]) bit encoding rule.
+///
+/// Type occupies 1 byte, and data occupies 4 bytes(less than 4 bytes, right justified).
+///
+/// 0x0000000000000000000000000000000000000000
+///    0 1 2 3 4 5 6 7 8 910111213141516171819 index
+///   ^^^^^^^^^^^^^^^^^^                       System contract address prefix
+///                     ^^                     CurrencyId Type: 1-Token 2-DexShare
+///                                         ^^ CurrencyId Type is 1-Token, Token
+///                                   ^^^^^^^^ CurrencyId Type is 1-Token, NFT
+///                       ^^                   CurrencyId Type is 2-DexShare, DexShare Left Type:
+///                         ^^^^^^^^           CurrencyId Type is 2-DexShare, DexShare left field
+///                                 ^^         CurrencyId Type is 2-DexShare, DexShare Right Type:
+///                                                             the same as DexShare Left Type
+///                                   ^^^^^^^^ CurrencyId Type is 2-DexShare, DexShare right field
+
+/// Check if the given `address` is a system contract.
+///
+/// It's system contract if the address starts with SYSTEM_CONTRACT_ADDRESS_PREFIX.
+pub fn is_system_contract(address: EvmAddress) -> bool {
+	address.as_bytes().starts_with(&SYSTEM_CONTRACT_ADDRESS_PREFIX)
+}
+
+pub fn is_setheum_precompile(address: EvmAddress) -> bool {
+	address >= PRECOMPILE_ADDRESS_START && address < PREDEPLOY_ADDRESS_START
+}
+
+pub fn is_mirrored_tokens_address_prefix(address: EvmAddress) -> bool {
+	is_system_contract(address) && CurrencyIdType::try_from(address.as_bytes()[H160_POSITION_CURRENCY_ID_TYPE]).is_ok()
+}
+
+pub const H160_POSITION_CURRENCY_ID_TYPE: usize = 9;
+pub const H160_POSITION_TOKEN: usize = 19;
+pub const H160_POSITION_TOKEN_NFT: Range<usize> = 16..20;
+pub const H160_POSITION_DEXSHARE_LEFT_TYPE: usize = 10;
+pub const H160_POSITION_DEXSHARE_LEFT_FIELD: Range<usize> = 11..15;
+pub const H160_POSITION_DEXSHARE_RIGHT_TYPE: usize = 15;
+pub const H160_POSITION_DEXSHARE_RIGHT_FIELD: Range<usize> = 16..20;
+
+/// Generate the EvmAddress from CurrencyId so that evm contracts can call the erc20 contract.
+/// NOTE: Can not be used directly, need to check the erc20 is mapped.
+impl TryFrom<CurrencyId> for EvmAddress {
+	type Error = ();
+
+	fn try_from(val: CurrencyId) -> Result<Self, Self::Error> {
+		let mut address = [0u8; 20];
+		match val {
+			CurrencyId::Token(token) => {
+				address[H160_POSITION_CURRENCY_ID_TYPE] = CurrencyIdType::Token.into();
+				address[H160_POSITION_TOKEN] = token.into();
+			}
+			CurrencyId::DexShare(left, right) => {
+				let left_field: u32 = left.into();
+				let right_field: u32 = right.into();
+				address[H160_POSITION_CURRENCY_ID_TYPE] = CurrencyIdType::DexShare.into();
+				address[H160_POSITION_DEXSHARE_LEFT_TYPE] = Into::<DexShareType>::into(left).into();
+				address[H160_POSITION_DEXSHARE_LEFT_FIELD].copy_from_slice(&left_field.to_be_bytes());
+				address[H160_POSITION_DEXSHARE_RIGHT_TYPE] = Into::<DexShareType>::into(right).into();
+				address[H160_POSITION_DEXSHARE_RIGHT_FIELD].copy_from_slice(&right_field.to_be_bytes());
+			}
+			CurrencyId::Erc20(erc20) => {
+				address[..].copy_from_slice(erc20.as_bytes());
+			}
+		};
+
+		Ok(EvmAddress::from_slice(&address))
+	}
 }
