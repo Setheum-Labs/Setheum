@@ -52,7 +52,7 @@ use sp_std::{
 	marker, result,
 	vec::Vec,
 };
-use support::{AddressMapping, EVMBridge, InvokeContext, SerpTreasury};
+use support::{AddressMapping, EVMBridge, InvokeContext, RandomTransfer, SerpTreasury};
 
 mod mock;
 mod tests;
@@ -170,6 +170,28 @@ pub mod module {
 			} else {
 				<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
 			}
+
+			Self::deposit_event(Event::Transferred(currency_id, from, to, amount));
+			Ok(())
+		}
+
+		/// Transfer some random balance to another account under `currency_id`.
+		///
+		/// The dispatch origin for this call must be `Signed` by the
+		/// transactor.
+		#[pallet::weight(T::WeightInfo::transfer_non_native_currency())]
+		pub fn transfer_random_balance(
+			origin: OriginFor<T>,
+			dest: <T::Lookup as StaticLookup>::Source,
+			currency_id: CurrencyIdOf<T>,
+			claim: bool,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+			let receiver = T::Lookup::lookup(dest)?;
+
+			<Self as RandomTransfer<T::AccountId>>::random_transfer(currency_id, &sender, &receiver, claim)?;
+
+			Self::deposit_event(Event::Transferred(currency_id, from, to, amount));
 			Ok(())
 		}
 
@@ -899,6 +921,40 @@ impl<T: Config> TransferAll<T::AccountId> for Pallet<T> {
 
 		// transfer all free to dest
 		T::NativeCurrency::transfer(source, dest, T::NativeCurrency::free_balance(source))
+	}
+}
+
+impl<T: Config> RandomTransfer<T::AccountId> for Pallet<T> {
+	// Generate a random number in the range [1, free_balance/2].
+	#[transactional]
+	fn random_transfer(
+		sender: &AccountId,
+		receiver: &AccountId,
+		currency_id: Self::CurrencyId,
+		claim: bool,
+	) -> DispatchResult {
+		
+		let balance = T::MultiCurrency::free_balance(currency_id, sender);
+		let range_max = balance.saturating_div(2 as BalanceOf<T>);
+		let random_range = rand::distributions::Uniform::new(1 as BalanceOf<T>, range_max as BalanceOf<T>);
+		
+		let mut rng = rand::thread_rng();
+		let random_amount = random_range.sample(&mut rng);
+
+		// transfer the random amount to receiver
+		T::MultiCurrency::transfer(currency_id, &sender, &receiver, random_amount)
+		
+		let try_transfer = T::MultiCurrency::transfer(currency_id, &sender, &receiver, random_amount).is_ok();
+		let try_claim = T::SerpTreasury::claim_cashdrop(currency_id, &sender, random_amount).is_ok();
+		
+		if try_transfer && try_claim && claim && T::StableCurrencyIds::get().contains(&currency_id) {
+			T::MultiCurrency::transfer(currency_id, &sender, &receiver, amount)?;
+			T::SerpTreasury::claim_cashdrop(currency_id, &sender, amount)?
+		} else {
+			T::MultiCurrency::transfer(currency_id, &sender, &receiver, amount)?;
+		}
+
+		Ok(())
 	}
 }
 

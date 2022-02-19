@@ -98,6 +98,40 @@ pub trait AuctionManager<AccountId> {
 	fn get_total_target_in_auction() -> Self::Balance;
 }
 
+// The RandomTransfer trait is used to generate a random transfer
+// from `sender` to `receiver` under `currency_id.
+pub trait RandomTransfer<AccountId> {
+	type Balance;
+	type CurrencyId;
+
+	fn random_transfer(
+		sender: &AccountId,
+		receiver: &AccountId,
+		currency_id: Self::CurrencyId,
+	) -> DispatchResult;
+}
+
+// The RandomNumber trait is used to generate a random number.
+pub trait RandomNumber<Balance> {
+	fn random_number(
+		start: Self::Balance,
+		end: Self::Balance,
+	) -> Self::Balance;
+}
+
+impl<T: Config> RandomNumber<Balance> for () {
+	// Generate a random number in the range [0, max).
+	fn random_number(
+		start: Self::Balance,
+		end: Self::Balance,
+	) -> Self::Balance {
+		let random_range = rand::distributions::Uniform::new(start, end);
+		let mut rng = rand::thread_rng();
+
+		random_number = random_range.sample(&mut rng);
+	}
+}
+
 /// The Structure of a Campaign info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq, Encode, Decode, Debug, Clone))]
 pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
