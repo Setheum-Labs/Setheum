@@ -33,22 +33,24 @@ use sp_runtime::{
 	DispatchError,
 };
 use sp_std::cell::RefCell;
+use support::SwapLimit;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const LP_SETUSD_SETM: CurrencyId =
-CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::SETM));
+pub const ACA: CurrencyId = CurrencyId::Token(TokenSymbol::ACA);
+pub const AUSD: CurrencyId = CurrencyId::Token(TokenSymbol::AUSD);
+pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
+pub const LP_AUSD_DOT: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::AUSD), DexShare::Token(TokenSymbol::DOT));
 
 mod dex_oracle {
 	pub use super::super::*;
 }
 
 parameter_types! {
-	pub static SETUSDSETMPair: TradingPair = TradingPair::from_currency_ids(SETUSD, SETM).unwrap();
-	pub static SETMSETMPair: TradingPair = TradingPair::from_currency_ids(SETM, SETM).unwrap();
+	pub static AUSDDOTPair: TradingPair = TradingPair::from_currency_ids(AUSD, DOT).unwrap();
+	pub static ACADOTPair: TradingPair = TradingPair::from_currency_ids(ACA, DOT).unwrap();
 	pub const BlockHashCount: u64 = 250;
 }
 
@@ -90,76 +92,56 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 thread_local! {
-	static SETUSD_SETM_POOL: RefCell<(Balance, Balance)> = RefCell::new((Zero::zero(), Zero::zero()));
-	static SETM_SETM_POOL: RefCell<(Balance, Balance)> = RefCell::new((Zero::zero(), Zero::zero()));
+	static AUSD_DOT_POOL: RefCell<(Balance, Balance)> = RefCell::new((Zero::zero(), Zero::zero()));
+	static ACA_DOT_POOL: RefCell<(Balance, Balance)> = RefCell::new((Zero::zero(), Zero::zero()));
 }
 
 pub fn set_pool(trading_pair: &TradingPair, pool_0: Balance, pool_1: Balance) {
-	if *trading_pair == SETUSDSETMPair::get() {
-		SETUSD_SETM_POOL.with(|v| *v.borrow_mut() = (pool_0, pool_1));
-	} else if *trading_pair == SETMSETMPair::get() {
-		SETM_SETM_POOL.with(|v| *v.borrow_mut() = (pool_0, pool_1));
+	if *trading_pair == AUSDDOTPair::get() {
+		AUSD_DOT_POOL.with(|v| *v.borrow_mut() = (pool_0, pool_1));
+	} else if *trading_pair == ACADOTPair::get() {
+		ACA_DOT_POOL.with(|v| *v.borrow_mut() = (pool_0, pool_1));
 	}
 }
 
 pub struct MockDEX;
 impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
-	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
-		match (currency_id_a, currency_id_b) {
-			(SETUSD, SETM) => (10000, 200),
-			_ => (0, 0),
-		}
+	fn get_liquidity_pool(currency_id_0: CurrencyId, currency_id_1: CurrencyId) -> (Balance, Balance) {
+		TradingPair::from_currency_ids(currency_id_0, currency_id_1)
+			.map(|trading_pair| {
+				if trading_pair == AUSDDOTPair::get() {
+					AUSD_DOT_POOL.with(|v| *v.borrow())
+				} else if trading_pair == ACADOTPair::get() {
+					ACA_DOT_POOL.with(|v| *v.borrow())
+				} else {
+					(0, 0)
+				}
+			})
+			.unwrap_or_else(|| (0, 0))
 	}
 
 	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
 		unimplemented!()
 	}
 
-	fn get_swap_target_amount(
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-	) -> Option<Balance> {
+	fn get_swap_amount(_: &[CurrencyId], _: SwapLimit<Balance>) -> Option<(Balance, Balance)> {
 		unimplemented!()
 	}
 
-	fn get_swap_supply_amount(
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-	) -> Option<Balance> {
+	fn get_best_price_swap_path(
+		_: CurrencyId,
+		_: CurrencyId,
+		_: SwapLimit<Balance>,
+		_: Vec<Vec<CurrencyId>>,
+	) -> Option<Vec<CurrencyId>> {
 		unimplemented!()
 	}
 
-	fn swap_with_exact_supply(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-		_min_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		unimplemented!()
-	}
-
-	fn buyback_swap_with_exact_supply(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		unimplemented!()
-	}
-
-	fn swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-		_max_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		unimplemented!()
-	}
-
-	fn buyback_swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	fn swap_with_specific_path(
+		_: &AccountId,
+		_: &[CurrencyId],
+		_: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 
@@ -170,6 +152,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_max_amount_a: Balance,
 		_max_amount_b: Balance,
 		_min_share_increment: Balance,
+		_stake_increment_share: bool,
 	) -> DispatchResult {
 		unimplemented!()
 	}
@@ -181,6 +164,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_remove_share: Balance,
 		_min_withdrawn_a: Balance,
 		_min_withdrawn_b: Balance,
+		_by_unstake: bool,
 	) -> DispatchResult {
 		unimplemented!()
 	}

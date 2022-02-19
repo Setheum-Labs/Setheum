@@ -26,8 +26,7 @@ use serde::{Deserialize, Serialize};
 use sp_runtime::DispatchResult;
 use sp_runtime::RuntimeDebug;
 
-// TODO - Add `TypeInfo` here below as in `#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]`
-#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug)]
+#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct TaskResult {
 	pub result: DispatchResult,

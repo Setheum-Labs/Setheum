@@ -25,11 +25,9 @@
 pub mod currency;
 pub mod evm;
 pub mod signature;
-pub mod task;
 
 use sp_std::vec::Vec;
 use codec::{Codec, Decode, Encode, MaxEncodedLen};
-use scale_info::TypeInfo;
 use core::ops::Range;
 use sp_runtime::{
 	generic,
@@ -160,8 +158,6 @@ pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 pub enum AirDropCurrencyId {
 	SETR = 0,
 	SETUSD = 1,
-	// VVV remove after IAE (Initial Airdrop Offering)
-	// vvv AND MultiCurrency INITIAL ALLOCATIONS vvv
 	SETM = 2,
 	SERP = 3,
 	DNAR = 4,
@@ -195,8 +191,8 @@ pub struct TradingPair(CurrencyId, CurrencyId);
 
 impl TradingPair {
 	pub fn from_currency_ids(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<Self> {
-		if (currency_id_a.is_token_currency_id() || currency_id_a.is_erc20_currency_id())
-			&& (currency_id_b.is_token_currency_id() || currency_id_b.is_erc20_currency_id())
+		if currency_id_a.is_trading_pair_currency_id()
+			&& currency_id_b.is_trading_pair_currency_id()
 			&& currency_id_a != currency_id_b
 		{
 			if currency_id_a > currency_id_b {
@@ -240,6 +236,11 @@ pub enum ReserveIdentifier {
 	TransactionPayment,
 	// always the last, indicate number of variants
 	Count,
+}
+
+/// Convert any type that implements Into<U256> into byte representation ([u8, 32])
+pub fn to_bytes<T: Into<U256>>(value: T) -> [u8; 32] {
+	Into::<[u8; 32]>::into(value.into())
 }
 
 // Temporary to bypass `not building wasm` error;

@@ -27,25 +27,29 @@ use crate::{
 		state::{StackExecutor, StackSubstateMetadata},
 		Runner as RunnerT, StackState as StackStateT,
 	},
-	AccountInfo, AccountStorages, Accounts, BalanceOf, CallInfo, Config, ContractStorageSizes, CreateInfo, Error,
-	Event, ExecutionInfo, One, Pallet, STORAGE_SIZE,
+	AccountInfo, AccountStorages, Accounts, BalanceOf, CallInfo, Config, CreateInfo, Error, ExecutionInfo, One, Pallet,
+	STORAGE_SIZE,
 };
-use evm::{backend::Backend as BackendT, ExitError, ExitReason, Transfer};
 use frame_support::{
 	dispatch::DispatchError,
 	ensure, log,
 	traits::{Currency, ExistenceRequirement, Get},
+	transactional,
+};
+use module_evm_utiltity::{
+	ethereum::Log,
+	evm::{self, backend::Backend as BackendT, ExitError, ExitReason, Transfer},
 };
 use module_support::AddressMapping;
 pub use primitives::{
-	evm::{Account, EvmAddress, Log, Vicinity},
-	ReserveIdentifier, MIRRORED_NFT_ADDRESS_START,
+	convert_decimals_from_evm,
+	evm::{EvmAddress, Vicinity, MIRRORED_NFT_ADDRESS_START},
+	ReserveIdentifier,
 };
 use sha3::{Digest, Keccak256};
 use sp_core::{H160, H256, U256};
-use sp_io::KillStorageResult::{AllRemoved, SomeRemaining};
-use sp_runtime::traits::UniqueSaturatedInto;
-use sp_std::{boxed::Box, collections::btree_set::BTreeSet, marker::PhantomData, mem, vec::Vec};
+use sp_runtime::traits::{UniqueSaturatedInto, Zero};
+use sp_std::{boxed::Box, collections::btree_set::BTreeSet, marker::PhantomData, mem, vec, vec::Vec};
 
 #[derive(Default)]
 pub struct Runner<T: Config> {
@@ -67,9 +71,13 @@ impl<T: Config> Runner<T> {
 		F: FnOnce(&mut StackExecutor<'config, SubstrateStackState<'_, 'config, T>>) -> (ExitReason, R),
 	{
 		let gas_price = U256::one();
-		let vicinity = Vicinity { gas_price, origin };
+		let vicinity = Vicinity {
+			gas_price,
+			origin,
+			..Default::default()
+		};
 
-		let metadata = StackSubstateMetadata::new(gas_limit, storage_limit, T::NewContractExtraBytes::get(), config);
+		let metadata = StackSubstateMetadata::new(gas_limit, storage_limit, config);
 		let state = SubstrateStackState::new(&vicinity, metadata);
 		let mut executor = StackExecutor::new_with_precompile(state, config, T::Precompiles::execute);
 
@@ -83,6 +91,10 @@ impl<T: Config> Runner<T> {
 
 		// Deduct fee from the `source` account.
 		// let fee = T::ChargeTransactionPayment::withdraw_fee(&source, total_fee)?;
+		ensure!(
+			convert_decimals_from_evm(value.low_u128()).is_some(),
+			Error::<T>::InvalidDecimals
+		);
 
 		if !config.estimate {
 			Pallet::<T>::reserve_storage(&origin, storage_limit).map_err(|e| {
@@ -126,6 +138,12 @@ impl<T: Config> Runner<T> {
 			.ok_or(Error::<T>::OutOfStorage)?;
 		let used_storage = state.metadata().storage_meter().total_used();
 		let refunded_storage = state.metadata().storage_meter().total_refunded();
+		log::debug!(
+			target: "evm",
+			"Storage logs: {:?}",
+			state.substate.storage_logs
+		);
+		let mut sum_storage: i32 = 0;
 		for (target, storage) in &state.substate.storage_logs {
 			if !config.estimate {
 				Pallet::<T>::charge_storage(&origin, target, *storage).map_err(|e| {
@@ -140,7 +158,17 @@ impl<T: Config> Runner<T> {
 					Error::<T>::ChargeStorageFailed
 				})?;
 			}
+			sum_storage += storage;
 		}
+		if actual_storage != sum_storage {
+			log::debug!(
+				target: "evm",
+				"ChargeStorageFailed [actual_storage: {:?}, sum_storage: {:?}]",
+				actual_storage, sum_storage
+			);
+			return Err(Error::<T>::ChargeStorageFailed.into());
+		}
+
 		if !config.estimate {
 			Pallet::<T>::unreserve_storage(&origin, storage_limit, used_storage, refunded_storage).map_err(|e| {
 				log::debug!(
@@ -162,7 +190,7 @@ impl<T: Config> Runner<T> {
 				"Deleting account at {:?}",
 				address
 			);
-			Pallet::<T>::remove_contract(&address).map_err(|e| {
+			Pallet::<T>::remove_contract(&origin, &address).map_err(|e| {
 				log::debug!(
 					target: "evm",
 					"CannotKillContract address {:?}, reason: {:?}",
@@ -190,6 +218,8 @@ impl<T: Config> Runner<T> {
 }
 
 impl<T: Config> RunnerT<T> for Runner<T> {
+	/// Require transactional here. Always need to send events.
+	#[transactional]
 	fn call(
 		source: H160,
 		origin: H160,
@@ -200,7 +230,7 @@ impl<T: Config> RunnerT<T> for Runner<T> {
 		storage_limit: u32,
 		config: &evm::Config,
 	) -> Result<CallInfo, DispatchError> {
-		// if the contract not deployed, the caller must be developer or contract or maintainer.
+		// if the contract not published, the caller must be developer or contract or maintainer.
 		// if the contract not exists, let evm try to execute it and handle the error.
 		ensure!(
 			Pallet::<T>::can_call_contract(&target, &source),
@@ -208,25 +238,14 @@ impl<T: Config> RunnerT<T> for Runner<T> {
 		);
 
 		let value = U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(value));
-		let info = Self::execute(source, origin, value, gas_limit, storage_limit, config, |executor| {
-			executor.transact_call(source, target, value, input, gas_limit)
-		})?;
-
-		if info.exit_reason.is_succeed() {
-			Pallet::<T>::deposit_event(Event::<T>::Executed(source, target, info.logs.clone()));
-		} else {
-			Pallet::<T>::deposit_event(Event::<T>::ExecutedFailed(
-				source,
-				target,
-				info.exit_reason.clone(),
-				info.value.clone(),
-				info.logs.clone(),
-			));
-		}
-
-		Ok(info)
+		Self::execute(source, origin, value, gas_limit, storage_limit, config, |executor| {
+			// TODO: EIP-2930
+			executor.transact_call(source, target, value, input, gas_limit, vec![])
+		})
 	}
 
+	/// Require transactional here. Always need to send events.
+	#[transactional]
 	fn create(
 		source: H160,
 		init: Vec<u8>,
@@ -236,27 +255,20 @@ impl<T: Config> RunnerT<T> for Runner<T> {
 		config: &evm::Config,
 	) -> Result<CreateInfo, DispatchError> {
 		let value = U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(value));
-		let info = Self::execute(source, source, value, gas_limit, storage_limit, config, |executor| {
+		Self::execute(source, source, value, gas_limit, storage_limit, config, |executor| {
 			let address = executor
 				.create_address(evm::CreateScheme::Legacy { caller: source })
 				.unwrap_or_default(); // transact_create will check the address
-			(executor.transact_create(source, value, init, gas_limit), address)
-		})?;
-
-		if info.exit_reason.is_succeed() {
-			Pallet::<T>::deposit_event(Event::<T>::Created(source, info.value, info.logs.clone()));
-		} else {
-			Pallet::<T>::deposit_event(Event::<T>::CreatedFailed(
-				source,
-				info.value,
-				info.exit_reason.clone(),
-				info.logs.clone(),
-			));
-		}
-
-		Ok(info)
+			(
+				// TODO: EIP-2930
+				executor.transact_create(source, value, init, gas_limit, vec![]),
+				address,
+			)
+		})
 	}
 
+	/// Require transactional here. Always need to send events.
+	#[transactional]
 	fn create2(
 		source: H160,
 		init: Vec<u8>,
@@ -268,7 +280,7 @@ impl<T: Config> RunnerT<T> for Runner<T> {
 	) -> Result<CreateInfo, DispatchError> {
 		let value = U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(value));
 		let code_hash = H256::from_slice(Keccak256::digest(&init).as_slice());
-		let info = Self::execute(source, source, value, gas_limit, storage_limit, config, |executor| {
+		Self::execute(source, source, value, gas_limit, storage_limit, config, |executor| {
 			let address = executor
 				.create_address(evm::CreateScheme::Create2 {
 					caller: source,
@@ -276,23 +288,16 @@ impl<T: Config> RunnerT<T> for Runner<T> {
 					salt,
 				})
 				.unwrap_or_default(); // transact_create2 will check the address
-			(executor.transact_create2(source, value, init, salt, gas_limit), address)
-		})?;
-
-		if info.exit_reason.is_succeed() {
-			Pallet::<T>::deposit_event(Event::<T>::Created(source, info.value, info.logs.clone()));
-		} else {
-			Pallet::<T>::deposit_event(Event::<T>::CreatedFailed(
-				source,
-				info.value,
-				info.exit_reason.clone(),
-				info.logs.clone(),
-			));
-		}
-
-		Ok(info)
+			(
+				// TODO: EIP-2930
+				executor.transact_create2(source, value, init, salt, gas_limit, vec![]),
+				address,
+			)
+		})
 	}
 
+	/// Require transactional here. Always need to send events.
+	#[transactional]
 	fn create_at_address(
 		source: H160,
 		address: H160,
@@ -303,25 +308,13 @@ impl<T: Config> RunnerT<T> for Runner<T> {
 		config: &evm::Config,
 	) -> Result<CreateInfo, DispatchError> {
 		let value = U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(value));
-		let info = Self::execute(source, source, value, gas_limit, storage_limit, config, |executor| {
+		Self::execute(source, source, value, gas_limit, storage_limit, config, |executor| {
 			(
-				executor.transact_create_at_address(source, address, value, init, gas_limit),
+				// TODO: EIP-2930
+				executor.transact_create_at_address(source, address, value, init, gas_limit, vec![]),
 				address,
 			)
-		})?;
-
-		if info.exit_reason.is_succeed() {
-			Pallet::<T>::deposit_event(Event::<T>::Created(source, info.value, info.logs.clone()));
-		} else {
-			Pallet::<T>::deposit_event(Event::<T>::CreatedFailed(
-				source,
-				info.value,
-				info.exit_reason.clone(),
-				info.logs.clone(),
-			));
-		}
-
-		Ok(info)
+		})
 	}
 }
 
@@ -470,7 +463,7 @@ impl<'vicinity, 'config, T: Config> BackendT for SubstrateStackState<'vicinity, 
 	}
 
 	fn block_coinbase(&self) -> H160 {
-		Pallet::<T>::find_author()
+		self.vicinity.block_coinbase.unwrap_or(Pallet::<T>::find_author())
 	}
 
 	fn block_timestamp(&self) -> U256 {
@@ -479,17 +472,23 @@ impl<'vicinity, 'config, T: Config> BackendT for SubstrateStackState<'vicinity, 
 	}
 
 	fn block_difficulty(&self) -> U256 {
-		U256::zero()
+		self.vicinity.block_difficulty.unwrap_or_default()
 	}
 
 	fn block_gas_limit(&self) -> U256 {
-		U256::zero()
+		self.vicinity.block_gas_limit.unwrap_or_default()
 	}
 
 	fn chain_id(&self) -> U256 {
 		U256::from(T::ChainId::get())
 	}
 
+	#[cfg(feature = "evm-tests")]
+	fn exists(&self, address: H160) -> bool {
+		Accounts::<T>::contains_key(&address)
+	}
+
+	#[cfg(not(feature = "evm-tests"))]
 	fn exists(&self, _address: H160) -> bool {
 		true
 	}
@@ -508,11 +507,11 @@ impl<'vicinity, 'config, T: Config> BackendT for SubstrateStackState<'vicinity, 
 	}
 
 	fn storage(&self, address: H160, index: H256) -> H256 {
-		<AccountStorages<T>>::get(address, index)
+		AccountStorages::<T>::get(&address, index)
 	}
 
-	fn original_storage(&self, _address: H160, _index: H256) -> Option<H256> {
-		None
+	fn original_storage(&self, address: H160, index: H256) -> Option<H256> {
+		Some(self.storage(address, index))
 	}
 }
 
@@ -549,12 +548,22 @@ impl<'vicinity, 'config, T: Config> StackStateT<'config> for SubstrateStackState
 		self.substate.deleted(address)
 	}
 
+	fn is_cold(&self, _address: H160) -> bool {
+		// TODO: EIP-2930
+		false
+	}
+
+	fn is_storage_cold(&self, _address: H160, _key: H256) -> bool {
+		// TODO: EIP-2930
+		false
+	}
+
 	fn inc_nonce(&mut self, address: H160) {
 		Accounts::<T>::mutate(&address, |maybe_account| {
 			if let Some(account) = maybe_account.as_mut() {
 				account.nonce += One::one()
 			} else {
-				let mut account_info = <AccountInfo<T>>::new(Default::default(), None);
+				let mut account_info = <AccountInfo<T::Index>>::new(Default::default(), None);
 				account_info.nonce += One::one();
 				*maybe_account = Some(account_info);
 			}
@@ -587,14 +596,7 @@ impl<'vicinity, 'config, T: Config> StackStateT<'config> for SubstrateStackState
 	}
 
 	fn reset_storage(&mut self, address: H160) {
-		match <AccountStorages<T>>::remove_prefix(address, None) {
-			AllRemoved(count) | SomeRemaining(count) => {
-				// should not happen
-				let storage = count.saturating_mul(STORAGE_SIZE);
-				Pallet::<T>::update_contract_storage_size(&address, -(storage as i32));
-				self.substate.metadata.storage_meter_mut().refund(storage);
-			}
-		}
+		<AccountStorages<T>>::remove_prefix(address, None);
 	}
 
 	fn log(&mut self, address: H160, topics: Vec<H256>, data: Vec<u8>) {
@@ -603,8 +605,6 @@ impl<'vicinity, 'config, T: Config> StackStateT<'config> for SubstrateStackState
 
 	fn set_deleted(&mut self, address: H160) {
 		self.substate.set_deleted(address);
-		let size = ContractStorageSizes::<T>::get(address);
-		self.substate.metadata.storage_meter_mut().refund(size);
 	}
 
 	fn set_code(&mut self, address: H160, code: Vec<u8>) {
@@ -619,37 +619,43 @@ impl<'vicinity, 'config, T: Config> StackStateT<'config> for SubstrateStackState
 		let mut substate = &self.substate;
 
 		loop {
-			if let Some(c) = substate.metadata().caller() {
-				// the caller maybe is contract and not deployed.
-				// get the parent's maintainer.
-				if Pallet::<T>::is_account_empty(c) {
-					if substate.parent.is_none() {
-						log::error!(
-							target: "evm",
-							"get parent's maintainer failed. caller: {:?}, address: {:?}",
-							c,
-							address
-						);
-						debug_assert!(false);
-						return;
-					}
-					substate = substate.parent.as_ref().expect("has checked; qed");
-				} else {
-					caller = *c;
-					break;
-				}
-			} else {
+			// get maintainer from parent caller
+			// `enter_substate` will do `spit_child`
+			if substate.parent.is_none() {
 				log::error!(
 					target: "evm",
-					"get maintainer failed. address: {:?}",
+					"get parent's maintainer failed. address: {:?}",
 					address
 				);
 				debug_assert!(false);
 				return;
 			}
+
+			substate = substate.parent.as_ref().expect("has checked; qed");
+
+			if let Some(c) = substate.metadata().caller() {
+				// the caller maybe is contract and not published.
+				// get the parent's maintainer.
+				if !Pallet::<T>::is_account_empty(c) {
+					caller = *c;
+					break;
+				}
+			}
 		}
 
+		log::debug!(
+			target: "evm",
+			"set_code: address: {:?}, maintainer: {:?}",
+			address,
+			caller
+		);
+
+		let code_size = code.len() as u32;
 		Pallet::<T>::create_contract(caller, address, code);
+
+		let used_storage = code_size.saturating_add(T::NewContractExtraBytes::get());
+		Pallet::<T>::update_contract_storage_size(&address, used_storage as i32);
+		self.substate.metadata.storage_meter_mut().charge(used_storage);
 	}
 
 	fn transfer(&mut self, transfer: Transfer) -> Result<(), ExitError> {
@@ -658,22 +664,45 @@ impl<'vicinity, 'config, T: Config> StackStateT<'config> for SubstrateStackState
 		}
 		let source = T::AddressMapping::get_account_id(&transfer.source);
 		let target = T::AddressMapping::get_account_id(&transfer.target);
+		let amount = convert_decimals_from_evm(transfer.value.low_u128())
+			.ok_or(ExitError::Other(Into::<&str>::into(Error::<T>::InvalidDecimals).into()))?
+			.unique_saturated_into();
 
-		T::Currency::transfer(
-			&source,
-			&target,
-			transfer.value.low_u128().unique_saturated_into(),
-			ExistenceRequirement::AllowDeath,
-		)
-		.map_err(|e| ExitError::Other(Into::<&str>::into(e).into()))
+		log::debug!(
+			target: "evm",
+			"transfer [source: {:?}, target: {:?}, amount: {:?}]",
+			source,
+			target,
+			amount
+		);
+
+		if T::Currency::free_balance(&source) < amount {
+			return Err(ExitError::OutOfFund);
+		}
+
+		T::Currency::transfer(&source, &target, amount, ExistenceRequirement::AllowDeath)
+			.map_err(|e| ExitError::Other(Into::<&str>::into(e).into()))
 	}
 
-	fn reset_balance(&mut self, _address: H160) {
-		// Do nothing on reset balance in Substrate.
-		//
-		// This function exists in EVM because a design issue
-		// (arguably a bug) in SELFDESTRUCT that can cause total
-		// issurance to be reduced. We do not need to replicate this.
+	fn reset_balance(&mut self, address: H160) {
+		// Address and target can be the same during SELFDESTRUCT. In that case we transfer the
+		// remaining balance to treasury
+		let source = T::AddressMapping::get_account_id(&address);
+		let balance = T::Currency::free_balance(&source);
+		if !balance.is_zero() {
+			if let Err(e) = T::Currency::transfer(
+				&source,
+				&T::TreasuryAccount::get(),
+				balance,
+				ExistenceRequirement::AllowDeath,
+			) {
+				debug_assert!(
+					false,
+					"Failed to transfer remaining balance to treasury with error: {:?}",
+					e
+				);
+			}
+		}
 	}
 
 	fn touch(&mut self, _address: H160) {
