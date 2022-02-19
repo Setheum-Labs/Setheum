@@ -184,6 +184,8 @@ std = [
 	"orml-tokens/std",
 	"orml-authority/std",
 	"orml-benchmarking/std",
+	"module-vesting/std",	"orml-oracle-rpc-runtime-api/std",
+	"orml-oracle/std",
 	"module-vesting/std",
 
 	"module-airdrop/std",
