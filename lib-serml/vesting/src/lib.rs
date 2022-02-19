@@ -354,9 +354,10 @@ pub mod module {
 							T::MultiCurrency::free_balance(T::GetNativeCurrencyId::get(), who) >= total,
 							"Account do not have enough balance"
 						);
-
-						T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetNativeCurrencyId::get(), who, total).unwrap();
-						NativeVestingSchedules::<T>::insert(who, bounded_schedule);
+	
+						if T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetNativeCurrencyId::get(), who, total).is_ok() {
+							NativeVestingSchedules::<T>::insert(who, bounded_schedule)
+						}
 					} else if currency_id == &T::GetSerpCurrencyId::get() {
 						let total = *per_period * Into::<BalanceOf<T>>::into(*period_count);
 	
@@ -375,8 +376,9 @@ pub mod module {
 							"Account do not have enough balance"
 						);
 	
-						T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetSerpCurrencyId::get(), who, total).unwrap();
-						SerpVestingSchedules::<T>::insert(who, bounded_schedule);
+						if T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetSerpCurrencyId::get(), who, total).is_ok() {
+							SerpVestingSchedules::<T>::insert(who, bounded_schedule)
+						}
 					} else if currency_id == &T::GetDinarCurrencyId::get() {
 						let total = *per_period * Into::<BalanceOf<T>>::into(*period_count);
 	
@@ -395,8 +397,9 @@ pub mod module {
 							"Account do not have enough balance"
 						);
 	
-						T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetDinarCurrencyId::get(), who, total).unwrap();
-						DinarVestingSchedules::<T>::insert(who, bounded_schedule);
+						if T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetDinarCurrencyId::get(), who, total).is_ok() {
+							DinarVestingSchedules::<T>::insert(who, bounded_schedule)
+						}
 					} else if currency_id == &T::GetHelpCurrencyId::get() {
 						let total = *per_period * Into::<BalanceOf<T>>::into(*period_count);
 	
@@ -415,8 +418,9 @@ pub mod module {
 							"Account do not have enough balance"
 						);
 	
-						T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetHelpCurrencyId::get(), who, total).unwrap();
-						HelpVestingSchedules::<T>::insert(who, bounded_schedule);
+						if T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetHelpCurrencyId::get(), who, total).is_ok() {
+							HelpVestingSchedules::<T>::insert(who, bounded_schedule)
+						}
 					} else if currency_id == &T::SetterCurrencyId::get() {
 						let total = *per_period * Into::<BalanceOf<T>>::into(*period_count);
 	
@@ -435,8 +439,9 @@ pub mod module {
 							"Account do not have enough balance"
 						);
 	
-						T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::SetterCurrencyId::get(), who, total).unwrap();
-						SetterVestingSchedules::<T>::insert(who, bounded_schedule);
+						if T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::SetterCurrencyId::get(), who, total).is_ok() {
+							SetterVestingSchedules::<T>::insert(who, bounded_schedule)
+						}
 					} else if currency_id == &T::GetSetUSDId::get() {
 						let total = *per_period * Into::<BalanceOf<T>>::into(*period_count);
 	
@@ -455,8 +460,9 @@ pub mod module {
 							"Account do not have enough balance"
 						);
 	
-						T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetSetUSDId::get(), who, total).unwrap();
-						SetUSDVestingSchedules::<T>::insert(who, bounded_schedule);
+						if T::MultiCurrency::set_lock(VESTING_LOCK_ID, T::GetSetUSDId::get(), who, total).is_ok() {
+							SetUSDVestingSchedules::<T>::insert(who, bounded_schedule)
+						}
 					}
 				});
 		}

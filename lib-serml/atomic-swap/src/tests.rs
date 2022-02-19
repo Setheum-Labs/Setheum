@@ -1,180 +1,168 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+
+// This file is part of Setheum.
+
+// Copyright (C) 2019-2021 Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 #![cfg(test)]
 
-// use super::*;
-// use crate as pallet_atomic_swap;
+use super::*;
+use crate as pallet_atomic_swap;
 
-// use frame_support::{construct_runtime, parameter_types, PalletId};
-// use sp_core::H256;
-// use sp_runtime::{
-// 	testing::Header,
-// 	traits::{BlakeTwo256, IdentityLookup},
-// };
-// use orml_traits::parameter_type_with_key;
-// use primitives::{Amount, TokenSymbol};
+use frame_support::{
+	parameter_types,
+	traits::{ConstU32, ConstU64},
+};
+use sp_core::H256;
+use sp_runtime::{
+	testing::Header,
+	traits::{BlakeTwo256, IdentityLookup},
+};
 
-// Currencies constants - CurrencyId/TokenSymbol
-// pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-// pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-// pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
+type Block = frame_system::mocking::MockBlock<Test>;
 
-// parameter_types! {
-// 	pub BlockWeights: frame_system::limits::BlockWeights =
-// 		frame_system::limits::BlockWeights::simple_max(1024);
-// }
+frame_support::construct_runtime!(
+	pub enum Test where
+		Block = Block,
+		NodeBlock = Block,
+		UncheckedExtrinsic = UncheckedExtrinsic,
+	{
+		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+        Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>},
+        AtomicSwap: pallet_atomic_swap::{Pallet, Call, Event<T>},
+	}
+);
 
-// parameter_types! {
-// 	pub const BlockHashCount: u64 = 250;
-// }
+parameter_types! {
+	pub BlockWeights: frame_system::limits::BlockWeights =
+		frame_system::limits::BlockWeights::simple_max(1024);
+}
+impl frame_system::Config for Test {
+	type BaseCallFilter = frame_support::traits::Everything;
+	type BlockWeights = ();
+	type BlockLength = ();
+	type DbWeight = ();
+	type Origin = Origin;
+	type Index = u64;
+	type BlockNumber = u64;
+	type Hash = H256;
+	type Call = Call;
+	type Hashing = BlakeTwo256;
+	type AccountId = u64;
+	type Lookup = IdentityLookup<Self::AccountId>;
+	type Header = Header;
+	type Event = Event;
+	type BlockHashCount = ConstU64<250>;
+	type Version = ();
+	type PalletInfo = PalletInfo;
+	type AccountData = pallet_balances::AccountData<u64>;
+	type OnNewAccount = ();
+	type OnKilledAccount = ();
+	type SystemWeightInfo = ();
+	type SS58Prefix = ();
+	type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
+}
 
-// impl frame_system::Config for Test {
-// 	type BaseCallFilter = frame_support::traits::Everything;
-// 	type BlockWeights = ();
-// 	type BlockLength = ();
-// 	type DbWeight = ();
-// 	type Origin = Origin;
-// 	type Index = u64;
-// 	type BlockNumber = u64;
-// 	type Hash = H256;
-// 	type Call = Call;
-// 	type Hashing = BlakeTwo256;
-// 	type AccountId = u64;
-// 	type Lookup = IdentityLookup<Self::AccountId>;
-// 	type Header = Header;
-// 	type Event = Event;
-// 	type BlockHashCount = BlockHashCount;
-// 	type Version = ();
-// 	type PalletInfo = PalletInfo;
-// 	type AccountData = pallet_balances::AccountData<u64>;
-// 	type OnNewAccount = ();
-// 	type OnKilledAccount = ();
-// 	type SystemWeightInfo = ();
-// 	type SS58Prefix = ();
-// 	type OnSetCode = ();
-// }
+impl pallet_balances::Config for Test {
+	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type Balance = u64;
+	type DustRemoval = ();
+	type Event = Event;
+	type ExistentialDeposit = ConstU64<1>;
+	type AccountStore = System;
+	type WeightInfo = ();
+}
 
-// parameter_types! {
-// 	pub const ExistentialDeposit: Balance = 1;
-// 	pub const ProofLimit: u32 = 1024;
-// }
+impl Config for Test {
+	type Event = Event;
+	type SwapAction = MultiCurrencySwapAction<u64, Tokens>;
+	type ProofLimit = ConstU32<1024>;
+}
 
-// impl pallet_balances::Config for Test {
-// 	type MaxLocks = ();
-// 	type MaxReserves = ();
-// 	type ReserveIdentifier = [u8; 8];
-// 	type Balance = u64;
-// 	type DustRemoval = ();
-// 	type Event = Event;
-// 	type ExistentialDeposit = ExistentialDeposit;
-// 	type AccountStore = System;
-// 	type WeightInfo = ();
-// }
+const A: u64 = 1;
+const B: u64 = 2;
 
-// parameter_type_with_key! {
-// 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
-// 		Default::default()
-// 	};
-// }
+pub fn new_test_ext() -> sp_io::TestExternalities {
+	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	let genesis = pallet_balances::GenesisConfig::<Test> { balances: vec![(A, 100), (B, 200)] };
+	genesis.assimilate_storage(&mut t).unwrap();
+	t.into()
+}
 
-// impl orml_tokens::Config for Test {
-// 	type Event = Event;
-// 	type Balance = Balance;
-// 	type Amount = Amount;
-// 	type CurrencyId = CurrencyId;
-// 	type WeightInfo = ();
-// 	type ExistentialDeposits = ExistentialDeposits;
-// 	type OnDust = ();
-// 	type MaxLocks = ();
-// 	type DustRemovalWhitelist = ();
-// }
+#[test]
+fn two_party_successful_swap() {
+	let mut chain1 = new_test_ext();
+	let mut chain2 = new_test_ext();
 
-// impl Config for Test {
-// 	type Event = Event;
-// 	type MultiCurrency = Tokens;
-// 	type SwapAction = MultiCurrencySwapAction<u64, Balances>;
-// 	type ProofLimit = ProofLimit;
-// }
+	// A generates a random proof. Keep it secret.
+	let proof: [u8; 2] = [4, 2];
+	// The hashed proof is the blake2_256 hash of the proof. This is public.
+	let hashed_proof = blake2_256(&proof);
 
-// type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-// type Block = frame_system::mocking::MockBlock<Test>;
+	// A creates the swap on chain1.
+	chain1.execute_with(|| {
+		AtomicSwap::create_swap(
+			Origin::signed(A),
+			B,
+			hashed_proof.clone(),
+			MultiCurrencySwapAction::new(50),
+			1000,
+		)
+		.unwrap();
 
-// construct_runtime!(
-// 	pub enum Test where
-// 		Block = Block,
-// 		NodeBlock = Block,
-// 		UncheckedExtrinsic = UncheckedExtrinsic,
-// 	{
-// 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-// 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-// 		Tokens: orml_tokens::{Pallet, Storage, Call, Event<T>},
-// 		AtomicSwap: pallet_atomic_swap::{Pallet, Call, Event<T>},
-// 	}
-// );
+		assert_eq!(Balances::free_balance(A), 100 - 50);
+		assert_eq!(Balances::free_balance(B), 200);
+	});
 
-// const A: u64 = 1;
-// const B: u64 = 2;
+	// B creates the swap on chain2.
+	chain2.execute_with(|| {
+		AtomicSwap::create_swap(
+			Origin::signed(B),
+			A,
+			hashed_proof.clone(),
+			MultiCurrencySwapAction::new(75),
+			1000,
+		)
+		.unwrap();
 
-// pub fn new_test_ext() -> sp_io::TestExternalities {
-// 	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-// 	let genesis = pallet_balances::GenesisConfig::<Test> { balances: vec![(A, 100), (B, 200)] };
-// 	genesis.assimilate_storage(&mut t).unwrap();
-// 	t.into()
-// }
+		assert_eq!(Balances::free_balance(A), 100);
+		assert_eq!(Balances::free_balance(B), 200 - 75);
+	});
 
-// #[test]
-// fn two_party_successful_swap() {
-// 	let mut chain1 = new_test_ext();
-// 	let mut chain2 = new_test_ext();
+	// A reveals the proof and claims the swap on chain2.
+	chain2.execute_with(|| {
+		AtomicSwap::claim_swap(Origin::signed(A), proof.to_vec(), MultiCurrencySwapAction::new(75))
+			.unwrap();
 
-// 	// A generates a random proof. Keep it secret.
-// 	let proof: [u8; 2] = [4, 2];
-// 	// The hashed proof is the blake2_256 hash of the proof. This is public.
-// 	let hashed_proof = blake2_256(&proof);
+		assert_eq!(Balances::free_balance(A), 100 + 75);
+		assert_eq!(Balances::free_balance(B), 200 - 75);
+	});
 
-// 	// A creates the swap on chain1.
-// 	chain1.execute_with(|| {
-// 		AtomicSwap::create_swap(
-// 			Origin::signed(A),
-// 			B,
-// 			hashed_proof.clone(),
-// 			MultiCurrencySwapAction::new(50),
-// 			1000,
-// 		)
-// 		.unwrap();
+	// B use the revealed proof to claim the swap on chain1.
+	chain1.execute_with(|| {
+		AtomicSwap::claim_swap(Origin::signed(B), proof.to_vec(), MultiCurrencySwapAction::new(50))
+			.unwrap();
 
-// 		assert_eq!(Balances::free_balance(A), 100 - 50);
-// 		assert_eq!(Balances::free_balance(B), 200);
-// 	});
-
-// 	// B creates the swap on chain2.
-// 	chain2.execute_with(|| {
-// 		AtomicSwap::create_swap(
-// 			Origin::signed(B),
-// 			A,
-// 			hashed_proof.clone(),
-// 			MultiCurrencySwapAction::new(75),
-// 			1000,
-// 		)
-// 		.unwrap();
-
-// 		assert_eq!(Balances::free_balance(A), 100);
-// 		assert_eq!(Balances::free_balance(B), 200 - 75);
-// 	});
-
-// 	// A reveals the proof and claims the swap on chain2.
-// 	chain2.execute_with(|| {
-// 		AtomicSwap::claim_swap(Origin::signed(A), proof.to_vec(), MultiCurrencySwapAction::new(75))
-// 			.unwrap();
-
-// 		assert_eq!(Balances::free_balance(A), 100 + 75);
-// 		assert_eq!(Balances::free_balance(B), 200 - 75);
-// 	});
-
-// 	// B use the revealed proof to claim the swap on chain1.
-// 	chain1.execute_with(|| {
-// 		AtomicSwap::claim_swap(Origin::signed(B), proof.to_vec(), MultiCurrencySwapAction::new(50))
-// 			.unwrap();
-
-// 		assert_eq!(Balances::free_balance(A), 100 - 50);
-// 		assert_eq!(Balances::free_balance(B), 200 + 50);
-// 	});
-// }
+		assert_eq!(Balances::free_balance(A), 100 - 50);
+		assert_eq!(Balances::free_balance(B), 200 + 50);
+	});
+}

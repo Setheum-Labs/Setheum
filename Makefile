@@ -19,7 +19,7 @@ release:
 
 .PHONY: build
 build:
-	cargo build --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility --release
+	cargo build --manifest-path node/Cargo.toml --features runtime-benchmarks, with-ethereum-compatibility --release
 
 .PHONY: wasm
 wasm:
@@ -67,7 +67,11 @@ noeth:
 
 .PHONY: bench
 bench:
-	SKIP_WASM_BUILD=1 cargo test --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility benchmarking
+	SKIP_WASM_BUILD=1 cargo test --manifest-path node/Cargo.toml --features runtime-benchmarks, with-ethereum-compatibility benchmarking
+
+.PHONY: check-try-runtime
+check-try-runtime:
+	SKIP_WASM_BUILD= cargo check --features try-runtime --features with-ethereum-compatibility
 
 .PHONY: doc
 doc:

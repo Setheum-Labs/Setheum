@@ -33,8 +33,7 @@ pub use crate::{
 		Runner,
 	},
 };
-use codec::{Decode, Encode, MaxEncodedLen};
-pub use evm::{Config as EvmConfig, Context, ExitError, ExitFatal, ExitReason, ExitRevert, ExitSucceed};
+use codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use frame_support::{
 	dispatch::{DispatchError, DispatchResult, DispatchResultWithPostInfo},
 	ensure,
@@ -52,19 +51,31 @@ use frame_support::{
 };
 use frame_system::{ensure_root, ensure_signed, pallet_prelude::*, EnsureOneOf, EnsureRoot, EnsureSigned};
 use hex_literal::hex;
+pub use module_evm_utiltity::{
+	ethereum::{Log, TransactionAction},
+	evm::{self, Config as EvmConfig, Context, ExitError, ExitFatal, ExitReason, ExitRevert, ExitSucceed},
+	Account,
+};
 pub use module_support::{
-	AddressMapping, EVMStateRentTrait, ExecutionMode, InvokeContext, TransactionPayment, EVM as EVMTrait,
+	AddressMapping, DispatchableTask, EVMStateRentTrait, ExecutionMode, IdleScheduler, InvokeContext,
+	TransactionPayment, EVM as EVMTrait,
 };
 pub use orml_traits::currency::TransferAll;
 use primitive_types::{H160, H256, U256};
 pub use primitives::{
-	evm::{Account, CallInfo, CreateInfo, EvmAddress, ExecutionInfo, Log, TransactionAction, Vicinity},
-	ReserveIdentifier, H160_PREFIX_DEXSHARE, H160_PREFIX_TOKEN, MIRRORED_NFT_ADDRESS_START, PRECOMPILE_ADDRESS_START,
-	SYSTEM_CONTRACT_ADDRESS_PREFIX,
+	convert_decimals_from_evm, convert_decimals_to_evm,
+	evm::{
+		CallInfo, CreateInfo, EvmAddress, ExecutionInfo, Vicinity, MIRRORED_NFT_ADDRESS_START,
+		MIRRORED_TOKENS_ADDRESS_START,
+	},
+	task::TaskResult,
+	ReserveIdentifier,
 };
+use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Keccak256};
+use sp_io::KillStorageResult::{AllRemoved, SomeRemaining};
 use sp_runtime::{
 	traits::{
 		Convert, DispatchInfoOf, One, PostDispatchInfoOf, Saturating, SignedExtension, UniqueSaturatedInto, Zero,
@@ -72,10 +83,18 @@ use sp_runtime::{
 	transaction_validity::TransactionValidityError,
 	Either, TransactionOutcome,
 };
-use sp_std::{collections::btree_map::BTreeMap, convert::TryInto, fmt::Write, marker::PhantomData, prelude::*};
+use sp_std::{
+	cmp,
+	collections::btree_map::BTreeMap,
+	fmt::{Debug, Write},
+	marker::PhantomData,
+	prelude::*,
+};
 
 pub mod precompiles;
 pub mod runner;
+
+pub mod bench;
 
 mod mock;
 mod tests;
@@ -100,6 +119,7 @@ static SETHEUM_CONFIG: EvmConfig = EvmConfig {
 	gas_ext_code_hash: 700,
 	gas_balance: 700,
 	gas_sload: 800,
+	gas_sload_cold: 0,
 	gas_sstore_set: 20000,
 	gas_sstore_reset: 5000,
 	refund_sstore_clears: 0, // no gas refund
@@ -111,8 +131,13 @@ static SETHEUM_CONFIG: EvmConfig = EvmConfig {
 	gas_transaction_call: 21000,
 	gas_transaction_zero_data: 4,
 	gas_transaction_non_zero_data: 16,
+	gas_access_list_address: 0,
+	gas_access_list_storage_key: 0,
+	gas_account_access_cold: 0,
+	gas_storage_read_warm: 0,
 	sstore_gas_metering: false,         // no gas refund
 	sstore_revert_under_stipend: false, // ignored
+	increase_state_access_gas: false,
 	err_on_call_with_more_gas: false,
 	empty_considered_exists: false,
 	create_increase_nonce: true,
@@ -132,6 +157,51 @@ static SETHEUM_CONFIG: EvmConfig = EvmConfig {
 	has_ext_code_hash: true,
 	estimate: false,
 };
+
+/// Create an empty contract `contract Empty { }`.
+pub const BASE_CREATE_GAS: u64 = 67_066;
+/// Call function that just set a storage `function store(uint256 num) public { number = num; }`.
+pub const BASE_CALL_GAS: u64 = 41_602;
+
+/// Helper method to calculate `create` weight.
+fn create_weight<T: Config>(gas: u64) -> Weight {
+	<T as Config>::WeightInfo::create()
+		// during `create` benchmark an additional of `BASE_CREATE_GAS` was used
+		// so user will be extra charged only for extra gas usage
+		.saturating_add(T::GasToWeight::convert(gas.saturating_sub(BASE_CREATE_GAS)))
+}
+
+/// Helper method to calculate `create2` weight.
+fn create2_weight<T: Config>(gas: u64) -> Weight {
+	<T as Config>::WeightInfo::create2()
+		// during `create2` benchmark an additional of `BASE_CREATE_GAS` was used
+		// so user will be extra charged only for extra gas usage
+		.saturating_add(T::GasToWeight::convert(gas.saturating_sub(BASE_CREATE_GAS)))
+}
+
+/// Helper method to calculate `create_predeploy_contract` weight.
+fn create_predeploy_contract<T: Config>(gas: u64) -> Weight {
+	<T as Config>::WeightInfo::create_predeploy_contract()
+		// during `create_predeploy_contract` benchmark an additional of `BASE_CREATE_GAS`
+		// was used so user will be extra charged only for extra gas usage
+		.saturating_add(T::GasToWeight::convert(gas.saturating_sub(BASE_CREATE_GAS)))
+}
+
+/// Helper method to calculate `create_nft_contract` weight.
+fn create_nft_contract<T: Config>(gas: u64) -> Weight {
+	<T as Config>::WeightInfo::create_nft_contract()
+		// during `create_nft_contract` benchmark an additional of `BASE_CREATE_GAS`
+		// was used so user will be extra charged only for extra gas usage
+		.saturating_add(T::GasToWeight::convert(gas.saturating_sub(BASE_CREATE_GAS)))
+}
+
+/// Helper method to calculate `call` weight.
+fn call_weight<T: Config>(gas: u64) -> Weight {
+	<T as Config>::WeightInfo::call()
+		// during `call` benchmark an additional of `BASE_CALL_GAS` was used
+		// so user will be extra charged only for extra gas usage
+		.saturating_add(T::GasToWeight::convert(gas.saturating_sub(BASE_CALL_GAS)))
+}
 
 #[frame_support::pallet]
 pub mod module {
@@ -163,6 +233,11 @@ pub mod module {
 		/// Storage required for per byte.
 		#[pallet::constant]
 		type StorageDepositPerByte: Get<BalanceOf<Self>>;
+
+		/// Tx fee required for per gas.
+		/// Provide to the client
+		#[pallet::constant]
+		type TxFeePerGas: Get<BalanceOf<Self>>;
 
 		/// The overarching event type.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
@@ -196,14 +271,14 @@ pub mod module {
 		#[pallet::constant]
 		type DeveloperDeposit: Get<BalanceOf<Self>>;
 
-		/// The fee for deploying the contract.
+		/// The fee for publishing the contract.
 		#[pallet::constant]
-		type DeploymentFee: Get<BalanceOf<Self>>;
+		type PublicationFee: Get<BalanceOf<Self>>;
 
 		#[pallet::constant]
 		type TreasuryAccount: Get<Self::AccountId>;
 
-		type FreeDeploymentOrigin: EnsureOrigin<Self::Origin>;
+		type FreePublicationOrigin: EnsureOrigin<Self::Origin>;
 
 		/// EVM execution runner.
 		type Runner: Runner<Self>;
@@ -211,36 +286,42 @@ pub mod module {
 		/// Find author for the current block.
 		type FindAuthor: FindAuthor<Self::AccountId>;
 
+		/// Dispatchable tasks
+		type Task: DispatchableTask + FullCodec + Debug + Clone + PartialEq + TypeInfo + From<EvmTask<Self>>;
+
+		/// Idle scheduler for the evm task.
+		type IdleScheduler: IdleScheduler<Self::Task>;
+
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 	}
 
-	#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode)]
+	#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo)]
 	pub struct ContractInfo {
 		pub code_hash: H256,
 		pub maintainer: EvmAddress,
-		pub deployed: bool,
+		pub published: bool,
 	}
 
-	#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode)]
-	pub struct AccountInfo<T: Config> {
-		pub nonce: T::Index,
+	#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo)]
+	pub struct AccountInfo<Index> {
+		pub nonce: Index,
 		pub contract_info: Option<ContractInfo>,
 	}
 
-	impl<T: Config> AccountInfo<T> {
-		pub fn new(nonce: T::Index, contract_info: Option<ContractInfo>) -> Self {
+	impl<Index> AccountInfo<Index> {
+		pub fn new(nonce: Index, contract_info: Option<ContractInfo>) -> Self {
 			Self { nonce, contract_info }
 		}
 	}
 
-	#[derive(Clone, Copy, Eq, PartialEq, RuntimeDebug, Encode, Decode, MaxEncodedLen)]
+	#[derive(Clone, Copy, Eq, PartialEq, RuntimeDebug, Encode, Decode, MaxEncodedLen, TypeInfo)]
 	pub struct CodeInfo {
 		pub code_size: u32,
 		pub ref_count: u32,
 	}
 
-	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug)]
+	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
 	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	/// Account definition used for genesis block construction.
 	pub struct GenesisAccount<Balance, Index> {
@@ -252,6 +333,8 @@ pub mod module {
 		pub storage: BTreeMap<H256, H256>,
 		/// Account code.
 		pub code: Vec<u8>,
+		/// If the account should enable contract development mode
+		pub enable_contract_development: bool,
 	}
 
 	/// The EVM accounts info.
@@ -259,7 +342,7 @@ pub mod module {
 	/// Accounts: map EvmAddress => Option<AccountInfo<T>>
 	#[pallet::storage]
 	#[pallet::getter(fn accounts)]
-	pub type Accounts<T: Config> = StorageMap<_, Twox64Concat, EvmAddress, AccountInfo<T>, OptionQuery>;
+	pub type Accounts<T: Config> = StorageMap<_, Twox64Concat, EvmAddress, AccountInfo<T::Index>, OptionQuery>;
 
 	/// The storage usage for contracts. Including code size, extra bytes and total AccountStorages
 	/// size.
@@ -310,7 +393,6 @@ pub mod module {
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		pub accounts: BTreeMap<EvmAddress, GenesisAccount<BalanceOf<T>, T::Index>>,
-		pub treasury: T::AccountId,
 	}
 
 	#[cfg(feature = "std")]
@@ -318,7 +400,6 @@ pub mod module {
 		fn default() -> Self {
 			GenesisConfig {
 				accounts: Default::default(),
-				treasury: Default::default(),
 			}
 		}
 	}
@@ -328,14 +409,14 @@ pub mod module {
 		fn build(&self) {
 			use sp_std::rc::Rc;
 
-			// NOTE: Only applicable for newrome testnet, unit test and integration test.
+			// NOTE: Only applicable for mandala testnet, unit test and integration test.
 			// Use create_predeploy_contract to deploy predeploy contracts on the mainnet.
 			let source = T::NetworkContractSource::get();
 
 			self.accounts.iter().for_each(|(address, account)| {
 				let account_id = T::AddressMapping::get_account_id(address);
 
-				let account_info = <AccountInfo<T>>::new(account.nonce, None);
+				let account_info = <AccountInfo<T::Index>>::new(account.nonce, None);
 				<Accounts<T>>::insert(address, account_info);
 
 				let amount = if account.balance.is_zero() {
@@ -345,20 +426,30 @@ pub mod module {
 				};
 				T::Currency::deposit_creating(&account_id, amount);
 
+				if account.enable_contract_development {
+					T::Currency::ensure_reserved_named(
+						&RESERVE_ID_DEVELOPER_DEPOSIT,
+						&account_id,
+						T::DeveloperDeposit::get(),
+					)
+					.expect("Failed to reserve developer deposit. Please make sure the account have enough balance.");
+				}
+
 				if !account.code.is_empty() {
+					// init contract
+
 					// Transactions are not supported by BasicExternalities
 					// Use the EVM Runtime
 					let vicinity = Vicinity {
 						gas_price: U256::one(),
-						origin: Default::default(),
+						..Default::default()
 					};
 					let context = Context {
 						caller: source,
 						address: *address,
 						apparent_value: Default::default(),
 					};
-					let metadata =
-						StackSubstateMetadata::new(210_000, 1000, T::NewContractExtraBytes::get(), T::config());
+					let metadata = StackSubstateMetadata::new(210_000, 1000, T::config());
 					let state = SubstrateStackState::<T>::new(&vicinity, metadata);
 					let mut executor = StackExecutor::new(state, T::config());
 
@@ -376,7 +467,7 @@ pub mod module {
 					<Pallet<T>>::create_contract(source, *address, out);
 
 					#[cfg(not(feature = "with-ethereum-compatibility"))]
-					<Pallet<T>>::mark_deployed(*address, None).expect("Genesis contract failed to deploy");
+					<Pallet<T>>::mark_published(*address, None).expect("Genesis contract failed to publish");
 
 					for (index, value) in &account.storage {
 						AccountStorages::<T>::insert(address, index, value);
@@ -390,30 +481,50 @@ pub mod module {
 	/// EVM events
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
-	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
-		/// A contract has been created at given \[from, address, logs\].
-		Created(EvmAddress, EvmAddress, Vec<Log>),
+		/// A contract has been created at given
+		Created {
+			from: EvmAddress,
+			contract: EvmAddress,
+			logs: Vec<Log>,
+		},
 		/// A contract was attempted to be created, but the execution failed.
-		/// \[from, contract, exit_reason, logs\]
-		CreatedFailed(EvmAddress, EvmAddress, ExitReason, Vec<Log>),
-		/// A contract has been executed successfully with states applied. \[from, contract, logs]\
-		Executed(EvmAddress, EvmAddress, Vec<Log>),
+		CreatedFailed {
+			from: EvmAddress,
+			contract: EvmAddress,
+			exit_reason: ExitReason,
+			logs: Vec<Log>,
+		},
+		/// A contract has been executed successfully with states applied.
+		Executed {
+			from: EvmAddress,
+			contract: EvmAddress,
+			logs: Vec<Log>,
+		},
 		/// A contract has been executed with errors. States are reverted with
-		/// only gas fees applied. \[from, contract, exit_reason, output, logs\]
-		ExecutedFailed(EvmAddress, EvmAddress, ExitReason, Vec<u8>, Vec<Log>),
-		/// Transferred maintainer. \[contract, address\]
-		TransferredMaintainer(EvmAddress, EvmAddress),
-		/// Enabled contract development. \[who\]
-		ContractDevelopmentEnabled(T::AccountId),
-		/// Disabled contract development. \[who\]
-		ContractDevelopmentDisabled(T::AccountId),
-		/// Deployed contract. \[contract\]
-		ContractDeployed(EvmAddress),
-		/// Set contract code. \[contract\]
-		ContractSetCode(EvmAddress),
-		/// Selfdestructed contract code. \[contract\]
-		ContractSelfdestructed(EvmAddress),
+		/// only gas fees applied.
+		ExecutedFailed {
+			from: EvmAddress,
+			contract: EvmAddress,
+			exit_reason: ExitReason,
+			output: Vec<u8>,
+			logs: Vec<Log>,
+		},
+		/// Transferred maintainer.
+		TransferredMaintainer {
+			contract: EvmAddress,
+			new_maintainer: EvmAddress,
+		},
+		/// Enabled contract development.
+		ContractDevelopmentEnabled { who: T::AccountId },
+		/// Disabled contract development.
+		ContractDevelopmentDisabled { who: T::AccountId },
+		/// Published contract.
+		ContractPublished { contract: EvmAddress },
+		/// Set contract code.
+		ContractSetCode { contract: EvmAddress },
+		/// Selfdestructed contract code.
+		ContractSelfdestructed { contract: EvmAddress },
 	}
 
 	#[pallet::error]
@@ -428,8 +539,8 @@ pub mod module {
 		ContractDevelopmentNotEnabled,
 		/// Contract development is already enabled
 		ContractDevelopmentAlreadyEnabled,
-		/// Contract already deployed
-		ContractAlreadyDeployed,
+		/// Contract already published
+		ContractAlreadyPublished,
 		/// Contract exceeds max code size
 		ContractExceedsMaxCodeSize,
 		/// Contract already existed
@@ -446,17 +557,26 @@ pub mod module {
 		UnreserveStorageFailed,
 		/// Charge storage failed
 		ChargeStorageFailed,
+		/// Invalid decimals
+		InvalidDecimals,
 	}
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
+	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
+		fn integrity_test() {
+			assert!(convert_decimals_from_evm(T::StorageDepositPerByte::get()).is_some());
+		}
+	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(T::GasToWeight::convert(*gas_limit))]
+		#[pallet::weight(match *action {
+			TransactionAction::Call(_) => call_weight::<T>(*gas_limit),
+			TransactionAction::Create => create_weight::<T>(*gas_limit)
+		})]
 		#[transactional]
 		pub fn eth_call(
 			origin: OriginFor<T>,
@@ -481,7 +601,7 @@ pub mod module {
 		/// - `value`: the amount sent for payable calls
 		/// - `gas_limit`: the maximum gas the call can use
 		/// - `storage_limit`: the total bytes the contract's storage can increase by
-		#[pallet::weight(T::GasToWeight::convert(*gas_limit))]
+		#[pallet::weight(call_weight::<T>(*gas_limit))]
 		#[transactional]
 		pub fn call(
 			origin: OriginFor<T>,
@@ -494,7 +614,7 @@ pub mod module {
 			let who = ensure_signed(origin)?;
 			let source = T::AddressMapping::get_or_create_evm_address(&who);
 
-			let info = T::Runner::call(
+			match T::Runner::call(
 				source,
 				source,
 				target,
@@ -503,14 +623,43 @@ pub mod module {
 				gas_limit,
 				storage_limit,
 				T::config(),
-			)?;
+			) {
+				Err(e) => {
+					Pallet::<T>::deposit_event(Event::<T>::ExecutedFailed {
+						from: source,
+						contract: target,
+						exit_reason: ExitReason::Error(ExitError::Other(Into::<&str>::into(e).into())),
+						output: vec![],
+						logs: vec![],
+					});
 
-			let used_gas: u64 = info.used_gas.unique_saturated_into();
+					Ok(().into())
+				}
+				Ok(info) => {
+					if info.exit_reason.is_succeed() {
+						Pallet::<T>::deposit_event(Event::<T>::Executed {
+							from: source,
+							contract: target,
+							logs: info.logs.clone(),
+						});
+					} else {
+						Pallet::<T>::deposit_event(Event::<T>::ExecutedFailed {
+							from: source,
+							contract: target,
+							exit_reason: info.exit_reason.clone(),
+							output: info.value.clone(),
+							logs: info.logs.clone(),
+						});
+					}
 
-			Ok(PostDispatchInfo {
-				actual_weight: Some(T::GasToWeight::convert(used_gas)),
-				pays_fee: Pays::Yes,
-			})
+					let used_gas: u64 = info.used_gas.unique_saturated_into();
+
+					Ok(PostDispatchInfo {
+						actual_weight: Some(call_weight::<T>(used_gas)),
+						pays_fee: Pays::Yes,
+					})
+				}
+			}
 		}
 
 		/// Issue an EVM call operation on a scheduled contract call, and
@@ -524,6 +673,7 @@ pub mod module {
 		/// - `storage_limit`: the total bytes the contract's storage can increase by
 		#[pallet::weight(T::GasToWeight::convert(*gas_limit))]
 		#[transactional]
+		// TODO: create benchmark
 		pub fn scheduled_call(
 			origin: OriginFor<T>,
 			from: EvmAddress,
@@ -546,30 +696,59 @@ pub mod module {
 				_payed = imbalance;
 			}
 
-			let info = T::Runner::call(from, from, target, input, value, gas_limit, storage_limit, T::config())?;
+			match T::Runner::call(from, from, target, input, value, gas_limit, storage_limit, T::config()) {
+				Err(e) => {
+					Pallet::<T>::deposit_event(Event::<T>::ExecutedFailed {
+						from,
+						contract: target,
+						exit_reason: ExitReason::Error(ExitError::Other(Into::<&str>::into(e).into())),
+						output: vec![],
+						logs: vec![],
+					});
 
-			let used_gas: u64 = info.used_gas.unique_saturated_into();
+					Ok(().into())
+				}
+				Ok(info) => {
+					if info.exit_reason.is_succeed() {
+						Pallet::<T>::deposit_event(Event::<T>::Executed {
+							from,
+							contract: target,
+							logs: info.logs.clone(),
+						});
+					} else {
+						Pallet::<T>::deposit_event(Event::<T>::ExecutedFailed {
+							from,
+							contract: target,
+							exit_reason: info.exit_reason.clone(),
+							output: info.value.clone(),
+							logs: info.logs.clone(),
+						});
+					}
 
-			#[cfg(not(feature = "with-ethereum-compatibility"))]
-			{
-				use sp_runtime::traits::Zero;
-				let refund_gas = gas_limit.saturating_sub(used_gas);
-				if !refund_gas.is_zero() {
-					// ignore the result to continue. if it fails, just the user will not
-					// be refunded, there will not increase user balance.
-					let res = T::ChargeTransactionPayment::refund_fee(
-						&_from_account,
-						T::GasToWeight::convert(refund_gas),
-						_payed,
-					);
-					debug_assert!(res.is_ok());
+					let used_gas: u64 = info.used_gas.unique_saturated_into();
+
+					#[cfg(not(feature = "with-ethereum-compatibility"))]
+					{
+						use sp_runtime::traits::Zero;
+						let refund_gas = gas_limit.saturating_sub(used_gas);
+						if !refund_gas.is_zero() {
+							// ignore the result to continue. if it fails, just the user will not
+							// be refunded, there will not increase user balance.
+							let res = T::ChargeTransactionPayment::refund_fee(
+								&_from_account,
+								T::GasToWeight::convert(refund_gas),
+								_payed,
+							);
+							debug_assert!(res.is_ok());
+						}
+					}
+
+					Ok(PostDispatchInfo {
+						actual_weight: Some(T::GasToWeight::convert(used_gas)),
+						pays_fee: Pays::Yes,
+					})
 				}
 			}
-
-			Ok(PostDispatchInfo {
-				actual_weight: Some(T::GasToWeight::convert(used_gas)),
-				pays_fee: Pays::Yes,
-			})
 		}
 
 		/// Issue an EVM create operation. This is similar to a contract
@@ -579,7 +758,7 @@ pub mod module {
 		/// - `value`: the amount sent to the contract upon creation
 		/// - `gas_limit`: the maximum gas the call can use
 		/// - `storage_limit`: the total bytes the contract's storage can increase by
-		#[pallet::weight(T::GasToWeight::convert(*gas_limit))]
+		#[pallet::weight(create_weight::<T>(*gas_limit))]
 		#[transactional]
 		pub fn create(
 			origin: OriginFor<T>,
@@ -591,14 +770,41 @@ pub mod module {
 			let who = ensure_signed(origin)?;
 			let source = T::AddressMapping::get_or_create_evm_address(&who);
 
-			let info = T::Runner::create(source, init, value, gas_limit, storage_limit, T::config())?;
+			match T::Runner::create(source, init, value, gas_limit, storage_limit, T::config()) {
+				Err(e) => {
+					Pallet::<T>::deposit_event(Event::<T>::CreatedFailed {
+						from: source,
+						contract: H160::default(),
+						exit_reason: ExitReason::Error(ExitError::Other(Into::<&str>::into(e).into())),
+						logs: vec![],
+					});
 
-			let used_gas: u64 = info.used_gas.unique_saturated_into();
+					Ok(().into())
+				}
+				Ok(info) => {
+					if info.exit_reason.is_succeed() {
+						Pallet::<T>::deposit_event(Event::<T>::Created {
+							from: source,
+							contract: info.value,
+							logs: info.logs.clone(),
+						});
+					} else {
+						Pallet::<T>::deposit_event(Event::<T>::CreatedFailed {
+							from: source,
+							contract: info.value,
+							exit_reason: info.exit_reason.clone(),
+							logs: info.logs.clone(),
+						});
+					}
 
-			Ok(PostDispatchInfo {
-				actual_weight: Some(T::GasToWeight::convert(used_gas)),
-				pays_fee: Pays::Yes,
-			})
+					let used_gas: u64 = info.used_gas.unique_saturated_into();
+
+					Ok(PostDispatchInfo {
+						actual_weight: Some(create_weight::<T>(used_gas)),
+						pays_fee: Pays::Yes,
+					})
+				}
+			}
 		}
 
 		/// Issue an EVM create2 operation.
@@ -609,7 +815,7 @@ pub mod module {
 		/// - `value`: the amount sent for payable calls
 		/// - `gas_limit`: the maximum gas the call can use
 		/// - `storage_limit`: the total bytes the contract's storage can increase by
-		#[pallet::weight(T::GasToWeight::convert(*gas_limit))]
+		#[pallet::weight(create2_weight::<T>(*gas_limit))]
 		#[transactional]
 		pub fn create2(
 			origin: OriginFor<T>,
@@ -622,26 +828,53 @@ pub mod module {
 			let who = ensure_signed(origin)?;
 			let source = T::AddressMapping::get_or_create_evm_address(&who);
 
-			let info = T::Runner::create2(source, init, salt, value, gas_limit, storage_limit, T::config())?;
+			match T::Runner::create2(source, init, salt, value, gas_limit, storage_limit, T::config()) {
+				Err(e) => {
+					Pallet::<T>::deposit_event(Event::<T>::CreatedFailed {
+						from: source,
+						contract: H160::default(),
+						exit_reason: ExitReason::Error(ExitError::Other(Into::<&str>::into(e).into())),
+						logs: vec![],
+					});
 
-			let used_gas: u64 = info.used_gas.unique_saturated_into();
+					Ok(().into())
+				}
+				Ok(info) => {
+					if info.exit_reason.is_succeed() {
+						Pallet::<T>::deposit_event(Event::<T>::Created {
+							from: source,
+							contract: info.value,
+							logs: info.logs.clone(),
+						});
+					} else {
+						Pallet::<T>::deposit_event(Event::<T>::CreatedFailed {
+							from: source,
+							contract: info.value,
+							exit_reason: info.exit_reason.clone(),
+							logs: info.logs.clone(),
+						});
+					}
 
-			Ok(PostDispatchInfo {
-				actual_weight: Some(T::GasToWeight::convert(used_gas)),
-				pays_fee: Pays::Yes,
-			})
+					let used_gas: u64 = info.used_gas.unique_saturated_into();
+
+					Ok(PostDispatchInfo {
+						actual_weight: Some(create2_weight::<T>(used_gas)),
+						pays_fee: Pays::Yes,
+					})
+				}
+			}
 		}
 
-		/// Issue an EVM create operation. The next available system contract
+		/// Create mirrored NFT contract. The next available system contract
 		/// address will be used as created contract address.
 		///
 		/// - `init`: the data supplied for the contract's constructor
 		/// - `value`: the amount sent for payable calls
 		/// - `gas_limit`: the maximum gas the call can use
 		/// - `storage_limit`: the total bytes the contract's storage can increase by
-		#[pallet::weight(T::GasToWeight::convert(*gas_limit))]
+		#[pallet::weight(create_nft_contract::<T>(*gas_limit))]
 		#[transactional]
-		pub fn create_network_contract(
+		pub fn create_nft_contract(
 			origin: OriginFor<T>,
 			init: Vec<u8>,
 			#[pallet::compact] value: BalanceOf<T>,
@@ -651,18 +884,44 @@ pub mod module {
 			T::NetworkContractOrigin::ensure_origin(origin)?;
 
 			let source = T::NetworkContractSource::get();
-			let address = EvmAddress::from_low_u64_be(Self::network_contract_index());
-			let info =
-				T::Runner::create_at_address(source, address, init, value, gas_limit, storage_limit, T::config())?;
+			let address = MIRRORED_TOKENS_ADDRESS_START | EvmAddress::from_low_u64_be(Self::network_contract_index());
+			match T::Runner::create_at_address(source, address, init, value, gas_limit, storage_limit, T::config()) {
+				Err(e) => {
+					Pallet::<T>::deposit_event(Event::<T>::CreatedFailed {
+						from: source,
+						contract: H160::default(),
+						exit_reason: ExitReason::Error(ExitError::Other(Into::<&str>::into(e).into())),
+						logs: vec![],
+					});
 
-			NetworkContractIndex::<T>::mutate(|v| *v = v.saturating_add(One::one()));
+					Ok(().into())
+				}
+				Ok(info) => {
+					if info.exit_reason.is_succeed() {
+						NetworkContractIndex::<T>::mutate(|v| *v = v.saturating_add(One::one()));
 
-			let used_gas: u64 = info.used_gas.unique_saturated_into();
+						Pallet::<T>::deposit_event(Event::<T>::Created {
+							from: source,
+							contract: info.value,
+							logs: info.logs.clone(),
+						});
+					} else {
+						Pallet::<T>::deposit_event(Event::<T>::CreatedFailed {
+							from: source,
+							contract: info.value,
+							exit_reason: info.exit_reason.clone(),
+							logs: info.logs.clone(),
+						});
+					}
 
-			Ok(PostDispatchInfo {
-				actual_weight: Some(T::GasToWeight::convert(used_gas)),
-				pays_fee: Pays::Yes,
-			})
+					let used_gas: u64 = info.used_gas.unique_saturated_into();
+
+					Ok(PostDispatchInfo {
+						actual_weight: Some(create_nft_contract::<T>(used_gas)),
+						pays_fee: Pays::Yes,
+					})
+				}
+			}
 		}
 
 		/// Issue an EVM create operation. The address specified
@@ -673,7 +932,11 @@ pub mod module {
 		/// - `value`: the amount sent for payable calls
 		/// - `gas_limit`: the maximum gas the call can use
 		/// - `storage_limit`: the total bytes the contract's storage can increase by
-		#[pallet::weight(T::GasToWeight::convert(*gas_limit))]
+		#[pallet::weight(if init.is_empty() {
+			<T as Config>::WeightInfo::deposit_ed()
+		} else {
+			create_predeploy_contract::<T>(*gas_limit)
+		})]
 		#[transactional]
 		pub fn create_predeploy_contract(
 			origin: OriginFor<T>,
@@ -692,7 +955,7 @@ pub mod module {
 
 			let source = T::NetworkContractSource::get();
 
-			let info = if init.is_empty() {
+			if init.is_empty() {
 				// deposit ED for mirrored token
 				T::Currency::transfer(
 					&T::TreasuryAccount::get(),
@@ -700,23 +963,48 @@ pub mod module {
 					T::Currency::minimum_balance(),
 					ExistenceRequirement::AllowDeath,
 				)?;
-				CreateInfo {
-					value: target,
-					exit_reason: ExitReason::Succeed(ExitSucceed::Stopped),
-					used_gas: 0.into(),
-					used_storage: 0,
-					logs: vec![],
-				}
+
+				Ok(PostDispatchInfo {
+					actual_weight: Some(<T as Config>::WeightInfo::deposit_ed()),
+					pays_fee: Pays::Yes,
+				})
 			} else {
-				T::Runner::create_at_address(source, target, init, value, gas_limit, storage_limit, T::config())?
-			};
+				match T::Runner::create_at_address(source, target, init, value, gas_limit, storage_limit, T::config()) {
+					Err(e) => {
+						Pallet::<T>::deposit_event(Event::<T>::CreatedFailed {
+							from: source,
+							contract: H160::default(),
+							exit_reason: ExitReason::Error(ExitError::Other(Into::<&str>::into(e).into())),
+							logs: vec![],
+						});
 
-			let used_gas: u64 = info.used_gas.unique_saturated_into();
+						Ok(().into())
+					}
+					Ok(info) => {
+						if info.exit_reason.is_succeed() {
+							Pallet::<T>::deposit_event(Event::<T>::Created {
+								from: source,
+								contract: info.value,
+								logs: info.logs.clone(),
+							});
+						} else {
+							Pallet::<T>::deposit_event(Event::<T>::CreatedFailed {
+								from: source,
+								contract: info.value,
+								exit_reason: info.exit_reason.clone(),
+								logs: info.logs.clone(),
+							});
+						}
 
-			Ok(PostDispatchInfo {
-				actual_weight: Some(T::GasToWeight::convert(used_gas)),
-				pays_fee: Pays::Yes,
-			})
+						let used_gas: u64 = info.used_gas.unique_saturated_into();
+
+						Ok(PostDispatchInfo {
+							actual_weight: Some(create_predeploy_contract::<T>(used_gas)),
+							pays_fee: Pays::Yes,
+						})
+					}
+				}
+			}
 		}
 
 		/// Transfers Contract maintainership to a new EVM Address.
@@ -734,100 +1022,91 @@ pub mod module {
 			let who = ensure_signed(origin)?;
 			Self::do_transfer_maintainer(who, contract, new_maintainer)?;
 
-			Pallet::<T>::deposit_event(Event::<T>::TransferredMaintainer(contract, new_maintainer));
+			Pallet::<T>::deposit_event(Event::<T>::TransferredMaintainer {
+				contract,
+				new_maintainer,
+			});
 
 			Ok(().into())
 		}
 
-		/// Mark a given contract as deployed.
+		/// Mark a given contract as published.
 		///
-		/// - `contract`: The contract to mark as deployed, the caller must the contract's
+		/// - `contract`: The contract to mark as published, the caller must the contract's
 		///   maintainer
-		#[pallet::weight(<T as Config>::WeightInfo::deploy())]
+		#[pallet::weight(<T as Config>::WeightInfo::publish_contract())]
 		#[transactional]
-		pub fn deploy(origin: OriginFor<T>, contract: EvmAddress) -> DispatchResultWithPostInfo {
+		pub fn publish_contract(origin: OriginFor<T>, contract: EvmAddress) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			let address = T::AddressMapping::get_evm_address(&who).ok_or(Error::<T>::AddressNotMapped)?;
-			T::Currency::transfer(
-				&who,
-				&T::TreasuryAccount::get(),
-				T::DeploymentFee::get(),
-				ExistenceRequirement::AllowDeath,
-			)?;
-			Self::mark_deployed(contract, Some(address))?;
-			Pallet::<T>::deposit_event(Event::<T>::ContractDeployed(contract));
+			Self::do_publish_contract(who, contract)?;
+
+			Pallet::<T>::deposit_event(Event::<T>::ContractPublished { contract });
 			Ok(().into())
 		}
 
-		/// Mark a given contract as deployed without paying the deployment fee
+		/// Mark a given contract as published without paying the publication fee
 		///
-		/// - `contract`: The contract to mark as deployed, the caller must be the contract's
+		/// - `contract`: The contract to mark as published, the caller must be the contract's
 		///   maintainer.
-		#[pallet::weight(<T as Config>::WeightInfo::deploy_free())]
+		#[pallet::weight(<T as Config>::WeightInfo::publish_free())]
 		#[transactional]
-		pub fn deploy_free(origin: OriginFor<T>, contract: EvmAddress) -> DispatchResultWithPostInfo {
-			T::FreeDeploymentOrigin::ensure_origin(origin)?;
-			Self::mark_deployed(contract, None)?;
-			Pallet::<T>::deposit_event(Event::<T>::ContractDeployed(contract));
+		pub fn publish_free(origin: OriginFor<T>, contract: EvmAddress) -> DispatchResultWithPostInfo {
+			T::FreePublicationOrigin::ensure_origin(origin)?;
+			Self::mark_published(contract, None)?;
+			Pallet::<T>::deposit_event(Event::<T>::ContractPublished { contract });
 			Ok(().into())
 		}
 
 		/// Mark the caller's address to allow contract development.
-		/// This allows the address to interact with non-deployed contracts.
+		/// This allows the address to interact with non-published contracts.
 		#[pallet::weight(<T as Config>::WeightInfo::enable_contract_development())]
 		#[transactional]
 		pub fn enable_contract_development(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			ensure!(
-				T::Currency::reserved_balance_named(&RESERVE_ID_DEVELOPER_DEPOSIT, &who).is_zero(),
-				Error::<T>::ContractDevelopmentAlreadyEnabled
-			);
-			T::Currency::ensure_reserved_named(&RESERVE_ID_DEVELOPER_DEPOSIT, &who, T::DeveloperDeposit::get())?;
-			Pallet::<T>::deposit_event(Event::<T>::ContractDevelopmentEnabled(who));
+			Self::do_enable_contract_development(&who)?;
+
+			Pallet::<T>::deposit_event(Event::<T>::ContractDevelopmentEnabled { who });
 			Ok(().into())
 		}
 
 		/// Mark the caller's address to disable contract development.
-		/// This disallows the address to interact with non-deployed contracts.
+		/// This disallows the address to interact with non-published contracts.
 		#[pallet::weight(<T as Config>::WeightInfo::disable_contract_development())]
 		#[transactional]
 		pub fn disable_contract_development(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			ensure!(
-				!T::Currency::reserved_balance_named(&RESERVE_ID_DEVELOPER_DEPOSIT, &who).is_zero(),
-				Error::<T>::ContractDevelopmentNotEnabled
-			);
-			T::Currency::unreserve_all_named(&RESERVE_ID_DEVELOPER_DEPOSIT, &who);
-			Pallet::<T>::deposit_event(Event::<T>::ContractDevelopmentDisabled(who));
+			Self::do_disable_contract_development(&who)?;
+
+			Pallet::<T>::deposit_event(Event::<T>::ContractDevelopmentDisabled { who });
 			Ok(().into())
 		}
 
 		/// Set the code of a contract at a given address.
 		///
-		/// - `contract`: The contract whose code is being set, must not be marked as deployed
+		/// - `contract`: The contract whose code is being set, must not be marked as published
 		/// - `code`: The new ABI bundle for the contract
-		#[pallet::weight(<T as Config>::WeightInfo::set_code())]
+		#[pallet::weight(<T as Config>::WeightInfo::set_code(code.len() as u32))]
 		#[transactional]
 		pub fn set_code(origin: OriginFor<T>, contract: EvmAddress, code: Vec<u8>) -> DispatchResultWithPostInfo {
 			let root_or_signed = Self::ensure_root_or_signed(origin)?;
 			Self::do_set_code(root_or_signed, contract, code)?;
 
-			Pallet::<T>::deposit_event(Event::<T>::ContractSetCode(contract));
+			Pallet::<T>::deposit_event(Event::<T>::ContractSetCode { contract });
 
 			Ok(().into())
 		}
 
 		/// Remove a contract at a given address.
 		///
-		/// - `contract`: The contract to remove, must not be marked as deployed
+		/// - `contract`: The contract to remove, must not be marked as published
 		#[pallet::weight(<T as Config>::WeightInfo::selfdestruct())]
 		#[transactional]
 		pub fn selfdestruct(origin: OriginFor<T>, contract: EvmAddress) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			let maintainer = T::AddressMapping::get_evm_address(&who).ok_or(Error::<T>::AddressNotMapped)?;
-			Self::do_selfdestruct(who, &maintainer, contract)?;
+			let caller = T::AddressMapping::get_evm_address(&who).ok_or(Error::<T>::AddressNotMapped)?;
+			Self::do_selfdestruct(&caller, &contract)?;
 
-			Pallet::<T>::deposit_event(Event::<T>::ContractSelfdestructed(contract));
+			Pallet::<T>::deposit_event(Event::<T>::ContractSelfdestructed { contract });
 
 			Ok(().into())
 		}
@@ -835,6 +1114,12 @@ pub mod module {
 }
 
 impl<T: Config> Pallet<T> {
+	/// Get StorageDepositPerByte of actual decimals
+	pub fn get_storage_deposit_per_byte() -> BalanceOf<T> {
+		// StorageDepositPerByte decimals is 18, KAR/ACA decimals is 12, convert to 12 here.
+		convert_decimals_from_evm(T::StorageDepositPerByte::get()).expect("checked in integrity_test; qed")
+	}
+
 	/// Check whether an account is empty.
 	pub fn is_account_empty(address: &H160) -> bool {
 		let account_id = T::AddressMapping::get_account_id(address);
@@ -859,15 +1144,14 @@ impl<T: Config> Pallet<T> {
 	}
 
 	#[transactional]
-	pub fn remove_contract(address: &EvmAddress) -> Result<u32, DispatchError> {
-		let address_account = T::AddressMapping::get_account_id(address);
+	pub fn remove_contract(caller: &EvmAddress, contract: &EvmAddress) -> DispatchResult {
+		let contract_account = T::AddressMapping::get_account_id(contract);
 
-		let size = Accounts::<T>::try_mutate_exists(address, |account_info| -> Result<u32, DispatchError> {
+		Accounts::<T>::try_mutate_exists(contract, |account_info| -> DispatchResult {
+			// We will keep the nonce until the storages are cleared.
+			// Only remove the `contract_info`
 			let account_info = account_info.as_mut().ok_or(Error::<T>::ContractNotFound)?;
 			let contract_info = account_info.contract_info.take().ok_or(Error::<T>::ContractNotFound)?;
-
-			let maintainer_account = T::AddressMapping::get_account_id(&contract_info.maintainer);
-			T::TransferAll::transfer_all(&address_account, &maintainer_account)?;
 
 			CodeInfos::<T>::mutate_exists(&contract_info.code_hash, |maybe_code_info| {
 				if let Some(code_info) = maybe_code_info.as_mut() {
@@ -882,38 +1166,44 @@ impl<T: Config> Pallet<T> {
 				}
 			});
 
-			AccountStorages::<T>::remove_prefix(address, None);
+			ContractStorageSizes::<T>::take(contract);
 
-			let size = ContractStorageSizes::<T>::take(address);
-
-			Ok(size)
+			T::IdleScheduler::schedule(
+				EvmTask::Remove {
+					caller: *caller,
+					contract: *contract,
+					maintainer: contract_info.maintainer,
+				}
+				.into(),
+			)
 		})?;
 
 		// this should happen after `Accounts` is updated because this could trigger another updates on
 		// `Accounts`
-		frame_system::Pallet::<T>::dec_providers(&address_account)?;
+		frame_system::Pallet::<T>::dec_providers(&contract_account)?;
 
-		Ok(size)
+		Ok(())
 	}
 
 	/// Removes an account from Accounts and AccountStorages.
 	pub fn remove_account(address: &EvmAddress) -> DispatchResult {
 		// Deref code, and remove it if ref count is zero.
-		if let Some(AccountInfo {
-			contract_info: Some(contract_info),
-			..
-		}) = Self::accounts(address)
-		{
-			CodeInfos::<T>::mutate_exists(&contract_info.code_hash, |maybe_code_info| {
-				if let Some(code_info) = maybe_code_info.as_mut() {
-					code_info.ref_count = code_info.ref_count.saturating_sub(1);
-					if code_info.ref_count == 0 {
-						Codes::<T>::remove(&contract_info.code_hash);
-						*maybe_code_info = None;
-					}
+		Accounts::<T>::mutate_exists(&address, |maybe_account| {
+			if let Some(account) = maybe_account {
+				if let Some(ContractInfo { code_hash, .. }) = account.contract_info {
+					CodeInfos::<T>::mutate_exists(&code_hash, |maybe_code_info| {
+						if let Some(code_info) = maybe_code_info {
+							code_info.ref_count = code_info.ref_count.saturating_sub(1);
+							if code_info.ref_count == 0 {
+								Codes::<T>::remove(&code_hash);
+								account.contract_info = None;
+								*maybe_code_info = None;
+							}
+						}
+					});
 				}
-			});
-		}
+			}
+		});
 
 		if let Some(AccountInfo {
 			contract_info: Some(_), ..
@@ -922,7 +1212,7 @@ impl<T: Config> Pallet<T> {
 			// remove_account can only be called when account is killed. i.e. providers == 0
 			// but contract_info should maintain a provider
 			// so this should never happen
-			debug_assert!(false);
+			debug_assert!(false, "removed account while is still linked to contract info");
 		}
 
 		Ok(())
@@ -956,15 +1246,10 @@ impl<T: Config> Pallet<T> {
 			code_hash,
 			maintainer,
 			#[cfg(feature = "with-ethereum-compatibility")]
-			deployed: true,
+			published: true,
 			#[cfg(not(feature = "with-ethereum-compatibility"))]
-			deployed: false,
+			published: false,
 		};
-
-		Self::update_contract_storage_size(
-			&address,
-			code_size.saturating_add(T::NewContractExtraBytes::get()) as i32,
-		);
 
 		CodeInfos::<T>::mutate_exists(&code_hash, |maybe_code_info| {
 			if let Some(code_info) = maybe_code_info.as_mut() {
@@ -984,7 +1269,7 @@ impl<T: Config> Pallet<T> {
 			if let Some(account_info) = maybe_account_info.as_mut() {
 				account_info.contract_info = Some(contract_info.clone());
 			} else {
-				let account_info = AccountInfo::<T>::new(Default::default(), Some(contract_info.clone()));
+				let account_info = AccountInfo::<T::Index>::new(Default::default(), Some(contract_info.clone()));
 				*maybe_account_info = Some(account_info);
 			}
 		});
@@ -1001,7 +1286,9 @@ impl<T: Config> Pallet<T> {
 
 		Account {
 			nonce: U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(nonce)),
-			balance: U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(balance)),
+			balance: U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(
+				convert_decimals_to_evm(balance),
+			)),
 		}
 	}
 
@@ -1073,10 +1360,45 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	/// Mark contract as deployed
+	/// Puts a deposit down to allow account to interact with non-published contracts
+	fn do_enable_contract_development(who: &T::AccountId) -> DispatchResult {
+		ensure!(
+			T::Currency::reserved_balance_named(&RESERVE_ID_DEVELOPER_DEPOSIT, who).is_zero(),
+			Error::<T>::ContractDevelopmentAlreadyEnabled
+		);
+		T::Currency::ensure_reserved_named(&RESERVE_ID_DEVELOPER_DEPOSIT, who, T::DeveloperDeposit::get())?;
+		Ok(())
+	}
+
+	/// Returns deposit and disables account for contract development
+	fn do_disable_contract_development(who: &T::AccountId) -> DispatchResult {
+		ensure!(
+			!T::Currency::reserved_balance_named(&RESERVE_ID_DEVELOPER_DEPOSIT, who).is_zero(),
+			Error::<T>::ContractDevelopmentNotEnabled
+		);
+		T::Currency::unreserve_all_named(&RESERVE_ID_DEVELOPER_DEPOSIT, who);
+		Ok(())
+	}
+
+	/// Publishes the Contract
+	///
+	/// Checks that `who` is the contract maintainer and takes the publication fee
+	fn do_publish_contract(who: T::AccountId, contract: EvmAddress) -> DispatchResult {
+		let address = T::AddressMapping::get_evm_address(&who).ok_or(Error::<T>::AddressNotMapped)?;
+		T::Currency::transfer(
+			&who,
+			&T::TreasuryAccount::get(),
+			T::PublicationFee::get(),
+			ExistenceRequirement::AllowDeath,
+		)?;
+		Self::mark_published(contract, Some(address))?;
+		Ok(())
+	}
+
+	/// Mark contract as published
 	///
 	/// If maintainer is provider then it will check maintainer
-	fn mark_deployed(contract: EvmAddress, maintainer: Option<EvmAddress>) -> DispatchResult {
+	fn mark_published(contract: EvmAddress, maintainer: Option<EvmAddress>) -> DispatchResult {
 		Accounts::<T>::mutate(contract, |maybe_account_info| -> DispatchResult {
 			if let Some(AccountInfo {
 				contract_info: Some(contract_info),
@@ -1086,8 +1408,8 @@ impl<T: Config> Pallet<T> {
 				if let Some(maintainer) = maintainer {
 					ensure!(contract_info.maintainer == maintainer, Error::<T>::NoPermission);
 				}
-				ensure!(!contract_info.deployed, Error::<T>::ContractAlreadyDeployed);
-				contract_info.deployed = true;
+				ensure!(!contract_info.published, Error::<T>::ContractAlreadyPublished);
+				contract_info.published = true;
 				Ok(())
 			} else {
 				Err(Error::<T>::ContractNotFound.into())
@@ -1111,7 +1433,7 @@ impl<T: Config> Pallet<T> {
 			let source = if let Either::Right(signer) = root_or_signed {
 				let maintainer = T::AddressMapping::get_evm_address(&signer).ok_or(Error::<T>::AddressNotMapped)?;
 				ensure!(contract_info.maintainer == maintainer, Error::<T>::NoPermission);
-				ensure!(!contract_info.deployed, Error::<T>::ContractAlreadyDeployed);
+				ensure!(!contract_info.published, Error::<T>::ContractAlreadyPublished);
 				maintainer
 			} else {
 				T::NetworkContractSource::get()
@@ -1171,31 +1493,17 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Selfdestruct a contract at a given address.
-	fn do_selfdestruct(who: T::AccountId, maintainer: &EvmAddress, contract: EvmAddress) -> DispatchResult {
+	fn do_selfdestruct(caller: &EvmAddress, contract: &EvmAddress) -> DispatchResult {
 		let account_info = Self::accounts(contract).ok_or(Error::<T>::ContractNotFound)?;
 		let contract_info = account_info
 			.contract_info
 			.as_ref()
 			.ok_or(Error::<T>::ContractNotFound)?;
 
-		ensure!(contract_info.maintainer == *maintainer, Error::<T>::NoPermission);
-		ensure!(!contract_info.deployed, Error::<T>::ContractAlreadyDeployed);
+		ensure!(contract_info.maintainer == *caller, Error::<T>::NoPermission);
+		ensure!(!contract_info.published, Error::<T>::ContractAlreadyPublished);
 
-		let storage = Self::remove_contract(&contract)?;
-
-		let contract_account = T::AddressMapping::get_account_id(&contract);
-
-		let amount = T::StorageDepositPerByte::get().saturating_mul(storage.into());
-		let val = T::Currency::repatriate_reserved_named(
-			&RESERVE_ID_STORAGE_DEPOSIT,
-			&contract_account,
-			&who,
-			amount,
-			BalanceStatus::Free,
-		)?;
-		debug_assert!(val.is_zero());
-
-		Ok(())
+		Self::remove_contract(caller, contract)
 	}
 
 	fn ensure_root_or_signed(o: T::Origin) -> Result<Either<(), T::AccountId>, BadOrigin> {
@@ -1206,12 +1514,14 @@ impl<T: Config> Pallet<T> {
 	fn can_call_contract(address: &H160, caller: &H160) -> bool {
 		if let Some(AccountInfo {
 			contract_info: Some(ContractInfo {
-				deployed, maintainer, ..
+				published, maintainer, ..
 			}),
 			..
 		}) = Accounts::<T>::get(address)
 		{
-			deployed || maintainer == *caller || Self::is_developer_or_contract(caller)
+			// https://github.com/AcalaNetwork/Acala/blob/af1c277/modules/evm/rpc/src/lib.rs#L176
+			// when rpc is called, from is empty, allowing the call
+			published || maintainer == *caller || Self::is_developer_or_contract(caller) || *caller == H160::default()
 		} else {
 			// contract non exist, we don't override defualt evm behaviour
 			true
@@ -1234,7 +1544,7 @@ impl<T: Config> Pallet<T> {
 		}
 
 		let user = T::AddressMapping::get_account_id(caller);
-		let amount = T::StorageDepositPerByte::get().saturating_mul(limit.into());
+		let amount = Self::get_storage_deposit_per_byte().saturating_mul(limit.into());
 
 		log::debug!(
 			target: "evm",
@@ -1253,7 +1563,7 @@ impl<T: Config> Pallet<T> {
 		}
 
 		let user = T::AddressMapping::get_account_id(caller);
-		let amount = T::StorageDepositPerByte::get().saturating_mul(unused.into());
+		let amount = Self::get_storage_deposit_per_byte().saturating_mul(unused.into());
 
 		log::debug!(
 			target: "evm",
@@ -1275,7 +1585,7 @@ impl<T: Config> Pallet<T> {
 
 		let user = T::AddressMapping::get_account_id(caller);
 		let contract_acc = T::AddressMapping::get_account_id(contract);
-		let amount = T::StorageDepositPerByte::get().saturating_mul((storage.abs() as u32).into());
+		let amount = Self::get_storage_deposit_per_byte().saturating_mul((storage.abs() as u32).into());
 
 		log::debug!(
 			target: "evm",
@@ -1304,6 +1614,33 @@ impl<T: Config> Pallet<T> {
 			)?;
 			debug_assert!(val.is_zero());
 		};
+
+		Ok(())
+	}
+
+	fn refund_storage(caller: &H160, contract: &H160, maintainer: &H160) -> DispatchResult {
+		let user = T::AddressMapping::get_account_id(caller);
+		let contract_acc = T::AddressMapping::get_account_id(contract);
+		let maintainer_acc = T::AddressMapping::get_account_id(maintainer);
+		let amount = T::Currency::reserved_balance_named(&RESERVE_ID_STORAGE_DEPOSIT, &contract_acc);
+
+		log::debug!(
+			target: "evm",
+			"refund_storage: [from: {:?}, account: {:?}, contract: {:?}, contract_acc: {:?}, maintainer: {:?}, maintainer_acc: {:?}, amount: {:?}]",
+			caller, user, contract, contract_acc, maintainer, maintainer_acc, amount
+		);
+
+		// user can't be a dead account
+		let val = T::Currency::repatriate_reserved_named(
+			&RESERVE_ID_STORAGE_DEPOSIT,
+			&contract_acc,
+			&user,
+			amount,
+			BalanceStatus::Free,
+		)?;
+		debug_assert!(val.is_zero());
+
+		T::TransferAll::transfer_all(&contract_acc, &maintainer_acc)?;
 
 		Ok(())
 	}
@@ -1340,8 +1677,20 @@ impl<T: Config> EVMTrait<T::AccountId> for Pallet<T> {
 				Ok(info) => match mode {
 					ExecutionMode::Execute => {
 						if info.exit_reason.is_succeed() {
+							Pallet::<T>::deposit_event(Event::<T>::Executed {
+								from: context.sender,
+								contract: context.contract,
+								logs: info.logs.clone(),
+							});
 							TransactionOutcome::Commit(Ok(info))
 						} else {
+							Pallet::<T>::deposit_event(Event::<T>::ExecutedFailed {
+								from: context.sender,
+								contract: context.contract,
+								exit_reason: info.exit_reason.clone(),
+								output: info.value.clone(),
+								logs: info.logs.clone(),
+							});
 							TransactionOutcome::Rollback(Ok(info))
 						}
 					}
@@ -1369,6 +1718,7 @@ impl<T: Config> EVMStateRentTrait<T::AccountId, BalanceOf<T>> for Pallet<T> {
 	}
 
 	fn query_storage_deposit_per_byte() -> BalanceOf<T> {
+		// the decimals is already 18
 		T::StorageDepositPerByte::get()
 	}
 
@@ -1381,15 +1731,31 @@ impl<T: Config> EVMStateRentTrait<T::AccountId, BalanceOf<T>> for Pallet<T> {
 	}
 
 	fn query_developer_deposit() -> BalanceOf<T> {
-		T::DeveloperDeposit::get()
+		convert_decimals_to_evm(T::DeveloperDeposit::get())
 	}
 
-	fn query_deployment_fee() -> BalanceOf<T> {
-		T::DeploymentFee::get()
+	fn query_publication_fee() -> BalanceOf<T> {
+		convert_decimals_to_evm(T::PublicationFee::get())
 	}
 
 	fn transfer_maintainer(from: T::AccountId, contract: EvmAddress, new_maintainer: EvmAddress) -> DispatchResult {
 		Pallet::<T>::do_transfer_maintainer(from, contract, new_maintainer)
+	}
+
+	fn publish_contract_precompile(who: T::AccountId, contract: H160) -> DispatchResult {
+		Pallet::<T>::do_publish_contract(who, contract)
+	}
+
+	fn query_developer_status(who: T::AccountId) -> bool {
+		!T::Currency::reserved_balance_named(&RESERVE_ID_DEVELOPER_DEPOSIT, &who).is_zero()
+	}
+
+	fn enable_account_contract_development(who: T::AccountId) -> DispatchResult {
+		Pallet::<T>::do_enable_contract_development(&who)
+	}
+
+	fn disable_account_contract_development(who: T::AccountId) -> sp_runtime::DispatchResult {
+		Pallet::<T>::do_disable_contract_development(&who)
 	}
 }
 
@@ -1425,7 +1791,8 @@ fn encode_revert_message(e: &ExitError) -> Vec<u8> {
 	data
 }
 
-#[derive(Encode, Decode, Clone, Eq, PartialEq)]
+#[derive(Encode, Decode, Clone, Eq, PartialEq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
 pub struct SetEvmOrigin<T: Config + Send + Sync>(PhantomData<T>);
 
 impl<T: Config + Send + Sync> sp_std::fmt::Debug for SetEvmOrigin<T> {
@@ -1483,5 +1850,96 @@ impl<T: Config + Send + Sync> SignedExtension for SetEvmOrigin<T> {
 	) -> Result<(), TransactionValidityError> {
 		ExtrinsicOrigin::<T>::kill();
 		Ok(())
+	}
+}
+
+#[derive(Clone, RuntimeDebug, PartialEq, Encode, Decode, TypeInfo)]
+pub enum EvmTask<T: Config> {
+	// TODO: update
+	Schedule {
+		from: EvmAddress,
+		target: EvmAddress,
+		input: Vec<u8>,
+		value: BalanceOf<T>,
+		gas_limit: u64,
+		storage_limit: u32,
+	},
+	Remove {
+		caller: EvmAddress,
+		contract: EvmAddress,
+		maintainer: EvmAddress,
+	},
+}
+
+impl<T: Config> DispatchableTask for EvmTask<T> {
+	fn dispatch(self, weight: Weight) -> TaskResult {
+		match self {
+			// TODO: update
+			EvmTask::Schedule { .. } => {
+				// check weight and call `scheduled_call`
+				TaskResult {
+					result: Ok(()),
+					used_weight: 0,
+					finished: false,
+				}
+			}
+			EvmTask::Remove {
+				caller,
+				contract,
+				maintainer,
+			} => {
+				// default limit 100
+				let limit = cmp::min(
+					weight
+						.checked_div(<T as frame_system::Config>::DbWeight::get().write)
+						.unwrap_or(100),
+					100,
+				) as u32;
+
+				match <AccountStorages<T>>::remove_prefix(contract, Some(limit)) {
+					AllRemoved(count) => {
+						let res = Pallet::<T>::refund_storage(&caller, &contract, &maintainer);
+						log::debug!(
+							target: "evm",
+							"EvmTask::Remove: [from: {:?}, contract: {:?}, maintainer: {:?}, count: {:?}, result: {:?}]",
+							caller, contract, maintainer, count, res
+						);
+
+						// Remove account after all of the storages are cleared.
+						Accounts::<T>::take(contract);
+
+						TaskResult {
+							result: res,
+							used_weight: <T as frame_system::Config>::DbWeight::get()
+								.write
+								.saturating_mul(count.into()),
+							finished: true,
+						}
+					}
+					SomeRemaining(count) => {
+						log::debug!(
+							target: "evm",
+							"EvmTask::Remove: [from: {:?}, contract: {:?}, maintainer: {:?}, count: {:?}]",
+							caller, contract, maintainer, count
+						);
+
+						TaskResult {
+							result: Ok(()),
+							used_weight: <T as frame_system::Config>::DbWeight::get()
+								.write
+								.saturating_mul(count.into()),
+							finished: false,
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+#[cfg(feature = "std")]
+impl<T: Config> From<EvmTask<T>> for () {
+	fn from(_task: EvmTask<T>) -> Self {
+		unimplemented!()
 	}
 }

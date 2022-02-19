@@ -22,11 +22,15 @@
 
 use super::*;
 
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types, traits::FindAuthor, ConsensusEngineId};
+use frame_support::{
+	construct_runtime, ord_parameter_types, parameter_types,
+	traits::{Everything, FindAuthor, Nothing},
+	ConsensusEngineId,
+};
 use frame_system::EnsureSignedBy;
 use module_support::mocks::MockAddressMapping;
 use orml_traits::parameter_type_with_key;
-use primitives::{Amount, BlockNumber, CurrencyId, ReserveIdentifier, TokenSymbol};
+use primitives::{define_combined_task, Amount, BlockNumber, CurrencyId, ReserveIdentifier, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
 	testing::Header,
@@ -34,6 +38,8 @@ use sp_runtime::{
 	AccountId32,
 };
 use std::{collections::BTreeMap, str::FromStr};
+
+type Balance = u128;
 
 mod evm_mod {
 	pub use super::super::*;
@@ -103,14 +109,14 @@ parameter_type_with_key! {
 
 impl orml_tokens::Config for Runtime {
 	type Event = Event;
-	type Balance = u64;
+	type Balance = Balance;
 	type Amount = Amount;
 	type CurrencyId = CurrencyId;
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
 	type MaxLocks = ();
-	type DustRemovalWhitelist = ();
+	type DustRemovalWhitelist = Nothing;
 }
 
 parameter_types! {
@@ -126,6 +132,24 @@ impl orml_currencies::Config for Runtime {
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 
+define_combined_task! {
+	#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+	pub enum ScheduledTasks {
+		EvmTask(EvmTask<Runtime>),
+	}
+}
+
+parameter_types!(
+	pub MinimumWeightRemainInBlock: Weight = u64::MIN;
+);
+
+impl module_idle_scheduler::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = ();
+	type Task = ScheduledTasks;
+	type MinimumWeightRemainInBlock = MinimumWeightRemainInBlock;
+}
+
 pub struct GasToWeight;
 
 impl Convert<u64, u64> for GasToWeight {
@@ -140,7 +164,9 @@ impl FindAuthor<AccountId32> for AuthorGiven {
 	where
 		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
 	{
-		Some(AccountId32::from_str("1234500000000000000000000000000000000000").unwrap())
+		Some(<Runtime as Config>::AddressMapping::get_account_id(
+			&H160::from_str("1234500000000000000000000000000000000000").unwrap(),
+		))
 	}
 }
 
@@ -153,9 +179,10 @@ ord_parameter_types! {
 	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
 	pub const NetworkContractAccount: AccountId32 = AccountId32::from([0u8; 32]);
 	pub const NewContractExtraBytes: u32 = 100;
-	pub const StorageDepositPerByte: u64 = 10;
-	pub const DeveloperDeposit: u64 = 1000;
-	pub const DeploymentFee: u64 = 200;
+	pub const StorageDepositPerByte: Balance = convert_decimals_to_evm(10);
+	pub const TxFeePerGas: Balance = 20_000_000;
+	pub const DeveloperDeposit: Balance = 1000;
+	pub const PublicationFee: Balance = 200;
 	pub const ChainId: u64 = 1;
 }
 
@@ -165,6 +192,7 @@ impl Config for Runtime {
 	type TransferAll = Currencies;
 	type NewContractExtraBytes = NewContractExtraBytes;
 	type StorageDepositPerByte = StorageDepositPerByte;
+	type TxFeePerGas = TxFeePerGas;
 
 	type Event = Event;
 	type Precompiles = ();
@@ -175,12 +203,14 @@ impl Config for Runtime {
 	type NetworkContractOrigin = EnsureSignedBy<NetworkContractAccount, AccountId32>;
 	type NetworkContractSource = NetworkContractSource;
 	type DeveloperDeposit = DeveloperDeposit;
-	type DeploymentFee = DeploymentFee;
+	type PublicationFee = PublicationFee;
 	type TreasuryAccount = TreasuryAccount;
-	type FreeDeploymentOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
+	type FreePublicationOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
 
 	type Runner = crate::runner::stack::Runner<Self>;
 	type FindAuthor = AuthorGiven;
+	type Task = ScheduledTasks;
+	type IdleScheduler = IdleScheduler;
 	type WeightInfo = ();
 }
 
@@ -198,10 +228,11 @@ construct_runtime!(
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+		IdleScheduler: module_idle_scheduler::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
-pub const INITIAL_BALANCE: u64 = 1_000_000_000_000;
+pub const INITIAL_BALANCE: Balance = 1_000_000_000_000_000;
 
 pub fn contract_a() -> H160 {
 	H160::from_str("2000000000000000000000000000000000000001").unwrap()
@@ -234,18 +265,14 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		contract_a(),
 		GenesisAccount {
 			nonce: 1,
-			balance: Default::default(),
-			storage: Default::default(),
-			code: Default::default(),
+			..Default::default()
 		},
 	);
 	accounts.insert(
 		contract_b(),
 		GenesisAccount {
 			nonce: 1,
-			balance: Default::default(),
-			storage: Default::default(),
-			code: Default::default(),
+			..Default::default()
 		},
 	);
 
@@ -254,8 +281,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		GenesisAccount {
 			nonce: 1,
 			balance: INITIAL_BALANCE,
-			storage: Default::default(),
-			code: Default::default(),
+			..Default::default()
 		},
 	);
 	accounts.insert(
@@ -263,8 +289,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		GenesisAccount {
 			nonce: 1,
 			balance: INITIAL_BALANCE,
-			storage: Default::default(),
-			code: Default::default(),
+			..Default::default()
 		},
 	);
 
@@ -273,29 +298,30 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();
-	evm_mod::GenesisConfig::<Runtime> {
-		accounts,
-		treasury: Default::default(),
-	}
-	.assimilate_storage(&mut t)
-	.unwrap();
+	evm_mod::GenesisConfig::<Runtime> { accounts }
+		.assimilate_storage(&mut t)
+		.unwrap();
 
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| System::set_block_number(1));
 	ext
 }
 
-pub fn balance(address: H160) -> u64 {
+pub fn balance(address: H160) -> Balance {
 	let account_id = <Runtime as Config>::AddressMapping::get_account_id(&address);
 	Balances::free_balance(account_id)
 }
 
-pub fn reserved_balance(address: H160) -> u64 {
+pub fn eth_balance(address: H160) -> U256 {
+	EVM::account_basic(&address).balance
+}
+
+pub fn reserved_balance(address: H160) -> Balance {
 	let account_id = <Runtime as Config>::AddressMapping::get_account_id(&address);
 	Balances::reserved_balance(account_id)
 }
 
 #[cfg(not(feature = "with-ethereum-compatibility"))]
-pub fn deploy_free(contract: H160) {
-	let _ = EVM::deploy_free(Origin::signed(CouncilAccount::get()), contract);
+pub fn publish_free(contract: H160) {
+	let _ = EVM::publish_free(Origin::signed(CouncilAccount::get()), contract);
 }

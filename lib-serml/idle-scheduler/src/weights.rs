@@ -30,13 +30,13 @@
 // --chain=dev
 // --steps=50
 // --repeat=20
-// --pallet=module-idle-scheduler
+// --pallet=module-homa-lite
 // --extrinsic=*
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --template=./templates/module-weight-template.hbs
-// --output=./lib-serml/idle-scheduler/src/weights.rs
+// --output=./modules/homa-lite/src/weights.rs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]

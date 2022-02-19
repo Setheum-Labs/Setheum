@@ -17,18 +17,14 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
-
 pub mod stack;
 pub mod state;
 pub mod storage_meter;
 
 use crate::{BalanceOf, CallInfo, Config, CreateInfo, ExitError};
-use evm::{backend::Backend, Transfer};
 use frame_support::dispatch::DispatchError;
-pub use primitives::{
-	evm::{Account, EvmAddress, Log, Vicinity},
-	ReserveIdentifier, MIRRORED_NFT_ADDRESS_START,
-};
+use module_evm_utiltity::evm::{self, backend::Backend, Transfer};
+pub use primitives::evm::{EvmAddress, Vicinity};
 use sp_core::{H160, H256};
 use sp_std::vec::Vec;
 use state::StackSubstateMetadata;
@@ -86,6 +82,8 @@ pub trait StackState<'config>: Backend {
 
 	fn is_empty(&self, address: H160) -> bool;
 	fn deleted(&self, address: H160) -> bool;
+	fn is_cold(&self, address: H160) -> bool;
+	fn is_storage_cold(&self, address: H160, key: H256) -> bool;
 
 	fn inc_nonce(&mut self, address: H160);
 	fn set_storage(&mut self, address: H160, key: H256, value: H256);

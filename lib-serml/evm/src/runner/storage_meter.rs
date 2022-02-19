@@ -22,7 +22,6 @@ use frame_support::log;
 
 pub struct StorageMeter {
 	limit: u32,
-	extra_bytes: u32,
 	used: u32,
 	refunded: u32,
 	// save storage of children
@@ -32,10 +31,9 @@ pub struct StorageMeter {
 
 impl StorageMeter {
 	/// Create a new storage_meter with given storage limit.
-	pub fn new(limit: u32, extra_bytes: u32) -> Self {
+	pub fn new(limit: u32) -> Self {
 		Self {
 			limit,
-			extra_bytes,
 			used: 0,
 			refunded: 0,
 			child_used: 0,
@@ -45,15 +43,11 @@ impl StorageMeter {
 
 	pub fn child_meter(&mut self) -> Self {
 		let storage = self.available_storage();
-		StorageMeter::new(storage, self.extra_bytes)
+		StorageMeter::new(storage)
 	}
 
 	pub fn storage_limit(&self) -> u32 {
 		self.limit
-	}
-
-	pub fn extra_bytes(&self) -> u32 {
-		self.extra_bytes
 	}
 
 	pub fn used(&self) -> u32 {
@@ -117,15 +111,6 @@ impl StorageMeter {
 		self.used = self.used.saturating_add(storage);
 	}
 
-	pub fn charge_with_extra_bytes(&mut self, storage: u32) {
-		log::trace!(
-			target: "evm",
-			"StorageMeter: charge: storage {:?}",
-			storage
-		);
-		self.used = self.used.saturating_add(storage).saturating_add(self.extra_bytes);
-	}
-
 	pub fn uncharge(&mut self, storage: u32) {
 		log::trace!(
 			target: "evm",
@@ -156,7 +141,7 @@ mod tests {
 
 	#[test]
 	fn test_storage_with_limit_zero() {
-		let mut storage_meter = StorageMeter::new(0, 0);
+		let mut storage_meter = StorageMeter::new(0);
 		assert_eq!(storage_meter.available_storage(), 0);
 		assert_eq!(storage_meter.storage_limit(), 0);
 
@@ -186,21 +171,8 @@ mod tests {
 	}
 
 	#[test]
-	fn test_with_extra_bytes() {
-		let mut storage_meter = StorageMeter::new(1000, 100);
-		assert_eq!(storage_meter.available_storage(), 1000);
-		assert_eq!(storage_meter.extra_bytes(), 100);
-
-		storage_meter.charge(200);
-		assert_eq!(storage_meter.finish(), Some(200));
-
-		storage_meter.charge_with_extra_bytes(200);
-		assert_eq!(storage_meter.finish(), Some(500));
-	}
-
-	#[test]
 	fn test_out_of_storage() {
-		let mut storage_meter = StorageMeter::new(1000, 0);
+		let mut storage_meter = StorageMeter::new(1000);
 		assert_eq!(storage_meter.available_storage(), 1000);
 
 		storage_meter.charge(200);
@@ -215,7 +187,7 @@ mod tests {
 
 	#[test]
 	fn test_high_use_and_refund() {
-		let mut storage_meter = StorageMeter::new(1000, 0);
+		let mut storage_meter = StorageMeter::new(1000);
 		assert_eq!(storage_meter.available_storage(), 1000);
 
 		storage_meter.charge(1000);
@@ -235,7 +207,7 @@ mod tests {
 
 	#[test]
 	fn test_child_meter() {
-		let mut storage_meter = StorageMeter::new(1000, 0);
+		let mut storage_meter = StorageMeter::new(1000);
 		storage_meter.charge(100);
 
 		let mut child_meter = storage_meter.child_meter();
@@ -270,7 +242,7 @@ mod tests {
 
 	#[test]
 	fn test_merge() {
-		let mut storage_meter = StorageMeter::new(1000, 0);
+		let mut storage_meter = StorageMeter::new(1000);
 		storage_meter.charge(100);
 
 		let mut child_meter = storage_meter.child_meter();

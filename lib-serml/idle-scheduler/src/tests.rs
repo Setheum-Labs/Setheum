@@ -41,6 +41,15 @@ fn can_schedule_tasks() {
 			Some(ScheduledTasks::BalancesTask(BalancesTask::OnIdle))
 		);
 
+		assert_ok!(IdleScheduler::schedule_task(
+			Origin::root(),
+			ScheduledTasks::HomaLiteTask(HomaLiteTask::OnIdle)
+		));
+		assert_eq!(
+			Tasks::<Runtime>::get(1),
+			Some(ScheduledTasks::HomaLiteTask(HomaLiteTask::OnIdle))
+		);
+
 		assert_eq!(Tasks::<Runtime>::get(2), None);
 	});
 }
@@ -56,6 +65,10 @@ fn can_process_tasks_up_to_weight_limit() {
 		assert_ok!(IdleScheduler::schedule_task(
 			Origin::root(),
 			ScheduledTasks::BalancesTask(BalancesTask::OnIdle)
+		));
+		assert_ok!(IdleScheduler::schedule_task(
+			Origin::root(),
+			ScheduledTasks::HomaLiteTask(HomaLiteTask::OnIdle)
 		));
 
 		// Given enough weights for only 2 tasks: MinimumWeightRemainInBlock::get() + BASE_WEIGHT*2

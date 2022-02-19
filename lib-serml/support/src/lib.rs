@@ -26,8 +26,8 @@ use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
 use primitives::{
 	Balance as AsBalance,
 	CampaignId, CurrencyId,
-	evm::{CallInfo, EvmAddress},
-	task::TaskResult
+	evm::{CallInfo, EvmAddress}
+	task::TaskResult,
 };
 use sp_core::H160;
 use sp_runtime::{
@@ -99,10 +99,8 @@ pub trait AuctionManager<AccountId> {
 }
 
 /// The Structure of a Campaign info.
-#[cfg_attr(feature = "std", derive(PartialEq, Eq, Encode, Decode, Debug, Clone))]
+#[cfg_attr(feature = "std", derive(PartialEq, Eq, Encode, Decode))]
 pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
-	/// The Campaign Id
-	pub id: CampaignId,
 	/// Campaign Creator
 	pub origin: AccountId,
 	/// Project Name
@@ -164,8 +162,6 @@ pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
 
 /// Abstraction over th Launchpad Proposal system.
 pub trait Proposal<AccountId, BlockNumber> {
-	/// Get all proposals
-	fn all_proposals() -> Vec<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
 	/// The Campaign Proposal info of `id`
 	fn proposal_info(id: CampaignId) -> Option<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
 	/// Create new Campaign Proposal with specific `CampaignInfo`, return the `id` of the Campaign
@@ -184,9 +180,9 @@ pub trait Proposal<AccountId, BlockNumber> {
 		period: BlockNumber,
 	) -> DispatchResult;
     /// Approve Proposal by `id` at `now`.
-    fn on_approve_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
+    fn approve_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
 	/// Reject Proposal by `id` and update storage
-	fn on_reject_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
+	fn reject_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
 	/// Remove Proposal by `id` from storage
 	fn remove_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
 }
@@ -195,8 +191,6 @@ pub trait Proposal<AccountId, BlockNumber> {
 pub trait CampaignManager<AccountId, BlockNumber> {
 	/// The Campaign info of `id`
 	fn campaign_info(id: CampaignId) -> Option<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
-	/// Get all proposals
-	fn all_campaigns() -> Vec<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
 	/// Called when a contribution is received.
 	fn on_contribution(
 		who: AccountId,
@@ -230,14 +224,35 @@ pub trait CampaignManager<AccountId, BlockNumber> {
 	fn on_retire(id: CampaignId)-> DispatchResult;
 	/// Get amount of contributors in a campaign
 	fn get_contributors_count(id: CampaignId) -> u32;
-	/// Get the total amounts raised in protocol
-	fn get_total_amounts_raised() -> Vec<(CurrencyId, AsBalance)>;
+}
+
+#[derive(RuntimeDebug, Clone, Copy, PartialEq)]
+pub enum SwapLimit<Balance> {
+	/// use exact amount supply amount to swap. (exact_supply_amount, minimum_target_amount)
+	ExactSupply(Balance, Balance),
+	/// swap to get exact amount target. (maximum_supply_amount, exact_target_amount)
+	ExactTarget(Balance, Balance),
 }
 
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_liquidity_token_address(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<H160>;
+
+	fn get_swap_amount(path: &[CurrencyId], limit: SwapLimit<Balance>) -> Option<(Balance, Balance)>;
+
+	fn get_best_price_swap_path(
+		supply_currency_id: CurrencyId,
+		target_currency_id: CurrencyId,
+		limit: SwapLimit<Balance>,
+		alternative_path_joint_list: Vec<Vec<CurrencyId>>,
+	) -> Option<Vec<CurrencyId>>;
+
+	fn swap_with_specific_path(
+		who: &AccountId,
+		path: &[CurrencyId],
+		limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError>;
 
 	fn get_swap_target_amount(path: &[CurrencyId], supply_amount: Balance) -> Option<Balance>;
 
@@ -298,6 +313,27 @@ where
 
 	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
 		Some(Default::default())
+	}
+
+	fn get_swap_amount(_path: &[CurrencyId], _limit: SwapLimit<Balance>) -> Option<(Balance, Balance)> {
+		Some(Default::default())
+	}
+
+	fn get_best_price_swap_path(
+		_supply_currency_id: CurrencyId,
+		_target_currency_id: CurrencyId,
+		_limit: SwapLimit<Balance>,
+		_alternative_path_joint_list: Vec<Vec<CurrencyId>>,
+	) -> Option<Vec<CurrencyId>> {
+		Some(Default::default())
+	}
+
+	fn swap_with_specific_path(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
+		Ok(Default::default())
 	}
 
 	fn get_swap_target_amount(_path: &[CurrencyId], _supply_amount: Balance) -> Option<Balance> {
@@ -598,30 +634,6 @@ pub trait ExchangeRateProvider {
 	fn get_exchange_rate() -> ExchangeRate;
 }
 
-/// Dispatchable tasks
-pub trait DispatchableTask {
-	fn dispatch(self, weight: Weight) -> TaskResult;
-}
-
-/// Idle scheduler trait
-pub trait IdleScheduler<Task> {
-	fn schedule(task: Task) -> DispatchResult;
-}
-
-#[cfg(feature = "std")]
-impl DispatchableTask for () {
-	fn dispatch(self, _weight: Weight) -> TaskResult {
-		unimplemented!()
-	}
-}
-
-#[cfg(feature = "std")]
-impl<Task> IdleScheduler<Task> for () {
-	fn schedule(_task: Task) -> DispatchResult {
-		unimplemented!()
-	}
-}
-
 pub trait EmergencyShutdown {
 	fn is_shutdown() -> bool;
 }
@@ -725,10 +737,18 @@ pub trait EVMStateRentTrait<AccountId, Balance> {
 	fn query_maintainer(contract: H160) -> Result<H160, DispatchError>;
 	/// Query the constants `DeveloperDeposit` value from evm module.
 	fn query_developer_deposit() -> Balance;
-	/// Query the constants `DeploymentFee` value from evm module.
-	fn query_deployment_fee() -> Balance;
+	/// Query the constants `PublicationFee` value from evm module.
+	fn query_publication_fee() -> Balance;
 	/// Transfer the maintainer of the contract address.
 	fn transfer_maintainer(from: AccountId, contract: H160, new_maintainer: H160) -> DispatchResult;
+	/// Publish contract
+	fn publish_contract_precompile(who: AccountId, contract: H160) -> DispatchResult;
+	/// Query the developer status of an account
+	fn query_developer_status(who: AccountId) -> bool;
+	/// Enable developer mode
+	fn enable_account_contract_development(who: AccountId) -> DispatchResult;
+	/// Disable developer mode
+	fn disable_account_contract_development(who: AccountId) -> DispatchResult;
 }
 
 pub trait TransactionPayment<AccountId, Balance, NegativeImbalance> {
@@ -811,14 +831,15 @@ pub trait AddressMapping<AccountId> {
 	fn is_linked(account_id: &AccountId, evm: &EvmAddress) -> bool;
 }
 
+/// A mapping between AssetId and AssetMetadata.
+pub trait AssetIdMapping<StableAssetPoolId, ForeignAssetId, MultiLocation, AssetMetadata> {
+	/// Returns the AssetMetadata associated with a given contract address.
+	fn get_erc20_asset_metadata(contract: EvmAddress) -> Option<AssetMetadata>;
+}
+
 /// A mapping between u32 and Erc20 address.
 /// provide a way to encode/decode for CurrencyId;
-pub trait CurrencyIdMapping {
-	/// Use first 4 non-zero bytes as u32 to the mapping between u32 and evm
-	/// address.
-	fn set_erc20_mapping(address: EvmAddress) -> DispatchResult;
-	/// Returns the EvmAddress associated with a given u32.
-	fn get_evm_address(currency_id: u32) -> Option<EvmAddress>;
+pub trait Erc20InfoMapping {
 	/// Returns the name associated with a given CurrencyId.
 	/// If CurrencyId is CurrencyId::DexShare and contain DexShare::Erc20,
 	/// the EvmAddress must have been mapped.
@@ -842,15 +863,7 @@ pub trait CurrencyIdMapping {
 }
 
 #[cfg(feature = "std")]
-impl CurrencyIdMapping for () {
-	fn set_erc20_mapping(_address: EvmAddress) -> DispatchResult {
-		Err(DispatchError::Other("unimplemented CurrencyIdMapping"))
-	}
-
-	fn get_evm_address(_currency_id: u32) -> Option<EvmAddress> {
-		None
-	}
-
+impl Erc20InfoMapping for () {
 	fn name(_currency_id: CurrencyId) -> Option<Vec<u8>> {
 		None
 	}
@@ -869,5 +882,29 @@ impl CurrencyIdMapping for () {
 
 	fn decode_evm_address(_v: EvmAddress) -> Option<CurrencyId> {
 		None
+	}
+}
+
+/// Dispatchable tasks
+pub trait DispatchableTask {
+	fn dispatch(self, weight: Weight) -> TaskResult;
+}
+
+/// Idle scheduler trait
+pub trait IdleScheduler<Task> {
+	fn schedule(task: Task) -> DispatchResult;
+}
+
+#[cfg(feature = "std")]
+impl DispatchableTask for () {
+	fn dispatch(self, _weight: Weight) -> TaskResult {
+		unimplemented!()
+	}
+}
+
+#[cfg(feature = "std")]
+impl<Task> IdleScheduler<Task> for () {
+	fn schedule(_task: Task) -> DispatchResult {
+		unimplemented!()
 	}
 }

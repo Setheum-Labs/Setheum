@@ -9,6 +9,7 @@ bstringify = "0.1.2"
 serde = { version = "1.0.124", optional = true }
 codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["max-encoded-len"] }
 num_enum = { version = "0.5.1", default-features = false }
+parity-util-mem = { version = "0.10.0", default-features = false, features = ["primitive-types"] }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
@@ -18,14 +19,13 @@ sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0
 sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-ethereum-types = { version = "0.12.0", default-features = false }
-evm = { version = "0.30.1", default-features = false, features = ["with-codec"] }
-ethereum = { version = "0.9.0", default-features = false, features = ["with-codec"] }
+
+module-evm-utiltity = { path = "../modules/evm-utiltity", default-features = false }
+module-evm-utiltity-macro = { path = "../modules/evm-utiltity/macro" }
 
 [dev-dependencies]
 serde_json = { version = "1.0.64" }
 hex-literal = "0.3.1"
-primitives-proc-macro = { path = "./proc-macro" }
 
 [features]
 default = ["std"]
@@ -33,6 +33,7 @@ std = [
 	"serde",
 	"codec/std",
 	"num_enum/std",
+	"parity-util-mem/std",
 
 	"scale-info/std",
 	"sp-runtime/std",
@@ -43,8 +44,6 @@ std = [
 
 	"frame-support/std",
 
-	"evm/std",
-	"evm/with-serde",
-	"ethereum/std",
-	"ethereum/with-serde",
+	"module-evm-utiltity/std",
 ]
+evm-tests = []

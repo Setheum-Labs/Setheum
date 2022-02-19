@@ -6,20 +6,22 @@ edition = "2018"
 
 [dependencies]
 serde = { version = "1.0.124", optional = true }
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
-libsecp256k1 = { version = "0.3.4", default-features = false, features = ["hmac"] }
+codec = { package = "parity-scale-codec", version = "2.3.1", default-features = false }
+libsecp256k1 = { version = "0.6", default-features = false, features = ["hmac", "static-context"], optional = true }
+scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.15", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.15", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.15", default-features = false }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.15", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.15", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.15", default-features = false }
 
 orml-traits = { path = "../../lib-orml/traits", default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 module-support = { path = "../support", default-features = false }
+module-evm-utiltity-macro = { path = "../evm-utiltity/macro" }
 
 [dev-dependencies]
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
@@ -31,7 +33,9 @@ default = ["std"]
 std = [
 	"serde",
 	"codec/std",
+	"libsecp256k1",
 	"libsecp256k1/std",
+	"scale-info/std",
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-io/std",
@@ -43,6 +47,8 @@ std = [
 	"module-support/std",
 ]
 runtime-benchmarks = [
+	"libsecp256k1",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
 ]
+try-runtime = ["frame-support/try-runtime"]
