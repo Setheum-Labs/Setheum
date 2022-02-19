@@ -241,15 +241,3 @@ pub enum ReserveIdentifier {
 	// always the last, indicate number of variants
 	Count,
 }
-
-// Temporary to bypass `not building wasm` error;
-sp_api::decl_runtime_apis! {
-	pub trait OracleApi<ProviderId, Key, Value> where
-		ProviderId: Codec,
-		Key: Codec,
-		Value: Codec,
-	{
-		fn get_value(provider_id: ProviderId, key: Key) -> Option<Value>;
-		fn get_all_values(provider_id: ProviderId) -> Vec<(Key, Option<Value>)>;
-	}
-}
