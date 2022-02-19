@@ -16,6 +16,7 @@ release:
 	make configure-rust
 	rm -rf target/
 	cargo build --manifest-path node/Cargo.toml --features with-ethereum-compatibility --release
+
 .PHONY: build
 build:
 	cargo build --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility --release
