@@ -188,7 +188,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 }
 
 pub struct MockSerpTreasury;
-impl SerpTreasury<AccountId> for MockSerpTreasury {
+impl SerpTreasury<AccountId, BlockNumber> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
@@ -200,7 +200,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn serp_tes_now() -> DispatchResult{
+	fn serp_tes_now(_now: BlockNumber) -> DispatchResult{
 		unimplemented!()
 	}
 

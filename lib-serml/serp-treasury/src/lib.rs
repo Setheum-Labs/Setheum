@@ -103,10 +103,6 @@ pub mod module {
 		/// The SetUSD currency id, it should be SETUSD in Setheum.
 		type GetSetUSDId: Get<CurrencyId>;
 
-		// CashDrop period for transferring cashdrop.
-		// The ideal period is after every `24 hours`.
-		// type CashDropPeriod: Get<Self::BlockNumber>;
-
 		/// CDP-Treasury account for processing serplus funds 
 		/// CDPTreasury account.
 		#[pallet::constant]
@@ -189,8 +185,8 @@ pub mod module {
 		CashDropToVault(Balance, CurrencyId),
 		/// Stable Currency Inflation Rate Updated
 		StableCurrencyInflationRateUpdated(SerpStableCurrencyId, Balance),
-		/// SERP-TES is Triggered
-		SerpTesNow(),
+		/// SERP-TES is Triggered [/now: Blocknumber/]
+		SerpTesNow(BlockNumber),
 		/// Stable Currency Inflation Rate Delivered
 		InflationDelivery(CurrencyId, Balance),
 		/// SerpSwapDinarToExactSetter
@@ -294,7 +290,7 @@ pub mod module {
 			// Schedule for when to trigger SERP-TES and SERP-Inflation
 			// (Blocktime/BlockNumber - every blabla block)
 
-			let serp_tes_now = Self::serp_tes_now().is_ok();
+			let serp_tes_now = Self::serp_tes_now(now).is_ok();
 
 			if now % T::StableCurrencyInflationPeriod::get() == Zero::zero() {
 				let mut count: u32 = 0;
@@ -306,7 +302,7 @@ pub mod module {
 					count += 1;
 				};
 				if serp_tes_now {
-					Self::serp_tes_now().unwrap();
+					Self::serp_tes_now(now).unwrap();
 					count += 1;
 				}
 
@@ -314,7 +310,7 @@ pub mod module {
 			} else if serp_tes_now {
 				// SERP TES (Token Elasticity of Supply).
 				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
-				Self::serp_tes_now().unwrap();
+				Self::serp_tes_now(now).unwrap();
 				let mut count: u32 = 0;
 				count += 1;
 
@@ -380,7 +376,7 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
+impl<T: Config> SerpTreasury<T::AccountId, T::BlockNumber> for Pallet<T> {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
@@ -403,36 +399,111 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 	
 	/// Deliver System StableCurrency stability for the Setter - SETR
-	fn serp_tes_now() -> DispatchResult {
-
-		let setter_token = T::SetterCurrencyId::get();
-
-		let setter_token: CurrencyId = setter_token.into();
-		let setdollar_token: CurrencyId = setter_token.into();
+	fn serp_tes_now(now: T::BlockNumber) -> DispatchResult {
+		// tokens
+		let setm_token: CurrencyId =  T::GetNativeCurrencyId::get().into();
+		let serp_token: CurrencyId = T::GetSerpCurrencyId::get().into();
+		let dnar_token: CurrencyId = T::GetDinarCurrencyId::get().into();
+		let help_token: CurrencyId = T::GetHelpCurrencyId::get().into();
+		let setter_token: CurrencyId = T::SetterCurrencyId::get().into();
+		let setusd_token: CurrencyId = T::GetSetUSDId::get().into();
+		// liquidity pools
+		let (setm_setusd_pool, setdollar_setm_pool) = T::Dex::get_liquidity_pool(setm_token, setusd_token);
+		let (serp_setusd_pool, setdollar_serp_pool) = T::Dex::get_liquidity_pool(serp_token, setusd_token);
+		let (dnar_setusd_pool, setdollar_dnar_pool) = T::Dex::get_liquidity_pool(dnar_token, setusd_token);
+		let (help_setusd_pool, setdollar_help_pool) = T::Dex::get_liquidity_pool(help_token, setusd_token);
+		let (setter_setusd_pool, setdollar_setr_pool) = T::Dex::get_liquidity_pool(setter_token, setusd_token);
+		let (setm_setr_pool, setter_setm_pool) = T::Dex::get_liquidity_pool(setm_token, setter_token);
+		let (serp_setr_pool, setter_serp_pool) = T::Dex::get_liquidity_pool(serp_token, setter_token);
+		let (dnar_setr_pool, setter_dnar_pool) = T::Dex::get_liquidity_pool(dnar_token, setter_token);
+		let (help_setr_pool, setter_help_pool) = T::Dex::get_liquidity_pool(help_token, setter_token);
 		
-		let (setter_pool, setdollar_pool) = T::Dex::get_liquidity_pool(setter_token, setdollar_token);
+		// setter-setusd base conversion rate
+		let setter_base_rate: Balance = 4;
+		let setusd_base_rate: Balance = 1;
 
-		let two: Balance = 2;
+		for currency_id in T::StableCurrencyIds::get() {
+			if currency_id == setter_token {
+				// setter prices
+				let setter_price_in_setm_pool = (setm_setr_pool.checked_div(setter_setm_pool)
+					.saturating_mul(setdollar_setm_pool.checked_div(setm_setusd_pool)).unwrap_or_else(Zero::zero));
+				let setter_price_in_serp_pool = (serp_setr_pool.checked_div(setter_serp_pool)
+					.saturating_mul(setdollar_serp_pool.checked_div(serp_setusd_pool)).unwrap_or_else(Zero::zero));
+				let setter_price_in_dnar_pool = (dnar_setr_pool.checked_div(setter_dnar_pool)
+					.saturating_mul(setdollar_dnar_pool.checked_div(dnar_setusd_pool)).unwrap_or_else(Zero::zero));
+				let setter_price_in_help_pool = (help_setr_pool.checked_div(setter_help_pool)
+					.saturating_mul(setdollar_help_pool.checked_div(help_setusd_pool)).unwrap_or_else(Zero::zero));
+				let setter_price_in_setusd_pool = setdollar_setr_pool.checked_div(setter_setusd_pool).unwrap_or_else(Zero::zero);
+				// setter average price
+				let setter_avg_price = (
+					setter_price_in_setm_pool
+					.checked_add(setter_price_in_serp_pool)
+					.checked_add(setter_price_in_dnar_pool)
+					.checked_add(setter_price_in_help_pool)
+					.checked_add(setter_price_in_setusd_pool)
+					.saturating_div(U256::from(5))
+				).unwrap_or_else(Zero::zero);
+				let setter_rate = setter_base_rate.checked_mul(setter_avg_price).unwrap_or_else(Zero::zero);
 
-		let base_unit = setter_pool.saturating_mul(two);
+				match setter_rate {
+					0 => {}
+					setter_rate if setter_rate > setusd_base_rate => {
+						// safe from underflow because `setter_rate` is checked to be greater than `setusd_base_rate`
+						let supply = T::Currency::total_issuance(setter_token);
+						let expand_by = Self::calculate_supply_change(setter_rate, setusd_base_rate, supply);
+						Self::on_serpup(setter_token, expand_by)?;
+					}
+					setter_rate if setter_rate < setusd_base_rate => {
+						// safe from underflow because `setter_rate` is checked to be less than `setusd_base_rate`
+						let supply = T::Currency::total_issuance(setter_token);
+						let contract_by = Self::calculate_supply_change(setusd_base_rate, setter_rate, supply);
+						Self::on_serpdown(setter_token, contract_by)?;
+					}
+					_ => {}
+				}
+			} else if currency_id == setusd_token {
+				// setusd prices
+				let setusd_price_in_setm_pool = (setm_setusd_pool.checked_div(setdollar_setm_pool)
+					.saturating_mul(setter_setm_pool.checked_div(setm_setr_pool)).unwrap_or_else(Zero::zero));
+				let setusd_price_in_serp_pool = (serp_setusd_pool.checked_div(setdollar_serp_pool)
+					.saturating_mul(setter_serp_pool.checked_div(serp_setr_pool)).unwrap_or_else(Zero::zero));
+				let setusd_price_in_dnar_pool = (dnar_setusd_pool.checked_div(setdollar_dnar_pool)
+					.saturating_mul(setter_dnar_pool.checked_div(dnar_setr_pool)).unwrap_or_else(Zero::zero));
+				let setusd_price_in_help_pool = (help_setusd_pool.checked_div(setdollar_help_pool)
+					.saturating_mul(setter_help_pool.checked_div(help_setr_pool)).unwrap_or_else(Zero::zero));
+				let setusd_price_in_setr_pool = setter_setusd_pool.checked_div(setdollar_setr_pool).unwrap_or_else(Zero::zero);
+				// setusd average price
+				let setusd_avg_price = (
+					setusd_price_in_setm_pool
+					.checked_add(setusd_price_in_serp_pool)
+					.checked_add(setusd_price_in_dnar_pool)
+					.checked_add(setusd_price_in_help_pool)
+					.checked_add(setusd_price_in_setr_pool)
+					.saturating_div(U256::from(5))
+				).unwrap_or_else(Zero::zero);
+				let setusd_rate = setusd_base_rate.checked_mul(setusd_avg_price).unwrap_or_else(Zero::zero);
 
-		match setdollar_pool {
-			0 => {}
-			setdollar_pool if setdollar_pool > base_unit => {
-				// safe from underflow because `setdollar_pool` is checked to be greater than `base_unit`
-				let supply = T::Currency::total_issuance(setter_token);
-				let expand_by = Self::calculate_supply_change(setdollar_pool, base_unit, supply);
-				Self::on_serpup(setter_token, expand_by)?;
+				match setusd_rate {
+					0 => {}
+					setusd_rate if setusd_rate > setter_base_rate => {
+						// safe from underflow because `setusd_rate` is checked to be greater than `setter_base_rate`
+						let supply = T::Currency::total_issuance(setusd_token);
+						let expand_by = Self::calculate_supply_change(setusd_rate, setter_base_rate, supply);
+						Self::on_serpup(setusd_token, expand_by)?;
+					}
+					setusd_rate if setusd_rate < setter_base_rate => {
+						// safe from underflow because `setusd_rate` is checked to be less than `setter_base_rate`
+						let supply = T::Currency::total_issuance(setusd_token);
+						let contract_by = Self::calculate_supply_change(setter_base_rate, setusd_rate, supply);
+						Self::on_serpdown(setusd_token, contract_by)?;
+					}
+					_ => {}
+				}
 			}
-			setdollar_pool if setdollar_pool < base_unit => {
-				// safe from underflow because `setdollar_pool` is checked to be less than `base_unit`
-				let supply = T::Currency::total_issuance(setter_token);
-				let contract_by = Self::calculate_supply_change(base_unit, setdollar_pool, supply);
-				Self::on_serpdown(setter_token, contract_by)?;
-			}
-			_ => {}
+			break;
 		}
-		Self::deposit_event(Event::SerpTesNow());
+		let now = <frame_system::Module<T>>::block_number();
+		Self::deposit_event(Event::SerpTesNow(now));
 		Ok(())
 	}
 
@@ -472,6 +543,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 				);
 				Self::deposit_event(Event::InflationDelivery(currency_id, inflation_amount));
 			};
+			break;
 		}
 		Ok(())
 	}

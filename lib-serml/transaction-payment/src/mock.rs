@@ -131,7 +131,7 @@ impl pallet_balances::Config for Runtime {
 pub type AdaptedBasicCurrency = module_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
 pub struct MockSerpTreasury;
-impl SerpTreasury<AccountId> for MockSerpTreasury {
+impl SerpTreasury<AccountId, BlockNumber> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
@@ -143,7 +143,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn serp_tes_now() -> DispatchResult{
+	fn serp_tes_now(_now: BlockNumber) -> DispatchResult{
 		unimplemented!()
 	}
 
