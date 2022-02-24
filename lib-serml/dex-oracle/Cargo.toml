@@ -1,5 +1,5 @@
 [package]
-name = "module-dex-oracle"
+name = "dex-oracle"
 version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
