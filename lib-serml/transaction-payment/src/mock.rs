@@ -143,7 +143,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn serp_tes_now() -> DispatchResult{
+	fn serp_tes_now() -> DispatchResult {
 		unimplemented!()
 	}
 

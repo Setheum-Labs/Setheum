@@ -150,6 +150,22 @@ macro_rules! create_currency_id {
 					symbol: "LP_SETR_SETUSD".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETR), DexShare::Token(SETUSD))).unwrap(),
 				},
+				Token {
+					symbol: "LP_SETM_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(SETR))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SERP_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SERP), DexShare::Token(SETR))).unwrap(),
+				},
+				Token {
+					symbol: "LP_DNAR_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETR))).unwrap(),
+				},
+				Token {
+					symbol: "LP_HELP_SETR".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HELP), DexShare::Token(SETR))).unwrap(),
+				},
 			];
 			tokens.append(&mut lp_tokens);
 

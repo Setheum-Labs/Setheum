@@ -406,15 +406,16 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn serp_tes_now() -> DispatchResult {
 
 		let setter_token = T::SetterCurrencyId::get();
+		let setdollar_token = T::GetSetUSDId::get();
 
 		let setter_token: CurrencyId = setter_token.into();
-		let setdollar_token: CurrencyId = setter_token.into();
+		let setdollar_token: CurrencyId = setdollar_token.into();
 		
 		let (setter_pool, setdollar_pool) = T::Dex::get_liquidity_pool(setter_token, setdollar_token);
 
-		let two: Balance = 2;
+		let setter_peg: Balance = 4;
 
-		let base_unit = setter_pool.saturating_mul(two);
+		let base_unit = setter_pool.saturating_mul(setter_peg);
 
 		match setdollar_pool {
 			0 => {}

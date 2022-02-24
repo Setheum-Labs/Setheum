@@ -678,12 +678,12 @@ parameter_types! {
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
+		vec![SETM],
+		vec![SERP],
+		vec![DNAR],
+		vec![HELP],
+		vec![SETR],
 		vec![SETUSD],
-		vec![SETM, SETUSD],
-		vec![SERP, SETUSD],
-		vec![DNAR, SETUSD],
-		vec![HELP, SETUSD],
-		vec![SETR, SETUSD],
 	];
 }
 
@@ -825,6 +825,10 @@ parameter_types! {
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, HELP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
+		TradingPair::from_currency_ids(SETR, SETM).unwrap(),
+		TradingPair::from_currency_ids(SETR, SERP).unwrap(),
+		TradingPair::from_currency_ids(SETR, DNAR).unwrap(),
+		TradingPair::from_currency_ids(SETR, HELP).unwrap(),
 	];
 }
 
@@ -857,21 +861,12 @@ impl module_airdrop::Config for Runtime {
 
 parameter_types! {
 	pub SerpDefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETR],
-		vec![SETUSD],
-		vec![SETUSD, SETR],
-		vec![SETM, SETUSD, SETR],
-		vec![SETUSD, SETM],
-		vec![SERP, SETUSD, SETR],
-		vec![SETUSD, SERP],
-		vec![DNAR, SETUSD, SETR],
-		vec![SETUSD, DNAR],
-		vec![HELP, SETUSD, SETR],
-		vec![SETUSD, HELP],
 		vec![SETM],
 		vec![SERP],
 		vec![DNAR],
 		vec![HELP],
+		vec![SETR],
+		vec![SETUSD],
 	];
 	
     pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
@@ -929,11 +924,12 @@ impl cdp_treasury::Config for Runtime {
 parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETUSD, SETM],
-		vec![SERP, SETUSD, SETM],
-		vec![DNAR, SETUSD, SETM],
-		vec![HELP, SETUSD, SETM],
-		vec![SETR, SETUSD, SETM],
+		vec![SETM],
+		vec![SERP],
+		vec![DNAR],
+		vec![HELP],
+		vec![SETR],
+		vec![SETUSD],
 	];
 }
 
