@@ -109,7 +109,7 @@ impl orml_auction::Config for Runtime {
 }
 
 pub struct MockSerpTreasury;
-impl SerpTreasury<AccountId, BlockNumber> for MockSerpTreasury {
+impl SerpTreasury<AccountId> for MockSerpTreasury {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 
@@ -121,7 +121,7 @@ impl SerpTreasury<AccountId, BlockNumber> for MockSerpTreasury {
 		unimplemented!()
 	}
 
-	fn serp_tes_now(_now: BlockNumber) -> DispatchResult{
+	fn serp_tes_now() -> DispatchResult{
 		unimplemented!()
 	}
 

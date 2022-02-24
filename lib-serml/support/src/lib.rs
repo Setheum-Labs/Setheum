@@ -366,13 +366,13 @@ where
 }
 
 /// An abstraction of serp treasury for the SERP (Setheum Elastic Reserve Protocol).
-pub trait SerpTreasury<AccountId, BlockNumber> {
+pub trait SerpTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
 
 	fn calculate_supply_change(numerator: Self::Balance, denominator: Self::Balance, supply: Self::Balance) -> Self::Balance;
 
-	fn serp_tes_now(now: BlockNumber) -> DispatchResult;
+	fn serp_tes_now() -> DispatchResult;
 
 	/// Deliver System StableCurrency Inflation
 	fn issue_stablecurrency_inflation() -> DispatchResult;
