@@ -1350,6 +1350,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "dex-oracle"
+version = "1.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "module-support",
+ "orml-traits",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "setheum-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "digest"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2717,6 +2737,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "idle-scheduler"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "module-support",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "setheum-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "idna"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3990,26 +4027,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "module-dex-oracle"
-version = "1.0.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "module-support",
- "orml-traits",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "setheum-primitives",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "module-evm"
 version = "1.0.0"
 dependencies = [
@@ -4133,23 +4150,6 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
-]
-
-[[package]]
-name = "module-idle-scheduler"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "module-support",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "setheum-primitives",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]

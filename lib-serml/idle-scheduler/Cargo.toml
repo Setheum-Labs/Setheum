@@ -1,5 +1,5 @@
 [package]
-name = "module-idle-scheduler"
+name = "idle-scheduler"
 version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
