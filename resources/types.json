@@ -163,7 +163,6 @@
         "liquidationPenalty": "Option<Rate>",
         "requiredCollateralRatio": "Option<Rate>"
     },
-    "CandidateInfoOf": "CandidateInfo",
     "TradingPairProvisionParameters": {
         "minContribution": "(Balance, Balance)",
         "targetProvision": "(Balance, Balance)",
@@ -276,12 +275,6 @@
         ]
     },
     "AtLeast64BitUnsigned": "u128",
-    "SubAccountStatus": {
-        "bonded": "Balance",
-        "available": "Balance",
-        "unbonding": "Vec<(EraIndex,Balance)>",
-        "mockRewardRate": "Rate"
-    },
     "ChangeRate": {
         "_enum": {
             "NoChange": "Null",
