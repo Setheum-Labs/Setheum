@@ -604,12 +604,12 @@ parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
-				TokenSymbol::SETUSD => 100_000_000_000_000_000, // 10 cents
-				TokenSymbol::SETR => 100_000_000_000_000_000, // 10 cents
-				TokenSymbol::SERP => 100_000_000_000_000_000, // 10 cents
-				TokenSymbol::HELP => 100_000_000_000_000_000, // 10 cents
-				TokenSymbol::DNAR => 100_000_000_000_000_000, // 10 cents
-				TokenSymbol::SETM => 100_000_000_000_000_000, // 10 cents
+				TokenSymbol::SETUSD => 100_000_000_000_000_000, // 10 cents (0.1)
+				TokenSymbol::SETR => 100_000_000_000_000_000, // 10 cents (0.1)
+				TokenSymbol::SERP => 100_000_000_000_000_000, // 10 cents (0.1)
+				TokenSymbol::HELP => 100_000_000_000_000_000, // 10 cents (0.1)
+				TokenSymbol::DNAR => 100_000_000_000_000_000, // 10 cents (0.1)
+				TokenSymbol::SETM => 100_000_000_000_000_000, // 10 cents (0.1)
 			},
 			CurrencyId::DexShare(dex_share_0, _) => {
 				let currency_id_0: CurrencyId = (*dex_share_0).into();
