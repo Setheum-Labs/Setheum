@@ -189,8 +189,6 @@ pub mod module {
 		CashDropToVault(Balance, CurrencyId),
 		/// Stable Currency Inflation Rate Updated
 		StableCurrencyInflationRateUpdated(SerpStableCurrencyId, Balance),
-		/// SERP-TES is Triggered
-		SerpTesNow(),
 		/// Stable Currency Inflation Rate Delivered
 		InflationDelivery(CurrencyId, Balance),
 		/// SerpSwapDinarToExactSetter
@@ -433,7 +431,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			}
 			_ => {}
 		}
-		Self::deposit_event(Event::SerpTesNow());
 		Ok(())
 	}
 
