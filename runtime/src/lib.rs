@@ -678,11 +678,15 @@ parameter_types! {
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETM],
-		vec![SERP],
-		vec![DNAR],
-		vec![HELP],
-		vec![SETR],
+		vec![SETM, SETUSD],
+		vec![SERP, SETUSD],
+		vec![DNAR, SETUSD],
+		vec![HELP, SETUSD],
+		vec![SETR, SETUSD],
+		vec![SETM, SETR, SETUSD],
+		vec![SERP, SETR, SETUSD],
+		vec![DNAR, SETR, SETUSD],
+		vec![HELP, SETR, SETUSD],
 		vec![SETUSD],
 	];
 }

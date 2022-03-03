@@ -29,6 +29,7 @@ use primitives::{
 	evm::{CallInfo, EvmAddress},
 	task::TaskResult
 };
+use scale_info::TypeInfo;
 use sp_core::H160;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, CheckedDiv, MaybeSerializeDeserialize},
@@ -234,40 +235,33 @@ pub trait CampaignManager<AccountId, BlockNumber> {
 	fn get_total_amounts_raised() -> Vec<(CurrencyId, AsBalance)>;
 }
 
+#[derive(RuntimeDebug, Encode, Decode, Clone, Copy, PartialEq, TypeInfo)]
+pub enum SwapLimit<Balance> {
+	/// use exact amount supply amount to swap. (exact_supply_amount, minimum_target_amount)
+	ExactSupply(Balance, Balance),
+	/// swap to get exact amount target. (maximum_supply_amount, exact_target_amount)
+	ExactTarget(Balance, Balance),
+}
+
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_liquidity_token_address(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<H160>;
 
-	fn get_swap_target_amount(path: &[CurrencyId], supply_amount: Balance) -> Option<Balance>;
+	fn get_swap_amount(path: &[CurrencyId], limit: SwapLimit<Balance>) -> Option<(Balance, Balance)>;
 
-	fn get_swap_supply_amount(path: &[CurrencyId], target_amount: Balance) -> Option<Balance>;
+	fn get_best_price_swap_path(
+		supply_currency_id: CurrencyId,
+		target_currency_id: CurrencyId,
+		limit: SwapLimit<Balance>,
+		alternative_path_joint_list: Vec<Vec<CurrencyId>>,
+	) -> Option<Vec<CurrencyId>>;
 
-	fn swap_with_exact_supply(
+	fn swap_with_specific_path(
 		who: &AccountId,
 		path: &[CurrencyId],
-		supply_amount: Balance,
-		min_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError>;
-
-	fn buyback_swap_with_exact_supply(
-		who: &AccountId,
-		path: &[CurrencyId],
-		supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError>;
-
-	fn swap_with_exact_target(
-		who: &AccountId,
-		path: &[CurrencyId],
-		target_amount: Balance,
-		max_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError>;
-
-	fn buyback_swap_with_exact_target(
-		who: &AccountId,
-		path: &[CurrencyId],
-		target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError>;
+		limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError>;
 
 	fn add_liquidity(
 		who: &AccountId,
@@ -276,7 +270,7 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		max_amount_a: Balance,
 		max_amount_b: Balance,
 		min_share_increment: Balance,
-	) -> DispatchResult;
+	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError>;
 
 	fn remove_liquidity(
 		who: &AccountId,
@@ -285,7 +279,7 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		remove_share: Balance,
 		min_withdrawn_a: Balance,
 		min_withdrawn_b: Balance,
-	) -> DispatchResult;
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError>;
 }
 
 impl<AccountId, CurrencyId, Balance> DEXManager<AccountId, CurrencyId, Balance> for ()
@@ -300,45 +294,24 @@ where
 		Some(Default::default())
 	}
 
-	fn get_swap_target_amount(_path: &[CurrencyId], _supply_amount: Balance) -> Option<Balance> {
+	fn get_swap_amount(_path: &[CurrencyId], _limit: SwapLimit<Balance>) -> Option<(Balance, Balance)> {
 		Some(Default::default())
 	}
 
-	fn get_swap_supply_amount(_path: &[CurrencyId], _target_amount: Balance) -> Option<Balance> {
+	fn get_best_price_swap_path(
+		_supply_currency_id: CurrencyId,
+		_target_currency_id: CurrencyId,
+		_limit: SwapLimit<Balance>,
+		_alternative_path_joint_list: Vec<Vec<CurrencyId>>,
+	) -> Option<Vec<CurrencyId>> {
 		Some(Default::default())
 	}
 
-	fn swap_with_exact_supply(
+	fn swap_with_specific_path(
 		_who: &AccountId,
 		_path: &[CurrencyId],
-		_supply_amount: Balance,
-		_min_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		Ok(Default::default())
-	}
-
-	fn buyback_swap_with_exact_supply(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		Ok(Default::default())
-	}
-
-	fn swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-		_max_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		Ok(Default::default())
-	}
-
-	fn buyback_swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+		_limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		Ok(Default::default())
 	}
 
@@ -349,8 +322,8 @@ where
 		_max_amount_a: Balance,
 		_max_amount_b: Balance,
 		_min_share_increment: Balance,
-	) -> DispatchResult {
-		Ok(())
+	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError> {
+		Ok(Default::default())
 	}
 
 	fn remove_liquidity(
@@ -360,8 +333,8 @@ where
 		_remove_share: Balance,
 		_min_withdrawn_a: Balance,
 		_min_withdrawn_b: Balance,
-	) -> DispatchResult {
-		Ok(())
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
+		Ok(Default::default())
 	}
 }
 
