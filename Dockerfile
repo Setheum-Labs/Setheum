@@ -1,7 +1,13 @@
-FROM rust:1.51.0 as build
+FROM ubuntu:18.04
+RUN apt-get update && apt-get install -y \
+    build-essential clang git\
+    curl
 
-RUN rustup default nightly-2021-05-09
-RUN apt-get update && apt-get install -y clang
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="/root/.cargo/bin:$PATH"
+RUN rustup update nightly
+RUN rustup update stable
+RUN rustup target add wasm32-unknown-unknown --toolchain nightly
 
 WORKDIR /build
 COPY . /build
