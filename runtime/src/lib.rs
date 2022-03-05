@@ -677,18 +677,6 @@ parameter_types! {
 	pub MinimumIncrementSize: Rate = Rate::saturating_from_rational(2, 100); // 2%
 	pub const AuctionTimeToClose: BlockNumber = 15 * MINUTES;
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
-	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETM, SETUSD],
-		vec![SERP, SETUSD],
-		vec![DNAR, SETUSD],
-		vec![HELP, SETUSD],
-		vec![SETR, SETUSD],
-		vec![SETM, SETR, SETUSD],
-		vec![SERP, SETR, SETUSD],
-		vec![DNAR, SETR, SETUSD],
-		vec![HELP, SETR, SETUSD],
-		vec![SETUSD],
-	];
 }
 
 impl auction_manager::Config for Runtime {
@@ -704,7 +692,6 @@ impl auction_manager::Config for Runtime {
 	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
 	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
 	type EmergencyShutdown = EmergencyShutdown;
-	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
 	type WeightInfo = weights::module_auction_manager::WeightInfo<Runtime>;
 }
 
@@ -771,6 +758,14 @@ where
 }
 
 parameter_types! {
+	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
+		vec![SETR],
+		vec![SERP],
+		vec![DNAR],
+		vec![SETM],
+		vec![HELP],
+		vec![SETUSD],
+	];
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, HELP, SETR];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
@@ -793,7 +788,9 @@ impl cdp_engine::Config for Runtime {
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
 	type EmergencyShutdown = EmergencyShutdown;
-	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
+	type Currency = Currencies;
+	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
+	type DEX = Dex;
 	type WeightInfo = weights::module_cdp_engine::WeightInfo<Runtime>;
 }
 
@@ -863,15 +860,6 @@ impl module_airdrop::Config for Runtime {
 }
 
 parameter_types! {
-	pub SerpDefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETM],
-		vec![SERP],
-		vec![DNAR],
-		vec![HELP],
-		vec![SETR],
-		vec![SETUSD],
-	];
-	
     pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
     
 	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * 1_000_000_000_000_000_000;
@@ -893,11 +881,10 @@ impl serp_treasury::Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasuryAccountId = CDPTreasuryAccount;
-	type DefaultSwapParitalPathList = SerpDefaultSwapParitalPathList;
 	type Dex = Dex;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = module_prices::RealTimePriceProvider<Runtime>;
+	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
 	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
 	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
@@ -916,23 +903,26 @@ impl cdp_treasury::Config for Runtime {
 	type Currency = Currencies;
 	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = AuctionManager;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = CDPTreasuryPalletId;
 	type SerpTreasury = SerpTreasury;
+	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 	type WeightInfo = weights::module_cdp_treasury::WeightInfo<Runtime>;
 }
 
 parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETM],
-		vec![SERP],
-		vec![DNAR],
-		vec![HELP],
-		vec![SETR],
-		vec![SETUSD],
+		vec![SETR, SETM],
+		vec![SETUSD, SETM],
+		vec![SERP, SETR, SETM],
+		vec![SERP, SETUSD, SETM],
+		vec![DNAR, SETR, SETM],
+		vec![DNAR, SETUSD, SETM],
+		vec![HELP, SETR, SETM],
+		vec![HELP, SETUSD, SETM],
 	];
 }
 

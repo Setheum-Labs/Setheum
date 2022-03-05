@@ -49,7 +49,7 @@ use sp_std::marker::PhantomData;
 /// Weight functions for cdp_treasury.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> cdp_treasury::WeightInfo for WeightInfo<T> {
-	f// Storage: Tokens Accounts (r:1 w:0)
+	// Storage: Tokens Accounts (r:1 w:0)
 	// Storage: AuctionManager TotalCollateralInAuction (r:1 w:1)
 	// Storage: CdpTreasury ExpectedCollateralAuctionSize (r:1 w:0)
 	// Storage: AuctionManager TotalTargetInAuction (r:1 w:1)
