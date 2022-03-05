@@ -1,13 +1,13 @@
 .PHONY: configure-rust
 configure-rust:
 	rustup install 1.53.0
-rustup default 1.53.0
-	rustup toolchain install nightly-2021-06-17
+	rustup default 1.53.0
+	rustup toolchain install nightly-2021-05-21
 	rustup toolchain install stable
-	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-06-17
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-21
 	rustup component add clippy
 	rustup update nightly
-	rustup update stable
+	rustup default nightly && rustup update
 	rustup target add wasm32-unknown-unknown --toolchain nightly
 
 
