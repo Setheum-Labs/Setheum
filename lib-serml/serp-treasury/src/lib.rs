@@ -915,15 +915,15 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		to_currency_id: CurrencyId,
 		swap_limit: SwapLimit<Balance>,
 	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		let target_limit = match swap_limit {
-			SwapLimit::ExactSupply(_, min_target_amount) => min_target_amount,
-			SwapLimit::ExactTarget(_, target_amount) => target_amount,
+		let (exact_supply, min_target) = match swap_limit {
+			SwapLimit::ExactSupply(exact_supply, min_target) => (exact_supply, min_target),
+			SwapLimit::ExactTarget(max_supply, target_amount) => (max_supply, target_amount),
 		};
 		ensure!(
 			T::Currency::deposit(
 				from_currency_id,
 				&Self::account_id(),
-				target_limit
+				exact_supply
 			).is_ok(),
 			Error::<T>::CannotDeposit,
 		);
@@ -938,9 +938,10 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		T::Currency::deposit(
 			from_currency_id,
 			&Self::account_id(),
-			target_limit
+			exact_supply
 		).unwrap();
-		T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)
+		let (_, actual_target) = T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)?;
+		Ok((exact_supply, actual_target))
 	}
 
 	/// Swap `from_currency_id` to get exact `from_currency_id`,
@@ -951,15 +952,15 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		to_currency_id: CurrencyId,
 		swap_limit: SwapLimit<Balance>,
 	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		let supply_limit = match swap_limit {
-			SwapLimit::ExactSupply(supply_amount, _) => supply_amount,
-			SwapLimit::ExactTarget(max_supply_amount, _) => max_supply_amount,
+		let (max_supply, exact_target) = match swap_limit {
+			SwapLimit::ExactSupply(supply_amount, min_target) => (supply_amount,min_target),
+			SwapLimit::ExactTarget(max_supply, exact_target) => (max_supply, exact_target),
 		};
 		ensure!(
 			T::Currency::deposit(
 				from_currency_id,
 				&Self::account_id(),
-				supply_limit
+				max_supply
 			).is_ok(),
 			Error::<T>::CannotDeposit,
 		);
@@ -974,9 +975,16 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		T::Currency::deposit(
 			from_currency_id,
 			&Self::account_id(),
-			supply_limit
+			max_supply
 		).unwrap();
-		T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)
+		let (actual_supply,_) = T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)?;
+		// withdraw extra buyback supply from SERP-Treasury
+		T::Currency::withdraw(
+			from_currency_id,
+			&Self::account_id(),
+			max_supply.saturating_sub(actual_supply),
+		).unwrap();
+		Ok((actual_supply, exact_target))
 	}
 }
 
