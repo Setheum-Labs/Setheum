@@ -36,7 +36,11 @@ fn authorize_should_work() {
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
 		assert_ok!(SerpSetmint::authorize(Origin::signed(ALICE), SERP, BOB));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), DepositPerAuthorization::get());
-		System::assert_last_event(Event::SerpSetmint(crate::Event::Authorization(ALICE, BOB, SERP)));
+		System::assert_last_event(Event::SerpSetmint(crate::Event::Authorization {
+			authorizer: ALICE,
+			authorizee: BOB,
+			collateral_type: SERP,
+		}));
 		assert_ok!(SerpSetmint::check_authorization(&ALICE, &BOB, SERP));
 		assert_noop!(
 			SerpSetmint::authorize(Origin::signed(ALICE), SERP, BOB),
@@ -55,8 +59,12 @@ fn unauthorize_should_work() {
 
 		assert_ok!(SerpSetmint::unauthorize(Origin::signed(ALICE), SERP, BOB));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
-		System::assert_last_event(Event::SerpSetmint(crate::Event::UnAuthorization(ALICE, BOB, SERP)));
-		assert_noop!(
+		System::assert_last_event(Event::SerpSetmint(crate::Event::UnAuthorization {
+			authorizer: ALICE,
+			authorizee: BOB,
+			collateral_type: SERP,
+		}));
+			assert_noop!(
 			SerpSetmint::check_authorization(&ALICE, &BOB, SERP),
 			Error::<Runtime>::NoPermission
 		);
@@ -76,7 +84,9 @@ fn unauthorize_all_should_work() {
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 200);
 		assert_ok!(SerpSetmint::unauthorize_all(Origin::signed(ALICE)));
 		assert_eq!(PalletBalances::reserved_balance(ALICE), 0);
-		System::assert_last_event(Event::SerpSetmint(crate::Event::UnAuthorizationAll(ALICE)));
+		System::assert_last_event(Event::SerpSetmint(crate::Event::UnAuthorizationAll {
+			authorizer: ALICE,
+		}));
 
 		assert_noop!(
 			SerpSetmint::check_authorization(&ALICE, &BOB, SERP),
@@ -148,7 +158,7 @@ fn on_emergency_shutdown_should_work() {
 			Error::<Runtime>::AlreadyShutdown,
 		);
 		assert_noop!(
-			SerpSetmint::close_loan_has_debit_by_dex(Origin::signed(ALICE), SERP, 100, None),
+			SerpSetmint::close_loan_has_debit_by_dex(Origin::signed(ALICE), SERP, 100),
 			Error::<Runtime>::AlreadyShutdown,
 		);
 	});
@@ -173,7 +183,6 @@ fn close_loan_has_debit_by_dex_work() {
 			Origin::signed(ALICE),
 			SERP,
 			100,
-			None
 		));
 		assert_eq!(LoansModule::positions(SERP, ALICE).collateral, 0);
 		assert_eq!(LoansModule::positions(SERP, ALICE).debit, 0);

@@ -26,7 +26,7 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types, PalletId};
 use frame_system::EnsureSignedBy;
 use orml_traits::parameter_type_with_key;
-use primitives::{Moment, TokenSymbol, TradingPair};
+use primitives::{DexShare, Moment, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{
 	testing::{Header, TestXt},
@@ -47,6 +47,11 @@ pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+
+pub const LP_SETUSD_DNAR: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DNAR));
+pub const LP_DNAR_SERP: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SERP), DexShare::Token(TokenSymbol::DNAR));
 
 mod cdp_engine {
 	pub use super::super::*;
@@ -135,7 +140,6 @@ parameter_types! {
 
 impl loans::Config for Runtime {
 	type Event = Event;
-	type Convert = DebitExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type RiskManager = CDPEngineModule;
 	type CDPTreasury = CDPTreasuryModule;
@@ -143,27 +147,39 @@ impl loans::Config for Runtime {
 }
 
 thread_local! {
-	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static SERP_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static DNAR_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static LP_SETUSD_DNAR_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static LP_DNAR_SERP_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
 }
 
 pub struct MockPriceSource;
 impl MockPriceSource {
-	pub fn set_relative_price(price: Option<Price>) {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
+	pub fn set_price(currency_id: CurrencyId, price: Option<Price>) {
+		match currency_id {
+			SERP => SERP_PRICE.with(|v| *v.borrow_mut() = price),
+			DNAR => DNAR_PRICE.with(|v| *v.borrow_mut() = price),
+			LP_SETUSD_DNAR => LP_SETUSD_DNAR_PRICE.with(|v| *v.borrow_mut() = price),
+			LP_DNAR_SERP => LP_DNAR_SERP_PRICE.with(|v| *v.borrow_mut() = price),
+			_ => {}
+		}
 	}
 }
 impl PriceProvider<CurrencyId> for MockPriceSource {
-	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<Price> {
-		match (base, quote) {
-			(SETUSD, SERP) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
-			(SERP, SETUSD) => RELATIVE_PRICE.with(|v| *v.borrow_mut()),
+	fn get_price(currency_id: CurrencyId) -> Option<Price> {
+		match currency_id {
+			SERP => SERP_PRICE.with(|v| *v.borrow()),
+			DNAR => DNAR_PRICE.with(|v| *v.borrow()),
+			SETUSD => Some(Price::one()),
+			LP_SETUSD_DNAR => LP_SETUSD_DNAR_PRICE.with(|v| *v.borrow()),
+			LP_DNAR_SERP => LP_DNAR_SERP_PRICE.with(|v| *v.borrow()),
 			_ => None,
 		}
 	}
+}
 
-	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
-		unimplemented!()
-	}
+thread_local! {
+	pub static AUCTION: RefCell<Option<(AccountId, CurrencyId, Balance, Balance)>> = RefCell::new(None);
 }
 
 pub struct MockAuctionManager;
@@ -173,24 +189,32 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	type AuctionId = AuctionId;
 
 	fn new_collateral_auction(
-		_refund_recipient: &AccountId,
-		_currency_id: Self::CurrencyId,
-		_amount: Self::Balance,
-		_target: Self::Balance,
+		refund_recipient: &AccountId,
+		currency_id: Self::CurrencyId,
+		amount: Self::Balance,
+		target: Self::Balance,
 	) -> DispatchResult {
+		AUCTION.with(|v| *v.borrow_mut() = Some((refund_recipient.clone(), currency_id, amount, target)));
 		Ok(())
 	}
 
 	fn cancel_auction(_id: Self::AuctionId) -> DispatchResult {
+		AUCTION.with(|v| *v.borrow_mut() = None);
 		Ok(())
 	}
 
 	fn get_total_target_in_auction() -> Self::Balance {
-		Default::default()
+		AUCTION
+			.with(|v| *v.borrow())
+			.map(|auction| auction.3)
+			.unwrap_or_default()
 	}
 
 	fn get_total_collateral_in_auction(_id: Self::CurrencyId) -> Self::Balance {
-		Default::default()
+		AUCTION
+			.with(|v| *v.borrow())
+			.map(|auction| auction.2)
+			.unwrap_or_default()
 	}
 }
 
@@ -351,8 +375,10 @@ parameter_types! {
 	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
+	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
+		vec![SERP],
+	];
 }
-
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
@@ -363,6 +389,7 @@ impl cdp_treasury::Config for Runtime {
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = CDPTreasuryPalletId;
+	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 	type WeightInfo = ();
 }
 
@@ -454,7 +481,9 @@ impl Config for Runtime {
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
 	type UnsignedPriority = UnsignedPriority;
 	type EmergencyShutdown = MockEmergencyShutdown;
-	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
+	type Currency = Currencies;
+	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
+	type DEX = DEXModule;
 	type WeightInfo = ();
 }
 

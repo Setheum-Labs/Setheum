@@ -64,7 +64,7 @@ fn can_process_tasks_up_to_weight_limit() {
 		// Due to hashing, excution is not guaranteed to be in order.
 		assert_eq!(
 			Tasks::<Runtime>::get(0),
-			Some(ScheduledTasks::BalancesTask(BalancesTask::OnIdle))
+			None
 		);
 		assert_eq!(Tasks::<Runtime>::get(1), None);
 		assert_eq!(Tasks::<Runtime>::get(2), None);
@@ -72,7 +72,7 @@ fn can_process_tasks_up_to_weight_limit() {
 		IdleScheduler::on_idle(0, 100_000_000_000);
 		assert_eq!(
 			Tasks::<Runtime>::get(0),
-			Some(ScheduledTasks::BalancesTask(BalancesTask::OnIdle))
+			None
 		);
 
 		IdleScheduler::on_idle(0, 100_001_000_000);

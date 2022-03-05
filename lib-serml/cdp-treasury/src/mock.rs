@@ -26,7 +26,7 @@ use super::*;
 use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
 use frame_system::{EnsureOneOf, EnsureRoot, EnsureSignedBy};
 use orml_traits::parameter_type_with_key;
-use primitives::{TokenSymbol, TradingPair};
+use primitives::{DexShare, TokenSymbol, TradingPair};
 use sp_core::H256;
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 use sp_std::cell::RefCell;
@@ -40,11 +40,14 @@ pub type AuctionId = u32;
 
 pub const ALICE: AccountId = 0;
 pub const BOB: AccountId = 1;
+pub const CHARLIE: AccountId = 2;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const LP_SETUSD_DNAR: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DNAR));
 
 mod cdp_treasury {
 	pub use super::super::*;
@@ -353,6 +356,9 @@ ord_parameter_types! {
 parameter_types! {
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub const TreasuryAccount: AccountId = 10;
+	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
+		vec![DNAR],
+	];
 }
 
 thread_local! {
@@ -369,6 +375,7 @@ impl Config for Runtime {
 	type PalletId = CDPTreasuryPalletId;
 	type SerpTreasury = MockSerpTreasury;
 	type UpdateOrigin = EnsureOneOf<AccountId, EnsureRoot<AccountId>, EnsureSignedBy<One, AccountId>>;
+	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 	type WeightInfo = ();
 }
 
@@ -404,6 +411,7 @@ impl Default for ExtBuilder {
 				(BOB, DNAR, 1000),
 				(BOB, SETUSD, 1000),
 				(BOB, SERP, 1000),
+				(CHARLIE, DNAR, 1000),
 			],
 		}
 	}

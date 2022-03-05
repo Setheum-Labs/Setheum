@@ -91,9 +91,12 @@ fn new_collateral_auction_work() {
 		);
 
 		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 10, 100));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::NewCollateralAuction(
-			0, SERP, 10, 100,
-		)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::NewCollateralAuction {
+			auction_id: 0,
+			collateral_type: SERP,
+			collateral_amount: 10,
+			target_bid_price: 100,
+		}));
 
 		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 10);
 		assert_eq!(AuctionManagerModule::total_target_in_auction(), 100);
@@ -175,7 +178,7 @@ fn bid_when_soft_cap_for_collateral_auction_work() {
 }
 
 #[test]
-fn collateral_auction_end_handler_without_bid() {
+fn always_forward_collateral_auction_without_bid_taken_by_dex() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
@@ -187,163 +190,113 @@ fn collateral_auction_end_handler_without_bid() {
 			1000,
 			0
 		));
+
+		assert_ok!(AuctionManagerModule::new_collateral_auction(
+			&CDPTreasuryModule::account_id(),
+			SERP,
+			100,
+			0
+		));
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 100);
 		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (100, 1000));
-		assert_eq!(DEXModule::get_swap_target_amount(&[SERP, SETUSD], 100).unwrap(), 498);
-
-		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 100, 200));
-		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
-		assert_eq!(AuctionManagerModule::total_target_in_auction(), 200);
-		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 100);
-		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1000);
-		assert_eq!(Tokens::free_balance(SETUSD, &ALICE), 1000);
-		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
 		assert_eq!(CDPTreasuryModule::surplus_pool(), 0);
-		let alice_ref_count_0 = System::consumers(&ALICE);
+		let ref_count_0 = System::consumers(&CDPTreasuryModule::account_id());
 
-		assert!(AuctionManagerModule::collateral_auctions(0).is_some());
 		AuctionManagerModule::on_auction_ended(0, None);
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::DEXTakeCollateralAuction(
-			0, SERP, 100, 497,
-		)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::DEXTakeCollateralAuction {
+			auction_id: 0,
+			collateral_type: SERP,
+			collateral_amount: 100,
+			supply_collateral_amount: 100,
+			target_stable_amount: 500,
+		}));
 
-		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (200, 503));
 		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 0);
-		assert_eq!(AuctionManagerModule::collateral_auctions(0), None);
-		assert_eq!(AuctionManagerModule::total_target_in_auction(), 0);
 		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);
-		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1000);
-		assert_eq!(Tokens::free_balance(SETUSD, &ALICE), 1297);
-		assert_eq!(CDPTreasuryModule::debit_pool(), 297);
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 498);
-		let alice_ref_count_1 = System::consumers(&ALICE);
-		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
+		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (200, 500));
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 500);
+		let ref_count_1 = System::consumers(&CDPTreasuryModule::account_id());
+		assert_eq!(ref_count_1, ref_count_0 - 1);
 	});
 }
 
 #[test]
-fn collateral_auction_end_handler_without_bid_and_swap_by_alternative_path() {
+fn always_forward_collateral_auction_without_bid_aborted() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(BOB),
+		assert_ok!(AuctionManagerModule::new_collateral_auction(
+			&CDPTreasuryModule::account_id(),
 			SERP,
-			DNAR,
 			100,
-			1000,
 			0
 		));
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(CAROL),
-			DNAR,
-			SETUSD,
-			1000,
-			1000,
-			0
-		));
-		assert_eq!(DEXModule::get_liquidity_pool(SERP, DNAR), (100, 1000));
-		assert_eq!(DEXModule::get_liquidity_pool(DNAR, SETUSD), (1000, 1000));
-		assert_eq!(DEXModule::get_swap_target_amount(&[SERP, SETUSD], 100), None);
-		assert_eq!(DEXModule::get_swap_target_amount(&[SERP, DNAR, SETUSD], 100), Some(331));
-
-		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 100, 200));
-		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1000);
-		assert_eq!(Tokens::free_balance(SETUSD, &ALICE), 1000);
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 100);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 0);
+		let ref_count_0 = System::consumers(&CDPTreasuryModule::account_id());
 
 		AuctionManagerModule::on_auction_ended(0, None);
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::DEXTakeCollateralAuction(
-			0, SERP, 100, 329,
-		)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CollateralAuctionAborted {
+			auction_id: 0,
+			collateral_type: SERP,
+			collateral_amount: 100,
+			target_stable_amount: 0,
+			refund_recipient: CDPTreasuryModule::account_id(),
+		}));
 
-		assert_eq!(DEXModule::get_liquidity_pool(SERP, DNAR), (100, 1000));
-		assert_eq!(DEXModule::get_liquidity_pool(DNAR, SETUSD), (1498, 671));
-		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1000);
-		assert_eq!(Tokens::free_balance(SETUSD, &ALICE), 1129);
-	});
-}
-
-#[test]
-fn collateral_auction_end_handler_in_reverse_stage() {
-	ExtBuilder::default().build().execute_with(|| {
-		System::set_block_number(1);
-		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
-		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 100, 200));
-		assert!(AuctionManagerModule::collateral_auction_bid_handler(2, 0, (BOB, 400), None).is_ok(),);
-		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 50);
-		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 50);
-		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1050);
-		assert_eq!(Tokens::free_balance(SERP, &BOB), 1000);
-		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 800);
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 200);
-
-		let alice_ref_count_0 = System::consumers(&ALICE);
-		let bob_ref_count_0 = System::consumers(&BOB);
-
-		assert!(AuctionManagerModule::collateral_auctions(0).is_some());
-		AuctionManagerModule::on_auction_ended(0, Some((BOB, 400)));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CollateralAuctionDealt(
-			0, SERP, 50, BOB, 200,
-		)));
-
-		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 0);
-		assert_eq!(AuctionManagerModule::collateral_auctions(0), None);
-		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);
-		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1050);
-		assert_eq!(Tokens::free_balance(SERP, &BOB), 1050);
-		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 800);
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 200);
-
-		let alice_ref_count_1 = System::consumers(&ALICE);
-		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
-		let bob_ref_count_1 = System::consumers(&BOB);
-		assert_eq!(bob_ref_count_1, bob_ref_count_0 - 1);
-	});
-}
-
-#[test]
-fn collateral_auction_end_handler_by_dealing_which_target_not_zero() {
-	ExtBuilder::default().build().execute_with(|| {
-		System::set_block_number(1);
-		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
-		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 100, 200));
-		assert!(AuctionManagerModule::collateral_auction_bid_handler(1, 0, (BOB, 100), None).is_ok(),);
 		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
-		assert_eq!(AuctionManagerModule::total_target_in_auction(), 200);
-		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 100);
-		assert_eq!(Tokens::free_balance(SERP, &BOB), 1000);
-		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 900);
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 100);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 0);
+		let ref_count_1 = System::consumers(&CDPTreasuryModule::account_id());
+		assert_eq!(ref_count_1, ref_count_0 - 1);
+	});
+}
 
-		let alice_ref_count_0 = System::consumers(&ALICE);
+#[test]
+fn always_forward_collateral_auction_dealt() {
+	ExtBuilder::default().build().execute_with(|| {
+		System::set_block_number(1);
+		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
+		assert_ok!(AuctionManagerModule::new_collateral_auction(
+			&CDPTreasuryModule::account_id(),
+			SERP,
+			100,
+			0
+		));
+		assert!(AuctionManagerModule::collateral_auction_bid_handler(1, 0, (BOB, 200), None).is_ok());
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 100);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 200);
+		assert_eq!(Tokens::free_balance(SERP, &BOB), 1000);
+		let ref_count_0 = System::consumers(&CDPTreasuryModule::account_id());
 		let bob_ref_count_0 = System::consumers(&BOB);
 
-		assert!(AuctionManagerModule::collateral_auctions(0).is_some());
-		AuctionManagerModule::on_auction_ended(0, Some((BOB, 100)));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CollateralAuctionDealt(
-			0, SERP, 100, BOB, 100,
-		)));
-
+		AuctionManagerModule::on_auction_ended(0, Some((BOB, 200)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CollateralAuctionDealt {
+			auction_id: 0,
+			collateral_type: SERP,
+			collateral_amount: 100,
+			winner: BOB,
+			payment_amount: 200,
+		}));
 		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 0);
-		assert_eq!(AuctionManagerModule::collateral_auctions(0), None);
-		assert_eq!(AuctionManagerModule::total_target_in_auction(), 0);
 		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);
-		assert_eq!(AuctionManagerModule::total_target_in_auction(), 0);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 200);
 		assert_eq!(Tokens::free_balance(SERP, &BOB), 1100);
-
-		let alice_ref_count_1 = System::consumers(&ALICE);
-		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
+		let ref_count_1 = System::consumers(&CDPTreasuryModule::account_id());
 		let bob_ref_count_1 = System::consumers(&BOB);
+		assert_eq!(ref_count_1, ref_count_0 - 1);
 		assert_eq!(bob_ref_count_1, bob_ref_count_0 - 1);
 	});
 }
 
 #[test]
-fn collateral_auction_end_handler_by_dex_which_target_not_zero() {
+fn always_forward_collateral_auction_with_bid_taked_by_dex() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
-		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 100, 200));
-		assert!(AuctionManagerModule::collateral_auction_bid_handler(1, 0, (BOB, 20), None).is_ok(),);
 		assert_ok!(DEXModule::add_liquidity(
 			Origin::signed(CAROL),
 			SERP,
@@ -352,40 +305,170 @@ fn collateral_auction_end_handler_by_dex_which_target_not_zero() {
 			1000,
 			0
 		));
-		assert_eq!(DEXModule::get_swap_target_amount(&[SERP, SETUSD], 100).unwrap(), 498);
 
+		assert_ok!(AuctionManagerModule::new_collateral_auction(
+			&CDPTreasuryModule::account_id(),
+			SERP,
+			100,
+			0
+		));
+		assert!(AuctionManagerModule::collateral_auction_bid_handler(1, 0, (BOB, 500), None).is_ok());
 		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
-		assert_eq!(AuctionManagerModule::total_target_in_auction(), 200);
 		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 100);
-		assert_eq!(Tokens::free_balance(SERP, &BOB), 1000);
-		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 980);
-		assert_eq!(Tokens::free_balance(SETUSD, &ALICE), 1000);
+		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (100, 1000));
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 500);
 		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 20);
-
-		let alice_ref_count_0 = System::consumers(&ALICE);
+		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 500);
+		let ref_count_0 = System::consumers(&CDPTreasuryModule::account_id());
 		let bob_ref_count_0 = System::consumers(&BOB);
 
-		assert!(AuctionManagerModule::collateral_auctions(0).is_some());
-		AuctionManagerModule::on_auction_ended(0, Some((BOB, 20)));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::DEXTakeCollateralAuction(
-			0, SERP, 100, 497,
-		)));
+		AuctionManagerModule::on_auction_ended(0, Some((BOB, 500)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::DEXTakeCollateralAuction {
+			auction_id: 0,
+			collateral_type: SERP,
+			collateral_amount: 100,
+			supply_collateral_amount: 100,
+			target_stable_amount: 500,
+		}));
 
 		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 0);
-		assert_eq!(AuctionManagerModule::collateral_auctions(0), None);
-		assert_eq!(AuctionManagerModule::total_target_in_auction(), 0);
 		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);
-		assert_eq!(Tokens::free_balance(SERP, &BOB), 1000);
+		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (200, 500));
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 1000);
+		assert_eq!(CDPTreasuryModule::debit_pool(), 500);
 		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1000);
-		assert_eq!(Tokens::free_balance(SETUSD, &ALICE), 1297);
-		assert_eq!(CDPTreasuryModule::debit_pool(), 317);
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 518);
+		let ref_count_1 = System::consumers(&CDPTreasuryModule::account_id());
+		let bob_ref_count_1 = System::consumers(&BOB);
+		assert_eq!(ref_count_1, ref_count_0 - 1);
+		assert_eq!(bob_ref_count_1, bob_ref_count_0 - 1);
+	});
+}
 
-		let alice_ref_count_1 = System::consumers(&ALICE);
-		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
+#[test]
+fn reverse_collateral_auction_with_bid_taked_by_dex() {
+	ExtBuilder::default().build().execute_with(|| {
+		System::set_block_number(1);
+		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
+		assert_ok!(DEXModule::add_liquidity(
+			Origin::signed(CAROL),
+			SERP,
+			SETUSD,
+			100,
+			1000,
+			0
+		));
+
+		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 100, 200));
+		assert!(AuctionManagerModule::collateral_auction_bid_handler(1, 0, (BOB, 200), None).is_ok());
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 100);
+		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (100, 1000));
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 200);
+		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
+		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 800);
+		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1000);
+		let bob_ref_count_0 = System::consumers(&BOB);
+
+		AuctionManagerModule::on_auction_ended(0, Some((BOB, 200)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::DEXTakeCollateralAuction {
+			auction_id: 0,
+			collateral_type: SERP,
+			collateral_amount: 100,
+			supply_collateral_amount: 26,
+			target_stable_amount: 200,
+		}));
+
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 0);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);
+		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (126, 806));
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 400);
+		assert_eq!(CDPTreasuryModule::debit_pool(), 200);
+		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1000);
+		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1074);
 		let bob_ref_count_1 = System::consumers(&BOB);
 		assert_eq!(bob_ref_count_1, bob_ref_count_0 - 1);
+	});
+}
+
+#[test]
+fn reverse_collateral_auction_with_bid_dealt() {
+	ExtBuilder::default().build().execute_with(|| {
+		System::set_block_number(1);
+		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
+		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 100, 200));
+		assert!(AuctionManagerModule::collateral_auction_bid_handler(1, 0, (BOB, 250), None).is_ok());
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 80);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 80);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 200);
+		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
+		assert_eq!(Tokens::free_balance(SERP, &BOB), 1000);
+		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 800);
+		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1020);
+		let alice_ref_count_0 = System::consumers(&ALICE);
+
+		AuctionManagerModule::on_auction_ended(0, Some((BOB, 250)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CollateralAuctionDealt {
+			auction_id: 0,
+			collateral_type: SERP,
+			collateral_amount: 80,
+			winner: BOB,
+			payment_amount: 200,
+		}));
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 0);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 200);
+		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
+		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 800);
+		assert_eq!(Tokens::free_balance(SERP, &BOB), 1080);
+		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1020);
+		let alice_ref_count_1 = System::consumers(&ALICE);
+		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
+	});
+}
+
+#[test]
+fn collateral_auction_with_bid_aborted() {
+	ExtBuilder::default().build().execute_with(|| {
+		System::set_block_number(1);
+		assert_ok!(CDPTreasuryModule::deposit_collateral(&CAROL, SERP, 100));
+		assert_ok!(DEXModule::add_liquidity(
+			Origin::signed(CAROL),
+			SERP,
+			SETUSD,
+			500,
+			1000,
+			0
+		));
+
+		assert_ok!(AuctionManagerModule::new_collateral_auction(&ALICE, SERP, 100, 200));
+		assert!(AuctionManagerModule::collateral_auction_bid_handler(1, 0, (BOB, 180), None).is_ok());
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 100);
+		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (500, 1000));
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 180);
+		assert_eq!(CDPTreasuryModule::debit_pool(), 0);
+		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 820);
+		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1000);
+		let alice_ref_count_0 = System::consumers(&ALICE);
+
+		AuctionManagerModule::on_auction_ended(0, Some((BOB, 180)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CollateralAuctionAborted {
+			auction_id: 0,
+			collateral_type: SERP,
+			collateral_amount: 100,
+			target_stable_amount: 200,
+			refund_recipient: ALICE,
+		}));
+
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
+		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);
+		assert_eq!(DEXModule::get_liquidity_pool(SERP, SETUSD), (500, 1000));
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 180);
+		assert_eq!(CDPTreasuryModule::debit_pool(), 180);
+		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1000);
+		assert_eq!(Tokens::free_balance(SERP, &ALICE), 1000);
+		let alice_ref_count_1 = System::consumers(&ALICE);
+		assert_eq!(alice_ref_count_1, alice_ref_count_0 - 1);
 	});
 }
 
@@ -463,7 +546,9 @@ fn cancel_collateral_auction_work() {
 
 		mock_shutdown();
 		assert_ok!(AuctionManagerModule::cancel(Origin::none(), 0));
-		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CancelAuction(0)));
+		System::assert_last_event(Event::AuctionManagerModule(crate::Event::CancelAuction {
+			auction_id: 0,
+		}));
 
 		assert_eq!(Tokens::free_balance(SETUSD, &BOB), 1000);
 		assert_eq!(AuctionManagerModule::total_collateral_in_auction(SERP), 0);

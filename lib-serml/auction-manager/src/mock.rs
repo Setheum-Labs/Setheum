@@ -269,6 +269,9 @@ parameter_types! {
 	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
+	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
+		vec![DNAR],
+	];
 }
 
 impl cdp_treasury::Config for Runtime {
@@ -281,6 +284,7 @@ impl cdp_treasury::Config for Runtime {
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type SerpTreasury = MockSerpTreasury;
 	type PalletId = CDPTreasuryPalletId;
+	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 	type WeightInfo = ();
 }
 
@@ -309,14 +313,14 @@ parameter_types! {
 		SETR,
 		SETUSD,
 	];
-	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
+	pub GetExchangeFee: (u32, u32) = (0, 100); // 1%
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
 		TradingPair::from_currency_ids(DNAR, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap()
 	];
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
+	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200); // 0.5%
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
 
@@ -372,7 +376,6 @@ impl Config for Runtime {
 	type PriceSource = MockPriceSource;
 	type UnsignedPriority = UnsignedPriority;
 	type EmergencyShutdown = MockEmergencyShutdown;
-	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
 	type WeightInfo = ();
 }
 

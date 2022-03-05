@@ -2,7 +2,7 @@
 name = "module-support"
 version = "1.0.0"
 authors = ["Setheum Labs"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 impl-trait-for-tuples = "0.1.3"

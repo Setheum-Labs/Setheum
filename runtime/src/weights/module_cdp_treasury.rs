@@ -49,17 +49,42 @@ use sp_std::marker::PhantomData;
 /// Weight functions for cdp_treasury.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> cdp_treasury::WeightInfo for WeightInfo<T> {
-	fn auction_collateral() -> Weight {
-		(3_287_964_000 as Weight)
+	f// Storage: Tokens Accounts (r:1 w:0)
+	// Storage: AuctionManager TotalCollateralInAuction (r:1 w:1)
+	// Storage: CdpTreasury ExpectedCollateralAuctionSize (r:1 w:0)
+	// Storage: AuctionManager TotalTargetInAuction (r:1 w:1)
+	// Storage: Auction AuctionsIndex (r:1 w:1)
+	// Storage: System Account (r:1 w:1)
+	// Storage: AuctionManager CollateralAuctions (r:0 w:1)
+	// Storage: Auction AuctionEndTime (r:0 w:1)
+	// Storage: Auction Auctions (r:0 w:1)
+	fn auction_collateral(b: u32, ) -> Weight {
+		(2_672_000 as Weight)
+			// Standard Error: 326_000
+			.saturating_add((32_334_000 as Weight).saturating_mul(b as Weight))
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
-			.saturating_add(T::DbWeight::get().writes(204 as Weight))
+			.saturating_add(T::DbWeight::get().writes(6 as Weight))
+			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(b as Weight)))
 	}
+	// Storage: Tokens Accounts (r:4 w:4)
+	// Storage: AuctionManager TotalCollateralInAuction (r:1 w:0)
+	// Storage: Dex TradingPairStatuses (r:1 w:0)
+	// Storage: Dex LiquidityPool (r:1 w:1)
+	// Storage: System Account (r:2 w:1)
+	fn exchange_collateral_to_stable() -> Weight {
+		(176_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(9 as Weight))
+			.saturating_add(T::DbWeight::get().writes(6 as Weight))
+	}
+	// Storage: CdpTreasury ExpectedCollateralAuctionSize (r:0 w:1)
 	fn set_expected_collateral_auction_size() -> Weight {
-		(24_330_000 as Weight)
+		(25_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
+	// Storage: Tokens Accounts (r:2 w:2)
+	// Storage: System Account (r:2 w:1)
 	fn extract_surplus_to_serp() -> Weight {
-		(77_917_000 as Weight)
+		(75_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}

@@ -30,7 +30,7 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureSignedBy};
 use module_support::{
-	mocks::MockAddressMapping, AddressMapping as AddressMappingT, ExchangeRate, ExchangeRateProvider, SerpTreasury,
+	mocks::MockAddressMapping, AddressMapping as AddressMappingT, SerpTreasury,
 };
 use orml_traits::parameter_type_with_key;
 pub use primitives::{
@@ -83,32 +83,6 @@ pub const DOLLARS: Balance = 1_000_000_000_000_000_000; // 18 DECIMALS
 parameter_types! {
 	pub const MaxNativeTokenExistentialDeposit: Balance = DOLLARS * 100; // 100 SETM
 }
-
-
-/// Predeployed contract addresses
-pub fn evm_genesis() -> BTreeMap<H160, module_evm::GenesisAccount<Balance, Nonce>> {
-	let existential_deposit = MaxNativeTokenExistentialDeposit::get();
-	
-	let contracts_json = &include_bytes!("../../../../predeploy-contracts/resources/bytecodes.json")[..];
-	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
-	let mut accounts = BTreeMap::new();
-	for (_, address, code_string) in contracts {
-		let account = module_evm::GenesisAccount {
-			nonce: 0,
-			balance: existential_deposit,
-			storage: Default::default(),
-			code: Bytes::from_str(&code_string).unwrap().0,
-		};
-		let addr = H160::from_slice(
-			from_hex(address.as_str())
-				.expect("predeploy-contracts must specify address")
-				.as_slice(),
-		);
-		accounts.insert(addr, account);
-	}
-	accounts
-}
-
 
 parameter_types! {
 	pub const MinimumCount: u32 = 1;
@@ -601,13 +575,6 @@ impl module_evm::Config for Test {
 	type WeightInfo = ();
 }
 
-pub struct MockLiquidStakingExchangeProvider;
-impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
-	fn get_exchange_rate() -> ExchangeRate {
-		ExchangeRate::saturating_from_rational(1, 2)
-	}
-}
-
 parameter_types! {
 	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
 	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 10); // $0.1(10 cents)
@@ -672,6 +639,29 @@ pub fn lp_setm_setusd_evm_address() -> EvmAddress {
 pub fn erc20_address_not_exists() -> EvmAddress {
 	EvmAddress::from_str("0000000000000000000000000000000200000001").unwrap()
 }
+
+/// Predeployed contract addresses
+pub fn evm_genesis() -> BTreeMap<H160, module_evm::GenesisAccount<Balance, Nonce>> {
+	let contracts_json = &include_bytes!("../../../../predeploy-contracts/resources/bytecodes.json")[..];
+	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
+	let mut accounts = BTreeMap::new();
+	for (_, address, code_string) in contracts {
+		let account = module_evm::GenesisAccount {
+			nonce: 0,
+			balance: 0u128,
+			storage: Default::default(),
+			code: Bytes::from_str(&code_string).unwrap().0,
+		};
+		let addr = H160::from_slice(
+			from_hex(address.as_str())
+				.expect("predeploy-contracts must specify address")
+				.as_slice(),
+		);
+		accounts.insert(addr, account);
+	}
+	accounts
+}
+
 
 pub const INITIAL_BALANCE: Balance = 1_000_000_000_000;
 

@@ -34,10 +34,10 @@ use frame_support::{log, pallet_prelude::*, transactional, PalletId};
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Amount, Balance, CurrencyId};
 use sp_runtime::{
-	traits::{AccountIdConversion, Convert, Zero},
+	traits::{AccountIdConversion, Zero},
 	ArithmeticError, DispatchResult, RuntimeDebug,
 };
-use sp_std::{convert::TryInto, result};
+use sp_std::convert::TryInto;
 use support::{CDPTreasury, RiskManager};
 
 mod mock;
@@ -61,10 +61,6 @@ pub mod module {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
-		/// Convert debit amount under specific collateral type to debit
-		/// value(stable currency)
-		type Convert: Convert<(CurrencyId, Balance), Balance>;
 
 		/// Currency type for deposit/withdraw collateral assets to/from loans
 		/// module
@@ -96,15 +92,26 @@ pub mod module {
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
-		/// Position updated. \[owner, collateral_type, collateral_adjustment,
-		/// debit_adjustment\]
-		PositionUpdated(T::AccountId, CurrencyId, Amount, Amount),
-		/// Confiscate CDP's collateral assets and eliminate its debit. \[owner,
-		/// collateral_type, confiscated_collateral_amount,
-		/// deduct_debit_amount\]
-		ConfiscateCollateralAndDebit(T::AccountId, CurrencyId, Balance, Balance),
-		/// Transfer loan. \[from, to, currency_id\]
-		TransferLoan(T::AccountId, T::AccountId, CurrencyId),
+		/// Position updated.
+		PositionUpdated {
+			owner: T::AccountId,
+			collateral_type: CurrencyId,
+			collateral_adjustment: Amount,
+			debit_adjustment: Amount,
+		},
+		/// Confiscate CDP's collateral assets and eliminate its debit.
+		ConfiscateCollateralAndDebit {
+			owner: T::AccountId,
+			collateral_type: CurrencyId,
+			confiscated_collateral_amount: Balance,
+			deduct_debit_amount: Balance,
+		},
+		/// Transfer loan.
+		TransferLoan {
+			from: T::AccountId,
+			to: T::AccountId,
+			currency_id: CurrencyId,
+		},
 	}
 
 	/// The collateralized debit positions, map from
@@ -157,7 +164,7 @@ impl<T: Config> Pallet<T> {
 		T::CDPTreasury::deposit_collateral(&Self::account_id(), currency_id, collateral_confiscate)?;
 
 		// deposit debit to cdp treasury
-		let bad_debt_value = T::RiskManager::get_bad_debt_value(currency_id, debit_decrease);
+		let bad_debt_value = T::RiskManager::get_debit_value(currency_id, debit_decrease);
 		T::CDPTreasury::on_system_debit(bad_debt_value)?;
 
 		// update loan
@@ -168,12 +175,12 @@ impl<T: Config> Pallet<T> {
 			debit_adjustment.saturating_neg(),
 		)?;
 
-		Self::deposit_event(Event::ConfiscateCollateralAndDebit(
-			who.clone(),
-			currency_id,
-			collateral_confiscate,
-			debit_decrease,
-		));
+		Self::deposit_event(Event::ConfiscateCollateralAndDebit {
+			owner: who.clone(),
+			collateral_type: currency_id,
+			confiscated_collateral_amount: collateral_confiscate,
+			deduct_debit_amount: debit_decrease,
+		});
 		Ok(())
 	}
 
@@ -206,11 +213,18 @@ impl<T: Config> Pallet<T> {
 			T::RiskManager::check_debit_cap(currency_id, Self::total_positions(currency_id).debit)?;
 
 			// issue debit with collateral backed by cdp treasury
-			T::CDPTreasury::issue_debit(who, T::Convert::convert((currency_id, debit_balance_adjustment)), true)?;
+			T::CDPTreasury::issue_debit(
+				who,
+				T::RiskManager::get_debit_value(currency_id, debit_balance_adjustment),
+				true,
+			)?;
 		} else if debit_adjustment.is_negative() {
 			// repay debit
 			// burn debit by cdp treasury
-			T::CDPTreasury::burn_debit(who, T::Convert::convert((currency_id, debit_balance_adjustment)))?;
+			T::CDPTreasury::burn_debit(
+				who,
+				T::RiskManager::get_debit_value(currency_id, debit_balance_adjustment),
+			)?;
 		}
 
 		// ensure pass risk check
@@ -222,12 +236,6 @@ impl<T: Config> Pallet<T> {
 			collateral_adjustment.is_negative() || debit_adjustment.is_positive(),
 		)?;
 
-		Self::deposit_event(Event::PositionUpdated(
-			who.clone(),
-			currency_id,
-			collateral_adjustment,
-			debit_adjustment,
-		));
 		Ok(())
 	}
 
@@ -262,12 +270,16 @@ impl<T: Config> Pallet<T> {
 		)?;
 		Self::update_loan(to, currency_id, collateral_adjustment, debit_adjustment)?;
 
-		Self::deposit_event(Event::TransferLoan(from.clone(), to.clone(), currency_id));
+		Self::deposit_event(Event::TransferLoan {
+			from: from.clone(),
+			to: to.clone(),
+			currency_id,
+		});
 		Ok(())
 	}
 
 	/// mutate records of collaterals and debits
-	fn update_loan(
+	pub fn update_loan(
 		who: &T::AccountId,
 		currency_id: CurrencyId,
 		collateral_adjustment: Amount,
@@ -348,18 +360,26 @@ impl<T: Config> Pallet<T> {
 			}?;
 
 			Ok(())
-		})
+		})?;
+
+		Self::deposit_event(Event::PositionUpdated {
+			owner: who.clone(),
+			collateral_type: currency_id,
+			collateral_adjustment,
+			debit_adjustment,
+		});
+		Ok(())
 	}
 }
 
 impl<T: Config> Pallet<T> {
 	/// Convert `Balance` to `Amount`.
-	fn amount_try_from_balance(b: Balance) -> result::Result<Amount, Error<T>> {
+	pub fn amount_try_from_balance(b: Balance) -> Result<Amount, Error<T>> {
 		TryInto::<Amount>::try_into(b).map_err(|_| Error::<T>::AmountConvertFailed)
 	}
 
 	/// Convert the absolute value of `Amount` to `Balance`.
-	fn balance_try_from_amount_abs(a: Amount) -> result::Result<Balance, Error<T>> {
+	pub fn balance_try_from_amount_abs(a: Amount) -> Result<Balance, Error<T>> {
 		TryInto::<Balance>::try_into(a.saturating_abs()).map_err(|_| Error::<T>::AmountConvertFailed)
 	}
 }

@@ -55,7 +55,9 @@ pub trait WeightInfo {
 	fn unauthorize_all(c: u32, ) -> Weight;
 	fn adjust_loan() -> Weight;
 	fn transfer_loan_from() -> Weight;
-	fn close_loan_has_debit_by_dex(u: u32, ) -> Weight;
+	fn close_loan_has_debit_by_dex() -> Weight;
+	fn expand_position_collateral() -> Weight;
+	fn shrink_position_debit() -> Weight;
 }
 
 /// Weights for serp_setmint using the Setheum node and recommended hardware.
@@ -76,21 +78,29 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().writes((1 as Weight).saturating_mul(c as Weight)))
 	}
 	fn adjust_loan() -> Weight {
-		(160_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(24 as Weight))
+		(245_614_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(26 as Weight))
 			.saturating_add(T::DbWeight::get().writes(11 as Weight))
 	}
 	fn transfer_loan_from() -> Weight {
-		(114_000_000 as Weight)
+		(166_925_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(21 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))
 	}
-	fn close_loan_has_debit_by_dex(u: u32, ) -> Weight {
-		(114_000_000 as Weight)
-			// Standard Error: 138_000
-			.saturating_add((654_000 as Weight).saturating_mul(u as Weight))
-			.saturating_add(T::DbWeight::get().reads(21 as Weight))
-			.saturating_add(T::DbWeight::get().writes(7 as Weight))
+	fn close_loan_has_debit_by_dex() -> Weight {
+		(369_989_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(32 as Weight))
+			.saturating_add(T::DbWeight::get().writes(14 as Weight))
+	}
+	fn expand_position_collateral() -> Weight {
+		(183_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(20 as Weight))
+			.saturating_add(T::DbWeight::get().writes(11 as Weight))
+	}
+	fn shrink_position_debit() -> Weight {
+		(186_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(16 as Weight))
+			.saturating_add(T::DbWeight::get().writes(12 as Weight))
 	}
 }
 
@@ -111,20 +121,28 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().writes((1 as Weight).saturating_mul(c as Weight)))
 	}
 	fn adjust_loan() -> Weight {
-		(160_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(24 as Weight))
+		(245_614_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(26 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(11 as Weight))
 	}
 	fn transfer_loan_from() -> Weight {
-		(114_000_000 as Weight)
+		(166_925_000 as Weight)
 			.saturating_add(RocksDbWeight::get().reads(21 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(7 as Weight))
 	}
-	fn close_loan_has_debit_by_dex(u: u32, ) -> Weight {
-		(114_000_000 as Weight)
-			// Standard Error: 138_000
-			.saturating_add((654_000 as Weight).saturating_mul(u as Weight))
-			.saturating_add(RocksDbWeight::get().reads(21 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(7 as Weight))
+	fn close_loan_has_debit_by_dex() -> Weight {
+		(369_989_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(32 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(14 as Weight))
+	}
+	fn expand_position_collateral() -> Weight {
+		(183_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(20 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(11 as Weight))
+	}
+	fn shrink_position_debit() -> Weight {
+		(186_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(16 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(12 as Weight))
 	}
 }

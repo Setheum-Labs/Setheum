@@ -616,24 +616,16 @@ where
 							PalletBalanceOf::<T>::max_value()
 						};
 
-						let swap_with_exact_target = T::DEX::swap_with_exact_target(
+						if T::DEX::swap_with_exact_target(
 							who,
 							&trading_path,
 							amount.unique_saturated_into(),
 							<T as Config>::MultiCurrency::free_balance(supply_currency_id, who)
 								.min(max_supply_limit.unique_saturated_into()),
 						)
-						.is_ok();
-						if swap_with_exact_target {
+						.is_ok()
+						{
 							// successfully swap, break iteration
-							T::DEX::swap_with_exact_target(
-								who,
-								&trading_path,
-								amount.unique_saturated_into(),
-								<T as Config>::MultiCurrency::free_balance(supply_currency_id, who)
-									.min(max_supply_limit.unique_saturated_into()),
-							).unwrap();
-							
 							break;
 						}
 					}

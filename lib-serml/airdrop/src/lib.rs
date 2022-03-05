@@ -106,12 +106,14 @@ pub mod module {
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	#[pallet::metadata(T::AccountId = "AccountId", BalanceOf<T> = "Balance", AirDropCurrencyId = "AirDropCurrencyId")]
 	pub enum Event<T: Config> {
-		/// Drop Airdrop \[currency_id\]
-		Airdrop(AirDropCurrencyId),
-		/// Donate to Airdrop Treasury \[from, currency_id, amount\]
-		DonateToAirdropTreasury(T::AccountId, AirDropCurrencyId, BalanceOf<T>),
+		/// Drop Airdrop
+		Airdrop { currency_id: AirDropCurrencyId },
 		/// Fund the Airdrop Treasury from `FundingOrigin` \[from, currency_id, amount\]
-		FundAirdropTreasury(T::AccountId, AirDropCurrencyId, BalanceOf<T>)
+		FundAirdropTreasury {
+			funder: T::AccountId,
+			currency_id: AirDropCurrencyId,
+			amount: BalanceOf<T>
+		}
 	}
 
 	#[pallet::pallet]
@@ -151,7 +153,11 @@ pub mod module {
 				T::MultiCurrency::transfer(T::GetHelpCurrencyId::get(), &T::FundingOrigin::get(), &Self::account_id(), amount)?;
 			}
 			
-			Self::deposit_event(Event::FundAirdropTreasury(T::FundingOrigin::get(), currency_id, amount));
+			Self::deposit_event(Event::FundAirdropTreasury {
+				funder: T::FundingOrigin::get(),
+				currency_id,
+				amount
+			});
 			Ok(())
 		}
 
@@ -227,7 +233,7 @@ impl<T: Config> Pallet<T> {
 			} _ => {}
 		}
 		
-		Self::deposit_event(Event::Airdrop(currency_id));
+		Self::deposit_event(Event::Airdrop { currency_id});
 		Ok(())
 	}
 }

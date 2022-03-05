@@ -51,7 +51,8 @@ use sp_std::marker::PhantomData;
 /// Weight functions needed for cdp_treasury.
 pub trait WeightInfo {
 	fn extract_surplus_to_serp() -> Weight;
-	fn auction_collateral() -> Weight;
+	fn auction_collateral(b: u32) -> Weight;
+	fn exchange_collateral_to_stable() -> Weight;
 	fn set_expected_collateral_auction_size() -> Weight;
 }
 
@@ -63,13 +64,21 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
 	}
-	fn auction_collateral() -> Weight {
-		(2_124_000_000 as Weight)
+	fn auction_collateral(b: u32, ) -> Weight {
+		(2_672_000 as Weight)
+			// Standard Error: 326_000
+			.saturating_add((32_334_000 as Weight).saturating_mul(b as Weight))
 			.saturating_add(T::DbWeight::get().reads(6 as Weight))
-			.saturating_add(T::DbWeight::get().writes(204 as Weight))
+			.saturating_add(T::DbWeight::get().writes(6 as Weight))
+			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(b as Weight)))
+	}
+	fn exchange_collateral_to_stable() -> Weight {
+		(176_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(9 as Weight))
+			.saturating_add(T::DbWeight::get().writes(6 as Weight))
 	}
 	fn set_expected_collateral_auction_size() -> Weight {
-		(14_000_000 as Weight)
+		(25_000_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 }
@@ -81,13 +90,20 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
 	}
-	fn auction_collateral() -> Weight {
-		(2_124_000_000 as Weight)
+	fn auction_collateral(b: u32, ) -> Weight {
+		(2_672_000 as Weight)
+			.saturating_add((32_334_000 as Weight).saturating_mul(b as Weight))
 			.saturating_add(RocksDbWeight::get().reads(6 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(204 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(6 as Weight))
+			.saturating_add(RocksDbWeight::get().writes((3 as Weight).saturating_mul(b as Weight)))
+	}
+	fn exchange_collateral_to_stable() -> Weight {
+		(176_000_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(9 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(6 as Weight))
 	}
 	fn set_expected_collateral_auction_size() -> Weight {
-		(14_000_000 as Weight)
+		(25_000_000 as Weight)
 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}
 }

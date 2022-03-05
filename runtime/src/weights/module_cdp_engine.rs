@@ -50,23 +50,26 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> cdp_engine::WeightInfo for WeightInfo<T> {
 	fn set_collateral_params() -> Weight {
-		(73_258_000 as Weight)
+		(57_130_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
-	fn liquidate_by_auction() -> Weight {
-		(358_911_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(28 as Weight))
-			.saturating_add(T::DbWeight::get().writes(17 as Weight))
+	fn liquidate_by_auction(b: u32, ) -> Weight {
+		(295_312_000 as Weight)
+			// Standard Error: 170_000
+			.saturating_add((27_764_000 as Weight).saturating_mul(b as Weight))
+			.saturating_add(T::DbWeight::get().reads(23 as Weight))
+			.saturating_add(T::DbWeight::get().writes(15 as Weight))
+			.saturating_add(T::DbWeight::get().writes((3 as Weight).saturating_mul(b as Weight)))
 	}
 	fn liquidate_by_dex() -> Weight {
-		(455_388_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(30 as Weight))
-			.saturating_add(T::DbWeight::get().writes(15 as Weight))
+		(408_674_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(31 as Weight))
+			.saturating_add(T::DbWeight::get().writes(16 as Weight))
 	}
 	fn settle() -> Weight {
-		(190_853_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(12 as Weight))
+		(160_596_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(13 as Weight))
 			.saturating_add(T::DbWeight::get().writes(8 as Weight))
 	}
 }

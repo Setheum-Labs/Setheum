@@ -161,51 +161,41 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		unimplemented!()
 	}
 
-	fn get_swap_target_amount(
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-	) -> Option<Balance> {
+	fn get_swap_amount(_: &[CurrencyId], _: SwapLimit<Balance>) -> Option<(Balance, Balance)> {
 		unimplemented!()
 	}
 
-	fn get_swap_supply_amount(
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-	) -> Option<Balance> {
+	fn get_best_price_swap_path(
+		_: CurrencyId,
+		_: CurrencyId,
+		_: SwapLimit<Balance>,
+		_: Vec<Vec<CurrencyId>>,
+	) -> Option<Vec<CurrencyId>> {
 		unimplemented!()
 	}
 
-	fn swap_with_exact_supply(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-		_min_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	fn swap_with_specific_path(
+		_: &AccountId,
+		_: &[CurrencyId],
+		_: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 
-	fn buyback_swap_with_exact_supply(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	fn buyback_swap_with_specific_path(
+		_: &AccountId,
+		_: &[CurrencyId],
+		_: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 
 	fn swap_with_exact_target(
 		_who: &AccountId,
 		_path: &[CurrencyId],
-		_target_amount: Balance,
+		_exact_target_amount: Balance,
 		_max_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		unimplemented!()
-	}
-
-	fn buyback_swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	) -> DispatchResult {
 		unimplemented!()
 	}
 
@@ -216,7 +206,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_max_amount_a: Balance,
 		_max_amount_b: Balance,
 		_min_share_increment: Balance,
-	) -> DispatchResult {
+	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 
@@ -227,7 +217,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_remove_share: Balance,
 		_min_withdrawn_a: Balance,
 		_min_withdrawn_b: Balance,
-	) -> DispatchResult {
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 }
@@ -270,6 +260,9 @@ parameter_type_with_key! {
 
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
+	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
+		vec![DNAR],
+	];
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETR, DNAR],
 		vec![SETUSD, SETR, DNAR]
@@ -299,11 +292,10 @@ impl Config for Runtime {
 	type SetterCurrencyId = SetterCurrencyId;
 	type GetSetUSDId = GetSetUSDId;
 	type CDPTreasuryAccountId = CDPTreasuryAccountId;
-	type DefaultSwapParitalPathList = DefaultSwapParitalPathList;
 	type Dex = MockDEX;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = MockPriceSource;
+	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
 	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
 	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;

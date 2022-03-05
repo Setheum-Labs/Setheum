@@ -36,22 +36,22 @@ use orml_traits::MultiCurrency;
 const SEED: u32 = 0;
 
 const NATIVE: CurrencyId = GetNativeCurrencyId::get();
-const STAKING: CurrencyId = GetNativeCurrencyId::get();
+const DINARID: CurrencyId = GetDinarCurrencyId::get();
 
 runtime_benchmarks! {
 	{ Runtime, module_currencies }
 
 	// `transfer` non-native currency
 	transfer_non_native_currency {
-		let amount: Balance = 1_000 * dollar(STAKING);
+		let amount: Balance = 1_000 * dollar(DNAR);
 		let from: AccountId = whitelisted_caller();
-		set_balance(STAKING, &from, amount);
+		set_balance(DNAR, &from, amount);
 
 		let to: AccountId = account("to", 0, SEED);
 		let to_lookup = lookup_of_account(to.clone());
-	}: transfer(RawOrigin::Signed(from), to_lookup, STAKING, amount, false)
+	}: transfer(RawOrigin::Signed(from), to_lookup, DNAR, amount, false)
 	verify {
-		assert_eq!(<Currencies as MultiCurrency<_>>::total_balance(STAKING, &to), amount);
+		assert_eq!(<Currencies as MultiCurrency<_>>::total_balance(DNAR, &to), amount);
 	}
 
 	// `transfer` native currency and in worst case
@@ -87,13 +87,13 @@ runtime_benchmarks! {
 
 	// `update_balance` for non-native currency
 	update_balance_non_native_currency {
-		let balance: Balance = 2 * dollar(STAKING);
+		let balance: Balance = 2 * dollar(DNAR);
 		let amount: Amount = balance.unique_saturated_into();
 		let who: AccountId = account("who", 0, SEED);
 		let who_lookup = lookup_of_account(who.clone());
-	}: update_balance(RawOrigin::Root, who_lookup, STAKING, amount)
+	}: update_balance(RawOrigin::Root, who_lookup, DNAR, amount)
 	verify {
-		assert_eq!(<Currencies as MultiCurrency<_>>::total_balance(STAKING, &who), balance);
+		assert_eq!(<Currencies as MultiCurrency<_>>::total_balance(DNAR, &who), balance);
 	}
 
 	// `update_balance` for native currency
@@ -128,19 +128,19 @@ runtime_benchmarks! {
 		let treasury: AccountId = TreasuryPalletId::get().into_account();
 		let accounts: Vec<AccountId> = vec!["alice", "bob", "charlie"].into_iter().map(|x| account(x, 0, SEED)).collect();
 		accounts.iter().for_each(|account| {
-			orml_tokens::Accounts::<Runtime>::insert(account, STAKING, orml_tokens::AccountData {
+			orml_tokens::Accounts::<Runtime>::insert(account, DNAR, orml_tokens::AccountData {
 				free: 100,
 				frozen: 0,
 				reserved: 0
 			});
 		});
-		set_balance(STAKING, &treasury, dollar(STAKING));
-	}: _(RawOrigin::Root, STAKING, (&accounts[..c as usize]).to_vec())
+		set_balance(DNAR, &treasury, dollar(DNAR));
+	}: _(RawOrigin::Root, DNAR, (&accounts[..c as usize]).to_vec())
 	verify {
 		(&accounts[..c as usize]).iter().for_each(|account| {
-			assert_eq!(orml_tokens::Accounts::<Runtime>::contains_key(account, STAKING), false);
+			assert_eq!(orml_tokens::Accounts::<Runtime>::contains_key(account, DNAR), false);
 		});
-		assert_eq!(Tokens::free_balance(STAKING, &treasury), dollar(STAKING) + (100 * c) as Balance);
+		assert_eq!(Tokens::free_balance(DNAR, &treasury), dollar(DNAR) + (100 * c) as Balance);
 	}
 }
 

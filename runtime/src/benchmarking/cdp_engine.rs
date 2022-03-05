@@ -41,7 +41,7 @@ use sp_std::prelude::*;
 const SEED: u32 = 0;
 
 const STABLECOIN: CurrencyId = GetSetUSDId::get();
-const STAKING: CurrencyId = GetDinarCurrencyId::get();
+const DINARID: CurrencyId = GetDinarCurrencyId::get();
 
 fn inject_liquidity(
 	maker: AccountId,
@@ -130,7 +130,7 @@ runtime_benchmarks! {
 	set_collateral_params {
 	}: _(
 		RawOrigin::Root,
-		STAKING,
+		DINARID,
 		Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 		Change::NewValue(Some(Rate::saturating_from_rational(20, 100))),
 		Change::NewValue(Some(Ratio::saturating_from_rational(180, 100))),
@@ -142,23 +142,23 @@ runtime_benchmarks! {
 		let owner: AccountId = account("owner", 0, SEED);
 		let owner_lookup = AccountIdLookup::unlookup(owner.clone());
 		let min_debit_value = MinimumDebitValue::get();
-		let debit_exchange_rate = CdpEngine::get_debit_exchange_rate(STAKING);
+		let debit_exchange_rate = CdpEngine::get_debit_exchange_rate(DINARID);
 		let collateral_price = Price::one();		// 1 USD
 		let min_debit_amount = debit_exchange_rate.reciprocal().unwrap().saturating_mul_int(min_debit_value);
 		let min_debit_amount: Amount = min_debit_amount.unique_saturated_into();
 		let collateral_value = 2 * min_debit_value;
-		let collateral_amount = Price::saturating_from_rational(dollar(STAKING), dollar(STABLECOIN)).saturating_mul_int(collateral_value);
+		let collateral_amount = Price::saturating_from_rational(dollar(DINARID), dollar(STABLECOIN)).saturating_mul_int(collateral_value);
 
 		// set balance
-		set_balance(STAKING, &owner, collateral_amount + ExistentialDeposits::get(&STAKING));
+		set_balance(DINARID, &owner, collateral_amount + ExistentialDeposits::get(&DINARID));
 
 		// feed price
-		feed_price(vec![(STAKING, collateral_price)])?;
+		feed_price(vec![(DINARID, collateral_price)])?;
 
 		// set risk params
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
-			STAKING,
+			DINARID,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
@@ -166,18 +166,18 @@ runtime_benchmarks! {
 		)?;
 
 		// adjust position
-		CdpEngine::adjust_position(&owner, STAKING, collateral_amount.try_into().unwrap(), min_debit_amount)?;
+		CdpEngine::adjust_position(&owner, DINARID, collateral_amount.try_into().unwrap(), min_debit_amount)?;
 
 		// modify liquidation rate to make the cdp unsafe
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
-			STAKING,
+			DINARID,
 			Change::NewValue(Some(Ratio::saturating_from_rational(1000, 100))),
 			Change::NoChange,
 			Change::NoChange,
 			Change::NoChange,
 		)?;
-	}: liquidate(RawOrigin::None, STAKING, owner_lookup)
+	}: liquidate(RawOrigin::None, DINARID, owner_lookup)
 
 	// `liquidate` by dex
 	liquidate_by_dex {
@@ -186,28 +186,28 @@ runtime_benchmarks! {
 		let funder: AccountId = account("funder", 0, SEED);
 
 		let debit_value = 100 * dollar(STABLECOIN);
-		let debit_exchange_rate = CdpEngine::get_debit_exchange_rate(STAKING);
+		let debit_exchange_rate = CdpEngine::get_debit_exchange_rate(DINARID);
 		let debit_amount = debit_exchange_rate.reciprocal().unwrap().saturating_mul_int(debit_value);
 		let debit_amount: Amount = debit_amount.unique_saturated_into();
 		let collateral_value = 2 * debit_value;
-		let collateral_amount = Price::saturating_from_rational(dollar(STAKING), dollar(STABLECOIN)).saturating_mul_int(collateral_value);
+		let collateral_amount = Price::saturating_from_rational(dollar(DINARID), dollar(STABLECOIN)).saturating_mul_int(collateral_value);
 		let collateral_price = Price::one();		// 1 USD
 		let max_slippage_swap_with_dex = MaxSwapSlippageCompareToOracle::get();
 		let collateral_amount_in_dex = max_slippage_swap_with_dex.reciprocal().unwrap().saturating_mul_int(collateral_amount);
 		let base_amount_in_dex = max_slippage_swap_with_dex.reciprocal().unwrap().saturating_mul_int(debit_value * 2);
 
-		inject_liquidity(funder.clone(), STAKING, base_amount_in_dex, collateral_amount_in_dex)?;
+		inject_liquidity(funder.clone(), DINARID, base_amount_in_dex, collateral_amount_in_dex)?;
 
 		// set balance
-		set_balance(STAKING, &owner, collateral_amount + ExistentialDeposits::get(&STAKING));
+		set_balance(DINARID, &owner, collateral_amount + ExistentialDeposits::get(&DINARID));
 
 		// feed price
-		feed_price(vec![(STAKING, collateral_price)])?;
+		feed_price(vec![(DINARID, collateral_price)])?;
 
 		// set risk params
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
-			STAKING,
+			DINARID,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
@@ -215,20 +215,20 @@ runtime_benchmarks! {
 		)?;
 
 		// adjust position
-		CdpEngine::adjust_position(&owner, STAKING, collateral_amount.try_into().unwrap(), debit_amount)?;
+		CdpEngine::adjust_position(&owner, DINARID, collateral_amount.try_into().unwrap(), debit_amount)?;
 
 		// modify liquidation rate to make the cdp unsafe
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
-			STAKING,
+			DINARID,
 			Change::NewValue(Some(Ratio::saturating_from_rational(1000, 100))),
 			Change::NoChange,
 			Change::NoChange,
 			Change::NoChange,
 		)?;
-	}: liquidate(RawOrigin::None, STAKING, owner_lookup)
+	}: liquidate(RawOrigin::None, DINARID, owner_lookup)
 	verify {
-		let (other_currency_amount, base_currency_amount) = Dex::get_liquidity_pool(STAKING, STABLECOIN);
+		let (other_currency_amount, base_currency_amount) = Dex::get_liquidity_pool(DINARID, STABLECOIN);
 		assert!(other_currency_amount > collateral_amount_in_dex);
 		assert!(base_currency_amount < base_amount_in_dex);
 	}
@@ -237,23 +237,23 @@ runtime_benchmarks! {
 		let owner: AccountId = account("owner", 0, SEED);
 		let owner_lookup = AccountIdLookup::unlookup(owner.clone());
 		let min_debit_value = MinimumDebitValue::get();
-		let debit_exchange_rate = CdpEngine::get_debit_exchange_rate(STAKING);
+		let debit_exchange_rate = CdpEngine::get_debit_exchange_rate(DINARID);
 		let collateral_price = Price::one();		// 1 USD
 		let min_debit_amount = debit_exchange_rate.reciprocal().unwrap().saturating_mul_int(min_debit_value);
 		let min_debit_amount: Amount = min_debit_amount.unique_saturated_into();
 		let collateral_value = 2 * min_debit_value;
-		let collateral_amount = Price::saturating_from_rational(dollar(STAKING), dollar(STABLECOIN)).saturating_mul_int(collateral_value);
+		let collateral_amount = Price::saturating_from_rational(dollar(DINARID), dollar(STABLECOIN)).saturating_mul_int(collateral_value);
 
 		// set balance
-		set_balance(STAKING, &owner, collateral_amount + ExistentialDeposits::get(&STAKING));
+		set_balance(DINARID, &owner, collateral_amount + ExistentialDeposits::get(&DINARID));
 
 		// feed price
-		feed_price(vec![(STAKING, collateral_price)])?;
+		feed_price(vec![(DINARID, collateral_price)])?;
 
 		// set risk params
 		CdpEngine::set_collateral_params(
 			RawOrigin::Root.into(),
-			STAKING,
+			DINARID,
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
 			Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
 			Change::NewValue(Some(Ratio::saturating_from_rational(150, 100))),
@@ -261,11 +261,11 @@ runtime_benchmarks! {
 		)?;
 
 		// adjust position
-		CdpEngine::adjust_position(&owner, STAKING, collateral_amount.try_into().unwrap(), min_debit_amount)?;
+		CdpEngine::adjust_position(&owner, DINARID, collateral_amount.try_into().unwrap(), min_debit_amount)?;
 
 		// shutdown
 		EmergencyShutdown::emergency_shutdown(RawOrigin::Root.into())?;
-	}: _(RawOrigin::None, STAKING, owner_lookup)
+	}: _(RawOrigin::None, DINARID, owner_lookup)
 }
 
 #[cfg(test)]

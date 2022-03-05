@@ -42,9 +42,9 @@ pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
 parameter_types! {
-	pub static SETUSDSERPPair: TradingPair = TradingPair::from_currency_ids(SETUSD, SERP).unwrap();
-	pub static SETUSDDNARPair: TradingPair = TradingPair::from_currency_ids(SETUSD, DNAR).unwrap();
-	pub static DNARSERPPair: TradingPair = TradingPair::from_currency_ids(DNAR, SERP).unwrap();
+	pub static SETUSDSERPPair: TradingPair = TradingPair::from_currency_ids(SERP, SETUSD).unwrap();
+	pub static SETUSDDNARPair: TradingPair = TradingPair::from_currency_ids(DNAR, SETUSD).unwrap();
+	pub static DNARSERPPair: TradingPair = TradingPair::from_currency_ids(SERP, DNAR).unwrap();
 }
 
 mod dex {

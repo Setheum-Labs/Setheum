@@ -34,7 +34,7 @@ use sp_runtime::{
 	DispatchError, FixedPointNumber,
 };
 use sp_std::cell::RefCell;
-use support::mocks::MockCurrencyIdMapping;
+use support::{mocks::MockCurrencyIdMapping, SwapLimit};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -131,45 +131,41 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		unimplemented!()
 	}
 
-	fn get_swap_target_amount(_path: &[CurrencyId], _supply_amount: Balance) -> Option<Balance> {
+	fn get_swap_amount(_: &[CurrencyId], _: SwapLimit<Balance>) -> Option<(Balance, Balance)> {
 		unimplemented!()
 	}
 
-	fn get_swap_supply_amount(_path: &[CurrencyId], _target_amount: Balance) -> Option<Balance> {
+	fn get_best_price_swap_path(
+		_: CurrencyId,
+		_: CurrencyId,
+		_: SwapLimit<Balance>,
+		_: Vec<Vec<CurrencyId>>,
+	) -> Option<Vec<CurrencyId>> {
 		unimplemented!()
 	}
 
-	fn swap_with_exact_supply(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-		_min_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	fn swap_with_specific_path(
+		_: &AccountId,
+		_: &[CurrencyId],
+		_: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 
-	fn buyback_swap_with_exact_supply(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	fn buyback_swap_with_specific_path(
+		_: &AccountId,
+		_: &[CurrencyId],
+		_: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 
 	fn swap_with_exact_target(
 		_who: &AccountId,
 		_path: &[CurrencyId],
-		_target_amount: Balance,
+		_exact_target_amount: Balance,
 		_max_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		unimplemented!()
-	}
-
-	fn buyback_swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
+	) -> DispatchResult {
 		unimplemented!()
 	}
 
@@ -180,7 +176,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_max_amount_a: Balance,
 		_max_amount_b: Balance,
 		_min_share_increment: Balance,
-	) -> DispatchResult {
+	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 
@@ -191,7 +187,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_remove_share: Balance,
 		_min_withdrawn_a: Balance,
 		_min_withdrawn_b: Balance,
-	) -> DispatchResult {
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
 }
@@ -222,7 +218,7 @@ parameter_types! {
 	pub const GetSetUSDId: CurrencyId = SETUSD;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub SetUSDFixedPrice: Price = Price::one();
-	pub SetterFixedPrice: Price = Price::one();
+	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 4); // $0.25
 }
 
 impl Config for Runtime {

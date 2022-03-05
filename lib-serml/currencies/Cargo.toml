@@ -2,7 +2,7 @@
 name = "module-currencies"
 version = "1.0.0"
 authors = ["Setheum Labs"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.124", optional = true }
@@ -28,6 +28,7 @@ pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "
 tokens = { package = "orml-tokens", path = "../../lib-orml/tokens" }
 module-evm = { path = "../evm" }
 module-evm-bridge = { path = "../evm-bridge" }
+serp-treasury = { path = "../serp-treasury" }
 
 [features]
 default = ["std"]

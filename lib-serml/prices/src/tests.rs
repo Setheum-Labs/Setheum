@@ -139,7 +139,7 @@ fn access_price_of_dex_share_currency() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			PricesModule::access_price(DNAR),
-			Some(Price::saturating_from_integer(10000u128))
+			Some(Price::saturating_from_integer(100u128))
 		); // 100 USD, right shift the decimal point (18-12) places
 		assert_eq!(
 			PricesModule::access_price(SETUSD),
@@ -194,7 +194,7 @@ fn access_price_of_dex_share_currency() {
 fn access_price_of_other_currency() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(PricesModule::access_price(SETM), Some(Price::saturating_from_integer(0)));
-		assert_eq!(PricesModule::access_price(SETR), None);
+		assert_eq!(PricesModule::access_price(SETR), Some(Price::saturating_from_rational(1, 4)));
 
 		mock_oracle_update();
 
@@ -203,8 +203,8 @@ fn access_price_of_other_currency() {
 			Some(Price::saturating_from_integer(30u128))
 		); // 30 USD, right shift the decimal point (18-12) places
 		assert_eq!(
-			PricesModule::access_price(SETR),
-			Some(Price::saturating_from_integer(200u128))
+			PricesModule::access_price(SERP),
+			Some(Price::saturating_from_integer(40000u128))
 		); // 200 USD, right shift the decimal point (18-12) places
 	});
 }
@@ -219,44 +219,33 @@ fn lock_price_work() {
 		// lock the price of SERP
 		assert_eq!(
 			PricesModule::access_price(SERP),
-			Some(Price::saturating_from_integer(500000000u128))
+			Some(Price::saturating_from_integer(50000u128))
 		);
 		assert_eq!(PricesModule::locked_price(SERP), None);
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), SERP));
 		System::assert_last_event(Event::PricesModule(crate::Event::LockPrice(
 			SERP,
-			Price::saturating_from_integer(500000000u128),
+			Price::saturating_from_integer(50000u128),
 		)));
 		assert_eq!(
 			PricesModule::locked_price(SERP),
-			Some(Price::saturating_from_integer(500000000u128))
+			Some(Price::saturating_from_integer(50000u128))
 		);
-
-		// cannot lock the price of SETR when the price from oracle is None
-		assert_eq!(PricesModule::access_price(SETR), None);
-		assert_eq!(PricesModule::locked_price(SETR), None);
-		assert_noop!(
-			PricesModule::lock_price(Origin::signed(1), SETR),
-			Error::<Runtime>::AccessPriceFailed
-		);
-		assert_eq!(PricesModule::locked_price(SETR), None);
-
-		mock_oracle_update();
 
 		// lock the price of SETR when the price of SETR from oracle is some
 		assert_eq!(
 			PricesModule::access_price(SETR),
-			Some(Price::saturating_from_integer(200u128))
+			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(PricesModule::locked_price(SETR), None);
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), SETR));
 		System::assert_last_event(Event::PricesModule(crate::Event::LockPrice(
 			SETR,
-			Price::saturating_from_integer(200u128),
+			Price::saturating_from_rational(1, 4),
 		)));
 		assert_eq!(
 			PricesModule::locked_price(SETR),
-			Some(Price::saturating_from_integer(200u128))
+			Some(Price::saturating_from_rational(1, 4))
 		);
 	});
 }
@@ -277,7 +266,7 @@ fn unlock_price_work() {
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), SERP));
 		assert_eq!(
 			PricesModule::locked_price(SERP),
-			Some(Price::saturating_from_integer(500000000u128))
+			Some(Price::saturating_from_integer(50000u128))
 		);
 		assert_ok!(PricesModule::unlock_price(Origin::signed(1), SERP));
 		System::assert_last_event(Event::PricesModule(crate::Event::UnlockPrice(SERP)));
@@ -305,11 +294,11 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			RealTimePriceProvider::<Runtime>::get_price(SERP),
-			Some(Price::saturating_from_integer(500000000u128))
+			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(SETR), None);
+		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(SETR), Some(Price::saturating_from_rational(1, 4)));
 		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_SETUSD_DNAR), lp_price_1);
-		assert_eq!(RealTimePriceProvider::<Runtime>::get_relative_price(SERP, SETR), None);
+		assert_eq!(RealTimePriceProvider::<Runtime>::get_relative_price(SERP, SETR), Some(Price::saturating_from_integer(200_000)));
 
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(SETUSD),
@@ -317,16 +306,16 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(SERP),
-			Some(Price::saturating_from_integer(500000000u128))
+			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(PriorityLockedPriceProvider::<Runtime>::get_price(SETR), None);
+		assert_eq!(PriorityLockedPriceProvider::<Runtime>::get_price(SETR), Some(Price::saturating_from_rational(1, 4)));
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(LP_SETUSD_DNAR),
 			lp_price_1
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR),
-			None
+			Some(Price::saturating_from_integer(200_000))
 		);
 
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SETUSD), None);
@@ -338,10 +327,7 @@ fn price_providers_work() {
 		// lock price
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), SETUSD));
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), SERP));
-		assert_noop!(
-			PricesModule::lock_price(Origin::signed(1), SETR),
-			Error::<Runtime>::AccessPriceFailed
-		);
+	
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), LP_SETUSD_DNAR));
 
 		assert_eq!(
@@ -350,7 +336,7 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			LockedPriceProvider::<Runtime>::get_price(SERP),
-			Some(Price::saturating_from_integer(500000000u128))
+			Some(Price::saturating_from_integer(50000u128))
 		);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SETR), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_SETUSD_DNAR), lp_price_1);
@@ -372,16 +358,16 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			RealTimePriceProvider::<Runtime>::get_price(SERP),
-			Some(Price::saturating_from_integer(400000000u128))
+			Some(Price::saturating_from_integer(40000u128))
 		);
 		assert_eq!(
 			RealTimePriceProvider::<Runtime>::get_price(SETR),
-			Some(Price::saturating_from_integer(200u128))
+			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_SETUSD_DNAR), lp_price_2);
 		assert_eq!(
 			RealTimePriceProvider::<Runtime>::get_relative_price(SERP, SETR),
-			Some(Price::saturating_from_integer(2u128))
+			Some(Price::saturating_from_integer(160_000u128))
 		);
 
 		assert_eq!(
@@ -390,11 +376,11 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(SERP),
-			Some(Price::saturating_from_integer(500000000u128))
+			Some(Price::saturating_from_integer(50000u128))
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(SETR),
-			Some(Price::saturating_from_integer(200u128))
+			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(LP_SETUSD_DNAR),
@@ -402,7 +388,7 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR),
-			Some(Price::saturating_from_integer(3u128))
+			Some(Price::saturating_from_integer(200_000u128))
 		);
 
 		assert_eq!(
@@ -411,7 +397,7 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			LockedPriceProvider::<Runtime>::get_price(SERP),
-			Some(Price::saturating_from_integer(500000000u128))
+			Some(Price::saturating_from_integer(50000u128))
 		);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SETR), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_SETUSD_DNAR), lp_price_1);
@@ -432,11 +418,11 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(SERP),
-			Some(Price::saturating_from_integer(400000000u128))
+			Some(Price::saturating_from_integer(40000u128))
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(SETR),
-			Some(Price::saturating_from_integer(200u128))
+			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(LP_SETUSD_DNAR),
@@ -444,7 +430,7 @@ fn price_providers_work() {
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR),
-			Some(Price::saturating_from_integer(2u128))
+			Some(Price::saturating_from_integer(160_000u128))
 		);
 
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SETUSD), None);

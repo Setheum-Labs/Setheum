@@ -30,6 +30,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
+#![allow(clippy::unnecessary_unwrap)]
 
 use frame_support::{log, pallet_prelude::*, transactional};
 use frame_system::{
@@ -52,7 +53,7 @@ use sp_runtime::{
 	DispatchError, DispatchResult, FixedPointNumber, RuntimeDebug,
 };
 use sp_std::prelude::*;
-use support::{AuctionManager, CDPTreasury, CDPTreasuryExtended, DEXManager, EmergencyShutdown, PriceProvider, Rate};
+use support::{AuctionManager, CDPTreasury, CDPTreasuryExtended, DEXManager, EmergencyShutdown, PriceProvider, Rate, SwapLimit};
 
 mod mock;
 mod tests;
@@ -175,12 +176,6 @@ pub mod module {
 		/// Emergency shutdown.
 		type EmergencyShutdown: EmergencyShutdown;
 
-		/// The default parital path list for DEX to directly take auction,
-		/// Note: the path is parital, the whole swap path is collateral currency id concat
-		/// the partial path. And the list is sorted, DEX try to take auction by order.
-		#[pallet::constant]
-		type DefaultSwapParitalPathList: Get<Vec<Vec<CurrencyId>>>;
-
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 	}
@@ -203,19 +198,40 @@ pub mod module {
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
-	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
-		/// Collateral auction created. \[auction_id, collateral_type,
-		/// collateral_amount, target_bid_price\]
-		NewCollateralAuction(AuctionId, CurrencyId, Balance, Balance),
-		/// Active auction cancelled. \[auction_id\]
-		CancelAuction(AuctionId),
-		/// Collateral auction dealt. \[auction_id, collateral_type,
-		/// collateral_amount, winner, payment_amount\]
-		CollateralAuctionDealt(AuctionId, CurrencyId, Balance, T::AccountId, Balance),
-		/// Dex take collateral auction. \[auction_id, collateral_type,
-		/// collateral_amount, turnover\]
-		DEXTakeCollateralAuction(AuctionId, CurrencyId, Balance, Balance),
+		/// Collateral auction created.
+		NewCollateralAuction {
+			auction_id: AuctionId,
+			collateral_type: CurrencyId,
+			collateral_amount: Balance,
+			target_bid_price: Balance,
+		},
+		/// Active auction cancelled.
+		CancelAuction { auction_id: AuctionId },
+		/// Collateral auction dealt.
+		CollateralAuctionDealt {
+			auction_id: AuctionId,
+			collateral_type: CurrencyId,
+			collateral_amount: Balance,
+			winner: T::AccountId,
+			payment_amount: Balance,
+		},
+		/// Dex take collateral auction.
+		DEXTakeCollateralAuction {
+			auction_id: AuctionId,
+			collateral_type: CurrencyId,
+			collateral_amount: Balance,
+			supply_collateral_amount: Balance,
+			target_stable_amount: Balance,
+		},
+		/// Collateral auction aborted.
+		CollateralAuctionAborted {
+			auction_id: AuctionId,
+			collateral_type: CurrencyId,
+			collateral_amount: Balance,
+			target_stable_amount: Balance,
+			refund_recipient: T::AccountId,
+		},
 	}
 
 	/// Mapping from auction id to collateral auction info
@@ -265,12 +281,6 @@ pub mod module {
 				}
 			}
 		}
-
-		fn integrity_test() {
-			assert!(T::DefaultSwapParitalPathList::get()
-				.iter()
-				.all(|path| !path.is_empty() && path[path.len() - 1] == T::GetSetUSDId::get()));
-		}
 	}
 
 	#[pallet::call]
@@ -284,7 +294,7 @@ pub mod module {
 			ensure_none(origin)?;
 			ensure!(T::EmergencyShutdown::is_shutdown(), Error::<T>::MustAfterShutdown);
 			<Self as AuctionManager<T::AccountId>>::cancel_auction(id)?;
-			Self::deposit_event(Event::CancelAuction(id));
+			Self::deposit_event(Event::CancelAuction { auction_id: id });
 			Ok(())
 		}
 	}
@@ -588,125 +598,63 @@ impl<T: Config> Pallet<T> {
 	fn collateral_auction_end_handler(
 		auction_id: AuctionId,
 		collateral_auction: CollateralAuctionItem<T::AccountId, T::BlockNumber>,
-		winner: Option<(T::AccountId, Balance)>,
+		last_bid: Option<(T::AccountId, Balance)>,
 	) {
-		let (maybe_bidder, bid_price) = if let Some((bidder, bid_price)) = winner {
+		let (last_bidder, bid_price) = if let Some((bidder, bid_price)) = last_bid.clone() {
 			(Some(bidder), bid_price)
 		} else {
 			(None, Zero::zero())
 		};
-		let mut should_deal = maybe_bidder.is_some();
 
-		// if bid_price doesn't reach target, DEX will try trading with DEX to get better result.
-		if !collateral_auction.in_reverse_stage(bid_price) {
-			let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
+		let swap_limit = if collateral_auction.always_forward() {
+			SwapLimit::ExactSupply(collateral_auction.amount, bid_price)
+		} else {
+			SwapLimit::ExactTarget(collateral_auction.amount, collateral_auction.target)
+		};
 
-			// iterator default_swap_parital_path_list to try swap until swap succeed.
-			for partial_path in default_swap_parital_path_list {
-				let partial_path_len = partial_path.len();
-
-				// check collateral currency_id and partial_path can form a valid swap path.
-				if partial_path_len > 0 && collateral_auction.currency_id != partial_path[0] {
-					let mut swap_path = vec![collateral_auction.currency_id];
-					swap_path.extend(partial_path);
-
-					// DEX must take a higher bid.
-					if bid_price
-						< T::DEX::get_swap_target_amount(&swap_path, collateral_auction.amount).unwrap_or_default()
-					{
-						// try swap collateral in auction with DEX to get stable.
-						if let Ok(stable_amount) = T::CDPTreasury::swap_exact_collateral_to_stable(
-							collateral_auction.currency_id,
-							collateral_auction.amount,
-							Zero::zero(),
-							&swap_path,
-							true,
-						) {
-							// swap successfully, will not deal.
-							should_deal = false;
-
-							// refund stable currency to the last bidder, it shouldn't fail and affect the
-							// process. but even it failed, just the winner did not get the bid price. it
-							// can be fixed by treasury council.
-							if let Some(bidder) = maybe_bidder.as_ref() {
-								let res = T::CDPTreasury::issue_debit(bidder, bid_price, false);
-								if let Err(e) = res {
-									log::warn!(
-										target: "auction-manager",
-										"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
-										This is unexpected but should be safe",
-										bid_price, bidder, e
-									);
-									debug_assert!(false);
-								}
-							}
-
-							// DEX bid is higher than the target amount of auction,
-							// need refund extra stable currency to recipient.
-							if collateral_auction.in_reverse_stage(stable_amount) {
-								let refund_amount = stable_amount
-									.checked_sub(collateral_auction.target)
-									.expect("ensured stable_amount > target; qed");
-								// it shouldn't fail and affect the process.
-								// but even it failed, just the winner did not get the refund amount. it can be
-								// fixed by treasury council.
-								let res = T::CDPTreasury::issue_debit(
-									&collateral_auction.refund_recipient,
-									refund_amount,
-									false,
-								);
-								if let Err(e) = res {
-									log::warn!(
-										target: "auction-manager",
-										"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
-										This is unexpected but should be safe",
-										refund_amount, collateral_auction.refund_recipient, e
-									);
-									debug_assert!(false);
-								}
-							}
-
-							Self::deposit_event(Event::DEXTakeCollateralAuction(
-								auction_id,
-								collateral_auction.currency_id,
-								collateral_auction.amount,
-								stable_amount,
-							));
-
-							// break loop.
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		if should_deal {
-			let bidder = maybe_bidder.expect("guaranteed by previous check");
-
-			// transfer collateral to winner from CDP treasury, it shouldn't fail and affect
-			// the process. but even it failed, just the winner did not get the amount. it
-			// can be fixed by treasury council.
-			let res =
-				T::CDPTreasury::withdraw_collateral(&bidder, collateral_auction.currency_id, collateral_auction.amount);
-			if let Err(e) = res {
-				log::warn!(
-					target: "auction-manager",
-					"withdraw_collateral: failed to withdraw {:?} {:?} from CDP treasury to {:?}: {:?}. \
-					This is unexpected but should be safe",
-					collateral_auction.amount, collateral_auction.currency_id, bidder, e
-				);
-				debug_assert!(false);
-			}
-
-			let payment_amount = collateral_auction.payment_amount(bid_price);
-			Self::deposit_event(Event::CollateralAuctionDealt(
-				auction_id,
+		// if DEX give a price no less than the last_bidder for swap target
+		if let Ok((actual_supply_amount, actual_target_amount)) =
+			T::CDPTreasury::swap_collateral_to_stable(collateral_auction.currency_id, swap_limit, true)
+		{
+			Self::try_refund_collateral(
 				collateral_auction.currency_id,
-				collateral_auction.amount,
-				bidder,
+				&collateral_auction.refund_recipient,
+				collateral_auction.amount.saturating_sub(actual_supply_amount),
+			);
+			Self::try_refund_bid(&collateral_auction, last_bid);
+
+			Self::deposit_event(Event::DEXTakeCollateralAuction {
+				auction_id,
+				collateral_type: collateral_auction.currency_id,
+				collateral_amount: collateral_auction.amount,
+				supply_collateral_amount: actual_supply_amount,
+				target_stable_amount: actual_target_amount,
+			});
+		} else if last_bidder.is_some() && bid_price >= collateral_auction.target {
+			// if these's bid which is gte target, auction should dealt by the last bidder.
+			let winner = last_bidder.expect("ensured last bidder not empty; qed");
+
+			Self::try_refund_collateral(collateral_auction.currency_id, &winner, collateral_auction.amount);
+			let payment_amount = collateral_auction.payment_amount(bid_price);
+
+			Self::deposit_event(Event::CollateralAuctionDealt {
+				auction_id,
+				collateral_type: collateral_auction.currency_id,
+				collateral_amount: collateral_auction.amount,
+				winner,
 				payment_amount,
-			));
+			});
+		} else {
+			// abort this collateral auction, these collateral can be reprocessed by cdp treausry.
+			Self::try_refund_bid(&collateral_auction, last_bid);
+
+			Self::deposit_event(Event::CollateralAuctionAborted {
+				auction_id,
+				collateral_type: collateral_auction.currency_id,
+				collateral_amount: collateral_auction.amount,
+				target_stable_amount: collateral_auction.target,
+				refund_recipient: collateral_auction.refund_recipient.clone(),
+			});
 		}
 
 		// decrement recipient account reference
@@ -717,6 +665,44 @@ impl<T: Config> Pallet<T> {
 			*balance = balance.saturating_sub(collateral_auction.amount)
 		});
 		TotalTargetInAuction::<T>::mutate(|balance| *balance = balance.saturating_sub(collateral_auction.target));
+	}
+
+	// Refund stable to the last_bidder.
+	fn try_refund_bid(
+		collateral_auction: &CollateralAuctionItem<T::AccountId, T::BlockNumber>,
+		last_bid: Option<(T::AccountId, Balance)>,
+	) {
+		if let Some((bidder, bid_price)) = last_bid {
+			// If failed, just the bid did not get the stable. It can be fixed by treasury council.
+			let res = T::CDPTreasury::issue_debit(&bidder, collateral_auction.payment_amount(bid_price), false);
+			if let Err(e) = res {
+				log::warn!(
+					target: "auction-manager",
+					"issue_debit: failed to issue stable {:?} to {:?}: {:?}. \
+					This is unexpected but should be safe",
+					collateral_auction.payment_amount(bid_price), bidder, e
+				);
+				debug_assert!(false);
+			}
+		}
+	}
+
+	// Refund collateral to the refund_recipient.
+	fn try_refund_collateral(collateral_type: CurrencyId, refund_recipient: &T::AccountId, refund_collateral: Balance) {
+		if !refund_collateral.is_zero() {
+			// If failed, just the refund_recipient did not get the refund collateral. It can be fixed by
+			// treasury council.
+			let res = T::CDPTreasury::withdraw_collateral(refund_recipient, collateral_type, refund_collateral);
+			if let Err(e) = res {
+				log::warn!(
+					target: "auction-manager",
+					"withdraw_collateral: failed to withdraw {:?} {:?} from CDP treasury to {:?}: {:?}. \
+					This is unexpected but should be safe",
+					refund_collateral, collateral_type, refund_recipient, e
+				);
+				debug_assert!(false);
+			}
+		}
 	}
 
 	/// increment `new_bidder` reference and decrement `last_bidder`
@@ -828,7 +814,12 @@ impl<T: Config> AuctionManager<T::AccountId> for Pallet<T> {
 			);
 		}
 
-		Self::deposit_event(Event::NewCollateralAuction(auction_id, currency_id, amount, target));
+		Self::deposit_event(Event::NewCollateralAuction {
+			auction_id,
+			collateral_type: currency_id,
+			collateral_amount: amount,
+			target_bid_price: target,
+		});
 		Ok(())
 	}
 

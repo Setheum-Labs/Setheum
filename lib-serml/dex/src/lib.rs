@@ -132,7 +132,7 @@ pub mod module {
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
-
+		
 		/// The origin which may list, enable or disable trading pairs.
 		type ListingOrigin: EnsureOrigin<Self::Origin>;
 	}
@@ -177,6 +177,10 @@ pub mod module {
 		UnqualifiedProvision,
 		/// Trading pair is still provisioning
 		StillProvisioning,
+		/// The Asset unregistered.
+		AssetUnregistered,
+		/// The trading path is invalid
+		InvalidTradingPath,
 	}
 
 	#[pallet::event]
@@ -208,6 +212,12 @@ pub mod module {
 			currency_1: CurrencyId,
 			pool_1: Balance,
 			share_decrement: Balance,
+		},
+		/// Updated liquidity pool.
+		LiquidityPoolUpdated {
+			trading_pair: TradingPair,
+			pool_0: Balance,
+			pool_1: Balance,
 		},
 		/// Use supply currency to swap target currency.
 		Swap {
@@ -409,7 +419,7 @@ pub mod module {
 		}
 
 		/// Add provision to Provisioning trading pair.
-		/// If succecceds, will record the provision, but shares issuing will happen after the
+		/// If succeeds, will record the provision, but shares issuing will happen after the
 		/// trading pair convert to Enabled status.
 		///
 		/// - `currency_id_a`: currency id A.
@@ -509,12 +519,15 @@ pub mod module {
 				Error::<T>::NotAllowedList
 			);
 
-			if let CurrencyId::Erc20(address) = currency_id_a {
-				T::CurrencyIdMapping::set_erc20_mapping(address)?;
-			}
-			if let CurrencyId::Erc20(address) = currency_id_b {
-				T::CurrencyIdMapping::set_erc20_mapping(address)?;
-			}
+			let check_asset_registry = |currency_id: CurrencyId| match currency_id {
+				CurrencyId::Erc20(_) => T::CurrencyIdMapping::name(currency_id)
+					.map(|_| ())
+					.ok_or(Error::<T>::AssetUnregistered),
+				CurrencyId::Token(_)
+				| CurrencyId::DexShare(_, _) => Ok(()), /* No registration required */
+			};
+			check_asset_registry(currency_id_a)?;
+			check_asset_registry(currency_id_b)?;
 
 			let (min_contribution, target_provision) = if currency_id_a == trading_pair.first() {
 				(
@@ -731,7 +744,17 @@ impl<T: Config> Pallet<T> {
 		f: impl FnOnce((&mut Balance, &mut Balance)) -> sp_std::result::Result<R, E>,
 	) -> sp_std::result::Result<R, E> {
 		LiquidityPool::<T>::try_mutate(trading_pair, |(pool_0, pool_1)| -> sp_std::result::Result<R, E> {
+			let old_pool_0 = *pool_0;
+			let old_pool_1 = *pool_1;
 			f((pool_0, pool_1)).map(move |result| {
+				if *pool_0 != old_pool_0 || *pool_1 != old_pool_1 {
+					Self::deposit_event(Event::LiquidityPoolUpdated {
+						trading_pair: trading_pair.clone(),
+						pool_0: *pool_0,
+						pool_1: *pool_1,
+					});
+				}
+
 				result
 			})
 		})
@@ -897,7 +920,7 @@ impl<T: Config> Pallet<T> {
 						let (exchange_rate_0, exchange_rate_1) = (
 							ExchangeRate::one(),
 							ExchangeRate::checked_from_rational(max_amount_0, max_amount_1)
-							.ok_or(ArithmeticError::Overflow)?,
+								.ok_or(ArithmeticError::Overflow)?,
 						);
 
 						let shares_from_token_0 = exchange_rate_0
@@ -913,16 +936,13 @@ impl<T: Config> Pallet<T> {
 						(max_amount_0, max_amount_1, initial_shares)
 					} else {
 						let exchange_rate_0_1 =
-							ExchangeRate::checked_from_rational(*pool_1, *pool_0)
-							.ok_or(ArithmeticError::Overflow)?;
-						let input_exchange_rate_0_1 =
-							ExchangeRate::checked_from_rational(max_amount_1, max_amount_0)
+							ExchangeRate::checked_from_rational(*pool_1, *pool_0).ok_or(ArithmeticError::Overflow)?;
+						let input_exchange_rate_0_1 = ExchangeRate::checked_from_rational(max_amount_1, max_amount_0)
 							.ok_or(ArithmeticError::Overflow)?;
 
 						if input_exchange_rate_0_1 <= exchange_rate_0_1 {
 							// max_amount_0 may be too much, calculate the actual amount_0
-							let exchange_rate_1_0 =
-								ExchangeRate::checked_from_rational(*pool_0, *pool_1)
+							let exchange_rate_1_0 = ExchangeRate::checked_from_rational(*pool_0, *pool_1)
 								.ok_or(ArithmeticError::Overflow)?;
 							let amount_0 = exchange_rate_1_0
 								.checked_mul_int(max_amount_1)
@@ -1138,11 +1158,9 @@ impl<T: Config> Pallet<T> {
 		path: &[CurrencyId],
 		supply_amount: Balance,
 	) -> sp_std::result::Result<Vec<Balance>, DispatchError> {
+		Self::validate_path(path)?;
+
 		let path_length = path.len();
-		ensure!(
-			path_length >= 2 && path_length <= T::TradingPathLimit::get().saturated_into(),
-			Error::<T>::InvalidTradingPathLength
-		);
 		let mut target_amounts: Vec<Balance> = vec![Zero::zero(); path_length];
 		target_amounts[0] = supply_amount;
 
@@ -1176,11 +1194,9 @@ impl<T: Config> Pallet<T> {
 		path: &[CurrencyId],
 		supply_amount: Balance,
 	) -> sp_std::result::Result<Vec<Balance>, DispatchError> {
+		Self::validate_path(path)?;
+
 		let path_length = path.len();
-		ensure!(
-			path_length >= 2 && path_length <= T::TradingPathLimit::get().saturated_into(),
-			Error::<T>::InvalidTradingPathLength
-		);
 		let mut target_amounts: Vec<Balance> = vec![Zero::zero(); path_length];
 		target_amounts[0] = supply_amount;
 
@@ -1214,11 +1230,9 @@ impl<T: Config> Pallet<T> {
 		path: &[CurrencyId],
 		target_amount: Balance,
 	) -> sp_std::result::Result<Vec<Balance>, DispatchError> {
+		Self::validate_path(path)?;
+
 		let path_length = path.len();
-		ensure!(
-			path_length >= 2 && path_length <= T::TradingPathLimit::get().saturated_into(),
-			Error::<T>::InvalidTradingPathLength
-		);
 		let mut supply_amounts: Vec<Balance> = vec![Zero::zero(); path_length];
 		supply_amounts[path_length - 1] = target_amount;
 
@@ -1252,11 +1266,9 @@ impl<T: Config> Pallet<T> {
 		path: &[CurrencyId],
 		target_amount: Balance,
 	) -> sp_std::result::Result<Vec<Balance>, DispatchError> {
+		Self::validate_path(path)?;
+
 		let path_length = path.len();
-		ensure!(
-			path_length >= 2 && path_length <= T::TradingPathLimit::get().saturated_into(),
-			Error::<T>::InvalidTradingPathLength
-		);
 		let mut supply_amounts: Vec<Balance> = vec![Zero::zero(); path_length];
 		supply_amounts[path_length - 1] = target_amount;
 
@@ -1284,6 +1296,17 @@ impl<T: Config> Pallet<T> {
 		}
 
 		Ok(supply_amounts)
+	}
+
+	fn validate_path(path: &[CurrencyId]) -> DispatchResult {
+		let path_length = path.len();
+		ensure!(
+			path_length >= 2 && path_length <= T::TradingPathLimit::get().saturated_into(),
+			Error::<T>::InvalidTradingPathLength
+		);
+		ensure!(path.get(0) != path.get(path_length - 1), Error::<T>::InvalidTradingPath);
+
+		Ok(())
 	}
 
 	fn _swap(
@@ -1536,14 +1559,21 @@ impl<T: Config> Pallet<T> {
 		who: &T::AccountId,
 		path: &[CurrencyId],
 		supply_amount: Balance,
-		// min_target_amount: Balance,
-		// price_impact_limit: Option<Ratio>,
+		min_target_amount: Balance,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let amounts = Self::get_target_amounts(&path, supply_amount)?;
+		ensure!(
+			amounts[amounts.len() - 1] >= min_target_amount,
+			Error::<T>::InsufficientTargetAmount
+		);
 		let module_account_id = Self::account_id();
 		let actual_target_amount = amounts[amounts.len() - 1];
 
         let efe_amounts = Self::get_efe_target_amounts(&path, supply_amount)?;
+		ensure!(
+			efe_amounts[efe_amounts.len() - 1] >= min_target_amount,
+			Error::<T>::InsufficientTargetAmount
+		);
         let efe_actual_target_amount = efe_amounts[efe_amounts.len() - 1];
 
 		// Call `ExchangeFeeEvaluator` here.
@@ -1586,8 +1616,18 @@ impl<T: Config> Pallet<T> {
 				liquidity_changes: efe_amounts,
 			});
             return Ok(efe_actual_target_amount);
+		} else {
+			T::Currency::transfer(path[0], who, &module_account_id, supply_amount)?;
+			Self::_swap_by_path(path, &amounts)?;
+			T::Currency::withdraw(path[path.len() - 1], &module_account_id, actual_target_amount)?;
+		
+			Self::deposit_event(Event::BuyBackSwap {
+				trader: who.clone(),
+				path: path.to_vec(),
+				liquidity_changes: amounts,
+			});
+            return Ok(actual_target_amount);
 		}
-		Ok(efe_actual_target_amount)
 	}
 
 	/// Ensured atomic.
@@ -1697,14 +1737,15 @@ impl<T: Config> Pallet<T> {
 		who: &T::AccountId,
 		path: &[CurrencyId],
 		target_amount: Balance,
-		// max_supply_amount: Balance,
-		// price_impact_limit: Option<Ratio>,
+		max_supply_amount: Balance,
 	) -> sp_std::result::Result<Balance, DispatchError> {
 		let amounts = Self::get_supply_amounts(&path, target_amount)?;
+		ensure!(amounts[0] <= max_supply_amount, Error::<T>::ExcessiveSupplyAmount);
 		let module_account_id = Self::account_id();
 		let actual_supply_amount = amounts[0];
 
         let efe_amounts = Self::get_efe_supply_amounts(&path, target_amount)?;
+        ensure!(efe_amounts[0] <= max_supply_amount, Error::<T>::ExcessiveSupplyAmount);
         let actual_efe_supply_amount = efe_amounts[0];
 
 		// Call `ExchangeFeeEvaluator` (EFE) here.
@@ -1748,8 +1789,18 @@ impl<T: Config> Pallet<T> {
 				liquidity_changes: efe_amounts,
 			});
             return Ok(actual_efe_supply_amount);
-        }
-		Ok(actual_efe_supply_amount)
+        } else {
+			T::Currency::transfer(path[0], who, &module_account_id, actual_supply_amount)?;
+			Self::_swap_by_path(path, &amounts)?;
+			T::Currency::withdraw(path[path.len() - 1], &module_account_id, target_amount)?;
+
+			Self::deposit_event(Event::BuyBackSwap {
+				trader: who.clone(),
+				path: path.to_vec(),
+				liquidity_changes: amounts,
+			});
+			return Ok(actual_supply_amount);
+		}
 	}
 }
 
@@ -1878,6 +1929,33 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 					.map(|actual_supply_amount| (actual_supply_amount, exact_target_amount))
 			}
 		}
+	}
+
+	fn buyback_swap_with_specific_path(
+		who: &T::AccountId,
+		path: &[CurrencyId],
+		limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
+		match limit {
+			SwapLimit::ExactSupply(exact_supply_amount, minimum_target_amount) => {
+				Self::buyback_do_efe_swap_with_exact_supply(who, path, exact_supply_amount, minimum_target_amount)
+					.map(|actual_target_amount| (exact_supply_amount, actual_target_amount))
+			}
+			SwapLimit::ExactTarget(maximum_supply_amount, exact_target_amount) => {
+				Self::buyback_do_efe_swap_with_exact_target(who, path, exact_target_amount, maximum_supply_amount)
+					.map(|actual_supply_amount| (actual_supply_amount, exact_target_amount))
+			}
+		}
+	}
+
+	fn swap_with_exact_target(
+		who: &T::AccountId,
+		path: &[CurrencyId],
+		exact_target_amount: Balance,
+		max_supply_amount: Balance,
+	) -> DispatchResult {
+		Self::do_swap_with_exact_target(who, path, exact_target_amount, max_supply_amount)?;
+		Ok(())
 	}
 
 	// `do_add_liquidity` is used in genesis_build,

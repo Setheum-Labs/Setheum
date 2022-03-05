@@ -2,7 +2,7 @@
 name = "runtime-common"
 version = "1.0.0"
 authors = ["Setheum Developers"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 static_assertions = "1.1.0"
@@ -37,7 +37,7 @@ pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-tokens = { path = "../../lib-orml/tokens", default-features = false }
+orml-tokens = { path = "../../lib-orml/tokens" }
 orml-nft = { path = "../../lib-orml/nft" }
 module-currencies = { path = "../../lib-serml/currencies" }
 module-evm-bridge = { path = "../../lib-serml/evm-bridge" }
@@ -68,4 +68,6 @@ std = [
 	"module-support/std",
 	"primitives/std",
 ]
-with-ethereum-compatibility = []
+with-ethereum-compatibility = [
+	"module-evm/with-ethereum-compatibility",
+]

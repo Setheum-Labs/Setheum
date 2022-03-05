@@ -3,6 +3,7 @@ configure-rust:
 	rustup install 1.53.0
 	rustup default 1.53.0
 	rustup toolchain install nightly-2021-05-21
+	rustup toolchain install stable
 	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-21
 	rustup component add clippy
 
@@ -15,14 +16,14 @@ init:
 release:
 	make configure-rust
 	rm -rf target/
-	cargo build --manifest-path node/Cargo.toml --features with-ethereum-compatibility --release
+	cargo +stable build --manifest-path node/Cargo.toml --features with-ethereum-compatibility --release
 .PHONY: build
 build:
-	cargo build --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility --release
+	cargo +stable build --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility --release
 
 .PHONY: wasm
 wasm:
-	cargo build -p setheum-runtime --features with-ethereum-compatibility --release
+	cargo +stable build -p setheum-runtime --features with-ethereum-compatibility --release
 
 .PHONY: genesis
 genesis:
@@ -34,48 +35,48 @@ genesis:
 
 .PHONY: check
 check:
-	SKIP_WASM_BUILD=1 cargo check
+	SKIP_WASM_BUILD=1 cargo +stable check
 
 .PHONY: clippy
 clippy:
-	SKIP_WASM_BUILD=1 cargo clippy -- -D warnings -A clippy::from-over-into -A clippy::unnecessary-cast -A clippy::identity-op -A clippy::upper-case-acronyms
+	SKIP_WASM_BUILD=1 cargo +stable clippy -- -D warnings -A clippy::from-over-into -A clippy::unnecessary-cast -A clippy::identity-op -A clippy::upper-case-acronyms
 
 .PHONY: watch
 watch:
-	SKIP_WASM_BUILD=1 cargo watch -c -x build
+	SKIP_WASM_BUILD=1 cargo +stable watch -c -x build
 
 .PHONY: test
 test:
-	SKIP_WASM_BUILD=1 cargo test --all
+	SKIP_WASM_BUILD=1 cargo +stable test --all
 
 .PHONY: debug
 debug:
-	cargo build && RUST_LOG=debug RUST_BACKTRACE=1 rust-gdb --args target/debug/setheum-node --dev --tmp -lruntime=debug
+	cargo +stable build && RUST_LOG=debug RUST_BACKTRACE=1 rust-gdb --args target/debug/setheum-node --dev --tmp -lruntime=debug
 
 .PHONY: run
 run:
-	RUST_BACKTRACE=1 cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
+	RUST_BACKTRACE=1 cargo +stable run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
 
 .PHONY: log
 log:
-	RUST_BACKTRACE=1 RUST_LOG=debug cargo run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
+	RUST_BACKTRACE=1 RUST_LOG=debug cargo +stable run --manifest-path node/Cargo.toml --features with-ethereum-compatibility  -- --dev --tmp
 
 .PHONY: noeth
 noeth:
-	RUST_BACKTRACE=1 cargo run -- --dev --tmp
+	RUST_BACKTRACE=1 cargo +stable run -- --dev --tmp
 
 .PHONY: bench
 bench:
-	SKIP_WASM_BUILD=1 cargo test --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility benchmarking
+	SKIP_WASM_BUILD=1 cargo +stable test --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility benchmarking
 
 .PHONY: doc
 doc:
-	SKIP_WASM_BUILD=1 cargo doc --open
+	SKIP_WASM_BUILD=1 cargo +stable doc --open
 
 .PHONY: cargo-update
 cargo-update:
-	cargo update
-	cargo update --manifest-path node/Cargo.toml
+	cargo +stable update
+	cargo +stable update --manifest-path node/Cargo.toml
 	make test
 
 .PHONY: fork

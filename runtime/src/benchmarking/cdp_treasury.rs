@@ -18,25 +18,49 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, CdpTreasury, Currencies, CurrencyId, GetNativeCurrencyId, GetSetUSDId, Runtime};
+use crate::{dollar, CdpTreasury, Currencies, CurrencyId, GetNativeCurrencyId, GetSetUSDId, MaxAuctionsCount, Runtime};
 
+use super::utils::set_balance;
+use frame_benchmarking::whitelisted_caller;
 use frame_system::RawOrigin;
-use module_support::CDPTreasury;
+use module_support::{CDPTreasury, SwapLimit};
 use orml_benchmarking::runtime_benchmarks;
 use orml_traits::MultiCurrency;
 
 const STABLECOIN: CurrencyId = GetSetUSDId::get();
-const STAKING: CurrencyId = GetNativeCurrencyId::get();
+const SETMID: CurrencyId = GetNativeCurrencyId::get();
 
 runtime_benchmarks! {
 	{ Runtime, cdp_treasury }
 
 	auction_collateral {
-		Currencies::deposit(STAKING, &CdpTreasury::account_id(), 10_000 * dollar(STAKING))?;
-	}: _(RawOrigin::Root, STAKING, 1_000 * dollar(STAKING), 1_000 * dollar(STABLECOIN), true)
+		let b in 1 .. MaxAuctionsCount::get();
+
+		let auction_size = (1_000 * dollar(SETMID)) / b as u128;
+		CdpTreasury::set_expected_collateral_auction_size(RawOrigin::Root.into(), SETMID, auction_size)?;
+
+		Currencies::deposit(SETMID, &CdpTreasury::account_id(), 10_000 * dollar(SETMID))?;
+	}: _(RawOrigin::Root, SETMID, 1_000 * dollar(SETMID), 1_000 * dollar(STABLECOIN), true)
+
+	exchange_collateral_to_stable {
+		let caller: AccountId = whitelisted_caller();
+		set_balance(STABLECOIN, &caller, 1000 * dollar(STABLECOIN));
+		set_balance(SETMID, &caller, 1000 * dollar(SETMID));
+		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), STABLECOIN, SETMID);
+		Dex::add_liquidity(
+			RawOrigin::Signed(caller.clone()).into(),
+			STABLECOIN,
+			SETMID,
+			1000 * dollar(STABLECOIN),
+			100 * dollar(SETMID),
+			0,
+			false,
+		)?;
+		CdpTreasury::deposit_collateral(&caller, SETMID, 100 * dollar(SETMID))?;
+	}: _(RawOrigin::Root, SETMID, SwapLimit::ExactSupply(100 * dollar(SETMID), 0))
 
 	set_expected_collateral_auction_size {
-	}: _(RawOrigin::Root, STAKING, 200 * dollar(STAKING))
+	}: _(RawOrigin::Root, SETMID, 200 * dollar(SETMID))
 
 	extract_surplus_to_serp {
 		CdpTreasury::on_system_surplus(1_000 * dollar(STABLECOIN))?;

@@ -35,7 +35,7 @@ use sp_std::vec;
 const SEED: u32 = 0;
 
 const STABLECOIN: CurrencyId = GetSetUSDId::get();
-const STAKING: CurrencyId = GetDinarCurrencyId::get();
+const DINARID: CurrencyId = GetDinarCurrencyId::get();
 
 runtime_benchmarks! {
 	{ Runtime, auction_manager }
@@ -48,14 +48,14 @@ runtime_benchmarks! {
 
 		// set balance
 		Currencies::deposit(STABLECOIN, &bidder, 80 * dollar(STABLECOIN))?;
-		Currencies::deposit(STAKING, &funder, dollar(STAKING))?;
-		CdpTreasury::deposit_collateral(&funder, STAKING, dollar(STAKING))?;
+		Currencies::deposit(DINARID, &funder, dollar(DINARID))?;
+		CdpTreasury::deposit_collateral(&funder, DINARID, dollar(DINARID))?;
 
 		// feed price
-		feed_price(vec![(STAKING, Price::saturating_from_integer(120))])?;
+		feed_price(vec![(DINARID, Price::saturating_from_integer(120))])?;
 
 		// create collateral auction
-		AuctionManager::new_collateral_auction(&funder, STAKING, dollar(STAKING), 100 * dollar(STABLECOIN))?;
+		AuctionManager::new_collateral_auction(&funder, DINARID, dollar(DINARID), 100 * dollar(STABLECOIN))?;
 		let auction_id: AuctionId = Default::default();
 
 		// bid collateral auction

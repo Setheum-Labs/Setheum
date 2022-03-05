@@ -37,15 +37,15 @@ use sp_core::U256;
 use sp_runtime::{
 	DispatchResult, 
 	traits::{
-		AccountIdConversion, Bounded, Saturating, UniqueSaturatedInto, One, Zero,
+		AccountIdConversion, Bounded, Saturating, One, Zero,
 	},
 	FixedPointNumber,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{
-	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended,
+	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended, SwapLimit,
 };
-
+use fixed::FixedU128;
 mod mock;
 mod tests;
 pub mod weights;
@@ -112,18 +112,16 @@ pub mod module {
 		#[pallet::constant]
 		type CDPTreasuryAccountId: Get<Self::AccountId>;
 
-		/// Default fee swap path list
-		type DefaultSwapParitalPathList: Get<Vec<Vec<CurrencyId>>>;
-
 		/// When swap with DEX, the acceptable max slippage for the price from oracle.
 		type MaxSwapSlippageCompareToOracle: Get<Ratio>;
 
-		/// The limit for length of trading path
-		#[pallet::constant]
-		type TradingPathLimit: Get<u32>;
-
 		/// The price source to provider external market price.
 		type PriceSource: PriceProvider<CurrencyId>;
+
+		/// The alternative swap path joint list, which can be concated to
+		/// alternative swap path when SERP-Treasury swaps for buyback.
+		#[pallet::constant]
+		type AlternativeSwapPathJointList: Get<Vec<Vec<CurrencyId>>>;
 
 		/// Dex manager is used to swap reserve asset (Setter) for propper (SetCurrency).
 		type Dex: DEXManager<Self::AccountId, CurrencyId, Balance>;
@@ -153,6 +151,10 @@ pub mod module {
 
 	#[pallet::error]
 	pub enum Error<T> {
+		/// The SERP Cannot Deposit for buyback
+		CannotDeposit,
+		/// The SERP Cannot Swap for buyback
+		CannotSwap,
 		/// The Stablecoin Price is stable and indifferent from peg
 		/// therefore cannot serp
 		PriceIsStableCannotSerp,
@@ -445,29 +447,86 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			let inflamounts: Balance = one.saturating_mul(inflation_amount / 5);
 
 			if inflation_amount != 0 {
+				// calculate the target amount limit according to oracle price and the slippage limit,
+				// if oracle price is not avalible, do not limit amount (get min_value)
+				let dinar_min_target_amount = if let Some(target_price) =
+					T::PriceSource::get_relative_price(T::GetDinarCurrencyId::get(), currency_id)
+				{
+					Ratio::one()
+						.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+						.reciprocal()
+						.unwrap_or_else(Ratio::min_value)
+						.saturating_mul_int(target_price.saturating_mul_int(inflamounts))
+				} else {
+					CurrencyBalanceOf::<T>::min_value()
+				};
+				// calculate the target amount limit according to oracle price and the slippage limit,
+				// if oracle price is not avalible, do not limit amount (get min_value)
+				let serp_min_target_amount = if let Some(target_price) =
+					T::PriceSource::get_relative_price(T::GetSerpCurrencyId::get(), currency_id)
+				{
+					Ratio::one()
+						.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+						.reciprocal()
+						.unwrap_or_else(Ratio::min_value)
+						.saturating_mul_int(target_price.saturating_mul_int(inflamounts))
+				} else {
+					CurrencyBalanceOf::<T>::min_value()
+				};
+				// calculate the target amount limit according to oracle price and the slippage limit,
+				// if oracle price is not avalible, do not limit amount (get min_value)
+				let native_min_target_amount = if let Some(target_price) =
+					T::PriceSource::get_relative_price(T::GetNativeCurrencyId::get(), currency_id)
+				{
+					Ratio::one()
+						.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+						.reciprocal()
+						.unwrap_or_else(Ratio::min_value)
+						.saturating_mul_int(target_price.saturating_mul_int(inflamounts))
+				} else {
+					CurrencyBalanceOf::<T>::min_value()
+				};
+				// calculate the target amount limit according to oracle price and the slippage limit,
+				// if oracle price is not avalible, do not limit amount (get min_value)
+				let help_min_target_amount = if let Some(target_price) =
+					T::PriceSource::get_relative_price(T::GetHelpCurrencyId::get(), currency_id)
+				{
+					Ratio::one()
+						.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+						.reciprocal()
+						.unwrap_or_else(Ratio::min_value)
+						.saturating_mul_int(target_price.saturating_mul_int(inflamounts))
+				} else {
+					CurrencyBalanceOf::<T>::min_value()
+				};
+		
 				// inflation distros
 				// 1
 				Self::add_cashdrop_to_pool(currency_id, inflamounts)?;
 				// 2
-				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
+				<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 					currency_id,
-					inflamounts,
-				);
+					T::GetDinarCurrencyId::get(),
+					SwapLimit::ExactSupply(inflamounts, dinar_min_target_amount),
+				)?;
 				// 3
-				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
+				<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 					currency_id,
-					inflamounts,
-				);
+					T::GetSerpCurrencyId::get(),
+					SwapLimit::ExactSupply(inflamounts, serp_min_target_amount),
+				)?;
 				// 4
-				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_native(
+				<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 					currency_id,
-					inflamounts,
-				);
+					T::GetNativeCurrencyId::get(),
+					SwapLimit::ExactSupply(inflamounts, native_min_target_amount),
+				)?;
 				// 5
-				<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_help(
+				<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 					currency_id,
-					inflamounts,
-				);
+					T::GetHelpCurrencyId::get(),
+					SwapLimit::ExactSupply(inflamounts, help_min_target_amount),
+				)?;
 				Self::deposit_event(Event::InflationDelivery(currency_id, inflation_amount));
 			};
 		}
@@ -479,16 +538,45 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Buyback with 50:50 with DNAR:SERP
 		let one: Balance = 1;
 		let amount_50percent: Balance = one.saturating_mul(amount / 2);
-		
-		
-		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
+
+		// calculate the target amount limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit amount (get min_value)
+		let dinar_min_target_amount = if let Some(target_price) =
+			T::PriceSource::get_relative_price(T::GetDinarCurrencyId::get(), currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(amount_50percent))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+		// calculate the target amount limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit amount (get min_value)
+		let serp_min_target_amount = if let Some(target_price) =
+			T::PriceSource::get_relative_price(T::GetSerpCurrencyId::get(), currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(amount_50percent))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 			currency_id,
-			amount_50percent,
-		);
-		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
+			T::GetDinarCurrencyId::get(),
+			SwapLimit::ExactSupply(amount_50percent, dinar_min_target_amount),
+		)?;
+		// 3
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 			currency_id,
-			amount_50percent,
-		);
+			T::GetSerpCurrencyId::get(),
+			SwapLimit::ExactSupply(amount_50percent, serp_min_target_amount),
+		)?;
 
 		Self::deposit_event(Event::SerpUpDelivery(amount, currency_id));
 		Ok(())
@@ -530,27 +618,98 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// Buyback with 20:20:20:20:20 with SETR:DNAR:SERP:SETM:HELP
 		let one: Balance = 1;
 		let amount_20percent: Balance = one.saturating_mul(amount / 5);
-		
-		<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_setter(
+
+		// calculate the target amount limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit amount (get min_value)
+		let setter_min_target_amount = if let Some(target_price) =
+			T::PriceSource::get_relative_price(T::SetterCurrencyId::get(), currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(amount_20percent))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+		// calculate the target amount limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit amount (get min_value)
+		let dinar_min_target_amount = if let Some(target_price) =
+			T::PriceSource::get_relative_price(T::GetDinarCurrencyId::get(), currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(amount_20percent))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+		// calculate the target amount limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit amount (get min_value)
+		let serp_min_target_amount = if let Some(target_price) =
+			T::PriceSource::get_relative_price(T::GetSerpCurrencyId::get(), currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(amount_20percent))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+		// calculate the target amount limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit amount (get min_value)
+		let native_min_target_amount = if let Some(target_price) =
+			T::PriceSource::get_relative_price(T::GetNativeCurrencyId::get(), currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(amount_20percent))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+		// calculate the target amount limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit amount (get min_value)
+		let help_min_target_amount = if let Some(target_price) =
+			T::PriceSource::get_relative_price(T::GetHelpCurrencyId::get(), currency_id)
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::min_value)
+				.saturating_mul_int(target_price.saturating_mul_int(amount_20percent))
+		} else {
+			CurrencyBalanceOf::<T>::min_value()
+		};
+
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 			currency_id,
-			amount_20percent,
-		);
-		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_dinar(
+			T::SetterCurrencyId::get(),
+			SwapLimit::ExactSupply(amount_20percent, setter_min_target_amount),
+		)?;
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 			currency_id,
-			amount_20percent,
-		);
-		<Self as SerpTreasuryExtended<T::AccountId>>::swap_exact_setcurrency_to_serp(
+			T::GetDinarCurrencyId::get(),
+			SwapLimit::ExactSupply(amount_20percent, dinar_min_target_amount),
+		)?;
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 			currency_id,
-			amount_20percent,
-		);
-		<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_native(
+			T::GetSerpCurrencyId::get(),
+			SwapLimit::ExactSupply(amount_20percent, serp_min_target_amount),
+		)?;
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 			currency_id,
-			amount_20percent,
-		);
-		<Self as SerpTreasuryExtended<T::AccountId>>::serplus_swap_exact_setcurrency_to_help(
+			T::GetNativeCurrencyId::get(),
+			SwapLimit::ExactSupply(amount_20percent, native_min_target_amount),
+		)?;
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_supply(
 			currency_id,
-			amount_20percent,
-		);
+			T::GetHelpCurrencyId::get(),
+			SwapLimit::ExactSupply(amount_20percent, help_min_target_amount),
+		)?;
 		Ok(())
 	}
 
@@ -626,15 +785,45 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let two: Balance = 2;
 		let half = amount / two;
 
+		// calculate the supply limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit
+		let dinar_max_supply_limit = if let Some(target_price) =
+			T::PriceSource::get_relative_price(currency_id, T::GetDinarCurrencyId::get())
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::max_value)
+				.saturating_mul_int(target_price.saturating_mul_int(half))
+		} else {
+			CurrencyBalanceOf::<T>::max_value()
+		};
+		
+		// calculate the supply limit according to oracle price and the slippage limit,
+		// if oracle price is not avalible, do not limit
+		let serp_max_supply_limit = if let Some(target_price) =
+			T::PriceSource::get_relative_price(currency_id, T::GetSerpCurrencyId::get())
+		{
+			Ratio::one()
+				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
+				.reciprocal()
+				.unwrap_or_else(Ratio::max_value)
+				.saturating_mul_int(target_price.saturating_mul_int(half))
+		} else {
+			CurrencyBalanceOf::<T>::max_value()
+		};
+		
 		// serpdown with 50:50 with DNAR:SERP
-		<Self as SerpTreasuryExtended<T::AccountId>>::swap_dinar_to_exact_setcurrency(
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_target(
+			T::GetDinarCurrencyId::get(),
 			currency_id,
-			half,
-		);
-		<Self as SerpTreasuryExtended<T::AccountId>>::swap_serp_to_exact_setcurrency(
+			SwapLimit::ExactTarget(dinar_max_supply_limit, half),
+		)?;
+		<Self as SerpTreasuryExtended<T::AccountId>>::buyback_swap_with_exact_target(
+			T::GetSerpCurrencyId::get(),
 			currency_id,
-			half,
-		);
+			SwapLimit::ExactTarget(serp_max_supply_limit, half),
+		)?;
 
 		Self::deposit_event(Event::SerpDown(amount, currency_id));
 		Ok(())
@@ -718,889 +907,76 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 }
 
 impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
-	/// swap Dinar to get exact Setter,
+	/// Swap `from_currency_id` to get exact `from_currency_id`,
 	/// return actual supply Dinar amount
 	#[allow(unused_variables)]
-	fn swap_dinar_to_exact_setter(
-		target_amount: Balance,
-	) {
-		let dinar_currency_id = T::GetDinarCurrencyId::get();
-		let setter_currency_id = T::SetterCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-
-		// calculate the supply limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(setter_currency_id, dinar_currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::max_value)
-				.saturating_mul_int(target_price.saturating_mul_int(target_amount))
-		} else {
-			CurrencyBalanceOf::<T>::max_value()
+	fn buyback_swap_with_exact_supply(
+		from_currency_id: CurrencyId,
+		to_currency_id: CurrencyId,
+		swap_limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
+		let target_limit = match swap_limit {
+			SwapLimit::ExactSupply(_, min_target_amount) => min_target_amount,
+			SwapLimit::ExactTarget(_, target_amount) => target_amount,
 		};
-		
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && dinar_currency_id != partial_path[0] {
-				let mut swap_path = vec![dinar_currency_id, setter_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					dinar_currency_id,
-					&Self::account_id(),
-					max_supply_limit.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
-					&Self::account_id(),
-					&swap_path,
-					target_amount.unique_saturated_into(),
-				).is_ok();
-				if deposit && buyback_swap_with_exact_target {
-					// successfully swap, break iteration
-					T::Currency::deposit(
-						dinar_currency_id,
-						&Self::account_id(),
-						max_supply_limit.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_target(
-						&Self::account_id(),
-						&swap_path,
-						target_amount.unique_saturated_into(),
-					).unwrap();
-					
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapDinarToExactSetter(dinar_currency_id, setter_currency_id, max_supply_limit, target_amount));
+		ensure!(
+			T::Currency::deposit(
+				from_currency_id,
+				&Self::account_id(),
+				target_limit
+			).is_ok(),
+			Error::<T>::CannotDeposit,
+		);
+		let swap_path = T::Dex::get_best_price_swap_path(
+			from_currency_id,
+			to_currency_id,
+			swap_limit,
+			T::AlternativeSwapPathJointList::get(),
+		)
+		.ok_or(Error::<T>::CannotSwap)?;
+	
+		T::Currency::deposit(
+			from_currency_id,
+			&Self::account_id(),
+			target_limit
+		).unwrap();
+		T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)
 	}
 
-	/// swap Serp to get exact Setter,
-	/// return actual supply Serp amount
-	#[allow(unused_variables)]
-	fn swap_serp_to_exact_setter(
-		target_amount: Balance,
-	) {
-		let serptoken_currency_id = T::GetSerpCurrencyId::get();
-		let setter_currency_id = T::SetterCurrencyId::get();
-		
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-
-		// calculate the supply limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(setter_currency_id, serptoken_currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::max_value)
-				.saturating_mul_int(target_price.saturating_mul_int(target_amount))
-		} else {
-			CurrencyBalanceOf::<T>::max_value()
-		};
-		
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && serptoken_currency_id != partial_path[0] {
-				let mut swap_path = vec![serptoken_currency_id, setter_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					serptoken_currency_id,
-					&Self::account_id(),
-					max_supply_limit.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
-					&Self::account_id(),
-					&swap_path,
-					target_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_target {
-					// successfully swap, break iteration
-					T::Currency::deposit(
-						serptoken_currency_id,
-						&Self::account_id(),
-						max_supply_limit.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_target(
-						&Self::account_id(),
-						&swap_path,
-						target_amount.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapSerpToExactSetter(serptoken_currency_id, setter_currency_id, max_supply_limit, target_amount));
-	}
-
-	/// swap Dinar to get exact Setter,
+	/// Swap `from_currency_id` to get exact `from_currency_id`,
 	/// return actual supply Dinar amount
 	#[allow(unused_variables)]
-	fn swap_dinar_to_exact_setcurrency(
-		currency_id: CurrencyId,
-		target_amount: Balance,
-	) {
-		let dinar_currency_id = T::GetDinarCurrencyId::get();
-		
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-
-		// calculate the supply limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(currency_id, dinar_currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::max_value)
-				.saturating_mul_int(target_price.saturating_mul_int(target_amount))
-		} else {
-			CurrencyBalanceOf::<T>::max_value()
+	fn buyback_swap_with_exact_target(
+		from_currency_id: CurrencyId,
+		to_currency_id: CurrencyId,
+		swap_limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
+		let supply_limit = match swap_limit {
+			SwapLimit::ExactSupply(supply_amount, _) => supply_amount,
+			SwapLimit::ExactTarget(max_supply_amount, _) => max_supply_amount,
 		};
-		
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && dinar_currency_id != partial_path[0] {
-				let mut swap_path = vec![dinar_currency_id, currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					dinar_currency_id,
-					&Self::account_id(),
-					max_supply_limit.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
-					&Self::account_id(),
-					&swap_path,
-					target_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_target {
-					// successfully swap, break iteration
-					T::Currency::deposit(
-						dinar_currency_id,
-						&Self::account_id(),
-						max_supply_limit.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_target(
-						&Self::account_id(),
-						&swap_path,
-						target_amount.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapDinarToExactStable(dinar_currency_id, currency_id, max_supply_limit, target_amount));
-	}
-
-	/// Swap exact amount of Setter to SetCurrency,
-	/// return actual target SetCurrency amount
-	///
-	/// 
-	/// When SetCurrency needs SerpDown
-	/// 
-	#[allow(unused_variables)]
-	fn swap_setter_to_exact_setcurrency(
-		currency_id: CurrencyId,
-		target_amount: Balance,
-	) {
-		let setter_currency_id = T::SetterCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-
-		// calculate the supply limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(currency_id, setter_currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::max_value)
-				.saturating_mul_int(target_price.saturating_mul_int(target_amount))
-		} else {
-			CurrencyBalanceOf::<T>::max_value()
-		};
-		
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && setter_currency_id != partial_path[0] {
-				let mut swap_path = vec![setter_currency_id, currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					setter_currency_id,
-					&Self::account_id(),
-					max_supply_limit.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
-					&Self::account_id(),
-					&swap_path,
-					target_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_target {
-					// successfully swap, break iteration
-					T::Currency::deposit(
-					setter_currency_id,
-					&Self::account_id(),
-					max_supply_limit.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_target(
-						&Self::account_id(),
-						&swap_path,
-						target_amount.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapSetterToExactSetDollar(setter_currency_id, currency_id, max_supply_limit, target_amount));
-	}
-
-	/// Swap exact amount of Serp currrency to SetCurrency,
-	/// return actual target SetCurrency amount
-	///
-	/// 
-	/// When SetCurrency needs SerpDown
-	/// 
-	#[allow(unused_variables)]
-	fn swap_serp_to_exact_setcurrency(
-		currency_id: CurrencyId,
-		target_amount: Balance,
-	) {
-		let serp_currency_id  = T::GetSerpCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-
-		// calculate the supply limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let max_supply_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(currency_id, serp_currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::max_value)
-				.saturating_mul_int(target_price.saturating_mul_int(target_amount))
-		} else {
-			CurrencyBalanceOf::<T>::max_value()
-		};
-		
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && serp_currency_id != partial_path[0] {
-				let mut swap_path = vec![serp_currency_id, currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					serp_currency_id,
-					&Self::account_id(),
-					max_supply_limit.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_target = T::Dex::buyback_swap_with_exact_target(
-					&Self::account_id(),
-					&swap_path,
-					target_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_target {
-					// successfully swap, break iteration
-					T::Currency::deposit(
-						serp_currency_id,
-						&Self::account_id(),
-						max_supply_limit.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_target(
-						&Self::account_id(),
-						&swap_path,
-						target_amount.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapSerpToExactStable(serp_currency_id, currency_id, max_supply_limit, target_amount));
-	}
-
-	/// Swap exact amount of Setter to Dinar,
-	/// return actual supply Setter amount
-	///
-	/// 
-	/// When Setter gets SerpUp
-	#[allow(unused_variables)]
-	fn swap_exact_setcurrency_to_dinar(
-		currency_id: CurrencyId,
-		supply_amount: Balance,
-	) {
-		let dinar_currency_id = T::GetDinarCurrencyId::get();
-		let currency_id = T::SetterCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-		
-		// calculate the target limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(dinar_currency_id, currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::min_value)
-				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
-		} else {
-			CurrencyBalanceOf::<T>::min_value()
-		};
-
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id, dinar_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					currency_id,
-					&Self::account_id(),
-					supply_amount.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
-					&Self::account_id(),
-					&swap_path,
-					supply_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_supply {
-					// successfully swap, break iteration.
-					T::Currency::deposit(
-						currency_id,
-						&Self::account_id(),
-						supply_amount.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_supply(
-						&Self::account_id(),
-						&swap_path,
-						supply_amount.unique_saturated_into(),
-						// min_target_limit.unique_saturated_into(),
-					).unwrap();
-					
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapExactStableToDinar(currency_id, dinar_currency_id, min_target_limit, supply_amount));
-	}
-
-	/// Swap exact amount of SetCurrency to Setter,
-	/// return actual supply SetCurrency amount
-	///
-	/// 
-	/// When SetCurrency gets inflation deposit
-	#[allow(unused_variables)]
-	fn swap_exact_setcurrency_to_setter(
-		currency_id: CurrencyId,
-		supply_amount: Balance,
-	) {
-		let setter_currency_id = T::SetterCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-		
-		// calculate the target limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(setter_currency_id, currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::min_value)
-				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
-		} else {
-			CurrencyBalanceOf::<T>::min_value()
-		};
-
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id, setter_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					currency_id,
-					&Self::account_id(),
-					supply_amount.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
-					&Self::account_id(),
-					&swap_path,
-					supply_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_supply {
-					// successfully swap, break iteration.
-					T::Currency::deposit(
-						currency_id,
-						&Self::account_id(),
-						supply_amount.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_supply(
-						&Self::account_id(),
-						&swap_path,
-						supply_amount.unique_saturated_into(),
-						// min_target_limit.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapExactStableToSetter(currency_id, setter_currency_id, min_target_limit, supply_amount));
-	}
-
-	/// Swap exact amount of SetCurrency to Setter,
-	/// return actual supply SetCurrency amount
-	///
-	/// 
-	/// When SetCurrency gets serplus deposit
-	#[allow(unused_variables)]
-	fn serplus_swap_exact_setcurrency_to_setter(
-		currency_id: CurrencyId,
-		supply_amount: Balance,
-	) {
-		let setter_currency_id = T::SetterCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-		
-		// calculate the target limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(setter_currency_id, currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::min_value)
-				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
-		} else {
-			CurrencyBalanceOf::<T>::min_value()
-		};
-
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id, setter_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					currency_id,
-					&Self::account_id(),
-					supply_amount.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
-					&Self::account_id(),
-					&swap_path,
-					supply_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_supply {
-					// successfully swap, break iteration.
-					T::Currency::deposit(
-						currency_id,
-						&Self::account_id(),
-						supply_amount.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_supply(
-						&Self::account_id(),
-						&swap_path,
-						supply_amount.unique_saturated_into(),
-						// min_target_limit.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerplusSwapExactStableToSetter(currency_id, setter_currency_id, min_target_limit, supply_amount));
-	}
-
-	/// Swap exact amount of SetCurrency to Setheum,
-	/// return actual supply SetCurrency amount
-	///
-	/// 
-	/// When SetCurrency gets serplus deposit
-	#[allow(unused_variables)]
-	fn serplus_swap_exact_setcurrency_to_native(
-		currency_id: CurrencyId,
-		supply_amount: Balance,
-	) {
-		let setm_currency_id = T::GetNativeCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-		
-		// calculate the target limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(setm_currency_id, currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::min_value)
-				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
-		} else {
-			CurrencyBalanceOf::<T>::min_value()
-		};
-
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id, setm_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					currency_id,
-					&Self::account_id(),
-					supply_amount.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
-					&Self::account_id(),
-					&swap_path,
-					supply_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_supply {
-					// successfully swap, break iteration.
-					T::Currency::deposit(
-						currency_id,
-						&Self::account_id(),
-						supply_amount.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_supply(
-						&Self::account_id(),
-						&swap_path,
-						supply_amount.unique_saturated_into(),
-						// min_target_limit.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerplusSwapExactStableToNative(currency_id, setm_currency_id, min_target_limit, supply_amount));
-	}
-
-	/// Swap exact amount of SetCurrency to Setheum,
-	/// return actual supply SetCurrency amount
-	///
-	/// 
-	/// When SetCurrency gets inflation deposit
-	#[allow(unused_variables)]
-	fn swap_exact_setcurrency_to_native(
-		currency_id: CurrencyId,
-		supply_amount: Balance,
-	) {
-		let native_currency_id = T::GetNativeCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-		
-		// calculate the target limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(native_currency_id, currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::min_value)
-				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
-		} else {
-			CurrencyBalanceOf::<T>::min_value()
-		};
-
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id, native_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					currency_id,
-					&Self::account_id(),
-					supply_amount.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
-					&Self::account_id(),
-					&swap_path,
-					supply_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_supply {
-					// successfully swap, break iteration.
-					T::Currency::deposit(
-						currency_id,
-						&Self::account_id(),
-						supply_amount.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_supply(
-						&Self::account_id(),
-						&swap_path,
-						supply_amount.unique_saturated_into(),
-						// min_target_limit.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapExactStableToNative(currency_id, native_currency_id, min_target_limit, supply_amount));
-	}
+		ensure!(
+			T::Currency::deposit(
+				from_currency_id,
+				&Self::account_id(),
+				supply_limit
+			).is_ok(),
+			Error::<T>::CannotDeposit,
+		);
+		let swap_path = T::Dex::get_best_price_swap_path(
+			from_currency_id,
+			to_currency_id,
+			swap_limit,
+			T::AlternativeSwapPathJointList::get(),
+		)
+		.ok_or(Error::<T>::CannotSwap)?;
 	
-	/// Swap exact amount of SetCurrency to HELP,
-	/// return actual supply SetCurrency amount
-	///
-	/// 
-	/// When SetCurrency gets serplus deposit
-	#[allow(unused_variables)]
-	fn serplus_swap_exact_setcurrency_to_help(
-		currency_id: CurrencyId,
-		supply_amount: Balance,
-	) {
-		let help_currency_id = T::GetHelpCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-		
-		// calculate the target limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(help_currency_id, currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::min_value)
-				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
-		} else {
-			CurrencyBalanceOf::<T>::min_value()
-		};
-
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id, help_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					currency_id,
-					&Self::account_id(),
-					supply_amount.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
-					&Self::account_id(),
-					&swap_path,
-					supply_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_supply {
-					// successfully swap, break iteration.
-					T::Currency::deposit(
-						currency_id,
-						&Self::account_id(),
-						supply_amount.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_supply(
-						&Self::account_id(),
-						&swap_path,
-						supply_amount.unique_saturated_into(),
-						// min_target_limit.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerplusSwapExactStableToHelp(currency_id, help_currency_id, min_target_limit, supply_amount));
-	}
-
-	/// Swap exact amount of SetCurrency to HELP,
-	/// return actual supply SetCurrency amount
-	///
-	/// 
-	/// When SetCurrency gets inflation deposit
-	#[allow(unused_variables)]
-	fn swap_exact_setcurrency_to_help(
-		currency_id: CurrencyId,
-		supply_amount: Balance,
-	) {
-		let help_currency_id = T::GetHelpCurrencyId::get();
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-		
-		// calculate the target limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(help_currency_id, currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::min_value)
-				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
-		} else {
-			CurrencyBalanceOf::<T>::min_value()
-		};
-
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id, help_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					currency_id,
-					&Self::account_id(),
-					supply_amount.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
-					&Self::account_id(),
-					&swap_path,
-					supply_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_supply {
-					// successfully swap, break iteration.
-					T::Currency::deposit(
-						currency_id,
-						&Self::account_id(),
-						supply_amount.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_supply(
-						&Self::account_id(),
-						&swap_path,
-						supply_amount.unique_saturated_into(),
-						// min_target_limit.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapExactStableToHelp(currency_id, help_currency_id, min_target_limit, supply_amount));
-	}
-	
-	/// Swap exact amount of Setter to Serp,
-	/// return actual supply Setter amount
-	///
-	/// 
-	/// When Setter gets SerpUp
-	#[allow(unused_variables)]
-	fn swap_exact_setcurrency_to_serp(
-		currency_id: CurrencyId,
-		supply_amount: Balance,
-	) {
-		let serptoken_currency_id = T::GetSerpCurrencyId::get(); 
-
-		let default_swap_parital_path_list: Vec<Vec<CurrencyId>> = T::DefaultSwapParitalPathList::get();
-		
-		// calculate the target limit according to oracle price and the slippage limit,
-		// if oracle price is not avalible, do not limit
-		let min_target_limit = if let Some(target_price) =
-			T::PriceSource::get_relative_price(serptoken_currency_id, currency_id)
-		{
-			Ratio::one()
-				.saturating_sub(T::MaxSwapSlippageCompareToOracle::get())
-				.reciprocal()
-				.unwrap_or_else(Ratio::min_value)
-				.saturating_mul_int(target_price.saturating_mul_int(supply_amount))
-		} else {
-			CurrencyBalanceOf::<T>::min_value()
-		};
-
-		// iterate default_swap_parital_path_list to try swap until swap succeeds.
-		for partial_path in default_swap_parital_path_list {
-			let partial_path_len = partial_path.len();
-
-			// check currency_id and partial_path can form a valid swap path.
-			if partial_path_len > 0 && currency_id != partial_path[0] {
-				let mut swap_path = vec![currency_id, serptoken_currency_id];
-				swap_path.extend(partial_path);
-
-				let deposit = T::Currency::deposit(
-					currency_id,
-					&Self::account_id(),
-					supply_amount.unique_saturated_into()
-				).is_ok();
-				let buyback_swap_with_exact_supply = T::Dex::buyback_swap_with_exact_supply(
-					&Self::account_id(),
-					&swap_path,
-					supply_amount.unique_saturated_into(),
-				).is_ok();
-
-				if deposit && buyback_swap_with_exact_supply {
-					// successfully swap, break iteration.
-					T::Currency::deposit(
-						currency_id,
-						&Self::account_id(),
-						supply_amount.unique_saturated_into()
-					).unwrap();
-					T::Dex::buyback_swap_with_exact_supply(
-						&Self::account_id(),
-						&swap_path,
-						supply_amount.unique_saturated_into(),
-						// min_target_limit.unique_saturated_into(),
-					).unwrap();
-
-					break;
-				}
-			}
-		}
-		Self::deposit_event(Event::SerpSwapExactStableToSerpToken(currency_id, serptoken_currency_id, min_target_limit, supply_amount));
+		T::Currency::deposit(
+			from_currency_id,
+			&Self::account_id(),
+			supply_limit
+		).unwrap();
+		T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)
 	}
 }
 

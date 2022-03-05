@@ -60,7 +60,6 @@ fn vested_transfer_works() {
 		};
 		assert_ok!(Vesting::vested_transfer(Origin::signed(ALICE), SETM, BOB, schedule.clone()));
 		assert_eq!(Vesting::native_vesting_schedules(&BOB), vec![schedule.clone()]);
-		System::assert_last_event(Event::Vesting(crate::Event::VestingScheduleAdded(SETM, ALICE, BOB, schedule)));
 	});
 }
 
@@ -249,7 +248,7 @@ fn update_vesting_schedules_works() {
 			per_period: 10u64,
 		};
 		assert_ok!(Vesting::update_vesting_schedules(
-			Origin::root(),
+			Origin::signed(ALICE),
 			SETM,
 			BOB,
 			vec![updated_schedule]
@@ -266,19 +265,19 @@ fn update_vesting_schedules_works() {
 		// empty vesting schedules cleanup the storage and unlock the fund
 		assert!(NativeVestingSchedules::<Runtime>::contains_key(BOB));
 
-		assert_ok!(Vesting::update_vesting_schedules(Origin::root(), SETM, BOB, vec![]));
+		assert_ok!(Vesting::update_vesting_schedules(Origin::signed(ALICE), SETM, BOB, vec![]));
 		assert!(!NativeVestingSchedules::<Runtime>::contains_key(BOB));
 		assert_eq!(PalletBalances::locks(&BOB), vec![]);
 	});
 }
 
-// #[test]
-// fn update_vesting_schedules_fails_if_unexpected_existing_locks() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_ok!(Tokens::transfer(Origin::signed(ALICE), BOB, SETM, 1));
-// 		Tokens::set_lock(*b"prelocks", SETM, &BOB, 0u64);
-// 	});
-// }
+#[test]
+fn update_vesting_schedules_fails_if_unexpected_existing_locks() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(Tokens::transfer(Origin::signed(ALICE), BOB, SETM, 1));
+		Tokens::set_lock(*b"prelocks", SETM, &BOB, 0u64);
+	});
+}
 
 #[test]
 fn vested_transfer_check_for_min() {
@@ -352,7 +351,7 @@ fn exceeding_maximum_schedules_should_fail() {
 		let schedules = vec![schedule.clone(), schedule.clone(), schedule];
 
 		assert_noop!(
-			Vesting::update_vesting_schedules(Origin::root(), SETM, BOB, schedules),
+			Vesting::update_vesting_schedules(Origin::signed(ALICE), SETM, BOB, schedules),
 			Error::<Runtime>::MaxVestingSchedulesExceeded
 		);
 	});

@@ -50,7 +50,7 @@ pub type Ratio = FixedU128;
 pub type Rate = FixedU128;
 
 pub trait RiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
-	fn get_bad_debt_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
+	fn get_debit_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
 
 	fn check_position_valid(
 		currency_id: CurrencyId,
@@ -62,10 +62,11 @@ pub trait RiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: DebitBalance) -> DispatchResult;
 }
 
+#[cfg(feature = "std")]
 impl<AccountId, CurrencyId, Balance: Default, DebitBalance> RiskManager<AccountId, CurrencyId, Balance, DebitBalance>
 	for ()
 {
-	fn get_bad_debt_value(_currency_id: CurrencyId, _debit_balance: DebitBalance) -> Balance {
+	fn get_debit_value(_currency_id: CurrencyId, _debit_balance: DebitBalance) -> Balance {
 		Default::default()
 	}
 
@@ -263,6 +264,19 @@ pub trait DEXManager<AccountId, CurrencyId, Balance> {
 		limit: SwapLimit<Balance>,
 	) -> sp_std::result::Result<(Balance, Balance), DispatchError>;
 
+	fn buyback_swap_with_specific_path(
+		who: &AccountId,
+		path: &[CurrencyId],
+		limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError>;
+
+	fn swap_with_exact_target(
+		who: &AccountId,
+		path: &[CurrencyId],
+		exact_target_amount: Balance,
+		max_supply_amount: Balance,
+	) -> DispatchResult;
+
 	fn add_liquidity(
 		who: &AccountId,
 		currency_id_a: CurrencyId,
@@ -312,6 +326,23 @@ where
 		_path: &[CurrencyId],
 		_limit: SwapLimit<Balance>,
 	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
+		Ok(Default::default())
+	}
+
+	fn buyback_swap_with_specific_path(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_limit: SwapLimit<Balance>,
+	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
+		Ok(Default::default())
+	}
+
+	fn swap_with_exact_target(
+		_who: &AccountId,
+		_path: &[CurrencyId],
+		_exact_target_amount: Balance,
+		_max_supply_amount: Balance,
+	) -> DispatchResult {
 		Ok(Default::default())
 	}
 
@@ -403,81 +434,19 @@ pub trait SerpTreasury<AccountId> {
 }
 
 pub trait SerpTreasuryExtended<AccountId>: SerpTreasury<AccountId> {
-	// when setter needs serpdown
-	fn swap_dinar_to_exact_setter(
-		target_amount: Self::Balance,
-	);
-
-	// when setter needs serpdown
-	fn swap_serp_to_exact_setter(
-		target_amount: Self::Balance,
-	);
+	/// When SetCurrency needs SerpDown
+	fn buyback_swap_with_exact_supply(
+		from_currency_id: Self::CurrencyId,
+		to_currency_id: Self::CurrencyId,
+		swap_limit: SwapLimit<Self::Balance>,
+	) -> sp_std::result::Result<(Self::Balance, Self::Balance), DispatchError>;
 
 	/// When SetCurrency needs SerpDown
-	fn swap_dinar_to_exact_setcurrency(
-		currency_id: Self::CurrencyId,
-		target_amount: Self::Balance,
-	);
-
-	/// When SetCurrency needs SerpDown
-	fn swap_setter_to_exact_setcurrency(
-		currency_id: Self::CurrencyId,
-		target_amount: Self::Balance,
-	);
-
-	/// When SetCurrency needs SerpDown
-	fn swap_serp_to_exact_setcurrency(
-		currency_id: Self::CurrencyId,
-		target_amount: Self::Balance,
-	);
-
-	/// When SetCurrency gets SerpUp
-	fn swap_exact_setcurrency_to_dinar(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-	);
-
-	/// When SetCurrency gets inflation deposit
-	fn swap_exact_setcurrency_to_setter(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-	);
-
-	/// When SetCurrency gets serplus deposit
-	fn serplus_swap_exact_setcurrency_to_setter(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-	);
-
-	/// When SetCurrency gets serplus deposit
-	fn serplus_swap_exact_setcurrency_to_native(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-	);
-
-	/// When SetCurrency gets inflation deposit
-	fn swap_exact_setcurrency_to_native(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-	);
-	
-	/// When SetCurrency gets serplus deposit
-	fn serplus_swap_exact_setcurrency_to_help(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-	);
-
-	/// When SetCurrency gets inflation deposit
-	fn swap_exact_setcurrency_to_help(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-	);
-	
-	/// When SetCurrency gets inflation deposit
-	fn swap_exact_setcurrency_to_serp(
-		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-	);
+	fn buyback_swap_with_exact_target(
+		from_currency_id: Self::CurrencyId,
+		to_currency_id: Self::CurrencyId,
+		swap_limit: SwapLimit<Self::Balance>,
+	) -> sp_std::result::Result<(Self::Balance, Self::Balance), DispatchError>;
 }
 
 /// An abstraction of cdp treasury for Setmint Protocol.
@@ -522,21 +491,11 @@ pub trait CDPTreasury<AccountId> {
 }
 
 pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
-	fn swap_exact_collateral_to_stable(
+	fn swap_collateral_to_stable(
 		currency_id: Self::CurrencyId,
-		supply_amount: Self::Balance,
-		min_target_amount: Self::Balance,
-		swap_path: &[Self::CurrencyId],
+		limit: SwapLimit<Self::Balance>,
 		collateral_in_auction: bool,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
-
-	fn swap_collateral_to_exact_stable(
-		currency_id: Self::CurrencyId,
-		max_supply_amount: Self::Balance,
-		target_amount: Self::Balance,
-		swap_path: &[Self::CurrencyId],
-		collateral_in_auction: bool,
-	) -> sp_std::result::Result<Self::Balance, DispatchError>;
+	) -> sp_std::result::Result<(Self::Balance, Self::Balance), DispatchError>;
 
 	fn create_collateral_auctions(
 		currency_id: Self::CurrencyId,
@@ -545,6 +504,13 @@ pub trait CDPTreasuryExtended<AccountId>: CDPTreasury<AccountId> {
 		refund_receiver: AccountId,
 		splited: bool,
 	) -> DispatchResult;
+
+	fn remove_liquidity_for_lp_collateral(
+		currency_id: Self::CurrencyId,
+		amount: Self::Balance,
+	) -> sp_std::result::Result<(Self::Balance, Self::Balance), DispatchError>;
+
+	fn max_auction() -> u32;
 }
 
 pub trait PriceProvider<CurrencyId> {

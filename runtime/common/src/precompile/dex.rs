@@ -22,7 +22,7 @@ use super::input::{Input, InputT, Output};
 use crate::precompile::PrecompileOutput;
 use frame_support::log;
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
-use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, DEXManager};
+use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, DEXManager, SwapLimit};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::RuntimeDebug;
@@ -124,7 +124,8 @@ where
 					path, supply_amount
 				);
 
-				let value = Dex::get_swap_target_amount(&path, supply_amount)
+				let value = Dex::get_swap_amount(&path, SwapLimit::ExactSupply(supply_amount, Balance::MIN))
+					.map(|(_, target)| target)
 					.ok_or_else(|| ExitError::Other("Dex get_swap_target_amount failed".into()))?;
 
 				Ok(PrecompileOutput {
@@ -148,7 +149,8 @@ where
 					path, target_amount
 				);
 
-				let value = Dex::get_swap_supply_amount(&path, target_amount)
+				let value = Dex::get_swap_amount(&path, SwapLimit::ExactTarget(Balance::MAX, target_amount))
+					.map(|(supply, _)| supply)
 					.ok_or_else(|| ExitError::Other("Dex get_swap_supply_amount failed".into()))?;
 
 				Ok(PrecompileOutput {
@@ -174,8 +176,8 @@ where
 					who, path, supply_amount, min_target_amount
 				);
 
-				let value =
-					Dex::swap_with_exact_supply(&who, &path, supply_amount, min_target_amount).map_err(|e| {
+				let (_, value) =
+					Dex::swap_with_specific_path(&who, &path, SwapLimit::ExactSupply(supply_amount, min_target_amount)).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;
@@ -203,8 +205,8 @@ where
 					who, path, target_amount, max_supply_amount
 				);
 
-				let value =
-					Dex::swap_with_exact_target(&who, &path, target_amount, max_supply_amount).map_err(|e| {
+				let (value, _) =
+					Dex::swap_with_specific_path(&who, &path, SwapLimit::ExactTarget(max_supply_amount, target_amount)).map_err(|e| {
 						let err_msg: &str = e.into();
 						ExitError::Other(err_msg.into())
 					})?;

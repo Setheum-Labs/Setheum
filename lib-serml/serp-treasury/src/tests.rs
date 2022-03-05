@@ -26,6 +26,94 @@ use super::*;
 use frame_support::assert_ok;
 use mock::*;
 
+// #[test]
+// fn set_stable_currency_inflation_rate_works() {
+// 	ExtBuilder::default().build().execute_with(|| {
+// 		assert_eq!(SerpTreasuryModule::stable_currency_inflation_rate(SETUSD), 0);
+// 		assert_ok!(SerpTreasuryModule::set_stable_currency_inflation_rate(Origin::signed(ALICE), SerpStableCurrencyId::SETUSD, 1));
+// 		assert_eq!(SerpTreasuryModule::stable_currency_inflation_rate(SETUSD), 1);
+// 	});
+// }
+
+// #[test]
+// fn force_serpdown_works() {
+
+// }
+
+// #[test]
+// fn serp_tes_now() {
+// 	ExtBuilder::default().build().execute_with(|| {
+// 		assert_eq!(SerpTreasuryModule::serp_tes_now(), 0);
+// 		assert_ok!(SerpTreasuryModule::serp_tes_now(1));
+// 		assert_eq!(SerpTreasuryModule::serp_tes_now(), 1);
+// 	});
+// }
+
+// #[test]
+// fn issue_stablecurrency_inflation_works() {
+// 	ExtBuilder::default().build().execute_with(|| {
+// 		assert_eq!(Currencies::total_issuance(SETUSD), );
+// 		assert_ok!(SerpTreasuryModule::issue_stablecurrency_inflation());
+// 		// get SETUSD total_issuance
+// 		assert_eq!(Currencies::total_issuance(SETUSD), );
+// 		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 2000);
+// 	});
+// }
+
+// #[test]
+// fn get_buyback_serpup_works() {
+// 	ExtBuilder::default().build().execute_with(|| {
+// 		assert_eq!(SerpTreasuryModule::get_buyback_serpup(SETUSD, &ALICE), 0);
+// 		assert_ok!(SerpTreasuryModule::set_buyback_serpup(SETUSD, &ALICE, 1000));
+// 		assert_eq!(SerpTreasuryModule::get_buyback_serpup(SETUSD, &ALICE), 1000);
+// 	});
+// }
+
+// #[test]
+// fn add_cashdrop_to_pool_works() {
+
+// }
+
+// #[test]
+// fn issue_cashdrop_from_pool_works() {
+	
+// }
+
+// #[test]
+// fn get_cashdrop_serpup_works() {
+	
+// }
+
+// #[test]
+// fn get_buyback_serplus_works() {
+	
+// }
+
+// #[test]
+// fn get_cashdrop_serplus_works() {
+	
+// }
+
+// #[test]
+// fn on_serplus_works() {
+	
+// }
+
+// #[test]
+// fn on_serpup_works() {
+	
+// }
+
+// #[test]
+// fn on_serpdown_works() {
+	
+// }
+
+// #[test]
+// fn get_minimum_supply_works() {
+	
+// }
+
 #[test]
 fn issue_standard_works() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -83,29 +171,16 @@ fn deposit_setter_works() {
 }
 
 // #[test]
-// fn on_serpdown_works() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_ok!(Currencies::deposit(SETR, &ALICE, 10000));
-// 		assert_ok!(Currencies::deposit(DNAR, &ALICE, 10000));
-// 		assert_ok!(Currencies::deposit(DNAR, &SerpTreasuryModule::account_id(), 10000));
-// 		assert_ok!(Currencies::deposit(SETR, &SerpTreasuryModule::account_id(), 10000));
-// 		assert_ok!(SerpTreasuryModule::on_serpdown(SETR, 10));
-// 		assert_eq!(Currencies::free_balance(SETR, &SerpTreasuryModule::account_id()), 10020);
-// 		assert_eq!(Currencies::free_balance(DNAR, &SerpTreasuryModule::account_id()), 10000);
-// 	});
+// fn claim_cashdrop_works() {
+	
 // }
 
 // #[test]
-// fn on_serpup_works() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_ok!(Currencies::deposit(SETR, &ALICE, 10000));
-// 		assert_ok!(Currencies::deposit(DNAR, &ALICE, 10000));
-// 		assert_ok!(Currencies::deposit(DNAR, &SerpTreasuryModule::account_id(), 10000));
-// 		assert_ok!(Currencies::deposit(SETR, &SerpTreasuryModule::account_id(), 10000));
-// 		assert_ok!(SerpTreasuryModule::on_serpup(SETR, 10));
-// 		assert_eq!(Currencies::free_balance(SETR, &SerpTreasuryModule::account_id()), 10004);
-// 		assert_eq!(Currencies::free_balance(SETR, &VAULT), 1000);
-// 		assert_eq!(Currencies::free_balance(SETR, &CHARITY_FUND), 1001);
-// 		assert_eq!(Currencies::free_balance(DNAR, &SerpTreasuryModule::account_id()), 10000);
-// 	});
+// fn buyback_swap_with_exact_supply_works() {
+	
+// }
+
+// #[test]
+// fn buyback_swap_with_exact_target_works() {
+	
 // }

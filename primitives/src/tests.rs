@@ -79,7 +79,7 @@ fn currency_id_into_u32_works() {
 	assert_eq!(Into::<u32>::into(currency_id), 0x00);
 
 	let currency_id = DexShare::Token(TokenSymbol::SETUSD);
-	assert_eq!(Into::<u32>::into(currency_id), 0x01);
+	assert_eq!(Into::<u32>::into(currency_id), 0x05);
 
 	let currency_id = DexShare::Erc20(EvmAddress::from_str("0x2000000000000000000000000000000000000000").unwrap());
 	assert_eq!(Into::<u32>::into(currency_id), 0x20000000);
@@ -106,7 +106,7 @@ fn currency_id_try_into_evm_address_works() {
 			DexShare::Token(TokenSymbol::SETM),
 			DexShare::Token(TokenSymbol::SETUSD),
 		)),
-		Ok(EvmAddress::from_str("0x0000000000000000000000010000000000000001").unwrap())
+		Ok(EvmAddress::from_str("0x0000000000000000000000010000000000000005").unwrap())
 	);
 
 	assert_eq!(

@@ -650,7 +650,7 @@ impl orml_tokens::Config for Runtime {
 
 parameter_types! {
 	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
-	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 10); // $0.1(10 cents)
+	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 4); // $0.25
 }
 
 impl module_prices::Config for Runtime {
@@ -710,7 +710,6 @@ impl auction_manager::Config for Runtime {
 
 impl module_loans::Config for Runtime {
 	type Event = Event;
-	type Convert = cdp_engine::DebitExchangeRateConvertor<Runtime>;
 	type Currency = Currencies;
 	type RiskManager = CdpEngine;
 	type CDPTreasury = CdpTreasury;

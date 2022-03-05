@@ -189,94 +189,13 @@ fn get_debit_proportion_work() {
 }
 
 #[test]
-fn swap_collateral_to_exact_stable_work() {
+fn swap_collateral_to_stable_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			SETUSD,
-			100,
-			1000,
-			0,
-		));
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			DNAR,
-			900,
-			1000,
-			0,
-		));
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(BOB),
-			DNAR,
-			SETUSD,
-			1000,
-			1000,
-			0,
-		));
 		assert_ok!(CDPTreasuryModule::deposit_collateral(&BOB, SERP, 200));
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 0);
+		assert_ok!(CDPTreasuryModule::deposit_collateral(&CHARLIE, DNAR, 1000));
 		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(SERP), 200);
-
-		assert_noop!(
-			CDPTreasuryModule::swap_collateral_to_exact_stable(SERP, 201, 499, &[SERP, SETUSD], false),
-			Error::<Runtime>::CollateralNotEnough,
-		);
-
-		assert_ok!(CDPTreasuryModule::swap_collateral_to_exact_stable(
-			SERP,
-			100,
-			499,
-			&[SERP, SETUSD],
-			false
-		));
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 499);
-		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(SERP), 100);
-
-		assert_noop!(
-			CDPTreasuryModule::swap_collateral_to_exact_stable(SERP, 100, 199, &[SERP], false),
-			Error::<Runtime>::InvalidSwapPath
-		);
-		assert_noop!(
-			CDPTreasuryModule::swap_collateral_to_exact_stable(SERP, 100, 199, &[SERP, DNAR], false),
-			Error::<Runtime>::InvalidSwapPath
-		);
-		assert_noop!(
-			CDPTreasuryModule::swap_collateral_to_exact_stable(SERP, 100, 199, &[DNAR, SETUSD], false),
-			Error::<Runtime>::InvalidSwapPath
-		);
-		assert_ok!(CDPTreasuryModule::swap_collateral_to_exact_stable(
-			SERP,
-			100,
-			10,
-			&[SERP, DNAR, SETUSD],
-			false
-		));
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 509);
-		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(SERP), 89);
-	});
-}
-
-#[test]
-fn swap_exact_collateral_to_stable_work() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			SETUSD,
-			100,
-			1000,
-			0,
-		));
-		assert_ok!(DEXModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			DNAR,
-			900,
-			1000,
-			0,
-		));
+		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(DNAR), 1000);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 0);
 		assert_ok!(DEXModule::add_liquidity(
 			Origin::signed(BOB),
 			DNAR,
@@ -285,55 +204,47 @@ fn swap_exact_collateral_to_stable_work() {
 			1000,
 			0,
 		));
-		assert_ok!(CDPTreasuryModule::deposit_collateral(&BOB, SERP, 200));
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 0);
-		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 200);
 
 		assert_noop!(
-			CDPTreasuryModule::swap_exact_collateral_to_stable(SERP, 200, 100, &[SERP, SETUSD], true),
+			CDPTreasuryModule::swap_collateral_to_stable(SERP, SwapLimit::ExactTarget(201, 200), false),
+			Error::<Runtime>::CollateralNotEnough,
+		);
+		assert_noop!(
+			CDPTreasuryModule::swap_collateral_to_stable(DNAR, SwapLimit::ExactSupply(1001, 0), false),
 			Error::<Runtime>::CollateralNotEnough,
 		);
 
-		assert_ok!(CDPTreasuryModule::create_collateral_auctions(
-			SERP, 200, 1000, ALICE, true
-		));
-		assert_eq!(TOTAL_COLLATERAL_IN_AUCTION.with(|v| *v.borrow_mut()), 200);
-
-		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 200);
-		assert_eq!(MockAuctionManager::get_total_collateral_in_auction(SERP), 200);
-
-		assert_ok!(CDPTreasuryModule::swap_exact_collateral_to_stable(
+		assert_noop!(
+			CDPTreasuryModule::swap_collateral_to_stable(SERP, SwapLimit::ExactTarget(200, 399), false),
+			Error::<Runtime>::CannotSwap
+		);
+		assert_ok!(DEXModule::add_liquidity(
+			Origin::signed(ALICE),
 			SERP,
+			DNAR,
 			100,
-			400,
-			&[SERP, SETUSD],
-			true
+			1000,
+			0,
 		));
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 500);
-		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 100);
+
+		assert_eq!(
+			CDPTreasuryModule::swap_collateral_to_stable(SERP, SwapLimit::ExactTarget(200, 399), false).unwrap(),
+			(198, 399)
+		);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 399);
+		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(SERP), 2);
 
 		assert_noop!(
-			CDPTreasuryModule::swap_exact_collateral_to_stable(SERP, 100, 199, &[SERP], true),
-			Error::<Runtime>::InvalidSwapPath
-		);
-		assert_noop!(
-			CDPTreasuryModule::swap_exact_collateral_to_stable(SERP, 100, 199, &[SERP, DNAR], true),
-			Error::<Runtime>::InvalidSwapPath
-		);
-		assert_noop!(
-			CDPTreasuryModule::swap_exact_collateral_to_stable(SERP, 100, 199, &[DNAR, SETUSD], true),
-			Error::<Runtime>::InvalidSwapPath
+			CDPTreasuryModule::swap_collateral_to_stable(DNAR, SwapLimit::ExactSupply(1000, 1000), false),
+			Error::<Runtime>::CannotSwap,
 		);
 
-		assert_ok!(CDPTreasuryModule::swap_exact_collateral_to_stable(
-			SERP,
-			100,
-			10,
-			&[SERP, DNAR, SETUSD],
-			true
-		));
-		assert_eq!(CDPTreasuryModule::surplus_pool(), 590);
-		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 0);
+		assert_eq!(
+			CDPTreasuryModule::swap_collateral_to_stable(DNAR, SwapLimit::ExactSupply(1000, 0), false).unwrap(),
+			(1000, 225)
+		);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 624);
+		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(DNAR), 0);
 	});
 }
 
@@ -387,6 +298,47 @@ fn create_collateral_auctions_work() {
 	});
 }
 
+// #[test]
+// fn remove_liquidity_for_lp_collateral_work() {
+// 	ExtBuilder::default().build().execute_with(|| {
+// 		assert_ok!(DEXModule::add_liquidity(
+// 			Origin::signed(BOB),
+// 			SETUSD,
+// 			DNAR,
+// 			1000,
+// 			100,
+// 			0,
+// 		));
+// 		assert_ok!(CDPTreasuryModule::deposit_collateral(&BOB, LP_SETUSD_DNAR, 200));
+// 		assert_eq!(Currencies::total_issuance(LP_SETUSD_DNAR), 2000);
+// 		assert_eq!(DEXModule::get_liquidity_pool(SETUSD, DNAR), (1000, 100));
+// 		assert_eq!(
+// 			Currencies::free_balance(LP_SETUSD_DNAR, &CDPTreasuryModule::account_id()),
+// 			200
+// 		);
+// 		assert_eq!(Currencies::free_balance(SETUSD, &CDPTreasuryModule::account_id()), 0);
+// 		assert_eq!(Currencies::free_balance(DNAR, &CDPTreasuryModule::account_id()), 0);
+
+// 		assert_noop!(
+// 			CDPTreasuryModule::remove_liquidity_for_lp_collateral(DNAR, 200),
+// 			Error::<Runtime>::NotDexShare
+// 		);
+
+// 		assert_eq!(
+// 			CDPTreasuryModule::remove_liquidity_for_lp_collateral(LP_SETUSD_DNAR, 120),
+// 			Ok((60, 6))
+// 		);
+// 		assert_eq!(Currencies::total_issuance(LP_SETUSD_DNAR), 1880);
+// 		assert_eq!(DEXModule::get_liquidity_pool(SETUSD, DNAR), (940, 94));
+// 		assert_eq!(
+// 			Currencies::free_balance(LP_SETUSD_DNAR, &CDPTreasuryModule::account_id()),
+// 			80
+// 		);
+// 		assert_eq!(Currencies::free_balance(SETUSD, &CDPTreasuryModule::account_id()), 60);
+// 		assert_eq!(Currencies::free_balance(DNAR, &CDPTreasuryModule::account_id()), 6);
+// 	});
+// }
+
 #[test]
 fn set_expected_collateral_auction_size_work() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -402,27 +354,97 @@ fn set_expected_collateral_auction_size_work() {
 			200
 		));
 		System::assert_last_event(Event::CDPTreasuryModule(
-			crate::Event::ExpectedCollateralAuctionSizeUpdated(SERP, 200),
+			crate::Event::ExpectedCollateralAuctionSizeUpdated {
+				collateral_type: SERP,
+				new_size: 200,
+			},
 		));
 	});
 }
 
-// #[test]
-// SOME NOT IMPLIMENTED - INTENTIONAL
-// fn extract_surplus_to_serp_work() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_ok!(CDPTreasuryModule::on_system_surplus(1000));
-// 		assert_eq!(CDPTreasuryModule::surplus_pool(), 1000);
-// 		assert_eq!(Currencies::free_balance(SETUSD, &CDPTreasuryModule::account_id()), 1000);
-// 		assert_eq!(Currencies::free_balance(SETUSD, &TreasuryAccount::get()), 0);
+#[test]
+fn auction_collateral_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(Currencies::deposit(SERP, &CDPTreasuryModule::account_id(), 10000));
+		assert_eq!(CDPTreasuryModule::expected_collateral_auction_size(SERP), 0);
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 10000);
+		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(SERP), 10000);
+		assert_noop!(
+			CDPTreasuryModule::auction_collateral(Origin::signed(5), SERP, 10000, 1000, false),
+			BadOrigin,
+		);
+		assert_noop!(
+			CDPTreasuryModule::auction_collateral(Origin::signed(1), SERP, 10001, 1000, false),
+			Error::<Runtime>::CollateralNotEnough,
+		);
 
-// 		assert_noop!(
-// 			CDPTreasuryModule::extract_surplus_to_serp(Origin::signed(5), 200),
-// 			BadOrigin
-// 		);
-// 		assert_ok!(CDPTreasuryModule::extract_surplus_to_serp(Origin::signed(1), 200));
-// 		assert_eq!(CDPTreasuryModule::surplus_pool(), 800);
-// 		assert_eq!(Currencies::free_balance(SETUSD, &CDPTreasuryModule::account_id()), 800);
-// 		assert_eq!(Currencies::free_balance(SETUSD, &TreasuryAccount::get()), 200);
-// 	});
-// }
+		assert_ok!(CDPTreasuryModule::auction_collateral(
+			Origin::signed(1),
+			SERP,
+			1000,
+			1000,
+			false
+		));
+		assert_eq!(TOTAL_COLLATERAL_AUCTION.with(|v| *v.borrow_mut()), 1);
+		assert_eq!(TOTAL_COLLATERAL_IN_AUCTION.with(|v| *v.borrow_mut()), 1000);
+
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 10000);
+		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(SERP), 9000);
+		assert_noop!(
+			CDPTreasuryModule::auction_collateral(Origin::signed(1), SERP, 9001, 1000, false),
+			Error::<Runtime>::CollateralNotEnough,
+		);
+	});
+}
+
+#[test]
+fn exchange_collateral_to_stable_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(DEXModule::add_liquidity(
+			Origin::signed(BOB),
+			SERP,
+			SETUSD,
+			200,
+			1000,
+			0,
+		));
+
+		assert_ok!(Currencies::deposit(SERP, &CDPTreasuryModule::account_id(), 1000));
+		assert_ok!(CDPTreasuryModule::auction_collateral(
+			Origin::signed(1),
+			SERP,
+			800,
+			1000,
+			false
+		));
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 1000);
+		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(SERP), 200);
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 0);
+
+		assert_noop!(
+			CDPTreasuryModule::exchange_collateral_to_stable(Origin::signed(5), SERP, SwapLimit::ExactTarget(200, 200)),
+			BadOrigin,
+		);
+		assert_noop!(
+			CDPTreasuryModule::exchange_collateral_to_stable(Origin::signed(1), SERP, SwapLimit::ExactTarget(201, 200)),
+			Error::<Runtime>::CollateralNotEnough,
+		);
+		assert_noop!(
+			CDPTreasuryModule::exchange_collateral_to_stable(Origin::signed(1), SERP, SwapLimit::ExactSupply(201, 0)),
+			Error::<Runtime>::CollateralNotEnough,
+		);
+		assert_noop!(
+			CDPTreasuryModule::exchange_collateral_to_stable(Origin::signed(1), SERP, SwapLimit::ExactTarget(200, 1000)),
+			Error::<Runtime>::CannotSwap
+		);
+
+		assert_ok!(CDPTreasuryModule::exchange_collateral_to_stable(
+			Origin::signed(1),
+			SERP,
+			SwapLimit::ExactTarget(200, 399)
+		));
+		assert_eq!(CDPTreasuryModule::surplus_pool(), 399);
+		assert_eq!(CDPTreasuryModule::total_collaterals(SERP), 867);
+		assert_eq!(CDPTreasuryModule::total_collaterals_not_in_auction(SERP), 67);
+	});
+}
