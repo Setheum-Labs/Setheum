@@ -155,6 +155,8 @@ pub mod module {
 		CannotDeposit,
 		/// The SERP Cannot Swap for buyback
 		CannotSwap,
+		/// The SetSwap DEX is not available for this operation
+		DexNotAvailable,
 		/// The Stablecoin Price is stable and indifferent from peg
 		/// therefore cannot serp
 		PriceIsStableCannotSerp,
@@ -403,6 +405,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	}
 	
 	/// Deliver System StableCurrency stability for the Setter - SETR
+	// TODO: FIXME - Change to use DEXOracle's AveragePrice for TES Efficiency
 	fn serp_tes_now() -> DispatchResult {
 
 		let setter_token = T::SetterCurrencyId::get();
@@ -915,18 +918,10 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		to_currency_id: CurrencyId,
 		swap_limit: SwapLimit<Balance>,
 	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		let (exact_supply, min_target) = match swap_limit {
-			SwapLimit::ExactSupply(exact_supply, min_target) => (exact_supply, min_target),
-			SwapLimit::ExactTarget(max_supply, target_amount) => (max_supply, target_amount),
+		let exact_supply = match swap_limit {
+			SwapLimit::ExactSupply(exact_supply, _) => exact_supply,
+			SwapLimit::ExactTarget(max_supply, target_amount) => max_supply,
 		};
-		ensure!(
-			T::Currency::deposit(
-				from_currency_id,
-				&Self::account_id(),
-				exact_supply
-			).is_ok(),
-			Error::<T>::CannotDeposit,
-		);
 		let swap_path = T::Dex::get_best_price_swap_path(
 			from_currency_id,
 			to_currency_id,
@@ -934,14 +929,21 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 			T::AlternativeSwapPathJointList::get(),
 		)
 		.ok_or(Error::<T>::CannotSwap)?;
-	
+		
+		ensure!(
+			T::Currency::deposit(
+				from_currency_id,
+				&Self::account_id(),
+				exact_supply as Balance,
+			).is_ok(),
+			Error::<T>::CannotDeposit,
+		);
 		T::Currency::deposit(
 			from_currency_id,
 			&Self::account_id(),
-			exact_supply
+			exact_supply as Balance,
 		).unwrap();
-		let (_, actual_target) = T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)?;
-		Ok((exact_supply, actual_target))
+		T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)
 	}
 
 	/// Swap `from_currency_id` to get exact `from_currency_id`,
@@ -952,18 +954,10 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		to_currency_id: CurrencyId,
 		swap_limit: SwapLimit<Balance>,
 	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		let (max_supply, exact_target) = match swap_limit {
-			SwapLimit::ExactSupply(supply_amount, min_target) => (supply_amount,min_target),
-			SwapLimit::ExactTarget(max_supply, exact_target) => (max_supply, exact_target),
-		};
-		ensure!(
-			T::Currency::deposit(
-				from_currency_id,
-				&Self::account_id(),
-				max_supply
-			).is_ok(),
-			Error::<T>::CannotDeposit,
-		);
+		// let max_supply = match swap_limit {
+		// 	SwapLimit::ExactSupply(supply_amount, min_target) => (supply_amount,min_target),
+		// 	SwapLimit::ExactTarget(max_supply, exact_target) => (max_supply, exact_target),
+		// };
 		let swap_path = T::Dex::get_best_price_swap_path(
 			from_currency_id,
 			to_currency_id,
@@ -972,19 +966,28 @@ impl<T: Config> SerpTreasuryExtended<T::AccountId> for Pallet<T> {
 		)
 		.ok_or(Error::<T>::CannotSwap)?;
 	
+		let (supply_amount, _) = T::Dex::get_swap_amount(
+			&swap_path,
+			swap_limit
+		)
+		.ok_or(Error::<T>::DexNotAvailable)?;
+
+		ensure!(
+			T::Currency::deposit(
+				from_currency_id,
+				&Self::account_id(),
+				supply_amount
+			).is_ok(),
+			Error::<T>::CannotDeposit,
+		);
+		
 		T::Currency::deposit(
 			from_currency_id,
 			&Self::account_id(),
-			max_supply
+			supply_amount
 		).unwrap();
-		let (actual_supply,_) = T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)?;
-		// withdraw extra buyback supply from SERP-Treasury
-		T::Currency::withdraw(
-			from_currency_id,
-			&Self::account_id(),
-			max_supply.saturating_sub(actual_supply),
-		).unwrap();
-		Ok((actual_supply, exact_target))
+
+		T::Dex::buyback_swap_with_specific_path(&Self::account_id(), &swap_path, swap_limit)
 	}
 }
 

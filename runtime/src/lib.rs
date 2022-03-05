@@ -765,6 +765,14 @@ parameter_types! {
 		vec![SETM],
 		vec![HELP],
 		vec![SETUSD],
+		vec![SETM, SETR],
+		vec![SETM, SETUSD],
+		vec![SERP, SETR],
+		vec![SERP, SETUSD],
+		vec![DNAR, SETR],
+		vec![DNAR, SETUSD],
+		vec![HELP, SETR],
+		vec![HELP, SETUSD],
 	];
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, HELP, SETR];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
