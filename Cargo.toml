@@ -1,4 +1,4 @@
-cargo-features = ["resolver", "edition2021"]
+cargo-features = ["resolver"]
 
 [workspace]
 members = [
