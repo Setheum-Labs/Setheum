@@ -2852,17 +2852,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "impl-num-traits"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38b6057d6b519ad53dd59ec6e1054ace520a61afdcff53f1199420f3078b5466"
-dependencies = [
- "integer-sqrt",
- "num-traits",
- "uint",
-]
-
-[[package]]
 name = "impl-rlp"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4246,7 +4235,6 @@ version = "1.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "impl-num-traits",
  "module-support",
  "orml-tokens",
  "orml-traits",
