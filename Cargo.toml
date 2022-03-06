@@ -1,8 +1,4 @@
-[profile.release]
-panic = 'unwind'
-
-[profile.dev]
-split-debuginfo = "unpacked"
+cargo-features = ["resolver"]
 
 [workspace]
 members = [
@@ -25,3 +21,11 @@ members = [
 	"lib-orml/utilities",
 ]
 exclude = ['rpc']
+
+resolver = "2"
+
+[profile.release]
+panic = 'unwind'
+
+[profile.dev]
+split-debuginfo = "unpacked"
