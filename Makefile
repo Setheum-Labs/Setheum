@@ -1,15 +1,9 @@
 .PHONY: configure-rust
 configure-rust:
-	sudo apt update
-	sudo apt install -y git clang curl libssl-dev llvm libudev-dev
-	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-	rustup toolchain install nightly-2021-05-21
-	rustup toolchain install stable
-	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-21
-	rustup component add clippy
 	rustup update nightly
 	rustup default nightly && rustup update
 	rustup target add wasm32-unknown-unknown --toolchain nightly
+	rustup target add wasm32-unknown-unknown --toolchain nightly-2021-05-21
 
 
 .PHONY: init
