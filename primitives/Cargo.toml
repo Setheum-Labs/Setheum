@@ -2,7 +2,7 @@
 name = "setheum-primitives"
 version = "1.0.0"
 authors = ["Setheum Labs"]
-edition = "2021"
+edition = "2018"
 
 [dependencies]
 bstringify = "0.1.2"

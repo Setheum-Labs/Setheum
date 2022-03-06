@@ -2,7 +2,7 @@
 name = "module-evm-accounts"
 version = "1.0.0"
 authors = ["Setheum Labs"]
-edition = "2021"
+edition = "2018"
 
 [dependencies]
 serde = { version = "1.0.124", optional = true }

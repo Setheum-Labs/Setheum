@@ -1,13 +1,11 @@
 [package]
 authors = ['Setheum Labs <https://setheum.xyz>']
 version = '1.0.0'
-edition = '2021'
+edition = '2018'
 build = "build.rs"
 homepage = 'https://setheum.xyz'
 name = 'setheum-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum'
-
-cargo-features = ["edition2021"]
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']

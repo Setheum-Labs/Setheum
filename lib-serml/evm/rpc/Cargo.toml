@@ -2,7 +2,7 @@
 name = "evm-rpc"
 version = "1.0.0"
 authors = ["Setheum Labs"]
-edition = "2021"
+edition = "2018"
 
 [dependencies]
 jsonrpc-core = "15.0.0"

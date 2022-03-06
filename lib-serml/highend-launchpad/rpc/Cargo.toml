@@ -2,7 +2,7 @@
 name = "highend-launchpad-rpc"
 version = "1.0.0"
 authors = ["Setheum Labs"]
-edition = "2021"
+edition = "2018"
 description = "RPC module for highend-launchpad."
 homepage = 'https://setheum.xyz'
 license = 'Apache-2.0'

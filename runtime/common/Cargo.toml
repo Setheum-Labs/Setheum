@@ -2,7 +2,7 @@
 name = "runtime-common"
 version = "1.0.0"
 authors = ["Setheum Developers"]
-edition = "2021"
+edition = "2018"
 
 [dependencies]
 static_assertions = "1.1.0"

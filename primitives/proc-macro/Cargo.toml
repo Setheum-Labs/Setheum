@@ -2,7 +2,7 @@
 name = "primitives-proc-macro"
 version = "1.0.0"
 authors = ["Setheum Labs"]
-edition = "2021"
+edition = "2018"
 
 [lib]
 proc-macro = true
