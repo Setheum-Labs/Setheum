@@ -2,7 +2,7 @@
 authors = ['Setheum Labs <https://setheum.xyz>']
 build = 'build.rs'
 description = 'Setheum Network Node'
-edition = '2018'
+edition = '2021'
 homepage = 'https://setheum.xyz'
 license = 'Unlicense'
 name = 'setheum-node'
