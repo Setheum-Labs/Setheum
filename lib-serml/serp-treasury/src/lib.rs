@@ -43,7 +43,7 @@ use sp_runtime::{
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{
-	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended, SwapLimit,
+	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended, SwapLimit
 };
 use fixed::FixedU128;
 mod mock;
