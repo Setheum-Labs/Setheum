@@ -9,6 +9,8 @@ name = 'setheum-node'
 repository = 'https://github.com/Setheum-Labs/Setheum'
 version = '1.0.0'
 
+cargo-features = ["edition2021"]
+
 [[bin]]
 name = 'setheum-node'
 

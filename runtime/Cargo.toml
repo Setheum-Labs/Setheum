@@ -7,6 +7,8 @@ homepage = 'https://setheum.xyz'
 name = 'setheum-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum'
 
+cargo-features = ["edition2021"]
+
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
 
