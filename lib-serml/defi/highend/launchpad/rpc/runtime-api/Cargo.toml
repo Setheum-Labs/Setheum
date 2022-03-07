@@ -1,0 +1,24 @@
+[package]
+name = "highend-launchpad-rpc-runtime-api"
+version = "0.0.1"
+authors = ["Setheum Labs"]
+edition = "2018"
+description = "Runtime API module for highend-launchpad-rpc."
+homepage = 'https://setheum.xyz'
+license = 'Apache-2.0'
+repository = 'https://github.com/Setheum-Labs/launchpad-crowdsales/'
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["derive"] }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+
+support = { package = "module-support", path = "../../../../../support", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"sp-api/std",
+	"sp-std/std"
+]

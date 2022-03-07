@@ -20,7 +20,7 @@
 
 use codec::{Decode, Encode};
 use frame_support::weights::Weight;
-use scale_info::TypeInfo;
+// use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_runtime::DispatchResult;

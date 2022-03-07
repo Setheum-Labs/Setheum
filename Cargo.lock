@@ -108,23 +108,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "al-ethaar-quadratic-altruism"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "integer-sqrt",
- "linked-hash-map",
- "pallet-identity",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "ansi_term"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -388,7 +371,7 @@ dependencies = [
 
 [[package]]
 name = "atomic-swap"
-version = "1.0.0"
+version = "0.0.1"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -450,6 +433,12 @@ name = "autocfg"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
+
+[[package]]
+name = "az"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f771a5d1f5503f7f4279a30f3643d3421ba149848b89ecaaec0ea2acf04a5ac4"
 
 [[package]]
 name = "backtrace"
@@ -713,6 +702,12 @@ name = "byte-tools"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3b5ca7a04898ad4bcd41c90c5285445ff5b791899bb1b0abdd2a2aa791211d7"
+
+[[package]]
+name = "bytemuck"
+version = "1.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e851ca7c24871e7336801608a4797d7376545b6928a10d32d75685687141ead"
 
 [[package]]
 name = "byteorder"
@@ -1370,6 +1365,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "dex-p2p"
+version = "0.0.1"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "digest"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1835,6 +1843,18 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.11.1",
  "scale-info",
+]
+
+[[package]]
+name = "fixed"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d333a26ec13a023c6dff4b7584de4d323cfee2e508f5dd2bbee6669e4f7efdf"
+dependencies = [
+ "az",
+ "bytemuck",
+ "half",
+ "typenum",
 ]
 
 [[package]]
@@ -2425,6 +2445,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "half"
+version = "1.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eabb4a44450da02c90444cf74558da904edde8fb4e9035a9a6a4e15445af0bd7"
+
+[[package]]
 name = "handlebars"
 version = "3.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2525,37 +2551,6 @@ name = "hex_fmt"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b07f60793ff0a4d9cef0f18e63b5357e06209987153a64648c972c1e5aff336f"
-
-[[package]]
-name = "highend-launchpad"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "module-support",
- "orml-tokens",
- "orml-traits",
- "parity-scale-codec",
- "serde",
- "setheum-primitives",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "highend-launchpool"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
-]
 
 [[package]]
 name = "hmac"
@@ -3999,6 +3994,7 @@ dependencies = [
  "pallet-timestamp",
  "parity-scale-codec",
  "serde",
+ "serp-treasury",
  "setheum-primitives",
  "sp-core",
  "sp-io",
@@ -4140,19 +4136,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "module-example"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
-]
-
-[[package]]
 name = "module-loans"
 version = "1.0.0"
 dependencies = [
@@ -4223,6 +4206,7 @@ dependencies = [
  "frame-support",
  "impl-trait-for-tuples 0.1.3",
  "parity-scale-codec",
+ "scale-info",
  "setheum-primitives",
  "sp-core",
  "sp-io",
@@ -6179,35 +6163,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "qma-flashloans"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "module-support",
- "orml-tokens",
- "orml-traits",
- "parity-scale-codec",
- "setheum-primitives",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "qma-flashloans-virtual-machine"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
-]
-
-[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7958,6 +7913,7 @@ dependencies = [
 name = "serp-treasury"
 version = "1.0.0"
 dependencies = [
+ "fixed",
  "frame-support",
  "frame-system",
  "module-prices",
@@ -9857,9 +9813,9 @@ checksum = "56dee185309b50d1f11bfedef0fe6d036842e3fb77413abef29f8f8d1c5d4c1c"
 
 [[package]]
 name = "uint"
-version = "0.9.0"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e11fe9a9348741cf134085ad57c249508345fe16411b3d7fb4ff2da2f1d6382e"
+checksum = "12f03af7ccf01dd611cc450a0d10dbc9b745770d096473e2faf0ca6e2d66d1e0"
 dependencies = [
  "byteorder",
  "crunchy",

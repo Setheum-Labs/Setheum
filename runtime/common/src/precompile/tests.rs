@@ -118,767 +118,768 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 		WithSystemContractFilter::execute(non_system.into(), &[0u8; 1], None, &non_system_caller_context).is_none()
 	);
 }
-
-#[test]
-fn multicurrency_precompile_should_work() {
-	new_test_ext().execute_with(|| {
-		let mut context = Context {
-			address: Default::default(),
-			caller: Default::default(),
-			apparent_value: Default::default(),
-		};
-
-		// call with not exists erc20
-		context.caller = erc20_address_not_exists();
-		let mut input = [0u8; 68];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QuerySymbol).to_be_bytes());
-		assert_noop!(
-			MultiCurrencyPrecompile::execute(&input, None, &context),
-			ExitError::Other("invalid currency id".into())
-		);
-
-		// 1.QueryName
-		let mut input = [0u8; 4];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryName).to_be_bytes());
-
-		// Token
-		context.caller = setm_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let mut expected_output = [0u8; 96];
-		// skip offset
-		expected_output[31] = 32;
-		// length
-		expected_output[63] = 5;
-		expected_output[64..64 + 5].copy_from_slice(&b"Setheum"[..]);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// DexShare
-		context.caller = lp_setm_setusd_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let mut expected_output = [0u8; 96];
-		// skip offset
-		expected_output[31] = 32;
-		// length
-		expected_output[63] = 23;
-		expected_output[64..64 + 23].copy_from_slice(&b"LP Setheum - Setheum Dollar"[..]);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// 2.QuerySymbol
-		let mut input = [0u8; 4];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QuerySymbol).to_be_bytes());
-
-		// Token
-		context.caller = setm_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let mut expected_output = [0u8; 96];
-		// skip offset
-		expected_output[31] = 32;
-		// length
-		expected_output[63] = 3;
-		expected_output[64..64 + 3].copy_from_slice(&b"SETM"[..]);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// DexShare
-		context.caller = lp_setm_setusd_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let mut expected_output = [0u8; 96];
-		// skip offset
-		expected_output[31] = 32;
-		// length
-		expected_output[63] = 11;
-		expected_output[64..64 + 11].copy_from_slice(&b"LP_SETM_SETUSD"[..]);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// 3.QueryDecimals
-		let mut input = [0u8; 4];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryDecimals).to_be_bytes());
-
-		// Token
-		context.caller = setm_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let mut expected_output = [0u8; 32];
-		expected_output[31] = 12;
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// DexShare
-		context.caller = lp_setm_setusd_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let mut expected_output = [0u8; 32];
-		expected_output[31] = 12;
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// 4.QueryTotalIssuance
-		let mut input = [0u8; 4];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryTotalIssuance).to_be_bytes());
-
-		// Token
-		context.caller = setusd_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let mut expected_output = [0u8; 32];
-		expected_output[28..32].copy_from_slice(&1_000_000_000u32.to_be_bytes()[..]);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// DexShare
-		context.caller = lp_setm_setusd_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let expected_output = [0u8; 32];
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// 5.QueryBalance
-		let mut input = [0u8; 36];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryBalance).to_be_bytes());
-		// from
-		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-
-		// Token
-		context.caller = setm_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let mut expected_output = [0u8; 32];
-		expected_output[16..32].copy_from_slice(&INITIAL_BALANCE.to_be_bytes()[..]);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// DexShare
-		context.caller = lp_setm_setusd_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let expected_output = [0u8; 32];
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// 6.Transfer
-		let mut input = [0u8; 4 + 3 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::Transfer).to_be_bytes());
-		// from
-		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-		// to
-		U256::from(bob_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
-		// amount
-		U256::from(1).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		let from_balance = Balances::free_balance(alice());
-		let to_balance = Balances::free_balance(bob());
-
-		// Token
-		context.caller = setm_evm_address();
-		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		let expected_output: Vec<u8> = vec![];
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-		assert_eq!(Balances::free_balance(alice()), from_balance - 1);
-		assert_eq!(Balances::free_balance(bob()), to_balance + 1);
-
-		// DexShare
-		context.caller = lp_setm_setusd_evm_address();
-		assert_noop!(
-			MultiCurrencyPrecompile::execute(&input, None, &context),
-			ExitError::Other("BalanceTooLow".into())
-		);
-	});
-}
-
-#[test]
-fn oracle_precompile_should_work() {
-	new_test_ext().execute_with(|| {
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		let price = Price::from(30_000);
-
-		// action + currency_id
-		let mut input = [0u8; 36];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(oracle::Action::GetPrice).to_be_bytes());
-		// SERP
-		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4..4 + 32]);
-
-		// no price yet
-		let resp = OraclePrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.output, [0u8; 32]);
-		assert_eq!(resp.cost, 0);
-
-		assert_ok!(Oracle::feed_value(ALICE, SERP, price));
-		assert_eq!(
-			Oracle::get_no_op(&SERP),
-			Some(orml_oracle::TimestampedValue {
-				value: price,
-				timestamp: 1
-			})
-		);
-
-		// returned price + timestamp
-		let mut expected_output = [0u8; 32];
-		U256::from(price.into_inner()).to_big_endian(&mut expected_output[..]);
-
-		let resp = OraclePrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-	});
-}
-
-#[test]
-fn oracle_precompile_should_handle_invalid_input() {
-	new_test_ext().execute_with(|| {
-		assert_noop!(
-			OraclePrecompile::execute(
-				&[0u8; 0],
-				None,
-				&Context {
-					address: Default::default(),
-					caller: alice_evm_addr(),
-					apparent_value: Default::default()
-				}
-			),
-			ExitError::Other("invalid input".into())
-		);
-
-		assert_noop!(
-			OraclePrecompile::execute(
-				&[0u8; 3],
-				None,
-				&Context {
-					address: Default::default(),
-					caller: alice_evm_addr(),
-					apparent_value: Default::default()
-				}
-			),
-			ExitError::Other("invalid input".into())
-		);
-
-		assert_noop!(
-			OraclePrecompile::execute(
-				&[1u8; 32],
-				None,
-				&Context {
-					address: Default::default(),
-					caller: alice_evm_addr(),
-					apparent_value: Default::default()
-				}
-			),
-			ExitError::Other("invalid action".into())
-		);
-	});
-}
-
-#[test]
-fn schedule_call_precompile_should_work() {
-	new_test_ext().execute_with(|| {
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		let mut input = [0u8; 11 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Schedule).to_be_bytes());
-		// from
-		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-		// target
-		U256::from(setm_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
-		// value
-		U256::from(0).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		// gas_limit
-		U256::from(300000).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
-		// storage_limit
-		U256::from(100).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
-		// min_delay
-		U256::from(1).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
-		// skip offset
-		// input_len
-		U256::from(4 + 32 + 32).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
-
-		// input_data
-		let mut transfer_to_bob = [0u8; 68];
-		// transfer bytes4(keccak256(signature)) 0xa9059cbb
-		transfer_to_bob[0..4].copy_from_slice(&hex!("a9059cbb"));
-		// to address
-		U256::from(bob_evm_addr().as_bytes()).to_big_endian(&mut transfer_to_bob[4..36]);
-		// amount
-		U256::from(1000).to_big_endian(&mut transfer_to_bob[36..68]);
-
-		U256::from(&transfer_to_bob[0..32]).to_big_endian(&mut input[4 + 8 * 32..4 + 9 * 32]);
-		U256::from(&transfer_to_bob[32..64]).to_big_endian(&mut input[4 + 9 * 32..4 + 10 * 32]);
-		input[4 + 10 * 32..4 + 10 * 32 + 4].copy_from_slice(&transfer_to_bob[64..68]);
-
-		let resp = ScheduleCallPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.cost, 0);
-		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Scheduled(3, 0));
-		assert!(System::events().iter().any(|record| record.event == event));
-
-		// cancel schedule
-		let task_id = get_task_id(resp.output);
-		let mut cancel_input = [0u8; 5 * 32];
-		// action
-		cancel_input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Cancel).to_be_bytes());
-		// from
-		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut cancel_input[4 + 0 * 32..4 + 1 * 32]);
-		// skip offset
-		// task_id_len
-		U256::from(task_id.len()).to_big_endian(&mut cancel_input[4 + 2 * 32..4 + 3 * 32]);
-		// task_id
-		cancel_input[4 + 3 * 32..4 + 3 * 32 + task_id.len()].copy_from_slice(&task_id[..]);
-
-		let resp = ScheduleCallPrecompile::execute(&cancel_input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.cost, 0);
-		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Canceled(3, 0));
-		assert!(System::events().iter().any(|record| record.event == event));
-
-		let resp = ScheduleCallPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.cost, 0);
-
-		run_to_block(2);
-
-		// reschedule call
-		let task_id = get_task_id(resp.output);
-		let mut reschedule_input = [0u8; 6 * 32];
-		// action
-		reschedule_input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Reschedule).to_be_bytes());
-		// from
-		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut reschedule_input[4 + 0 * 32..4 + 1 * 32]);
-		// min_delay
-		U256::from(2).to_big_endian(&mut reschedule_input[4 + 1 * 32..4 + 2 * 32]);
-		// skip offset
-		// task_id_len
-		U256::from(task_id.len()).to_big_endian(&mut reschedule_input[4 + 3 * 32..4 + 4 * 32]);
-		// task_id
-		reschedule_input[4 + 4 * 32..4 + 4 * 32 + task_id.len()].copy_from_slice(&task_id[..]);
-
-		let resp = ScheduleCallPrecompile::execute(&reschedule_input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.cost, 0);
-		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Scheduled(5, 0));
-		assert!(System::events().iter().any(|record| record.event == event));
-
-		let from_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
-		let to_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
-		{
-			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
-			assert_eq!(Balances::reserved_balance(from_account.clone()), 300000);
-			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
-		}
-		#[cfg(feature = "with-ethereum-compatibility")]
-		{
-			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
-			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);
-			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
-		}
-
-		run_to_block(5);
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
-		{
-			assert_eq!(Balances::free_balance(from_account.clone()), 999999972553);
-			assert_eq!(Balances::reserved_balance(from_account), 0);
-			assert_eq!(Balances::free_balance(to_account), 1000000001000);
-		}
-		#[cfg(feature = "with-ethereum-compatibility")]
-		{
-			assert_eq!(Balances::free_balance(from_account.clone()), 999999999000);
-			assert_eq!(Balances::reserved_balance(from_account), 0);
-			assert_eq!(Balances::free_balance(to_account), 1000000001000);
-		}
-	});
-}
-
-#[test]
-fn schedule_call_precompile_should_handle_invalid_input() {
-	new_test_ext().execute_with(|| {
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		let mut input = [0u8; 10 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Schedule).to_be_bytes());
-		// from
-		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-		// target
-		U256::from(setm_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
-		// value
-		U256::from(0).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		// gas_limit
-		U256::from(300000).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
-		// storage_limit
-		U256::from(100).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
-		// min_delay
-		U256::from(1).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
-		// skip offset
-		// input_len
-		U256::from(1).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
-
-		// input_data = 0x12
-		input[4 + 9 * 32] = hex!("12")[0];
-
-		let resp = ScheduleCallPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.cost, 0);
-
-		let from_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
-		let to_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
-		{
-			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
-			assert_eq!(Balances::reserved_balance(from_account.clone()), 300000);
-			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
-		}
-		#[cfg(feature = "with-ethereum-compatibility")]
-		{
-			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
-			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);
-			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
-		}
-
-		// cancel schedule
-		let task_id = get_task_id(resp.output);
-		let mut cancel_input = [0u8; 6 * 32];
-		// action
-		cancel_input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Cancel).to_be_bytes());
-		// from
-		U256::from(bob_evm_addr().as_bytes()).to_big_endian(&mut cancel_input[4 + 0 * 32..4 + 1 * 32]);
-		// skip offset
-		// task_id_len
-		U256::from(task_id.len()).to_big_endian(&mut cancel_input[4 + 2 * 32..4 + 3 * 32]);
-		// task_id
-		cancel_input[4 + 3 * 32..4 + 3 * 32 + task_id.len()].copy_from_slice(&task_id[..]);
-
-		assert_eq!(
-			ScheduleCallPrecompile::execute(&cancel_input, None, &context),
-			Err(ExitError::Other("NoPermission".into()))
-		);
-
-		run_to_block(4);
-		#[cfg(not(feature = "with-ethereum-compatibility"))]
-		{
-			assert_eq!(Balances::free_balance(from_account.clone()), 999999978926);
-			assert_eq!(Balances::reserved_balance(from_account), 0);
-			assert_eq!(Balances::free_balance(to_account), 1000000000000);
-		}
-		#[cfg(feature = "with-ethereum-compatibility")]
-		{
-			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
-			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);
-			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
-		}
-	});
-}
-
-#[test]
-fn dex_precompile_get_liquidity_should_work() {
-	new_test_ext().execute_with(|| {
-		// enable SERP/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
-
-		assert_ok!(DexModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			SETUSD,
-			1_000,
-			1_000_000,
-			0
-		));
-
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		// action + currency_id_a + currency_id_b
-		let mut input = [0u8; 3 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityPool).to_be_bytes());
-		// SERP
-		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
-
-		let mut expected_output = [0u8; 64];
-		U256::from(1_000).to_big_endian(&mut expected_output[..32]);
-		U256::from(1_000_000).to_big_endian(&mut expected_output[32..64]);
-
-		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-	});
-}
-
-#[test]
-fn dex_precompile_get_liquidity_token_address_should_work() {
-	new_test_ext().execute_with(|| {
-		// enable SERP/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
-
-		assert_ok!(DexModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			SETUSD,
-			1_000,
-			1_000_000,
-			0
-		));
-
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		// action + currency_id_a + currency_id_b
-		let mut input = [0u8; 4 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityTokenAddress).to_be_bytes());
-		// SERP
-		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
-
-		let mut expected_output = [0u8; 32];
-		let address = H160::from_str("0x0000000000000000000000010000000100000014").unwrap();
-		U256::from(address.as_bytes()).to_big_endian(&mut expected_output[..32]);
-
-		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-
-		// unkonwn token
-		let mut id = [0u8; 32];
-		id[31] = u8::MAX; // not exists
-		U256::from_big_endian(&id.to_vec()).to_big_endian(&mut input[2 * 32..3 * 32]);
-		assert_noop!(
-			DexPrecompile::execute(&input, None, &context),
-			ExitError::Other("invalid currency id".into())
-		);
-	});
-}
-
-#[test]
-fn dex_precompile_get_swap_target_amount_should_work() {
-	new_test_ext().execute_with(|| {
-		// enable SERP/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
-
-		assert_ok!(DexModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			SETUSD,
-			1_000,
-			1_000_000,
-			0
-		));
-
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		// action + path_len + currency_id_a + currency_id_b +
-		// supply_amount
-		let mut input = [0u8; 6 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetSwapTargetAmount).to_be_bytes());
-		// skip offset
-		// supply_amount
-		U256::from(1).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
-		// path_len
-		U256::from(2).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		// SERP
-		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
-		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
-
-		let mut expected_output = [0u8; 32];
-		U256::from(989).to_big_endian(&mut expected_output[..32]);
-
-		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-	});
-}
-
-#[test]
-fn dex_precompile_get_swap_supply_amount_should_work() {
-	new_test_ext().execute_with(|| {
-		// enable SERP/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
-
-		assert_ok!(DexModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			SETUSD,
-			1_000,
-			1_000_000,
-			0
-		));
-
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		// action + path_len + currency_id_a + currency_id_b +
-		// target_amount
-		let mut input = [0u8; 6 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetSwapSupplyAmount).to_be_bytes());
-		// skip offset
-		// target_amount
-		U256::from(1).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
-		// path_len
-		U256::from(2).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		// SERP
-		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
-		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
-
-		let mut expected_output = [0u8; 32];
-		U256::from(1).to_big_endian(&mut expected_output[..32]);
-
-		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-	});
-}
-
-#[test]
-fn dex_precompile_swap_with_exact_supply_should_work() {
-	new_test_ext().execute_with(|| {
-		// enable SERP/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
-
-		assert_ok!(DexModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			SETUSD,
-			1_000,
-			1_000_000,
-			0
-		));
-
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		// action + who + path_len + currency_id_a + currency_id_b +
-		// supply_amount + min_target_amount
-		let mut input = [0u8; 8 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::SwapWithExactSupply).to_be_bytes());
-		// who
-		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-		// skip offset
-		// supply_amount
-		U256::from(1).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		// min_target_amount
-		U256::from(0).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
-		// path_len
-		U256::from(2).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
-		// SERP
-		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
-		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
-
-		let mut expected_output = [0u8; 32];
-		U256::from(989).to_big_endian(&mut expected_output[..32]);
-
-		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-	});
-}
-
-#[test]
-fn dex_precompile_swap_with_exact_target_should_work() {
-	new_test_ext().execute_with(|| {
-		// enable SERP/SETUSD
-		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
-
-		assert_ok!(DexModule::add_liquidity(
-			Origin::signed(ALICE),
-			SERP,
-			SETUSD,
-			1_000,
-			1_000_000,
-			0
-		));
-
-		let context = Context {
-			address: Default::default(),
-			caller: alice_evm_addr(),
-			apparent_value: Default::default(),
-		};
-
-		// action + who + path_len + currency_id_a + currency_id_b +
-		// target_amount + max_supply_amount
-		let mut input = [0u8; 8 * 32];
-		// action
-		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::SwapWithExactTarget).to_be_bytes());
-		// who
-		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-		// skip offset
-		// target_amount
-		U256::from(1).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
-		// max_supply_amount
-		U256::from(1).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
-		// path_len
-		U256::from(2).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
-		// SERP
-		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
-		// SETUSD
-		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
-
-		let mut expected_output = [0u8; 32];
-		U256::from(1).to_big_endian(&mut expected_output[..32]);
-
-		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
-		assert_eq!(resp.exit_status, ExitSucceed::Returned);
-		assert_eq!(resp.output, expected_output);
-		assert_eq!(resp.cost, 0);
-	});
-}
+// TODO - FIXME: Fix Mock Prefix
+// #[test]
+// fn multicurrency_precompile_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		let mut context = Context {
+// 			address: Default::default(),
+// 			caller: Default::default(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		// call with not exists erc20
+// 		context.caller = erc20_address_not_exists();
+// 		let mut input = [0u8; 68];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QuerySymbol).to_be_bytes());
+// 		assert_noop!(
+// 			MultiCurrencyPrecompile::execute(&input, None, &context),
+// 			ExitError::Other("invalid currency id".into())
+// 		);
+
+// 		// 1.QueryName
+// 		let mut input = [0u8; 4];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryName).to_be_bytes());
+
+// 		// Token
+// 		context.caller = setm_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let mut expected_output = [0u8; 96];
+// 		// skip offset
+// 		expected_output[31] = 32;
+// 		// length
+// 		expected_output[63] = 5;
+// 		expected_output[64..64 + 5].copy_from_slice(&b"Setheum"[..]);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// DexShare
+// 		context.caller = lp_setm_setusd_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let mut expected_output = [0u8; 96];
+// 		// skip offset
+// 		expected_output[31] = 32;
+// 		// length
+// 		expected_output[63] = 23;
+// 		expected_output[64..64 + 23].copy_from_slice(&b"LP Setheum - SetDollar"[..]);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// 2.QuerySymbol
+// 		let mut input = [0u8; 4];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QuerySymbol).to_be_bytes());
+
+// 		// Token
+// 		context.caller = setm_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let mut expected_output = [0u8; 96];
+// 		// skip offset
+// 		expected_output[31] = 32;
+// 		// length
+// 		expected_output[63] = 3;
+// 		expected_output[64..64 + 3].copy_from_slice(&b"SETM"[..]);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// DexShare
+// 		context.caller = lp_setm_setusd_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let mut expected_output = [0u8; 96];
+// 		// skip offset
+// 		expected_output[31] = 32;
+// 		// length
+// 		expected_output[63] = 11;
+// 		expected_output[64..64 + 11].copy_from_slice(&b"LP_SETM_SETUSD"[..]);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// 3.QueryDecimals
+// 		let mut input = [0u8; 4];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryDecimals).to_be_bytes());
+
+// 		// Token
+// 		context.caller = setm_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let mut expected_output = [0u8; 32];
+// 		expected_output[31] = 12;
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// DexShare
+// 		context.caller = lp_setm_setusd_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let mut expected_output = [0u8; 32];
+// 		expected_output[31] = 12;
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// 4.QueryTotalIssuance
+// 		let mut input = [0u8; 4];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryTotalIssuance).to_be_bytes());
+
+// 		// Token
+// 		context.caller = setusd_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let mut expected_output = [0u8; 32];
+// 		expected_output[28..32].copy_from_slice(&1_000_000_000u32.to_be_bytes()[..]);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// DexShare
+// 		context.caller = lp_setm_setusd_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let expected_output = [0u8; 32];
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// 5.QueryBalance
+// 		let mut input = [0u8; 36];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::QueryBalance).to_be_bytes());
+// 		// from
+// 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+
+// 		// Token
+// 		context.caller = setm_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let mut expected_output = [0u8; 32];
+// 		expected_output[16..32].copy_from_slice(&INITIAL_BALANCE.to_be_bytes()[..]);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// DexShare
+// 		context.caller = lp_setm_setusd_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let expected_output = [0u8; 32];
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// 6.Transfer
+// 		let mut input = [0u8; 4 + 3 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(multicurrency::Action::Transfer).to_be_bytes());
+// 		// from
+// 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+// 		// to
+// 		U256::from(bob_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+// 		// amount
+// 		U256::from(1).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+// 		let from_balance = Balances::free_balance(alice());
+// 		let to_balance = Balances::free_balance(bob());
+
+// 		// Token
+// 		context.caller = setm_evm_address();
+// 		let resp = MultiCurrencyPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		let expected_output: Vec<u8> = vec![];
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+// 		assert_eq!(Balances::free_balance(alice()), from_balance - 1);
+// 		assert_eq!(Balances::free_balance(bob()), to_balance + 1);
+
+// 		// DexShare
+// 		context.caller = lp_setm_setusd_evm_address();
+// 		assert_noop!(
+// 			MultiCurrencyPrecompile::execute(&input, None, &context),
+// 			ExitError::Other("BalanceTooLow".into())
+// 		);
+// 	});
+// }
+
+// #[test]
+// fn oracle_precompile_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		let price = Price::from(30_000);
+
+// 		// action + currency_id
+// 		let mut input = [0u8; 36];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(oracle::Action::GetPrice).to_be_bytes());
+// 		// SERP
+// 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4..4 + 32]);
+
+// 		// no price yet
+// 		let resp = OraclePrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.output, [0u8; 32]);
+// 		assert_eq!(resp.cost, 0);
+
+// 		assert_ok!(Oracle::feed_value(ALICE, SERP, price));
+// 		assert_eq!(
+// 			Oracle::get_no_op(&SERP),
+// 			Some(orml_oracle::TimestampedValue {
+// 				value: price,
+// 				timestamp: 1
+// 			})
+// 		);
+
+// 		// returned price + timestamp
+// 		let mut expected_output = [0u8; 32];
+// 		U256::from(price.into_inner()).to_big_endian(&mut expected_output[..]);
+
+// 		let resp = OraclePrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+// 	});
+// }
+
+// #[test]
+// fn oracle_precompile_should_handle_invalid_input() {
+// 	new_test_ext().execute_with(|| {
+// 		assert_noop!(
+// 			OraclePrecompile::execute(
+// 				&[0u8; 0],
+// 				None,
+// 				&Context {
+// 					address: Default::default(),
+// 					caller: alice_evm_addr(),
+// 					apparent_value: Default::default()
+// 				}
+// 			),
+// 			ExitError::Other("invalid input".into())
+// 		);
+
+// 		assert_noop!(
+// 			OraclePrecompile::execute(
+// 				&[0u8; 3],
+// 				None,
+// 				&Context {
+// 					address: Default::default(),
+// 					caller: alice_evm_addr(),
+// 					apparent_value: Default::default()
+// 				}
+// 			),
+// 			ExitError::Other("invalid input".into())
+// 		);
+
+// 		assert_noop!(
+// 			OraclePrecompile::execute(
+// 				&[1u8; 32],
+// 				None,
+// 				&Context {
+// 					address: Default::default(),
+// 					caller: alice_evm_addr(),
+// 					apparent_value: Default::default()
+// 				}
+// 			),
+// 			ExitError::Other("invalid action".into())
+// 		);
+// 	});
+// }
+
+// #[test]
+// fn schedule_call_precompile_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		let mut input = [0u8; 11 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Schedule).to_be_bytes());
+// 		// from
+// 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+// 		// target
+// 		U256::from(setm_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+// 		// value
+// 		U256::from(0).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+// 		// gas_limit
+// 		U256::from(300000).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
+// 		// storage_limit
+// 		U256::from(100).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+// 		// min_delay
+// 		U256::from(1).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+// 		// skip offset
+// 		// input_len
+// 		U256::from(4 + 32 + 32).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
+
+// 		// input_data
+// 		let mut transfer_to_bob = [0u8; 68];
+// 		// transfer bytes4(keccak256(signature)) 0xa9059cbb
+// 		transfer_to_bob[0..4].copy_from_slice(&hex!("a9059cbb"));
+// 		// to address
+// 		U256::from(bob_evm_addr().as_bytes()).to_big_endian(&mut transfer_to_bob[4..36]);
+// 		// amount
+// 		U256::from(1000).to_big_endian(&mut transfer_to_bob[36..68]);
+
+// 		U256::from(&transfer_to_bob[0..32]).to_big_endian(&mut input[4 + 8 * 32..4 + 9 * 32]);
+// 		U256::from(&transfer_to_bob[32..64]).to_big_endian(&mut input[4 + 9 * 32..4 + 10 * 32]);
+// 		input[4 + 10 * 32..4 + 10 * 32 + 4].copy_from_slice(&transfer_to_bob[64..68]);
+
+// 		let resp = ScheduleCallPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.cost, 0);
+// 		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Scheduled(3, 0));
+// 		assert!(System::events().iter().any(|record| record.event == event));
+
+// 		// cancel schedule
+// 		let task_id = get_task_id(resp.output);
+// 		let mut cancel_input = [0u8; 5 * 32];
+// 		// action
+// 		cancel_input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Cancel).to_be_bytes());
+// 		// from
+// 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut cancel_input[4 + 0 * 32..4 + 1 * 32]);
+// 		// skip offset
+// 		// task_id_len
+// 		U256::from(task_id.len()).to_big_endian(&mut cancel_input[4 + 2 * 32..4 + 3 * 32]);
+// 		// task_id
+// 		cancel_input[4 + 3 * 32..4 + 3 * 32 + task_id.len()].copy_from_slice(&task_id[..]);
+
+// 		let resp = ScheduleCallPrecompile::execute(&cancel_input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.cost, 0);
+// 		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Canceled(3, 0));
+// 		assert!(System::events().iter().any(|record| record.event == event));
+
+// 		let resp = ScheduleCallPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.cost, 0);
+
+// 		run_to_block(2);
+
+// 		// reschedule call
+// 		let task_id = get_task_id(resp.output);
+// 		let mut reschedule_input = [0u8; 6 * 32];
+// 		// action
+// 		reschedule_input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Reschedule).to_be_bytes());
+// 		// from
+// 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut reschedule_input[4 + 0 * 32..4 + 1 * 32]);
+// 		// min_delay
+// 		U256::from(2).to_big_endian(&mut reschedule_input[4 + 1 * 32..4 + 2 * 32]);
+// 		// skip offset
+// 		// task_id_len
+// 		U256::from(task_id.len()).to_big_endian(&mut reschedule_input[4 + 3 * 32..4 + 4 * 32]);
+// 		// task_id
+// 		reschedule_input[4 + 4 * 32..4 + 4 * 32 + task_id.len()].copy_from_slice(&task_id[..]);
+
+// 		let resp = ScheduleCallPrecompile::execute(&reschedule_input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.cost, 0);
+// 		let event = TestEvent::Scheduler(pallet_scheduler::Event::<Test>::Scheduled(5, 0));
+// 		assert!(System::events().iter().any(|record| record.event == event));
+
+// 		let from_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
+// 		let to_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
+// 		#[cfg(not(feature = "with-ethereum-compatibility"))]
+// 		{
+// 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
+// 			assert_eq!(Balances::reserved_balance(from_account.clone()), 300000);
+// 			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
+// 		}
+// 		#[cfg(feature = "with-ethereum-compatibility")]
+// 		{
+// 			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
+// 			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);
+// 			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
+// 		}
+
+// 		run_to_block(5);
+// 		#[cfg(not(feature = "with-ethereum-compatibility"))]
+// 		{
+// 			assert_eq!(Balances::free_balance(from_account.clone()), 999999972553);
+// 			assert_eq!(Balances::reserved_balance(from_account), 0);
+// 			assert_eq!(Balances::free_balance(to_account), 1000000001000);
+// 		}
+// 		#[cfg(feature = "with-ethereum-compatibility")]
+// 		{
+// 			assert_eq!(Balances::free_balance(from_account.clone()), 999999999000);
+// 			assert_eq!(Balances::reserved_balance(from_account), 0);
+// 			assert_eq!(Balances::free_balance(to_account), 1000000001000);
+// 		}
+// 	});
+// }
+
+// #[test]
+// fn schedule_call_precompile_should_handle_invalid_input() {
+// 	new_test_ext().execute_with(|| {
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		let mut input = [0u8; 10 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Schedule).to_be_bytes());
+// 		// from
+// 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+// 		// target
+// 		U256::from(setm_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+// 		// value
+// 		U256::from(0).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+// 		// gas_limit
+// 		U256::from(300000).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
+// 		// storage_limit
+// 		U256::from(100).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+// 		// min_delay
+// 		U256::from(1).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+// 		// skip offset
+// 		// input_len
+// 		U256::from(1).to_big_endian(&mut input[4 + 7 * 32..4 + 8 * 32]);
+
+// 		// input_data = 0x12
+// 		input[4 + 9 * 32] = hex!("12")[0];
+
+// 		let resp = ScheduleCallPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.cost, 0);
+
+// 		let from_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&alice_evm_addr());
+// 		let to_account = <Test as module_evm::Config>::AddressMapping::get_account_id(&bob_evm_addr());
+// 		#[cfg(not(feature = "with-ethereum-compatibility"))]
+// 		{
+// 			assert_eq!(Balances::free_balance(from_account.clone()), 999999700000);
+// 			assert_eq!(Balances::reserved_balance(from_account.clone()), 300000);
+// 			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
+// 		}
+// 		#[cfg(feature = "with-ethereum-compatibility")]
+// 		{
+// 			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
+// 			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);
+// 			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
+// 		}
+
+// 		// cancel schedule
+// 		let task_id = get_task_id(resp.output);
+// 		let mut cancel_input = [0u8; 6 * 32];
+// 		// action
+// 		cancel_input[0..4].copy_from_slice(&Into::<u32>::into(schedule_call::Action::Cancel).to_be_bytes());
+// 		// from
+// 		U256::from(bob_evm_addr().as_bytes()).to_big_endian(&mut cancel_input[4 + 0 * 32..4 + 1 * 32]);
+// 		// skip offset
+// 		// task_id_len
+// 		U256::from(task_id.len()).to_big_endian(&mut cancel_input[4 + 2 * 32..4 + 3 * 32]);
+// 		// task_id
+// 		cancel_input[4 + 3 * 32..4 + 3 * 32 + task_id.len()].copy_from_slice(&task_id[..]);
+
+// 		assert_eq!(
+// 			ScheduleCallPrecompile::execute(&cancel_input, None, &context),
+// 			Err(ExitError::Other("NoPermission".into()))
+// 		);
+
+// 		run_to_block(4);
+// 		#[cfg(not(feature = "with-ethereum-compatibility"))]
+// 		{
+// 			assert_eq!(Balances::free_balance(from_account.clone()), 999999978926);
+// 			assert_eq!(Balances::reserved_balance(from_account), 0);
+// 			assert_eq!(Balances::free_balance(to_account), 1000000000000);
+// 		}
+// 		#[cfg(feature = "with-ethereum-compatibility")]
+// 		{
+// 			assert_eq!(Balances::free_balance(from_account.clone()), 1000000000000);
+// 			assert_eq!(Balances::reserved_balance(from_account.clone()), 0);
+// 			assert_eq!(Balances::free_balance(to_account.clone()), 1000000000000);
+// 		}
+// 	});
+// }
+
+// TODO - FIXME: Fix Mock Prefix
+// #[test]
+// fn dex_precompile_get_liquidity_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		// enable SERP/SETUSD
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+
+// 		assert_ok!(DexModule::add_liquidity(
+// 			Origin::signed(ALICE),
+// 			SERP,
+// 			SETUSD,
+// 			1_000,
+// 			1_000_000,
+// 			0
+// 		));
+
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		// action + currency_id_a + currency_id_b
+// 		let mut input = [0u8; 3 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityPool).to_be_bytes());
+// 		// SERP
+// 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+// 		// SETUSD
+// 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+
+// 		let mut expected_output = [0u8; 64];
+// 		U256::from(1_000).to_big_endian(&mut expected_output[..32]);
+// 		U256::from(1_000_000).to_big_endian(&mut expected_output[32..64]);
+
+// 		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+// 	});
+// }
+
+// #[test]
+// fn dex_precompile_get_liquidity_token_address_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		// enable SERP/SETUSD
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+
+// 		assert_ok!(DexModule::add_liquidity(
+// 			Origin::signed(ALICE),
+// 			SERP,
+// 			SETUSD,
+// 			1_000,
+// 			1_000_000,
+// 			0
+// 		));
+
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		// action + currency_id_a + currency_id_b
+// 		let mut input = [0u8; 4 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityTokenAddress).to_be_bytes());
+// 		// SERP
+// 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+// 		// SETUSD
+// 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+
+// 		let mut expected_output = [0u8; 32];
+// 		let address = H160::from_str("0x0000000000000000000000010000000100000014").unwrap();
+// 		U256::from(address.as_bytes()).to_big_endian(&mut expected_output[..32]);
+
+// 		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+
+// 		// unkonwn token
+// 		let mut id = [0u8; 32];
+// 		id[31] = u8::MAX; // not exists
+// 		U256::from_big_endian(&id.to_vec()).to_big_endian(&mut input[2 * 32..3 * 32]);
+// 		assert_noop!(
+// 			DexPrecompile::execute(&input, None, &context),
+// 			ExitError::Other("invalid currency id".into())
+// 		);
+// 	});
+// }
+
+// #[test]
+// fn dex_precompile_get_swap_target_amount_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		// enable SERP/SETUSD
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+
+// 		assert_ok!(DexModule::add_liquidity(
+// 			Origin::signed(ALICE),
+// 			SERP,
+// 			SETUSD,
+// 			1_000,
+// 			1_000_000,
+// 			0
+// 		));
+
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		// action + path_len + currency_id_a + currency_id_b +
+// 		// supply_amount
+// 		let mut input = [0u8; 6 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetSwapTargetAmount).to_be_bytes());
+// 		// skip offset
+// 		// supply_amount
+// 		U256::from(1).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+// 		// path_len
+// 		U256::from(2).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+// 		// SERP
+// 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
+// 		// SETUSD
+// 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+
+// 		let mut expected_output = [0u8; 32];
+// 		U256::from(989).to_big_endian(&mut expected_output[..32]);
+
+// 		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+// 	});
+// }
+
+// #[test]
+// fn dex_precompile_get_swap_supply_amount_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		// enable SERP/SETUSD
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+
+// 		assert_ok!(DexModule::add_liquidity(
+// 			Origin::signed(ALICE),
+// 			SERP,
+// 			SETUSD,
+// 			1_000,
+// 			1_000_000,
+// 			0
+// 		));
+
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		// action + path_len + currency_id_a + currency_id_b +
+// 		// target_amount
+// 		let mut input = [0u8; 6 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetSwapSupplyAmount).to_be_bytes());
+// 		// skip offset
+// 		// target_amount
+// 		U256::from(1).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
+// 		// path_len
+// 		U256::from(2).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+// 		// SERP
+// 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
+// 		// SETUSD
+// 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+
+// 		let mut expected_output = [0u8; 32];
+// 		U256::from(1).to_big_endian(&mut expected_output[..32]);
+
+// 		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+// 	});
+// }
+
+// #[test]
+// fn dex_precompile_swap_with_exact_supply_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		// enable SERP/SETUSD
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+
+// 		assert_ok!(DexModule::add_liquidity(
+// 			Origin::signed(ALICE),
+// 			SERP,
+// 			SETUSD,
+// 			1_000,
+// 			1_000_000,
+// 			0
+// 		));
+
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		// action + who + path_len + currency_id_a + currency_id_b +
+// 		// supply_amount + min_target_amount
+// 		let mut input = [0u8; 8 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::SwapWithExactSupply).to_be_bytes());
+// 		// who
+// 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+// 		// skip offset
+// 		// supply_amount
+// 		U256::from(1).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+// 		// min_target_amount
+// 		U256::from(0).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
+// 		// path_len
+// 		U256::from(2).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+// 		// SERP
+// 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+// 		// SETUSD
+// 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
+
+// 		let mut expected_output = [0u8; 32];
+// 		U256::from(989).to_big_endian(&mut expected_output[..32]);
+
+// 		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+// 	});
+// }
+
+// #[test]
+// fn dex_precompile_swap_with_exact_target_should_work() {
+// 	new_test_ext().execute_with(|| {
+// 		// enable SERP/SETUSD
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+
+// 		assert_ok!(DexModule::add_liquidity(
+// 			Origin::signed(ALICE),
+// 			SERP,
+// 			SETUSD,
+// 			1_000,
+// 			1_000_000,
+// 			0
+// 		));
+
+// 		let context = Context {
+// 			address: Default::default(),
+// 			caller: alice_evm_addr(),
+// 			apparent_value: Default::default(),
+// 		};
+
+// 		// action + who + path_len + currency_id_a + currency_id_b +
+// 		// target_amount + max_supply_amount
+// 		let mut input = [0u8; 8 * 32];
+// 		// action
+// 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::SwapWithExactTarget).to_be_bytes());
+// 		// who
+// 		U256::from(alice_evm_addr().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
+// 		// skip offset
+// 		// target_amount
+// 		U256::from(1).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
+// 		// max_supply_amount
+// 		U256::from(1).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
+// 		// path_len
+// 		U256::from(2).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
+// 		// SERP
+// 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
+// 		// SETUSD
+// 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
+
+// 		let mut expected_output = [0u8; 32];
+// 		U256::from(1).to_big_endian(&mut expected_output[..32]);
+
+// 		let resp = DexPrecompile::execute(&input, None, &context).unwrap();
+// 		assert_eq!(resp.exit_status, ExitSucceed::Returned);
+// 		assert_eq!(resp.output, expected_output);
+// 		assert_eq!(resp.cost, 0);
+// 	});
+// }
 
 #[test]
 fn task_id_max_and_min() {

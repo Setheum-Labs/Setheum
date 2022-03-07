@@ -50,39 +50,45 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> serp_setmint::WeightInfo for WeightInfo<T> {
 	fn authorize() -> Weight {
-		(64_457_000 as Weight)
+		(52_407_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
 	fn unauthorize() -> Weight {
-		(64_896_000 as Weight)
+		(54_414_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
 	}
 	fn unauthorize_all(c: u32, ) -> Weight {
-		(38_140_000 as Weight)
-			// Standard Error: 1_844_000
-			.saturating_add((19_344_000 as Weight).saturating_mul(c as Weight))
+		(31_904_000 as Weight)
+			// Standard Error: 1_582_000
+			.saturating_add((16_667_000 as Weight).saturating_mul(c as Weight))
 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
 			.saturating_add(T::DbWeight::get().writes((2 as Weight).saturating_mul(c as Weight)))
 	}
 	fn adjust_loan() -> Weight {
-		(299_621_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(25 as Weight))
+		(220_676_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(21 as Weight))
 			.saturating_add(T::DbWeight::get().writes(11 as Weight))
 	}
 	fn transfer_loan_from() -> Weight {
-		(196_287_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(20 as Weight))
+		(140_250_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(15 as Weight))
 			.saturating_add(T::DbWeight::get().writes(7 as Weight))
 	}
-	fn close_loan_has_debit_by_dex(u: u32, ) -> Weight {
-		(420_565_000 as Weight)
-			// Standard Error: 791_000
-			.saturating_add((17_556_000 as Weight).saturating_mul(u as Weight))
-			.saturating_add(T::DbWeight::get().reads(25 as Weight))
-			.saturating_add(T::DbWeight::get().reads((2 as Weight).saturating_mul(u as Weight)))
+	fn close_loan_has_debit_by_dex() -> Weight {
+		(385_594_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(30 as Weight))
+			.saturating_add(T::DbWeight::get().writes(15 as Weight))
+	}
+	fn expand_position_collateral() -> Weight {
+		(183_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(20 as Weight))
+			.saturating_add(T::DbWeight::get().writes(11 as Weight))
+	}
+	fn shrink_position_debit() -> Weight {
+		(186_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(16 as Weight))
 			.saturating_add(T::DbWeight::get().writes(12 as Weight))
-			.saturating_add(T::DbWeight::get().writes((1 as Weight).saturating_mul(u as Weight)))
 	}
 }

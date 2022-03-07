@@ -69,12 +69,12 @@ sc-consensus-slots = { git = "https://github.com/paritytech/substrate", branch =
 
 node-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
-module-nft = { path = "../lib-serml/nft" }
 orml-oracle-rpc = { path = "../lib-orml/oracle/rpc" }
 
-module-evm = { path = "../lib-serml/evm" }
-module-evm-rpc-runtime-api = { path = "../lib-serml/evm/rpc/runtime_api" }
-evm-rpc = { path = "../lib-serml/evm/rpc" }
+module-nft = { path = "../lib-serml/core/tokens/nft" }
+module-evm = { path = "../lib-serml/sevm/evm" }
+module-evm-rpc-runtime-api = { path = "../lib-serml/sevm/evm/rpc/runtime_api" }
+evm-rpc = { path = "../lib-serml/sevm/evm/rpc" }
 
 setheum-primitives = { path = "../primitives" }
 
