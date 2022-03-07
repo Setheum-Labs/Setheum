@@ -1,0 +1,54 @@
+[package]
+name = "module-nft"
+version = "1.0.0"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0.124", optional = true }
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["max-encoded-len"] }
+enumflags2 = { version = "0.6.3" }
+
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false, optional = true}
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+
+orml-nft = { path = "../../../../lib-orml/nft", default-features = false }
+orml-traits = { path = "../../../../lib-orml/traits", default-features = false }
+
+primitives = { package = "setheum-primitives", path = "../../../../primitives", default-features = false }
+
+[dev-dependencies]
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+
+orml-tokens = { path = "../../../../lib-orml/tokens" }
+module-currencies = { path = "../currencies" }
+support = { package = "module-support", path = "../../../support" }
+
+[features]
+default = ["std"]
+std = [
+	"serde",
+	"codec/std",
+	"enumflags2/serde",
+	"sp-std/std",
+	"sp-runtime/std",
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-proxy/std",
+	"primitives/std",
+	"orml-traits/std",
+	"orml-nft/std",
+	"enumflags2/serde",
+]
+runtime-benchmarks = [
+	"frame-benchmarking",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+]

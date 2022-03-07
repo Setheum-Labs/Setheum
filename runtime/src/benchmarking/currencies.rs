@@ -20,8 +20,8 @@
 
 use super::utils::{lookup_of_account, set_balance};
 use crate::{
-	dollar, AccountId, Amount, Balance, Currencies, CurrencyId, GetNativeCurrencyId,
-	NativeTokenExistentialDeposit, Runtime, Tokens, TreasuryPalletId,
+	dollar, AccountId, Amount, Balance, Currencies, CurrencyId, GetDinarCurrencyId,
+	GetNativeCurrencyId, NativeTokenExistentialDeposit, Runtime, Tokens, TreasuryPalletId,
 };
 
 use sp_std::prelude::*;
@@ -36,7 +36,7 @@ use orml_traits::MultiCurrency;
 const SEED: u32 = 0;
 
 const NATIVE: CurrencyId = GetNativeCurrencyId::get();
-const DINARID: CurrencyId = GetDinarCurrencyId::get();
+const DNAR: CurrencyId = GetDinarCurrencyId::get();
 
 runtime_benchmarks! {
 	{ Runtime, module_currencies }

@@ -18,7 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{dollar, CdpTreasury, Currencies, CurrencyId, GetNativeCurrencyId, GetSetUSDId, MaxAuctionsCount, Runtime};
+use crate::{dollar, AccountId, CdpTreasury, Currencies, CurrencyId, Dex, GetNativeCurrencyId, GetSetUSDId, MaxAuctionsCount, Runtime};
 
 use super::utils::set_balance;
 use frame_benchmarking::whitelisted_caller;
@@ -54,7 +54,6 @@ runtime_benchmarks! {
 			1000 * dollar(STABLECOIN),
 			100 * dollar(SETMID),
 			0,
-			false,
 		)?;
 		CdpTreasury::deposit_collateral(&caller, SETMID, 100 * dollar(SETMID))?;
 	}: _(RawOrigin::Root, SETMID, SwapLimit::ExactSupply(100 * dollar(SETMID), 0))

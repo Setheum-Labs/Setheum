@@ -184,7 +184,7 @@ runtime_benchmarks! {
 		// set balance
 		<Currencies as MultiCurrencyExtended<_>>::update_balance(trading_pair.first(), &founder, (10 * dollar(trading_pair.first())).unique_saturated_into())?;
 		<Currencies as MultiCurrencyExtended<_>>::update_balance(trading_pair.second(), &founder, (10 * dollar(trading_pair.second())).unique_saturated_into())?;
-	}: _(RawOrigin::Signed(founder), trading_pair.first(), trading_pair.second(), dollar(trading_pair.first()), dollar(trading_pair.second()))
+	}: _(RawOrigin::Signed(founder.clone()), trading_pair.first(), trading_pair.second(), dollar(trading_pair.first()), dollar(trading_pair.second()))
 	verify{
 		assert_last_event(module_dex::Event::AddProvision{who: founder, currency_0: trading_pair.first(), contribution_0: dollar(trading_pair.first()), currency_1: trading_pair.second(), contribution_1: dollar(trading_pair.second())}.into());
 	}
@@ -222,7 +222,7 @@ runtime_benchmarks! {
 			trading_pair.first(),
 			trading_pair.second(),
 		)?;
-	}: _(RawOrigin::Signed(whitelisted_caller()), founder, trading_pair.first(), trading_pair.second())
+	}: _(RawOrigin::Signed(whitelisted_caller()), founder.clone(), trading_pair.first(), trading_pair.second())
 	verify {
 		assert_eq!(Currencies::free_balance(trading_pair.dex_share_currency_id(), &founder), 2_000_000_000_000);
 	}

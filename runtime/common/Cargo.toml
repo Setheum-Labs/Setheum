@@ -23,9 +23,9 @@ pallet-membership = { git = "https://github.com/paritytech/substrate", branch = 
 orml-oracle = { path = "../../lib-orml/oracle", default-features = false }
 orml-traits = { path = "../../lib-orml/traits", default-features = false }
 
-module-evm = { path = "../../lib-serml/evm", default-features = false }
+module-evm = { path = "../../lib-serml/sevm/evm", default-features = false }
 module-support = { path = "../../lib-serml/support", default-features = false }
-module-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
+module-transaction-payment = { path = "../../lib-serml/core/transactions/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 primitives-proc-macro = { path = "../../primitives/proc-macro" }
 
@@ -37,15 +37,17 @@ pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+
 orml-tokens = { path = "../../lib-orml/tokens" }
 orml-nft = { path = "../../lib-orml/nft" }
-module-currencies = { path = "../../lib-serml/currencies" }
-module-evm-bridge = { path = "../../lib-serml/evm-bridge" }
-module-evm-manager = { path = "../../lib-serml/evm-manager" }
-module-nft = { path = "../../lib-serml/nft" }
-module-dex = { path = "../../lib-serml/dex" }
-module-prices = { path = "../../lib-serml/prices" }
-module-transaction-payment = { path = "../../lib-serml/transaction-payment" }
+
+module-currencies = { path = "../../lib-serml/core/tokens/currencies" }
+module-evm-bridge = { path = "../../lib-serml/sevm/evm-bridge" }
+module-evm-manager = { path = "../../lib-serml/sevm/evm-manager" }
+module-nft = { path = "../../lib-serml/core/tokens/nft" }
+module-dex = { path = "../../lib-serml/defi/setswap/dex" }
+module-prices = { path = "../../lib-serml/core/oracle/prices" }
+module-transaction-payment = { path = "../../lib-serml/core/transactions/transaction-payment" }
 
 [features]
 default = ["std"]

@@ -19,7 +19,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, AccountId, Amount, CdpEngine, CollateralCurrencyIds, CurrencyId, DepositPerAuthorization, Dex,
+	dollar, AccountId, Amount, Balance, CdpEngine, CollateralCurrencyIds, CurrencyId, Currencies, DepositPerAuthorization, Dex,
 	ExistentialDeposits, GetNativeCurrencyId, GetSetUSDId, GetDinarCurrencyId, Setmint, Price, Rate, Ratio,
 	Runtime, TradingPathLimit,
 };
@@ -42,6 +42,7 @@ const SEED: u32 = 0;
 const NATIVE: CurrencyId = GetNativeCurrencyId::get();
 const STABLECOIN: CurrencyId = GetSetUSDId::get();
 const DINARID: CurrencyId = GetDinarCurrencyId::get();
+const SERP: CurrencyId = GetDinarCurrencyId::get();
 
 fn inject_liquidity(
 	maker: AccountId,
@@ -211,7 +212,7 @@ runtime_benchmarks! {
 
 		// set balance
 		set_balance(currency_id, &sender, collateral_amount + ExistentialDeposits::get(&currency_id));
-		inject_liquidity(maker.clone(), currency_id, DINARID, 10_000 * dollar(LIQUID), 10_000 * dollar(DINARID))?;
+		inject_liquidity(maker.clone(), currency_id, DINARID, 10_000 * dollar(SERP), 10_000 * dollar(DINARID))?;
 		inject_liquidity(maker, DINARID, STABLECOIN, 10_000 * dollar(DINARID), 10_000 * dollar(STABLECOIN))?;
 
 		feed_price(vec![(DINARID, Price::one())])?;
