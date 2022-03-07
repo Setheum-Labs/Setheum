@@ -232,7 +232,7 @@ make update
 ```bash
 cd lib-orml && git checkout master && git pull
 git add lib-orml
-cargo-update check-all
+cargo update check-all
 ```
 
 ### Update Predeploy-Contracts
@@ -240,7 +240,7 @@ cargo-update check-all
 ```bash
 cd predeploy-contracts && git checkout master && git pull
 git add predeploy-contracts
-cargo-update check-all
+cargo update check-all
 ```
 
 ### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
