@@ -119,12 +119,6 @@ ord_parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
 	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureSignedBy<One, AccountId>;
 	type PalletId = AirdropPalletId;
