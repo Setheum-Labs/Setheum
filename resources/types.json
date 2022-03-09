@@ -93,16 +93,6 @@
         }
     },
     "CurrencyIdOf": "CurrencyId",
-    "AirDropCurrencyId": {
-        "_enum": [
-            "SETR",
-            "SETUSD",
-            "SETM",
-            "SERP",
-            "DNAR",
-            "HELP"
-        ]
-    },
     "SerpStableCurrencyId": {
         "_enum": [
             "SETR",
