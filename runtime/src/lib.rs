@@ -859,9 +859,14 @@ impl module_dex::Config for Runtime {
 	type ListingOrigin = EnsureRootOrHalfFinancialCouncil;
 }
 
+parameter_types! {
+	pub const MaxAirdropListSize: usize = 258;
+}
+
 impl module_airdrop::Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Currencies;
+	type MaxAirdropListSize = MaxAirdropListSize;
 	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
 	type PalletId = AirdropPalletId;

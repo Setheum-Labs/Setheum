@@ -54,6 +54,9 @@ pub mod module {
 		/// The Currency for managing assets related to the SERP (Setheum Elastic Reserve Protocol).
 		type MultiCurrency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
+		/// The maximum size of an airdrop list
+		type MaxAirdropListSize: Get<usize>;
+
 		#[pallet::constant]
 		/// The Airdrop module pallet id, keeps airdrop funds.
 		type FundingOrigin: Get<Self::AccountId>;
@@ -71,6 +74,8 @@ pub mod module {
 	pub enum Error<T> {
 		// Duplicate Airdrop Account
 		DuplicateAccounts,
+		// The airdrop list is over the max size limit `MaxAirdropListSize`
+		OverSizedAirdropList,
 	}
 
 	#[pallet::event]
@@ -137,6 +142,11 @@ pub mod module {
 			airdrop_list: Vec<(T::AccountId, Balance)>,
 		) -> DispatchResult {
 			T::DropOrigin::ensure_origin(origin)?;
+			
+			ensure!(
+				airdrop_list.len() <= T::MaxAirdropListSize::get(),
+				Error::<T>::OverSizedAirdropList,
+			);
 
 			Self::do_make_airdrop(currency_id, airdrop_list)?;
 			Ok(())

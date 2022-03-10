@@ -24,7 +24,7 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETR, ALICE, BOB, CHARLIE, TREASURY, SETUSD};
+use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETR, ALICE, BOB, CHARLIE, DAVE, EVE, TREASURY, SETUSD};
 use sp_runtime::traits::BadOrigin;
 
 #[test]
@@ -132,5 +132,44 @@ fn make_airdrop_works() {
                 airdrop_list
             },
         ));
+	});
+}
+
+#[test]
+fn make_airdrop_does_not_work() {
+	ExtBuilder::default().build().execute_with(|| {
+        let airdrop_list = vec![
+            (ALICE, 10),
+            (BOB, 5),
+            (CHARLIE, 20),
+            (DAVE, 20),
+            (EVE, 20),
+        ];
+
+		assert_noop!(Airdrop::make_airdrop(
+            Origin::signed(BOB),
+            SETUSD,
+            airdrop_list
+        ),
+        BadOrigin
+        );
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETR,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 258);
+
+        assert_noop!(Airdrop::make_airdrop(
+            Origin::signed(ALICE),
+            SETR,
+            airdrop_list
+        )
+        Error::<Runtime>::OverSizedAirdropList,
+        );
 	});
 }
