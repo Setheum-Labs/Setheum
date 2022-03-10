@@ -28,6 +28,7 @@ pub mod cdp_engine;
 pub mod cdp_treasury;
 pub mod currencies;
 pub mod dex;
+// pub mod dex_oracle;
 // pub mod emergency_shutdown;
 // pub mod evm;
 // pub mod evm_accounts;

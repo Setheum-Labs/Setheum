@@ -8018,6 +8018,7 @@ dependencies = [
  "auction-manager",
  "cdp-engine",
  "cdp-treasury",
+ "dex-oracle",
  "emergency-shutdown",
  "evm",
  "frame-benchmarking",

@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use super::utils::dollar;
 use crate::{
-	AccountId, Balance, Currencies, CurrencyId, Dex, DexOracle, GetNativeCurrencyId, GetSetUSDId,
+	dollar, AccountId, Balance, Currencies, CurrencyId, Dex, DexOracle, GetNativeCurrencyId, GetSetUSDId,
 	GetDinarCurrencyId, Runtime, Timestamp,
 };
 use frame_benchmarking::whitelisted_caller;
@@ -68,7 +67,7 @@ fn inject_liquidity(
 }
 
 runtime_benchmarks! {
-	{ Runtime, module_dex_oracle }
+	{ Runtime, dex_oracle }
 
 	on_initialize_with_update_average_prices {
 		let n in 0 .. 3;
