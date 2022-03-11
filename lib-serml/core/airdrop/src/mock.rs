@@ -39,6 +39,9 @@ pub type BlockNumber = u64;
 pub const TREASURY: AccountId = AccountId32::new([0u8; 32]);
 pub const ALICE: AccountId = AccountId32::new([2u8; 32]);
 pub const BOB: AccountId = AccountId32::new([3u8; 32]);
+pub const CHARLIE: AccountId = AccountId32::new([4u8; 32]);
+pub const DAVE: AccountId = AccountId32::new([5u8; 32]);
+pub const EVE: AccountId = AccountId32::new([6u8; 32]);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
@@ -110,6 +113,7 @@ parameter_types! {
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
 	pub const GetHelpCurrencyId: CurrencyId = HELP;  // Setheum native currency ticker is SETM/
 	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");
+	pub const MaxAirdropListSize: usize = 4;
 }
 
 ord_parameter_types! {
@@ -119,12 +123,7 @@ ord_parameter_types! {
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
+	type MaxAirdropListSize = MaxAirdropListSize;
 	type FundingOrigin = TreasuryAccount;
 	type DropOrigin = EnsureSignedBy<One, AccountId>;
 	type PalletId = AirdropPalletId;

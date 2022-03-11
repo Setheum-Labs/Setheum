@@ -1,6 +1,6 @@
-// This file is part of Acala.
+// This file is part of Setheum.
 
-// Copyright (C) 2020-2022 Acala Foundation.
+// Copyright (C) 2020-2022 Setheum Labs.
 // SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use super::utils::dollar;
 use crate::{
-	AccountId, Balance, Currencies, CurrencyId, Dex, DexOracle, GetNativeCurrencyId, GetSetUSDId,
+	dollar, AccountId, Balance, Currencies, CurrencyId, Dex, DexOracle, GetNativeCurrencyId, GetSetUSDId,
 	GetDinarCurrencyId, Runtime, Timestamp,
 };
 use frame_benchmarking::whitelisted_caller;
@@ -68,7 +67,7 @@ fn inject_liquidity(
 }
 
 runtime_benchmarks! {
-	{ Runtime, module_dex_oracle }
+	{ Runtime, dex_oracle }
 
 	on_initialize_with_update_average_prices {
 		let n in 0 .. 3;

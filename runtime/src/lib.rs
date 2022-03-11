@@ -98,9 +98,8 @@ pub use authority::AuthorityConfigImpl;
 pub use constants::{fee::*, time::*};
 use primitives::evm::EthereumTransactionMessage;
 pub use primitives::{
-	evm::EstimateResourcesRequest, AccountId, AccountIndex, AirDropCurrencyId, Amount, AuctionId,
-	AuthoritysOriginId, Balance, BlockNumber, CurrencyId, DataProviderId, EraIndex, Hash, Moment, Nonce,
-	ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair, SerpStableCurrencyId,
+	evm::EstimateResourcesRequest, AccountId, AccountIndex, Amount, AuctionId, AuthoritysOriginId, Balance, BlockNumber, CurrencyId,
+	DataProviderId, EraIndex, Hash, Moment, Nonce, ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair, SerpStableCurrencyId,
 };
 // use module_support::Web3SettersClubAccounts;
 pub use runtime_common::{
@@ -667,6 +666,13 @@ impl module_prices::Config for Runtime {
 	type WeightInfo = weights::module_prices::WeightInfo<Runtime>;
 }
 
+// impl dex_oracle::Config for Runtime {
+// 	type DEX = Dex;
+// 	type Time = Timestamp;
+// 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+// 	type WeightInfo = weights::dex_oracle::WeightInfo<Runtime>;
+// }
+
 impl module_transaction_pause::Config for Runtime {
 	type Event = Event;
 	type UpdateOrigin = EnsureRootOrThreeFourthsShuraCouncil;
@@ -853,19 +859,18 @@ impl module_dex::Config for Runtime {
 	type ListingOrigin = EnsureRootOrHalfFinancialCouncil;
 }
 
-impl module_airdrop::Config for Runtime {
-	type Event = Event;
-	type MultiCurrency = Currencies;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
-	type FundingOrigin = TreasuryAccount;
-	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
-	type PalletId = AirdropPalletId;
-}
+// parameter_types! {
+// 	pub const MaxAirdropListSize: usize = 250;
+// }
+
+// impl module_airdrop::Config for Runtime {
+// 	type Event = Event;
+// 	type MultiCurrency = Currencies;
+// 	type MaxAirdropListSize = MaxAirdropListSize;
+// 	type FundingOrigin = TreasuryAccount;
+// 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
+// 	type PalletId = AirdropPalletId;
+// }
 
 parameter_types! {
     pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
@@ -1548,59 +1553,60 @@ construct_runtime!(
 		// Oracle
 		//
 		// NOTE: OperatorMembership must be placed after Oracle or else will have race condition on initialization
-		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Event<T>} = 20,
-		OperatorMembershipSetheum: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
+		// DexOracle: dex_oracle::{Pallet, Storage, Call}, = 20
+		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Event<T>} = 21,
+		OperatorMembershipSetheum: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
 
 		// SERP
-		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 22,
-		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 23,
-		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 24,
-		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 25,
-		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 26,
-		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 27,
-		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 28,
+		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 23,
+		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 24,
+		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 25,
+		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 26,
+		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 27,
+		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 28,
+		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 29,
 
 		// Treasury
-		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 29,
+		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 30,
 		// Bounties
-		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 30,
+		Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 31,
 		// Tips
-		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 31,
+		Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 32,
 
 		// Extras
-		NFT: module_nft::{Pallet, Call, Event<T>} = 32,
-		AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>} = 33,
+		NFT: module_nft::{Pallet, Call, Event<T>} = 33,
+		// AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>} = 34,
 
 		// Account lookup
-		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 34,
+		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 35,
 
 		// Tokens, Fees & Related
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 35,
-		Currencies: module_currencies::{Pallet, Call, Event<T>} = 36,
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 37,
-		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 38,
-		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 39,
-		Vesting: module_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 40,
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
+		Currencies: module_currencies::{Pallet, Call, Event<T>} = 37,
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 38,
+		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 39,
+		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 40,
+		Vesting: module_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 41,
 
 		// Identity
-		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 41,
+		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 42,
 
 		// Smart contracts
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 42,
-		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 43,
-		EVMBridge: module_evm_bridge::{Pallet} = 44,
-		EvmManager: module_evm_manager::{Pallet, Storage} = 45,
+		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 43,
+		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 44,
+		EVMBridge: module_evm_bridge::{Pallet} = 45,
+		EvmManager: module_evm_manager::{Pallet, Storage} = 46,
 
 		// Consensus
-		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 46,
-		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 47,
-		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 48,
-		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 49,
-		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 50,
-		Historical: pallet_session_historical::{Pallet} = 51,
-		Offences: pallet_offences::{Pallet, Storage, Event} = 52,
-		ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>} = 53,
-		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 54,
+		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 47,
+		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 48,
+		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 49,
+		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 50,
+		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 51,
+		Historical: pallet_session_historical::{Pallet} = 52,
+		Offences: pallet_offences::{Pallet, Storage, Event} = 53,
+		ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>} = 54,
+		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 55,
 	}
 );
 
@@ -1611,47 +1617,6 @@ impl frame_support::traits::OnRuntimeUpgrade for OnRuntimeUpgrade {
 		0
 	}
 }
-
-// // Storage migrations required for runtime upgrade v7 -> v8
-// /// Babe config migration
-// impl pallet_babe::migrations::BabePalletPrefix for Runtime {
-// 	fn pallet_prefix() -> &'static str {
-// 		"Babe"
-// 	}
-// }
-
-// pub struct BabeEpochConfigMigrations;
-// impl frame_support::traits::OnRuntimeUpgrade for BabeEpochConfigMigrations {
-// 	fn on_runtime_upgrade() -> Weight {
-// 		log::info!("Migrating Babe pallet - adding epoch config");
-// 		pallet_babe::migrations::add_epoch_configuration::<Runtime>(
-// 			BABE_GENESIS_EPOCH_CONFIG
-// 		)
-// 	}
-// }
-
-// /// Migrate from `PalletVersion` to the new `StorageVersion`
-// pub struct MigratePalletVersionToStorageVersion;
-// impl frame_support::traits::OnRuntimeUpgrade for MigratePalletVersionToStorageVersion {
-// 	fn on_runtime_upgrade() -> frame_support::weights::Weight {
-// 		log::info!("Migrating PalletVersion to new StorageVersion pattern");
-// 		frame_support::migrations::migrate_from_pallet_version_to_storage_version::<AllPalletsWithSystem>(
-// 				&RocksDbWeight::get()
-// 		)
-// 	}
-// }
-
-// /// Migrate staking
-// pub struct MigratePalletStakingV5toV7;
-// impl frame_support::traits::OnRuntimeUpgrade for MigratePalletStakingV5toV7 {
-// 	fn on_runtime_upgrade() -> Weight {
-// 		log::info!("Migrating staking from V5 to V7");
-// 		let mut weight = 0;
-// 		weight += pallet_staking::migrations::v6::migrate::<Runtime>();
-// 		weight += pallet_staking::migrations::v7::migrate::<Runtime>();
-// 		weight
-// 	}
-// }
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, RuntimeDebug)]
 pub struct ConvertEthereumTx;
@@ -2047,14 +2012,15 @@ impl_runtime_apis! {
 			// orml_list_benchmark!(list, extra, emergency_shutdown, benchmarking::emergency_shutdown);
 			// orml_list_benchmark!(list, extra, module_evm, benchmarking::evm);
 			orml_list_benchmark!(list, extra, serp_setmint, benchmarking::serp_setmint);
-			// orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
+			orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
 			orml_list_benchmark!(list, extra, cdp_treasury, benchmarking::cdp_treasury);
 			orml_list_benchmark!(list, extra, module_transaction_pause, benchmarking::transaction_pause);
 			orml_list_benchmark!(list, extra, module_transaction_payment, benchmarking::transaction_payment);
 			orml_list_benchmark!(list, extra, module_prices, benchmarking::prices);
-			// orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
+			// orml_list_benchmark!(list, extra, dex_oracle, benchmarking::dex_oracle);
+			orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
 			orml_list_benchmark!(list, extra, module_currencies, benchmarking::currencies);
-			// orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
+			orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
 
 			orml_list_benchmark!(list, extra, orml_tokens, benchmarking::tokens);
 			orml_list_benchmark!(list, extra, orml_auction, benchmarking::auction);
@@ -2108,13 +2074,13 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, cdp_treasury, benchmarking::cdp_treasury);
 			orml_add_benchmark!(params, batches, module_transaction_pause, benchmarking::transaction_pause);
 			orml_add_benchmark!(params, batches, module_transaction_payment, benchmarking::transaction_payment);
-			orml_add_benchmark!(params, batches, module_prices, benchmarking::prices);
-			// orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
+			// orml_add_benchmark!(params, batches, dex_oracle, benchmarking::dex_oracle);
+			orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
 			orml_add_benchmark!(params, batches, module_currencies, benchmarking::currencies);
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
-			// orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
+			orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
 
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);

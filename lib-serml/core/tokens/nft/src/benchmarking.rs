@@ -50,7 +50,7 @@ fn test_attr() -> Attributes {
 }
 
 fn create_token_class<T: Config>(caller: T::AccountId) -> Result<T::AccountId, DispatchErrorWithPostInfo> {
-	let base_currency_amount = dollar(1000);
+	let base_currency_amount = dollar(10000);
 	<T as module::Config>::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 
 	let module_account: T::AccountId = T::PalletId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
@@ -78,7 +78,7 @@ benchmarks! {
 	// create NFT class
 	create_class {
 		let caller: T::AccountId = account("caller", 0, SEED);
-		let base_currency_amount = dollar(1000);
+		let base_currency_amount = dollar(10000);
 
 		<T as module::Config>::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 	}: _(RawOrigin::Signed(caller), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable), test_attr())

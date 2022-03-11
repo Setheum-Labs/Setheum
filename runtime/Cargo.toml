@@ -98,6 +98,7 @@ cdp-engine = { path = "../lib-serml/defi/setmint/cdp-engine", default-features =
 cdp-treasury = { path = "../lib-serml/defi/setmint/cdp-treasury", default-features = false }
 module-currencies = { path = "../lib-serml/core/tokens/currencies", default-features = false }
 module-dex = { path = "../lib-serml/defi/setswap/dex", default-features = false }
+dex-oracle = { path = "../lib-serml/core/oracle/dex-oracle", default-features = false }
 emergency-shutdown = { path = "../lib-serml/defi/setmint/emergency-shutdown", default-features = false }
 
 module-evm = { path = "../lib-serml/sevm/evm", default-features = false }
@@ -193,6 +194,7 @@ std = [
 	"cdp-treasury/std",
 	"module-currencies/std",
 	"module-dex/std",
+	"dex-oracle/std",
 	"emergency-shutdown/std",
 	"module-evm/std",
 	"module-evm-accounts/std",
@@ -227,12 +229,15 @@ runtime-benchmarks = [
 	'frame-system-benchmarking',
 	'frame-system/runtime-benchmarks',
 	'pallet-balances/runtime-benchmarks',
+	"pallet-collective/runtime-benchmarks",
 	'pallet-timestamp/runtime-benchmarks',
 	'sp-runtime/runtime-benchmarks',
-	"pallet-collective/runtime-benchmarks",
 
+	"module-evm-accounts/runtime-benchmarks",
 	"module-nft/runtime-benchmarks",
+	"module-vesting/runtime-benchmarks",
+
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
-	"module-vesting/runtime-benchmarks",
+	"orml-tokens/runtime-benchmarks",
 ]

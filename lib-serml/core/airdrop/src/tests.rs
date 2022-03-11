@@ -20,29 +20,156 @@
 
 //! Unit tests for the airdrop module.
 
-// #![cfg(test)]
+#![cfg(test)]
 
-// use super::*;
-// use frame_support::{assert_noop, assert_ok};
-// use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETR, ALICE, BOB, CHARLIE, TREASURY, SETUSD};
-// use sp_runtime::traits::BadOrigin;
+use super::*;
+use frame_support::{assert_noop, assert_ok};
+use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETR, ALICE, BOB, CHARLIE, DAVE, EVE, TREASURY, SETUSD};
+use sp_runtime::traits::BadOrigin;
 
-// #[test]
-// fn fund_airdrop_treasury_works() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_noop!(Airdrop::make_airdrop(Origin::signed(BOB), ALICE, SETUSD, 10000), BadOrigin,);
-// 		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETUSD, 10000));
-// 		System::assert_last_event(Event::AirDrop(RawEvent::Airdrop(ALICE, SETUSD, 10000)));
-// 		assert_eq!(Airdrop::airdrops(ALICE, SETUSD), 10000);
-// 	});
-// }
+#[test]
+fn fund_airdrop_treasury_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_noop!(Airdrop::fund_airdrop_treasury(
+            Origin::signed(BOB),
+            SETUSD, 10
+        ),
+        BadOrigin
+        );
+        
+        let airdrop_treasury = Airdrop::account_id();
 
-// #[test]
-// fn make_airdrop_works() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		assert_noop!(Airdrop::make_airdrop(Origin::signed(BOB), SETUSD, 10000), BadOrigin,);
-// 		assert_ok!(Airdrop::airdrop(Origin::root(), ALICE, SETUSD, 10000));
-// 		System::assert_last_event(Event::AirDrop(RawEvent::Airdrop(ALICE, SETUSD, 10000)));
-// 		assert_eq!(Airdrop::airdrops(ALICE, SETUSD), 10000);
-// 	});
-// }
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETR,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETUSD, airdrop_treasury), 0);
+        assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 258);
+
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 10));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETR,
+                amount: 10
+            },
+        ));
+         assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 268);
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETUSD, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETUSD,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETUSD, airdrop_treasury), 258);
+	});
+}
+
+#[test]
+fn make_airdrop_works() {
+	ExtBuilder::default().build().execute_with(|| {
+        let airdrop_list = vec![
+            (ALICE, 10),
+            (BOB, 5),
+            (CHARLIE, 20),
+        ];
+
+		assert_noop!(Airdrop::make_airdrop(
+            Origin::signed(BOB),
+            SETUSD,
+            airdrop_list
+        ),
+        BadOrigin
+        );
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETR,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 258);
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETUSD, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETUSD,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETUSD, airdrop_treasury), 258);
+
+        assert_ok!(Airdrop::make_airdrop(
+            Origin::signed(ALICE),
+            SETR,
+            airdrop_list
+        ));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::Airdrop {
+                currency_id: SETR,
+                airdrop_list
+            },
+        ));
+        assert_ok!(Airdrop::make_airdrop(
+            Origin::signed(ALICE),
+            SETUSD,
+            airdrop_list
+        ));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::Airdrop {
+                currency_id: SETUSD,
+                airdrop_list
+            },
+        ));
+	});
+}
+
+#[test]
+fn make_airdrop_does_not_work() {
+	ExtBuilder::default().build().execute_with(|| {
+        let airdrop_list = vec![
+            (ALICE, 10),
+            (BOB, 5),
+            (CHARLIE, 20),
+            (DAVE, 20),
+            (EVE, 20),
+        ];
+
+		assert_noop!(Airdrop::make_airdrop(
+            Origin::signed(BOB),
+            SETUSD,
+            airdrop_list
+        ),
+        BadOrigin
+        );
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETR,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 258);
+
+        assert_noop!(Airdrop::make_airdrop(
+            Origin::signed(ALICE),
+            SETR,
+            airdrop_list
+        )
+        Error::<Runtime>::OverSizedAirdropList,
+        );
+	});
+}

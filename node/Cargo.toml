@@ -27,16 +27,16 @@ serde_json = "1.0.68"
 
 # Substrate dependencies
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", optional = true }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sc-chain-spec = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sc-basic-authorship = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-sc-cli = { git = "https://github.com/paritytech/substrate", default-features = false, features = ['wasmtime'], branch = "polkadot-v0.9.10" }
+sc-cli = { git = "https://github.com/paritytech/substrate", default-features = false, features = ['wasmtime'], branch = "polkadot-v0.9.10", optional = true }
 sc-client-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sc-executor = { git = "https://github.com/paritytech/substrate", features = ['wasmtime'], branch = "polkadot-v0.9.10" }
 sc-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sc-rpc-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-sc-service = { git = "https://github.com/paritytech/substrate", default-features = false, features = ['wasmtime'], branch = "polkadot-v0.9.10" }
+sc-service = { git = "https://github.com/paritytech/substrate", default-features = false, features = ['wasmtime'], branch = "polkadot-v0.9.10", optional = true }
 sc-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sc-transaction-pool-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sc-telemetry = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
@@ -44,7 +44,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-block-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", optional = true }
 sp-inherents = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
@@ -82,8 +82,18 @@ setheum-primitives = { path = "../primitives" }
 setheum-runtime = { path = '../runtime', version = '1.0.0' }
 
 [features]
-default = []
-runtime-benchmarks = ['setheum-runtime/runtime-benchmarks', 'node-runtime/runtime-benchmarks']
+default = [ "wasmtime", "cli" ]
+wasmtime = [ "sc-cli/wasmtime" ]
+cli = [
+	"sp-core",
+	"sc-cli",
+	"sc-service",
+	"frame-benchmarking-cli",
+]
+runtime-benchmarks = [
+	'setheum-runtime/runtime-benchmarks',
+	'node-runtime/runtime-benchmarks'
+]
 with-ethereum-compatibility = [
 	"setheum-runtime/with-ethereum-compatibility"
 ]

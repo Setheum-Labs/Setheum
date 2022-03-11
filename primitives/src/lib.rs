@@ -157,19 +157,6 @@ pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum AirDropCurrencyId {
-	SETR = 0,
-	SETUSD = 1,
-	// VVV remove after IAE (Initial Airdrop Offering)
-	// vvv AND MultiCurrency INITIAL ALLOCATIONS vvv
-	SETM = 2,
-	SERP = 3,
-	DNAR = 4,
-	HELP = 5,
-}
-
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum SerpStableCurrencyId {
 	SETR = 0,
 	SETUSD = 1,
