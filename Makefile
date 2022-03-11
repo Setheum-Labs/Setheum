@@ -32,6 +32,13 @@ genesis:
 check:
 	SKIP_WASM_BUILD=1 cargo check
 
+.PHONY: check-all
+check-all: check-runtime check-benchmarks
+
+.PHONY: check-runtime
+check-runtime:
+	SKIP_WASM_BUILD= cargo check --features with-ethereum-compatibility --tests --all
+
 .PHONY: clippy
 clippy:
 	SKIP_WASM_BUILD=1 cargo clippy -- -D warnings -A clippy::from-over-into -A clippy::unnecessary-cast -A clippy::identity-op -A clippy::upper-case-acronyms
@@ -42,7 +49,11 @@ watch:
 
 .PHONY: test
 test:
-	SKIP_WASM_BUILD=1 cargo test --all
+	SKIP_WASM_BUILD=1 cargo test --features with-ethereum-compatibility --all
+
+.PHONY: check-tests
+check-tests:
+	SKIP_WASM_BUILD= cargo check --features with-ethereum-compatibility --tests --all
 
 .PHONY: debug
 debug:
@@ -60,9 +71,22 @@ log:
 noeth:
 	RUST_BACKTRACE=1 cargo run -- --dev --tmp
 
+.PHONY: check-benchmarks
+check-benchmarks:
+	SKIP_WASM_BUILD= cargo check --features runtime-benchmarks --no-default-features --target=wasm32-unknown-unknown -p setheum-runtime
+
+.PHONY: test-benchmarking
+test-benchmarking:
+	cargo test --features bench --package module-evm
+	cargo test --features runtime-benchmarks --features with-ethereum-compatibility --features --all benchmarking
+
 .PHONY: bench
 bench:
 	SKIP_WASM_BUILD=1 cargo test --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility benchmarking
+
+.PHONY: benchmark
+benchmark:
+	 cargo run --release --features=runtime-benchmarks --features=with-ethereum-compatibility -- benchmark --chain=dev --steps=50 --repeat=20 '--pallet=*' '--extrinsic=*' --execution=wasm --wasm-execution=compiled --heap-pages=4096 --template=./templates/runtime-weight-template.hbs --output=./runtime/src/weights/
 
 .PHONY: doc
 doc:
@@ -73,6 +97,13 @@ cargo-update:
 	cargo update
 	cargo update --manifest-path node/Cargo.toml
 	make test
+
+.PHONY: purge
+purge: target/debug/setheum-node
+	target/debug/setheum-node purge-chain --dev -y
+
+.PHONY: restart
+restart: purge run
 
 .PHONY: fork
 fork:
