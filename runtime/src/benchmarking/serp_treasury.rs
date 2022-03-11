@@ -21,13 +21,25 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 #![allow(unused_parens)]
 #![allow(unused_imports)]
-use crate::{dollar, SerpTreasury, Currencies, CurrencyId, GetSetUSDId, Runtime, SerpStableCurrencyId};
+use crate::{dollar, SerpTreasury, Runtime, StableCurrencyInflationPeriod, System};
 
 use frame_system::RawOrigin;
 use orml_benchmarking::runtime_benchmarks;
+use frame_support::traits::OnInitialize;
+use orml_traits::MultiCurrency;
+use sp_runtime::traits::Zero;
+use sp_std::prelude::*;
 
 runtime_benchmarks! {
 	{ Runtime, serp_treasury }
+	on_initialize {
+		let block_number = StableCurrencyInflationPeriod::get();
+	
+		SerpTreasury::on_initialize(1);
+		System::set_block_number(block_number);
+	}: {
+		SerpTreasury::on_initialize(System::block_number());
+	}
 
 	set_stable_currency_inflation_rate {
 	}: _(RawOrigin::Root, crate::SerpStableCurrencyId::SETR, 200 * 1_000_000_000_000_000_000)

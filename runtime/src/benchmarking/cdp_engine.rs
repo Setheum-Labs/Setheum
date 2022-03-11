@@ -72,61 +72,6 @@ fn inject_liquidity(
 runtime_benchmarks! {
 	{ Runtime, cdp_engine }
 
-	on_initialize {
-		let c in 0 .. CollateralCurrencyIds::get().len().saturating_sub(1) as u32;
-		let owner: AccountId = account("owner", 0, SEED);
-		let owner_lookup: Address = AccountIdLookup::unlookup(owner.clone());
-		let currency_ids = CollateralCurrencyIds::get();
-		let min_debit_value = MinimumDebitValue::get();
-		let debit_exchange_rate = DefaultDebitExchangeRate::get();
-		let min_debit_amount = debit_exchange_rate.reciprocal().unwrap().saturating_mul_int(min_debit_value);
-		let min_debit_amount: Amount = min_debit_amount.unique_saturated_into();
-		let collateral_value = 2 * min_debit_value;
-
-		// feed price
-		let mut feed_data: Vec<(CurrencyId, Price)> = vec![];
-		for i in 0 .. c {
-			let currency_id = currency_ids[i as usize];
-			let collateral_price = Price::one();
-			feed_data.push((currency_id, collateral_price));
-		}
-		feed_price(feed_data)?;
-
-		for i in 0 .. c {
-			let currency_id = currency_ids[i as usize];
-			let collateral_amount = Price::saturating_from_rational(dollar(currency_id), dollar(STABLECOIN)).saturating_mul_int(collateral_value);
-
-			// set balance
-			set_balance(currency_id, &owner, collateral_amount + ExistentialDeposits::get(&currency_id));
-
-			CdpEngine::set_collateral_params(
-				RawOrigin::Root.into(),
-				currency_id,
-				Change::NewValue(Some(Ratio::saturating_from_rational(0, 100))),
-				Change::NewValue(Some(Rate::saturating_from_rational(10, 100))),
-				Change::NewValue(Some(Ratio::saturating_from_rational(0, 100))),
-				Change::NewValue(min_debit_value * 100),
-			)?;
-
-			// adjust position
-			CdpEngine::adjust_position(&owner, currency_id, collateral_amount.try_into().unwrap(), min_debit_amount)?;
-		}
-
-		// set timestamp by set storage, this is deprecated,
-		// replace it by following after https://github.com/paritytech/substrate/pull/8601 is available:
-		// Timestamp::set_timestamp(MILLISECS_PER_BLOCK);
-		pallet_timestamp::Now::<Runtime>::put(MILLISECS_PER_BLOCK);
-
-		CdpEngine::on_initialize(2);
-	}: {
-		// set timestamp by set storage, this is deprecated,
-		// replace it by following after https://github.com/paritytech/substrate/pull/8601 is available:
-		// Timestamp::set_timestamp(MILLISECS_PER_BLOCK * 2);
-		pallet_timestamp::Now::<Runtime>::put(MILLISECS_PER_BLOCK * 2);
-
-		CdpEngine::on_initialize(3);
-	}
-
 	set_collateral_params {
 	}: _(
 		RawOrigin::Root,
