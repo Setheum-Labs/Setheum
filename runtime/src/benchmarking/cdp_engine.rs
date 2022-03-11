@@ -21,7 +21,7 @@
 use crate::{
 	dollar, AccountId, Address, Amount, Balance, CdpEngine, CollateralCurrencyIds, CurrencyId,
 	DefaultDebitExchangeRate, Dex, EmergencyShutdown, ExistentialDeposits, GetSetUSDId, GetDinarCurrencyId,
-	MaxSwapSlippageCompareToOracle, MinimumDebitValue, Price, Rate, Ratio, Runtime, MILLISECS_PER_BLOCK,
+	MaxSwapSlippageCompareToOracle, MinimumDebitValue, Price, Rate, Ratio, Runtime,
 };
 
 use super::utils::{feed_price, set_balance};
