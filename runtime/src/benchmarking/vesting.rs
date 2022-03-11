@@ -87,7 +87,7 @@ runtime_benchmarks! {
 			Vesting::vested_transfer(RawOrigin::Signed(from.clone()).into(), NATIVE, to_lookup.clone(), schedule.clone())?;
 		}
 		System::set_block_number(schedule.end().unwrap() + 1u32);
-	}: _(RawOrigin::Signed(to.clone()))
+	}: _(RawOrigin::Signed(to.clone()), NATIVE)
 	verify {
 		assert_eq!(
 			<Currencies as MultiCurrency<_>>::free_balance(NATIVE, &to),

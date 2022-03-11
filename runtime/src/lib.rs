@@ -2018,9 +2018,9 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, module_transaction_payment, benchmarking::transaction_payment);
 			orml_list_benchmark!(list, extra, module_prices, benchmarking::prices);
 			// orml_list_benchmark!(list, extra, dex_oracle, benchmarking::dex_oracle);
-			// orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
+			orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
 			orml_list_benchmark!(list, extra, module_currencies, benchmarking::currencies);
-			// orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
+			orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
 
 			orml_list_benchmark!(list, extra, orml_tokens, benchmarking::tokens);
 			orml_list_benchmark!(list, extra, orml_auction, benchmarking::auction);
@@ -2075,12 +2075,12 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, module_transaction_pause, benchmarking::transaction_pause);
 			orml_add_benchmark!(params, batches, module_transaction_payment, benchmarking::transaction_payment);
 			// orml_add_benchmark!(params, batches, dex_oracle, benchmarking::dex_oracle);
-			// orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
+			orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
 			orml_add_benchmark!(params, batches, module_currencies, benchmarking::currencies);
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
 			orml_add_benchmark!(params, batches, orml_auction, benchmarking::auction);
-			// orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
+			orml_add_benchmark!(params, batches, module_vesting, benchmarking::vesting);
 
 			orml_add_benchmark!(params, batches, orml_authority, benchmarking::authority);
 			orml_add_benchmark!(params, batches, orml_oracle, benchmarking::oracle);

@@ -229,12 +229,15 @@ runtime-benchmarks = [
 	'frame-system-benchmarking',
 	'frame-system/runtime-benchmarks',
 	'pallet-balances/runtime-benchmarks',
+	"pallet-collective/runtime-benchmarks",
 	'pallet-timestamp/runtime-benchmarks',
 	'sp-runtime/runtime-benchmarks',
-	"pallet-collective/runtime-benchmarks",
 
+	"module-evm-accounts/runtime-benchmarks",
 	"module-nft/runtime-benchmarks",
+	"module-vesting/runtime-benchmarks",
+
 	"orml-benchmarking",
 	"orml-authority/runtime-benchmarks",
-	"module-vesting/runtime-benchmarks",
+	"orml-tokens/runtime-benchmarks",
 ]
