@@ -58,13 +58,12 @@ pub trait WeightInfo {
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn on_initialize(c: u32) -> Weight {
-		(33_360_000 as Weight)
-			.saturating_add((23_139_000 as Weight).saturating_mul(c as Weight))
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
+		(243_267_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(30 as Weight))
+			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 	fn set_stable_currency_inflation_rate() -> Weight {
-		(3_000_000 as Weight)
+		(20_458_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
 	fn force_serpdown() -> Weight {
@@ -78,13 +77,12 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 // For backwards compatibility and tests
 impl WeightInfo for () {
 	fn on_initialize(c: u32) -> Weight {
-		(33_360_000 as Weight)
-			.saturating_add((23_139_000 as Weight).saturating_mul(c as Weight))
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().reads((1 as Weight).saturating_mul(c as Weight)))
+		(243_267_000 as Weight)
+			.saturating_add(RocksDbWeight::get().reads(30 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}
 	fn set_stable_currency_inflation_rate() -> Weight {
-		(3_000_000 as Weight)
+		(20_458_000 as Weight)
 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
 	}
 	fn force_serpdown() -> Weight {
