@@ -281,13 +281,13 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 6_266_000_000 as u128),
 				// Treasury: 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
 				(hex!["6d6f646c7365742f747273790000000000000000000000000000000000000000"].into(), 3_133_000_000 as u128),
-				// Airdrop: 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
-				(hex!["6d6f646c7365742f64726f700000000000000000000000000000000000000000"].into(), 1_566_500_000 as u128),
+				// Airdrop: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
+				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 1_566_500_000 as u128),
 				// Team and DEX Liquidity Offering Fund: 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
 				(hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(), 15_665_000_000 as u128),
 			],
-			// Airdrop: 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
-			hex!["6d6f646c7365742f64726f700000000000000000000000000000000000000000"].into(),
+			// Airdrop: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
+			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
 			// Foundation: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
 			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
 			// Team and DEX Liquidity Offering Fund: 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
@@ -391,8 +391,8 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 6_266_000_000 as u128),
 				// Treasury: 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
 				(hex!["6d6f646c7365742f747273790000000000000000000000000000000000000000"].into(), 3_133_000_000 as u128),
-				// Airdrop: 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
-				(hex!["6d6f646c7365742f64726f700000000000000000000000000000000000000000"].into(), 1_566_500_000 as u128),
+				// Airdrop: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
+				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 1_566_500_000 as u128),
 				// Setheum Public Fund (SPF): 3YQuJToGJv2Gwu2puFbamNTDhQnKP1xU1zf6TiCHe8Ty2om3
 				(hex!["78d105e22be9735d200591ebe506fbc0d0be3f18afa5f5b2fbdb370ee4c2fd47"].into(), 3_133_000_000 as u128),
 				// Team and DEX Liquidity Offering Fund: 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7
@@ -402,8 +402,8 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			],
 			// Foundation: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
 			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
-			// Airdrop: 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
-			hex!["6d6f646c7365742f64726f700000000000000000000000000000000000000000"].into(),
+			// Airdrop: 3X9Co4hD4qaQR9yhYGzkATopDYiuXzdh1zoGJs2wjUkjPWfL
+			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
 			// Setheum Public Fund (SPF): 3YQuJToGJv2Gwu2puFbamNTDhQnKP1xU1zf6TiCHe8Ty2om3
 			hex!["78d105e22be9735d200591ebe506fbc0d0be3f18afa5f5b2fbdb370ee4c2fd47"].into(),
 			// Team and DEX Liquidity Offering Fund: 3WTzyeSKVb7CwTUqEC6mkixfJbNcW2aoSynEjan9WbgDfnc7

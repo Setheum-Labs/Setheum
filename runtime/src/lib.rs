@@ -859,18 +859,18 @@ impl module_dex::Config for Runtime {
 	type ListingOrigin = EnsureRootOrHalfFinancialCouncil;
 }
 
-parameter_types! {
-	pub const MaxAirdropListSize: usize = 250;
-}
+// parameter_types! {
+// 	pub const MaxAirdropListSize: usize = 250;
+// }
 
-impl module_airdrop::Config for Runtime {
-	type Event = Event;
-	type MultiCurrency = Currencies;
-	type MaxAirdropListSize = MaxAirdropListSize;
-	type FundingOrigin = TreasuryAccount;
-	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
-	type PalletId = AirdropPalletId;
-}
+// impl module_airdrop::Config for Runtime {
+// 	type Event = Event;
+// 	type MultiCurrency = Currencies;
+// 	type MaxAirdropListSize = MaxAirdropListSize;
+// 	type FundingOrigin = TreasuryAccount;
+// 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
+// 	type PalletId = AirdropPalletId;
+// }
 
 parameter_types! {
     pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
@@ -1575,7 +1575,7 @@ construct_runtime!(
 
 		// Extras
 		NFT: module_nft::{Pallet, Call, Event<T>} = 33,
-		AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>} = 34,
+		// AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>} = 34,
 
 		// Account lookup
 		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 35,
