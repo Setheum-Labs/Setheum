@@ -860,7 +860,7 @@ impl module_dex::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MaxAirdropListSize: usize = 258;
+	pub const MaxAirdropListSize: usize = 250;
 }
 
 impl module_airdrop::Config for Runtime {
