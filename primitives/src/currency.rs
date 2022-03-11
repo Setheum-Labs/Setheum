@@ -148,6 +148,7 @@ macro_rules! create_currency_id {
 					symbol: "LP_HELP_SETUSD".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HELP), DexShare::Token(SETUSD))).unwrap(),
 				},
+				// TODO - FIXME: Remove SETR:SETUSD Pairs (stablecoins)
 				Token {
 					symbol: "LP_SETR_SETUSD".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETR), DexShare::Token(SETUSD))).unwrap(),
@@ -171,7 +172,7 @@ macro_rules! create_currency_id {
 			];
 			tokens.append(&mut lp_tokens);
 
-			frame_support::assert_ok!(std::fs::write("../predeploy-contracts/resources/tokens.json", serde_json::to_string_pretty(&tokens).unwrap()));
+			frame_support::assert_ok!(std::fs::write("../lib-serml/sevm/predeploy-contracts/resources/tokens.json", serde_json::to_string_pretty(&tokens).unwrap()));
 		}
     }
 }

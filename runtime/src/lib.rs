@@ -270,8 +270,8 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
-	pub const BlockHashCount: BlockNumber = 2400; // 4hrs
-	pub const SS58Prefix: u8 = 25;
+	pub const BlockHashCount: BlockNumber = 6400; // 4hrs
+	pub const SS58Prefix: u16 = 258;
 }
 
 impl frame_system::Config for Runtime {
@@ -346,7 +346,7 @@ impl pallet_session::Config for Runtime {
 
 parameter_types! {
 	pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
-	pub const ExpectedBlockTime: Moment = SECS_PER_BLOCK;
+	pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
 	pub const ReportLongevity: u64 =
 		BondingDuration::get() as u64 * SessionsPerEra::get() as u64 * EpochDuration::get();
 }
@@ -995,7 +995,7 @@ impl module_evm_manager::Config for Runtime {
 static ISTANBUL_CONFIG: evm::Config = evm::Config::istanbul();
 
 parameter_types! {
-	pub const ChainId: u64 = 25888;
+	pub const ChainId: u64 = 258;
 	pub NetworkContractSource: H160 = H160::from_low_u64_be(0);
 }
 

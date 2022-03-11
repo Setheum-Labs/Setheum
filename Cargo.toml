@@ -11,7 +11,7 @@ members = [
     'primitives',
 	# SERML Modules
 	"lib-serml/core/airdrop",
-	"lib-serml/core/atomic-swap",
+	# "lib-serml/core/atomic-swap",
 	"lib-serml/core/idle-scheduler",
 	"lib-serml/core/oracle/dex-oracle",
 	"lib-serml/core/oracle/prices",

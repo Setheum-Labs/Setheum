@@ -25,12 +25,10 @@ pub mod time {
 	use primitives::{Balance, BlockNumber, Moment};
 	// use runtime_common::{dollar, millicent, SETM};
 
-	// TODO: FIXME - Update to using `MILLISECS_PER_BLOCK` generally instead. 
-	pub const SECS_PER_BLOCK: Moment = 6; // 6 seconds blocktime
-	pub const MILLISECS_PER_BLOCK: Moment = SECS_PER_BLOCK * 1000;
+	pub const MILLISECS_PER_BLOCK: Moment = 2250; // 2.25 seconds blocktime
 
 	// These time units are defined in number of blocks.
-	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
+	pub const MINUTES: BlockNumber = 60000;
 	pub const HOURS: BlockNumber = MINUTES * 60;
 	pub const DAYS: BlockNumber = HOURS * 24;
 
