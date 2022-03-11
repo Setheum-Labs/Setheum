@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 serde = { version = "1.0.124", optional = true }
 codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
-libsecp256k1 = { version = "0.3.4", default-features = false, features = ["hmac"], optional = true }
+libsecp256k1 = { version = "0.3.4", default-features = false, features = ["hmac"] }
 
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
@@ -31,7 +31,6 @@ default = ["std"]
 std = [
 	"serde",
 	"codec/std",
-	"libsecp256k1",
 	"libsecp256k1/std",
 	"sp-core/std",
 	"sp-runtime/std",
@@ -44,7 +43,6 @@ std = [
 	"module-support/std",
 ]
 runtime-benchmarks = [
-	"libsecp256k1",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
 ]
