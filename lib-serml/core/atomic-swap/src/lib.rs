@@ -78,6 +78,7 @@ use codec::{Decode, Encode};
 // /// Hashed proof type.
 // pub type HashedProof = [u8; 32];
 
+// TODO: FIXME - Time in blocks have changed on Setheum - 1 block = 2.25 secs now
 // /// Minutes defined in blocktime (number of blocks in a minute).
 // pub const SECS_PER_BLOCK: Moment = 6; // 6 seconds blocktime
 // pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
