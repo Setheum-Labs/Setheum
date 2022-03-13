@@ -105,7 +105,7 @@ pub use primitives::{
 pub use runtime_common::{
 	BlockLength, BlockWeights, GasToWeight, OffchainSolutionWeightLimit,
 	Price, Rate, Ratio, SystemContractsFilter, ExchangeRate, TimeStampedPrice,
-	cent, dollar, microcent, millicent, nanocent, deposit, ProxyType,
+	cent, dollar, microcent, millicent, nanocent, ProxyType,
 
 	EnsureRootOrOneShuraCouncil, EnsureRootOrAllShuraCouncil, EnsureRootOrHalfShuraCouncil,
 	EnsureRootOrOneThirdsShuraCouncil, EnsureRootOrTwoThirdsShuraCouncil,
@@ -356,7 +356,6 @@ impl pallet_session::historical::Config for Runtime {
 	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
 }
 
-pub const DOLLARS: Balance = 1_000_000_000_000_000_000; // 18 DECIMALS
 
 pallet_staking_reward_curve::build! {
 	// 2.58% min, 25.8% max, 50% ideal stake
@@ -483,13 +482,12 @@ impl pallet_im_online::Config for Runtime {
 }
 
 parameter_types! {
-	pub Dollars: Balance = 1_000_000_000_000_000_000;
-	pub BasicDeposit: Balance =      100 * 1_000_000_000_000_000_000;
-	pub FieldDeposit: Balance =        1 * 1_000_000_000_000_000_000;
-	pub SubAccountDeposit: Balance =  20 * 1_000_000_000_000_000_000;
+	pub BasicDeposit: Balance =      10 * dollar(SETM);
+	pub FieldDeposit: Balance =        1 * dollar(SETM);
+	pub SubAccountDeposit: Balance =  20 * dollar(SETM);
 	pub const MaxSubAccounts: u32 = 100;
 	pub const MaxAdditionalFields: u32 = 100;
-	pub const MaxRegistrars: u32 = 20;
+	pub const MaxRegistrars: u32 = 19;
 }
 
 impl pallet_identity::Config for Runtime {
@@ -509,7 +507,7 @@ impl pallet_identity::Config for Runtime {
 
 
 parameter_types! {
-	pub IndexDeposit: Balance = 1 * 1_000_000_000_000_000_000;
+	pub IndexDeposit: Balance = 1 * dollar(SETM);
 }
 
 impl pallet_indices::Config for Runtime {
@@ -592,8 +590,8 @@ impl Contains<AccountId> for DustRemovalWhitelist {
 parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&SETR => 1_000_000_000 * 1_000_000_000_000_000_000,
-			&SETUSD => 1_000_000_000 * 1_000_000_000_000_000_000,
+			&SETR => 1_000_000_000 * dollar(SETR),
+			&SETUSD => 1_000_000_000 * dollar(SETUSD),
 			_ => 0,
 		}
 	};
@@ -603,12 +601,12 @@ parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
-				TokenSymbol::SETUSD => 100_000_000_000_000_000, // 10 cents (0.1)
-				TokenSymbol::SETR => 100_000_000_000_000_000, // 10 cents (0.1)
-				TokenSymbol::SERP => 100_000_000_000_000_000, // 10 cents (0.1)
-				TokenSymbol::HELP => 100_000_000_000_000_000, // 10 cents (0.1)
-				TokenSymbol::DNAR => 100_000_000_000_000_000, // 10 cents (0.1)
-				TokenSymbol::SETM => 100_000_000_000_000_000, // 10 cents (0.1)
+				TokenSymbol::SETUSD => 10 * cent(SETUSD), // 10 cents (0.1)
+				TokenSymbol::SETR => 10 * cent(SETR), // 10 cents (0.1)
+				TokenSymbol::SERP => 10 * cent(SERP), // 10 cents (0.1)
+				TokenSymbol::HELP => 10 * cent(HELP), // 10 cents (0.1)
+				TokenSymbol::DNAR => 10 * cent(DNAR), // 10 cents (0.1)
+				TokenSymbol::SETM => 10 * cent(SETM), // 10 cents (0.1)
 			},
 			CurrencyId::DexShare(dex_share_0, _) => {
 				let currency_id_0: CurrencyId = (*dex_share_0).into();
@@ -784,7 +782,7 @@ parameter_types! {
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
-	pub MinimumDebitValue: Balance = 1_000_000_000_000_000_000;
+	pub MinimumDebitValue: Balance = 10 * dollar(SETUSD);
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(15, 100);
 }
 
@@ -809,7 +807,7 @@ impl cdp_engine::Config for Runtime {
 }
 
 parameter_types! {
-	pub DepositPerAuthorization: Balance = 1_000_000_000_000_000_000;
+	pub DepositPerAuthorization: Balance = deposit(1, 64);
 }
 
 impl serp_setmint::Config for Runtime {
@@ -875,10 +873,10 @@ impl module_dex::Config for Runtime {
 parameter_types! {
     pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
     
-	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * 1_000_000_000_000_000_000;
-	pub SetterMaximumClaimableTransferAmounts: Balance = 2_000_000 * 1_000_000_000_000_000_000;
-	pub SetDollarMinimumClaimableTransferAmounts: Balance = 4 * 1_000_000_000_000_000_000;
-	pub SetDollarMaximumClaimableTransferAmounts: Balance = 100_000 * 1_000_000_000_000_000_000;
+	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * dollar(SETR);
+	pub SetterMaximumClaimableTransferAmounts: Balance = 2_000_000 * dollar(SETR);
+	pub SetDollarMinimumClaimableTransferAmounts: Balance = 4 * dollar(SETUSD);
+	pub SetDollarMaximumClaimableTransferAmounts: Balance = 100_000 * dollar(SETUSD);
 }
 
 impl serp_treasury::Config for Runtime {
@@ -1002,8 +1000,8 @@ parameter_types! {
 parameter_types! {
 	pub const NewContractExtraBytes: u32 = 10_000;
 	pub StorageDepositPerByte: Balance = deposit(0, 1);
-	pub DeveloperDeposit: Balance = 1_000_000_000_000_000_000;
-	pub DeploymentFee: Balance = 1_000_000_000_000_000_000;
+	pub DeveloperDeposit: Balance = 7 * dollar(SETM);
+	pub DeploymentFee: Balance = 7 * dollar(SETM);
 }
 
 pub type MultiCurrencyPrecompile = runtime_common::MultiCurrencyPrecompile<
@@ -1077,8 +1075,8 @@ impl module_evm_bridge::Config for Runtime {
 }
 
 parameter_types! {
-	pub CreateClassDeposit: Balance = 20 * 1_000_000_000_000_000_000;
-	pub CreateTokenDeposit: Balance = 2 * 1_000_000_000_000_000_000;
+	pub CreateClassDeposit: Balance = 11 * dollar(SETM);
+	pub CreateTokenDeposit: Balance = 7 * dollar(SETM);
 	pub MaxAttributesBytes: u32 = 2048;
 }
 
@@ -1186,8 +1184,8 @@ impl pallet_proxy::Config for Runtime {
 parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
-	pub NativeTokenExistentialDeposit: Balance = 1_000_000_000_000_000_000; // 1 SETM
-	pub MaxNativeTokenExistentialDeposit: Balance = 1000 * 1_000_000_000_000_000_000;
+	pub NativeTokenExistentialDeposit: Balance = 1 * dollar(SETM); // 1 SETM
+	pub MaxNativeTokenExistentialDeposit: Balance = 100 * dollar(SETM); // 100 SETM
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = ReserveIdentifier::Count as u32;
 }
@@ -1420,10 +1418,10 @@ impl ContainsLengthBound for ShuraCouncilProvider {
 }
 
 parameter_types! {
-	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub ProposalBondMinimum: Balance = 1_000_000_000_000_000_000;
-	pub const SpendPeriod: BlockNumber = 21 * DAYS;
-	pub const Burn: Permill = Permill::from_percent(0);
+	pub const ProposalBond: Permill = Permill::from_percent(3);
+	pub ProposalBondMinimum: Balance = 1 * dollar(SETM); // 1 SETM
+	pub const SpendPeriod: BlockNumber = 40 * DAYS;
+	pub const Burn: Permill = Permill::from_perthousand(0); // 0.0%
 	pub const MaxApprovals: u32 = 100;
 
 	pub const TipCountdown: BlockNumber = DAYS;
@@ -1432,11 +1430,11 @@ parameter_types! {
 	pub const SevenDays: BlockNumber = 7 * DAYS;
 	pub const ZeroDay: BlockNumber = 0;
 	pub const OneDay: BlockNumber = DAYS;
-	pub BountyDepositBase: Balance = 1_000_000_000_000_000_000;
+	pub BountyDepositBase: Balance = deposit(1, 0);
 	pub const BountyDepositPayoutDelay: BlockNumber = DAYS;
 	pub const BountyUpdatePeriod: BlockNumber = 21 * DAYS;
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub BountyValueMinimum: Balance = 5 * 1_000_000_000_000_000_000;
+	pub BountyValueMinimum: Balance = 1 * dollar(SETM); // 1 SETM
 	pub DataDepositPerByte: Balance = deposit(0, 1);
 	pub const MaximumReasonLength: u32 = 16384;
 }
