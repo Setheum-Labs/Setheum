@@ -28,8 +28,10 @@ pub mod time {
 	pub const MILLISECS_PER_BLOCK: Moment = 2250; // 2.25 seconds blocktime
 
 	// These time units are defined in number of blocks.
-	pub const MINUTES: BlockNumber = 60000;
-	pub const HOURS: BlockNumber = MINUTES * 60;
+	pub const HOURS: BlockNumber = 1_600;
+	
+	pub const MINUTES: BlockNumber = HOURS / 60;
+
 	pub const DAYS: BlockNumber = HOURS * 24;
 
 	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
