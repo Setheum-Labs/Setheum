@@ -55,7 +55,6 @@ pub use primitives::{
 	AccountId,
 };
 
-pub const DOLLARS: Balance = 1_000_000_000_000_000_000; // 18 DECIMALS
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
 
@@ -148,7 +147,7 @@ parameter_types! {
 // TODO: make those const fn
 // TODO: Check if this makes sense at 18 decimals;
 pub fn dollar(currency_id: CurrencyId) -> Balance {
-	1u128.saturating_pow(currency_id.decimals().expect("__ERC20>?__").into())
+	10u128.saturating_pow(currency_id.decimals().expect("Does not support Non-Token decimals").into())
 }
 
 pub fn cent(currency_id: CurrencyId) -> Balance {
