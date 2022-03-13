@@ -29,7 +29,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional, PalletId};
+use frame_support::{log, pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
 use orml_traits::{GetByKey, MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId, SerpStableCurrencyId};
@@ -302,22 +302,9 @@ pub mod module {
 				let mut count: u32 = 0;
 				count += 1;
 				
-				let issue_stablecurrency_inflation = Self::issue_stablecurrency_inflation().is_ok();
-				if issue_stablecurrency_inflation {
-					Self::issue_stablecurrency_inflation().unwrap();
-					count += 1;
-				};
-				if serp_tes_now {
-					Self::serp_tes_now().unwrap();
-					count += 1;
-				}
-
-				T::WeightInfo::on_initialize(count)
-			} else if serp_tes_now {
-				// SERP TES (Token Elasticity of Supply).
-				// Triggers Serping for all system stablecoins to stabilize stablecoin prices.
-				Self::serp_tes_now().unwrap();
-				let mut count: u32 = 0;
+				Self::stable_inflation_on_initialize();
+				count += 1;
+				Self::serp_tes_on_initialize();
 				count += 1;
 
 				T::WeightInfo::on_initialize(count)
@@ -379,6 +366,48 @@ impl<T: Config> Pallet<T> {
 	/// Get account of SERP Treasury module.
 	pub fn account_id() -> T::AccountId {
 		T::PalletId::get().into_account()
+	}
+
+	/// Called in `on_initialize` for SERP-TES
+	fn serp_tes_on_initialize() {
+		// SERP-TES Adjustment Frequency and SetCurrency Inflation frequency.
+		// Schedule for when to trigger SERP-TES and SERP-Inflation
+		// (Blocktime/BlockNumber - every blabla block)
+		
+		let res = <Self as SerpTreasury<T::AccountId>>::serp_tes_now();
+
+		match res {
+			Ok(_) => {}
+			Err(e) => {
+				log::warn!(
+					target: "serp_treasury",
+					"serp_tes_now: failed to algorithmically serp setcurrencies: {:?}.\
+					This is unexpected but should be safe",
+					e
+				);
+			}
+		}
+	}
+
+	/// Called in `on_initialize` for SERP-StableInflation
+	fn stable_inflation_on_initialize() {
+		// SERP-TES Adjustment Frequency and SetCurrency Inflation frequency.
+		// Schedule for when to trigger SERP-TES
+		// (Blocktime/BlockNumber - every blabla block)
+		
+		let res = <Self as SerpTreasury<T::AccountId>>::serp_tes_now();
+
+		match res {
+			Ok(_) => {}
+			Err(e) => {
+				log::warn!(
+					target: "serp_treasury",
+					"issue_stablecurrency_inflation: failed to algorithmically serp setcurrencies: {:?}.\
+					This is unexpected but should be safe",
+					e
+				);
+			}
+		}
 	}
 }
 
@@ -739,8 +768,16 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::InvalidAmount,
 		);
 		
-		Self::get_buyback_serplus(amount / 2, currency_id).unwrap();	// 50%
-		Self::get_cashdrop_serplus(amount / 2, currency_id).unwrap();	// 50%
+		let get_buyback_serplus = Self::get_buyback_serplus(amount / 2, currency_id).is_ok();
+		let get_cashdrop_serplus = Self::get_cashdrop_serplus(amount / 2, currency_id).is_ok();
+
+		if get_buyback_serplus {
+			Self::get_buyback_serplus(amount / 2, currency_id).unwrap();	// 50%
+		};
+		
+		if get_cashdrop_serplus {
+			Self::get_cashdrop_serplus(amount / 2, currency_id).unwrap();	// 50%
+		}
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
 		Ok(())
@@ -758,8 +795,17 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			!amount.is_zero(),
 			Error::<T>::InvalidAmount,
 		);
-		Self::get_buyback_serpup(amount / 2, currency_id).unwrap();		// 50%
-		Self::get_cashdrop_serpup(amount / 2, currency_id).unwrap();	// 50%
+
+		let get_buyback_serpup = Self::get_buyback_serpup(amount / 2, currency_id).is_ok();
+		let get_cashdrop_serpup = Self::get_cashdrop_serpup(amount / 2, currency_id).is_ok();
+
+		if get_buyback_serpup {
+			Self::get_buyback_serpup(amount / 2, currency_id).unwrap();	// 50%
+		};
+		
+		if get_cashdrop_serpup {
+			Self::get_cashdrop_serpup(amount / 2, currency_id).unwrap();	// 50%
+		}
 
 		Self::deposit_event(Event::SerpUp(amount, currency_id));
 		Ok(())
