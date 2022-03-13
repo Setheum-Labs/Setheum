@@ -296,8 +296,6 @@ pub mod module {
 			// Schedule for when to trigger SERP-TES and SERP-Inflation
 			// (Blocktime/BlockNumber - every blabla block)
 
-			let serp_tes_now = Self::serp_tes_now().is_ok();
-
 			if now % T::StableCurrencyInflationPeriod::get() == Zero::zero() {
 				let mut count: u32 = 0;
 				count += 1;
