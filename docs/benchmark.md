@@ -44,7 +44,7 @@ for example, this is the command for generating the `serp_treasury` module weigh
    make benchmark
 ```
 
-or 
+Or for a specific module:
 
 ```bash
     cargo run --release --features=runtime-benchmarks \
