@@ -145,7 +145,6 @@ parameter_types! {
 }
 
 // TODO: make those const fn
-// TODO: Check if this makes sense at 18 decimals;
 pub fn dollar(currency_id: CurrencyId) -> Balance {
 	10u128.saturating_pow(currency_id.decimals().expect("Does not support Non-Token decimals").into())
 }
