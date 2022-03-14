@@ -43,3 +43,21 @@ for example, this is the command for generating the `serp_treasury` module weigh
 ```bash
    make benchmark
 ```
+
+or 
+
+```bash
+    cargo run --release --features=runtime-benchmarks \
+    --features=with-ethereum-compatibility \
+    -- benchmark \
+    --chain=dev \
+    --steps=50 \
+    --repeat=20 \
+    '--pallet=serp_treasury' \
+    '--extrinsic=*' \
+    --execution=wasm \
+    --wasm-execution=compiled \
+    --heap-pages=4096 \
+    --template=./templates/runtime-weight-template.hbs \
+    --output=./runtime/src/weights/
+```
