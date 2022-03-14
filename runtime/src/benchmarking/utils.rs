@@ -36,6 +36,7 @@ use sp_runtime::{
 	traits::{SaturatedConversion, StaticLookup},
 	DispatchResult,
 };
+use runtime_common::TokenInfo;
 use sp_std::prelude::*;
 
 pub fn lookup_of_account(who: AccountId) -> <<Runtime as frame_system::Config>::Lookup as StaticLookup>::Source {
@@ -43,11 +44,11 @@ pub fn lookup_of_account(who: AccountId) -> <<Runtime as frame_system::Config>::
 }
 
 pub fn set_balance(currency_id: CurrencyId, who: &AccountId, balance: Balance) {
-	let _ = <Currencies as MultiCurrencyExtended<_>>::update_balance(currency_id, &who, balance.saturated_into());
-	assert_eq!(
-		<Currencies as MultiCurrency<_>>::free_balance(currency_id, who),
-		balance
-	);
+	assert_ok!(<Currencies as MultiCurrencyExtended<_>>::update_balance(
+		currency_id,
+		who,
+		balance.saturated_into()
+	));
 }
 
 pub fn _set_setheum_balance(who: &AccountId, balance: Balance) {
@@ -69,6 +70,10 @@ pub fn feed_price(prices: Vec<(CurrencyId, Price)>) -> DispatchResult {
 
 pub fn _set_balance_fungibles(currency_id: CurrencyId, who: &AccountId, balance: Balance) {
 	assert_ok!(<orml_tokens::Pallet<Runtime> as fungibles::Mutate<AccountId>>::mint_into(currency_id, who, balance));
+}
+
+pub fn dollar(currency_id: CurrencyId) -> Balance {
+	10u128.saturating_pow(currency_id.decimals().expect("Does not support Non-Token decimals").into())
 }
 
 #[cfg(test)]
