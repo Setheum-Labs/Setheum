@@ -43,9 +43,8 @@ use sp_runtime::{
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{
-	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended, SwapLimit
+	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended, SwapLimit
 };
-use fixed::FixedU128;
 mod mock;
 mod tests;
 pub mod weights;
@@ -459,7 +458,6 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		let base_peg: Balance = 4;
 
 		let base_unit = stable_pool_2average_price.saturating_mul(base_peg);
-		let setusd_base_unit = stable_pool_1average_price.saturating_div(base_peg);
 
 		match stable_pool_1average_price {
 			0 => {} 
