@@ -763,12 +763,10 @@ where
 
 parameter_types! {
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETR],
 		vec![SERP],
 		vec![DNAR],
 		vec![SETM],
 		vec![HELP],
-		vec![SETUSD],
 		vec![SETM, SETR],
 		vec![SETM, SETUSD],
 		vec![SERP, SETR],
