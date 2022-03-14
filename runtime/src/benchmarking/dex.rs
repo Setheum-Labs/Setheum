@@ -224,7 +224,7 @@ runtime_benchmarks! {
 		)?;
 	}: _(RawOrigin::Signed(whitelisted_caller()), founder.clone(), trading_pair.first(), trading_pair.second())
 	verify {
-		assert_eq!(Currencies::free_balance(trading_pair.dex_share_currency_id(), &founder), 2_000_000_000_000);
+		assert_eq!(Currencies::free_balance(trading_pair.dex_share_currency_id(), &founder), 2_000_000_000_000_000_000);
 	}
 
 	// add liquidity

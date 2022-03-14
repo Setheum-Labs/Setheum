@@ -43,9 +43,8 @@ use sp_runtime::{
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
 use support::{
-	DEXManager, Price, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended, SwapLimit
+	DEXManager, PriceProvider, Ratio, SerpTreasury, SerpTreasuryExtended, SwapLimit
 };
-use fixed::FixedU128;
 mod mock;
 mod tests;
 pub mod weights;
@@ -431,35 +430,54 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		}
 	}
 	
-	/// Deliver System StableCurrency stability for the Setter - SETR
-	// TODO: FIXME - Change to use DEXOracle's AveragePrice for TES Efficiency
+	/// Deliver System StableCurrency stability for the SetCurrencies.
 	fn serp_tes_now() -> DispatchResult {
 
-		let setter_token = T::SetterCurrencyId::get();
-		let setdollar_token = T::GetSetUSDId::get();
+		let setr = T::SetterCurrencyId::get();
+		let dinar = T::GetDinarCurrencyId::get();
+		let serp = T::GetSerpCurrencyId::get();
+		let setusd = T::GetSetUSDId::get();
 
-		let setter_token: CurrencyId = setter_token.into();
-		let setdollar_token: CurrencyId = setdollar_token.into();
-		
-		let (setter_pool, setdollar_pool) = T::Dex::get_liquidity_pool(setter_token, setdollar_token);
+		// SETR Pools and prices
+		let (stable_pool_1d, dnar_pool1) = T::Dex::get_liquidity_pool(setr, dinar);
+		let (stable_pool_1s,serp_pool1) = T::Dex::get_liquidity_pool(setr, serp);
+		let stable_pool_1d_relative_price = stable_pool_1d.saturating_div(dnar_pool1);
+		let stable_pool_1s_relative_price = stable_pool_1s.saturating_div(serp_pool1);
+		let stable_pool_1cumulative_prices: Balance = stable_pool_1d_relative_price.saturating_add(stable_pool_1s_relative_price);
+		let stable_pool_1average_price: Balance = stable_pool_1cumulative_prices.saturating_div(2);
 
-		let setter_peg: Balance = 4;
+		// SETUSD Pools and prices
+		let (stable_pool_2d, dnar_pool1) = T::Dex::get_liquidity_pool(setusd, dinar);
+		let (stable_pool_2s,serp_pool1) = T::Dex::get_liquidity_pool(setusd, serp);
+		let stable_pool_2d_relative_price = stable_pool_2d.saturating_div(dnar_pool1);
+		let stable_pool_2s_relative_price = stable_pool_2s.saturating_div(serp_pool1);
+		let stable_pool_2cumulative_prices: Balance = stable_pool_2d_relative_price.saturating_add(stable_pool_2s_relative_price);
+		let stable_pool_2average_price: Balance = stable_pool_2cumulative_prices.saturating_div(2);
 
-		let base_unit = setter_pool.saturating_mul(setter_peg);
 
-		match setdollar_pool {
+		let base_peg: Balance = 4;
+
+		let base_unit = stable_pool_2average_price.saturating_mul(base_peg);
+
+		match stable_pool_1average_price {
 			0 => {} 
-			setdollar_pool if setdollar_pool > base_unit => {
-				// safe from underflow because `setdollar_pool` is checked to be greater than `base_unit`
-				let supply = T::Currency::total_issuance(setter_token);
-				let expand_by = Self::calculate_supply_change(setdollar_pool, base_unit, supply);
-				Self::on_serpup(setter_token, expand_by)?;
+			stable_pool_1average_price if stable_pool_1average_price < base_unit => {
+				// safe from underflow because `stable_pool_1average_price` is checked to be greater than `base_unit`
+				let supply = T::Currency::total_issuance(setr);
+				let expand_setr_by = Self::calculate_supply_change(stable_pool_1average_price, base_unit, supply);
+				let contract_setusd_by = expand_setr_by.saturating_div(base_peg);
+				// serpup SETR and serpdown SETUSD both to meet halfway
+				Self::on_serpup(setr, expand_setr_by)?;
+				Self::on_serpdown(setusd, contract_setusd_by)?;
 			}
-			setdollar_pool if setdollar_pool < base_unit => {
-				// safe from underflow because `setdollar_pool` is checked to be less than `base_unit`
-				let supply = T::Currency::total_issuance(setter_token);
-				let contract_by = Self::calculate_supply_change(base_unit, setdollar_pool, supply);
-				Self::on_serpdown(setter_token, contract_by)?;
+			stable_pool_1average_price if stable_pool_1average_price > base_unit => {
+				// safe from underflow because `stable_pool_1average_price` is checked to be less than `base_unit`
+				let supply = T::Currency::total_issuance(setr);
+				let contract_setr_by = Self::calculate_supply_change(base_unit, stable_pool_1average_price, supply);
+				let expand_setusd_by = contract_setr_by.saturating_div(base_peg);
+				// serpup SETR and serpdown SETUSD both to meet halfway
+				Self::on_serpdown(setr, contract_setr_by)?;
+				Self::on_serpup(setusd, expand_setusd_by)?;
 			}
 			_ => {}
 		}

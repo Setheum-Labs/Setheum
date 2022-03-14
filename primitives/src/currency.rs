@@ -148,11 +148,6 @@ macro_rules! create_currency_id {
 					symbol: "LP_HELP_SETUSD".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HELP), DexShare::Token(SETUSD))).unwrap(),
 				},
-				// TODO - FIXME: Remove SETR:SETUSD Pairs (stablecoins)
-				Token {
-					symbol: "LP_SETR_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETR), DexShare::Token(SETUSD))).unwrap(),
-				},
 				Token {
 					symbol: "LP_SETM_SETR".to_string(),
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(SETR))).unwrap(),
