@@ -276,18 +276,14 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 			// Endowed accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
 			vec![
-				// Foundation: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
-				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 626_600_000 as u128),
+				// Foundation & Airdrop: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
+				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 783_250_000 as u128),
 				// Treasury: VQi5wfR3UZnJY4KvxG2uVPP6n6CS296xTznrzqs3hfD4Fyp6x
 				(hex!["6d6f646c7365742f747273790000000000000000000000000000000000000000"].into(), 313_300_000 as u128),
-				// Airdrop: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
-				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 156_650_000 as u128),
 				// Team and DEX Liquidity Offering Fund: VQgPxsHbvGdXC7HhUvYvPifu1SyAuRnUhbMw4hAaTm9fwvkkz
 				(hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(), 1_566_500_000 as u128),
 			],
-			// Airdrop: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
-			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
-			// Foundation: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
+			// Foundation & Airdrop: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
 			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
 			// Team and DEX Liquidity Offering Fund: VQgPxsHbvGdXC7HhUvYvPifu1SyAuRnUhbMw4hAaTm9fwvkkz
 			hex!["22b565e2303579c0d50884a3524c32ed12c8b91a8621dd72270b8fd17d20d009"].into(),
@@ -386,12 +382,10 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 			// Endowed accounts vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			//
 			vec![
-				// Foundation: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
-				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 626_600_000 as u128),
+				// Foundation & Airdrop: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
+				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 783_250_000 as u128),
 				// Treasury: VQi5wfR3UZnJY4KvxG2uVPP6n6CS296xTznrzqs3hfD4Fyp6x
 				(hex!["6d6f646c7365742f747273790000000000000000000000000000000000000000"].into(), 313_300_000 as u128),
-				// Airdrop: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
-				(hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(), 156_650_000 as u128),
 				// Setheum Public Fund (SPF): VQiLsC6xs5xSG7jFUbcRCjKPZqnacJmrNANovRHzbtgThHzhy
 				(hex!["78d105e22be9735d200591ebe506fbc0d0be3f18afa5f5b2fbdb370ee4c2fd47"].into(), 313_300_000 as u128),
 				// Team and DEX Liquidity Offering Fund: VQgPxsHbvGdXC7HhUvYvPifu1SyAuRnUhbMw4hAaTm9fwvkkz
@@ -399,9 +393,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
 				// Advisors and Partners Fund: VQgfLtTS8oZCreyX3FzHuaAbUovtbcuSFLnUFS3tkRvwWGkbD
 				(hex!["2e70349d7140ec49b7cf1ae03b6ae3405103dab86c5a463ceef77ffb4a769868"].into(), 156_650_000 as u128),
 			],
-			// Foundation: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
-			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
-			// Airdrop: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
+			// Foundation & Airdrop: VQh5AghroqszPazCMEdpN8QkAMvXCTkXbANx6GSqFz2kTebuv
 			hex!["409bc00c7f4d8cf046c1eb363022eec1103e70ae180cba92056452315837c71a"].into(),
 			// Setheum Public Fund (SPF): VQiLsC6xs5xSG7jFUbcRCjKPZqnacJmrNANovRHzbtgThHzhy
 			hex!["78d105e22be9735d200591ebe506fbc0d0be3f18afa5f5b2fbdb370ee4c2fd47"].into(),
@@ -629,7 +621,6 @@ fn testnet_genesis(
 	initial_authorities: Vec<(AccountId, AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<(AccountId, Balance)>,
-	airdrop: AccountId,
 	foundation: AccountId,
 	team: AccountId,
 ) -> GenesisConfig {
@@ -661,8 +652,8 @@ fn testnet_genesis(
 	let  setm_foundation_vesting: u128 = 2_664_659_454_310_403_000;
 	let  setm_team_vesting: u128 = 39_969_891_814_656_050_00;
 
-	let  serp_foundation_vesting: u128 = 2_762_540_153_199_900_00;
-	let  serp_team_vesting: u128 = 4_143_810_229_799_850_00;
+	let  serp_foundation_vesting: u128 = 27_625_401_531_999_000;
+	let  serp_team_vesting: u128 = 82_876_204_595_997_000;
 
 	let  dnar_foundation_vesting: u128 = 74_952_639_815_501_000;
 	let  dnar_team_vesting: u128 = 112_428_959_723_252_000;
@@ -775,21 +766,16 @@ fn testnet_genesis(
 		treasury: Default::default(), // Main Treasury (Setheum Treasury)
 		tokens: TokensConfig {
 			balances: vec![
-				(foundation.clone(), SERP, serp_foundation_alloc),
+				(foundation.clone(), SERP, serp_foundation_alloc + serp_airdrops_alloc),
 				(team.clone(), SERP, serp_team_alloc),
-				(airdrop.clone(), SERP, serp_airdrops_alloc),
-				(foundation.clone(), DNAR, dnar_foundation_alloc),
+				(foundation.clone(), DNAR, dnar_foundation_alloc + dnar_airdrop_alloc),
 				(team.clone(), DNAR, dnar_team_alloc),
-				(airdrop.clone(), DNAR, dnar_airdrop_alloc),
-				(foundation.clone(), HELP, help_foundation_alloc),
+				(foundation.clone(), HELP, help_foundation_alloc + help_airdrop_alloc),
 				(team.clone(), HELP, help_team_alloc),
-				(airdrop.clone(), HELP, help_airdrop_alloc),
-				(foundation.clone(), SETR, setr_foundation_alloc),
+				(foundation.clone(), SETR, setr_foundation_alloc + setr_airdrop_alloc),
 				(team.clone(), SETR, setr_team_alloc),
-				(airdrop.clone(), SETR, setr_airdrop_alloc),
-				(foundation.clone(), SETUSD, setusd_foundation_alloc),
+				(foundation.clone(), SETUSD, setusd_foundation_alloc + setusd_airdrop_alloc),
 				(team.clone(), SETUSD, setusd_team_alloc),
-				(airdrop.clone(), SETUSD, setusd_airdrop_alloc),
 			]
 		},
 		evm: EVMConfig {
@@ -891,7 +877,6 @@ fn mainnet_genesis(
 	root_key: AccountId,
 	endowed_accounts: Vec<(AccountId, Balance)>,
 	foundation: AccountId,
-	airdrop: AccountId,
 	spf: AccountId,
 	team: AccountId,
 	advisors_n_partners: AccountId,
@@ -930,40 +915,39 @@ fn mainnet_genesis(
 	let  setusd_airdrop_alloc: u128 = 31_330_000 * 1_000_000_000_000_000_000;
 	
 	// Allocations Vesting - per_period
-	let  setm_foundation_vesting: u128 = 2_664_659_454_310_403_000;
-	let  setm_spf_vesting: u128 = 16_316_348_637_613_530_00;
-	let  setm_team_vesting: u128 = 39_969_891_814_656_050_00;
-	let  setm_advisors_n_partners_vesting: u128 = 21_888_274_088_978_310_00;
+	let  setm_foundation_vesting: u128 = 2_664_659_454_310_403_000; // 2.664_659_454_310_403_000
+	let  setm_spf_vesting: u128 = 16_316_348_637_613_530_00; // 16.316_348_637_613_530_00
+	let  setm_team_vesting: u128 = 3_996_989_181_465_605_000; // 3.996_989_181_465_605_000
+	let  setm_advisors_n_partners_vesting: u128 = 2_188_827_408_897_831_000; // 2.188_827_408_897_831_000
 	
-	let  serp_foundation_vesting: u128 = 2_762_540_153_199_900_00;
-	let  serp_spf_vesting: u128 = 3_749_161_636_485_580_00;
-	let  serp_team_vesting: u128 = 4_143_810_229_799_850_00;
-	let  serp_advisors_n_partners_vesting: u128 = 2_624_413_145_539_910_00;
+	let  serp_foundation_vesting: u128 = 276_254_015_319_990_000; // 0.276_254_015_319_990_000
+	let  serp_spf_vesting: u128 = 374_916_163_648_558_000; // 0.374_916_163_648_558_000
+	let  serp_team_vesting: u128 = 828_762_045_959_970_000; // 0.828_762_045_959_970_000
+	let  serp_advisors_n_partners_vesting: u128 = 262_441_314_553_991_000; // 0.262_441_314_553_991_000
 	
-	let  dnar_foundation_vesting: u128 = 74_952_639_815_501_000;
-	let  dnar_spf_vesting: u128 = 101_721_439_749_609_000;
-	let  dnar_team_vesting: u128 = 112_428_959_723_252_000;
-	let  dnar_advisors_n_partners_vesting: u128 = 71_205_007_824_726_000;
+	let  dnar_foundation_vesting: u128 = 74_952_639_815_501_000; // 0.074_952_639_815_501_000
+	let  dnar_spf_vesting: u128 = 101_721_439_749_609_000; // 0.101_721_439_749_609_000
+	let  dnar_team_vesting: u128 = 224_857_919_446_504_000; // 0.224_857_919_446_504_000
+	let  dnar_advisors_n_partners_vesting: u128 = 71_205_007_824_726_000; // 0.071_205_007_824_726_000
 	
-	let  help_foundation_vesting: u128 = 749_526_398_155_010_000;
-	let  help_spf_vesting: u128 = 1_017_214_397_496_090_000;
-	let  help_team_vesting: u128 = 1_124_289_597_232_520_000;
-	let  help_advisors_n_partners_vesting: u128 = 712_050_078_247_260_000;
+	let  help_foundation_vesting: u128 = 749_526_398_155_012_000; // 0.749_526_398_155_012_000
+	let  help_spf_vesting: u128 = 1_017_214_397_496_088_000; // 1.017_214_397_496_088_000
+	let  help_team_vesting: u128 = 2_248_579_194_465_036_000; // 2.248_579_194_465_036_000
+	let  help_advisors_n_partners_vesting: u128 = 712_050_078_247_261_000; // 0.712_050_078_247_261_000
 	
-	let  setr_foundation_vesting: u128 = 3_912_363_067_292_644_000;
-	let  setr_spf_vesting: u128 = 3_912_363_067_292_644_000;
-	let  setr_team_vesting: u128 = 11_737_089_201_877_930_000;
-	let  setr_advisors_n_partners_vesting: u128 = 3_912_363_067_292_644_000;
+	let  setr_foundation_vesting: u128 = 3_912_363_067_292_645_000; // 3.912_363_067_292_645_000
+	let  setr_spf_vesting: u128 = 3_912_363_067_292_645_000; // 3.912_363_067_292_645_000
+	let  setr_team_vesting: u128 = 11_737_089_201_877_930_000; // 11.737_089_201_877_930_000
+	let  setr_advisors_n_partners_vesting: u128 = 3_912_363_067_292_645_000; // 3.912_363_067_292_645_000
 	
-	let  setusd_foundation_vesting: u128 = 766_089_593_114_241_000;
-	let  setusd_spf_vesting: u128 = 766_089_593_114_241_000;
-	let  setusd_team_vesting: u128 = 2_298_268_779_342_723_000;
-	let  setusd_advisors_n_partners_vesting: u128 = 766_089_593_114_241_000;
+	let  setusd_foundation_vesting: u128 = 766_089_593_114_241_000; // 0.766_089_593_114_241_000
+	let  setusd_spf_vesting: u128 = 766_089_593_114_241_000; // 0.766_089_593_114_241_000
+	let  setusd_team_vesting: u128 = 2_298_268_779_342_723_000; // 2.298_268_779_342_723_000
+	let  setusd_advisors_n_partners_vesting: u128 = 766_089_593_114_241_000; // 0.766_089_593_114_241_000
 
 	let evm_genesis_accounts = evm_genesis();
 
 	let  initial_staking: u128 = 100_000 * 1_000_000_000_000_000_000;
-	let  third_foundation_staking: u128 = 100_000_000 * 1_000_000_000_000_000_000;
 	let existential_deposit = NativeTokenExistentialDeposit::get();
 
 	let balances = initial_authorities
@@ -1046,7 +1030,7 @@ fn mainnet_genesis(
 			minimum_validator_count: 1 as u32,
 			stakers: initial_authorities
 				.iter()
-				.map(|x| (x.0.clone(), x.1.clone(), initial_staking + third_foundation_staking, StakerStatus::Validator))
+				.map(|x| (x.0.clone(), x.1.clone(), initial_staking, StakerStatus::Validator))
 				.collect(),
 			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
 			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
@@ -1059,35 +1043,30 @@ fn mainnet_genesis(
 		treasury: Default::default(), // Setheum Treasury
 		tokens: TokensConfig {
 			balances: vec![
-				(foundation.clone(), SERP, serp_foundation_alloc),
+				(foundation.clone(), SERP, serp_foundation_alloc + serp_airdrops_alloc),
 				(spf.clone(), SERP, serp_spf_alloc),
 				(team.clone(), SERP, serp_team_alloc),
 				(advisors_n_partners.clone(), SERP, serp_advisors_n_partners_alloc),
-				(airdrop.clone(), SERP, serp_airdrops_alloc),
 
-				(foundation.clone(), DNAR, dnar_foundation_alloc),
+				(foundation.clone(), DNAR, dnar_foundation_alloc + dnar_airdrop_alloc),
 				(spf.clone(), DNAR, dnar_spf_alloc),
 				(team.clone(), DNAR, dnar_team_alloc),
 				(advisors_n_partners.clone(), DNAR, dnar_advisors_n_partners_alloc),
-				(airdrop.clone(), DNAR, dnar_airdrop_alloc),
 
-				(foundation.clone(), HELP, help_foundation_alloc),
+				(foundation.clone(), HELP, help_foundation_alloc + help_airdrop_alloc),
 				(spf.clone(), HELP, help_spf_alloc),
 				(team.clone(), HELP, help_team_alloc),
 				(advisors_n_partners.clone(), HELP, help_advisors_n_partners_alloc),
-				(airdrop.clone(), HELP, help_airdrop_alloc),
 
-				(foundation.clone(), SETR, setr_foundation_alloc),
+				(foundation.clone(), SETR, setr_foundation_alloc + setr_airdrop_alloc),
 				(spf.clone(), SETR, setr_spf_alloc),
 				(team.clone(), SETR, setr_team_alloc),
 				(advisors_n_partners.clone(), SETR, setr_advisors_n_partners_alloc),
-				(airdrop.clone(), SETR, setr_airdrop_alloc),
 
-				(foundation.clone(), SETUSD, setusd_foundation_alloc),
+				(foundation.clone(), SETUSD, setusd_foundation_alloc + setusd_airdrop_alloc),
 				(spf.clone(), SETUSD, setusd_spf_alloc),
 				(team.clone(), SETUSD, setusd_team_alloc),
 				(advisors_n_partners.clone(), SETUSD, setusd_advisors_n_partners_alloc),
-				(airdrop.clone(), SETUSD, setusd_airdrop_alloc),
 			]
 		},
 		evm: EVMConfig {

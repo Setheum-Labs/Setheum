@@ -12,6 +12,7 @@ release:
 	make toolchain
 	rm -rf target/
 	cargo build --manifest-path node/Cargo.toml --features with-ethereum-compatibility --release
+
 .PHONY: build
 build:
 	cargo build --manifest-path node/Cargo.toml --features runtime-benchmarks,with-ethereum-compatibility --release
@@ -22,7 +23,7 @@ wasm:
 
 .PHONY: genesis
 genesis:
-	make release
+	make build
 	./target/release/setheum-node build-spec --chain testnet-new > resources/chain_spec_testnet.json
 	./target/release/setheum-node build-spec --chain mainnet-new > resources/chain_spec_mainnet.json
 	./target/release/setheum-node build-spec --chain testnet-new --raw > resources/chain_spec_testnet_raw.json
