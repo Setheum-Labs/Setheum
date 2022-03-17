@@ -102,15 +102,15 @@ pub const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(25);
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be
 /// used by  Operational  extrinsics.
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-/// We allow for 0.75 seconds of compute with a 2.25 seconds average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight = 750 * WEIGHT_PER_MILLIS;
+/// We allow for 1 seconds of compute with a 3 seconds average block time.
+pub const MAXIMUM_BLOCK_WEIGHT: Weight = 1000 * WEIGHT_PER_MILLIS;
 
 const_assert!(NORMAL_DISPATCH_RATIO.deconstruct() >= AVERAGE_ON_INITIALIZE_RATIO.deconstruct());
 
 parameter_types! {
-	/// Maximum length of block. Up to 2MB.
+	/// Maximum length of block. Up to 5MB.
 	pub BlockLength: limits::BlockLength =
-		limits::BlockLength::max_with_normal_ratio(2 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+		limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	/// Block weights base values and limits.
 	pub BlockWeights: limits::BlockWeights = limits::BlockWeights::builder()
 		.base_block(BlockExecutionWeight::get())
