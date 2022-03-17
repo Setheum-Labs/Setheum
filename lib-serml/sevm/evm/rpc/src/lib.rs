@@ -160,7 +160,7 @@ where
 		} = request;
 
 		let gas_limit = gas_limit.unwrap_or(MAX_GAS_LIMIT);
-		let storage_limit = storage_limit.unwrap_or(MAX_STROAGE_LIMIT);
+		let storage_limit = storage_limit.unwrap_or(MAX_STORAGE_LIMIT);
 		let data = data.map(|d| d.0).unwrap_or_default();
 
 		let api = self.client.runtime_api();
