@@ -1,6 +1,6 @@
 {
   "name": "@setheum-labs/contracts",
-  "version": "2.1.0",
+  "version": "3.1.0",
   "description": "Setheum Smart Contract library for Solidity",
   "files": [
     "**/*.js",
@@ -28,5 +28,8 @@
   "bugs": {
     "url": "https://github.com/Setheum-Labs/predeploy-contracts/issues"
   },
-  "homepage": "https://github.com/Setheum-Labs/predeploy-contracts"
+  "homepage": "https://github.com/Setheum-Labs/predeploy-contracts",
+  "contributors": [
+    "Muhammad-Jibril B.A. <jbashir52@gmail.com>"
+  ]
 }
