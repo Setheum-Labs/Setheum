@@ -128,6 +128,15 @@ fn to_u128(val: NumberOrHex) -> std::result::Result<u128, ()> {
 	val.into_u256().try_into().map_err(|_| ())
 }
 
+// Default `gas and storage` limits:
+// limits only apply to call() API
+// create() API takes values from the caller and is unlimited
+//
+// 20M. TODO: use value from runtime
+const MAX_GAS_LIMIT: u64 = 20_000_000;
+// 4M. TODO: use value from runtime
+const MAX_STORAGE_LIMIT: u32 = 4 * 1024 * 1024;
+
 impl<B, C, Balance> EVMApiT<<B as BlockT>::Hash> for EVMApi<B, C, Balance>
 where
 	B: BlockT,
@@ -150,8 +159,8 @@ where
 			data,
 		} = request;
 
-		let gas_limit = gas_limit.unwrap_or_else(u64::max_value); // TODO: set a limit
-		let storage_limit = storage_limit.unwrap_or_else(u32::max_value); // TODO: set a limit
+		let gas_limit = gas_limit.unwrap_or(MAX_GAS_LIMIT);
+		let storage_limit = storage_limit.unwrap_or(MAX_STORAGE_LIMIT);
 		let data = data.map(|d| d.0).unwrap_or_default();
 
 		let api = self.client.runtime_api();

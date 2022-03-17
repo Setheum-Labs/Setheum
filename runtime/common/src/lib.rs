@@ -55,6 +55,7 @@ pub use primitives::{
 	AccountId,
 };
 
+mod gas_to_weight_ratio;
 
 pub type TimeStampedPrice = orml_oracle::TimestampedValue<Price, primitives::Moment>;
 
@@ -89,9 +90,8 @@ impl PrecompileCallerFilter for SystemContractsFilter {
 /// Convert gas to weight
 pub struct GasToWeight;
 impl Convert<u64, Weight> for GasToWeight {
-	fn convert(a: u64) -> u64 {
-		// TODO: estimate this
-		a as Weight
+	fn convert(gas: u64) -> Weight {
+		gas.saturating_mul(gas_to_weight_ratio::RATIO)
 	}
 }
 
