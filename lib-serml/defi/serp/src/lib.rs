@@ -69,7 +69,7 @@ pub mod module {
 		type StableCurrencyIds: Get<Vec<CurrencyId>>;
 
 		#[pallet::constant]
-		/// A duration period of inflation injection.
+		/// A duration period for performing SERP-TES Operations.
 		type StableCurrencyInflationPeriod: Get<Self::BlockNumber>;
 
 		/// The minimum total supply/issuance required to keep a currency live on SERP.
@@ -433,53 +433,63 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	/// Deliver System StableCurrency stability for the SetCurrencies.
 	fn serp_tes_now() -> DispatchResult {
 
+		// Currencies
 		let setr = T::SetterCurrencyId::get();
 		let dinar = T::GetDinarCurrencyId::get();
 		let serp = T::GetSerpCurrencyId::get();
 		let setusd = T::GetSetUSDId::get();
 
-		// SETR Pools and prices
+		// SETR Pools
 		let (stable_pool_1d, dnar_pool1) = T::Dex::get_liquidity_pool(setr, dinar);
 		let (stable_pool_1s,serp_pool1) = T::Dex::get_liquidity_pool(setr, serp);
-		let stable_pool_1d_relative_price = stable_pool_1d.saturating_div(dnar_pool1);
-		let stable_pool_1s_relative_price = stable_pool_1s.saturating_div(serp_pool1);
-		let stable_pool_1cumulative_prices: Balance = stable_pool_1d_relative_price.saturating_add(stable_pool_1s_relative_price);
-		let stable_pool_1average_price: Balance = stable_pool_1cumulative_prices.saturating_div(2);
 
-		// SETUSD Pools and prices
-		let (stable_pool_2d, dnar_pool1) = T::Dex::get_liquidity_pool(setusd, dinar);
-		let (stable_pool_2s,serp_pool1) = T::Dex::get_liquidity_pool(setusd, serp);
-		let stable_pool_2d_relative_price = stable_pool_2d.saturating_div(dnar_pool1);
-		let stable_pool_2s_relative_price = stable_pool_2s.saturating_div(serp_pool1);
-		let stable_pool_2cumulative_prices: Balance = stable_pool_2d_relative_price.saturating_add(stable_pool_2s_relative_price);
-		let stable_pool_2average_price: Balance = stable_pool_2cumulative_prices.saturating_div(2);
+		// SETUSD Pools
+		let (stable_pool_2d, dnar_pool2) = T::Dex::get_liquidity_pool(setusd, dinar);
+		let (stable_pool_2s,serp_pool2) = T::Dex::get_liquidity_pool(setusd, serp);
+
+		// ensure that the SetSwap DEX liquidity pools are not empty
+		if stable_pool_1d.is_zero() || dnar_pool1.is_zero() || stable_pool_1s.is_zero() || serp_pool1.is_zero() {
+			return Ok(());
+		} else if !stable_pool_1d.is_zero() || !dnar_pool1.is_zero() || !stable_pool_1s.is_zero() || !serp_pool1.is_zero() {
+			// SETR prices
+			let stable_pool_1d_relative_price = stable_pool_1d.saturating_div(dnar_pool1);
+			let stable_pool_1s_relative_price = stable_pool_1s.saturating_div(serp_pool1);
+			let stable_pool_1cumulative_prices: Balance = stable_pool_1d_relative_price.saturating_add(stable_pool_1s_relative_price);
+			let stable_pool_1average_price: Balance = stable_pool_1cumulative_prices.saturating_div(2);
+
+			// SETUSD prices
+			let stable_pool_2d_relative_price = stable_pool_2d.saturating_div(dnar_pool2);
+			let stable_pool_2s_relative_price = stable_pool_2s.saturating_div(serp_pool2);
+			let stable_pool_2cumulative_prices: Balance = stable_pool_2d_relative_price.saturating_add(stable_pool_2s_relative_price);
+			let stable_pool_2average_price: Balance = stable_pool_2cumulative_prices.saturating_div(2);
 
 
-		let base_peg: Balance = 4;
+			let base_peg: Balance = 4;
 
-		let base_unit = stable_pool_2average_price.saturating_mul(base_peg);
+			let base_unit = stable_pool_2average_price.saturating_mul(base_peg);
 
-		match stable_pool_1average_price {
-			0 => {} 
-			stable_pool_1average_price if stable_pool_1average_price < base_unit => {
-				// safe from underflow because `stable_pool_1average_price` is checked to be greater than `base_unit`
-				let supply = T::Currency::total_issuance(setr);
-				let expand_setr_by = Self::calculate_supply_change(stable_pool_1average_price, base_unit, supply);
-				let contract_setusd_by = expand_setr_by.saturating_div(base_peg);
-				// serpup SETR and serpdown SETUSD both to meet halfway
-				Self::on_serpup(setr, expand_setr_by)?;
-				Self::on_serpdown(setusd, contract_setusd_by)?;
+			match stable_pool_1average_price {
+				0 => {} 
+				stable_pool_1average_price if stable_pool_1average_price < base_unit => {
+					// safe from underflow because `stable_pool_1average_price` is checked to be greater than `base_unit`
+					let supply = T::Currency::total_issuance(setr);
+					let expand_setr_by = Self::calculate_supply_change(stable_pool_1average_price, base_unit, supply);
+					let contract_setusd_by = expand_setr_by.saturating_div(base_peg);
+					// serpup SETR and serpdown SETUSD both to meet halfway
+					Self::on_serpup(setr, expand_setr_by)?;
+					Self::on_serpdown(setusd, contract_setusd_by)?;
+				}
+				stable_pool_1average_price if stable_pool_1average_price > base_unit => {
+					// safe from underflow because `stable_pool_1average_price` is checked to be less than `base_unit`
+					let supply = T::Currency::total_issuance(setr);
+					let contract_setr_by = Self::calculate_supply_change(base_unit, stable_pool_1average_price, supply);
+					let expand_setusd_by = contract_setr_by.saturating_div(base_peg);
+					// serpup SETR and serpdown SETUSD both to meet halfway
+					Self::on_serpdown(setr, contract_setr_by)?;
+					Self::on_serpup(setusd, expand_setusd_by)?;
+				}
+				_ => {}
 			}
-			stable_pool_1average_price if stable_pool_1average_price > base_unit => {
-				// safe from underflow because `stable_pool_1average_price` is checked to be less than `base_unit`
-				let supply = T::Currency::total_issuance(setr);
-				let contract_setr_by = Self::calculate_supply_change(base_unit, stable_pool_1average_price, supply);
-				let expand_setusd_by = contract_setr_by.saturating_div(base_peg);
-				// serpup SETR and serpdown SETUSD both to meet halfway
-				Self::on_serpdown(setr, contract_setr_by)?;
-				Self::on_serpup(setusd, expand_setusd_by)?;
-			}
-			_ => {}
 		}
 		Ok(())
 	}
@@ -492,7 +502,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			// (CashDropPool, DNAR, SERP, SETM, HELP)
 			let one: Balance = 1;
 			let inflation_amount = Self::stable_currency_inflation_rate(currency_id);
-			let inflamounts: Balance = one.saturating_mul(inflation_amount / 5);
+			let inflamounts: Balance = one.saturating_mul(inflation_amount.saturating_div(5));
 
 			if inflation_amount != 0 {
 				// calculate the target amount limit according to oracle price and the slippage limit,
@@ -585,7 +595,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 	fn get_buyback_serpup(amount: Balance, currency_id: Self::CurrencyId) -> DispatchResult {
 		// Buyback with 50:50 with DNAR:SERP
 		let one: Balance = 1;
-		let amount_50percent: Balance = one.saturating_mul(amount / 2);
+		let amount_50percent: Balance = one.saturating_mul(amount.saturating_div(2));
 
 		// calculate the target amount limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit amount (get min_value)
@@ -665,7 +675,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		// BuyBack Pool - 50%
 		// Buyback with 20:20:20:20:20 with SETR:DNAR:SERP:SETM:HELP
 		let one: Balance = 1;
-		let amount_20percent: Balance = one.saturating_mul(amount / 5);
+		let amount_20percent: Balance = one.saturating_mul(amount.saturating_div(5));
 
 		// calculate the target amount limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit amount (get min_value)
@@ -784,15 +794,15 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::InvalidAmount,
 		);
 		
-		let get_buyback_serplus = Self::get_buyback_serplus(amount / 2, currency_id).is_ok();
-		let get_cashdrop_serplus = Self::get_cashdrop_serplus(amount / 2, currency_id).is_ok();
+		let get_buyback_serplus = Self::get_buyback_serplus(amount.saturating_div(2), currency_id).is_ok();
+		let get_cashdrop_serplus = Self::get_cashdrop_serplus(amount.saturating_div(2), currency_id).is_ok();
 
 		if get_buyback_serplus {
-			Self::get_buyback_serplus(amount / 2, currency_id).unwrap();	// 50%
+			Self::get_buyback_serplus(amount.saturating_div(2), currency_id).unwrap();	// 50%
 		};
 		
 		if get_cashdrop_serplus {
-			Self::get_cashdrop_serplus(amount / 2, currency_id).unwrap();	// 50%
+			Self::get_cashdrop_serplus(amount.saturating_div(2), currency_id).unwrap();	// 50%
 		}
 
 		Self::deposit_event(Event::SerplusDelivery(amount, currency_id));
@@ -812,15 +822,15 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			Error::<T>::InvalidAmount,
 		);
 
-		let get_buyback_serpup = Self::get_buyback_serpup(amount / 2, currency_id).is_ok();
-		let get_cashdrop_serpup = Self::get_cashdrop_serpup(amount / 2, currency_id).is_ok();
+		let get_buyback_serpup = Self::get_buyback_serpup(amount.saturating_div(2), currency_id).is_ok();
+		let get_cashdrop_serpup = Self::get_cashdrop_serpup(amount.saturating_div(2), currency_id).is_ok();
 
 		if get_buyback_serpup {
-			Self::get_buyback_serpup(amount / 2, currency_id).unwrap();	// 50%
+			Self::get_buyback_serpup(amount.saturating_div(2), currency_id).unwrap();	// 50%
 		};
 		
 		if get_cashdrop_serpup {
-			Self::get_cashdrop_serpup(amount / 2, currency_id).unwrap();	// 50%
+			Self::get_cashdrop_serpup(amount.saturating_div(2), currency_id).unwrap();	// 50%
 		}
 
 		Self::deposit_event(Event::SerpUp(amount, currency_id));
@@ -847,8 +857,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		);
 
 		// Serpdown 50:50 with DNAR:SERP
-		let two: Balance = 2;
-		let half = amount / two;
+		let half = amount.saturating_div(2);
 
 		// calculate the supply limit according to oracle price and the slippage limit,
 		// if oracle price is not avalible, do not limit
@@ -937,7 +946,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			let maximum_claimable_transfer = T::SetterMaximumClaimableTransferAmounts::get();
 
 			if transfer_amount >= minimum_claimable_transfer && transfer_amount <= maximum_claimable_transfer {
-				let balance_cashdrop_amount = transfer_amount / 25; // 4% cashdrop claim reward
+				let balance_cashdrop_amount = transfer_amount.saturating_div(25); // 4% cashdrop claim reward
 				let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 				if balance_cashdrop_amount <= cashdrop_pool_balance {
 					// Issue the CashDrop claim from the CashDropPool
@@ -954,7 +963,7 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 			let maximum_claimable_transfer = T::SetDollarMaximumClaimableTransferAmounts::get();
 
 			if transfer_amount >= minimum_claimable_transfer && transfer_amount <= maximum_claimable_transfer {
-				let balance_cashdrop_amount = transfer_amount / 50; // 2% cashdrop claim reward
+				let balance_cashdrop_amount = transfer_amount.saturating_div(50); // 2% cashdrop claim reward
 				let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 				if balance_cashdrop_amount <= cashdrop_pool_balance {
 					// Issue the CashDrop claim from the CashDropPool

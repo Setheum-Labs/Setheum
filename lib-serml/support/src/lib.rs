@@ -244,6 +244,14 @@ pub enum SwapLimit<Balance> {
 	ExactTarget(Balance, Balance),
 }
 
+// #[derive(RuntimeDebug, Encode, Decode, Clone, Copy, PartialEq, TypeInfo)]
+// pub enum SerpingStatus<BlockNumber> {
+// 	/// Enable/Activate serping of setcurrencies (period).
+// 	Active(BlockNumber),
+// 	/// Disable/Deactivate serping of setcurrencies.
+// 	Inactive,
+// }
+
 pub trait DEXManager<AccountId, CurrencyId, Balance> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
