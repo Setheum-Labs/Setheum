@@ -268,7 +268,7 @@ parameter_types! {
 		vec![SETUSD, SETR, DNAR]
 	];
 	pub const TradingPathLimit: u32 = 4;
-	pub SerpTesPeriod: u64 = 5;
+	pub StableCurrencyInflationPeriod: u64 = 5;
 	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
 	pub SetterMaximumClaimableTransferAmounts: Balance = 200;
 	pub SetDollarMinimumClaimableTransferAmounts: Balance = 2;
@@ -283,7 +283,7 @@ impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
-	type SerpTesPeriod = SerpTesPeriod;
+	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;

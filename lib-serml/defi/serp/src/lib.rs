@@ -70,7 +70,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// A duration period for performing SERP-TES Operations.
-		type SerpTesPeriod: Get<Self::BlockNumber>;
+		type StableCurrencyInflationPeriod: Get<Self::BlockNumber>;
 
 		/// The minimum total supply/issuance required to keep a currency live on SERP.
 		/// This can be bypassed through the CDP-Treasury if necessary.
@@ -235,7 +235,7 @@ pub mod module {
 	#[pallet::getter(fn cashdrop_pool)]
 	pub type CashDropPool<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
-	/// The inflation rate amount per SerpTesPeriod of specific
+	/// The inflation rate amount per StableCurrencyInflationPeriod of specific
 	/// stable currency type.
 	///
 	/// StableCurrencyInflationRate: map CurrencyId => Balance
@@ -295,7 +295,7 @@ pub mod module {
 			// Schedule for when to trigger SERP-TES and SERP-Inflation
 			// (Blocktime/BlockNumber - every blabla block)
 
-			if now % T::SerpTesPeriod::get() == Zero::zero() {
+			if now % T::StableCurrencyInflationPeriod::get() == Zero::zero() {
 				let mut count: u32 = 0;
 				count += 1;
 				
