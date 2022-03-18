@@ -283,6 +283,12 @@
     "ExchangeRate": "FixedU128",
     "Rate": "FixedU128",
     "Ratio": "FixedU128",
+    "SwapLimit": {
+        "_enum": {
+            "ExactSupply": "(Balance, Balance)",
+            "ExactTarget": "(Balance, Balance)"
+        }
+    },
     "PublicKey": "[u8; 20]",
     "DestAddress": "Vec<u8>",
     "PoolTokenIndex": "u32",
