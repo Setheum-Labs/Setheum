@@ -869,7 +869,7 @@ impl module_dex::Config for Runtime {
 // }
 
 parameter_types! {
-    pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
+    pub const SerpTesPeriod: BlockNumber = MINUTES;
     
 	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * dollar(SETR);
 	pub SetterMaximumClaimableTransferAmounts: Balance = 2_000_000 * dollar(SETR);
@@ -881,7 +881,7 @@ impl serp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type StableCurrencyIds = StableCurrencyIds;
-	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
+	type SerpTesPeriod = SerpTesPeriod;
 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetSerpCurrencyId = GetSerpCurrencyId;

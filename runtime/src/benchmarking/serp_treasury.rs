@@ -24,7 +24,7 @@
 use crate::{
 	AccountId, Balance, CurrencyId, Currencies, dollar, Dex,
 	MaxSwapSlippageCompareToOracle, Prices, Ratio, Runtime,
-	SerpTreasury, StableCurrencyIds, StableCurrencyInflationPeriod,
+	SerpTreasury, StableCurrencyIds, SerpTesPeriod,
 	System, GetDinarCurrencyId, GetSerpCurrencyId, GetNativeCurrencyId,
 	GetHelpCurrencyId, GetSetUSDId, SetterCurrencyId, 
 };
@@ -52,7 +52,7 @@ runtime_benchmarks! {
 		let c in 0 .. StableCurrencyIds::get().len().saturating_sub(1) as u32;
 		let currency_ids = StableCurrencyIds::get();
 
-		let block_number = StableCurrencyInflationPeriod::get();
+		let block_number = SerpTesPeriod::get();
 		
 		let caller: AccountId = whitelisted_caller();
 		set_balance(DNAR, &caller, 1000000000 * dollar(DNAR));
