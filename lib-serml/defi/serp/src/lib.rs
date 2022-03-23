@@ -235,6 +235,20 @@ pub mod module {
 	#[pallet::getter(fn cashdrop_pool)]
 	pub type CashDropPool<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
 
+	/// The Total count of CashDrops successfully been claimed
+	///
+	/// CashDropCount: map CurrencyId => u32
+	#[pallet::storage]
+	#[pallet::getter(fn cashdrop_count)]
+	pub type CashDropCount<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, u32, ValueQuery>;
+
+	/// The Total amounts of CashDrops successfully been claimed
+	///
+	/// CashDrops: map CurrencyId => Balance
+	#[pallet::storage]
+	#[pallet::getter(fn total_cashdrops)]
+	pub type CashDrops<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Balance, ValueQuery>;
+
 	/// The inflation rate amount per StableCurrencyInflationPeriod of specific
 	/// stable currency type.
 	///
@@ -655,8 +669,13 @@ impl<T: Config> SerpTreasury<T::AccountId> for Pallet<T> {
 		Self::issue_standard(currency_id, &claimant_id, amount)?;
 		let cashdrop_pool_balance = Self::cashdrop_pool(currency_id);
 		let updated_cashdrop_pool_balance = cashdrop_pool_balance.saturating_sub(amount);
-
-		CashDropPool::<T>::insert(currency_id, updated_cashdrop_pool_balance);
+		// Update `CashDropCount`
+		let cashdrop_count: u32 = 1 + <CashDropCount<T>>::get(currency_id);
+		<CashDropCount<T>>::insert(currency_id, cashdrop_count);
+		// Update `CashDropPool`
+		<CashDropPool<T>>::insert(currency_id, updated_cashdrop_pool_balance);
+		// Update `CashDrops` history
+		<CashDrops<T>>::insert(currency_id, <CashDrops<T>>::get(currency_id) + amount);
 		Self::deposit_event(Event::IssueCashDropFromPool(claimant_id.clone(), currency_id, amount));
 		Ok(())
 	}
