@@ -1,5 +1,5 @@
 [package]
-name = "nft-mart"
+name = "module-example"
 version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"
