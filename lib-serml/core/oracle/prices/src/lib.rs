@@ -39,6 +39,7 @@ use sp_core::U256;
 use sp_runtime::FixedPointNumber;
 use sp_std::{convert::TryInto, marker::PhantomData};
 use support::{CurrencyIdMapping, DEXManager, LockablePrice, Price, PriceProvider};
+use integer_sqrt::*;
 
 mod mock;
 mod tests;
