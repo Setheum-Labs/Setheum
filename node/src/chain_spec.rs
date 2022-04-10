@@ -565,7 +565,6 @@ fn dev_genesis(
 				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(SETR, 800 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 			],
 		},
 		cdp_engine: CdpEngineConfig {
@@ -597,13 +596,6 @@ fn dev_genesis(
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
 					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					SETR,
-					Some(FixedU128::saturating_from_rational(103, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
-					33_000_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 			],
 		},
@@ -820,7 +812,6 @@ fn testnet_genesis(
 				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(SETR, 800 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 			],
 		},
 		cdp_engine: CdpEngineConfig {
@@ -852,13 +843,6 @@ fn testnet_genesis(
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
 					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					SETR,
-					Some(FixedU128::saturating_from_rational(103, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
-					33_000_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 			],
 		},
@@ -1122,7 +1106,6 @@ fn mainnet_genesis(
 				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(SETR, 800 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 			],
 		},
 		cdp_engine: CdpEngineConfig {
@@ -1154,13 +1137,6 @@ fn mainnet_genesis(
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
 					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					SETR,
-					Some(FixedU128::saturating_from_rational(103, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(3, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(106, 100)), // required liquidation ratio
-					33_000_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
 				),
 			],
 		},
