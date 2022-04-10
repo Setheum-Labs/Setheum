@@ -271,7 +271,7 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 4800; // 4hrs
-	pub const SS58Prefix: u8 = 149; // {mb***}
+	pub const SS58Prefix: u8 = 42;
 }
 
 impl frame_system::Config for Runtime {

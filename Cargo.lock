@@ -4168,6 +4168,7 @@ version = "1.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "integer-sqrt",
  "module-support",
  "orml-tokens",
  "orml-traits",
