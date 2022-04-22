@@ -132,13 +132,13 @@ mod benchmarking;
 
 // Pallet accounts of runtime
 parameter_types! {
-	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");		// 3Y9ymmssnjtYt1J9ohYzpjVj17f2xMBHcuFY8B6ty1p4vzno
-	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");	// 3Y9ymmssnjtYsyRWeDAo7XuSnXQqhxMcmefhqbubtbWdVxHP
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 3Y9ymmssnjtYtTqe2maPGPCgruSW6sbMc9biwoPD8AqSeDZc
-	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 3Y9ymmssnjtYtFUzi9GQnpn3yxheQjSN7a8vJZSbiwVaJR5M
-	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");			// 3Y9ymmssnjtYtTgjkqqj1mQyQUmUUfWps8UEgZHZiDkh9dUy
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");	// 3Y9ymmssnjtYtTr4Ywm8vFwf5K2SJc3RTWxGWw5Gc6dttfJ8
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");		// 3Y9ymmssnjtYtViJZg5sRSARwpdjDM4ZrQiAtHFPQf4XiRUk
+	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");		// 5EYCAe5jKgkuY1B3CkWQF41wzN62tTt8ptfmao31qYvMiVRD
+	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");	// 5EYCAe5jKgkuXyJQ3G8CXrRfmmqqe54Tye5wJDqim8cvHQi7
+	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 5EYCAe5jKgkuYTiXRpXnghiur9sW2zJCp91xQRKKzhwjS2DC
+	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 5EYCAe5jKgkuYFMt7CDpD9JGyD8eLr9DKZZ9mBNibUbs5xXo
+	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");			// 5EYCAe5jKgkuYTZd9to8S5wCPjCUQnDg57tU9BDgakrywBM2
+	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");	// 5EYCAe5jKgkuYTiwwziYLaTt4ZTSEikGfWNVyZ1PUdkBg78Z
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");		// 5EYCAe5jKgkuYVbBxj3Gqkgew54j9TmR4Q8QLuBWHCApVqWn
 }
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
