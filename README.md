@@ -19,7 +19,7 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 
 # Introduction
 
-Setheum is founded and initiated and fascilitated by Muhammad-Jibril B.A. of Setheum Labs, Setheum Foundation and Slixon Technologies to steward and support the development and advancement of the Network, its ecosystem and its community to foster the development and adoption of decentralised finance by building and supporting cross-chain open finance infrastructure such as the SERP (Setheum Elastic Reserve Protocol) stablecoin system, the SetMint stablecoin minting system and Setheum's built-in payment system SetPay(CashDrops) that lets traders and transactors claim cashback (what we call CashDrop) on their transactions to speak of a few. 
+Setheum is founded and initiated and fascilitated by Muhammad-Jibril B.A. of Setheum Labs, Setheum Foundation and Slixon Technologies to steward and support the development and advancement of the Network, its ecosystem and its community to foster the development and adoption of decentralised finance by building and supporting cross-chain open finance infrastructure.
 Setheum also deploys Advanced Incentivization mechanisms and economic models modeled under the Jurisdiction of Islamic Finance.
 
 ### Founder/Developer:
@@ -28,37 +28,26 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
 
 ## Core Products - Mostly Unique to Setheum
 
-### The Tokens - [Currencies](./primitives/src/currency.rs#:~:text=%7D-,create_currency_id!%20%7B,%7D,-pub%20trait%20TokenInfo)
+### The Tokens
 
 
 ```bash
     SETM("Setheum", 12) = 0,
-    USDI("InterUSD", 12) = 1,
+    SLIX("Slixon", 12) = 1,
+    USDI("InterUSD", 12) = 2,
+    USDW("WestUSD", 12) = 3,
 ```
 
-1. [The Setter](./primitives/src/currency.rs#:~:text=SETR(%22Setter%22%2C%2012)%20%3D%203%2C) - The Setter is a stable currency pegged to the US dollar at a ratio of 1:10, where 1 SETR = $0.25 USD (25 cents or $1 USD = 4 SETRs).
-
-2. [The SERP](./lib-serml/defi/serp) - The SERP (Setheum Elastic Reserve Protocol) is algorithmically responsible for stabilizing the prices of the Setheum Stable Currencies. No human interferrance is needed for this, it's all algorithmically handled by the SERP. The SERP is the backbone of Setheum, it is based on my TES (Token Elasticity of Supply) algorithm based on PES (Price Elasticity of Supply) such that the demand curve or price of a currency determines the supply serping point, meaning the supply curve of a SetCurrency will be adjusted according to the demand curve of that specific SetCurrency. The result will be burning or minting an amount equivalent to the serping point produced by the SERP-TES, the burning amount will be bought back by the SERP automatically through the built-in-DEX and the bought amount will be burnt to meet the satisfaction of the demand curve to prop the price back up to its peg, the opposite is done to lower the price of an under-supplied currency that is on demand and above its peg on the demand curve, for this the mint amount is divided into receipients including the SetPayTreasury where CashDrops are deposited for users to claim, the System Treasury under Governance, the Charity Fund stewarded by the Setheum Foundation, and the WelfareTreasury, more on the Welfare Treasury below.
-
-	In The SERP and Setheum lingua, I coined these terms:
-	* serp: to increase or decrease the supply of a Setheum stable Currency at its serping point in the curve, on either the x or y axis, the negative or the positive.
-	* serpup: to increase the supply of a Setheum stablecurrency at its serping point.
-	* serpdown: to decrease the supply of a Setheum stablecurrency at its serping point.
-
-3. [The CashDrops](./lib-serml/core/tokens/currencies/src/lib.rs#:~:text=T%3A%3ASerpTreasury%3A%3Aclaim_cashdrop(currency_id%2C%20%26from%2C%20amount)%3F) - The CashDrops that are dispatched by the SERP to the claimants (transactors/transactions that claim cashdrops). Whoever transacts witha SetCurrency (Setheum Stable Currency), they can toggle on claim cashdrop to get a cashback of (2% for SETUSD and/or 4% for SETR) of the amount they transferred/sent, this amount is only cashdropped if the CashDropPool has enough funds to cover that amount. The funds in the CashDropPool are provided by the SERP through SerpUps and through Serp Stablecoin Inflation. these funds are then transferred by the system to the SERP'S CashDropPool for CashDrops ready to be claimed.
-
-4. [The EFE and EFFECTs](./lib-serml/defi/setswap/dex/src/lib.rs#:~:text=type%20GetStableCurrencyExchangeFee%3A%20Get%3C(u32%2C%20u32)%3E%3B) - The EFE is the ExchangeFeeEvaluator, it basically takes lower exchange fees than the normal rate on DEX for stablecurrency pools, and the difference between those two rates is settled by the EFE to the LPs in stable currencies, to be eligible for the EFE one of the two currencies in the LP pair must be a Setheum stablecurrency. Therefore, the traders of that pool pay less fees and the LPs get more income because these pairs will attract more traders and that will in turn attract more liquidity by the LPs.
-
-5. [The SEVM](./lib-serml/sevm) - The Setheum EVM is an Ethereum Virtual Machine (EVM) compatibility layer that implements the EVM on Setheum and bridges to Ethereum that opens the ground for interoperability between Ethereum and Setheum.
+1. [The SEVM](./lib-serml/sevm) - The Setheum EVM is an Ethereum Virtual Machine (EVM) compatibility layer that implements the EVM on Setheum and bridges to Ethereum that opens the ground for interoperability between Ethereum and Setheum.
 The SEVM lets developers onboard, deploy or migrate their Ethereum Solidity Smart Contracts on Setheum seamlessly with little to no change in their code.
 The SetheumEVM has a beautiful library of developer tools that let developers deploy, manageand interact with their smart contracts and upgradable smart contracts on the S-EVM with popular and well documented tools like Truffle, MetaMask, et al.
 The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, to let users access the Setheum and the EVM both with a single wallet without having to use two separate wallets for compatibility.
 
-6. [The SetMint](./lib-serml/defi/setmint) - Inspired by MakerDAO Protocol, the CDP (Collateralized Debt Position) protocol on Ethereum. The Setheum CDP has zero interest rates, zero stability fees, and is fully halal and collateralized. This differentiates SetMint from any other CDP Protocol, making it by far the only halal loan protocol in the entire industry. And it is Multi-Collateral.
-Just reserve some collateral to mint some SETUSD, when returning the loan just return exactly what was loaned and unreserve the collateral with no fees and no interest.
+2. [The SetMint](./lib-serml/defi/setmint) - Inspired by MakerDAO Protocol, the CDP (Collateralized Debt Position) protocol on Ethereum. The Setheum CDP has zero interest rates, zero stability fees, and is fully halal and collateralized. This differentiates SetMint from any other CDP Protocol, making it by far the only halal loan protocol in the entire industry. And it is Multi-Collateral.
+Just reserve some collateral to mint some USDI/USDW, when returning the loan just return exactly what was loaned and unreserve the collateral with no fees and no interest.
 This lets the muslim world also participate in the industry and take part in trading and yield making strategies that are within their dome of principles, for me this is a gamechanger that I wished was there for me, therefore I am building it for people like me who need it but haven’t been given the chance to be pleased by it, and also non-muslims that want to break-free from the interest-based alternatives to a more efficient system based on truth, fairness and equality.
 
-6. [The HELP (HighEnd LaunchPad)](./lib-serml/defi/highend) - The Setheum Help LaunchPad is a crowdfunding protocol for teams & projects to raise soney and launch their tokens to the public and add their tokens to the Setheum DEX (SetSwap). It provides halal incentives to LPs to provide liquidity for token launches to bootstrap on the SetSwap and lets the teams/projects raise funds while getting help listing bootstrap pool on DEX. Governed by the` LaunchPadCouncil`
+3. [The LaunchPad](./lib-serml/defi/launchpad) - The Setheum Help LaunchPad is a crowdfunding protocol for teams & projects to raise soney and launch their tokens to the public and add their tokens to the Setheum DEX (SetSwap). It provides halal incentives to LPs to provide liquidity for token launches to bootstrap on the SetSwap and lets the teams/projects raise funds while getting help listing bootstrap pool on DEX. Governed by the` LaunchPadCouncil`
 
 For all the SERML (Setheum Runtime Module Library) modules Check the [lib-serml](./lib-serml)
 
