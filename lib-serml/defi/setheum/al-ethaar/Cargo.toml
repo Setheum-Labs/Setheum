@@ -1,0 +1,34 @@
+[package]
+name = "al-ethaar-quadratic-altruism"
+version = "0.0.1"
+authors = ["Setheum Labs"]
+edition = "2018"
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+frame-system = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+pallet-identity = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+integer-sqrt = { default-features = false, version = '0.1.5' }
+linked-hash-map = { default-features = false, version = '0.5.4' }
+serde = { version = "1.0.119", features = ["derive"], optional = true }
+
+[dev-dependencies]
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+sp-io = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10"}
+
+[features]
+default = ['std']
+std = [
+    'serde',
+    'codec/std',
+    'frame-support/std',
+    'frame-system/std',
+]
