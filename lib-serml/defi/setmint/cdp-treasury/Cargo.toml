@@ -14,7 +14,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 
 orml-traits = { path = "../../../../lib-orml/traits", default-features = false }
 support = { package = "module-support", path = "../../../support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../../../primitives", default-features = false }
+primitives = { package = "system-primitives", path = "../../../../primitives", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }

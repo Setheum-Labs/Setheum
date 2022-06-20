@@ -4,7 +4,7 @@ version = '1.0.0'
 edition = '2018'
 build = "build.rs"
 homepage = 'https://setheum.xyz'
-name = 'setheum-runtime'
+name = 'newrome-runtime'
 repository = 'https://github.com/Setheum-Labs/Setheum'
 
 [package.metadata.docs.rs]
@@ -116,7 +116,7 @@ module-prices = { path = "../lib-serml/core/oracle/prices", default-features = f
 module-support = { path = "../lib-serml/support", default-features = false }
 module-vesting = { path = "../lib-serml/core/vesting", default-features = false }
 
-primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
+primitives = { package = "system-primitives", path = "../primitives", default-features = false }
 runtime-common = { path = "common", default-features = false }
 
 

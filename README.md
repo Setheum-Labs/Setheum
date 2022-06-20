@@ -263,7 +263,7 @@ Bench bot will do the benchmarking, generate `weights.rs` file push changes into
 make benchmark
 ```
 
-### Fork setheum-chain
+### Fork Setheum
 
 You can create a fork of a live chain (testnet / mainnet) for development purposes.
 

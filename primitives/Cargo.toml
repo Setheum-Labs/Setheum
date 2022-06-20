@@ -1,5 +1,5 @@
 [package]
-name = "setheum-primitives"
+name = "system-primitives"
 version = "1.0.0"
 authors = ["Setheum Labs"]
 edition = "2018"

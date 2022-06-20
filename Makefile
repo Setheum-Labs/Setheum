@@ -120,5 +120,5 @@ endif
 
 .PHONY: generate-tokens
 generate-tokens:
-	cargo test -p setheum-primitives -- --ignored
+	cargo test -p system-primitives -- --ignored
 	cd lib-serml/sevm/predeploy-contracts && yarn && yarn run generate-bytecode

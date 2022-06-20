@@ -116,7 +116,7 @@ module-prices = { path = "../lib-serml/core/oracle/prices", default-features = f
 module-support = { path = "../lib-serml/support", default-features = false }
 module-vesting = { path = "../lib-serml/core/vesting", default-features = false }
 
-primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
+primitives = { package = "system-primitives", path = "../primitives", default-features = false }
 runtime-common = { path = "common", default-features = false }
 
 

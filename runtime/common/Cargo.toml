@@ -26,7 +26,7 @@ orml-traits = { path = "../../lib-orml/traits", default-features = false }
 module-evm = { path = "../../lib-serml/sevm/evm", default-features = false }
 module-support = { path = "../../lib-serml/support", default-features = false }
 module-transaction-payment = { path = "../../lib-serml/core/transactions/transaction-payment", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+primitives = { package = "system-primitives", path = "../../primitives", default-features = false }
 primitives-proc-macro = { path = "../../primitives/proc-macro" }
 
 [dev-dependencies]

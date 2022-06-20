@@ -17,7 +17,7 @@ rand_chacha = { version = "0.2", default-features = false }
 
 loans = { package = "module-loans", path = "../loans", default-features = false }
 support = { package = "module-support", path = "../../../support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../../../primitives", default-features = false }
+primitives = { package = "system-primitives", path = "../../../../primitives", default-features = false }
 orml-traits = { path = "../../../../lib-orml/traits", default-features = false }
 orml-utilities = { path = "../../../../lib-orml/utilities", default-features = false }
 

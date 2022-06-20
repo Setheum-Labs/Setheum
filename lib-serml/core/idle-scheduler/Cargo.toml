@@ -13,7 +13,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-setheum-primitives = { path = "../../../primitives", default-features = false }
+system-primitives = { path = "../../../primitives", default-features = false }
 module-support = { path = "../../support", default-features = false }
 
 [dev-dependencies]
@@ -29,7 +29,7 @@ std = [
 	"sp-std/std",
 	"frame-support/std",
 	"frame-system/std",
-	"setheum-primitives/std",
+	"system-primitives/std",
 	"module-support/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

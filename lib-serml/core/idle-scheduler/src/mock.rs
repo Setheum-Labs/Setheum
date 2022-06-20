@@ -23,7 +23,7 @@
 #![cfg(test)]
 
 use crate as module_idle_scheduler;
-use setheum_primitives::{define_combined_task, task::TaskResult};
+use system_primitives::{define_combined_task, task::TaskResult};
 use frame_support::weights::Weight;
 use frame_support::{construct_runtime, parameter_types, traits::Everything};
 use module_support::DispatchableTask;

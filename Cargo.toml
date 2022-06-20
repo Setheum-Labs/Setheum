@@ -5,13 +5,17 @@ resolver = "2"
 
 members = [
 	# Primary modules
-    'node',
-    'runtime',
+    'nodes/newrome',
+    'nodes/setheum',
+    'nodes/slixon',
 	"runtime/common",
+	"runtime/newrome",
+	"runtime/setheum",
+	"runtime/slixon",
     'primitives',
+
 	# SERML Modules
 	"lib-serml/core/airdrop",
-	# "lib-serml/core/atomic-swap",
 	"lib-serml/core/idle-scheduler",
 	"lib-serml/core/oracle/dex-oracle",
 	"lib-serml/core/oracle/prices",
@@ -20,15 +24,6 @@ members = [
 	"lib-serml/core/transactions/transaction-pause",
 	"lib-serml/core/transactions/transaction-payment",
 	"lib-serml/core/vesting",
-	# "lib-serml/defi/al-ethaar",
-	# "lib-serml/defi/al-ethaar/rpc",
-	# "lib-serml/defi/al-ethaar/runtime-api",
-	# "lib-serml/defi/highend/launchpad",
-	# "lib-serml/defi/highend/launchpad/rpc",
-	# "lib-serml/defi/highend/launchpad/rpc/runtime-api",
-	# "lib-serml/defi/qma/flashloans",
-	# "lib-serml/defi/qma/fvm",
-	"lib-serml/defi/serp",
 	"lib-serml/defi/setmint/auction-manager",
 	"lib-serml/defi/setmint/cdp-engine",
 	"lib-serml/defi/setmint/cdp-treasury",
@@ -36,13 +31,13 @@ members = [
 	"lib-serml/defi/setmint/loans",
 	"lib-serml/defi/setmint/setmint-core",
 	"lib-serml/defi/setswap/dex",
-	"lib-serml/defi/setswap/p2p",
 	"lib-serml/sevm/evm",
 	"lib-serml/sevm/evm/rpc",
 	"lib-serml/sevm/evm/rpc/runtime_api",
 	"lib-serml/sevm/evm-accounts",
 	"lib-serml/sevm/evm-bridge",
 	"lib-serml/sevm/evm-manager",
+
 	# ORML modules
 	"lib-orml/auction",
 	"lib-orml/authority",

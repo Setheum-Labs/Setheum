@@ -15,7 +15,7 @@ sp-io= { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-primitives = { package = "setheum-primitives", path = "../../../../primitives", default-features = false }
+primitives = { package = "system-primitives", path = "../../../../primitives", default-features = false }
 support = { package = "module-support", path = "../../../support", default-features = false }
 orml-traits = { path = "../../../../lib-orml/traits", default-features = false }
 
