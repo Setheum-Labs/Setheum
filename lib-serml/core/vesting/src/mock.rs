@@ -22,7 +22,7 @@ parameter_types! {
 pub type AccountId = u128;
 
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -112,10 +112,10 @@ impl orml_tokens::Config for Runtime {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETUSD,
+		USDI,
 	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  	// Setter  currency ticker is SETR/
-	pub const GetSetUSDId: CurrencyId = SETUSD;  		// SetDollar currency ticker is SETUSD/
+	pub const GetSetUSDId: CurrencyId = USDI;  		// SetDollar currency ticker is USDI/
 	pub const GetNativeCurrencyId: CurrencyId = SETM;  	// Setheum native currency ticker is SETM/
 	pub const GetSerpCurrencyId: CurrencyId = SERP;  	// Serp currency ticker is SERP/
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;  	// The Dinar currency ticker is DNAR/
@@ -197,19 +197,19 @@ impl Default for ExtBuilder {
 				(ALICE, DNAR, 1000),
 				(ALICE, HELP, 1000),
 				(ALICE, SETR, 1000),
-				(ALICE, SETUSD, 1000),
+				(ALICE, USDI, 1000),
 				(CHARLIE, SETM, 10000),
 				(CHARLIE, SERP, 1000),
 				(CHARLIE, DNAR, 1000),
 				(CHARLIE, HELP, 1000),
 				(CHARLIE, SETR, 1000),
-				(CHARLIE, SETUSD, 1000),
+				(CHARLIE, USDI, 1000),
 				(TREASURY, SETM, 10000),
 				(TREASURY, SERP, 1000),
 				(TREASURY, DNAR, 1000),
 				(TREASURY, HELP, 1000),
 				(TREASURY, SETR, 1000),
-				(TREASURY, SETUSD, 1000)
+				(TREASURY, USDI, 1000)
 			],
 		}
 	}

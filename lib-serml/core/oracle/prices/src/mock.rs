@@ -40,12 +40,12 @@ pub type AccountId = u128;
 pub type BlockNumber = u64;
 
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const LP_SETUSD_DNAR: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DNAR));
+pub const LP_USDI_DNAR: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDI), DexShare::Token(TokenSymbol::DNAR));
 
 mod prices {
 	pub use super::super::*;
@@ -94,7 +94,7 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 	fn get(currency_id: &CurrencyId) -> Option<Price> {
 		if CHANGED.with(|v| *v.borrow_mut()) {
 			match *currency_id {
-				SETUSD => None,
+				USDI => None,
 				SERP => Some(Price::saturating_from_integer(40000)),
 				DNAR => Some(Price::saturating_from_integer(10)),
 				SETM => Some(Price::saturating_from_integer(30)),
@@ -102,7 +102,7 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 			}
 		} else {
 			match *currency_id {
-				SETUSD => Some(Price::saturating_from_rational(99, 100)),
+				USDI => Some(Price::saturating_from_rational(99, 100)),
 				SERP => Some(Price::saturating_from_integer(50000)),
 				DNAR => Some(Price::saturating_from_integer(100)),
 				SETM => Some(Price::zero()),
@@ -122,7 +122,7 @@ pub struct MockDEX;
 impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
-			(SETUSD, DNAR) => (10000, 200),
+			(USDI, DNAR) => (10000, 200),
 			_ => (0, 0),
 		}
 	}
@@ -215,7 +215,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetUSDId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = USDI;
 	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub SetUSDFixedPrice: Price = Price::one();
 	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 4); // $0.25

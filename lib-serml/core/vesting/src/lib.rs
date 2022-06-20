@@ -177,7 +177,7 @@ pub mod module {
 		type SetterCurrencyId: Get<CurrencyId>;
 
 		#[pallet::constant]
-		/// The SetDollar (SETUSD) currency id
+		/// The SetDollar (USDI) currency id
 		type GetSetUSDId: Get<CurrencyId>;
 
 		#[pallet::constant]
@@ -209,7 +209,7 @@ pub mod module {
 		/// The maximum vesting schedules for SETR
 		type MaxSetterVestingSchedules: Get<u32>;
 
-		/// The maximum vesting schedules for SETUSD
+		/// The maximum vesting schedules for USDI
 		type MaxSetUSDVestingSchedules: Get<u32>;
 	}
 
@@ -306,7 +306,7 @@ pub mod module {
 		ValueQuery,
 	>;
 
-	/// Vesting schedules of an account under SETUSD currency.
+	/// Vesting schedules of an account under USDI currency.
 	///
 	/// SetUSDVestingSchedules: map AccountId => Vec<VestingSchedule>
 	#[pallet::storage]

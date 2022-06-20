@@ -37,7 +37,7 @@ use sp_runtime::{
 	traits::{AccountIdConversion, One, Zero},
 	ArithmeticError, DispatchError, DispatchResult, FixedPointNumber,
 };
-use support::{AuctionManager, CDPTreasury, CDPTreasuryExtended, DEXManager, Ratio, SerpTreasury, SwapLimit};
+use support::{AuctionManager, CDPTreasury, CDPTreasuryExtended, DEXManager, Ratio, SwapLimit};
 use sp_std::{prelude::*, vec};
 
 mod mock;
@@ -61,10 +61,6 @@ pub mod module {
 		/// Stablecoin currency id
 		#[pallet::constant]
 		type GetSetUSDId: Get<CurrencyId>;
-
-		/// SERP Treasury for issuing/burning stable currency adjust standard value
-		/// adjustment
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// Auction manager creates auction to handle system surplus and debit
 		type AuctionManagerHandler: AuctionManager<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -179,11 +175,12 @@ pub mod module {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		// Extract surplus to SerpTreasury.
+		// TODO: FIXME - Change to extract to Setheum Treasury
 		#[pallet::weight(T::WeightInfo::extract_surplus_to_serp())]
 		#[transactional]
 		pub fn extract_surplus_to_serp(origin: OriginFor<T>, amount: Balance) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
-			T::SerpTreasury::on_serplus(T::GetSetUSDId::get(), amount)?;
+			// T::SerpTreasury::on_serplus(T::GetSetUSDId::get(), amount)?;
 			Ok(().into())
 		}
 

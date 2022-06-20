@@ -97,7 +97,7 @@ fn adjust_position_should_work() {
 		assert_eq!(LoansModule::total_positions(SERP).collateral, 0);
 		assert_eq!(LoansModule::positions(SERP, &ALICE).debit, 0);
 		assert_eq!(LoansModule::positions(SERP, &ALICE).collateral, 0);
-		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 0);
+		assert_eq!(Currencies::free_balance(USDI, &ALICE), 0);
 
 		// success
 		assert_ok!(LoansModule::adjust_position(&ALICE, SERP, 500, 300));
@@ -107,7 +107,7 @@ fn adjust_position_should_work() {
 		assert_eq!(LoansModule::total_positions(SERP).collateral, 500);
 		assert_eq!(LoansModule::positions(SERP, &ALICE).debit, 300);
 		assert_eq!(LoansModule::positions(SERP, &ALICE).collateral, 500);
-		assert_eq!(Currencies::free_balance(SETUSD, &ALICE), 150);
+		assert_eq!(Currencies::free_balance(USDI, &ALICE), 150);
 		System::assert_has_event(Event::LoansModule(crate::Event::PositionUpdated {
 			owner: ALICE,
 			collateral_type: SERP,

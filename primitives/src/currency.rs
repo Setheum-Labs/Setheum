@@ -133,36 +133,12 @@ macro_rules! create_currency_id {
 
 			let mut lp_tokens = vec![
 				Token {
-					symbol: "LP_SETM_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(SETUSD))).unwrap(),
+					symbol: "LP_SETM_USDI".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDI))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SERP_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SERP), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
-					symbol: "LP_DNAR_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
-					symbol: "LP_HELP_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HELP), DexShare::Token(SETUSD))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETM_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SERP_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SERP), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_DNAR_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_HELP_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HELP), DexShare::Token(SETR))).unwrap(),
+					symbol: "LP_SLIX_USDW".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDW))).unwrap(),
 				},
 			];
 			tokens.append(&mut lp_tokens);
@@ -178,12 +154,10 @@ create_currency_id! {
 	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		SETM("Setheum", 18) = 0, 			// Tier-1
-		SERP("Serp", 18) = 1, 				// Tier-1
-		DNAR("The Dinar", 18) = 2, 			// Tier-1
-		HELP("HighEnd LaunchPad", 18) = 3, 	// Tier-1
-		SETR("Setter", 18) = 4,				// Tier-2
-		SETUSD("SetDollar", 18) = 5,		// Tier-2
+		SETM("Setheum", 18) = 0,
+		SLIX("Slixon", 18) = 1,
+		DNAR("The Dinar", 18) = 2,
+		HELP("HighEnd LaunchPad", 18) = 3,
 	}
 }
 

@@ -33,7 +33,7 @@ use sp_runtime::{
 	traits::{IdentityLookup, One as OneT},
 };
 use sp_std::cell::RefCell;
-pub use support::{Price, SerpTreasury};
+pub use support::Price;
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -44,7 +44,7 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
@@ -108,165 +108,12 @@ impl orml_auction::Config for Runtime {
 	type WeightInfo = ();
 }
 
-pub struct MockSerpTreasury;
-impl SerpTreasury<AccountId> for MockSerpTreasury {
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
-
-	fn calculate_supply_change(
-		_numerator: Balance,
-		_denominator: Balance,
-		_supply: Balance
-	) -> Self::Balance{
-		unimplemented!()
-	}
-
-	fn serp_tes_now() -> DispatchResult{
-		unimplemented!()
-	}
-
-	/// Deliver System StableCurrency Inflation
-	fn issue_stablecurrency_inflation() -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serpup(
-		_amount: Balance,
-		_currency_id: CurrencyId,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// Add CashDrop to the pool
-	fn add_cashdrop_to_pool(
-		_currency_id: Self::CurrencyId,
-		_amount: Self::Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// Issue CashDrop from the pool to the claimant account
-	fn issue_cashdrop_from_pool(
-		_claimant_id: &AccountId,
-		_currency_id: Self::CurrencyId,
-		_amount: Self::Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// SerpUp ratio for SetPay Cashdrops
-	fn get_cashdrop_serpup(
-		_amount: Balance,
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serplus(
-		_amount: Balance,
-		_currency_id: CurrencyId,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn get_cashdrop_serplus(
-		_amount: Balance, 
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serplus(
-		_currency_id: CurrencyId,
-		_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serpup(
-		_currency_id: CurrencyId,
-		_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	fn on_serpdown(
-		_currency_id: CurrencyId,
-		_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// get the minimum supply of a setcurrency - by key
-	fn get_minimum_supply(
-		_currency_id: CurrencyId
-	) -> Balance {
-		unimplemented!()
-	}
-
-	/// issue standard to `who`
-	fn issue_standard(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_standard: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// burn standard(stable currency) of `who`
-	fn burn_standard(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_standard: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// issue setter of amount setter to `who`
-	fn issue_setter(
-		_who: &AccountId,
-		_setter: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// burn setter of `who`
-	fn burn_setter(
-		_who: &AccountId,
-		_setter: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
-	fn deposit_setter(
-		_from: &AccountId,
-		_amount: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_transfer_amount: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-}
-
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
 
 parameter_types! {
-	pub const GetSetUSDId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = USDI;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
@@ -282,7 +129,6 @@ impl cdp_treasury::Config for Runtime {
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
-	type SerpTreasury = MockSerpTreasury;
 	type PalletId = CDPTreasuryPalletId;
 	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 	type WeightInfo = ();
@@ -311,14 +157,14 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETUSD,
+		USDI,
 	];
 	pub GetExchangeFee: (u32, u32) = (0, 100); // 1%
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
+		TradingPair::from_currency_ids(USDI, SERP).unwrap(),
 		TradingPair::from_currency_ids(DNAR, SERP).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap()
+		TradingPair::from_currency_ids(USDI, DNAR).unwrap()
 	];
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200); // 0.5%
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
@@ -358,8 +204,8 @@ parameter_types! {
 	pub const AuctionDurationSoftCap: u64 = 2000;
 	pub const UnsignedPriority: u64 = 1 << 20;
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETUSD],
-		vec![DNAR, SETUSD],
+		vec![USDI],
+		vec![DNAR, USDI],
 	];
 }
 
@@ -415,9 +261,9 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, SETUSD, 1000),
-				(BOB, SETUSD, 1000),
-				(CAROL, SETUSD, 1000),
+				(ALICE, USDI, 1000),
+				(BOB, USDI, 1000),
+				(CAROL, USDI, 1000),
 				(ALICE, SERP, 1000),
 				(BOB, SERP, 1000),
 				(CAROL, SERP, 1000),

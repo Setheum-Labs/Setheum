@@ -61,10 +61,10 @@ pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const HELP: CurrencyId = CurrencyId::Token(TokenSymbol::HELP);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 
 impl frame_system::Config for Runtime {
 	type Origin = Origin;
@@ -196,16 +196,15 @@ impl module_evm_bridge::Config for Runtime {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETUSD,
+		USDI,
 	];
 	pub const GetSerpCurrencyId: CurrencyId = SERP;
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
 	pub const GetHelpCurrencyId: CurrencyId = HELP;
 	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
+	pub const GetSetUSDId: CurrencyId = USDI;  // Setter  currency ticker is USDI/
 
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
 	pub CDPTreasuryAccount: AccountId = CDPTreasuryPalletId::get().into_account();
 
 }
@@ -214,7 +213,7 @@ pub struct MockDEX;
 impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
-			(SETUSD, DNAR) => (10000, 200),
+			(USDI, DNAR) => (10000, 200),
 			_ => (0, 0),
 		}
 	}
@@ -310,57 +309,10 @@ parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETR => 10_000,
-			&SETUSD => 10_000,
+			&USDI => 10_000,
 			_ => 0,
 		}
 	};
-}
-
-parameter_types! {
-	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
-	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
-		vec![DNAR],
-	];
-	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETR, DNAR],
-		vec![SETUSD, SETR, DNAR]
-	];
-	pub const TradingPathLimit: u32 = 4;
-	pub StableCurrencyInflationPeriod: u64 = 5;
-	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
-	pub SetterMaximumClaimableTransferAmounts: Balance = 200;
-	pub SetDollarMinimumClaimableTransferAmounts: Balance = 2;
-	pub SetDollarMaximumClaimableTransferAmounts: Balance = 200;
-}
-
-ord_parameter_types! {
-	pub const Root: AccountId = alice();
-}
-
-impl serp_treasury::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
-	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
-	type CDPTreasuryAccountId = CDPTreasuryAccount;
-	type Dex = MockDEX;
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type PriceSource = MockPriceSource;
-	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
-	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
-	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
-	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
-	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
-	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
-	type PalletId = SerpTreasuryPalletId;
-	type WeightInfo = ();
 }
 
 impl Config for Runtime {
@@ -369,7 +321,6 @@ impl Config for Runtime {
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type StableCurrencyIds = StableCurrencyIds;
-	type SerpTreasury = SerpTreasuryModule;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
@@ -397,7 +348,6 @@ frame_support::construct_runtime!(
 		Currencies: currencies::{Pallet, Call, Event<T>},
 		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
 		EVMBridge: module_evm_bridge::{Pallet},
-		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Config, Event<T>},
 	}
 );
 

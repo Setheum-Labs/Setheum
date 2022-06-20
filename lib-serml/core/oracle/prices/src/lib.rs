@@ -59,7 +59,7 @@ pub mod module {
 		/// The data source, such as Oracle.
 		type Source: DataProvider<CurrencyId, Price> + DataFeeder<CurrencyId, Price, Self::AccountId>;
 
-		/// The stable currency id, it should be SETUSD in Setheum.
+		/// The stable currency id, it should be USDI in Setheum.
 		#[pallet::constant]
 		type GetSetUSDId: Get<CurrencyId>;
 
@@ -67,7 +67,7 @@ pub mod module {
 		#[pallet::constant]
 		type SetterCurrencyId: Get<CurrencyId>;
 
-		/// The fixed prices of stable currency SETUSD, it should be 1 USD in Setheum.
+		/// The fixed prices of stable currency USDI, it should be 1 USD in Setheum.
 		#[pallet::constant]
 		type SetUSDFixedPrice: Get<Price>;
 
@@ -162,7 +162,7 @@ impl<T: Config> Pallet<T> {
 	/// Note: this returns the price for 1 basic unit
 	fn access_price(currency_id: CurrencyId) -> Option<Price> {
 		let maybe_price = if currency_id == T::GetSetUSDId::get() {
-			// if is SETUSD, use fixed price
+			// if is USDI, use fixed price
 			Some(T::SetUSDFixedPrice::get())
 		} else if currency_id == T::SetterCurrencyId::get() {
 			// if is SETR, return Setter fixed price (currently $0.1)

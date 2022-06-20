@@ -119,7 +119,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, HELP, SETR, SETUSD,
+	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, HELP, SETR, USDI,
 };
 
 
@@ -137,7 +137,6 @@ parameter_types! {
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 5EYCAe5jKgkuYTiXRpXnghiur9sW2zJCp91xQRKKzhwjS2DC
 	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 5EYCAe5jKgkuYFMt7CDpD9JGyD8eLr9DKZZ9mBNibUbs5xXo
 	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");			// 5EYCAe5jKgkuYTZd9to8S5wCPjCUQnDg57tU9BDgakrywBM2
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");	// 5EYCAe5jKgkuYTiwwziYLaTt4ZTSEikGfWNVyZ1PUdkBg78Z
 	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");		// 5EYCAe5jKgkuYVbBxj3Gqkgew54j9TmR4Q8QLuBWHCApVqWn
 }
 
@@ -147,7 +146,6 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		CDPTreasuryPalletId::get().into_account(),
 		DEXPalletId::get().into_account(),
 		LoansPalletId::get().into_account(),
-		SerpTreasuryPalletId::get().into_account(),
 		TreasuryPalletId::get().into_account(),
 		ZeroAccountId::get(),		 	// ACCOUNT 0
 	]
@@ -524,10 +522,10 @@ parameter_types! {
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
 	pub const GetHelpCurrencyId: CurrencyId = HELP;
 	pub const SetterCurrencyId: CurrencyId = SETR;
-	pub const GetSetUSDId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = USDI;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETUSD,
+		USDI,
 	];
 }
 
@@ -536,8 +534,6 @@ impl module_currencies::Config for Runtime {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type SerpTreasury = SerpTreasury;
 	type WeightInfo = weights::module_currencies::WeightInfo<Runtime>;
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type EVMBridge = EVMBridge;
@@ -591,7 +587,7 @@ parameter_type_with_key! {
 	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			&SETR => 1_000_000_000 * dollar(SETR),
-			&SETUSD => 1_000_000_000 * dollar(SETUSD),
+			&USDI => 1_000_000_000 * dollar(USDI),
 			_ => 0,
 		}
 	};
@@ -601,7 +597,7 @@ parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
-				TokenSymbol::SETUSD => 10 * cent(SETUSD), // 10 cents (0.1)
+				TokenSymbol::USDI => 10 * cent(USDI), // 10 cents (0.1)
 				TokenSymbol::SETR => 10 * cent(SETR), // 10 cents (0.1)
 				TokenSymbol::SERP => 10 * cent(SERP), // 10 cents (0.1)
 				TokenSymbol::HELP => 10 * cent(HELP), // 10 cents (0.1)
@@ -630,7 +626,6 @@ parameter_type_with_key! {
 parameter_types! {
 	pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account();
 	pub CDPTreasuryAccount: AccountId = CDPTreasuryPalletId::get().into_account();
-	// pub SerpTreasuryAccount: AccountId = SerpTreasuryPalletId::get().into_account();
 }
 
 impl orml_tokens::Config for Runtime {
@@ -768,19 +763,19 @@ parameter_types! {
 		vec![SETM],
 		vec![HELP],
 		vec![SETM, SETR],
-		vec![SETM, SETUSD],
+		vec![SETM, USDI],
 		vec![SERP, SETR],
-		vec![SERP, SETUSD],
+		vec![SERP, USDI],
 		vec![DNAR, SETR],
-		vec![DNAR, SETUSD],
+		vec![DNAR, USDI],
 		vec![HELP, SETR],
-		vec![HELP, SETUSD],
+		vec![HELP, USDI],
 	];
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, HELP];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
-	pub MinimumDebitValue: Balance = 10 * dollar(SETUSD);
+	pub MinimumDebitValue: Balance = 10 * dollar(USDI);
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(15, 100);
 }
 
@@ -830,11 +825,11 @@ parameter_types! {
 	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, HELP).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
+		TradingPair::from_currency_ids(USDI, SETM).unwrap(),
+		TradingPair::from_currency_ids(USDI, SERP).unwrap(),
+		TradingPair::from_currency_ids(USDI, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDI, HELP).unwrap(),
+		TradingPair::from_currency_ids(USDI, SETR).unwrap(),
 		TradingPair::from_currency_ids(SETR, SETM).unwrap(),
 		TradingPair::from_currency_ids(SETR, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETR, DNAR).unwrap(),
@@ -869,41 +864,6 @@ impl module_dex::Config for Runtime {
 // }
 
 parameter_types! {
-    pub const StableCurrencyInflationPeriod: BlockNumber = MINUTES;
-    
-	pub SetterMinimumClaimableTransferAmounts: Balance = 10 * dollar(SETR);
-	pub SetterMaximumClaimableTransferAmounts: Balance = 2_000_000 * dollar(SETR);
-	pub SetDollarMinimumClaimableTransferAmounts: Balance = 4 * dollar(SETUSD);
-	pub SetDollarMaximumClaimableTransferAmounts: Balance = 100_000 * dollar(SETUSD);
-}
-
-impl serp_treasury::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
-	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
-	type CDPTreasuryAccountId = CDPTreasuryAccount;
-	type Dex = Dex;
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type PriceSource = module_prices::RealTimePriceProvider<Runtime>;
-	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
-	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
-	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
-	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
-	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type PalletId = SerpTreasuryPalletId;
-	type WeightInfo = ();
-}
-
-parameter_types! {
 	pub const MaxAuctionsCount: u32 = 100;
 }
 
@@ -915,7 +875,6 @@ impl cdp_treasury::Config for Runtime {
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
 	type PalletId = CDPTreasuryPalletId;
-	type SerpTreasury = SerpTreasury;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 	type WeightInfo = weights::module_cdp_treasury::WeightInfo<Runtime>;
@@ -925,13 +884,13 @@ parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![SETR, SETM],
-		vec![SETUSD, SETM],
+		vec![USDI, SETM],
 		vec![SERP, SETR, SETM],
-		vec![SERP, SETUSD, SETM],
+		vec![SERP, USDI, SETM],
 		vec![DNAR, SETR, SETM],
-		vec![DNAR, SETUSD, SETM],
+		vec![DNAR, USDI, SETM],
 		vec![HELP, SETR, SETM],
-		vec![HELP, SETUSD, SETM],
+		vec![HELP, USDI, SETM],
 	];
 }
 
@@ -1180,7 +1139,7 @@ impl pallet_proxy::Config for Runtime {
 }
 
 parameter_types! {
-	// note: if we add other native tokens (SETUSD) we have to set native
+	// note: if we add other native tokens (USDI) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
 	pub NativeTokenExistentialDeposit: Balance = 1 * dollar(SETM); // 1 SETM
 	pub MaxNativeTokenExistentialDeposit: Balance = 100 * dollar(SETM); // 100 SETM
@@ -1557,7 +1516,6 @@ construct_runtime!(
 		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 23,
 		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 24,
 		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 25,
-		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 26,
 		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 27,
 		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 28,
 		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 29,

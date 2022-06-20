@@ -43,7 +43,7 @@ pub const BOB: AccountId = 2;
 pub const CHARLIE: AccountId = 3;
 
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const TEST: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
@@ -102,7 +102,7 @@ impl orml_tokens::Config for Runtime {
 parameter_type_with_key! {
 	pub MinRaise: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&SETUSD => 100,
+			&USDI => 100,
 			&SETM => 100,
 			&DOT => 100,
 			_ => 0,
@@ -113,7 +113,7 @@ parameter_type_with_key! {
 parameter_type_with_key! {
 	pub MinContribution: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
-			&SETUSD => 100,
+			&USDI => 100,
 			&SETM => 100,
 			&DOT => 100,
 			_ => 0,
@@ -189,19 +189,19 @@ impl ExtBuilder {
 	pub fn one_hundred_thousand_for_all(self) -> Self {
 		self.balances(vec![
 			(ALICE, SETM, 100_000),
-			(ALICE, SETUSD, 100_000),
+			(ALICE, USDI, 100_000),
 			(ALICE, DOT, 100_000),
 			(ALICE, TEST, 100_000),
 			(BOB, SETM, 100_000),
-			(BOB, SETUSD, 100_000),
+			(BOB, USDI, 100_000),
 			(BOB, DOT, 100_000),
 			(BOB, TEST, 100_000),
 			(CHARLIE, SETM, 100_000),
-			(CHARLIE, SETUSD, 100_000),
+			(CHARLIE, USDI, 100_000),
 			(CHARLIE, DOT, 100_000),
 			(CHARLIE, TEST, 100_000),
 			(TREASURY, SETM, 100_000),
-			(TREASURY, SETUSD, 100_000),
+			(TREASURY, USDI, 100_000),
 			(TREASURY, DOT, 100_000),
 			(TREASURY, TEST, 100_000),
 		])

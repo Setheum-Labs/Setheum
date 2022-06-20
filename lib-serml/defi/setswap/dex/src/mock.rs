@@ -36,14 +36,14 @@ pub type AccountId = u128;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
 parameter_types! {
-	pub static SETUSDSERPPair: TradingPair = TradingPair::from_currency_ids(SERP, SETUSD).unwrap();
-	pub static SETUSDDNARPair: TradingPair = TradingPair::from_currency_ids(DNAR, SETUSD).unwrap();
+	pub static USDISERPPair: TradingPair = TradingPair::from_currency_ids(SERP, USDI).unwrap();
+	pub static USDIDNARPair: TradingPair = TradingPair::from_currency_ids(DNAR, USDI).unwrap();
 	pub static DNARSERPPair: TradingPair = TradingPair::from_currency_ids(SERP, DNAR).unwrap();
 }
 
@@ -106,7 +106,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETUSD,
+		USDI,
 	];
 	pub GetExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const TradingPathLimit: u32 = 4;
@@ -153,8 +153,8 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, SETUSD, 1_000_000_000_000_000_000u128),
-				(BOB, SETUSD, 1_000_000_000_000_000_000u128),
+				(ALICE, USDI, 1_000_000_000_000_000_000u128),
+				(BOB, USDI, 1_000_000_000_000_000_000u128),
 				(ALICE, SERP, 1_000_000_000_000_000_000u128),
 				(BOB, SERP, 1_000_000_000_000_000_000u128),
 				(ALICE, DNAR, 1_000_000_000_000_000_000u128),
@@ -169,7 +169,7 @@ impl Default for ExtBuilder {
 
 impl ExtBuilder {
 	pub fn initialize_enabled_trading_pairs(mut self) -> Self {
-		self.initial_enabled_trading_pairs = vec![SETUSDDNARPair::get(), SETUSDSERPPair::get(), DNARSERPPair::get()];
+		self.initial_enabled_trading_pairs = vec![USDIDNARPair::get(), USDISERPPair::get(), DNARSERPPair::get()];
 		self
 	}
 
@@ -177,8 +177,8 @@ impl ExtBuilder {
 		self.initial_added_liquidity_pools = vec![(
 			who,
 			vec![
-				(SETUSDDNARPair::get(), (1_000_000u128, 2_000_000u128)),
-				(SETUSDSERPPair::get(), (1_000_000u128, 2_000_000u128)),
+				(USDIDNARPair::get(), (1_000_000u128, 2_000_000u128)),
+				(USDISERPPair::get(), (1_000_000u128, 2_000_000u128)),
 				(DNARSERPPair::get(), (1_000_000u128, 2_000_000u128)),
 			],
 		)];

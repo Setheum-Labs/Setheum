@@ -34,7 +34,6 @@ use newrome_runtime::{
 	FinancialCouncilMembershipConfig,
 	TechnicalCommitteeMembershipConfig,
 	OperatorMembershipSetheumConfig,
-	SerpTreasuryConfig,
 	CdpTreasuryConfig,
 	CdpEngineConfig,
 
@@ -43,7 +42,7 @@ use newrome_runtime::{
 	TokensConfig, OrmlNFTConfig,
 	NativeTokenExistentialDeposit, MaxNativeTokenExistentialDeposit,
 	//
-	SETM, SERP, DNAR, HELP, SETR, SETUSD,
+	SETM, SERP, DNAR, HELP, SETR, USDI,
 };
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
@@ -317,8 +316,8 @@ fn dev_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;	// 1,000,000 SETM/SERP/DNAR/HELP/SETR/SETUSD
-	let initial_staking: u128 = 2_000 * 1_000_000_000_000_000_000; 	// 258,000 SETM/SERP/DNAR/HELP/SETR/SETUSD
+	let initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;	// 1,000,000 SETM/SERP/DNAR/HELP/SETR/USDI
+	let initial_staking: u128 = 2_000 * 1_000_000_000_000_000_000; 	// 258,000 SETM/SERP/DNAR/HELP/SETR/USDI
 
 	let balances = initial_authorities
 		.iter()
@@ -419,7 +418,7 @@ fn dev_genesis(
 					(x.clone(), DNAR, initial_balance),
 					(x.clone(), HELP, initial_balance),
 					(x.clone(), SETR, initial_balance),
-					(x.clone(), SETUSD, initial_balance),
+					(x.clone(), USDI, initial_balance),
 					])
 				.collect(),
 		},
@@ -436,19 +435,9 @@ fn dev_genesis(
 				(x.clone(), DNAR, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), HELP, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), SETR, 10, 1, 3600, 100_000_000_000_000_000),
-				(x.clone(), SETUSD, 10, 1, 3600, 100_000_000_000_000_000),
+				(x.clone(), USDI, 10, 1, 3600, 100_000_000_000_000_000),
 				])
 			.collect(),
-		},
-		serp_treasury: SerpTreasuryConfig {
-			stable_currency_inflation_rate: vec![
-				(SETR, 100_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 10_000_000_000_000_000_000),	// (currency_id, inflation rate of a setcurrency)
-			],
-			stable_currency_cashdrop: vec![
-				(SETR,  initial_balance), 	// (currency_id, cashdrop pool balance of a setcurrency)
-				(SETUSD,  initial_balance),  // (currency_id, cashdrop pool balance of a setcurrency)
-			],
 		},
 		cdp_treasury: CdpTreasuryConfig {
 			expected_collateral_auction_size: vec![
@@ -465,28 +454,28 @@ fn dev_genesis(
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in USDI (cap)
 				),
 				(
 					SERP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in USDI (cap)
 				),
 				(
 					DNAR,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in USDI (cap)
 				),
 				(
 					HELP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in USDI (cap)
 				),
 			],
 		},
@@ -657,8 +646,8 @@ fn testnet_genesis(
 				(team.clone(), HELP, help_team_alloc),
 				(foundation.clone(), SETR, setr_foundation_alloc + setr_airdrop_alloc),
 				(team.clone(), SETR, setr_team_alloc),
-				(foundation.clone(), SETUSD, setusd_foundation_alloc + setusd_airdrop_alloc),
-				(team.clone(), SETUSD, setusd_team_alloc),
+				(foundation.clone(), USDI, setusd_foundation_alloc + setusd_airdrop_alloc),
+				(team.clone(), USDI, setusd_team_alloc),
 			]
 		},
 		evm: EVMConfig {
@@ -683,19 +672,9 @@ fn testnet_genesis(
 				(foundation.clone(), SETR, 258, 1, 5_112_000, setr_foundation_vesting),
 				(team.clone(), SETR, 258, 1, 5_112_000, setr_team_vesting),
 
-				(foundation.clone(), SETUSD, 258, 1, 5_112_000, setusd_foundation_vesting),
-				(team.clone(), SETUSD, 258, 1, 5_112_000, setusd_team_vesting),
+				(foundation.clone(), USDI, 258, 1, 5_112_000, setusd_foundation_vesting),
+				(team.clone(), USDI, 258, 1, 5_112_000, setusd_team_vesting),
 			]
-		},
-		serp_treasury: SerpTreasuryConfig {
-			stable_currency_inflation_rate: vec![
-				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
-				(SETUSD, 0),	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
-			],
-			stable_currency_cashdrop: vec![
-				(SETR,  setr_cashdrop_alloc), 	// (currency_id, cashdrop pool balance of a setcurrency)
-				(SETUSD,  setusd_cashdrop_alloc),  // (currency_id, cashdrop pool balance of a setcurrency)
-			],
 		},
 		cdp_treasury: CdpTreasuryConfig {
 			expected_collateral_auction_size: vec![
@@ -712,28 +691,28 @@ fn testnet_genesis(
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in USDI (cap)
 				),
 				(
 					SERP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in USDI (cap)
 				),
 				(
 					DNAR,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in USDI (cap)
 				),
 				(
 					HELP,
 					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in USDI (cap)
 				),
 			],
 		},
@@ -751,7 +730,7 @@ pub fn newrome_properties() -> Properties {
 	let mut properties = Map::new();
 	let mut token_symbol: Vec<String> = vec![];
 	let mut token_decimals: Vec<u32> = vec![];
-	[SETM, SERP, DNAR, HELP, SETR, SETUSD].iter().for_each(|token| {
+	[SETM, SERP, DNAR, HELP, SETR, USDI].iter().for_each(|token| {
 		token_symbol.push(token.symbol().unwrap().to_string());
 		token_decimals.push(token.decimals().unwrap() as u32);
 	});

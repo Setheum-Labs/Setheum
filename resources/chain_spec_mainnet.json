@@ -28,7 +28,7 @@
       "DNAR",
       "HELP",
       "SETR",
-      "SETUSD"
+      "USDI"
     ]
   },
   "forkBlocks": null,
@@ -52,7 +52,7 @@
               "token": "SETM"
             },
             {
-              "token": "SETUSD"
+              "token": "USDI"
             }
           ],
           [
@@ -60,7 +60,7 @@
               "token": "SERP"
             },
             {
-              "token": "SETUSD"
+              "token": "USDI"
             }
           ],
           [
@@ -68,7 +68,7 @@
               "token": "DNAR"
             },
             {
-              "token": "SETUSD"
+              "token": "USDI"
             }
           ],
           [
@@ -76,7 +76,7 @@
               "token": "HELP"
             },
             {
-              "token": "SETUSD"
+              "token": "USDI"
             }
           ],
           [
@@ -84,7 +84,7 @@
               "token": "SETR"
             },
             {
-              "token": "SETUSD"
+              "token": "USDI"
             }
           ],
           [
@@ -171,7 +171,7 @@
           ],
           [
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             0
           ]
@@ -185,7 +185,7 @@
           ],
           [
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             31330000000000000000000000
           ]
@@ -440,28 +440,28 @@
           [
             "5DXRBvu4bnSm59rawKx9anL3Co9uU7LYDzDVmUy4c1s2Atxk",
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             62660000000000000000000000
           ],
           [
             "5Eo7hL17qrtdbtuiJJYzBgySgfDKK8fKDz5KvL8QWfaFpQCf",
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             31330000000000000000000000
           ],
           [
             "5CrDNWeB2XyZbTMidF4BB3UtHqocS9HeeyCUCCiGP8nWTH3S",
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             156650000000000000000000000
           ],
           [
             "5D7bPgUPZTfE99BGxgRh2YBMeoXJdGFCQPjew62Z3v44nr2y",
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             31330000000000000000000000
           ]
@@ -672,7 +672,7 @@
           [
             "5DXRBvu4bnSm59rawKx9anL3Co9uU7LYDzDVmUy4c1s2Atxk",
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             313,
             1,
@@ -682,7 +682,7 @@
           [
             "5Eo7hL17qrtdbtuiJJYzBgySgfDKK8fKDz5KvL8QWfaFpQCf",
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             313,
             1,
@@ -692,7 +692,7 @@
           [
             "5CrDNWeB2XyZbTMidF4BB3UtHqocS9HeeyCUCCiGP8nWTH3S",
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             313,
             1,
@@ -702,7 +702,7 @@
           [
             "5D7bPgUPZTfE99BGxgRh2YBMeoXJdGFCQPjew62Z3v44nr2y",
             {
-              "token": "SETUSD"
+              "token": "USDI"
             },
             313,
             1,

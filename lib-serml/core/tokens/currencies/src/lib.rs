@@ -52,7 +52,7 @@ use sp_std::{
 	marker, result,
 	vec::Vec,
 };
-use support::{AddressMapping, EVMBridge, InvokeContext, SerpTreasury};
+use support::{AddressMapping, EVMBridge, InvokeContext};
 
 mod mock;
 mod tests;
@@ -86,13 +86,6 @@ pub mod module {
 		/// The native currency id
 		#[pallet::constant]
 		type GetNativeCurrencyId: Get<CurrencyId>;
-
-		/// The stable currency ids
-		type StableCurrencyIds: Get<Vec<CurrencyId>>;
-		
-		/// SERP Treasury for issuing/burning stable currency adjust standard value
-		/// adjustment
-		type SerpTreasury: SerpTreasury<Self::AccountId, Balance = BalanceOf<Self>, CurrencyId = CurrencyId>;
 
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -161,15 +154,7 @@ pub mod module {
 			let from = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(dest)?;
 
-			let try_transfer = <Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount).is_ok();
-			let try_claim = T::SerpTreasury::claim_cashdrop(currency_id, &from, amount).is_ok();
-			
-			if try_transfer && try_claim && claim && T::StableCurrencyIds::get().contains(&currency_id) {
-				<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-				T::SerpTreasury::claim_cashdrop(currency_id, &from, amount)?
-			} else {
-				<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
-			}
+			<Self as MultiCurrency<T::AccountId>>::transfer(currency_id, &from, &to, amount)?;
 			Ok(())
 		}
 

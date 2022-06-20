@@ -116,12 +116,12 @@ fn name_works() {
 			);
 
 			assert_eq!(
-				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD))),
+				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::USDI))),
 				Some(b"LP Setheum - SetDollar".to_vec())
 			);
 
 			assert_eq!(
-				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Erc20(erc20_address()), DexShare::Token(TokenSymbol::SETUSD))),
+				EvmCurrencyIdMapping::<Runtime>::name(CurrencyId::DexShare(DexShare::Erc20(erc20_address()), DexShare::Token(TokenSymbol::USDI))),
 				Some(b"LP long string name, long string name, long string name, long string name, long string name - SetDollar"[..32].to_vec())
 			);
 
@@ -169,17 +169,17 @@ fn symbol_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::symbol(CurrencyId::DexShare(
 					DexShare::Token(TokenSymbol::SETM),
-					DexShare::Token(TokenSymbol::SETUSD)
+					DexShare::Token(TokenSymbol::USDI)
 				)),
-				Some(b"LP_SETM_SETUSD".to_vec())
+				Some(b"LP_SETM_USDI".to_vec())
 			);
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::symbol(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::SETUSD)
+					DexShare::Token(TokenSymbol::USDI)
 				)),
-				Some(b"LP_TestToken_SETUSD".to_vec())
+				Some(b"LP_TestToken_USDI".to_vec())
 			);
 
 			assert_eq!(
@@ -235,7 +235,7 @@ fn decimals_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decimals(CurrencyId::DexShare(
 					DexShare::Token(TokenSymbol::SETM),
-					DexShare::Token(TokenSymbol::SETUSD)
+					DexShare::Token(TokenSymbol::USDI)
 				)),
 				Some(18)
 			);
@@ -243,7 +243,7 @@ fn decimals_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::decimals(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::SETUSD)
+					DexShare::Token(TokenSymbol::USDI)
 				)),
 				Some(17)
 			);
@@ -293,7 +293,7 @@ fn encode_evm_address_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 					DexShare::Token(TokenSymbol::SETM),
-					DexShare::Token(TokenSymbol::SETUSD)
+					DexShare::Token(TokenSymbol::USDI)
 				)),
 				H160::from_str("0x0000000000000000000000010000000000000005").ok()
 			);
@@ -301,14 +301,14 @@ fn encode_evm_address_works() {
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::SETUSD)
+					DexShare::Token(TokenSymbol::USDI)
 				)),
 				H160::from_str("0x0000000000000000000000010200000000000005").ok()
 			);
 
 			assert_eq!(
 				EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
-					DexShare::Token(TokenSymbol::SETUSD),
+					DexShare::Token(TokenSymbol::USDI),
 					DexShare::Erc20(erc20_address())
 				)),
 				H160::from_str("0x0000000000000000000000010000000502000000").ok()
@@ -375,13 +375,13 @@ fn decode_evm_address_works() {
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(
 					EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 						DexShare::Token(TokenSymbol::SETM),
-						DexShare::Token(TokenSymbol::SETUSD)
+						DexShare::Token(TokenSymbol::USDI)
 					))
 					.unwrap(),
 				),
 				Some(CurrencyId::DexShare(
 					DexShare::Token(TokenSymbol::SETM),
-					DexShare::Token(TokenSymbol::SETUSD)
+					DexShare::Token(TokenSymbol::USDI)
 				))
 			);
 
@@ -389,13 +389,13 @@ fn decode_evm_address_works() {
 				EvmCurrencyIdMapping::<Runtime>::decode_evm_address(
 					EvmCurrencyIdMapping::<Runtime>::encode_evm_address(CurrencyId::DexShare(
 						DexShare::Erc20(erc20_address()),
-						DexShare::Token(TokenSymbol::SETUSD)
+						DexShare::Token(TokenSymbol::USDI)
 					))
 					.unwrap()
 				),
 				Some(CurrencyId::DexShare(
 					DexShare::Erc20(erc20_address()),
-					DexShare::Token(TokenSymbol::SETUSD)
+					DexShare::Token(TokenSymbol::USDI)
 				))
 			);
 

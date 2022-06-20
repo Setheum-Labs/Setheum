@@ -33,7 +33,7 @@ use sp_runtime::{
 	traits::{IdentityLookup, One as OneT},
 };
 use sp_std::cell::RefCell;
-use support::{AuctionManager, EmergencyShutdown, SerpTreasury};
+use support::{AuctionManager, EmergencyShutdown};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
@@ -45,11 +45,11 @@ pub const CAROL: AccountId = 3;
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 
-pub const LP_SETUSD_DNAR: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DNAR));
+pub const LP_USDI_DNAR: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDI), DexShare::Token(TokenSymbol::DNAR));
 pub const LP_DNAR_SERP: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SERP), DexShare::Token(TokenSymbol::DNAR));
 
@@ -149,7 +149,7 @@ impl loans::Config for Runtime {
 thread_local! {
 	static SERP_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
 	static DNAR_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-	static LP_SETUSD_DNAR_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static LP_USDI_DNAR_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
 	static LP_DNAR_SERP_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
 }
 
@@ -159,7 +159,7 @@ impl MockPriceSource {
 		match currency_id {
 			SERP => SERP_PRICE.with(|v| *v.borrow_mut() = price),
 			DNAR => DNAR_PRICE.with(|v| *v.borrow_mut() = price),
-			LP_SETUSD_DNAR => LP_SETUSD_DNAR_PRICE.with(|v| *v.borrow_mut() = price),
+			LP_USDI_DNAR => LP_USDI_DNAR_PRICE.with(|v| *v.borrow_mut() = price),
 			LP_DNAR_SERP => LP_DNAR_SERP_PRICE.with(|v| *v.borrow_mut() = price),
 			_ => {}
 		}
@@ -170,8 +170,8 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 		match currency_id {
 			SERP => SERP_PRICE.with(|v| *v.borrow()),
 			DNAR => DNAR_PRICE.with(|v| *v.borrow()),
-			SETUSD => Some(Price::one()),
-			LP_SETUSD_DNAR => LP_SETUSD_DNAR_PRICE.with(|v| *v.borrow()),
+			USDI => Some(Price::one()),
+			LP_USDI_DNAR => LP_USDI_DNAR_PRICE.with(|v| *v.borrow()),
 			LP_DNAR_SERP => LP_DNAR_SERP_PRICE.with(|v| *v.borrow()),
 			_ => None,
 		}
@@ -218,161 +218,8 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 	}
 }
 
-pub struct MockSerpTreasury;
-impl SerpTreasury<AccountId> for MockSerpTreasury {
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
-
-	fn calculate_supply_change(
-		_numerator: Balance,
-		_denominator: Balance,
-		_supply: Balance
-	) -> Self::Balance{
-		unimplemented!()
-	}
-
-	fn serp_tes_now() -> DispatchResult{
-		unimplemented!()
-	}
-
-	/// Deliver System StableCurrency Inflation
-	fn issue_stablecurrency_inflation() -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serpup(
-		_amount: Balance,
-		_currency_id: CurrencyId,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// Add CashDrop to the pool
-	fn add_cashdrop_to_pool(
-		_currency_id: Self::CurrencyId,
-		_amount: Self::Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// Issue CashDrop from the pool to the claimant account
-	fn issue_cashdrop_from_pool(
-		_claimant_id: &AccountId,
-		_currency_id: Self::CurrencyId,
-		_amount: Self::Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// SerpUp ratio for SetPay Cashdrops
-	fn get_cashdrop_serpup(
-		_amount: Balance,
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// SerpUp ratio for BuyBack Swaps to burn Dinar
-	fn get_buyback_serplus(
-		_amount: Balance,
-		_currency_id: CurrencyId,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn get_cashdrop_serplus(
-		_amount: Balance, 
-		_currency_id: CurrencyId
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serplus(
-		_currency_id: CurrencyId,
-		_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// issue serpup surplus(stable currencies) to their destinations according to the serpup_ratio.
-	fn on_serpup(
-		_currency_id: CurrencyId,
-		_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// buy back and burn surplus(stable currencies) with swap by DEX.
-	fn on_serpdown(
-		_currency_id: CurrencyId,
-		_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// get the minimum supply of a setcurrency - by key
-	fn get_minimum_supply(
-		_currency_id: CurrencyId
-	) -> Balance {
-		unimplemented!()
-	}
-
-	/// issue standard to `who`
-	fn issue_standard(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_standard: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// burn standard(stable currency) of `who`
-	fn burn_standard(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_standard: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// issue setter of amount setter to `who`
-	fn issue_setter(
-		_who: &AccountId,
-		_setter: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// burn setter of `who`
-	fn burn_setter(
-		_who: &AccountId,
-		_setter: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// deposit reserve asset (Setter (SETR)) to serp treasury by `who`
-	fn deposit_setter(
-		_from: &AccountId,
-		_amount: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	/// claim cashdrop of `currency_id` relative to `transfer_amount` for `who`
-	fn claim_cashdrop(
-		_currency_id: CurrencyId,
-		_who: &AccountId,
-		_transfer_amount: Balance
-	) -> DispatchResult {
-		unimplemented!()
-	}
-}
-
 parameter_types! {
-	pub const GetSetUSDId: CurrencyId = SETUSD;
+	pub const GetSetUSDId: CurrencyId = USDI;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
@@ -384,7 +231,6 @@ impl cdp_treasury::Config for Runtime {
 	type Currency = Currencies;
 	type GetSetUSDId = GetSetUSDId;
 	type AuctionManagerHandler = MockAuctionManager;
-	type SerpTreasury = MockSerpTreasury;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -397,17 +243,17 @@ parameter_types! {
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
-		SETUSD,
+		USDI,
 	];
 	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 4;
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
-		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDI, SERP).unwrap(),
+		TradingPair::from_currency_ids(USDI, DNAR).unwrap(),
 		TradingPair::from_currency_ids(SETM, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETM, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETM, SETUSD).unwrap(),
+		TradingPair::from_currency_ids(SETM, USDI).unwrap(),
 	];
 }
 
@@ -462,8 +308,8 @@ parameter_types! {
 	pub const UnsignedPriority: u64 = 1 << 20;
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SERP, DNAR];
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETUSD],
-		vec![SETM, SETUSD],
+		vec![USDI],
+		vec![SETM, USDI],
 	];
 }
 
@@ -533,7 +379,7 @@ impl Default for ExtBuilder {
 				(ALICE, DNAR, 1000),
 				(BOB, DNAR, 1000),
 				(CAROL, DNAR, 10000),
-				(CAROL, SETUSD, 10000),
+				(CAROL, USDI, 10000),
 			],
 		}
 	}

@@ -39,17 +39,17 @@ pub type AccountId = u128;
 pub type BlockNumber = u64;
 
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
+pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const LP_SETUSD_DNAR: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DNAR));
+pub const LP_USDI_DNAR: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDI), DexShare::Token(TokenSymbol::DNAR));
 
 mod dex_oracle {
 	pub use super::super::*;
 }
 
 parameter_types! {
-	pub static SETUSDDNARPair: TradingPair = TradingPair::from_currency_ids(SETUSD, DNAR).unwrap();
+	pub static USDIDNARPair: TradingPair = TradingPair::from_currency_ids(USDI, DNAR).unwrap();
 	pub static SETMDNARPair: TradingPair = TradingPair::from_currency_ids(SETM, DNAR).unwrap();
 	pub const BlockHashCount: u64 = 250;
 }
@@ -92,13 +92,13 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 thread_local! {
-	static SETUSD_DNAR_POOL: RefCell<(Balance, Balance)> = RefCell::new((Zero::zero(), Zero::zero()));
+	static USDI_DNAR_POOL: RefCell<(Balance, Balance)> = RefCell::new((Zero::zero(), Zero::zero()));
 	static SETM_DNAR_POOL: RefCell<(Balance, Balance)> = RefCell::new((Zero::zero(), Zero::zero()));
 }
 
 pub fn set_pool(trading_pair: &TradingPair, pool_0: Balance, pool_1: Balance) {
-	if *trading_pair == SETUSDDNARPair::get() {
-		SETUSD_DNAR_POOL.with(|v| *v.borrow_mut() = (pool_0, pool_1));
+	if *trading_pair == USDIDNARPair::get() {
+		USDI_DNAR_POOL.with(|v| *v.borrow_mut() = (pool_0, pool_1));
 	} else if *trading_pair == SETMDNARPair::get() {
 		SETM_DNAR_POOL.with(|v| *v.borrow_mut() = (pool_0, pool_1));
 	}
@@ -109,8 +109,8 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_0: CurrencyId, currency_id_1: CurrencyId) -> (Balance, Balance) {
 		TradingPair::from_currency_ids(currency_id_0, currency_id_1)
 			.map(|trading_pair| {
-				if trading_pair == SETUSDDNARPair::get() {
-					SETUSD_DNAR_POOL.with(|v| *v.borrow())
+				if trading_pair == USDIDNARPair::get() {
+					USDI_DNAR_POOL.with(|v| *v.borrow())
 				} else if trading_pair == SETMDNARPair::get() {
 					SETM_DNAR_POOL.with(|v| *v.borrow())
 				} else {

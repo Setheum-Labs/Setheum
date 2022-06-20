@@ -26,7 +26,7 @@ use crate::precompile::{
 		setm_evm_address, alice, alice_evm_addr, setusd_evm_address, bob, bob_evm_addr, erc20_address_not_exists,
 		get_task_id, lp_setm_setusd_evm_address, new_test_ext, serp_evm_address, run_to_block, Balances, DexModule,
 		DexPrecompile, Event as TestEvent, MultiCurrencyPrecompile, Oracle, OraclePrecompile, Origin, Price,
-		ScheduleCallPrecompile, System, Test, ALICE, SETUSD, INITIAL_BALANCE, SERP,
+		ScheduleCallPrecompile, System, Test, ALICE, USDI, INITIAL_BALANCE, SERP,
 	},
 	schedule_call::TaskInfo,
 };
@@ -196,7 +196,7 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // 		expected_output[31] = 32;
 // 		// length
 // 		expected_output[63] = 11;
-// 		expected_output[64..64 + 11].copy_from_slice(&b"LP_SETM_SETUSD"[..]);
+// 		expected_output[64..64 + 11].copy_from_slice(&b"LP_SETM_USDI"[..]);
 // 		assert_eq!(resp.output, expected_output);
 // 		assert_eq!(resp.cost, 0);
 
@@ -601,13 +601,13 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // #[test]
 // fn dex_precompile_get_liquidity_should_work() {
 // 	new_test_ext().execute_with(|| {
-// 		// enable SERP/SETUSD
-// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+// 		// enable SERP/USDI
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, USDI,));
 
 // 		assert_ok!(DexModule::add_liquidity(
 // 			Origin::signed(ALICE),
 // 			SERP,
-// 			SETUSD,
+// 			USDI,
 // 			1_000,
 // 			1_000_000,
 // 			0
@@ -625,7 +625,7 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityPool).to_be_bytes());
 // 		// SERP
 // 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-// 		// SETUSD
+// 		// USDI
 // 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 
 // 		let mut expected_output = [0u8; 64];
@@ -642,13 +642,13 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // #[test]
 // fn dex_precompile_get_liquidity_token_address_should_work() {
 // 	new_test_ext().execute_with(|| {
-// 		// enable SERP/SETUSD
-// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+// 		// enable SERP/USDI
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, USDI,));
 
 // 		assert_ok!(DexModule::add_liquidity(
 // 			Origin::signed(ALICE),
 // 			SERP,
-// 			SETUSD,
+// 			USDI,
 // 			1_000,
 // 			1_000_000,
 // 			0
@@ -666,7 +666,7 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // 		input[0..4].copy_from_slice(&Into::<u32>::into(dex::Action::GetLiquidityTokenAddress).to_be_bytes());
 // 		// SERP
 // 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 0 * 32..4 + 1 * 32]);
-// 		// SETUSD
+// 		// USDI
 // 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 1 * 32..4 + 2 * 32]);
 
 // 		let mut expected_output = [0u8; 32];
@@ -692,13 +692,13 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // #[test]
 // fn dex_precompile_get_swap_target_amount_should_work() {
 // 	new_test_ext().execute_with(|| {
-// 		// enable SERP/SETUSD
-// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+// 		// enable SERP/USDI
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, USDI,));
 
 // 		assert_ok!(DexModule::add_liquidity(
 // 			Origin::signed(ALICE),
 // 			SERP,
-// 			SETUSD,
+// 			USDI,
 // 			1_000,
 // 			1_000_000,
 // 			0
@@ -722,7 +722,7 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // 		U256::from(2).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 // 		// SERP
 // 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
-// 		// SETUSD
+// 		// USDI
 // 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 
 // 		let mut expected_output = [0u8; 32];
@@ -738,13 +738,13 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // #[test]
 // fn dex_precompile_get_swap_supply_amount_should_work() {
 // 	new_test_ext().execute_with(|| {
-// 		// enable SERP/SETUSD
-// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+// 		// enable SERP/USDI
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, USDI,));
 
 // 		assert_ok!(DexModule::add_liquidity(
 // 			Origin::signed(ALICE),
 // 			SERP,
-// 			SETUSD,
+// 			USDI,
 // 			1_000,
 // 			1_000_000,
 // 			0
@@ -768,7 +768,7 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // 		U256::from(2).to_big_endian(&mut input[4 + 2 * 32..4 + 3 * 32]);
 // 		// SERP
 // 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 3 * 32..4 + 4 * 32]);
-// 		// SETUSD
+// 		// USDI
 // 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 
 // 		let mut expected_output = [0u8; 32];
@@ -784,13 +784,13 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // #[test]
 // fn dex_precompile_swap_with_exact_supply_should_work() {
 // 	new_test_ext().execute_with(|| {
-// 		// enable SERP/SETUSD
-// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+// 		// enable SERP/USDI
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, USDI,));
 
 // 		assert_ok!(DexModule::add_liquidity(
 // 			Origin::signed(ALICE),
 // 			SERP,
-// 			SETUSD,
+// 			USDI,
 // 			1_000,
 // 			1_000_000,
 // 			0
@@ -818,7 +818,7 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // 		U256::from(2).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 // 		// SERP
 // 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
-// 		// SETUSD
+// 		// USDI
 // 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 
 // 		let mut expected_output = [0u8; 32];
@@ -834,13 +834,13 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // #[test]
 // fn dex_precompile_swap_with_exact_target_should_work() {
 // 	new_test_ext().execute_with(|| {
-// 		// enable SERP/SETUSD
-// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, SETUSD,));
+// 		// enable SERP/USDI
+// 		assert_ok!(DexModule::enable_trading_pair(Origin::signed(ALICE), SERP, USDI,));
 
 // 		assert_ok!(DexModule::add_liquidity(
 // 			Origin::signed(ALICE),
 // 			SERP,
-// 			SETUSD,
+// 			USDI,
 // 			1_000,
 // 			1_000_000,
 // 			0
@@ -868,7 +868,7 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // 		U256::from(2).to_big_endian(&mut input[4 + 4 * 32..4 + 5 * 32]);
 // 		// SERP
 // 		U256::from_big_endian(serp_evm_address().as_bytes()).to_big_endian(&mut input[4 + 5 * 32..4 + 6 * 32]);
-// 		// SETUSD
+// 		// USDI
 // 		U256::from_big_endian(setusd_evm_address().as_bytes()).to_big_endian(&mut input[4 + 6 * 32..4 + 7 * 32]);
 
 // 		let mut expected_output = [0u8; 32];

@@ -26,21 +26,21 @@ use orml_benchmarking::runtime_benchmarks;
 use sp_runtime::traits::One;
 use sp_std::vec;
 
-const SETUSD: CurrencyId = GetSetUSDId::get();
+const USDI: CurrencyId = GetSetUSDId::get();
 
 runtime_benchmarks! {
 	{ Runtime, module_prices }
 
 	lock_price {
 		// feed price
-		feed_price(vec![(SETUSD, Price::one())])?;
-	}: _(RawOrigin::Root, SETUSD)
+		feed_price(vec![(USDI, Price::one())])?;
+	}: _(RawOrigin::Root, USDI)
 
 	unlock_price {
 		// feed price
-		feed_price(vec![(SETUSD, Price::one())])?;
-		Prices::lock_price(Origin::root(), SETUSD)?;
-	}: _(RawOrigin::Root, SETUSD)
+		feed_price(vec![(USDI, Price::one())])?;
+		Prices::lock_price(Origin::root(), USDI)?;
+	}: _(RawOrigin::Root, USDI)
 }
 
 #[cfg(test)]
