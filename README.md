@@ -32,14 +32,8 @@ Setheum also deploys Advanced Incentivization mechanisms and economic models mod
 
 
 ```bash
-    // Tier-1 Tokens
     SETM("Setheum", 12) = 0,
-    SERP("Serp", 12) = 1,
-    DNAR("The Dinar", 12) = 2,
-    HELP("HighEnd LaunchPad", 12) = 3,
-    // Tier-2 Tokens (StableCurrencies)
-    SETR("Setter", 12) = 4,
-    SETUSD("SetDollar", 12) = 5,
+    USDI("InterUSD", 12) = 1,
 ```
 
 1. [The Setter](./primitives/src/currency.rs#:~:text=SETR(%22Setter%22%2C%2012)%20%3D%203%2C) - The Setter is a stable currency pegged to the US dollar at a ratio of 1:10, where 1 SETR = $0.25 USD (25 cents or $1 USD = 4 SETRs).
