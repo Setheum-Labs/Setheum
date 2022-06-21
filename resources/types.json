@@ -66,11 +66,9 @@
     "TokenSymbol": {
         "_enum": {
             "SETM": 0,
-            "SERP": 1,
-            "DNAR": 2,
-            "HELP": 3,
-            "SETR": 4,
-            "USDI": 5
+            "SLIX": 1,
+            "USDI": 2,
+            "USDW": 3
         }
     },
     "DexShare": {
@@ -93,12 +91,6 @@
         }
     },
     "CurrencyIdOf": "CurrencyId",
-    "SerpStableCurrencyId": {
-        "_enum": [
-            "SETR",
-            "USDI"
-        ]
-    },
     "AuthoritysOriginId": {
         "_enum": [
             "Root",

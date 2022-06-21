@@ -35,16 +35,16 @@ pub type AccountId = u128;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 
 parameter_types! {
-	pub static USDISERPPair: TradingPair = TradingPair::from_currency_ids(SERP, USDI).unwrap();
-	pub static USDIDNARPair: TradingPair = TradingPair::from_currency_ids(DNAR, USDI).unwrap();
-	pub static DNARSERPPair: TradingPair = TradingPair::from_currency_ids(SERP, DNAR).unwrap();
+	pub static USDIETHPair: TradingPair = TradingPair::from_currency_ids(ETH, USDI).unwrap();
+	pub static USDIWBTCPair: TradingPair = TradingPair::from_currency_ids(WBTC, USDI).unwrap();
+	pub static WBTCETHPair: TradingPair = TradingPair::from_currency_ids(ETH, WBTC).unwrap();
 }
 
 mod dex {
@@ -104,22 +104,15 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
 	pub GetExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const TradingPathLimit: u32 = 4;
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
@@ -155,10 +148,10 @@ impl Default for ExtBuilder {
 			balances: vec![
 				(ALICE, USDI, 1_000_000_000_000_000_000u128),
 				(BOB, USDI, 1_000_000_000_000_000_000u128),
-				(ALICE, SERP, 1_000_000_000_000_000_000u128),
-				(BOB, SERP, 1_000_000_000_000_000_000u128),
-				(ALICE, DNAR, 1_000_000_000_000_000_000u128),
-				(BOB, DNAR, 1_000_000_000_000_000_000u128),
+				(ALICE, ETH, 1_000_000_000_000_000_000u128),
+				(BOB, ETH, 1_000_000_000_000_000_000u128),
+				(ALICE, WBTC, 1_000_000_000_000_000_000u128),
+				(BOB, WBTC, 1_000_000_000_000_000_000u128),
 			],
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: vec![],
@@ -169,7 +162,7 @@ impl Default for ExtBuilder {
 
 impl ExtBuilder {
 	pub fn initialize_enabled_trading_pairs(mut self) -> Self {
-		self.initial_enabled_trading_pairs = vec![USDIDNARPair::get(), USDISERPPair::get(), DNARSERPPair::get()];
+		self.initial_enabled_trading_pairs = vec![USDIWBTCPair::get(), USDIETHPair::get(), WBTCETHPair::get()];
 		self
 	}
 
@@ -177,9 +170,9 @@ impl ExtBuilder {
 		self.initial_added_liquidity_pools = vec![(
 			who,
 			vec![
-				(USDIDNARPair::get(), (1_000_000u128, 2_000_000u128)),
-				(USDISERPPair::get(), (1_000_000u128, 2_000_000u128)),
-				(DNARSERPPair::get(), (1_000_000u128, 2_000_000u128)),
+				(USDIWBTCPair::get(), (1_000_000u128, 2_000_000u128)),
+				(USDIETHPair::get(), (1_000_000u128, 2_000_000u128)),
+				(WBTCETHPair::get(), (1_000_000u128, 2_000_000u128)),
 			],
 		)];
 		self

@@ -43,9 +43,9 @@ pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -158,19 +158,16 @@ parameter_types! {
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 4;
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(USDI, SETM).unwrap(),
-		TradingPair::from_currency_ids(USDI, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDI, WBTC).unwrap(),
 	];
 }
 
 impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
@@ -181,7 +178,7 @@ impl module_dex::Config for Runtime {
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
 	pub static TransactionByteFee: u128 = 1;
-	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![USDI, SETM], vec![DNAR, USDI, SETM]];
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![USDI, SETM], vec![WBTC, USDI, SETM]];
 }
 
 thread_local! {
@@ -284,7 +281,7 @@ pub struct ExtBuilder {
 impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
-			balances: vec![(ALICE, USDI, 10000), (ALICE, DNAR, 1000)],
+			balances: vec![(ALICE, USDI, 10000), (ALICE, WBTC, 1000)],
 			base_weight: 0,
 			byte_fee: 2,
 			weight_to_fee: 1,

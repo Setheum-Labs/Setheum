@@ -43,8 +43,8 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 
 mod emergency_shutdown {
 	pub use super::super::*;
@@ -223,7 +223,7 @@ impl cdp_treasury::Config for Runtime {
 }
 
 ord_parameter_types! {
-	pub const CollateralCurrencyIds: Vec<CurrencyId> = vec![SERP, DNAR];
+	pub const CollateralCurrencyIds: Vec<CurrencyId> = vec![ETH, WBTC];
 }
 
 impl Config for Runtime {
@@ -263,10 +263,10 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, SERP, 1000),
-				(BOB, SERP, 1000),
-				(ALICE, DNAR, 1000),
-				(BOB, DNAR, 1000),
+				(ALICE, ETH, 1000),
+				(BOB, ETH, 1000),
+				(ALICE, WBTC, 1000),
+				(BOB, WBTC, 1000),
 			],
 		}
 	}

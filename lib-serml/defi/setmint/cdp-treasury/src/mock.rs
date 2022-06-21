@@ -42,11 +42,11 @@ pub const BOB: AccountId = 1;
 pub const CHARLIE: AccountId = 2;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const LP_USDI_DNAR: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDI), DexShare::Token(TokenSymbol::DNAR));
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
+pub const LP_USDI_WBTC: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDI), DexShare::Token(TokenSymbol::WBTC));
 
 mod cdp_treasury {
 	pub use super::super::*;
@@ -130,18 +130,13 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
 	pub const GetSetUSDId: CurrencyId = USDI;
 	pub GetExchangeFee: (u32, u32) = (0, 100);
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200);
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(USDI, SERP).unwrap(),
-		TradingPair::from_currency_ids(USDI, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SERP, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDI, ETH).unwrap(),
+		TradingPair::from_currency_ids(USDI, WBTC).unwrap(),
+		TradingPair::from_currency_ids(ETH, WBTC).unwrap(),
 	];
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
@@ -150,8 +145,6 @@ impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
-	type StableCurrencyIds = StableCurrencyIds;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
@@ -203,7 +196,7 @@ parameter_types! {
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub const TreasuryAccount: AccountId = 10;
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
-		vec![DNAR],
+		vec![WBTC],
 	];
 }
 
@@ -250,13 +243,13 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, DNAR, 1000),
+				(ALICE, WBTC, 1000),
 				(ALICE, USDI, 1000),
-				(ALICE, SERP, 1000),
-				(BOB, DNAR, 1000),
+				(ALICE, ETH, 1000),
+				(BOB, WBTC, 1000),
 				(BOB, USDI, 1000),
-				(BOB, SERP, 1000),
-				(CHARLIE, DNAR, 1000),
+				(BOB, ETH, 1000),
+				(CHARLIE, WBTC, 1000),
 			],
 		}
 	}

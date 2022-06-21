@@ -43,10 +43,10 @@ pub type Amount = i64;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 
 mod auction_manager {
 	pub use super::super::*;
@@ -117,7 +117,7 @@ parameter_types! {
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
-		vec![DNAR],
+		vec![WBTC],
 	];
 }
 
@@ -155,27 +155,20 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
 	pub GetExchangeFee: (u32, u32) = (0, 100); // 1%
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(USDI, SERP).unwrap(),
-		TradingPair::from_currency_ids(DNAR, SERP).unwrap(),
-		TradingPair::from_currency_ids(USDI, DNAR).unwrap()
+		TradingPair::from_currency_ids(USDI, ETH).unwrap(),
+		TradingPair::from_currency_ids(WBTC, ETH).unwrap(),
+		TradingPair::from_currency_ids(USDI, WBTC).unwrap()
 	];
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (0, 200); // 0.5%
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
 
 impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
@@ -205,7 +198,7 @@ parameter_types! {
 	pub const UnsignedPriority: u64 = 1 << 20;
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![USDI],
-		vec![DNAR, USDI],
+		vec![WBTC, USDI],
 	];
 }
 
@@ -264,12 +257,12 @@ impl Default for ExtBuilder {
 				(ALICE, USDI, 1000),
 				(BOB, USDI, 1000),
 				(CAROL, USDI, 1000),
-				(ALICE, SERP, 1000),
-				(BOB, SERP, 1000),
-				(CAROL, SERP, 1000),
-				(ALICE, DNAR, 1000),
-				(BOB, DNAR, 1000),
-				(CAROL, DNAR, 1000),
+				(ALICE, ETH, 1000),
+				(BOB, ETH, 1000),
+				(CAROL, ETH, 1000),
+				(ALICE, WBTC, 1000),
+				(BOB, WBTC, 1000),
+				(CAROL, WBTC, 1000),
 			],
 		}
 	}
@@ -302,7 +295,7 @@ impl ExtBuilder {
 		let mut balances = Vec::new();
 		for i in 0..1001 {
 			let account_id: AccountId = i;
-			balances.push((account_id, SERP, 1000));
+			balances.push((account_id, ETH, 1000));
 		}
 		Self { balances }
 	}

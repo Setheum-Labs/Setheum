@@ -26,7 +26,7 @@ use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::{
 	alice, bob, deploy_contracts, erc20_address, eva, AccountId, AdaptedBasicCurrency, CouncilAccount, Currencies,
-	DustAccount, Event, ExtBuilder, NativeCurrency, Origin, PalletBalances, Runtime, System, Tokens, DNAR, EVM, ID_1,
+	DustAccount, Event, ExtBuilder, NativeCurrency, Origin, PalletBalances, Runtime, System, Tokens, WBTC, EVM, ID_1,
 	NATIVE_CURRENCY_ID, X_TOKEN_ID,
 };
 use sp_core::H160;
@@ -818,7 +818,7 @@ fn sweep_dust_tokens_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		tokens::Accounts::<Runtime>::insert(
 			bob(),
-			DNAR,
+			WBTC,
 			tokens::AccountData {
 				free: 1,
 				frozen: 0,
@@ -827,7 +827,7 @@ fn sweep_dust_tokens_works() {
 		);
 		tokens::Accounts::<Runtime>::insert(
 			eva(),
-			DNAR,
+			WBTC,
 			tokens::AccountData {
 				free: 2,
 				frozen: 0,
@@ -836,7 +836,7 @@ fn sweep_dust_tokens_works() {
 		);
 		tokens::Accounts::<Runtime>::insert(
 			alice(),
-			DNAR,
+			WBTC,
 			tokens::AccountData {
 				free: 0,
 				frozen: 1,
@@ -845,40 +845,40 @@ fn sweep_dust_tokens_works() {
 		);
 		tokens::Accounts::<Runtime>::insert(
 			DustAccount::get(),
-			DNAR,
+			WBTC,
 			tokens::AccountData {
 				free: 100,
 				frozen: 0,
 				reserved: 0,
 			},
 		);
-		tokens::TotalIssuance::<Runtime>::insert(DNAR, 104);
+		tokens::TotalIssuance::<Runtime>::insert(WBTC, 104);
 
 		let accounts = vec![bob(), eva(), alice()];
 
 		assert_noop!(
-			Currencies::sweep_dust(Origin::signed(bob()), DNAR, accounts.clone()),
+			Currencies::sweep_dust(Origin::signed(bob()), WBTC, accounts.clone()),
 			DispatchError::BadOrigin
 		);
 
 		assert_ok!(Currencies::sweep_dust(
 			Origin::signed(CouncilAccount::get()),
-			DNAR,
+			WBTC,
 			accounts.clone()
 		));
-		System::assert_last_event(Event::Currencies(crate::Event::DustSwept(DNAR, bob(), 1)));
+		System::assert_last_event(Event::Currencies(crate::Event::DustSwept(WBTC, bob(), 1)));
 
 		// bob's account is gone
-		assert_eq!(tokens::Accounts::<Runtime>::contains_key(bob(), DNAR), false);
-		assert_eq!(Currencies::free_balance(DNAR, &bob()), 0);
+		assert_eq!(tokens::Accounts::<Runtime>::contains_key(bob(), WBTC), false);
+		assert_eq!(Currencies::free_balance(WBTC, &bob()), 0);
 
 		// eva's account remains, not below ED
-		assert_eq!(Currencies::free_balance(DNAR, &eva()), 2);
+		assert_eq!(Currencies::free_balance(WBTC, &eva()), 2);
 
 		// Dust transferred to dust receiver
-		assert_eq!(Currencies::free_balance(DNAR, &DustAccount::get()), 101);
+		assert_eq!(Currencies::free_balance(WBTC, &DustAccount::get()), 101);
 		// Total issuance remains the same
-		assert_eq!(Currencies::total_issuance(DNAR), 104);
+		assert_eq!(Currencies::total_issuance(WBTC), 104);
 	});
 }
 

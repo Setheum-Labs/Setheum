@@ -51,7 +51,7 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::{
-	currency::{TokenInfo, SETM, SERP, DNAR, HELP, SETR, USDI},
+	currency::{TokenInfo, SETM, ETH, WBTC, BNB, USDT, USDI},
 	AccountId,
 };
 

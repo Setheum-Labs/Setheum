@@ -42,7 +42,7 @@ const SEED: u32 = 0;
 const NATIVE: CurrencyId = GetNativeCurrencyId::get();
 const STABLECOIN: CurrencyId = GetSetUSDId::get();
 const DINARID: CurrencyId = GetDinarCurrencyId::get();
-const SERP: CurrencyId = GetDinarCurrencyId::get();
+const ETH: CurrencyId = GetDinarCurrencyId::get();
 
 fn inject_liquidity(
 	maker: AccountId,
@@ -212,7 +212,7 @@ runtime_benchmarks! {
 
 		// set balance
 		set_balance(currency_id, &sender, collateral_amount + ExistentialDeposits::get(&currency_id));
-		inject_liquidity(maker.clone(), currency_id, DINARID, 10_000 * dollar(SERP), 10_000 * dollar(DINARID))?;
+		inject_liquidity(maker.clone(), currency_id, DINARID, 10_000 * dollar(ETH), 10_000 * dollar(DINARID))?;
 		inject_liquidity(maker, DINARID, STABLECOIN, 10_000 * dollar(DINARID), 10_000 * dollar(STABLECOIN))?;
 
 		feed_price(vec![(DINARID, Price::one())])?;

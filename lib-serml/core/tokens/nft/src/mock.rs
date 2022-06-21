@@ -177,15 +177,8 @@ parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
 }
 
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-
-parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
-}
 
 impl module_currencies::Config for Runtime {
 	type Event = Event;

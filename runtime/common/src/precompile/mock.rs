@@ -156,18 +156,14 @@ impl pallet_balances::Config for Test {
 }
 
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 pub const LP_SETM_USDI: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::USDI));
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
 }
 
 impl module_currencies::Config for Test {
@@ -322,7 +318,6 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
-	pub const GetStableCurrencyExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
 }
@@ -330,9 +325,7 @@ parameter_types! {
 impl module_dex::Config for Test {
 	type Event = Event;
 	type Currency = Tokens;
-	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping;
@@ -424,7 +417,7 @@ parameter_types! {
 	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
 	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 10); // $0.1(10 cents)
 	pub const GetSetUSDId: CurrencyId = USDI;
-	pub const SetterCurrencyId: CurrencyId = SETR;
+	pub const SetterCurrencyId: CurrencyId = USDT;
 }
 
 ord_parameter_types! {
@@ -474,7 +467,7 @@ pub fn setusd_evm_address() -> EvmAddress {
 }
 
 pub fn serp_evm_address() -> EvmAddress {
-	EvmAddress::try_from(SERP).unwrap()
+	EvmAddress::try_from(ETH).unwrap()
 }
 
 pub fn lp_setm_setusd_evm_address() -> EvmAddress {
@@ -584,7 +577,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
 			ALICE,
-			SERP,
+			ETH,
 			1_000_000_000_000
 		));
 		assert_ok!(Currencies::update_balance(Origin::root(), ALICE, USDI, 1_000_000_000));
@@ -592,7 +585,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
 			MockAddressMapping::get_account_id(&alice_evm_addr()),
-			SERP,
+			ETH,
 			1_000
 		));
 	});

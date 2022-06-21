@@ -42,16 +42,16 @@ pub type AuctionId = u32;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 
-pub const LP_USDI_DNAR: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDI), DexShare::Token(TokenSymbol::DNAR));
-pub const LP_DNAR_SERP: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SERP), DexShare::Token(TokenSymbol::DNAR));
+pub const LP_USDI_WBTC: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USDI), DexShare::Token(TokenSymbol::WBTC));
+pub const LP_WBTC_ETH: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::ETH), DexShare::Token(TokenSymbol::WBTC));
 
 mod cdp_engine {
 	pub use super::super::*;
@@ -147,20 +147,20 @@ impl loans::Config for Runtime {
 }
 
 thread_local! {
-	static SERP_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-	static DNAR_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-	static LP_USDI_DNAR_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-	static LP_DNAR_SERP_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static ETH_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static WBTC_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static LP_USDI_WBTC_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
+	static LP_WBTC_ETH_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
 }
 
 pub struct MockPriceSource;
 impl MockPriceSource {
 	pub fn set_price(currency_id: CurrencyId, price: Option<Price>) {
 		match currency_id {
-			SERP => SERP_PRICE.with(|v| *v.borrow_mut() = price),
-			DNAR => DNAR_PRICE.with(|v| *v.borrow_mut() = price),
-			LP_USDI_DNAR => LP_USDI_DNAR_PRICE.with(|v| *v.borrow_mut() = price),
-			LP_DNAR_SERP => LP_DNAR_SERP_PRICE.with(|v| *v.borrow_mut() = price),
+			ETH => ETH_PRICE.with(|v| *v.borrow_mut() = price),
+			WBTC => WBTC_PRICE.with(|v| *v.borrow_mut() = price),
+			LP_USDI_WBTC => LP_USDI_WBTC_PRICE.with(|v| *v.borrow_mut() = price),
+			LP_WBTC_ETH => LP_WBTC_ETH_PRICE.with(|v| *v.borrow_mut() = price),
 			_ => {}
 		}
 	}
@@ -168,11 +168,11 @@ impl MockPriceSource {
 impl PriceProvider<CurrencyId> for MockPriceSource {
 	fn get_price(currency_id: CurrencyId) -> Option<Price> {
 		match currency_id {
-			SERP => SERP_PRICE.with(|v| *v.borrow()),
-			DNAR => DNAR_PRICE.with(|v| *v.borrow()),
+			ETH => ETH_PRICE.with(|v| *v.borrow()),
+			WBTC => WBTC_PRICE.with(|v| *v.borrow()),
 			USDI => Some(Price::one()),
-			LP_USDI_DNAR => LP_USDI_DNAR_PRICE.with(|v| *v.borrow()),
-			LP_DNAR_SERP => LP_DNAR_SERP_PRICE.with(|v| *v.borrow()),
+			LP_USDI_WBTC => LP_USDI_WBTC_PRICE.with(|v| *v.borrow()),
+			LP_WBTC_ETH => LP_WBTC_ETH_PRICE.with(|v| *v.borrow()),
 			_ => None,
 		}
 	}
@@ -223,7 +223,7 @@ parameter_types! {
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
-		vec![SERP],
+		vec![ETH],
 	];
 }
 impl cdp_treasury::Config for Runtime {
@@ -241,18 +241,13 @@ impl cdp_treasury::Config for Runtime {
 
 parameter_types! {
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
 	pub GetExchangeFee: (u32, u32) = (1, 100); // 1%
 	pub const TradingPathLimit: u32 = 4;
-	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(USDI, SERP).unwrap(),
-		TradingPair::from_currency_ids(USDI, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETM, SERP).unwrap(),
-		TradingPair::from_currency_ids(SETM, DNAR).unwrap(),
+		TradingPair::from_currency_ids(USDI, ETH).unwrap(),
+		TradingPair::from_currency_ids(USDI, WBTC).unwrap(),
+		TradingPair::from_currency_ids(SETM, ETH).unwrap(),
+		TradingPair::from_currency_ids(SETM, WBTC).unwrap(),
 		TradingPair::from_currency_ids(SETM, USDI).unwrap(),
 	];
 }
@@ -260,9 +255,7 @@ parameter_types! {
 impl dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = ();
@@ -306,7 +299,7 @@ parameter_types! {
 	pub const MinimumDebitValue: Balance = 2;
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub const UnsignedPriority: u64 = 1 << 20;
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SERP, DNAR];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![ETH, WBTC];
 	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
 		vec![USDI],
 		vec![SETM, USDI],
@@ -373,12 +366,12 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, SERP, 1000),
-				(BOB, SERP, 1000),
-				(CAROL, SERP, 10000),
-				(ALICE, DNAR, 1000),
-				(BOB, DNAR, 1000),
-				(CAROL, DNAR, 10000),
+				(ALICE, ETH, 1000),
+				(BOB, ETH, 1000),
+				(CAROL, ETH, 10000),
+				(ALICE, WBTC, 1000),
+				(BOB, WBTC, 1000),
+				(CAROL, WBTC, 10000),
 				(CAROL, USDI, 10000),
 			],
 		}
@@ -418,7 +411,7 @@ impl ExtBuilder {
 		let mut balances = Vec::new();
 		for i in 0..1001 {
 			let account_id: AccountId = i;
-			balances.push((account_id, SERP, 1000));
+			balances.push((account_id, ETH, 1000));
 		}
 		Self { balances }
 	}

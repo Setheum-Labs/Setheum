@@ -24,7 +24,7 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETR, ALICE, BOB, CHARLIE, DAVE, EVE, TREASURY, USDI};
+use mock::{Airdrop, Event, ExtBuilder, Origin, System, USDT, ALICE, BOB, CHARLIE, DAVE, EVE, TREASURY, USDI};
 use sp_runtime::traits::BadOrigin;
 
 #[test]
@@ -39,27 +39,27 @@ fn fund_airdrop_treasury_works() {
         
         let airdrop_treasury = Airdrop::account_id();
 
-        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), USDT, 258));
         System::assert_last_event(Event::AirDrop(
             crate::Event::FundAirdropTreasury {
                 funder: ALICE,
-                currency_id: SETR,
+                currency_id: USDT,
                 amount: 258
             },
         ));
         assert_eq!(Tokens::free_balance(USDI, airdrop_treasury), 0);
-        assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 258);
+        assert_eq!(Tokens::free_balance(USDT, airdrop_treasury), 258);
 
 
-        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 10));
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), USDT, 10));
         System::assert_last_event(Event::AirDrop(
             crate::Event::FundAirdropTreasury {
                 funder: ALICE,
-                currency_id: SETR,
+                currency_id: USDT,
                 amount: 10
             },
         ));
-         assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 268);
+         assert_eq!(Tokens::free_balance(USDT, airdrop_treasury), 268);
 
         assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), USDI, 258));
         System::assert_last_event(Event::AirDrop(
@@ -90,15 +90,15 @@ fn make_airdrop_works() {
         BadOrigin
         );
 
-        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), USDT, 258));
         System::assert_last_event(Event::AirDrop(
             crate::Event::FundAirdropTreasury {
                 funder: ALICE,
-                currency_id: SETR,
+                currency_id: USDT,
                 amount: 258
             },
         ));
-        assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 258);
+        assert_eq!(Tokens::free_balance(USDT, airdrop_treasury), 258);
 
         assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), USDI, 258));
         System::assert_last_event(Event::AirDrop(
@@ -112,12 +112,12 @@ fn make_airdrop_works() {
 
         assert_ok!(Airdrop::make_airdrop(
             Origin::signed(ALICE),
-            SETR,
+            USDT,
             airdrop_list
         ));
         System::assert_last_event(Event::AirDrop(
             crate::Event::Airdrop {
-                currency_id: SETR,
+                currency_id: USDT,
                 airdrop_list
             },
         ));
@@ -154,19 +154,19 @@ fn make_airdrop_does_not_work() {
         BadOrigin
         );
 
-        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), USDT, 258));
         System::assert_last_event(Event::AirDrop(
             crate::Event::FundAirdropTreasury {
                 funder: ALICE,
-                currency_id: SETR,
+                currency_id: USDT,
                 amount: 258
             },
         ));
-        assert_eq!(Tokens::free_balance(SETR, airdrop_treasury), 258);
+        assert_eq!(Tokens::free_balance(USDT, airdrop_treasury), 258);
 
         assert_noop!(Airdrop::make_airdrop(
             Origin::signed(ALICE),
-            SETR,
+            USDT,
             airdrop_list
         )
         Error::<Runtime>::OverSizedAirdropList,

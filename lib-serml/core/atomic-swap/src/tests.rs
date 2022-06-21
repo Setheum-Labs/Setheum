@@ -14,7 +14,7 @@
 
 // Currencies constants - CurrencyId/TokenSymbol
 // pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-// pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+// pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 // pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 
 // parameter_types! {

@@ -49,8 +49,8 @@ pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
@@ -234,7 +234,7 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 parameter_types! {
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SERP, DNAR];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![ETH, WBTC];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(3, 2);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::one();
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(10, 100);
@@ -284,7 +284,7 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		SerpSetmint: setmint::{Pallet, Storage, Call, Event<T>},
+		Setmint: setmint::{Pallet, Storage, Call, Event<T>},
 		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>},
 		PalletBalances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 		Currencies: orml_currencies::{Pallet, Call, Event<T>},
@@ -316,10 +316,10 @@ impl Default for ExtBuilder {
 		Self {
 			endowed_native: vec![(ALICE, 1000)],
 			balances: vec![
-				(ALICE, SERP, 1000),
-				(BOB, SERP, 1000),
-				(ALICE, DNAR, 1000),
-				(BOB, DNAR, 1000),
+				(ALICE, ETH, 1000),
+				(BOB, ETH, 1000),
+				(ALICE, WBTC, 1000),
+				(BOB, WBTC, 1000),
 			],
 		}
 	}

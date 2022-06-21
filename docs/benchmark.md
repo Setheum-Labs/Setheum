@@ -19,7 +19,7 @@
     --template=./templates/runtime-weight-template.hbs \
     --output=./lib-serml/{dir/module-inner-directory}/src/weights/
 ```
-
+TODO - FIXME: Remove/Relace 'serp_treasury'
 for example, this is the command for generating the `serp_treasury` module weights:
 
 ```bash

@@ -57,10 +57,10 @@ pub type AccountId = AccountId32;
 pub type BlockNumber = u64;
 
 // Currencies constants - CurrencyId/TokenSymbol
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const HELP: CurrencyId = CurrencyId::Token(TokenSymbol::HELP);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
+pub const BNB: CurrencyId = CurrencyId::Token(TokenSymbol::BNB);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
@@ -96,7 +96,7 @@ type Balance = u128;
 
 parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
-		if *currency_id == DNAR { return 2; }
+		if *currency_id == WBTC { return 2; }
 		Default::default()
 	};
 }
@@ -193,126 +193,8 @@ impl module_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
-parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
-	pub const GetSerpCurrencyId: CurrencyId = SERP;
-	pub const GetDinarCurrencyId: CurrencyId = DNAR;
-	pub const GetHelpCurrencyId: CurrencyId = HELP;
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDId: CurrencyId = USDI;  // Setter  currency ticker is USDI/
-
-	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
-	pub CDPTreasuryAccount: AccountId = CDPTreasuryPalletId::get().into_account();
-
-}
-
-pub struct MockDEX;
-impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
-	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
-		match (currency_id_a, currency_id_b) {
-			(USDI, DNAR) => (10000, 200),
-			_ => (0, 0),
-		}
-	}
-
-	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
-		unimplemented!()
-	}
-
-	fn get_swap_amount(_: &[CurrencyId], _: SwapLimit<Balance>) -> Option<(Balance, Balance)> {
-		unimplemented!()
-	}
-
-	fn get_best_price_swap_path(
-		_: CurrencyId,
-		_: CurrencyId,
-		_: SwapLimit<Balance>,
-		_: Vec<Vec<CurrencyId>>,
-	) -> Option<Vec<CurrencyId>> {
-		unimplemented!()
-	}
-
-	fn swap_with_specific_path(
-		_: &AccountId,
-		_: &[CurrencyId],
-		_: SwapLimit<Balance>,
-	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-
-	fn buyback_swap_with_specific_path(
-		_: &AccountId,
-		_: &[CurrencyId],
-		_: SwapLimit<Balance>,
-	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-
-	fn swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_exact_target_amount: Balance,
-		_max_supply_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn add_liquidity(
-		_who: &AccountId,
-		_currency_id_a: CurrencyId,
-		_currency_id_b: CurrencyId,
-		_max_amount_a: Balance,
-		_max_amount_b: Balance,
-		_min_share_increment: Balance,
-	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-
-	fn remove_liquidity(
-		_who: &AccountId,
-		_currency_id_a: CurrencyId,
-		_currency_id_b: CurrencyId,
-		_remove_share: Balance,
-		_min_withdrawn_a: Balance,
-		_min_withdrawn_b: Balance,
-	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-}
-
 thread_local! {
 	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-}
-
-pub struct MockPriceSource;
-impl MockPriceSource {
-	pub fn _set_relative_price(price: Option<Price>) {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
-	}
-}
-impl PriceProvider<CurrencyId> for MockPriceSource {
-
-	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut())
-	}
-
-	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
-		None
-	}
-
-}
-
-parameter_type_with_key! {
-	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 10_000,
-			&USDI => 10_000,
-			_ => 0,
-		}
-	};
 }
 
 impl Config for Runtime {
@@ -320,7 +202,6 @@ impl Config for Runtime {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;

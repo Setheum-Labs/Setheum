@@ -63,7 +63,7 @@ pub mod module {
 		#[pallet::constant]
 		type GetSetUSDId: Get<CurrencyId>;
 
-		/// The stable currency id, it should be SETR in Setheum.
+		/// The stable currency id, it should be USDT in Setheum.
 		#[pallet::constant]
 		type SetterCurrencyId: Get<CurrencyId>;
 
@@ -71,7 +71,7 @@ pub mod module {
 		#[pallet::constant]
 		type SetUSDFixedPrice: Get<Price>;
 
-		/// The fixed prices of stable currency SETR, it should be 0.1 USD (10 cents) in Setheum.
+		/// The fixed prices of stable currency USDT, it should be 0.1 USD (10 cents) in Setheum.
 		#[pallet::constant]
 		type SetterFixedPrice: Get<Price>;
 
@@ -165,7 +165,7 @@ impl<T: Config> Pallet<T> {
 			// if is USDI, use fixed price
 			Some(T::SetUSDFixedPrice::get())
 		} else if currency_id == T::SetterCurrencyId::get() {
-			// if is SETR, return Setter fixed price (currently $0.1)
+			// if is USDT, return Setter fixed price (currently $0.1)
 			Some(T::SetterFixedPrice::get())
 		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0: CurrencyId = symbol_0.into();

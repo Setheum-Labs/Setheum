@@ -23,8 +23,8 @@
 // use super::*;
 // use frame_support::{assert_noop, assert_ok};
 // use mock::{
-// 	USDISERPPair, USDIDNARPair, DNARSERPPair, DexModule, Event, ExtBuilder, ListingOrigin, Origin, Runtime, System, Tokens,
-// 	SETM, ALICE, USDI, BOB, SERP, DNAR,
+// 	USDIETHPair, USDIWBTCPair, WBTCETHPair, DexModule, Event, ExtBuilder, ListingOrigin, Origin, Runtime, System, Tokens,
+// 	SETM, ALICE, USDI, BOB, ETH, WBTC,
 // };
 // use orml_traits::MultiReservableCurrency;
 // use sp_core::H160;
@@ -40,7 +40,7 @@
 // 			DexModule::list_provisioning(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				1_000_000_000_000u128,
 // 				1_000_000_000_000u128,
 // 				5_000_000_000_000u128,
@@ -51,13 +51,13 @@
 // 		);
 
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Disabled
 // 		);
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000u128,
@@ -65,7 +65,7 @@
 // 			10,
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (1_000_000_000_000u128, 1_000_000_000_000u128),
 // 				target_provision: (2_000_000_000_000u128, 5_000_000_000_000u128),
@@ -74,7 +74,7 @@
 // 			})
 // 		);
 // 		System::assert_last_event(Event::DexModule(crate::Event::ListProvisioning {
-// 			trading_pair: USDIDNARPair::get(),
+// 			trading_pair: USDIWBTCPair::get(),
 // 		}));
 
 // 		assert_noop!(
@@ -95,7 +95,7 @@
 // 			DexModule::list_provisioning(
 // 				Origin::signed(ListingOrigin::get()),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				1_000_000_000_000u128,
 // 				1_000_000_000_000u128,
 // 				5_000_000_000_000u128,
@@ -116,7 +116,7 @@
 // 			DexModule::update_provisioning_parameters(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				1_000_000_000_000u128,
 // 				1_000_000_000_000u128,
 // 				5_000_000_000_000u128,
@@ -130,7 +130,7 @@
 // 			DexModule::update_provisioning_parameters(
 // 				Origin::signed(ListingOrigin::get()),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				1_000_000_000_000u128,
 // 				1_000_000_000_000u128,
 // 				5_000_000_000_000u128,
@@ -143,7 +143,7 @@
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000u128,
@@ -151,7 +151,7 @@
 // 			10,
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (1_000_000_000_000u128, 1_000_000_000_000u128),
 // 				target_provision: (2_000_000_000_000u128, 5_000_000_000_000u128),
@@ -163,7 +163,7 @@
 // 		assert_ok!(DexModule::update_provisioning_parameters(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			2_000_000_000_000u128,
 // 			0,
 // 			3_000_000_000_000u128,
@@ -171,7 +171,7 @@
 // 			50,
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (2_000_000_000_000u128, 0),
 // 				target_provision: (3_000_000_000_000u128, 2_000_000_000_000u128),
@@ -188,29 +188,29 @@
 // 		System::set_block_number(1);
 
 // 		assert_noop!(
-// 			DexModule::enable_trading_pair(Origin::signed(ALICE), USDI, DNAR),
+// 			DexModule::enable_trading_pair(Origin::signed(ALICE), USDI, WBTC),
 // 			BadOrigin
 // 		);
 
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Disabled
 // 		);
 // 		assert_ok!(DexModule::enable_trading_pair(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR
+// 			WBTC
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Enabled
 // 		);
 // 		System::assert_last_event(Event::DexModule(crate::Event::EnableTradingPair {
-// 			trading_pair: USDIDNARPair::get(),
+// 			trading_pair: USDIWBTCPair::get(),
 // 		}));
 
 // 		assert_noop!(
-// 			DexModule::enable_trading_pair(Origin::signed(ListingOrigin::get()), DNAR, USDI),
+// 			DexModule::enable_trading_pair(Origin::signed(ListingOrigin::get()), WBTC, USDI),
 // 			Error::<Runtime>::AlreadyEnabled
 // 		);
 // 	});
@@ -224,7 +224,7 @@
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000u128,
@@ -234,7 +234,7 @@
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			SERP,
+// 			ETH,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000u128,
@@ -244,13 +244,13 @@
 // 		assert_ok!(DexModule::add_provision(
 // 			Origin::signed(ALICE),
 // 			USDI,
-// 			SERP,
+// 			ETH,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128
 // 		));
 
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (1_000_000_000_000u128, 1_000_000_000_000u128),
 // 				target_provision: (2_000_000_000_000u128, 5_000_000_000_000u128),
@@ -261,18 +261,18 @@
 // 		assert_ok!(DexModule::enable_trading_pair(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR
+// 			WBTC
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Enabled
 // 		);
 // 		System::assert_last_event(Event::DexModule(crate::Event::EnableTradingPair {
-// 			trading_pair: USDIDNARPair::get(),
+// 			trading_pair: USDIWBTCPair::get(),
 // 		}));
 
 // 		assert_noop!(
-// 			DexModule::enable_trading_pair(Origin::signed(ListingOrigin::get()), USDI, SERP),
+// 			DexModule::enable_trading_pair(Origin::signed(ListingOrigin::get()), USDI, ETH),
 // 			Error::<Runtime>::StillProvisioning
 // 		);
 // 	});
@@ -286,7 +286,7 @@
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000u128,
@@ -294,7 +294,7 @@
 // 			10,
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (1_000_000_000_000u128, 1_000_000_000_000u128),
 // 				target_provision: (2_000_000_000_000u128, 5_000_000_000_000u128),
@@ -306,7 +306,7 @@
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			SERP,
+// 			ETH,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000u128,
@@ -316,19 +316,19 @@
 // 		assert_ok!(DexModule::add_provision(
 // 			Origin::signed(ALICE),
 // 			USDI,
-// 			SERP,
+// 			ETH,
 // 			1_000_000_000_000u128,
 // 			2_000_000_000_000u128
 // 		));
 
 // 		assert_noop!(
-// 			DexModule::end_provisioning(Origin::signed(ListingOrigin::get()), USDI, SERP),
+// 			DexModule::end_provisioning(Origin::signed(ListingOrigin::get()), USDI, ETH),
 // 			Error::<Runtime>::UnqualifiedProvision
 // 		);
 // 		System::set_block_number(10);
 
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDISERPPair::get()),
+// 			DexModule::trading_pair_statuses(USDIETHPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (1_000_000_000_000u128, 1_000_000_000_000u128),
 // 				target_provision: (2_000_000_000_000u128, 5_000_000_000_000u128),
@@ -337,45 +337,45 @@
 // 			})
 // 		);
 // 		assert_eq!(
-// 			DexModule::initial_share_exchange_rates(USDISERPPair::get()),
+// 			DexModule::initial_share_exchange_rates(USDIETHPair::get()),
 // 			Default::default()
 // 		);
-// 		assert_eq!(DexModule::liquidity_pool(USDISERPPair::get()), (0, 0));
-// 		assert_eq!(Tokens::total_issuance(USDISERPPair::get().dex_share_currency_id()), 0);
+// 		assert_eq!(DexModule::liquidity_pool(USDIETHPair::get()), (0, 0));
+// 		assert_eq!(Tokens::total_issuance(USDIETHPair::get().dex_share_currency_id()), 0);
 // 		assert_eq!(
-// 			Tokens::free_balance(USDISERPPair::get().dex_share_currency_id(), &DexModule::account_id()),
+// 			Tokens::free_balance(USDIETHPair::get().dex_share_currency_id(), &DexModule::account_id()),
 // 			0
 // 		);
 
 // 		assert_ok!(DexModule::end_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			SERP
+// 			ETH
 // 		));
 // 		System::assert_last_event(Event::DexModule(crate::Event::ProvisioningToEnabled {
-// 			trading_pair: USDISERPPair::get(),
+// 			trading_pair: USDIETHPair::get(),
 // 			pool_0: 1_000_000_000_000u128,
 // 			pool_1: 2_000_000_000_000u128,
 // 			share_amount: 2_000_000_000_000u128,
 // 		}));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDISERPPair::get()),
+// 			DexModule::trading_pair_statuses(USDIETHPair::get()),
 // 			TradingPairStatus::<_, _>::Enabled
 // 		);
 // 		assert_eq!(
-// 			DexModule::initial_share_exchange_rates(USDISERPPair::get()),
+// 			DexModule::initial_share_exchange_rates(USDIETHPair::get()),
 // 			(ExchangeRate::one(), ExchangeRate::checked_from_rational(1, 2).unwrap())
 // 		);
 // 		assert_eq!(
-// 			DexModule::liquidity_pool(USDISERPPair::get()),
+// 			DexModule::liquidity_pool(USDIETHPair::get()),
 // 			(1_000_000_000_000u128, 2_000_000_000_000u128)
 // 		);
 // 		assert_eq!(
-// 			Tokens::total_issuance(USDISERPPair::get().dex_share_currency_id()),
+// 			Tokens::total_issuance(USDIETHPair::get().dex_share_currency_id()),
 // 			2_000_000_000_000u128
 // 		);
 // 		assert_eq!(
-// 			Tokens::free_balance(USDISERPPair::get().dex_share_currency_id(), &DexModule::account_id()),
+// 			Tokens::free_balance(USDIETHPair::get().dex_share_currency_id(), &DexModule::account_id()),
 // 			2_000_000_000_000u128
 // 		);
 // 	});
@@ -389,40 +389,40 @@
 // 		assert_ok!(DexModule::enable_trading_pair(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR
+// 			WBTC
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Enabled
 // 		);
 
 // 		assert_noop!(
-// 			DexModule::disable_trading_pair(Origin::signed(ALICE), USDI, DNAR),
+// 			DexModule::disable_trading_pair(Origin::signed(ALICE), USDI, WBTC),
 // 			BadOrigin
 // 		);
 
 // 		assert_ok!(DexModule::disable_trading_pair(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR
+// 			WBTC
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Disabled
 // 		);
 // 		System::assert_last_event(Event::DexModule(crate::Event::DisableTradingPair {
-// 			trading_pair: USDIDNARPair::get(),
+// 			trading_pair: USDIWBTCPair::get(),
 // 		}));
 
 // 		assert_noop!(
-// 			DexModule::disable_trading_pair(Origin::signed(ListingOrigin::get()), USDI, DNAR),
+// 			DexModule::disable_trading_pair(Origin::signed(ListingOrigin::get()), USDI, WBTC),
 // 			Error::<Runtime>::MustBeEnabled
 // 		);
 
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			SERP,
+// 			ETH,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000u128,
@@ -430,7 +430,7 @@
 // 			10,
 // 		));
 // 		assert_noop!(
-// 			DexModule::disable_trading_pair(Origin::signed(ListingOrigin::get()), USDI, SERP),
+// 			DexModule::disable_trading_pair(Origin::signed(ListingOrigin::get()), USDI, ETH),
 // 			Error::<Runtime>::MustBeEnabled
 // 		);
 // 	});
@@ -445,7 +445,7 @@
 // 			DexModule::add_provision(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				5_000_000_000_000u128,
 // 				1_000_000_000_000u128,
 // 			),
@@ -455,7 +455,7 @@
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			5_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000_000u128,
@@ -467,7 +467,7 @@
 // 			DexModule::add_provision(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				4_999_999_999_999u128,
 // 				999_999_999_999u128,
 // 			),
@@ -475,7 +475,7 @@
 // 		);
 
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (1_000_000_000_000u128, 5_000_000_000_000u128),
 // 				target_provision: (1_000_000_000_000_000u128, 5_000_000_000_000_000u128),
@@ -483,22 +483,22 @@
 // 				not_before: 10,
 // 			})
 // 		);
-// 		assert_eq!(DexModule::provisioning_pool(USDIDNARPair::get(), ALICE), (0, 0));
+// 		assert_eq!(DexModule::provisioning_pool(USDIWBTCPair::get(), ALICE), (0, 0));
 // 		assert_eq!(Tokens::free_balance(USDI, &ALICE), 1_000_000_000_000_000_000u128);
-// 		assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000u128);
+// 		assert_eq!(Tokens::free_balance(WBTC, &ALICE), 1_000_000_000_000_000_000u128);
 // 		assert_eq!(Tokens::free_balance(USDI, &DexModule::account_id()), 0);
-// 		assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 0);
+// 		assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 0);
 // 		let alice_ref_count_0 = System::consumers(&ALICE);
 
 // 		assert_ok!(DexModule::add_provision(
 // 			Origin::signed(ALICE),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			5_000_000_000_000u128,
 // 			0,
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (1_000_000_000_000u128, 5_000_000_000_000u128),
 // 				target_provision: (1_000_000_000_000_000u128, 5_000_000_000_000_000u128),
@@ -507,23 +507,23 @@
 // 			})
 // 		);
 // 		assert_eq!(
-// 			DexModule::provisioning_pool(USDIDNARPair::get(), ALICE),
+// 			DexModule::provisioning_pool(USDIWBTCPair::get(), ALICE),
 // 			(0, 5_000_000_000_000u128)
 // 		);
 // 		assert_eq!(Tokens::free_balance(USDI, &ALICE), 999_995_000_000_000_000u128);
-// 		assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000u128);
+// 		assert_eq!(Tokens::free_balance(WBTC, &ALICE), 1_000_000_000_000_000_000u128);
 // 		assert_eq!(
 // 			Tokens::free_balance(USDI, &DexModule::account_id()),
 // 			5_000_000_000_000u128
 // 		);
-// 		assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 0);
+// 		assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 0);
 // 		let alice_ref_count_1 = System::consumers(&ALICE);
 // 		assert_eq!(alice_ref_count_1, alice_ref_count_0 + 1);
 // 		System::assert_last_event(Event::DexModule(crate::Event::AddProvision {
 // 			who: ALICE,
 // 			currency_0: USDI,
 // 			contribution_0: 5_000_000_000_000u128,
-// 			currency_1: DNAR,
+// 			currency_1: WBTC,
 // 			contribution_1: 0,
 // 		}));
 // 	});
@@ -537,7 +537,7 @@
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			5_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000_000u128,
@@ -548,34 +548,34 @@
 // 		assert_ok!(DexModule::add_provision(
 // 			Origin::signed(ALICE),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			1_000_000_000_000_000u128,
 // 			200_000_000_000_000u128,
 // 		));
 // 		assert_ok!(DexModule::add_provision(
 // 			Origin::signed(BOB),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			4_000_000_000_000_000u128,
 // 			800_000_000_000_000u128,
 // 		));
 
 // 		assert_noop!(
-// 			DexModule::claim_dex_share(Origin::signed(ALICE), ALICE, USDI, DNAR),
+// 			DexModule::claim_dex_share(Origin::signed(ALICE), ALICE, USDI, WBTC),
 // 			Error::<Runtime>::StillProvisioning
 // 		);
 
 // 		assert_ok!(DexModule::end_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR
+// 			WBTC
 // 		));
 
-// 		let lp_currency_id = USDIDNARPair::get().dex_share_currency_id();
+// 		let lp_currency_id = USDIWBTCPair::get().dex_share_currency_id();
 
-// 		assert!(InitialShareExchangeRates::<Runtime>::contains_key(USDIDNARPair::get()),);
+// 		assert!(InitialShareExchangeRates::<Runtime>::contains_key(USDIWBTCPair::get()),);
 // 		assert_eq!(
-// 			DexModule::initial_share_exchange_rates(USDIDNARPair::get()),
+// 			DexModule::initial_share_exchange_rates(USDIWBTCPair::get()),
 // 			(ExchangeRate::one(), ExchangeRate::saturating_from_rational(2, 10))
 // 		);
 // 		assert_eq!(
@@ -583,11 +583,11 @@
 // 			2_000_000_000_000_000u128
 // 		);
 // 		assert_eq!(
-// 			DexModule::provisioning_pool(USDIDNARPair::get(), ALICE),
+// 			DexModule::provisioning_pool(USDIWBTCPair::get(), ALICE),
 // 			(1_000_000_000_000_000u128, 200_000_000_000_000u128)
 // 		);
 // 		assert_eq!(
-// 			DexModule::provisioning_pool(USDIDNARPair::get(), BOB),
+// 			DexModule::provisioning_pool(USDIWBTCPair::get(), BOB),
 // 			(4_000_000_000_000_000u128, 800_000_000_000_000u128)
 // 		);
 // 		assert_eq!(Tokens::free_balance(lp_currency_id, &ALICE), 0);
@@ -596,37 +596,37 @@
 // 		let alice_ref_count_0 = System::consumers(&ALICE);
 // 		let bob_ref_count_0 = System::consumers(&BOB);
 
-// 		assert_ok!(DexModule::claim_dex_share(Origin::signed(ALICE), ALICE, USDI, DNAR));
+// 		assert_ok!(DexModule::claim_dex_share(Origin::signed(ALICE), ALICE, USDI, WBTC));
 // 		assert_eq!(
 // 			Tokens::free_balance(lp_currency_id, &DexModule::account_id()),
 // 			8_000_000_000_000_000u128
 // 		);
-// 		assert_eq!(DexModule::provisioning_pool(USDIDNARPair::get(), ALICE), (0, 0));
+// 		assert_eq!(DexModule::provisioning_pool(USDIWBTCPair::get(), ALICE), (0, 0));
 // 		assert_eq!(Tokens::free_balance(lp_currency_id, &ALICE), 2_000_000_000_000_000u128);
 // 		assert_eq!(System::consumers(&ALICE), alice_ref_count_0 - 1);
-// 		assert!(InitialShareExchangeRates::<Runtime>::contains_key(USDIDNARPair::get()),);
+// 		assert!(InitialShareExchangeRates::<Runtime>::contains_key(USDIWBTCPair::get()),);
 
 // 		assert_ok!(DexModule::disable_trading_pair(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR
+// 			WBTC
 // 		));
-// 		assert_ok!(DexModule::claim_dex_share(Origin::signed(BOB), BOB, USDI, DNAR));
+// 		assert_ok!(DexModule::claim_dex_share(Origin::signed(BOB), BOB, USDI, WBTC));
 // 		assert_eq!(Tokens::free_balance(lp_currency_id, &DexModule::account_id()), 0);
-// 		assert_eq!(DexModule::provisioning_pool(USDIDNARPair::get(), BOB), (0, 0));
+// 		assert_eq!(DexModule::provisioning_pool(USDIWBTCPair::get(), BOB), (0, 0));
 // 		assert_eq!(Tokens::free_balance(lp_currency_id, &BOB), 8_000_000_000_000_000u128);
 // 		assert_eq!(System::consumers(&BOB), bob_ref_count_0 - 1);
-// 		assert!(!InitialShareExchangeRates::<Runtime>::contains_key(USDIDNARPair::get()),);
+// 		assert!(!InitialShareExchangeRates::<Runtime>::contains_key(USDIWBTCPair::get()),);
 // 	});
 // }
 
 // #[test]
 // fn get_liquidity_work() {
 // 	ExtBuilder::default().build().execute_with(|| {
-// 		LiquidityPool::<Runtime>::insert(USDIDNARPair::get(), (1000, 20));
-// 		assert_eq!(DexModule::liquidity_pool(USDIDNARPair::get()), (1000, 20));
-// 		assert_eq!(DexModule::get_liquidity(USDI, DNAR), (20, 1000));
-// 		assert_eq!(DexModule::get_liquidity(DNAR, USDI), (1000, 20));
+// 		LiquidityPool::<Runtime>::insert(USDIWBTCPair::get(), (1000, 20));
+// 		assert_eq!(DexModule::liquidity_pool(USDIWBTCPair::get()), (1000, 20));
+// 		assert_eq!(DexModule::get_liquidity(USDI, WBTC), (20, 1000));
+// 		assert_eq!(DexModule::get_liquidity(WBTC, USDI), (1000, 20));
 // 	});
 // }
 
@@ -662,42 +662,42 @@
 // 		.initialize_enabled_trading_pairs()
 // 		.build()
 // 		.execute_with(|| {
-// 			LiquidityPool::<Runtime>::insert(USDIDNARPair::get(), (50000, 10000));
-// 			LiquidityPool::<Runtime>::insert(USDISERPPair::get(), (100000, 10));
+// 			LiquidityPool::<Runtime>::insert(USDIWBTCPair::get(), (50000, 10000));
+// 			LiquidityPool::<Runtime>::insert(USDIETHPair::get(), (100000, 10));
 // 			assert_noop!(
-// 				DexModule::get_target_amounts(&[DNAR], 10000),
+// 				DexModule::get_target_amounts(&[WBTC], 10000),
 // 				Error::<Runtime>::InvalidTradingPathLength,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_target_amounts(&[DNAR, USDI, SERP, DNAR], 10000),
+// 				DexModule::get_target_amounts(&[WBTC, USDI, ETH, WBTC], 10000),
 // 				Error::<Runtime>::InvalidTradingPath,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_target_amounts(&[DNAR, DNAR], 10000),
+// 				DexModule::get_target_amounts(&[WBTC, WBTC], 10000),
 // 				Error::<Runtime>::InvalidTradingPath,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_target_amounts(&[DNAR, USDI, DNAR], 10000),
+// 				DexModule::get_target_amounts(&[WBTC, USDI, WBTC], 10000),
 // 				Error::<Runtime>::InvalidTradingPath,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_target_amounts(&[DNAR, USDI, SETM], 10000),
+// 				DexModule::get_target_amounts(&[WBTC, USDI, SETM], 10000),
 // 				Error::<Runtime>::MustBeEnabled,
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_target_amounts(&[DNAR, USDI], 10000),
+// 				DexModule::get_target_amounts(&[WBTC, USDI], 10000),
 // 				Ok(vec![10000, 1659])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_target_amounts(&[DNAR, USDI, SERP], 10000),
+// 				DexModule::get_target_amounts(&[WBTC, USDI, ETH], 10000),
 // 				Ok(vec![10000, 1659, 99397])
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_target_amounts(&[DNAR, USDI, SERP], 100),
+// 				DexModule::get_target_amounts(&[WBTC, USDI, ETH], 100),
 // 				Error::<Runtime>::ZeroTargetAmount,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_target_amounts(&[DNAR, SERP], 100),
+// 				DexModule::get_target_amounts(&[WBTC, ETH], 100),
 // 				Error::<Runtime>::InsufficientLiquidity,
 // 			);
 // 		});
@@ -707,7 +707,7 @@
 // fn calculate_amount_for_big_number_work() {
 // 	ExtBuilder::default().build().execute_with(|| {
 // 		LiquidityPool::<Runtime>::insert(
-// 			USDIDNARPair::get(),
+// 			USDIWBTCPair::get(),
 // 			(171_000_000_000_000_000_000_000, 56_000_000_000_000_000_000_000),
 // 		);
 // 		assert_eq!(
@@ -735,38 +735,38 @@
 // 		.initialize_enabled_trading_pairs()
 // 		.build()
 // 		.execute_with(|| {
-// 			LiquidityPool::<Runtime>::insert(USDIDNARPair::get(), (50000, 10000));
-// 			LiquidityPool::<Runtime>::insert(USDISERPPair::get(), (100000, 10));
+// 			LiquidityPool::<Runtime>::insert(USDIWBTCPair::get(), (50000, 10000));
+// 			LiquidityPool::<Runtime>::insert(USDIETHPair::get(), (100000, 10));
 // 			assert_noop!(
-// 				DexModule::get_supply_amounts(&[DNAR], 10000),
+// 				DexModule::get_supply_amounts(&[WBTC], 10000),
 // 				Error::<Runtime>::InvalidTradingPathLength,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_supply_amounts(&[DNAR, DNAR], 10000),
+// 				DexModule::get_supply_amounts(&[WBTC, WBTC], 10000),
 // 				Error::<Runtime>::InvalidTradingPath,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_supply_amounts(&[DNAR, USDI, DNAR], 10000),
+// 				DexModule::get_supply_amounts(&[WBTC, USDI, WBTC], 10000),
 // 				Error::<Runtime>::InvalidTradingPath,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_supply_amounts(&[DNAR, USDI, SETM], 10000),
+// 				DexModule::get_supply_amounts(&[WBTC, USDI, SETM], 10000),
 // 				Error::<Runtime>::MustBeEnabled,
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_supply_amounts(&[DNAR, USDI], 24874),
+// 				DexModule::get_supply_amounts(&[WBTC, USDI], 24874),
 // 				Ok(vec![10000, 24874])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_supply_amounts(&[DNAR, USDI], 25000),
+// 				DexModule::get_supply_amounts(&[WBTC, USDI], 25000),
 // 				Ok(vec![10102, 25000])
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_supply_amounts(&[DNAR, USDI, SERP], 10000),
+// 				DexModule::get_supply_amounts(&[WBTC, USDI, ETH], 10000),
 // 				Error::<Runtime>::ZeroSupplyAmount,
 // 			);
 // 			assert_noop!(
-// 				DexModule::get_supply_amounts(&[DNAR, SERP], 10000),
+// 				DexModule::get_supply_amounts(&[WBTC, ETH], 10000),
 // 				Error::<Runtime>::InsufficientLiquidity,
 // 			);
 // 		});
@@ -778,17 +778,17 @@
 // 		.initialize_enabled_trading_pairs()
 // 		.build()
 // 		.execute_with(|| {
-// 			LiquidityPool::<Runtime>::insert(USDIDNARPair::get(), (50000, 10000));
+// 			LiquidityPool::<Runtime>::insert(USDIWBTCPair::get(), (50000, 10000));
 
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (10000, 50000));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (10000, 50000));
 // 			assert_noop!(
-// 				DexModule::_swap(USDI, DNAR, 50000, 5001),
+// 				DexModule::_swap(USDI, WBTC, 50000, 5001),
 // 				Error::<Runtime>::InvariantCheckFailed
 // 			);
-// 			assert_ok!(DexModule::_swap(USDI, DNAR, 50000, 5000));
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (100000, 5000));
-// 			assert_ok!(DexModule::_swap(DNAR, USDI, 100, 800));
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (99200, 5100));
+// 			assert_ok!(DexModule::_swap(USDI, WBTC, 50000, 5000));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (100000, 5000));
+// 			assert_ok!(DexModule::_swap(WBTC, USDI, 100, 800));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (99200, 5100));
 // 		});
 // }
 
@@ -798,16 +798,16 @@
 // 		.initialize_enabled_trading_pairs()
 // 		.build()
 // 		.execute_with(|| {
-// 			LiquidityPool::<Runtime>::insert(USDIDNARPair::get(), (50000, 10000));
-// 			LiquidityPool::<Runtime>::insert(USDISERPPair::get(), (100000, 10));
+// 			LiquidityPool::<Runtime>::insert(USDIWBTCPair::get(), (50000, 10000));
+// 			LiquidityPool::<Runtime>::insert(USDIETHPair::get(), (100000, 10));
 
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (10000, 50000));
-// 			assert_eq!(DexModule::get_liquidity(USDI, SERP), (10, 100000));
-// 			assert_ok!(DexModule::_swap_by_path(&[DNAR, USDI], &[10000, 25000]));
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (25000, 20000));
-// 			assert_ok!(DexModule::_swap_by_path(&[DNAR, USDI, SERP], &[100000, 20000, 1]));
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (5000, 120000));
-// 			assert_eq!(DexModule::get_liquidity(USDI, SERP), (120000, 9));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (10000, 50000));
+// 			assert_eq!(DexModule::get_liquidity(USDI, ETH), (10, 100000));
+// 			assert_ok!(DexModule::_swap_by_path(&[WBTC, USDI], &[10000, 25000]));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (25000, 20000));
+// 			assert_ok!(DexModule::_swap_by_path(&[WBTC, USDI, ETH], &[100000, 20000, 1]));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (5000, 120000));
+// 			assert_eq!(DexModule::get_liquidity(USDI, ETH), (120000, 9));
 // 		});
 // }
 
@@ -824,28 +824,28 @@
 // 				Error::<Runtime>::MustBeEnabled
 // 			);
 // 			assert_noop!(
-// 				DexModule::add_liquidity(Origin::signed(ALICE), USDI, DNAR, 0, 100_000_000, 0),
+// 				DexModule::add_liquidity(Origin::signed(ALICE), USDI, WBTC, 0, 100_000_000, 0),
 // 				Error::<Runtime>::InvalidLiquidityIncrement
 // 			);
 
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (0, 0));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (0, 0));
 // 			assert_eq!(Tokens::free_balance(USDI, &DexModule::account_id()), 0);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 0);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 0);
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &ALICE),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &ALICE),
 // 				0
 // 			);
 // 			assert_eq!(
-// 				Tokens::reserved_balance(USDIDNARPair::get().dex_share_currency_id(), &ALICE),
+// 				Tokens::reserved_balance(USDIWBTCPair::get().dex_share_currency_id(), &ALICE),
 // 				0
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &ALICE), 1_000_000_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &ALICE), 1_000_000_000_000_000_000);
 
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				5_000_000_000_000,
 // 				1_000_000_000_000,
 // 				0,
@@ -854,39 +854,39 @@
 // 				who: ALICE,
 // 				currency_0: USDI,
 // 				pool_0: 5_000_000_000_000,
-// 				currency_1: DNAR,
+// 				currency_1: WBTC,
 // 				pool_1: 1_000_000_000_000,
 // 				share_increment: 10_000_000_000_000,
 // 			}));
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(5_000_000_000_000, 1_000_000_000_000)
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &DexModule::account_id()), 5_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 1_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 1_000_000_000_000);
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &ALICE),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &ALICE),
 // 				10_000_000_000_000
 // 			);
 // 			assert_eq!(
-// 				Tokens::reserved_balance(USDIDNARPair::get().dex_share_currency_id(), &ALICE),
+// 				Tokens::reserved_balance(USDIWBTCPair::get().dex_share_currency_id(), &ALICE),
 // 				0
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &ALICE), 999_995_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 999_999_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &ALICE), 999_999_000_000_000_000);
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &BOB),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &BOB),
 // 				0
 // 			);
 // 			assert_eq!(
-// 				Tokens::reserved_balance(USDIDNARPair::get().dex_share_currency_id(), &BOB),
+// 				Tokens::reserved_balance(USDIWBTCPair::get().dex_share_currency_id(), &BOB),
 // 				0
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &BOB), 1_000_000_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &BOB), 1_000_000_000_000_000_000);
 
 // 			assert_noop!(
-// 				DexModule::add_liquidity(Origin::signed(BOB), USDI, DNAR, 4, 1, 0),
+// 				DexModule::add_liquidity(Origin::signed(BOB), USDI, WBTC, 4, 1, 0),
 // 				Error::<Runtime>::InvalidLiquidityIncrement,
 // 			);
 
@@ -894,7 +894,7 @@
 // 				DexModule::add_liquidity(
 // 					Origin::signed(BOB),
 // 					USDI,
-// 					DNAR,
+// 					WBTC,
 // 					50_000_000_000_000,
 // 					8_000_000_000_000,
 // 					80_000_000_000_001,
@@ -905,7 +905,7 @@
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(BOB),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				50_000_000_000_000,
 // 				8_000_000_000_000,
 // 				80_000_000_000_000,
@@ -914,26 +914,26 @@
 // 				who: BOB,
 // 				currency_0: USDI,
 // 				pool_0: 40_000_000_000_000,
-// 				currency_1: DNAR,
+// 				currency_1: WBTC,
 // 				pool_1: 8_000_000_000_000,
 // 				share_increment: 80_000_000_000_000,
 // 			}));
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(45_000_000_000_000, 9_000_000_000_000)
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &DexModule::account_id()), 45_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 9_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 9_000_000_000_000);
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &BOB),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &BOB),
 // 				0
 // 			);
 // 			assert_eq!(
-// 				Tokens::reserved_balance(USDIDNARPair::get().dex_share_currency_id(), &BOB),
+// 				Tokens::reserved_balance(USDIWBTCPair::get().dex_share_currency_id(), &BOB),
 // 				80_000_000_000_000
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &BOB), 999_960_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_992_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &BOB), 999_992_000_000_000_000);
 // 		});
 // }
 
@@ -948,7 +948,7 @@
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				5_000_000_000_000,
 // 				1_000_000_000_000,
 // 				0,
@@ -956,8 +956,8 @@
 // 			assert_noop!(
 // 				DexModule::remove_liquidity(
 // 					Origin::signed(ALICE),
-// 					USDIDNARPair::get().dex_share_currency_id(),
-// 					DNAR,
+// 					USDIWBTCPair::get().dex_share_currency_id(),
+// 					WBTC,
 // 					100_000_000,
 // 					0,
 // 					0,
@@ -966,23 +966,23 @@
 // 			);
 
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(5_000_000_000_000, 1_000_000_000_000)
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &DexModule::account_id()), 5_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 1_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 1_000_000_000_000);
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &ALICE),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &ALICE),
 // 				2000000000000
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &ALICE), 999_995_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 999_999_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &ALICE), 999_999_000_000_000_000);
 
 // 			// assert_noop!(
 // 			// 	DexModule::remove_liquidity(
 // 			// 		Origin::signed(ALICE),
 // 			// 		USDI,
-// 			// 		DNAR,
+// 			// 		WBTC,
 // 			// 		8_000_000_000_000,
 // 			// 		4_000_000_000_001,
 // 			// 		800_000_000_000,
@@ -993,7 +993,7 @@
 // 			// 	DexModule::remove_liquidity(
 // 			// 		Origin::signed(ALICE),
 // 			// 		USDI,
-// 			// 		DNAR,
+// 			// 		WBTC,
 // 			// 		8_000_000_000_000,
 // 			// 		4_000_000_000_000,
 // 			// 		800_000_000_001,
@@ -1003,7 +1003,7 @@
 // 			assert_ok!(DexModule::remove_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				8_000_000_000_000,
 // 				4_000_000_000_000,
 // 				800_000_000_000,
@@ -1012,27 +1012,27 @@
 // 				who: ALICE,
 // 				currency_0: USDI,
 // 				pool_0: 4_000_000_000_000,
-// 				currency_1: DNAR,
+// 				currency_1: WBTC,
 // 				pool_1: 800_000_000_000,
 // 				share_decrement: 8_000_000_000_000,
 // 			}));
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(1_000_000_000_000, 200_000_000_000)
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &DexModule::account_id()), 1_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 200_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 200_000_000_000);
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &ALICE),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &ALICE),
 // 				2_000_000_000_000
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &ALICE), 999_999_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 999_999_800_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &ALICE), 999_999_800_000_000_000);
 
 // 			assert_ok!(DexModule::remove_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				2_000_000_000_000,
 // 				0,
 // 				0,
@@ -1041,50 +1041,50 @@
 // 				who: ALICE,
 // 				currency_0: USDI,
 // 				pool_0: 1_000_000_000_000,
-// 				currency_1: DNAR,
+// 				currency_1: WBTC,
 // 				pool_1: 200_000_000_000,
 // 				share_decrement: 2_000_000_000_000,
 // 			}));
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (0, 0));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (0, 0));
 // 			assert_eq!(Tokens::free_balance(USDI, &DexModule::account_id()), 0);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 0);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 0);
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &ALICE),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &ALICE),
 // 				0
 // 			);
 // 			assert_eq!(Tokens::free_balance(USDI, &ALICE), 1_000_000_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &ALICE), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &ALICE), 1_000_000_000_000_000_000);
 
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(BOB),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				5_000_000_000_000,
 // 				1_000_000_000_000,
 // 				0,
 // 			));
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &BOB),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &BOB),
 // 				0
 // 			);
 // 			assert_eq!(
-// 				Tokens::reserved_balance(USDIDNARPair::get().dex_share_currency_id(), &BOB),
+// 				Tokens::reserved_balance(USDIWBTCPair::get().dex_share_currency_id(), &BOB),
 // 				10_000_000_000_000
 // 			);
 // 			assert_ok!(DexModule::remove_liquidity(
 // 				Origin::signed(BOB),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				2_000_000_000_000,
 // 				0,
 // 				0,
 // 			));
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &BOB),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &BOB),
 // 				0
 // 			);
 // 			assert_eq!(
-// 				Tokens::reserved_balance(USDIDNARPair::get().dex_share_currency_id(), &BOB),
+// 				Tokens::reserved_balance(USDIWBTCPair::get().dex_share_currency_id(), &BOB),
 // 				8_000_000_000_000
 // 			);
 // 		});
@@ -1101,7 +1101,7 @@
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				500_000_000_000_000,
 // 				100_000_000_000_000,
 // 				0,
@@ -1109,104 +1109,104 @@
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				SERP,
+// 				ETH,
 // 				100_000_000_000_000,
 // 				10_000_000_000,
 // 				0,
 // 			));
 
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(500_000_000_000_000, 100_000_000_000_000)
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, SERP),
+// 				DexModule::get_liquidity(USDI, ETH),
 // 				(100_000_000_000_000, 10_000_000_000)
 // 			);
 // 			assert_eq!(
 // 				Tokens::free_balance(USDI, &DexModule::account_id()),
 // 				600_000_000_000_000
 // 			);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 100_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(SERP, &DexModule::account_id()), 10_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 100_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(ETH, &DexModule::account_id()), 10_000_000_000);
 // 			assert_eq!(Tokens::free_balance(USDI, &BOB), 1_000_000_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(SERP, &BOB), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &BOB), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(ETH, &BOB), 1_000_000_000_000_000_000);
 
 // 			assert_noop!(
-// 				DexModule::do_swap_with_exact_supply(&BOB, &[DNAR, USDI], 100_000_000_000_000, 250_000_000_000_000,),
+// 				DexModule::do_swap_with_exact_supply(&BOB, &[WBTC, USDI], 100_000_000_000_000, 250_000_000_000_000,),
 // 				Error::<Runtime>::InsufficientTargetAmount
 // 			);
 // 			// assert_noop!(
-// 			// 	DexModule::do_swap_with_exact_supply(&BOB, &[DNAR, USDI, SERP, DNAR], 100_000_000_000_000, 0),
+// 			// 	DexModule::do_swap_with_exact_supply(&BOB, &[WBTC, USDI, ETH, WBTC], 100_000_000_000_000, 0),
 // 			// 	Error::<Runtime>::InvalidTradingPathLength,
 // 			// );
 // 			assert_noop!(
-// 				DexModule::do_swap_with_exact_supply(&BOB, &[DNAR, USDI, DNAR], 100_000_000_000_000, 0),
+// 				DexModule::do_swap_with_exact_supply(&BOB, &[WBTC, USDI, WBTC], 100_000_000_000_000, 0),
 // 				Error::<Runtime>::InvalidTradingPath,
 // 			);
 // 			assert_noop!(
-// 				DexModule::do_swap_with_exact_supply(&BOB, &[DNAR, SETM], 100_000_000_000_000, 0),
+// 				DexModule::do_swap_with_exact_supply(&BOB, &[WBTC, SETM], 100_000_000_000_000, 0),
 // 				Error::<Runtime>::MustBeEnabled,
 // 			);
 
 // 			assert_ok!(DexModule::do_swap_with_exact_supply(
 // 				&BOB,
-// 				&[DNAR, USDI],
+// 				&[WBTC, USDI],
 // 				100_000_000_000_000,
 // 				200_000_000_000_000,
 // 			));
 // 			System::assert_last_event(Event::DexModule(crate::Event::Swap {
 // 				trader: BOB,
-// 				path: vec![DNAR, USDI],
+// 				path: vec![WBTC, USDI],
 // 				liquidity_changes: vec![100_000_000_000_000, 248_743_718_592_964],
 // 			}));
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(251_256_281_407_036, 200_000_000_000_000)
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, SERP),
+// 				DexModule::get_liquidity(USDI, ETH),
 // 				(100_000_000_000_000, 10_000_000_000)
 // 			);
 // 			assert_eq!(
 // 				Tokens::free_balance(USDI, &DexModule::account_id()),
 // 				351_256_281_407_036
 // 			);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 200_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(SERP, &DexModule::account_id()), 10_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 200_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(ETH, &DexModule::account_id()), 10_000_000_000);
 // 			assert_eq!(Tokens::free_balance(USDI, &BOB), 1_000_248_743_718_592_964);
-// 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_900_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(SERP, &BOB), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &BOB), 999_900_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(ETH, &BOB), 1_000_000_000_000_000_000);
 
 // 			assert_ok!(DexModule::do_swap_with_exact_supply(
 // 				&BOB,
-// 				&[DNAR, USDI, SERP],
+// 				&[WBTC, USDI, ETH],
 // 				200_000_000_000_000,
 // 				1,
 // 			));
 // 			System::assert_last_event(Event::DexModule(crate::Event::Swap {
 // 				trader: BOB,
-// 				path: vec![DNAR, USDI, SERP],
+// 				path: vec![WBTC, USDI, ETH],
 // 				liquidity_changes: vec![200_000_000_000_000, 124_996_843_514_053, 5_530_663_837],
 // 			}));
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(126_259_437_892_983, 400_000_000_000_000)
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, SERP),
+// 				DexModule::get_liquidity(USDI, ETH),
 // 				(224_996_843_514_053, 4_469_336_163)
 // 			);
 // 			assert_eq!(
 // 				Tokens::free_balance(USDI, &DexModule::account_id()),
 // 				351_256_281_407_036
 // 			);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 400_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(SERP, &DexModule::account_id()), 4_469_336_163);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 400_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(ETH, &DexModule::account_id()), 4_469_336_163);
 // 			assert_eq!(Tokens::free_balance(USDI, &BOB), 1_000_248_743_718_592_964);
-// 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_700_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(SERP, &BOB), 1_000_000_005_530_663_837);
+// 			assert_eq!(Tokens::free_balance(WBTC, &BOB), 999_700_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(ETH, &BOB), 1_000_000_005_530_663_837);
 // 		});
 // }
 
@@ -1221,7 +1221,7 @@
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				500_000_000_000_000,
 // 				100_000_000_000_000,
 // 				0,
@@ -1229,109 +1229,109 @@
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				SERP,
+// 				ETH,
 // 				100_000_000_000_000,
 // 				10_000_000_000,
 // 				0,
 // 			));
 
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(500_000_000_000_000, 100_000_000_000_000)
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, SERP),
+// 				DexModule::get_liquidity(USDI, ETH),
 // 				(100_000_000_000_000, 10_000_000_000)
 // 			);
 // 			assert_eq!(
 // 				Tokens::free_balance(USDI, &DexModule::account_id()),
 // 				600_000_000_000_000
 // 			);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 100_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(SERP, &DexModule::account_id()), 10_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 100_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(ETH, &DexModule::account_id()), 10_000_000_000);
 // 			assert_eq!(Tokens::free_balance(USDI, &BOB), 1_000_000_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 1_000_000_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(SERP, &BOB), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &BOB), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(ETH, &BOB), 1_000_000_000_000_000_000);
 
 // 			assert_noop!(
-// 				DexModule::do_swap_with_exact_target(&BOB, &[DNAR, USDI], 250_000_000_000_000, 100_000_000_000_000,),
+// 				DexModule::do_swap_with_exact_target(&BOB, &[WBTC, USDI], 250_000_000_000_000, 100_000_000_000_000,),
 // 				Error::<Runtime>::ExcessiveSupplyAmount
 // 			);
 // 			assert_noop!(
 // 				DexModule::do_swap_with_exact_target(
 // 					&BOB,
-// 					&[DNAR, USDI, SERP, DNAR],
+// 					&[WBTC, USDI, ETH, WBTC],
 // 					250_000_000_000_000,
 // 					200_000_000_000_000,
 // 				),
 // 				Error::<Runtime>::InvalidTradingPathLength,
 // 			);
 // 			assert_noop!(
-// 				DexModule::do_swap_with_exact_target(&BOB, &[DNAR, USDI, DNAR], 250_000_000_000_000, 200_000_000_000_000,),
+// 				DexModule::do_swap_with_exact_target(&BOB, &[WBTC, USDI, WBTC], 250_000_000_000_000, 200_000_000_000_000,),
 // 				Error::<Runtime>::InvalidTradingPath,
 // 			);
 // 			assert_noop!(
-// 				DexModule::do_swap_with_exact_target(&BOB, &[DNAR, SETM], 250_000_000_000_000, 200_000_000_000_000),
+// 				DexModule::do_swap_with_exact_target(&BOB, &[WBTC, SETM], 250_000_000_000_000, 200_000_000_000_000),
 // 				Error::<Runtime>::MustBeEnabled,
 // 			);
 
 // 			assert_ok!(DexModule::do_swap_with_exact_target(
 // 				&BOB,
-// 				&[DNAR, USDI],
+// 				&[WBTC, USDI],
 // 				250_000_000_000_000,
 // 				200_000_000_000_000,
 // 			));
 // 			System::assert_last_event(Event::DexModule(crate::Event::Swap {
 // 				trader: BOB,
-// 				path: vec![DNAR, USDI],
+// 				path: vec![WBTC, USDI],
 // 				liquidity_changes: vec![101_010_101_010_102, 250_000_000_000_000],
 // 			}));
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(250_000_000_000_000, 201_010_101_010_102)
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, SERP),
+// 				DexModule::get_liquidity(USDI, ETH),
 // 				(100_000_000_000_000, 10_000_000_000)
 // 			);
 // 			assert_eq!(
 // 				Tokens::free_balance(USDI, &DexModule::account_id()),
 // 				350_000_000_000_000
 // 			);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 201_010_101_010_102);
-// 			assert_eq!(Tokens::free_balance(SERP, &DexModule::account_id()), 10_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 201_010_101_010_102);
+// 			assert_eq!(Tokens::free_balance(ETH, &DexModule::account_id()), 10_000_000_000);
 // 			assert_eq!(Tokens::free_balance(USDI, &BOB), 1_000_250_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_898_989_898_989_898);
-// 			assert_eq!(Tokens::free_balance(SERP, &BOB), 1_000_000_000_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &BOB), 999_898_989_898_989_898);
+// 			assert_eq!(Tokens::free_balance(ETH, &BOB), 1_000_000_000_000_000_000);
 
 // 			assert_ok!(DexModule::do_swap_with_exact_target(
 // 				&BOB,
-// 				&[DNAR, USDI, SERP],
+// 				&[WBTC, USDI, ETH],
 // 				5_000_000_000,
 // 				2_000_000_000_000_000,
 // 			));
 // 			System::assert_last_event(Event::DexModule(crate::Event::Swap {
 // 				trader: BOB,
-// 				path: vec![DNAR, USDI, SERP],
+// 				path: vec![WBTC, USDI, ETH],
 // 				liquidity_changes: vec![137_654_580_386_993, 101_010_101_010_102, 5_000_000_000],
 // 			}));
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, DNAR),
+// 				DexModule::get_liquidity(USDI, WBTC),
 // 				(148_989_898_989_898, 338_664_681_397_095)
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_liquidity(USDI, SERP),
+// 				DexModule::get_liquidity(USDI, ETH),
 // 				(201_010_101_010_102, 5_000_000_000)
 // 			);
 // 			assert_eq!(
 // 				Tokens::free_balance(USDI, &DexModule::account_id()),
 // 				350_000_000_000_000
 // 			);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 338_664_681_397_095);
-// 			assert_eq!(Tokens::free_balance(SERP, &DexModule::account_id()), 5_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 338_664_681_397_095);
+// 			assert_eq!(Tokens::free_balance(ETH, &DexModule::account_id()), 5_000_000_000);
 // 			assert_eq!(Tokens::free_balance(USDI, &BOB), 1_000_250_000_000_000_000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &BOB), 999_761_335_318_602_905);
-// 			assert_eq!(Tokens::free_balance(SERP, &BOB), 1_000_000_005_000_000_000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &BOB), 999_761_335_318_602_905);
+// 			assert_eq!(Tokens::free_balance(ETH, &BOB), 1_000_000_005_000_000_000);
 // 		});
 // }
 
@@ -1344,11 +1344,11 @@
 // 		.execute_with(|| {
 // 			System::set_block_number(1);
 
-// 			assert_eq!(DexModule::get_liquidity(USDI, DNAR), (2000000, 1000000));
+// 			assert_eq!(DexModule::get_liquidity(USDI, WBTC), (2000000, 1000000));
 // 			assert_eq!(Tokens::free_balance(USDI, &DexModule::account_id()), 4000000);
-// 			assert_eq!(Tokens::free_balance(DNAR, &DexModule::account_id()), 3000000);
+// 			assert_eq!(Tokens::free_balance(WBTC, &DexModule::account_id()), 3000000);
 // 			assert_eq!(
-// 				Tokens::free_balance(USDIDNARPair::get().dex_share_currency_id(), &ALICE),
+// 				Tokens::free_balance(USDIWBTCPair::get().dex_share_currency_id(), &ALICE),
 // 				2000000
 // 			);
 // 		});
@@ -1360,21 +1360,21 @@
 // 		.initialize_enabled_trading_pairs()
 // 		.build()
 // 		.execute_with(|| {
-// 			LiquidityPool::<Runtime>::insert(USDIDNARPair::get(), (50000, 10000));
+// 			LiquidityPool::<Runtime>::insert(USDIWBTCPair::get(), (50000, 10000));
 // 			assert_eq!(
-// 				DexModule::get_swap_amount(&vec![DNAR, USDI], SwapLimit::ExactSupply(10000, 0)),
+// 				DexModule::get_swap_amount(&vec![WBTC, USDI], SwapLimit::ExactSupply(10000, 0)),
 // 				Some((10000, 24874))
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_swap_amount(&vec![DNAR, USDI], SwapLimit::ExactSupply(10000, 1659)),
+// 				DexModule::get_swap_amount(&vec![WBTC, USDI], SwapLimit::ExactSupply(10000, 1659)),
 // 				None
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_swap_amount(&vec![DNAR, USDI], SwapLimit::ExactTarget(Balance::max_value(), 24874)),
+// 				DexModule::get_swap_amount(&vec![WBTC, USDI], SwapLimit::ExactTarget(Balance::max_value(), 24874)),
 // 				Some((10000, 24874))
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_swap_amount(&vec![DNAR, USDI], SwapLimit::ExactTarget(9999, 24874)),
+// 				DexModule::get_swap_amount(&vec![WBTC, USDI], SwapLimit::ExactTarget(9999, 24874)),
 // 				None
 // 			);
 // 		});
@@ -1386,74 +1386,74 @@
 // 		.initialize_enabled_trading_pairs()
 // 		.build()
 // 		.execute_with(|| {
-// 			LiquidityPool::<Runtime>::insert(USDIDNARPair::get(), (300000, 100000));
-// 			LiquidityPool::<Runtime>::insert(USDISERPPair::get(), (50000, 10000));
-// 			LiquidityPool::<Runtime>::insert(DNARSERPPair::get(), (10000, 10000));
+// 			LiquidityPool::<Runtime>::insert(USDIWBTCPair::get(), (300000, 100000));
+// 			LiquidityPool::<Runtime>::insert(USDIETHPair::get(), (50000, 10000));
+// 			LiquidityPool::<Runtime>::insert(WBTCETHPair::get(), (10000, 10000));
 
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactSupply(10, 0), vec![]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactSupply(10, 0), vec![]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactSupply(10, 30), vec![]),
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactSupply(10, 30), vec![]),
 // 				None
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactSupply(0, 0), vec![]),
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactSupply(0, 0), vec![]),
 // 				None
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactSupply(10, 0), vec![vec![SETM]]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactSupply(10, 0), vec![vec![SETM]]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactSupply(10, 0), vec![vec![DNAR]]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactSupply(10, 0), vec![vec![WBTC]]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactSupply(10, 0), vec![vec![USDI]]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactSupply(10, 0), vec![vec![USDI]]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 			// assert_eq!(
-// 			// 	DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactSupply(10, 0), vec![vec![SERP]]),
-// 			// 	Some(vec![DNAR, SERP, USDI])
+// 			// 	DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactSupply(10, 0), vec![vec![ETH]]),
+// 			// 	Some(vec![WBTC, ETH, USDI])
 // 			// );
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactSupply(10000, 0), vec![vec![SERP]]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactSupply(10000, 0), vec![vec![ETH]]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactTarget(20, 30), vec![]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactTarget(20, 30), vec![]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactTarget(10, 30), vec![]),
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactTarget(10, 30), vec![]),
 // 				None
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactTarget(0, 0), vec![]),
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactTarget(0, 0), vec![]),
 // 				None
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactTarget(20, 30), vec![vec![SETM]]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactTarget(20, 30), vec![vec![SETM]]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactTarget(20, 30), vec![vec![DNAR]]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactTarget(20, 30), vec![vec![WBTC]]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactTarget(20, 30), vec![vec![USDI]]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactTarget(20, 30), vec![vec![USDI]]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactTarget(20, 30), vec![vec![SERP]]),
-// 				Some(vec![DNAR, SERP, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactTarget(20, 30), vec![vec![ETH]]),
+// 				Some(vec![WBTC, ETH, USDI])
 // 			);
 // 			assert_eq!(
-// 				DexModule::get_best_price_swap_path(DNAR, USDI, SwapLimit::ExactTarget(100000, 20000), vec![vec![SERP]]),
-// 				Some(vec![DNAR, USDI])
+// 				DexModule::get_best_price_swap_path(WBTC, USDI, SwapLimit::ExactTarget(100000, 20000), vec![vec![ETH]]),
+// 				Some(vec![WBTC, USDI])
 // 			);
 // 		});
 // }
@@ -1468,7 +1468,7 @@
 // 			assert_ok!(DexModule::add_liquidity(
 // 				Origin::signed(ALICE),
 // 				USDI,
-// 				DNAR,
+// 				WBTC,
 // 				500_000_000_000_000,
 // 				100_000_000_000_000,
 // 				0,
@@ -1476,25 +1476,25 @@
 
 // 			assert_ok!(DexModule::swap_with_specific_path(
 // 					&BOB,
-// 					&vec![DNAR, USDI],
+// 					&vec![WBTC, USDI],
 // 					SwapLimit::ExactSupply(100_000_000_000_000, 249373433583959)
 // 			));
 
 // 			assert_ok!(DexModule::swap_with_specific_path(
 // 				&BOB,
-// 				&vec![DNAR, USDI],
+// 				&vec![WBTC, USDI],
 // 				SwapLimit::ExactSupply(100_000_000_000_000, 200_000_000_000_000)
 // 			));
 // 			System::assert_last_event(Event::DexModule(crate::Event::Swap {
 // 				trader: BOB,
-// 				path: vec![DNAR, USDI],
+// 				path: vec![WBTC, USDI],
 // 				liquidity_changes: vec![100_000_000_000_000, 248_743_718_592_964],
 // 			}));
 
 // 			assert_noop!(
 // 				DexModule::swap_with_specific_path(
 // 					&BOB,
-// 					&vec![USDI, DNAR],
+// 					&vec![USDI, WBTC],
 // 					SwapLimit::ExactTarget(253_794_223_643_470, 100_000_000_000_000)
 // 				),
 // 				Error::<Runtime>::ExcessiveSupplyAmount
@@ -1502,12 +1502,12 @@
 
 // 			assert_ok!(DexModule::swap_with_specific_path(
 // 				&BOB,
-// 				&vec![USDI, DNAR],
+// 				&vec![USDI, WBTC],
 // 				SwapLimit::ExactTarget(300_000_000_000_000, 100_000_000_000_000)
 // 			));
 // 			System::assert_last_event(Event::DexModule(crate::Event::Swap {
 // 				trader: BOB,
-// 				path: vec![USDI, DNAR],
+// 				path: vec![USDI, WBTC],
 // 				liquidity_changes: vec![253_794_223_643_471, 100_000_000_000_000],
 // 			}));
 // 		});
@@ -1519,15 +1519,15 @@
 // 		System::set_block_number(1);
 
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Disabled
 // 		);
-// 		assert_eq!(DexModule::get_liquidity_token_address(USDI, DNAR), None);
+// 		assert_eq!(DexModule::get_liquidity_token_address(USDI, WBTC), None);
 
 // 		assert_ok!(DexModule::list_provisioning(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR,
+// 			WBTC,
 // 			1_000_000_000_000u128,
 // 			1_000_000_000_000u128,
 // 			5_000_000_000_000u128,
@@ -1535,7 +1535,7 @@
 // 			10,
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Provisioning(ProvisioningParameters {
 // 				min_contribution: (1_000_000_000_000u128, 1_000_000_000_000u128),
 // 				target_provision: (5_000_000_000_000u128, 2_000_000_000_000u128),
@@ -1544,21 +1544,21 @@
 // 			})
 // 		);
 // 		assert_eq!(
-// 			DexModule::get_liquidity_token_address(USDI, DNAR),
+// 			DexModule::get_liquidity_token_address(USDI, WBTC),
 // 			Some(H160::from_str("0x0000000000000000000200000000010000000002").unwrap())
 // 		);
 
 // 		assert_ok!(DexModule::enable_trading_pair(
 // 			Origin::signed(ListingOrigin::get()),
 // 			USDI,
-// 			DNAR
+// 			WBTC
 // 		));
 // 		assert_eq!(
-// 			DexModule::trading_pair_statuses(USDIDNARPair::get()),
+// 			DexModule::trading_pair_statuses(USDIWBTCPair::get()),
 // 			TradingPairStatus::<_, _>::Enabled
 // 		);
 // 		assert_eq!(
-// 			DexModule::get_liquidity_token_address(USDI, DNAR),
+// 			DexModule::get_liquidity_token_address(USDI, WBTC),
 // 			Some(H160::from_str("0x0000000000000000000200000000010000000002").unwrap())
 // 		);
 // 	});

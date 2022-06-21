@@ -137,9 +137,91 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDI))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SLIX_USDW".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDW))).unwrap(),
+					symbol: "LP_SETM_ETH".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(ETH))).unwrap(),
 				},
+				Token {
+					symbol: "LP_SETM_WBTC".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(WBTC))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SETM_BNB".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(BNB))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SETM_USDC".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDC))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SETM_USDT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SETM_BUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(BUSD))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SETM_USDP".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDP))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SETM_PAXG".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(PAXG))).unwrap(),
+				},
+				// Token {
+				// 	symbol: "LP_SETM_DOT".to_string(),
+				// 	address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(DOT))).unwrap(),
+				// },
+				// Token {
+				// 	symbol: "LP_SETM_KSM".to_string(),
+				// 	address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(KSM))).unwrap(),
+				// },
+
+				// Slixon LP Tokens
+				Token {
+					symbol: "LP_SLIX_USDW".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(USDW))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SLIX_ETH".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(ETH))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SLIX_WBTC".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(WBTC))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SLIX_BNB".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(BNB))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SLIX_USDC".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(USDC))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SLIX_USDT".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(USDT))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SLIX_BUSD".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(BUSD))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SLIX_USDP".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(USDP))).unwrap(),
+				},
+				Token {
+					symbol: "LP_SLIX_PAXG".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(PAXG))).unwrap(),
+				},
+				// Token {
+				// 	symbol: "LP_SLIX_DOT".to_string(),
+				// 	address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(DOT))).unwrap(),
+				// },
+				// Token {
+				// 	symbol: "LP_SLIX_KSM".to_string(),
+				// 	address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(KSM))).unwrap(),
+				// },
 			];
 			tokens.append(&mut lp_tokens);
 
@@ -154,10 +236,24 @@ create_currency_id! {
 	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	#[repr(u8)]
 	pub enum TokenSymbol {
+		// Native Tokens
 		SETM("Setheum", 18) = 0,
 		SLIX("Slixon", 18) = 1,
-		DNAR("The Dinar", 18) = 2,
-		HELP("HighEnd LaunchPad", 18) = 3,
+		USDI("InterUSD", 18) = 2,
+		USDW("WestUSD", 18) = 3,
+		// Foreign Tokens
+		ETH("Ethereum", 18) = 4,
+		WBTC("Wrapped Bitcoin", 9) = 5,
+		BTCB("Binance-Peg BTC", 9) = 6,
+		BNB("BNB", 18) = 7,
+		USDC("USD Coin", 18) = 8,
+		USDT("Tether", 18) = 9,
+		BUSD("Binance USD", 18) = 10,
+		USDP("Pax Dollar", 18) = 11,
+		PAXG("Pax Gold", 18) = 12,
+		// Dotsama Tokens
+		// Reserve DOT("Polkadot", 18) = 13,
+		// Reserve KSM("Kusama", 18) = 14,
 	}
 }
 

@@ -29,7 +29,7 @@ use frame_support::{
 };
 use mock::{
 	AccountId, BlockWeights, Call, Currencies, DEXModule, ExtBuilder, MockPriceSource, Origin, Runtime,
-	TransactionPayment, SETM, ALICE, USDI, BOB, CHARLIE, DNAR, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
+	TransactionPayment, SETM, ALICE, USDI, BOB, CHARLIE, WBTC, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
 };
 use orml_traits::MultiCurrency;
 use sp_runtime::{testing::TestXt, traits::One};
@@ -310,7 +310,7 @@ fn set_alternative_fee_swap_path_work() {
 		);
 
 		assert_noop!(
-			TransactionPayment::set_alternative_fee_swap_path(Origin::signed(ALICE), Some(vec![USDI, DNAR])),
+			TransactionPayment::set_alternative_fee_swap_path(Origin::signed(ALICE), Some(vec![USDI, WBTC])),
 			Error::<Runtime>::InvalidSwapPath
 		);
 
@@ -338,26 +338,26 @@ fn charge_fee_by_default_swap_path() {
 			));
 			assert_ok!(DEXModule::add_liquidity(
 				Origin::signed(ALICE),
-				DNAR,
+				WBTC,
 				USDI,
 				100,
 				1000,
 				0
 			));
 			assert_eq!(DEXModule::get_liquidity_pool(SETM, USDI), (10000, 1000));
-			assert_eq!(DEXModule::get_liquidity_pool(DNAR, USDI), (100, 1000));
+			assert_eq!(DEXModule::get_liquidity_pool(WBTC, USDI), (100, 1000));
 			assert_ok!(TransactionPayment::set_alternative_fee_swap_path(
 				Origin::signed(BOB),
-				Some(vec![DNAR, SETM])
+				Some(vec![WBTC, SETM])
 			));
 			assert_eq!(
 				TransactionPayment::alternative_fee_swap_path(&BOB).unwrap(),
-				vec![DNAR, SETM]
+				vec![WBTC, SETM]
 			);
-			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(DNAR, &ALICE, &BOB, 100));
+			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(WBTC, &ALICE, &BOB, 100));
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETM, &BOB), 0);
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(USDI, &BOB), 0);
-			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 100);
+			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(WBTC, &BOB), 100);
 
 			let fee = 500 * 2 + 1000; // len * byte + weight
 			assert_eq!(
@@ -370,9 +370,9 @@ fn charge_fee_by_default_swap_path() {
 
 			assert_eq!(Currencies::free_balance(SETM, &BOB), Currencies::minimum_balance(SETM));
 			assert_eq!(Currencies::free_balance(USDI, &BOB), 0);
-			assert_eq!(Currencies::free_balance(DNAR, &BOB), 100 - 35);
+			assert_eq!(Currencies::free_balance(WBTC, &BOB), 100 - 35);
 			assert_eq!(DEXModule::get_liquidity_pool(SETM, USDI), (10000 - 2000 - 10, 1255));
-			assert_eq!(DEXModule::get_liquidity_pool(DNAR, USDI), (100 + 35, 1000 - 255));
+			assert_eq!(DEXModule::get_liquidity_pool(WBTC, USDI), (100 + 35, 1000 - 255));
 		});
 }
 

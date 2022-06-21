@@ -99,9 +99,6 @@ pub mod module {
 		/// Currency for transfer currencies
 		type Currency: MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
-		/// The stable currency ids
-		type StableCurrencyIds: Get<Vec<CurrencyId>>;
-
 		/// Trading fee rate
 		/// The first item of the tuple is the numerator of the fee rate, second
 		/// item is the denominator, fee_rate = numerator / denominator,
@@ -109,14 +106,6 @@ pub mod module {
 		/// operation.
 		#[pallet::constant]
 		type GetExchangeFee: Get<(u32, u32)>;
-
-		/// Trading fee waiver rate
-		/// The first item of the tuple is the numerator of the fee rate, second
-		/// item is the denominator, fee_rate = numerator / denominator,
-		/// use (u32, u32) over `Rate` type to minimize internal division
-		/// operation.
-		#[pallet::constant]
-		type GetStableCurrencyExchangeFee: Get<(u32, u32)>;
 
 		/// The limit for length of trading path
 		#[pallet::constant]
@@ -221,12 +210,6 @@ pub mod module {
 		},
 		/// Use supply currency to swap target currency.
 		Swap {
-			trader: T::AccountId,
-			path: Vec<CurrencyId>,
-			liquidity_changes: Vec<Balance>,
-		},
-		/// Use supply currency to swap target currency for SERP Treasury buyback.
-		BuyBackSwap {
 			trader: T::AccountId,
 			path: Vec<CurrencyId>,
 			liquidity_changes: Vec<Balance>,
@@ -1092,53 +1075,12 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
-	/// Get how much target amount will be got for specific supply amount.
-	fn get_efe_target_amount(supply_pool: Balance, target_pool: Balance, supply_amount: Balance) -> Balance {
-		if supply_amount.is_zero() || supply_pool.is_zero() || target_pool.is_zero() {
-			Zero::zero()
-		} else {
-			let (fee_numerator, fee_denominator) = T::GetStableCurrencyExchangeFee::get();
-			let supply_amount_with_fee: U256 =
-				U256::from(supply_amount).saturating_mul(U256::from(fee_denominator.saturating_sub(fee_numerator)));
-			let numerator: U256 = supply_amount_with_fee.saturating_mul(U256::from(target_pool));
-			let denominator: U256 = U256::from(supply_pool)
-				.saturating_mul(U256::from(fee_denominator))
-				.saturating_add(supply_amount_with_fee);
-
-			numerator
-				.checked_div(denominator)
-				.and_then(|n| TryInto::<Balance>::try_into(n).ok())
-				.unwrap_or_else(Zero::zero)
-		}
-	}
-
 	/// Get how much supply amount will be paid for specific target amount.
 	fn get_supply_amount(supply_pool: Balance, target_pool: Balance, target_amount: Balance) -> Balance {
 		if target_amount.is_zero() || supply_pool.is_zero() || target_pool.is_zero() {
 			Zero::zero()
 		} else {
 			let (fee_numerator, fee_denominator) = T::GetExchangeFee::get();
-			let numerator: U256 = U256::from(supply_pool)
-				.saturating_mul(U256::from(target_amount))
-				.saturating_mul(U256::from(fee_denominator));
-			let denominator: U256 = U256::from(target_pool)
-				.saturating_sub(U256::from(target_amount))
-				.saturating_mul(U256::from(fee_denominator.saturating_sub(fee_numerator)));
-
-			numerator
-				.checked_div(denominator)
-				.and_then(|r| r.checked_add(U256::one())) // add 1 to result so that correct the possible losses caused by remainder discarding in
-				.and_then(|n| TryInto::<Balance>::try_into(n).ok())
-				.unwrap_or_else(Zero::zero)
-		}
-	}
-
-	/// Get how much supply amount will be paid for specific target amount.
-	fn get_efe_supply_amount(supply_pool: Balance, target_pool: Balance, target_amount: Balance) -> Balance {
-		if target_amount.is_zero() || supply_pool.is_zero() || target_pool.is_zero() {
-			Zero::zero()
-		} else {
-			let (fee_numerator, fee_denominator) = T::GetStableCurrencyExchangeFee::get();
 			let numerator: U256 = U256::from(supply_pool)
 				.saturating_mul(U256::from(target_amount))
 				.saturating_mul(U256::from(fee_denominator));
@@ -1190,42 +1132,6 @@ impl<T: Config> Pallet<T> {
 		Ok(target_amounts)
 	}
 
-	fn get_efe_target_amounts(
-		path: &[CurrencyId],
-		supply_amount: Balance,
-	) -> sp_std::result::Result<Vec<Balance>, DispatchError> {
-		Self::validate_path(path)?;
-
-		let path_length = path.len();
-		let mut target_amounts: Vec<Balance> = vec![Zero::zero(); path_length];
-		target_amounts[0] = supply_amount;
-
-		let mut i: usize = 0;
-		while i + 1 < path_length {
-			let trading_pair =
-				TradingPair::from_currency_ids(path[i], path[i + 1]).ok_or(Error::<T>::InvalidCurrencyId)?;
-			ensure!(
-				matches!(
-					Self::trading_pair_statuses(trading_pair),
-					TradingPairStatus::<_, _>::Enabled
-				),
-				Error::<T>::MustBeEnabled
-			);
-			let (supply_pool, target_pool) = Self::get_liquidity(path[i], path[i + 1]);
-			ensure!(
-				!supply_pool.is_zero() && !target_pool.is_zero(),
-				Error::<T>::InsufficientLiquidity
-			);
-			let target_amount = Self::get_efe_target_amount(supply_pool, target_pool, target_amounts[i]);
-			ensure!(!target_amount.is_zero(), Error::<T>::ZeroTargetAmount);
-
-			target_amounts[i + 1] = target_amount;
-			i += 1;
-		}
-
-		Ok(target_amounts)
-	}
-
 	fn get_supply_amounts(
 		path: &[CurrencyId],
 		target_amount: Balance,
@@ -1253,42 +1159,6 @@ impl<T: Config> Pallet<T> {
 				Error::<T>::InsufficientLiquidity
 			);
 			let supply_amount = Self::get_supply_amount(supply_pool, target_pool, supply_amounts[i]);
-			ensure!(!supply_amount.is_zero(), Error::<T>::ZeroSupplyAmount);
-
-			supply_amounts[i - 1] = supply_amount;
-			i -= 1;
-		}
-
-		Ok(supply_amounts)
-	}
-
-	fn get_efe_supply_amounts(
-		path: &[CurrencyId],
-		target_amount: Balance,
-	) -> sp_std::result::Result<Vec<Balance>, DispatchError> {
-		Self::validate_path(path)?;
-
-		let path_length = path.len();
-		let mut supply_amounts: Vec<Balance> = vec![Zero::zero(); path_length];
-		supply_amounts[path_length - 1] = target_amount;
-
-		let mut i: usize = path_length - 1;
-		while i > 0 {
-			let trading_pair =
-				TradingPair::from_currency_ids(path[i - 1], path[i]).ok_or(Error::<T>::InvalidCurrencyId)?;
-			ensure!(
-				matches!(
-					Self::trading_pair_statuses(trading_pair),
-					TradingPairStatus::<_, _>::Enabled
-				),
-				Error::<T>::MustBeEnabled
-			);
-			let (supply_pool, target_pool) = Self::get_liquidity(path[i - 1], path[i]);
-			ensure!(
-				!supply_pool.is_zero() && !target_pool.is_zero(),
-				Error::<T>::InsufficientLiquidity
-			);
-			let supply_amount = Self::get_efe_supply_amount(supply_pool, target_pool, supply_amounts[i]);
 			ensure!(!supply_amount.is_zero(), Error::<T>::ZeroSupplyAmount);
 
 			supply_amounts[i - 1] = supply_amount;
@@ -1339,72 +1209,6 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	fn _efe_swap(
-		supply_currency_id: CurrencyId,
-		target_currency_id: CurrencyId,
-		supply_increment: Balance,
-		target_decrement: Balance,
-		supply_effect_amount: Balance,
-		target_effect_amount: Balance,
-	) -> DispatchResult {
-		if let Some(trading_pair) = TradingPair::from_currency_ids(supply_currency_id, target_currency_id) {
-			if T::StableCurrencyIds::get().contains(&supply_currency_id) {
-				Self::try_mutate_liquidity_pool(&trading_pair, |(pool_0, pool_1)| -> DispatchResult {
-					let invariant_before_swap: U256 = U256::from(*pool_0).saturating_mul(U256::from(*pool_1));
-
-					if supply_currency_id == trading_pair.first() {
-						*pool_0 = pool_0.checked_add(supply_increment).ok_or(ArithmeticError::Overflow)?;
-						*pool_1 = pool_1.checked_sub(target_decrement).ok_or(ArithmeticError::Underflow)?;
-						if !supply_effect_amount.is_zero() {
-							*pool_0 = pool_0.saturating_add(supply_effect_amount);
-						};
-					} else {
-						*pool_0 = pool_0.checked_sub(target_decrement).ok_or(ArithmeticError::Underflow)?;
-						*pool_1 = pool_1.checked_add(supply_increment).ok_or(ArithmeticError::Overflow)?;
-						if !supply_effect_amount.is_zero() {
-							*pool_1 = pool_1.saturating_add(supply_effect_amount);
-						};
-					}
-
-					// invariant check to ensure the constant product formulas (k = x * y)
-					let invariant_after_swap: U256 = U256::from(*pool_0).saturating_mul(U256::from(*pool_1));
-					ensure!(
-						invariant_after_swap >= invariant_before_swap,
-						Error::<T>::InvariantCheckFailed,
-					);
-					Ok(())
-				})?;
-			} else if T::StableCurrencyIds::get().contains(&target_currency_id) {
-				Self::try_mutate_liquidity_pool(&trading_pair, |(pool_0, pool_1)| -> DispatchResult {
-					let invariant_before_swap: U256 = U256::from(*pool_0).saturating_mul(U256::from(*pool_1));
-
-					if supply_currency_id == trading_pair.first() {
-						*pool_0 = pool_0.checked_add(supply_increment).ok_or(ArithmeticError::Overflow)?;
-						*pool_1 = pool_1.checked_sub(target_decrement).ok_or(ArithmeticError::Underflow)?;
-						if !target_effect_amount.is_zero() {
-							*pool_1 = pool_1.saturating_add(target_effect_amount);
-						};
-					} else {
-						*pool_0 = pool_0.checked_sub(target_decrement).ok_or(ArithmeticError::Underflow)?;
-						*pool_1 = pool_1.checked_add(supply_increment).ok_or(ArithmeticError::Overflow)?;
-						if !target_effect_amount.is_zero() {
-							*pool_0 = pool_0.saturating_add(target_effect_amount);
-						};
-					}
-
-					// invariant check to ensure the constant product formulas (k = x * y)
-					let invariant_after_swap: U256 = U256::from(*pool_0).saturating_mul(U256::from(*pool_1));
-					ensure!(
-						invariant_after_swap >= invariant_before_swap,
-						Error::<T>::InvariantCheckFailed,
-					);
-					Ok(())
-				})?;
-			}
-		}
-		Ok(())
-	}
-
 	fn _swap_by_path(path: &[CurrencyId], amounts: &[Balance]) -> DispatchResult {
 		let mut i: usize = 0;
 		while i + 1 < path.len() {
@@ -1415,29 +1219,6 @@ impl<T: Config> Pallet<T> {
 				target_currency_id,
 				supply_increment,
 				target_decrement,
-			)?;
-			i += 1;
-		}
-		Ok(())
-	}
-
-	fn _efe_swap_by_path(
-		path: &[CurrencyId],
-		amounts: &[Balance],
-        supply_effect_amount: Balance,
-        target_effect_amount: Balance
-	) -> DispatchResult {
-		let mut i: usize = 0;
-		while i + 1 < path.len() {
-			let (supply_currency_id, target_currency_id) = (path[i], path[i + 1]);
-			let (supply_increment, target_decrement) = (amounts[i], amounts[i + 1]);
-			Self::_efe_swap(
-				supply_currency_id,
-				target_currency_id,
-				supply_increment,
-				target_decrement,
-				supply_effect_amount,
-				target_effect_amount,
 			)?;
 			i += 1;
 		}
@@ -1460,174 +1241,16 @@ impl<T: Config> Pallet<T> {
 		let module_account_id = Self::account_id();
 		let actual_target_amount = amounts[amounts.len() - 1];
 
-		// Call `ExchangeFeeEvaluator` here.
-		// If supply_currency or the target_currency is a StableCurrencyId,
-		// call the EFE function of this function,
-		// else do normal swap without EFE.
-		if T::StableCurrencyIds::get().contains(&path[0])
-			|| T::StableCurrencyIds::get().contains(&path[path.len() - 1]) {
-				Self::do_efe_swap_with_exact_supply(
-					who,
-					path,
-					supply_amount,
-					min_target_amount,
-				)?;
-		} else {
-			T::Currency::transfer(path[0], who, &module_account_id, supply_amount)?;
-			Self::_swap_by_path(path, &amounts)?;
-			T::Currency::transfer(path[path.len() - 1], &module_account_id, who, actual_target_amount)?;
+		T::Currency::transfer(path[0], who, &module_account_id, supply_amount)?;
+		Self::_swap_by_path(path, &amounts)?;
+		T::Currency::transfer(path[path.len() - 1], &module_account_id, who, actual_target_amount)?;
 
-			Self::deposit_event(Event::Swap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: amounts,
-			});
-		}
+		Self::deposit_event(Event::Swap {
+			trader: who.clone(),
+			path: path.to_vec(),
+			liquidity_changes: amounts,
+		});
 		Ok(actual_target_amount)
-	}
-
-	/// Ensured atomic.
-	#[transactional]
-	fn do_efe_swap_with_exact_supply(
-		who: &T::AccountId,
-		path: &[CurrencyId],
-		supply_amount: Balance,
-		min_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		let amounts = Self::get_target_amounts(path, supply_amount)?;
-		ensure!(
-			amounts[amounts.len() - 1] >= min_target_amount,
-			Error::<T>::InsufficientTargetAmount
-		);
-		let module_account_id = Self::account_id();
-		let actual_target_amount = amounts[amounts.len() - 1];
-
-        let efe_amounts = Self::get_efe_target_amounts(&path, supply_amount)?;
-        ensure!(
-            efe_amounts[efe_amounts.len() - 1] >= min_target_amount,
-            Error::<T>::InsufficientTargetAmount
-        );
-        let efe_actual_target_amount = efe_amounts[efe_amounts.len() - 1];
-
-		// Call `ExchangeFeeEvaluator` here.
-		// If target_currency is a StableCurrency, offer it as waiver,
-		// else if supply_currency is a StableCurrency, offer it as waiver,
-        // The `EFFECT` means "Exchange Fee Full Evaluation Commission Target" (effect).
-		if T::StableCurrencyIds::get().contains(&path[path.len() - 1]) {
-            // get the difference, this is the EFFECT.
-			let target_effect_amount = efe_actual_target_amount.checked_sub(actual_target_amount)
-				.ok_or(ArithmeticError::Overflow)?;
-            // deposit the EFFECT to DEX.
-			T::Currency::deposit(path[path.len() - 1], &module_account_id, target_effect_amount)?;
-			T::Currency::transfer(path[0], who, &module_account_id, supply_amount)?;
-            Self::_efe_swap_by_path(&path, &efe_amounts, 0, target_effect_amount)?;
-			T::Currency::transfer(path[path.len() - 1], &module_account_id, who, efe_actual_target_amount)?;
-
-			Self::deposit_event(Event::Swap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: efe_amounts,
-			});
-            return Ok(efe_actual_target_amount);
-		} else if T::StableCurrencyIds::get().contains(&path[0]) {
-            // get the actual_supply_amount, this is the EFFECT.
-			let supply_amounts = Self::get_supply_amounts(&path, actual_target_amount)?;
-			let actual_supply_amount = supply_amounts[supply_amounts.len() - 1];
-			
-            // get the difference, this is the EFFECT.
-			let supply_effects_amount = actual_supply_amount.checked_sub(supply_amount)
-                .ok_or(ArithmeticError::Overflow)?;
-            // deposit the EFFECT to DEX.
-			T::Currency::deposit(path[path.len() - 1], &module_account_id, supply_effects_amount)?;
-			T::Currency::transfer(path[0], who, &module_account_id, supply_amount)?;
-            Self::_efe_swap_by_path(&path, &efe_amounts, supply_effects_amount, 0)?;
-			T::Currency::transfer(path[path.len() - 1], &module_account_id, who, actual_target_amount)?;
-		
-			Self::deposit_event(Event::Swap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: efe_amounts,
-			});
-            return Ok(efe_actual_target_amount);
-		}
-		Ok(efe_actual_target_amount)
-	}
-
-	/// Ensured atomic.
-	#[transactional]
-	fn buyback_do_efe_swap_with_exact_supply(
-		who: &T::AccountId,
-		path: &[CurrencyId],
-		supply_amount: Balance,
-		min_target_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		let amounts = Self::get_target_amounts(&path, supply_amount)?;
-		ensure!(
-			amounts[amounts.len() - 1] >= min_target_amount,
-			Error::<T>::InsufficientTargetAmount
-		);
-		let module_account_id = Self::account_id();
-		let actual_target_amount = amounts[amounts.len() - 1];
-
-        let efe_amounts = Self::get_efe_target_amounts(&path, supply_amount)?;
-		ensure!(
-			efe_amounts[efe_amounts.len() - 1] >= min_target_amount,
-			Error::<T>::InsufficientTargetAmount
-		);
-        let efe_actual_target_amount = efe_amounts[efe_amounts.len() - 1];
-
-		// Call `ExchangeFeeEvaluator` here.
-		// If target_currency is a StableCurrency, offer it as waiver,
-		// else if supply_currency is a StableCurrency, offer it as waiver,
-        // The `EFFECT` means "Exchange Fee Full Evaluation Commission Target" (effect).
-		if T::StableCurrencyIds::get().contains(&path[path.len() - 1]) {
-            // get the difference, this is the EFFECT.
-			let target_effect_amount = efe_actual_target_amount.checked_sub(actual_target_amount)
-				.ok_or(ArithmeticError::Overflow)?;
-			// deposit the EFFECT to DEX and burn the boughtback amount.
-			T::Currency::deposit(path[path.len() - 1], &module_account_id, target_effect_amount)?;
-			T::Currency::transfer(path[0], &who, &module_account_id, supply_amount)?;
-            Self::_efe_swap_by_path(&path, &efe_amounts, 0, target_effect_amount)?;
-			T::Currency::withdraw(path[path.len() - 1], &module_account_id, efe_actual_target_amount)?;
-
-			Self::deposit_event(Event::BuyBackSwap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: efe_amounts,
-			});
-            return Ok(efe_actual_target_amount);
-		} else if T::StableCurrencyIds::get().contains(&path[0]) {
-            // get the actual_supply_amount, this is the EFFECT.
-			let supply_amounts = Self::get_supply_amounts(&path, actual_target_amount)?;
-			let actual_supply_amount = supply_amounts[supply_amounts.len() - 1];
-			
-            // get the difference, this is the EFFECT.
-			let supply_effects_amount = actual_supply_amount.checked_sub(supply_amount)
-                .ok_or(ArithmeticError::Overflow)?;
-            // deposit the EFFECT to DEX and burn the boughtback amount.
-			T::Currency::deposit(path[path.len() - 1], &module_account_id, supply_effects_amount)?;
-			T::Currency::transfer(path[0], &who, &module_account_id, supply_amount)?;
-            Self::_efe_swap_by_path(&path, &efe_amounts, supply_effects_amount, 0)?;
-			T::Currency::withdraw(path[path.len() - 1], &module_account_id, actual_target_amount)?;
-		
-			Self::deposit_event(Event::BuyBackSwap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: efe_amounts,
-			});
-            return Ok(efe_actual_target_amount);
-		} else {
-			T::Currency::transfer(path[0], who, &module_account_id, supply_amount)?;
-			Self::_swap_by_path(path, &amounts)?;
-			T::Currency::withdraw(path[path.len() - 1], &module_account_id, actual_target_amount)?;
-		
-			Self::deposit_event(Event::BuyBackSwap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: amounts,
-			});
-            return Ok(actual_target_amount);
-		}
 	}
 
 	/// Ensured atomic.
@@ -1643,164 +1266,16 @@ impl<T: Config> Pallet<T> {
 		let module_account_id = Self::account_id();
 		let actual_supply_amount = amounts[0];
 
-		// Call `ExchangeFeeEvaluator` here.
-		// If supply_currency or the target_currency is a StableCurrencyId,
-		// call the EFE function of this function,
-		// else do normal swap without EFE.
-		if T::StableCurrencyIds::get().contains(&path[0])
-            || T::StableCurrencyIds::get().contains(&path[path.len() - 1]) {
-                Self::do_efe_swap_with_exact_target(
-                    who,
-                    path,
-                    target_amount,
-                    max_supply_amount,
-                )?;
-		} else {
-			T::Currency::transfer(path[0], who, &module_account_id, actual_supply_amount)?;
-			Self::_swap_by_path(path, &amounts)?;
-			T::Currency::transfer(path[path.len() - 1], &module_account_id, who, target_amount)?;
+		T::Currency::transfer(path[0], who, &module_account_id, actual_supply_amount)?;
+		Self::_swap_by_path(path, &amounts)?;
+		T::Currency::transfer(path[path.len() - 1], &module_account_id, who, target_amount)?;
 
-			Self::deposit_event(Event::Swap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: amounts,
-			});
-        }
+		Self::deposit_event(Event::Swap {
+			trader: who.clone(),
+			path: path.to_vec(),
+			liquidity_changes: amounts,
+		});
 		Ok(actual_supply_amount)
-	}
-
-	/// Ensured atomic.
-	#[transactional]
-	fn do_efe_swap_with_exact_target(
-		who: &T::AccountId,
-		path: &[CurrencyId],
-		target_amount: Balance,
-		max_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		let amounts = Self::get_supply_amounts(path, target_amount)?;
-		ensure!(amounts[0] <= max_supply_amount, Error::<T>::ExcessiveSupplyAmount);
-		let module_account_id = Self::account_id();
-		let actual_supply_amount = amounts[0];
-
-        let efe_amounts = Self::get_efe_supply_amounts(&path, target_amount)?;
-        ensure!(efe_amounts[0] <= max_supply_amount, Error::<T>::ExcessiveSupplyAmount);
-        let actual_efe_supply_amount = efe_amounts[0];
-
-		// Call `ExchangeFeeEvaluator` (EFE) here.
-		// If supply_currency is a StableCurrencyId, offer it as waiver,
-		// else if target_currency is a StableCurrencyId, offer it as waiver.
-        // The `EFFECT` means "Exchange Fee Full Evaluation Commission Target" (effect).
-		if T::StableCurrencyIds::get().contains(&path[0]) {
-            // get the difference, this is the EFFECT.
-            let supply_effect_amount = actual_supply_amount.checked_sub(actual_efe_supply_amount)
-                .ok_or(ArithmeticError::Overflow)?;
-            // deposit the EFFECT to DEX.
-            T::Currency::deposit(path[0], &module_account_id, supply_effect_amount)?;
-            T::Currency::transfer(path[0], who, &module_account_id, actual_efe_supply_amount)?;
-            Self::_efe_swap_by_path(&path, &efe_amounts, supply_effect_amount, 0)?;
-            T::Currency::transfer(path[path.len() - 1], &module_account_id, who, target_amount)?;
-    
-			Self::deposit_event(Event::Swap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: efe_amounts,
-			});
-            return Ok(actual_efe_supply_amount);
-            
-		} else if T::StableCurrencyIds::get().contains(&path[path.len() - 1]) {
-            // get the actual_target_amount, this is the EFFECT.
-            let target_amounts = Self::get_target_amounts(&path, actual_supply_amount)?;
-            let actual_target_amount = target_amounts[target_amounts.len() - 1];
-            
-            // get the difference, this is the EFFECT.
-            let target_effect_amount = actual_target_amount.checked_sub(target_amount)
-                .ok_or(ArithmeticError::Overflow)?;
-            // deposit the EFFECT to DEX.
-            T::Currency::deposit(path[path.len() - 1], &module_account_id, target_effect_amount)?;
-            T::Currency::transfer(path[0], who, &module_account_id, actual_efe_supply_amount)?;
-            Self::_efe_swap_by_path(&path, &efe_amounts, 0, target_effect_amount)?;
-            T::Currency::transfer(path[path.len() - 1], &module_account_id, who, target_amount)?;
-    
-			Self::deposit_event(Event::Swap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: efe_amounts,
-			});
-            return Ok(actual_efe_supply_amount);
-        }
-		Ok(actual_supply_amount)
-	}
-
-	/// Ensured atomic.
-	#[transactional]
-	fn buyback_do_efe_swap_with_exact_target(
-		who: &T::AccountId,
-		path: &[CurrencyId],
-		target_amount: Balance,
-		max_supply_amount: Balance,
-	) -> sp_std::result::Result<Balance, DispatchError> {
-		let amounts = Self::get_supply_amounts(&path, target_amount)?;
-		ensure!(amounts[0] <= max_supply_amount, Error::<T>::ExcessiveSupplyAmount);
-		let module_account_id = Self::account_id();
-		let actual_supply_amount = amounts[0];
-
-        let efe_amounts = Self::get_efe_supply_amounts(&path, target_amount)?;
-        ensure!(efe_amounts[0] <= max_supply_amount, Error::<T>::ExcessiveSupplyAmount);
-        let actual_efe_supply_amount = efe_amounts[0];
-
-		// Call `ExchangeFeeEvaluator` (EFE) here.
-		// If supply_currency is a StableCurrencyId, offer it as waiver,
-		// else if target_currency is a StableCurrencyId, offer it as waiver.
-        // The `EFFECT` means "Exchange Fee Full Evaluation Commission Target" (effect).
-		if T::StableCurrencyIds::get().contains(&path[0]) {
-            // get the difference, this is the EFFECT.
-            let supply_effect_amount = actual_supply_amount.checked_sub(actual_efe_supply_amount)
-                .ok_or(ArithmeticError::Overflow)?;
-			// deposit the EFFECT to DEX and burn the boughtback amount.
-            T::Currency::deposit(path[0], &module_account_id, supply_effect_amount)?;
-            T::Currency::transfer(path[0], &who, &module_account_id, actual_efe_supply_amount)?;
-            Self::_efe_swap_by_path(&path, &efe_amounts, supply_effect_amount, 0)?;
-			T::Currency::withdraw(path[path.len() - 1], &module_account_id, target_amount)?;
-
-			Self::deposit_event(Event::BuyBackSwap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: efe_amounts,
-			});
-            return Ok(actual_efe_supply_amount);
-            
-		} else if T::StableCurrencyIds::get().contains(&path[path.len() - 1]) {
-            // get the actual_target_amount, this is the EFFECT.
-            let target_amounts = Self::get_target_amounts(&path, actual_supply_amount)?;
-            let actual_target_amount = target_amounts[target_amounts.len() - 1];
-            
-            // get the difference, this is the EFFECT.
-            let target_effect_amount = actual_target_amount.checked_sub(target_amount)
-                .ok_or(ArithmeticError::Overflow)?;
-            // deposit the EFFECT to DEX and burn the boughtback amount.
-            T::Currency::deposit(path[path.len() - 1], &module_account_id, target_effect_amount)?;
-            T::Currency::transfer(path[0], &who, &module_account_id, actual_efe_supply_amount)?;
-            Self::_efe_swap_by_path(&path, &efe_amounts, 0, target_effect_amount)?;
-			T::Currency::withdraw(path[path.len() - 1], &module_account_id, target_amount)?;
-    
-			Self::deposit_event(Event::BuyBackSwap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: efe_amounts,
-			});
-            return Ok(actual_efe_supply_amount);
-        } else {
-			T::Currency::transfer(path[0], who, &module_account_id, actual_supply_amount)?;
-			Self::_swap_by_path(path, &amounts)?;
-			T::Currency::withdraw(path[path.len() - 1], &module_account_id, target_amount)?;
-
-			Self::deposit_event(Event::BuyBackSwap {
-				trader: who.clone(),
-				path: path.to_vec(),
-				liquidity_changes: amounts,
-			});
-			return Ok(actual_supply_amount);
-		}
 	}
 }
 
@@ -1821,56 +1296,28 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 	}
 
 	fn get_swap_amount(path: &[CurrencyId], limit: SwapLimit<Balance>) -> Option<(Balance, Balance)> {
-		// if `target_currency` is a `stable_currency_id`, then `get_efe_target_amounts`,
-		// else `get_target_amounts`.
 		match limit{
 			SwapLimit::ExactSupply(exact_supply_amount, minimum_target_amount) => {
-				if T::StableCurrencyIds::get().contains(&path[path.len() - 1])
-					|| T::StableCurrencyIds::get().contains(&path[0]) {
-						Self::get_efe_target_amounts(path, exact_supply_amount)
-							.ok()
-							.and_then(|amounts| {
-								if amounts[amounts.len() - 1] >= minimum_target_amount {
-									Some((exact_supply_amount, amounts[amounts.len() - 1]))
-								} else {
-									None
-								}
-							})
-					} else {
-						Self::get_target_amounts(path, exact_supply_amount)
-							.ok()
-							.and_then(|amounts| {
-								if amounts[amounts.len() - 1] >= minimum_target_amount {
-									Some((exact_supply_amount, amounts[amounts.len() - 1]))
-								} else {
-									None
-								}
-							})
-					}
+				Self::get_target_amounts(path, exact_supply_amount)
+					.ok()
+					.and_then(|amounts| {
+						if amounts[amounts.len() - 1] >= minimum_target_amount {
+							Some((exact_supply_amount, amounts[amounts.len() - 1]))
+						} else {
+							None
+						}
+					})
 			}
 			SwapLimit::ExactTarget(maximum_supply_amount, exact_target_amount) => {
-				if T::StableCurrencyIds::get().contains(&path[path.len() - 1])
-					|| T::StableCurrencyIds::get().contains(&path[0]) {
-						Self::get_efe_supply_amounts(path, exact_target_amount)
-							.ok()
-							.and_then(|amounts| {
-								if amounts[0] <= maximum_supply_amount {
-									Some((amounts[0], exact_target_amount))
-								} else {
-									None
-								}
-							})
-					} else {
-						Self::get_supply_amounts(path, exact_target_amount)
-							.ok()
-							.and_then(|amounts| {
-								if amounts[0] <= maximum_supply_amount {
-									Some((amounts[0], exact_target_amount))
-								} else {
-									None
-								}
-							})
-					}
+				Self::get_supply_amounts(path, exact_target_amount)
+					.ok()
+					.and_then(|amounts| {
+						if amounts[0] <= maximum_supply_amount {
+							Some((amounts[0], exact_target_amount))
+						} else {
+							None
+						}
+					})
 			}
 		}
 	}
@@ -1926,23 +1373,6 @@ impl<T: Config> DEXManager<T::AccountId, CurrencyId, Balance> for Pallet<T> {
 			}
 			SwapLimit::ExactTarget(maximum_supply_amount, exact_target_amount) => {
 				Self::do_swap_with_exact_target(who, path, exact_target_amount, maximum_supply_amount)
-					.map(|actual_supply_amount| (actual_supply_amount, exact_target_amount))
-			}
-		}
-	}
-
-	fn buyback_swap_with_specific_path(
-		who: &T::AccountId,
-		path: &[CurrencyId],
-		limit: SwapLimit<Balance>,
-	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		match limit {
-			SwapLimit::ExactSupply(exact_supply_amount, minimum_target_amount) => {
-				Self::buyback_do_efe_swap_with_exact_supply(who, path, exact_supply_amount, minimum_target_amount)
-					.map(|actual_target_amount| (exact_supply_amount, actual_target_amount))
-			}
-			SwapLimit::ExactTarget(maximum_supply_amount, exact_target_amount) => {
-				Self::buyback_do_efe_swap_with_exact_target(who, path, exact_target_amount, maximum_supply_amount)
 					.map(|actual_supply_amount| (actual_supply_amount, exact_target_amount))
 			}
 		}

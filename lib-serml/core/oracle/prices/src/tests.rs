@@ -138,55 +138,55 @@ fn access_price_of_stable_currency() {
 fn access_price_of_dex_share_currency() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
-			PricesModule::access_price(DNAR),
+			PricesModule::access_price(WBTC),
 			Some(Price::saturating_from_integer(100u128))
 		); // 100 USD, right shift the decimal point (18-12) places
 		assert_eq!(
 			PricesModule::access_price(USDI),
 			Some(Price::saturating_from_integer(1u128))
 		);
-		assert_eq!(Tokens::total_issuance(LP_USDI_DNAR), 0);
-		assert_eq!(MockDEX::get_liquidity_pool(USDI, DNAR), (10000, 200));
+		assert_eq!(Tokens::total_issuance(LP_USDI_WBTC), 0);
+		assert_eq!(MockDEX::get_liquidity_pool(USDI, WBTC), (10000, 200));
 
 		// when the total issuance of dex share currency is zero
-		assert_eq!(PricesModule::access_price(LP_USDI_DNAR), None);
+		assert_eq!(PricesModule::access_price(LP_USDI_WBTC), None);
 
 		// issue LP
-		assert_ok!(Tokens::deposit(LP_USDI_DNAR, &1, 100));
-		assert_eq!(Tokens::total_issuance(LP_USDI_DNAR), 100);
+		assert_ok!(Tokens::deposit(LP_USDI_WBTC, &1, 100));
+		assert_eq!(Tokens::total_issuance(LP_USDI_WBTC), 100);
 
 		let lp_price_1 = lp_token_fair_price(
-			Tokens::total_issuance(LP_USDI_DNAR),
-			MockDEX::get_liquidity_pool(USDI, DNAR).0,
-			MockDEX::get_liquidity_pool(USDI, DNAR).1,
+			Tokens::total_issuance(LP_USDI_WBTC),
+			MockDEX::get_liquidity_pool(USDI, WBTC).0,
+			MockDEX::get_liquidity_pool(USDI, WBTC).1,
 			PricesModule::access_price(USDI).unwrap(),
-			PricesModule::access_price(DNAR).unwrap(),
+			PricesModule::access_price(WBTC).unwrap(),
 		);
-		assert_eq!(PricesModule::access_price(LP_USDI_DNAR), lp_price_1);
+		assert_eq!(PricesModule::access_price(LP_USDI_WBTC), lp_price_1);
 
 		// issue more LP
-		assert_ok!(Tokens::deposit(LP_USDI_DNAR, &1, 100));
-		assert_eq!(Tokens::total_issuance(LP_USDI_DNAR), 200);
+		assert_ok!(Tokens::deposit(LP_USDI_WBTC, &1, 100));
+		assert_eq!(Tokens::total_issuance(LP_USDI_WBTC), 200);
 
 		let lp_price_2 = lp_token_fair_price(
-			Tokens::total_issuance(LP_USDI_DNAR),
-			MockDEX::get_liquidity_pool(USDI, DNAR).0,
-			MockDEX::get_liquidity_pool(USDI, DNAR).1,
+			Tokens::total_issuance(LP_USDI_WBTC),
+			MockDEX::get_liquidity_pool(USDI, WBTC).0,
+			MockDEX::get_liquidity_pool(USDI, WBTC).1,
 			PricesModule::access_price(USDI).unwrap(),
-			PricesModule::access_price(DNAR).unwrap(),
+			PricesModule::access_price(WBTC).unwrap(),
 		);
-		assert_eq!(PricesModule::access_price(LP_USDI_DNAR), lp_price_2);
+		assert_eq!(PricesModule::access_price(LP_USDI_WBTC), lp_price_2);
 
 		mock_oracle_update();
 
 		let lp_price_3 = lp_token_fair_price(
-			Tokens::total_issuance(LP_USDI_DNAR),
-			MockDEX::get_liquidity_pool(USDI, DNAR).0,
-			MockDEX::get_liquidity_pool(USDI, DNAR).1,
+			Tokens::total_issuance(LP_USDI_WBTC),
+			MockDEX::get_liquidity_pool(USDI, WBTC).0,
+			MockDEX::get_liquidity_pool(USDI, WBTC).1,
 			PricesModule::access_price(USDI).unwrap(),
-			PricesModule::access_price(DNAR).unwrap(),
+			PricesModule::access_price(WBTC).unwrap(),
 		);
-		assert_eq!(PricesModule::access_price(LP_USDI_DNAR), lp_price_3);
+		assert_eq!(PricesModule::access_price(LP_USDI_WBTC), lp_price_3);
 	});
 }
 
@@ -194,7 +194,7 @@ fn access_price_of_dex_share_currency() {
 fn access_price_of_other_currency() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(PricesModule::access_price(SETM), Some(Price::saturating_from_integer(0)));
-		assert_eq!(PricesModule::access_price(SETR), Some(Price::saturating_from_rational(1, 4)));
+		assert_eq!(PricesModule::access_price(USDT), Some(Price::saturating_from_rational(1, 4)));
 
 		mock_oracle_update();
 
@@ -203,7 +203,7 @@ fn access_price_of_other_currency() {
 			Some(Price::saturating_from_integer(30u128))
 		); // 30 USD, right shift the decimal point (18-12) places
 		assert_eq!(
-			PricesModule::access_price(SERP),
+			PricesModule::access_price(ETH),
 			Some(Price::saturating_from_integer(40000u128))
 		); // 200 USD, right shift the decimal point (18-12) places
 	});
@@ -214,37 +214,37 @@ fn lock_price_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 
-		assert_noop!(PricesModule::unlock_price(Origin::signed(5), SERP), BadOrigin);
+		assert_noop!(PricesModule::unlock_price(Origin::signed(5), ETH), BadOrigin);
 
-		// lock the price of SERP
+		// lock the price of ETH
 		assert_eq!(
-			PricesModule::access_price(SERP),
+			PricesModule::access_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(PricesModule::locked_price(SERP), None);
-		assert_ok!(PricesModule::lock_price(Origin::signed(1), SERP));
+		assert_eq!(PricesModule::locked_price(ETH), None);
+		assert_ok!(PricesModule::lock_price(Origin::signed(1), ETH));
 		System::assert_last_event(Event::PricesModule(crate::Event::LockPrice(
-			SERP,
+			ETH,
 			Price::saturating_from_integer(50000u128),
 		)));
 		assert_eq!(
-			PricesModule::locked_price(SERP),
+			PricesModule::locked_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
 
-		// lock the price of SETR when the price of SETR from oracle is some
+		// lock the price of USDT when the price of USDT from oracle is some
 		assert_eq!(
-			PricesModule::access_price(SETR),
+			PricesModule::access_price(USDT),
 			Some(Price::saturating_from_rational(1, 4))
 		);
-		assert_eq!(PricesModule::locked_price(SETR), None);
-		assert_ok!(PricesModule::lock_price(Origin::signed(1), SETR));
+		assert_eq!(PricesModule::locked_price(USDT), None);
+		assert_ok!(PricesModule::lock_price(Origin::signed(1), USDT));
 		System::assert_last_event(Event::PricesModule(crate::Event::LockPrice(
-			SETR,
+			USDT,
 			Price::saturating_from_rational(1, 4),
 		)));
 		assert_eq!(
-			PricesModule::locked_price(SETR),
+			PricesModule::locked_price(USDT),
 			Some(Price::saturating_from_rational(1, 4))
 		);
 	});
@@ -255,22 +255,22 @@ fn unlock_price_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 
-		assert_noop!(PricesModule::unlock_price(Origin::signed(5), SERP), BadOrigin);
+		assert_noop!(PricesModule::unlock_price(Origin::signed(5), ETH), BadOrigin);
 
 		// unlock failed when there's no locked price
 		assert_noop!(
-			PricesModule::unlock_price(Origin::signed(1), SERP),
+			PricesModule::unlock_price(Origin::signed(1), ETH),
 			Error::<Runtime>::NoLockedPrice
 		);
 
-		assert_ok!(PricesModule::lock_price(Origin::signed(1), SERP));
+		assert_ok!(PricesModule::lock_price(Origin::signed(1), ETH));
 		assert_eq!(
-			PricesModule::locked_price(SERP),
+			PricesModule::locked_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_ok!(PricesModule::unlock_price(Origin::signed(1), SERP));
-		System::assert_last_event(Event::PricesModule(crate::Event::UnlockPrice(SERP)));
-		assert_eq!(PricesModule::locked_price(SERP), None);
+		assert_ok!(PricesModule::unlock_price(Origin::signed(1), ETH));
+		System::assert_last_event(Event::PricesModule(crate::Event::UnlockPrice(ETH)));
+		assert_eq!(PricesModule::locked_price(ETH), None);
 	});
 }
 
@@ -278,14 +278,14 @@ fn unlock_price_work() {
 fn price_providers_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		// issue LP
-		assert_ok!(Tokens::deposit(LP_USDI_DNAR, &1, 100));
-		assert_eq!(Tokens::total_issuance(LP_USDI_DNAR), 100);
+		assert_ok!(Tokens::deposit(LP_USDI_WBTC, &1, 100));
+		assert_eq!(Tokens::total_issuance(LP_USDI_WBTC), 100);
 		let lp_price_1 = lp_token_fair_price(
-			Tokens::total_issuance(LP_USDI_DNAR),
-			MockDEX::get_liquidity_pool(USDI, DNAR).0,
-			MockDEX::get_liquidity_pool(USDI, DNAR).1,
+			Tokens::total_issuance(LP_USDI_WBTC),
+			MockDEX::get_liquidity_pool(USDI, WBTC).0,
+			MockDEX::get_liquidity_pool(USDI, WBTC).1,
 			PricesModule::access_price(USDI).unwrap(),
-			PricesModule::access_price(DNAR).unwrap(),
+			PricesModule::access_price(WBTC).unwrap(),
 		);
 
 		assert_eq!(
@@ -293,63 +293,63 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(1u128))
 		);
 		assert_eq!(
-			RealTimePriceProvider::<Runtime>::get_price(SERP),
+			RealTimePriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(SETR), Some(Price::saturating_from_rational(1, 4)));
-		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_USDI_DNAR), lp_price_1);
-		assert_eq!(RealTimePriceProvider::<Runtime>::get_relative_price(SERP, SETR), Some(Price::saturating_from_integer(200_000)));
+		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(USDT), Some(Price::saturating_from_rational(1, 4)));
+		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_USDI_WBTC), lp_price_1);
+		assert_eq!(RealTimePriceProvider::<Runtime>::get_relative_price(ETH, USDT), Some(Price::saturating_from_integer(200_000)));
 
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(USDI),
 			Some(Price::saturating_from_integer(1u128))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(SERP),
+			PriorityLockedPriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(PriorityLockedPriceProvider::<Runtime>::get_price(SETR), Some(Price::saturating_from_rational(1, 4)));
+		assert_eq!(PriorityLockedPriceProvider::<Runtime>::get_price(USDT), Some(Price::saturating_from_rational(1, 4)));
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(LP_USDI_DNAR),
+			PriorityLockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC),
 			lp_price_1
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR),
+			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT),
 			Some(Price::saturating_from_integer(200_000))
 		);
 
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDI), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SERP), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SETR), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_DNAR), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(ETH), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT), None);
 
 		// lock price
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), USDI));
-		assert_ok!(PricesModule::lock_price(Origin::signed(1), SERP));
+		assert_ok!(PricesModule::lock_price(Origin::signed(1), ETH));
 	
-		assert_ok!(PricesModule::lock_price(Origin::signed(1), LP_USDI_DNAR));
+		assert_ok!(PricesModule::lock_price(Origin::signed(1), LP_USDI_WBTC));
 
 		assert_eq!(
 			LockedPriceProvider::<Runtime>::get_price(USDI),
 			Some(Price::saturating_from_integer(1u128))
 		);
 		assert_eq!(
-			LockedPriceProvider::<Runtime>::get_price(SERP),
+			LockedPriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SETR), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_DNAR), lp_price_1);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC), lp_price_1);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT), None);
 
 		// mock oracle update
 		mock_oracle_update();
 		let lp_price_2 = lp_token_fair_price(
-			Tokens::total_issuance(LP_USDI_DNAR),
-			MockDEX::get_liquidity_pool(USDI, DNAR).0,
-			MockDEX::get_liquidity_pool(USDI, DNAR).1,
+			Tokens::total_issuance(LP_USDI_WBTC),
+			MockDEX::get_liquidity_pool(USDI, WBTC).0,
+			MockDEX::get_liquidity_pool(USDI, WBTC).1,
 			PricesModule::access_price(USDI).unwrap(),
-			PricesModule::access_price(DNAR).unwrap(),
+			PricesModule::access_price(WBTC).unwrap(),
 		);
 
 		assert_eq!(
@@ -357,16 +357,16 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(1u128))
 		);
 		assert_eq!(
-			RealTimePriceProvider::<Runtime>::get_price(SERP),
+			RealTimePriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(40000u128))
 		);
 		assert_eq!(
-			RealTimePriceProvider::<Runtime>::get_price(SETR),
+			RealTimePriceProvider::<Runtime>::get_price(USDT),
 			Some(Price::saturating_from_rational(1, 4))
 		);
-		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_USDI_DNAR), lp_price_2);
+		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_USDI_WBTC), lp_price_2);
 		assert_eq!(
-			RealTimePriceProvider::<Runtime>::get_relative_price(SERP, SETR),
+			RealTimePriceProvider::<Runtime>::get_relative_price(ETH, USDT),
 			Some(Price::saturating_from_integer(160_000u128))
 		);
 
@@ -375,19 +375,19 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(1u128))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(SERP),
+			PriorityLockedPriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(SETR),
+			PriorityLockedPriceProvider::<Runtime>::get_price(USDT),
 			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(LP_USDI_DNAR),
+			PriorityLockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC),
 			lp_price_1
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR),
+			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT),
 			Some(Price::saturating_from_integer(200_000u128))
 		);
 
@@ -396,47 +396,47 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(1u128))
 		);
 		assert_eq!(
-			LockedPriceProvider::<Runtime>::get_price(SERP),
+			LockedPriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SETR), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_DNAR), lp_price_1);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC), lp_price_1);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT), None);
 
 		// unlock price
 		assert_ok!(PricesModule::unlock_price(Origin::signed(1), USDI));
-		assert_ok!(PricesModule::unlock_price(Origin::signed(1), SERP));
+		assert_ok!(PricesModule::unlock_price(Origin::signed(1), ETH));
 		assert_noop!(
-			PricesModule::unlock_price(Origin::signed(1), SETR),
+			PricesModule::unlock_price(Origin::signed(1), USDT),
 			Error::<Runtime>::NoLockedPrice
 		);
-		assert_ok!(PricesModule::unlock_price(Origin::signed(1), LP_USDI_DNAR));
+		assert_ok!(PricesModule::unlock_price(Origin::signed(1), LP_USDI_WBTC));
 
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(USDI),
 			Some(Price::saturating_from_integer(1u128))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(SERP),
+			PriorityLockedPriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(40000u128))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(SETR),
+			PriorityLockedPriceProvider::<Runtime>::get_price(USDT),
 			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(LP_USDI_DNAR),
+			PriorityLockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC),
 			lp_price_2
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR),
+			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT),
 			Some(Price::saturating_from_integer(160_000u128))
 		);
 
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDI), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SERP), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(SETR), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_DNAR), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(SERP, SETR), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(ETH), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT), None);
 	});
 }

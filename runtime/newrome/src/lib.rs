@@ -99,7 +99,7 @@ pub use constants::{fee::*, time::*};
 use primitives::evm::EthereumTransactionMessage;
 pub use primitives::{
 	evm::EstimateResourcesRequest, AccountId, AccountIndex, Amount, AuctionId, AuthoritysOriginId, Balance, BlockNumber, CurrencyId,
-	DataProviderId, EraIndex, Hash, Moment, Nonce, ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair, SerpStableCurrencyId,
+	DataProviderId, EraIndex, Hash, Moment, Nonce, ReserveIdentifier, Share, Signature, TokenSymbol, TradingPair,
 };
 // use module_support::Web3SettersClubAccounts;
 pub use runtime_common::{
@@ -119,7 +119,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, HELP, SETR, USDI,
+	OperatorMembershipInstanceSetheum, SETM, ETH, WBTC, BNB, USDT, USDI,
 };
 
 
@@ -518,15 +518,7 @@ impl pallet_indices::Config for Runtime {
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub const GetSerpCurrencyId: CurrencyId = SERP;
-	pub const GetDinarCurrencyId: CurrencyId = DNAR;
-	pub const GetHelpCurrencyId: CurrencyId = HELP;
-	pub const SetterCurrencyId: CurrencyId = SETR;
 	pub const GetSetUSDId: CurrencyId = USDI;
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
 }
 
 impl module_currencies::Config for Runtime {
@@ -584,24 +576,14 @@ impl Contains<AccountId> for DustRemovalWhitelist {
 }
 
 parameter_type_with_key! {
-	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 1_000_000_000 * dollar(SETR),
-			&USDI => 1_000_000_000 * dollar(USDI),
-			_ => 0,
-		}
-	};
-}
-
-parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
 				TokenSymbol::USDI => 10 * cent(USDI), // 10 cents (0.1)
-				TokenSymbol::SETR => 10 * cent(SETR), // 10 cents (0.1)
-				TokenSymbol::SERP => 10 * cent(SERP), // 10 cents (0.1)
-				TokenSymbol::HELP => 10 * cent(HELP), // 10 cents (0.1)
-				TokenSymbol::DNAR => 10 * cent(DNAR), // 10 cents (0.1)
+				TokenSymbol::USDT => 10 * cent(USDT), // 10 cents (0.1)
+				TokenSymbol::ETH => 10 * cent(ETH), // 10 cents (0.1)
+				TokenSymbol::BNB => 10 * cent(BNB), // 10 cents (0.1)
+				TokenSymbol::WBTC => 10 * cent(WBTC), // 10 cents (0.1)
 				TokenSymbol::SETM => 10 * cent(SETM), // 10 cents (0.1)
 			},
 			CurrencyId::DexShare(dex_share_0, _) => {
@@ -758,20 +740,20 @@ where
 
 parameter_types! {
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
-		vec![SERP],
-		vec![DNAR],
+		vec![ETH],
+		vec![WBTC],
 		vec![SETM],
-		vec![HELP],
-		vec![SETM, SETR],
+		vec![BNB],
+		vec![SETM, USDT],
 		vec![SETM, USDI],
-		vec![SERP, SETR],
-		vec![SERP, USDI],
-		vec![DNAR, SETR],
-		vec![DNAR, USDI],
-		vec![HELP, SETR],
-		vec![HELP, USDI],
+		vec![ETH, USDT],
+		vec![ETH, USDI],
+		vec![WBTC, USDT],
+		vec![WBTC, USDI],
+		vec![BNB, USDT],
+		vec![BNB, USDI],
 	];
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, HELP];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, ETH, WBTC, BNB];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -822,27 +804,24 @@ impl emergency_shutdown::Config for Runtime {
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (3, 1000);	// 0.3%
-	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(USDI, SETM).unwrap(),
-		TradingPair::from_currency_ids(USDI, SERP).unwrap(),
-		TradingPair::from_currency_ids(USDI, DNAR).unwrap(),
-		TradingPair::from_currency_ids(USDI, HELP).unwrap(),
-		TradingPair::from_currency_ids(USDI, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETR, SETM).unwrap(),
-		TradingPair::from_currency_ids(SETR, SERP).unwrap(),
-		TradingPair::from_currency_ids(SETR, DNAR).unwrap(),
-		TradingPair::from_currency_ids(SETR, HELP).unwrap(),
+		TradingPair::from_currency_ids(USDI, ETH).unwrap(),
+		TradingPair::from_currency_ids(USDI, WBTC).unwrap(),
+		TradingPair::from_currency_ids(USDI, BNB).unwrap(),
+		TradingPair::from_currency_ids(USDI, USDT).unwrap(),
+		TradingPair::from_currency_ids(USDT, SETM).unwrap(),
+		TradingPair::from_currency_ids(USDT, ETH).unwrap(),
+		TradingPair::from_currency_ids(USDT, WBTC).unwrap(),
+		TradingPair::from_currency_ids(USDT, BNB).unwrap(),
 	];
 }
 
 impl module_dex::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
 	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = DEXPalletId;
 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
@@ -883,14 +862,14 @@ impl cdp_treasury::Config for Runtime {
 parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETR, SETM],
+		vec![USDT, SETM],
 		vec![USDI, SETM],
-		vec![SERP, SETR, SETM],
-		vec![SERP, USDI, SETM],
-		vec![DNAR, SETR, SETM],
-		vec![DNAR, USDI, SETM],
-		vec![HELP, SETR, SETM],
-		vec![HELP, USDI, SETM],
+		vec![ETH, USDT, SETM],
+		vec![ETH, USDI, SETM],
+		vec![WBTC, USDT, SETM],
+		vec![WBTC, USDI, SETM],
+		vec![BNB, USDT, SETM],
+		vec![BNB, USDI, SETM],
 	];
 }
 
@@ -1160,37 +1139,7 @@ impl pallet_balances::Config for Runtime {
 	type ReserveIdentifier = ReserveIdentifier;
 }
 
-parameter_types! {
-	pub MinVestedTransfer: Balance = 0;
-	pub const MaxNativeVestingSchedules: u32 = 70;
-	pub const MaxSerpVestingSchedules: u32 = 70;
-	pub const MaxDinarVestingSchedules: u32 = 70;
-	pub const MaxHelpVestingSchedules: u32 = 70;
-	pub const MaxSetterVestingSchedules: u32 = 70;
-	pub const MaxSetUSDVestingSchedules: u32 = 70;
-}
-
-impl module_vesting::Config for Runtime {
-	type Event = Event;
-	type MultiCurrency = Currencies;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
-	type MinVestedTransfer = MinVestedTransfer;
-	type TreasuryAccount = TreasuryAccount;
-	type UpdateOrigin = EnsureRootOrTwoThirdsShuraCouncil;
-	type MaxNativeVestingSchedules = MaxNativeVestingSchedules;
-	type MaxSerpVestingSchedules = MaxSerpVestingSchedules;
-	type MaxDinarVestingSchedules = MaxDinarVestingSchedules;
-	type MaxHelpVestingSchedules = MaxHelpVestingSchedules;
-	type MaxSetterVestingSchedules = MaxSetterVestingSchedules;
-	type MaxSetUSDVestingSchedules = MaxSetUSDVestingSchedules;
-	type WeightInfo = weights::module_vesting::WeightInfo<Runtime>;
-}
-
+// TODO - Add vesting module
 parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(10) * BlockWeights::get().max_block;
 	pub const MaxScheduledPerBlock: u32 = 50;
@@ -1512,7 +1461,7 @@ construct_runtime!(
 		SetheumOracle: orml_oracle::<Instance1>::{Pallet, Storage, Call, Event<T>} = 21,
 		OperatorMembershipSetheum: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
 
-		// SERP
+		// ETH
 		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 23,
 		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 24,
 		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 25,

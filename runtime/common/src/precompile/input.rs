@@ -310,7 +310,7 @@ mod tests {
 
 		raw_input[35] = 1;
 		let input = TestInput::new(&raw_input[..]);
-		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::SERP));
+		assert_ok!(input.currency_id_at(1), CurrencyId::Token(TokenSymbol::ETH));
 	}
 
 	#[test]

@@ -39,12 +39,10 @@ pub type BlockNumber = u64;
 pub const TREASURY: AccountId = AccountId32::new([0u8; 32]);
 pub const ALICE: AccountId = AccountId32::new([2u8; 32]);
 pub const BOB: AccountId = AccountId32::new([3u8; 32]);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const HELP: CurrencyId = CurrencyId::Token(TokenSymbol::HELP);
+pub const BNB: CurrencyId = CurrencyId::Token(TokenSymbol::BNB);
 
 mod airdrop {
 	pub use super::super::*;
@@ -99,16 +97,9 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		USDI,
-	];
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
+	pub const SetterCurrencyId: CurrencyId = USDT;  // Setter  currency ticker is USDT/
 	pub const GetSetUSDId: CurrencyId = USDI;  // SetDollar currency ticker is USDI/
 	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
-	pub const GetSerpCurrencyId: CurrencyId = SERP;  // Setheum native currency ticker is SETM/
-	pub const GetDinarCurrencyId: CurrencyId = DNAR;  // Setheum native currency ticker is SETM/
-	pub const GetHelpCurrencyId: CurrencyId = HELP;  // Setheum native currency ticker is SETM/
 	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");
 	pub const MaxAirdropListSize: usize = 4;
 }
@@ -149,24 +140,24 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			_balances: vec![
-				(ALICE, SETR, 1000),
-				(BOB, SETR, 1000),
-				(TREASURY, SETR, 1000),
+				(ALICE, USDT, 1000),
+				(BOB, USDT, 1000),
+				(TREASURY, USDT, 1000),
 				(ALICE, USDI, 1000),
 				(BOB, USDI, 1000),
 				(TREASURY, USDI, 1000),
 				(ALICE, SETM, 1000),
 				(BOB, SETM, 1000),
 				(TREASURY, SETM, 1000),
-				(ALICE, SERP, 1000),
-				(BOB, SERP, 1000),
-				(TREASURY, SERP, 1000),
-				(ALICE, DNAR, 1000),
-				(BOB, DNAR, 1000),
-				(TREASURY, DNAR, 1000),
-				(ALICE, HELP, 1000),
-				(BOB, HELP, 1000),
-				(TREASURY, HELP, 1000),
+				(ALICE, ETH, 1000),
+				(BOB, ETH, 1000),
+				(TREASURY, ETH, 1000),
+				(ALICE, WBTC, 1000),
+				(BOB, WBTC, 1000),
+				(TREASURY, WBTC, 1000),
+				(ALICE, BNB, 1000),
+				(BOB, BNB, 1000),
+				(TREASURY, BNB, 1000),
 			],
 		}
 	}

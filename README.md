@@ -242,7 +242,7 @@ Bench bot can take care of syncing branch with `master` and generating WeightInf
 
 #### Generate Weights on Git with PR
 
-Comment on a PR `/bench runtime module <setheum_module_name>` i.e.: `serp_prices`
+Comment on a PR `/bench runtime module <setheum_module_name>` i.e.: `module_currencies`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
 

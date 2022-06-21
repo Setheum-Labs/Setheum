@@ -44,8 +44,8 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
+pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
+pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
 
 mod loans {
 	pub use super::super::*;
@@ -194,7 +194,7 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 		check_required_ratio: bool,
 	) -> DispatchResult {
 		match currency_id {
-			DNAR => {
+			WBTC => {
 				if check_required_ratio {
 					Err(sp_runtime::DispatchError::Other(
 						"mock below required collateral ratio error",
@@ -203,22 +203,22 @@ impl RiskManager<AccountId, CurrencyId, Balance, Balance> for MockRiskManager {
 					Err(sp_runtime::DispatchError::Other("mock below liquidation ratio error"))
 				}
 			}
-			SERP => Ok(()),
+			ETH => Ok(()),
 			_ => Err(sp_runtime::DispatchError::Other("mock below liquidation ratio error")),
 		}
 	}
 
 	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: Balance) -> DispatchResult {
 		match (currency_id, total_debit_balance) {
-			(DNAR, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
-			(SERP, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(WBTC, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
+			(ETH, 1000) => Err(sp_runtime::DispatchError::Other("mock exceed debit value cap error")),
 			(_, _) => Ok(()),
 		}
 	}
 }
 
 thread_local! {
-	pub static DNAR_SHARES: RefCell<HashMap<AccountId, Balance>> = RefCell::new(HashMap::new());
+	pub static WBTC_SHARES: RefCell<HashMap<AccountId, Balance>> = RefCell::new(HashMap::new());
 }
 
 parameter_types! {
@@ -259,10 +259,10 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, DNAR, 1000),
-				(ALICE, SERP, 1000),
-				(BOB, DNAR, 1000),
-				(BOB, SERP, 1000),
+				(ALICE, WBTC, 1000),
+				(ALICE, ETH, 1000),
+				(BOB, WBTC, 1000),
+				(BOB, ETH, 1000),
 			],
 		}
 	}

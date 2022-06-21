@@ -32,36 +32,36 @@ fn enable_average_price_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		Timestamp::set_timestamp(1000);
 		assert_noop!(
-			DexOracle::enable_average_price(Origin::signed(0), USDI, DNAR, 0),
+			DexOracle::enable_average_price(Origin::signed(0), USDI, WBTC, 0),
 			BadOrigin
 		);
 		assert_noop!(
-			DexOracle::enable_average_price(Origin::signed(1), USDI, LP_USDI_DNAR, 0),
+			DexOracle::enable_average_price(Origin::signed(1), USDI, LP_USDI_WBTC, 0),
 			Error::<Runtime>::InvalidCurrencyId
 		);
 		assert_noop!(
-			DexOracle::enable_average_price(Origin::signed(1), USDI, DNAR, 0),
+			DexOracle::enable_average_price(Origin::signed(1), USDI, WBTC, 0),
 			Error::<Runtime>::IntervalIsZero
 		);
 		assert_noop!(
-			DexOracle::enable_average_price(Origin::signed(1), USDI, DNAR, 12000),
+			DexOracle::enable_average_price(Origin::signed(1), USDI, WBTC, 12000),
 			Error::<Runtime>::InvalidPool
 		);
 
-		set_pool(&USDIDNARPair::get(), 1_000, 100);
+		set_pool(&USDIWBTCPair::get(), 1_000, 100);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
-		assert_eq!(DexOracle::average_prices(USDIDNARPair::get()), None);
+		assert_eq!(DexOracle::average_prices(USDIWBTCPair::get()), None);
 
-		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, DNAR, 12000));
+		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, WBTC, 12000));
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(U256::from(0), U256::from(0), 1000)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(100, 1000),
 				ExchangeRate::saturating_from_rational(1000, 100),
@@ -73,7 +73,7 @@ fn enable_average_price_work() {
 		);
 
 		assert_noop!(
-			DexOracle::enable_average_price(Origin::signed(1), USDI, DNAR, 12000),
+			DexOracle::enable_average_price(Origin::signed(1), USDI, WBTC, 12000),
 			Error::<Runtime>::AveragePriceAlreadyEnabled
 		);
 	});
@@ -82,15 +82,15 @@ fn enable_average_price_work() {
 #[test]
 fn disable_average_price_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		set_pool(&USDIDNARPair::get(), 1_000, 100);
+		set_pool(&USDIWBTCPair::get(), 1_000, 100);
 		Timestamp::set_timestamp(100);
-		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, DNAR, 1000));
+		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, WBTC, 1000));
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(U256::from(0), U256::from(0), 100)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(100, 1000),
 				ExchangeRate::saturating_from_rational(1000, 100),
@@ -102,34 +102,34 @@ fn disable_average_price_work() {
 		);
 
 		assert_noop!(
-			DexOracle::disable_average_price(Origin::signed(0), USDI, DNAR),
+			DexOracle::disable_average_price(Origin::signed(0), USDI, WBTC),
 			BadOrigin
 		);
 		assert_noop!(
-			DexOracle::disable_average_price(Origin::signed(1), USDI, LP_USDI_DNAR),
+			DexOracle::disable_average_price(Origin::signed(1), USDI, LP_USDI_WBTC),
 			Error::<Runtime>::InvalidCurrencyId
 		);
 		assert_noop!(
-			DexOracle::disable_average_price(Origin::signed(1), SETM, DNAR),
+			DexOracle::disable_average_price(Origin::signed(1), SETM, WBTC),
 			Error::<Runtime>::AveragePriceMustBeEnabled
 		);
 
-		assert_ok!(DexOracle::disable_average_price(Origin::signed(1), USDI, DNAR));
+		assert_ok!(DexOracle::disable_average_price(Origin::signed(1), USDI, WBTC));
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
-		assert_eq!(DexOracle::average_prices(USDIDNARPair::get()), None);
+		assert_eq!(DexOracle::average_prices(USDIWBTCPair::get()), None);
 	});
 }
 
 #[test]
 fn update_average_price_interval_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		set_pool(&USDIDNARPair::get(), 1_000, 100);
-		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, DNAR, 1000));
+		set_pool(&USDIWBTCPair::get(), 1_000, 100);
+		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, WBTC, 1000));
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(100, 1000),
 				ExchangeRate::saturating_from_rational(1000, 100),
@@ -141,30 +141,30 @@ fn update_average_price_interval_work() {
 		);
 
 		assert_noop!(
-			DexOracle::update_average_price_interval(Origin::signed(0), USDI, DNAR, 0),
+			DexOracle::update_average_price_interval(Origin::signed(0), USDI, WBTC, 0),
 			BadOrigin
 		);
 		assert_noop!(
-			DexOracle::update_average_price_interval(Origin::signed(1), USDI, LP_USDI_DNAR, 0),
+			DexOracle::update_average_price_interval(Origin::signed(1), USDI, LP_USDI_WBTC, 0),
 			Error::<Runtime>::InvalidCurrencyId
 		);
 		assert_noop!(
-			DexOracle::update_average_price_interval(Origin::signed(1), SETM, DNAR, 0),
+			DexOracle::update_average_price_interval(Origin::signed(1), SETM, WBTC, 0),
 			Error::<Runtime>::AveragePriceMustBeEnabled
 		);
 		assert_noop!(
-			DexOracle::update_average_price_interval(Origin::signed(1), USDI, DNAR, 0),
+			DexOracle::update_average_price_interval(Origin::signed(1), USDI, WBTC, 0),
 			Error::<Runtime>::IntervalIsZero
 		);
 
 		assert_ok!(DexOracle::update_average_price_interval(
 			Origin::signed(1),
 			USDI,
-			DNAR,
+			WBTC,
 			2000
 		));
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(100, 1000),
 				ExchangeRate::saturating_from_rational(1000, 100),
@@ -181,26 +181,26 @@ fn update_average_price_interval_work() {
 fn try_update_cumulative_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		// initialize cumulative price
-		set_pool(&USDIDNARPair::get(), 1_000, 100);
-		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, DNAR, 1000));
+		set_pool(&USDIWBTCPair::get(), 1_000, 100);
+		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, WBTC, 1000));
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
 
 		// will not cumulative if now is not gt than the last update cumulative timestamp.
 		assert_eq!(Timestamp::now(), 0);
-		DexOracle::try_update_cumulative(&USDIDNARPair::get(), 500, 200);
+		DexOracle::try_update_cumulative(&USDIWBTCPair::get(), 500, 200);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
 
 		Timestamp::set_timestamp(100);
 		assert_eq!(Timestamp::now(), 100);
-		DexOracle::try_update_cumulative(&USDIDNARPair::get(), 500, 200);
+		DexOracle::try_update_cumulative(&USDIWBTCPair::get(), 500, 200);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(
 				U256::from(40_000_000_000_000_000_000u128),
 				U256::from(250_000_000_000_000_000_000u128),
@@ -210,9 +210,9 @@ fn try_update_cumulative_work() {
 
 		Timestamp::set_timestamp(200);
 		assert_eq!(Timestamp::now(), 200);
-		DexOracle::try_update_cumulative(&USDIDNARPair::get(), 1_000, 100);
+		DexOracle::try_update_cumulative(&USDIWBTCPair::get(), 1_000, 100);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(
 				U256::from(50_000_000_000_000_000_000u128),
 				U256::from(1_250_000_000_000_000_000_000u128),
@@ -222,12 +222,12 @@ fn try_update_cumulative_work() {
 
 		// will not cumulative if TradingPair is not enabled as cumulative price.
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
-		DexOracle::try_update_cumulative(&SETMDNARPair::get(), 500, 200);
+		DexOracle::try_update_cumulative(&SETMWBTCPair::get(), 500, 200);
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
 	});
@@ -238,14 +238,14 @@ fn on_initialize_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		// initialize average prices
 		assert_eq!(Timestamp::now(), 0);
-		set_pool(&USDIDNARPair::get(), 1000, 100);
-		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, DNAR, 1000));
+		set_pool(&USDIWBTCPair::get(), 1000, 100);
+		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), USDI, WBTC, 1000));
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(1, 10),
 				ExchangeRate::saturating_from_rational(10, 1),
@@ -255,14 +255,14 @@ fn on_initialize_work() {
 				1000
 			))
 		);
-		set_pool(&SETMDNARPair::get(), 1000, 1000);
-		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), SETM, DNAR, 2000));
+		set_pool(&SETMWBTCPair::get(), 1000, 1000);
+		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), SETM, WBTC, 2000));
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
 		assert_eq!(
-			DexOracle::average_prices(SETMDNARPair::get()),
+			DexOracle::average_prices(SETMWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(1, 1),
 				ExchangeRate::saturating_from_rational(1, 1),
@@ -278,11 +278,11 @@ fn on_initialize_work() {
 		Timestamp::set_timestamp(999);
 		DexOracle::on_initialize(1);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(1, 10),
 				ExchangeRate::saturating_from_rational(10, 1),
@@ -293,11 +293,11 @@ fn on_initialize_work() {
 			))
 		);
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
 		assert_eq!(
-			DexOracle::average_prices(SETMDNARPair::get()),
+			DexOracle::average_prices(SETMWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(1, 1),
 				ExchangeRate::saturating_from_rational(1, 1),
@@ -308,12 +308,12 @@ fn on_initialize_work() {
 			))
 		);
 
-		// elapsed time is lt the update interval of USDI/DNAR, update average price of USDI/DNAR after try
+		// elapsed time is lt the update interval of USDI/WBTC, update average price of USDI/WBTC after try
 		// update cumulatives.
 		Timestamp::set_timestamp(1200);
 		DexOracle::on_initialize(2);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(
 				U256::from(120_000_000_000_000_000_000u128),
 				U256::from(12_000_000_000_000_000_000_000u128),
@@ -321,7 +321,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(1, 10),
 				ExchangeRate::saturating_from_rational(10, 1),
@@ -332,11 +332,11 @@ fn on_initialize_work() {
 			))
 		);
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(U256::from(0), U256::from(0), 0)
 		);
 		assert_eq!(
-			DexOracle::average_prices(SETMDNARPair::get()),
+			DexOracle::average_prices(SETMWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(1, 1),
 				ExchangeRate::saturating_from_rational(1, 1),
@@ -347,13 +347,13 @@ fn on_initialize_work() {
 			))
 		);
 
-		// elapsed time is lt the update interval of SETM/DNAR, update average price of SETM/DNAR after try
+		// elapsed time is lt the update interval of SETM/WBTC, update average price of SETM/WBTC after try
 		// update cumulatives.
-		set_pool(&SETMDNARPair::get(), 1000, 2000);
+		set_pool(&SETMWBTCPair::get(), 1000, 2000);
 		Timestamp::set_timestamp(2100);
 		DexOracle::on_initialize(3);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(
 				U256::from(120_000_000_000_000_000_000u128),
 				U256::from(12_000_000_000_000_000_000_000u128),
@@ -361,7 +361,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(1, 10),
 				ExchangeRate::saturating_from_rational(10, 1),
@@ -372,7 +372,7 @@ fn on_initialize_work() {
 			))
 		);
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(
 				U256::from(4_200_000_000_000_000_000_000u128),
 				U256::from(1_050_000_000_000_000_000_000u128),
@@ -380,7 +380,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(SETMDNARPair::get()),
+			DexOracle::average_prices(SETMWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(2000, 1000),
 				ExchangeRate::saturating_from_rational(1000, 2000),
@@ -391,12 +391,12 @@ fn on_initialize_work() {
 			))
 		);
 
-		set_pool(&USDIDNARPair::get(), 2000, 100);
-		set_pool(&SETMDNARPair::get(), 1000, 4000);
+		set_pool(&USDIWBTCPair::get(), 2000, 100);
+		set_pool(&SETMWBTCPair::get(), 1000, 4000);
 		Timestamp::set_timestamp(5000);
 		DexOracle::on_initialize(4);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(
 				U256::from(310_000_000_000_000_000_000u128),
 				U256::from(88_000_000_000_000_000_000_000u128),
@@ -404,7 +404,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(100, 2000),
 				ExchangeRate::saturating_from_rational(2000, 100),
@@ -415,7 +415,7 @@ fn on_initialize_work() {
 			))
 		);
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(
 				U256::from(15_800_000_000_000_000_000_000u128),
 				U256::from(1_775_000_000_000_000_000_000u128),
@@ -423,7 +423,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(SETMDNARPair::get()),
+			DexOracle::average_prices(SETMWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(4000, 1000),
 				ExchangeRate::saturating_from_rational(1000, 4000),
@@ -437,10 +437,10 @@ fn on_initialize_work() {
 		// mock update cumulatives, the average prices are not updated.
 		Timestamp::set_timestamp(5500);
 		DexOracle::on_initialize(5);
-		DexOracle::try_update_cumulative(&USDIDNARPair::get(), 100, 100);
-		DexOracle::try_update_cumulative(&SETMDNARPair::get(), 2000, 200);
+		DexOracle::try_update_cumulative(&USDIWBTCPair::get(), 100, 100);
+		DexOracle::try_update_cumulative(&SETMWBTCPair::get(), 2000, 200);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(
 				U256::from(810_000_000_000_000_000_000u128),
 				U256::from(88_500_000_000_000_000_000_000u128),
@@ -448,7 +448,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(100, 2000),
 				ExchangeRate::saturating_from_rational(2000, 100),
@@ -459,7 +459,7 @@ fn on_initialize_work() {
 			))
 		);
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(
 				U256::from(15_850_000_000_000_000_000_000u128),
 				U256::from(6_775_000_000_000_000_000_000u128),
@@ -467,7 +467,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(SETMDNARPair::get()),
+			DexOracle::average_prices(SETMWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(4000, 1000),
 				ExchangeRate::saturating_from_rational(1000, 4000),
@@ -478,13 +478,13 @@ fn on_initialize_work() {
 			))
 		);
 
-		// update average prices of USDI/DNAR and SETM/DNAR
-		set_pool(&USDIDNARPair::get(), 1000, 100);
-		set_pool(&SETMDNARPair::get(), 1000, 1000);
+		// update average prices of USDI/WBTC and SETM/WBTC
+		set_pool(&USDIWBTCPair::get(), 1000, 100);
+		set_pool(&SETMWBTCPair::get(), 1000, 1000);
 		Timestamp::set_timestamp(7000);
 		DexOracle::on_initialize(6);
 		assert_eq!(
-			DexOracle::cumulatives(USDIDNARPair::get()),
+			DexOracle::cumulatives(USDIWBTCPair::get()),
 			(
 				U256::from(960_000_000_000_000_000_000u128),
 				U256::from(103_500_000_000_000_000_000_000u128),
@@ -492,7 +492,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(USDIDNARPair::get()),
+			DexOracle::average_prices(USDIWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(325, 1000),
 				ExchangeRate::saturating_from_rational(775, 100),
@@ -503,7 +503,7 @@ fn on_initialize_work() {
 			))
 		);
 		assert_eq!(
-			DexOracle::cumulatives(SETMDNARPair::get()),
+			DexOracle::cumulatives(SETMWBTCPair::get()),
 			(
 				U256::from(17_350_000_000_000_000_000_000u128),
 				U256::from(8_275_000_000_000_000_000_000u128),
@@ -511,7 +511,7 @@ fn on_initialize_work() {
 			)
 		);
 		assert_eq!(
-			DexOracle::average_prices(SETMDNARPair::get()),
+			DexOracle::average_prices(SETMWBTCPair::get()),
 			Some((
 				ExchangeRate::saturating_from_rational(775, 1000),
 				ExchangeRate::saturating_from_rational(325, 100),
@@ -527,41 +527,41 @@ fn on_initialize_work() {
 #[test]
 fn dex_price_providers_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(CurrentDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR), None);
-		assert_eq!(CurrentDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI), None);
-		assert_eq!(AverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR), None);
-		assert_eq!(AverageDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI), None);
+		assert_eq!(CurrentDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC), None);
+		assert_eq!(CurrentDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI), None);
+		assert_eq!(AverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC), None);
+		assert_eq!(AverageDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI), None);
 		assert_eq!(
-			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR),
+			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC),
 			None
 		);
 		assert_eq!(
-			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI),
+			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI),
 			None
 		);
 
-		set_pool(&USDIDNARPair::get(), 1_000, 100);
+		set_pool(&USDIWBTCPair::get(), 1_000, 100);
 		assert_eq!(
-			CurrentDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR),
+			CurrentDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC),
 			Some(ExchangeRate::saturating_from_integer(10))
 		);
 		assert_eq!(
-			CurrentDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI),
+			CurrentDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI),
 			Some(ExchangeRate::saturating_from_rational(1, 10))
 		);
-		assert_eq!(AverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR), None);
-		assert_eq!(AverageDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI), None);
+		assert_eq!(AverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC), None);
+		assert_eq!(AverageDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI), None);
 		assert_eq!(
-			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR),
+			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC),
 			Some(ExchangeRate::saturating_from_integer(10))
 		);
 		assert_eq!(
-			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI),
+			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI),
 			Some(ExchangeRate::saturating_from_rational(1, 10))
 		);
 
 		AveragePrices::<Runtime>::insert(
-			&USDIDNARPair::get(),
+			&USDIWBTCPair::get(),
 			(
 				ExchangeRate::saturating_from_rational(2, 10),
 				ExchangeRate::saturating_from_rational(10, 2),
@@ -572,33 +572,33 @@ fn dex_price_providers_work() {
 			),
 		);
 		assert_eq!(
-			CurrentDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR),
+			CurrentDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC),
 			Some(ExchangeRate::saturating_from_integer(10))
 		);
 		assert_eq!(
-			CurrentDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI),
+			CurrentDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI),
 			Some(ExchangeRate::saturating_from_rational(1, 10))
 		);
 		assert_eq!(
-			AverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR),
+			AverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC),
 			Some(ExchangeRate::saturating_from_integer(5))
 		);
 		assert_eq!(
-			AverageDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI),
+			AverageDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI),
 			Some(ExchangeRate::saturating_from_rational(2, 10))
 		);
 		assert_eq!(
-			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR),
+			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC),
 			Some(ExchangeRate::saturating_from_integer(5))
 		);
 		assert_eq!(
-			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(DNAR, USDI),
+			PriorityAverageDEXPriceProvider::<Runtime>::get_relative_price(WBTC, USDI),
 			Some(ExchangeRate::saturating_from_rational(2, 10))
 		);
 
-		set_pool(&USDIDNARPair::get(), 300, 100);
+		set_pool(&USDIWBTCPair::get(), 300, 100);
 		assert_eq!(
-			CurrentDEXPriceProvider::<Runtime>::get_relative_price(USDI, DNAR),
+			CurrentDEXPriceProvider::<Runtime>::get_relative_price(USDI, WBTC),
 			Some(ExchangeRate::saturating_from_integer(3))
 		);
 	});
