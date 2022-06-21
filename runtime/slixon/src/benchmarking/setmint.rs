@@ -20,7 +20,7 @@
 
 use crate::{
 	dollar, AccountId, Amount, Balance, CdpEngine, CollateralCurrencyIds, CurrencyId, Currencies, DepositPerAuthorization, Dex,
-	ExistentialDeposits, GetNativeCurrencyId, GetSetUSDId, GetDinarCurrencyId, Setmint, Price, Rate, Ratio,
+	ExistentialDeposits, GetNativeCurrencyId, GetUSDStablecoinId, GetDinarCurrencyId, Setmint, Price, Rate, Ratio,
 	Runtime, TradingPathLimit,
 };
 
@@ -40,7 +40,7 @@ use sp_std::prelude::*;
 const SEED: u32 = 0;
 
 const NATIVE: CurrencyId = GetNativeCurrencyId::get();
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 const DINARID: CurrencyId = GetDinarCurrencyId::get();
 const ETH: CurrencyId = GetDinarCurrencyId::get();
 

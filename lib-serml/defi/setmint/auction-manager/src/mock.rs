@@ -113,7 +113,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetUSDId: CurrencyId = USDI;
+	pub const GetUSDStablecoinId: CurrencyId = USDI;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
@@ -124,7 +124,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Tokens;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type AuctionManagerHandler = AuctionManagerModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
@@ -209,7 +209,7 @@ impl Config for Runtime {
 	type MinimumIncrementSize = MinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type CDPTreasury = CDPTreasuryModule;
 	type DEX = DEXModule;
 	type PriceSource = MockPriceSource;

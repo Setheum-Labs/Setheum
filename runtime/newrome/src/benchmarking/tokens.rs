@@ -19,7 +19,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::utils::{lookup_of_account, set_balance as update_balance};
-use crate::{dollar, AccountId, Balance, CurrencyId, GetSetUSDId, Runtime, Tokens};
+use crate::{dollar, AccountId, Balance, CurrencyId, GetUSDStablecoinId, Runtime, Tokens};
 
 use sp_std::prelude::*;
 
@@ -31,7 +31,7 @@ use orml_traits::MultiCurrency;
 
 const SEED: u32 = 0;
 
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 
 runtime_benchmarks! {
 	{ Runtime, orml_tokens }

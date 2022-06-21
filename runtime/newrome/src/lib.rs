@@ -518,7 +518,7 @@ impl pallet_indices::Config for Runtime {
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub const GetSetUSDId: CurrencyId = USDI;
+	pub const GetUSDStablecoinId: CurrencyId = USDI;
 }
 
 impl module_currencies::Config for Runtime {
@@ -623,17 +623,14 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
-	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 4); // $0.25
+	pub USDStablecoinFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
 }
 
 impl module_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
-	type GetSetUSDId = GetSetUSDId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type SetUSDFixedPrice = SetUSDFixedPrice;
-	type SetterFixedPrice = SetterFixedPrice;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
+	type USDStablecoinFixedPrice = USDStablecoinFixedPrice;
 	type LockOrigin = EnsureRootOrTwoThirdsFinancialCouncil;
 	type DEX = Dex;
 	type Currency = Currencies;
@@ -667,7 +664,7 @@ impl auction_manager::Config for Runtime {
 	type MinimumIncrementSize = MinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type CDPTreasury = CdpTreasury;
 	type DEX = Dex;
 	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
@@ -769,7 +766,7 @@ impl cdp_engine::Config for Runtime {
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumDebitValue = MinimumDebitValue;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type CDPTreasury = CdpTreasury;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
@@ -849,7 +846,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type AuctionManagerHandler = AuctionManager;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;

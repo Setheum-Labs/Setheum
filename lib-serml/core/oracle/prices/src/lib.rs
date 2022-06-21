@@ -61,19 +61,11 @@ pub mod module {
 
 		/// The stable currency id, it should be USDI in Setheum.
 		#[pallet::constant]
-		type GetSetUSDId: Get<CurrencyId>;
-
-		/// The stable currency id, it should be USDT in Setheum.
-		#[pallet::constant]
-		type SetterCurrencyId: Get<CurrencyId>;
+		type GetUSDStablecoinId: Get<CurrencyId>;
 
 		/// The fixed prices of stable currency USDI, it should be 1 USD in Setheum.
 		#[pallet::constant]
-		type SetUSDFixedPrice: Get<Price>;
-
-		/// The fixed prices of stable currency USDT, it should be 0.1 USD (10 cents) in Setheum.
-		#[pallet::constant]
-		type SetterFixedPrice: Get<Price>;
+		type USDStablecoinFixedPrice: Get<Price>;
 
 		/// The origin which may lock and unlock prices feed to system.
 		type LockOrigin: EnsureOrigin<Self::Origin>;
@@ -161,12 +153,9 @@ impl<T: Config> Pallet<T> {
 	///
 	/// Note: this returns the price for 1 basic unit
 	fn access_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_price = if currency_id == T::GetSetUSDId::get() {
+		let maybe_price = if currency_id == T::GetUSDStablecoinId::get() {
 			// if is USDI, use fixed price
-			Some(T::SetUSDFixedPrice::get())
-		} else if currency_id == T::SetterCurrencyId::get() {
-			// if is USDT, return Setter fixed price (currently $0.1)
-			Some(T::SetterFixedPrice::get())
+			Some(T::USDStablecoinFixedPrice::get())
 		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0: CurrencyId = symbol_0.into();
 			let token_1: CurrencyId = symbol_1.into();

@@ -17,7 +17,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, AccountId, Balance, Currencies, CurrencyId, Dex, DexOracle, GetNativeCurrencyId, GetSetUSDId,
+	dollar, AccountId, Balance, Currencies, CurrencyId, Dex, DexOracle, GetNativeCurrencyId, GetUSDStablecoinId,
 	GetDinarCurrencyId, Runtime, Timestamp,
 };
 use frame_benchmarking::whitelisted_caller;
@@ -30,7 +30,7 @@ use sp_runtime::traits::UniqueSaturatedInto;
 use sp_std::prelude::*;
 
 const NATIVE: CurrencyId = GetNativeCurrencyId::get();
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 const DINARID: CurrencyId = GetDinarCurrencyId::get();
 
 fn inject_liquidity(

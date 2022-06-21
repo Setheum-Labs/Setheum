@@ -148,7 +148,7 @@ pub mod module {
 
 		/// Stablecoin currency id
 		#[pallet::constant]
-		type GetSetUSDId: Get<CurrencyId>;
+		type GetUSDStablecoinId: Get<CurrencyId>;
 
 		/// When swap with DEX, the acceptable max slippage for the price from oracle.
 		#[pallet::constant]
@@ -633,7 +633,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn check_cdp_status(currency_id: CurrencyId, collateral_amount: Balance, debit_amount: Balance) -> CDPStatus {
-		let stable_currency_id = T::GetSetUSDId::get();
+		let stable_currency_id = T::GetUSDStablecoinId::get();
 		if let Some(feed_price) = T::PriceSource::get_relative_price(currency_id, stable_currency_id) {
 			let collateral_ratio =
 				Self::calculate_collateral_ratio(currency_id, collateral_amount, debit_amount, feed_price);
@@ -738,7 +738,7 @@ impl<T: Config> Pallet<T> {
 				// need better distribution methods to avoid unused component tokens.
 				let stable_for_token_0 = increase_debit_value / 2;
 				let stable_for_token_1 = increase_debit_value.saturating_sub(stable_for_token_0);
-				let stable_currency_id = T::GetSetUSDId::get();
+				let stable_currency_id = T::GetUSDStablecoinId::get();
 				let stable_to_lp_component = |token: CurrencyId,
 				                              stable_amount: Balance|
 				 -> sp_std::result::Result<Balance, DispatchError> {
@@ -786,7 +786,7 @@ impl<T: Config> Pallet<T> {
 				// swap stable coin to collateral
 				let limit = SwapLimit::ExactSupply(increase_debit_value, min_increase_collateral);
 				let swap_path = T::DEX::get_best_price_swap_path(
-					T::GetSetUSDId::get(),
+					T::GetUSDStablecoinId::get(),
 					currency_id,
 					limit,
 					T::AlternativeSwapPathJointList::get(),
@@ -833,7 +833,7 @@ impl<T: Config> Pallet<T> {
 		);
 
 		let loans_module_account = <LoansOf<T>>::account_id();
-		let stable_currency_id = T::GetSetUSDId::get();
+		let stable_currency_id = T::GetUSDStablecoinId::get();
 		let Position { collateral, debit } = <LoansOf<T>>::positions(currency_id, &who);
 
 		// ensure collateral of CDP is enough
@@ -935,7 +935,7 @@ impl<T: Config> Pallet<T> {
 
 		// confiscate collateral in cdp to cdp treasury
 		// and decrease CDP's debit to zero
-		let settle_price: Price = T::PriceSource::get_relative_price(T::GetSetUSDId::get(), currency_id)
+		let settle_price: Price = T::PriceSource::get_relative_price(T::GetUSDStablecoinId::get(), currency_id)
 			.ok_or(Error::<T>::InvalidFeedPrice)?;
 		let bad_debt_value = Self::get_debit_value(currency_id, debit);
 		let confiscate_collateral_amount =
@@ -1023,7 +1023,7 @@ impl<T: Config> Pallet<T> {
 					<T as Config>::CDPTreasury::remove_liquidity_for_lp_collateral(currency_id, collateral)?;
 
 				// if these's stable
-				let stable_currency_id = T::GetSetUSDId::get();
+				let stable_currency_id = T::GetUSDStablecoinId::get();
 				if token_0 == stable_currency_id || token_1 == stable_currency_id {
 					let (existing_stable, need_handle_currency, handle_amount) = if token_0 == stable_currency_id {
 						(amount_0, token_1, amount_1)
@@ -1087,7 +1087,7 @@ impl<T: Config> Pallet<T> {
 			.reciprocal()
 			.unwrap_or_else(Ratio::max_value)
 			.saturating_mul_int(
-				T::PriceSource::get_relative_price(T::GetSetUSDId::get(), currency_id)
+				T::PriceSource::get_relative_price(T::GetUSDStablecoinId::get(), currency_id)
 					.expect("the oracle price should be avalible because liquidation are triggered by it.")
 					.saturating_mul_int(target_stable_amount),
 			);
@@ -1135,7 +1135,7 @@ impl<T: Config> RiskManager<T::AccountId, CurrencyId, Balance, Balance> for Pall
 	) -> DispatchResult {
 		if !debit_balance.is_zero() {
 			let debit_value = Self::get_debit_value(currency_id, debit_balance);
-			let feed_price = <T as Config>::PriceSource::get_relative_price(currency_id, T::GetSetUSDId::get())
+			let feed_price = <T as Config>::PriceSource::get_relative_price(currency_id, T::GetUSDStablecoinId::get())
 				.ok_or(Error::<T>::InvalidFeedPrice)?;
 			let collateral_ratio =
 				Self::calculate_collateral_ratio(currency_id, collateral_balance, debit_balance, feed_price);

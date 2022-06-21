@@ -20,7 +20,7 @@
 
 use crate::{
 	dollar, AccountId, Auction, AuctionId, AuctionManager, AuctionTimeToClose, CdpTreasury, CurrencyId,
-	GetSetUSDId, GetDinarCurrencyId, Runtime, System,
+	GetUSDStablecoinId, GetDinarCurrencyId, Runtime, System,
 };
 
 use super::utils::set_balance;
@@ -35,7 +35,7 @@ const SEED: u32 = 0;
 const MAX_DOLLARS: u32 = 1000;
 const MAX_AUCTION_ID: u32 = 100;
 
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 const STAKING: CurrencyId = GetDinarCurrencyId::get();
 
 runtime_benchmarks! {

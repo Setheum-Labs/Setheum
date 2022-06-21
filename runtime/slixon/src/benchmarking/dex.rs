@@ -19,7 +19,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, AccountId, Balance, Currencies, CurrencyId, Dex, Event, GetNativeCurrencyId, GetSetUSDId, Runtime,
+	dollar, AccountId, Balance, Currencies, CurrencyId, Dex, Event, GetNativeCurrencyId, GetUSDStablecoinId, Runtime,
 	System, TradingPathLimit,
 };
 
@@ -35,7 +35,7 @@ use sp_std::prelude::*;
 const SEED: u32 = 0;
 
 const NATIVE: CurrencyId = GetNativeCurrencyId::get();
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 const CURRENCY_LIST: [CurrencyId; 2] = [NATIVE, STABLECOIN];
 
 fn assert_last_event(generic_event: Event) {

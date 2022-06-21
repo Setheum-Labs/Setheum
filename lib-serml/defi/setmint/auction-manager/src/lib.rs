@@ -149,7 +149,7 @@ pub mod module {
 
 		/// The stable currency id
 		#[pallet::constant]
-		type GetSetUSDId: Get<CurrencyId>;
+		type GetUSDStablecoinId: Get<CurrencyId>;
 
 		/// Currency to transfer assets
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -436,7 +436,7 @@ impl<T: Config> Pallet<T> {
 
 		// calculate how much collateral to offset target in settle price
 		let settle_price =
-			T::PriceSource::get_relative_price(T::GetSetUSDId::get(), collateral_auction.currency_id)
+			T::PriceSource::get_relative_price(T::GetUSDStablecoinId::get(), collateral_auction.currency_id)
 				.ok_or(Error::<T>::InvalidFeedPrice)?;
 		let confiscate_collateral_amount = if collateral_auction.always_forward() {
 			collateral_auction.amount
@@ -555,7 +555,7 @@ impl<T: Config> Pallet<T> {
 				// if there's bid before, return stablecoin from new bidder to last bidder
 				if let Some(last_bidder) = last_bidder {
 					let refund = collateral_auction.payment_amount(last_bid_price);
-					T::Currency::transfer(T::GetSetUSDId::get(), &new_bidder, last_bidder, refund)?;
+					T::Currency::transfer(T::GetUSDStablecoinId::get(), &new_bidder, last_bidder, refund)?;
 
 					payment = payment
 						.checked_sub(refund)

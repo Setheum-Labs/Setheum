@@ -20,7 +20,7 @@
 
 use crate::{
 	dollar, AccountId, Address, Amount, Balance, CdpEngine, CollateralCurrencyIds, CurrencyId,
-	DefaultDebitExchangeRate, Dex, EmergencyShutdown, ExistentialDeposits, GetSetUSDId, GetDinarCurrencyId,
+	DefaultDebitExchangeRate, Dex, EmergencyShutdown, ExistentialDeposits, GetUSDStablecoinId, GetDinarCurrencyId,
 	MaxSwapSlippageCompareToOracle, MinimumDebitValue, Price, Rate, Ratio, Runtime,
 };
 
@@ -40,7 +40,7 @@ use sp_std::prelude::*;
 
 const SEED: u32 = 0;
 
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 const DINARID: CurrencyId = GetDinarCurrencyId::get();
 
 fn inject_liquidity(
@@ -49,7 +49,7 @@ fn inject_liquidity(
 	max_amount: Balance,
 	max_other_currency_amount: Balance,
 ) -> Result<(), &'static str> {
-	let base_currency_id = GetSetUSDId::get();
+	let base_currency_id = GetUSDStablecoinId::get();
 
 	// set balance
 	set_balance(currency_id, &maker, max_other_currency_amount.unique_saturated_into());

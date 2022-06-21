@@ -18,14 +18,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{AccountId, CurrencyId, GetNativeCurrencyId, GetSetUSDId, Runtime, System, TransactionPayment};
+use crate::{AccountId, CurrencyId, GetNativeCurrencyId, GetUSDStablecoinId, Runtime, System, TransactionPayment};
 use frame_benchmarking::whitelisted_caller;
 use frame_support::traits::OnFinalize;
 use frame_system::RawOrigin;
 use orml_benchmarking::runtime_benchmarks;
 use sp_std::prelude::*;
 
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 const NATIVECOIN: CurrencyId = GetNativeCurrencyId::get();
 
 runtime_benchmarks! {

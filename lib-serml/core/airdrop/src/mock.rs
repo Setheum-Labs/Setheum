@@ -97,8 +97,7 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub const SetterCurrencyId: CurrencyId = USDT;  // Setter  currency ticker is USDT/
-	pub const GetSetUSDId: CurrencyId = USDI;  // SetDollar currency ticker is USDI/
+	pub const GetUSDStablecoinId: CurrencyId = USDI;  // SetDollar currency ticker is USDI/
 	pub const GetNativeCurrencyId: CurrencyId = SETM;  // Setheum native currency ticker is SETM/
 	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");
 	pub const MaxAirdropListSize: usize = 4;

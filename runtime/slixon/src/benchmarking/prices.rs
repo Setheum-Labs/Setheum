@@ -18,7 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{CurrencyId, GetSetUSDId, Origin, Price, Prices, Runtime};
+use crate::{CurrencyId, GetUSDStablecoinId, Origin, Price, Prices, Runtime};
 
 use super::utils::feed_price;
 use frame_system::RawOrigin;
@@ -26,7 +26,7 @@ use orml_benchmarking::runtime_benchmarks;
 use sp_runtime::traits::One;
 use sp_std::vec;
 
-const USDI: CurrencyId = GetSetUSDId::get();
+const USDI: CurrencyId = GetUSDStablecoinId::get();
 
 runtime_benchmarks! {
 	{ Runtime, module_prices }

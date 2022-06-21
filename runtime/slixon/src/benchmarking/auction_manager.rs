@@ -20,7 +20,7 @@
 
 use crate::{
 	dollar, AccountId, AuctionId, AuctionManager, CdpTreasury, Currencies, CurrencyId, EmergencyShutdown,
-	GetSetUSDId, GetDinarCurrencyId, Price, Runtime,
+	GetUSDStablecoinId, GetDinarCurrencyId, Price, Runtime,
 };
 
 use super::utils::feed_price;
@@ -34,7 +34,7 @@ use sp_std::vec;
 
 const SEED: u32 = 0;
 
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 const DINARID: CurrencyId = GetDinarCurrencyId::get();
 
 runtime_benchmarks! {

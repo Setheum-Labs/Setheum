@@ -130,7 +130,7 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetSetUSDId: CurrencyId = USDI;
+	pub const GetUSDStablecoinId: CurrencyId = USDI;
 	pub GetExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
@@ -207,7 +207,7 @@ thread_local! {
 impl Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type DEX = DEXModule;
 	type MaxAuctionsCount = MaxAuctionsCount;

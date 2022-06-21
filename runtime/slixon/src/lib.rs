@@ -119,7 +119,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SETM, ETH, WBTC, BNB, USDT, USDI,
+	OperatorMembershipInstanceSetheum, SLIX, ETH, WBTC, BNB, USDT, USDW,
 };
 
 
@@ -480,9 +480,9 @@ impl pallet_im_online::Config for Runtime {
 }
 
 parameter_types! {
-	pub BasicDeposit: Balance =      10 * dollar(SETM);
-	pub FieldDeposit: Balance =        1 * dollar(SETM);
-	pub SubAccountDeposit: Balance =  20 * dollar(SETM);
+	pub BasicDeposit: Balance =      10 * dollar(SLIX);
+	pub FieldDeposit: Balance =        1 * dollar(SLIX);
+	pub SubAccountDeposit: Balance =  20 * dollar(SLIX);
 	pub const MaxSubAccounts: u32 = 100;
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 19;
@@ -505,7 +505,7 @@ impl pallet_identity::Config for Runtime {
 
 
 parameter_types! {
-	pub IndexDeposit: Balance = 1 * dollar(SETM);
+	pub IndexDeposit: Balance = 1 * dollar(SLIX);
 }
 
 impl pallet_indices::Config for Runtime {
@@ -517,8 +517,8 @@ impl pallet_indices::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETM;
-	pub const GetSetUSDId: CurrencyId = USDI;
+	pub const GetNativeCurrencyId: CurrencyId = SLIX;
+	pub const GetUSDStablecoinId: CurrencyId = USDW;
 }
 
 impl module_currencies::Config for Runtime {
@@ -579,12 +579,12 @@ parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
-				TokenSymbol::USDI => 10 * cent(USDI), // 10 cents (0.1)
+				TokenSymbol::USDW => 10 * cent(USDW), // 10 cents (0.1)
 				TokenSymbol::USDT => 10 * cent(USDT), // 10 cents (0.1)
 				TokenSymbol::ETH => 10 * cent(ETH), // 10 cents (0.1)
 				TokenSymbol::BNB => 10 * cent(BNB), // 10 cents (0.1)
 				TokenSymbol::WBTC => 10 * cent(WBTC), // 10 cents (0.1)
-				TokenSymbol::SETM => 10 * cent(SETM), // 10 cents (0.1)
+				TokenSymbol::SLIX => 10 * cent(SLIX), // 10 cents (0.1)
 			},
 			CurrencyId::DexShare(dex_share_0, _) => {
 				let currency_id_0: CurrencyId = (*dex_share_0).into();
@@ -623,17 +623,14 @@ impl orml_tokens::Config for Runtime {
 }
 
 parameter_types! {
-	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
-	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 4); // $0.25
+	pub USDStablecoinFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
 }
 
 impl module_prices::Config for Runtime {
 	type Event = Event;
 	type Source = AggregatedDataProvider;
-	type GetSetUSDId = GetSetUSDId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type SetUSDFixedPrice = SetUSDFixedPrice;
-	type SetterFixedPrice = SetterFixedPrice;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
+	type USDStablecoinFixedPrice = USDStablecoinFixedPrice;
 	type LockOrigin = EnsureRootOrTwoThirdsFinancialCouncil;
 	type DEX = Dex;
 	type Currency = Currencies;
@@ -667,7 +664,7 @@ impl auction_manager::Config for Runtime {
 	type MinimumIncrementSize = MinimumIncrementSize;
 	type AuctionTimeToClose = AuctionTimeToClose;
 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type CDPTreasury = CdpTreasury;
 	type DEX = Dex;
 	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
@@ -742,22 +739,22 @@ parameter_types! {
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
 		vec![ETH],
 		vec![WBTC],
-		vec![SETM],
+		vec![SLIX],
 		vec![BNB],
-		vec![SETM, USDT],
-		vec![SETM, USDI],
+		vec![SLIX, USDT],
+		vec![SLIX, USDW],
 		vec![ETH, USDT],
-		vec![ETH, USDI],
+		vec![ETH, USDW],
 		vec![WBTC, USDT],
-		vec![WBTC, USDI],
+		vec![WBTC, USDW],
 		vec![BNB, USDT],
-		vec![BNB, USDI],
+		vec![BNB, USDW],
 	];
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, ETH, WBTC, BNB];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SLIX, ETH, WBTC, BNB];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
-	pub MinimumDebitValue: Balance = 10 * dollar(USDI);
+	pub MinimumDebitValue: Balance = 10 * dollar(USDW);
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(15, 100);
 }
 
@@ -769,7 +766,7 @@ impl cdp_engine::Config for Runtime {
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumDebitValue = MinimumDebitValue;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type CDPTreasury = CdpTreasury;
 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
@@ -785,11 +782,11 @@ parameter_types! {
 	pub DepositPerAuthorization: Balance = deposit(1, 64);
 }
 
-impl serp_setmint::Config for Runtime {
+impl serp_SLIXint::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type DepositPerAuthorization = DepositPerAuthorization;
-	type WeightInfo = weights::serp_setmint::WeightInfo<Runtime>;
+	type WeightInfo = weights::serp_SLIXint::WeightInfo<Runtime>;
 }
 
 impl emergency_shutdown::Config for Runtime {
@@ -806,12 +803,12 @@ parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (3, 1000);	// 0.3%
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(USDI, SETM).unwrap(),
-		TradingPair::from_currency_ids(USDI, ETH).unwrap(),
-		TradingPair::from_currency_ids(USDI, WBTC).unwrap(),
-		TradingPair::from_currency_ids(USDI, BNB).unwrap(),
-		TradingPair::from_currency_ids(USDI, USDT).unwrap(),
-		TradingPair::from_currency_ids(USDT, SETM).unwrap(),
+		TradingPair::from_currency_ids(USDW, SLIX).unwrap(),
+		TradingPair::from_currency_ids(USDW, ETH).unwrap(),
+		TradingPair::from_currency_ids(USDW, WBTC).unwrap(),
+		TradingPair::from_currency_ids(USDW, BNB).unwrap(),
+		TradingPair::from_currency_ids(USDW, USDT).unwrap(),
+		TradingPair::from_currency_ids(USDT, SLIX).unwrap(),
 		TradingPair::from_currency_ids(USDT, ETH).unwrap(),
 		TradingPair::from_currency_ids(USDT, WBTC).unwrap(),
 		TradingPair::from_currency_ids(USDT, BNB).unwrap(),
@@ -849,7 +846,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type AuctionManagerHandler = AuctionManager;
 	type DEX = Dex;
 	type MaxAuctionsCount = MaxAuctionsCount;
@@ -862,14 +859,14 @@ impl cdp_treasury::Config for Runtime {
 parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![USDT, SETM],
-		vec![USDI, SETM],
-		vec![ETH, USDT, SETM],
-		vec![ETH, USDI, SETM],
-		vec![WBTC, USDT, SETM],
-		vec![WBTC, USDI, SETM],
-		vec![BNB, USDT, SETM],
-		vec![BNB, USDI, SETM],
+		vec![USDT, SLIX],
+		vec![USDW, SLIX],
+		vec![ETH, USDT, SLIX],
+		vec![ETH, USDW, SLIX],
+		vec![WBTC, USDT, SLIX],
+		vec![WBTC, USDW, SLIX],
+		vec![BNB, USDT, SLIX],
+		vec![BNB, USDW, SLIX],
 	];
 }
 
@@ -936,8 +933,8 @@ parameter_types! {
 parameter_types! {
 	pub const NewContractExtraBytes: u32 = 10_000;
 	pub StorageDepositPerByte: Balance = deposit(0, 1);
-	pub DeveloperDeposit: Balance = 7 * dollar(SETM);
-	pub DeploymentFee: Balance = 7 * dollar(SETM);
+	pub DeveloperDeposit: Balance = 7 * dollar(SLIX);
+	pub DeploymentFee: Balance = 7 * dollar(SLIX);
 }
 
 pub type MultiCurrencyPrecompile = runtime_common::MultiCurrencyPrecompile<
@@ -1011,8 +1008,8 @@ impl module_evm_bridge::Config for Runtime {
 }
 
 parameter_types! {
-	pub CreateClassDeposit: Balance = 11 * dollar(SETM);
-	pub CreateTokenDeposit: Balance = 7 * dollar(SETM);
+	pub CreateClassDeposit: Balance = 11 * dollar(SLIX);
+	pub CreateTokenDeposit: Balance = 7 * dollar(SLIX);
 	pub MaxAttributesBytes: u32 = 2048;
 }
 
@@ -1086,8 +1083,8 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::Loan => {
 				matches!(
 					c,
-					Call::Setmint(serp_setmint::Call::adjust_loan(..))
-						| Call::Setmint(serp_setmint::Call::close_loan_has_debit_by_dex(..))
+					Call::SLIXint(serp_SLIXint::Call::adjust_loan(..))
+						| Call::SLIXint(serp_SLIXint::Call::close_loan_has_debit_by_dex(..))
 				)
 			}
 		}
@@ -1118,10 +1115,10 @@ impl pallet_proxy::Config for Runtime {
 }
 
 parameter_types! {
-	// note: if we add other native tokens (USDI) we have to set native
+	// note: if we add other native tokens (USDW) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
-	pub NativeTokenExistentialDeposit: Balance = 1 * dollar(SETM); // 1 SETM
-	pub MaxNativeTokenExistentialDeposit: Balance = 100 * dollar(SETM); // 100 SETM
+	pub NativeTokenExistentialDeposit: Balance = 1 * dollar(SLIX); // 1 SLIX
+	pub MaxNativeTokenExistentialDeposit: Balance = 100 * dollar(SLIX); // 100 SLIX
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = ReserveIdentifier::Count as u32;
 }
@@ -1326,7 +1323,7 @@ impl ContainsLengthBound for ShuraCouncilProvider {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(3);
-	pub ProposalBondMinimum: Balance = 1 * dollar(SETM); // 1 SETM
+	pub ProposalBondMinimum: Balance = 1 * dollar(SLIX); // 1 SLIX
 	pub const SpendPeriod: BlockNumber = 40 * DAYS;
 	pub const Burn: Permill = Permill::from_perthousand(0); // 0.0%
 	pub const MaxApprovals: u32 = 100;
@@ -1341,7 +1338,7 @@ parameter_types! {
 	pub const BountyDepositPayoutDelay: BlockNumber = DAYS;
 	pub const BountyUpdatePeriod: BlockNumber = 21 * DAYS;
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub BountyValueMinimum: Balance = 1 * dollar(SETM); // 1 SETM
+	pub BountyValueMinimum: Balance = 1 * dollar(SLIX); // 1 SLIX
 	pub DataDepositPerByte: Balance = deposit(0, 1);
 	pub const MaximumReasonLength: u32 = 16384;
 }
@@ -1465,7 +1462,7 @@ construct_runtime!(
 		// ETH
 		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 23,
 		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 24,
-		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 25,
+		SLIXint: serp_SLIXint::{Pallet, Storage, Call, Event<T>} = 25,
 		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 27,
 		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 28,
 		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 29,
@@ -1915,7 +1912,7 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, cdp_engine, benchmarking::cdp_engine);
 			// orml_list_benchmark!(list, extra, emergency_shutdown, benchmarking::emergency_shutdown);
 			// orml_list_benchmark!(list, extra, module_evm, benchmarking::evm);
-			orml_list_benchmark!(list, extra, serp_setmint, benchmarking::serp_setmint);
+			orml_list_benchmark!(list, extra, serp_SLIXint, benchmarking::serp_SLIXint);
 			orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
 			orml_list_benchmark!(list, extra, cdp_treasury, benchmarking::cdp_treasury);
 			orml_list_benchmark!(list, extra, module_transaction_pause, benchmarking::transaction_pause);
@@ -1973,7 +1970,7 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, cdp_engine, benchmarking::cdp_engine);
 			// orml_add_benchmark!(params, batches, emergency_shutdown, benchmarking::emergency_shutdown);
 			// orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
-			orml_add_benchmark!(params, batches, serp_setmint, benchmarking::serp_setmint);
+			orml_add_benchmark!(params, batches, serp_SLIXint, benchmarking::serp_SLIXint);
 			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
 			orml_add_benchmark!(params, batches, cdp_treasury, benchmarking::cdp_treasury);
 			orml_add_benchmark!(params, batches, module_transaction_pause, benchmarking::transaction_pause);

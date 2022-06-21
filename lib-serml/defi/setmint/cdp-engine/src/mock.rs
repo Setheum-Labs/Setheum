@@ -219,7 +219,7 @@ impl AuctionManager<AccountId> for MockAuctionManager {
 }
 
 parameter_types! {
-	pub const GetSetUSDId: CurrencyId = USDI;
+	pub const GetUSDStablecoinId: CurrencyId = USDI;
 	pub const MaxAuctionsCount: u32 = 10_000;
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
@@ -229,7 +229,7 @@ parameter_types! {
 impl cdp_treasury::Config for Runtime {
 	type Event = Event;
 	type Currency = Currencies;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type AuctionManagerHandler = MockAuctionManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DEXModule;
@@ -314,7 +314,7 @@ impl Config for Runtime {
 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
 	type MinimumDebitValue = MinimumDebitValue;
-	type GetSetUSDId = GetSetUSDId;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
 	type CDPTreasury = CDPTreasuryModule;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;

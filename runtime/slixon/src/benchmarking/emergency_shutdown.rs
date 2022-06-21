@@ -19,7 +19,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-	dollar, AccountId, CdpTreasury, CollateralCurrencyIds, CurrencyId, EmergencyShutdown, GetSetUSDId, Price,
+	dollar, AccountId, CdpTreasury, CollateralCurrencyIds, CurrencyId, EmergencyShutdown, GetUSDStablecoinId, Price,
 	Runtime,
 };
 
@@ -33,7 +33,7 @@ use sp_std::vec;
 
 const SEED: u32 = 0;
 
-const STABLECOIN: CurrencyId = GetSetUSDId::get();
+const STABLECOIN: CurrencyId = GetUSDStablecoinId::get();
 
 runtime_benchmarks! {
 	{ Runtime, emergency_shutdown }

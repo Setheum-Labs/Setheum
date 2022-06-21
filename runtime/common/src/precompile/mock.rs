@@ -414,10 +414,8 @@ impl module_evm::Config for Test {
 }
 
 parameter_types! {
-	pub SetUSDFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
-	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 10); // $0.1(10 cents)
-	pub const GetSetUSDId: CurrencyId = USDI;
-	pub const SetterCurrencyId: CurrencyId = USDT;
+	pub USDStablecoinFixedPrice: Price = Price::saturating_from_rational(1, 1); // $1
+	pub const GetUSDStablecoinId: CurrencyId = USDI;
 }
 
 ord_parameter_types! {
@@ -427,10 +425,8 @@ ord_parameter_types! {
 impl module_prices::Config for Test {
 	type Event = Event;
 	type Source = Oracle;
-	type GetSetUSDId = GetSetUSDId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type SetUSDFixedPrice = SetUSDFixedPrice;
-	type SetterFixedPrice = SetterFixedPrice;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
+	type USDStablecoinFixedPrice = USDStablecoinFixedPrice;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = DexModule;
 	type Currency = Currencies;

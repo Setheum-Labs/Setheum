@@ -215,19 +215,16 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetUSDId: CurrencyId = USDI;
-	pub const SetterCurrencyId: CurrencyId = USDT;
-	pub SetUSDFixedPrice: Price = Price::one();
+	pub const GetUSDStablecoinId: CurrencyId = USDI;
+	pub USDStablecoinFixedPrice: Price = Price::one();
 	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 4); // $0.25
 }
 
 impl Config for Runtime {
 	type Event = Event;
 	type Source = MockDataProvider;
-	type GetSetUSDId = GetSetUSDId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type SetUSDFixedPrice = SetUSDFixedPrice;
-	type SetterFixedPrice = SetterFixedPrice;
+	type GetUSDStablecoinId = GetUSDStablecoinId;
+	type USDStablecoinFixedPrice = USDStablecoinFixedPrice;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = MockDEX;
 	type Currency = Tokens;
