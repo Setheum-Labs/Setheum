@@ -60,7 +60,7 @@ pub type BlockNumber = u64;
 pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
 pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 pub const BNB: CurrencyId = CurrencyId::Token(TokenSymbol::BNB);
-pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
+pub const USDW: CurrencyId = CurrencyId::Token(TokenSymbol::USDW);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);

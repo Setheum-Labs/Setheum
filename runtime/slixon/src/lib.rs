@@ -119,7 +119,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SLIX, ETH, WBTC, BNB, USDT, USDW,
+	OperatorMembershipInstanceSetheum, SLIX, ETH, WBTC, BNB, USDW, USDW,
 };
 
 
@@ -580,7 +580,7 @@ parameter_type_with_key! {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
 				TokenSymbol::USDW => 10 * cent(USDW), // 10 cents (0.1)
-				TokenSymbol::USDT => 10 * cent(USDT), // 10 cents (0.1)
+				TokenSymbol::USDW => 10 * cent(USDW), // 10 cents (0.1)
 				TokenSymbol::ETH => 10 * cent(ETH), // 10 cents (0.1)
 				TokenSymbol::BNB => 10 * cent(BNB), // 10 cents (0.1)
 				TokenSymbol::WBTC => 10 * cent(WBTC), // 10 cents (0.1)
@@ -741,13 +741,13 @@ parameter_types! {
 		vec![WBTC],
 		vec![SLIX],
 		vec![BNB],
-		vec![SLIX, USDT],
 		vec![SLIX, USDW],
-		vec![ETH, USDT],
+		vec![SLIX, USDW],
 		vec![ETH, USDW],
-		vec![WBTC, USDT],
+		vec![ETH, USDW],
 		vec![WBTC, USDW],
-		vec![BNB, USDT],
+		vec![WBTC, USDW],
+		vec![BNB, USDW],
 		vec![BNB, USDW],
 	];
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SLIX, ETH, WBTC, BNB];
@@ -807,11 +807,11 @@ parameter_types! {
 		TradingPair::from_currency_ids(USDW, ETH).unwrap(),
 		TradingPair::from_currency_ids(USDW, WBTC).unwrap(),
 		TradingPair::from_currency_ids(USDW, BNB).unwrap(),
-		TradingPair::from_currency_ids(USDW, USDT).unwrap(),
-		TradingPair::from_currency_ids(USDT, SLIX).unwrap(),
-		TradingPair::from_currency_ids(USDT, ETH).unwrap(),
-		TradingPair::from_currency_ids(USDT, WBTC).unwrap(),
-		TradingPair::from_currency_ids(USDT, BNB).unwrap(),
+		TradingPair::from_currency_ids(USDW, USDW).unwrap(),
+		TradingPair::from_currency_ids(USDW, SLIX).unwrap(),
+		TradingPair::from_currency_ids(USDW, ETH).unwrap(),
+		TradingPair::from_currency_ids(USDW, WBTC).unwrap(),
+		TradingPair::from_currency_ids(USDW, BNB).unwrap(),
 	];
 }
 
@@ -825,19 +825,6 @@ impl module_dex::Config for Runtime {
 	type WeightInfo = weights::module_dex::WeightInfo<Runtime>;
 	type ListingOrigin = EnsureRootOrHalfFinancialCouncil;
 }
-
-// parameter_types! {
-// 	pub const MaxAirdropListSize: usize = 250;
-// }
-
-// impl module_airdrop::Config for Runtime {
-// 	type Event = Event;
-// 	type MultiCurrency = Currencies;
-// 	type MaxAirdropListSize = MaxAirdropListSize;
-// 	type FundingOrigin = TreasuryAccount;
-// 	type DropOrigin = EnsureRootOrTwoThirdsShuraCouncil;
-// 	type PalletId = AirdropPalletId;
-// }
 
 parameter_types! {
 	pub const MaxAuctionsCount: u32 = 100;
@@ -859,13 +846,13 @@ impl cdp_treasury::Config for Runtime {
 parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![USDT, SLIX],
 		vec![USDW, SLIX],
-		vec![ETH, USDT, SLIX],
+		vec![USDW, SLIX],
 		vec![ETH, USDW, SLIX],
-		vec![WBTC, USDT, SLIX],
+		vec![ETH, USDW, SLIX],
 		vec![WBTC, USDW, SLIX],
-		vec![BNB, USDT, SLIX],
+		vec![WBTC, USDW, SLIX],
+		vec![BNB, USDW, SLIX],
 		vec![BNB, USDW, SLIX],
 	];
 }
@@ -1476,7 +1463,6 @@ construct_runtime!(
 
 		// Extras
 		NFT: module_nft::{Pallet, Call, Event<T>} = 33,
-		// AirDrop: module_airdrop::{Pallet, Call, Storage, Event<T>} = 34,
 
 		// Account lookup
 		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 35,

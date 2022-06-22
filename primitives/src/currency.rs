@@ -149,12 +149,8 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(BNB))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SETM_USDC".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDC))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SETM_USDT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDT))).unwrap(),
+					symbol: "LP_SETM_USDW".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SETM), DexShare::Token(USDW))).unwrap(),
 				},
 				Token {
 					symbol: "LP_SETM_BUSD".to_string(),
@@ -195,12 +191,8 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(BNB))).unwrap(),
 				},
 				Token {
-					symbol: "LP_SLIX_USDC".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(USDC))).unwrap(),
-				},
-				Token {
-					symbol: "LP_SLIX_USDT".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(USDT))).unwrap(),
+					symbol: "LP_SLIX_USDW".to_string(),
+					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SLIX), DexShare::Token(USDW))).unwrap(),
 				},
 				Token {
 					symbol: "LP_SLIX_BUSD".to_string(),
@@ -244,14 +236,7 @@ create_currency_id! {
 		// Foreign Tokens
 		ETH("Ethereum", 18) = 4,
 		WBTC("Wrapped Bitcoin", 9) = 5,
-		BTCB("Binance-Peg BTC", 9) = 6,
-		BNB("BNB", 18) = 7,
-		USDC("USD Coin", 18) = 8,
-		USDT("Tether", 18) = 9,
-		BUSD("Binance USD", 18) = 10,
-		USDP("Pax Dollar", 18) = 11,
-		PAXG("Pax Gold", 18) = 12,
-		// Dotsama Tokens
+		BNB("BNB", 18) = 6,
 		// Reserve DOT("Polkadot", 18) = 13,
 		// Reserve KSM("Kusama", 18) = 14,
 	}

@@ -158,7 +158,7 @@ impl pallet_balances::Config for Test {
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
+pub const USDW: CurrencyId = CurrencyId::Token(TokenSymbol::USDW);
 pub const LP_SETM_USDI: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::USDI));
 

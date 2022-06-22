@@ -44,7 +44,7 @@ pub const CHARLIE: AccountId = 3;
 
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
-pub const TEST: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
+pub const TEST: CurrencyId = CurrencyId::Token(TokenSymbol::USDW);
 pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 
 mod crowdsales {

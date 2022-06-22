@@ -43,7 +43,7 @@ pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
+pub const USDW: CurrencyId = CurrencyId::Token(TokenSymbol::USDW);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);
 

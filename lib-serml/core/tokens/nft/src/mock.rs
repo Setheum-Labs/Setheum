@@ -177,7 +177,7 @@ parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
 }
 
-pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
+pub const USDW: CurrencyId = CurrencyId::Token(TokenSymbol::USDW);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 
 impl module_currencies::Config for Runtime {

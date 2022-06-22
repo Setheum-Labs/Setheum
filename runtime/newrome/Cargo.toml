@@ -92,7 +92,6 @@ orml-nft= { path = "../lib-orml/nft", default-features = false }
 
 module-transaction-pause = { path = "../lib-serml/core/transactions/transaction-pause", default-features = false }
 module-transaction-payment = { path = "../lib-serml/core/transactions/transaction-payment", default-features = false }
-module-airdrop = { path = "../lib-serml/core/airdrop", default-features = false }
 auction-manager = { path = "../lib-serml/defi/setmint/auction-manager", default-features = false }
 cdp-engine = { path = "../lib-serml/defi/setmint/cdp-engine", default-features = false }
 cdp-treasury = { path = "../lib-serml/defi/setmint/cdp-treasury", default-features = false }
@@ -188,7 +187,6 @@ std = [
 	"orml-oracle-rpc-runtime-api/std",
 	"orml-oracle/std",
 
-	"module-airdrop/std",
 	"auction-manager/std",
 	"cdp-engine/std",
 	"cdp-treasury/std",

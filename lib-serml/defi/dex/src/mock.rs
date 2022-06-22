@@ -35,7 +35,7 @@ pub type AccountId = u128;
 
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
-pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
+pub const USDW: CurrencyId = CurrencyId::Token(TokenSymbol::USDW);
 pub const USDI: CurrencyId = CurrencyId::Token(TokenSymbol::USDI);
 pub const ETH: CurrencyId = CurrencyId::Token(TokenSymbol::ETH);
 pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::WBTC);

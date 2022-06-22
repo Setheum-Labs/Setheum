@@ -15,7 +15,6 @@ members = [
     'primitives',
 
 	# SERML Modules
-	"lib-serml/core/airdrop",
 	"lib-serml/core/idle-scheduler",
 	"lib-serml/core/oracle/dex-oracle",
 	"lib-serml/core/oracle/prices",
@@ -23,7 +22,6 @@ members = [
 	"lib-serml/core/tokens/nft",
 	"lib-serml/core/transactions/transaction-pause",
 	"lib-serml/core/transactions/transaction-payment",
-	"lib-serml/core/vesting",
 	"lib-serml/defi/setmint/auction-manager",
 	"lib-serml/defi/setmint/cdp-engine",
 	"lib-serml/defi/setmint/cdp-treasury",

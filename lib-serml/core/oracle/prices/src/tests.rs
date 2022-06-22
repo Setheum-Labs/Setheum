@@ -194,7 +194,7 @@ fn access_price_of_dex_share_currency() {
 fn access_price_of_other_currency() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(PricesModule::access_price(SETM), Some(Price::saturating_from_integer(0)));
-		assert_eq!(PricesModule::access_price(USDT), Some(Price::saturating_from_rational(1, 4)));
+		assert_eq!(PricesModule::access_price(USDW), Some(Price::saturating_from_rational(1, 4)));
 
 		mock_oracle_update();
 
@@ -232,19 +232,19 @@ fn lock_price_work() {
 			Some(Price::saturating_from_integer(50000u128))
 		);
 
-		// lock the price of USDT when the price of USDT from oracle is some
+		// lock the price of USDW when the price of USDW from oracle is some
 		assert_eq!(
-			PricesModule::access_price(USDT),
+			PricesModule::access_price(USDW),
 			Some(Price::saturating_from_rational(1, 4))
 		);
-		assert_eq!(PricesModule::locked_price(USDT), None);
-		assert_ok!(PricesModule::lock_price(Origin::signed(1), USDT));
+		assert_eq!(PricesModule::locked_price(USDW), None);
+		assert_ok!(PricesModule::lock_price(Origin::signed(1), USDW));
 		System::assert_last_event(Event::PricesModule(crate::Event::LockPrice(
-			USDT,
+			USDW,
 			Price::saturating_from_rational(1, 4),
 		)));
 		assert_eq!(
-			PricesModule::locked_price(USDT),
+			PricesModule::locked_price(USDW),
 			Some(Price::saturating_from_rational(1, 4))
 		);
 	});
@@ -296,9 +296,9 @@ fn price_providers_work() {
 			RealTimePriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(USDT), Some(Price::saturating_from_rational(1, 4)));
+		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(USDW), Some(Price::saturating_from_rational(1, 4)));
 		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_USDI_WBTC), lp_price_1);
-		assert_eq!(RealTimePriceProvider::<Runtime>::get_relative_price(ETH, USDT), Some(Price::saturating_from_integer(200_000)));
+		assert_eq!(RealTimePriceProvider::<Runtime>::get_relative_price(ETH, USDW), Some(Price::saturating_from_integer(200_000)));
 
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(USDI),
@@ -308,21 +308,21 @@ fn price_providers_work() {
 			PriorityLockedPriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(PriorityLockedPriceProvider::<Runtime>::get_price(USDT), Some(Price::saturating_from_rational(1, 4)));
+		assert_eq!(PriorityLockedPriceProvider::<Runtime>::get_price(USDW), Some(Price::saturating_from_rational(1, 4)));
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC),
 			lp_price_1
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT),
+			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDW),
 			Some(Price::saturating_from_integer(200_000))
 		);
 
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDI), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(ETH), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDW), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDW), None);
 
 		// lock price
 		assert_ok!(PricesModule::lock_price(Origin::signed(1), USDI));
@@ -338,9 +338,9 @@ fn price_providers_work() {
 			LockedPriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDW), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC), lp_price_1);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDW), None);
 
 		// mock oracle update
 		mock_oracle_update();
@@ -361,12 +361,12 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(40000u128))
 		);
 		assert_eq!(
-			RealTimePriceProvider::<Runtime>::get_price(USDT),
+			RealTimePriceProvider::<Runtime>::get_price(USDW),
 			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_USDI_WBTC), lp_price_2);
 		assert_eq!(
-			RealTimePriceProvider::<Runtime>::get_relative_price(ETH, USDT),
+			RealTimePriceProvider::<Runtime>::get_relative_price(ETH, USDW),
 			Some(Price::saturating_from_integer(160_000u128))
 		);
 
@@ -379,7 +379,7 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(50000u128))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(USDT),
+			PriorityLockedPriceProvider::<Runtime>::get_price(USDW),
 			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(
@@ -387,7 +387,7 @@ fn price_providers_work() {
 			lp_price_1
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT),
+			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDW),
 			Some(Price::saturating_from_integer(200_000u128))
 		);
 
@@ -399,15 +399,15 @@ fn price_providers_work() {
 			LockedPriceProvider::<Runtime>::get_price(ETH),
 			Some(Price::saturating_from_integer(50000u128))
 		);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDW), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC), lp_price_1);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDW), None);
 
 		// unlock price
 		assert_ok!(PricesModule::unlock_price(Origin::signed(1), USDI));
 		assert_ok!(PricesModule::unlock_price(Origin::signed(1), ETH));
 		assert_noop!(
-			PricesModule::unlock_price(Origin::signed(1), USDT),
+			PricesModule::unlock_price(Origin::signed(1), USDW),
 			Error::<Runtime>::NoLockedPrice
 		);
 		assert_ok!(PricesModule::unlock_price(Origin::signed(1), LP_USDI_WBTC));
@@ -421,7 +421,7 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(40000u128))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(USDT),
+			PriorityLockedPriceProvider::<Runtime>::get_price(USDW),
 			Some(Price::saturating_from_rational(1, 4))
 		);
 		assert_eq!(
@@ -429,14 +429,14 @@ fn price_providers_work() {
 			lp_price_2
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT),
+			PriorityLockedPriceProvider::<Runtime>::get_relative_price(ETH, USDW),
 			Some(Price::saturating_from_integer(160_000u128))
 		);
 
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDI), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(ETH), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USDW), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USDI_WBTC), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDT), None);
+		assert_eq!(LockedPriceProvider::<Runtime>::get_relative_price(ETH, USDW), None);
 	});
 }

@@ -123,7 +123,7 @@ pub mod module {
 		type UpdateOrigin: EnsureOrigin<Self::Origin>;
 
 		#[pallet::constant]
-		/// The Airdrop module pallet id, keeps airdrop funds.
+		/// The module pallet id, keeps funds.
 		type PalletId: Get<PalletId>;                                                                                                                              
 	}
 

@@ -154,7 +154,7 @@ impl<T: Config> Pallet<T> {
 	/// Note: this returns the price for 1 basic unit
 	fn access_price(currency_id: CurrencyId) -> Option<Price> {
 		let maybe_price = if currency_id == T::GetUSDStablecoinId::get() {
-			// if is USDI, use fixed price
+			// if it's USD Stablecoin, use fixed price
 			Some(T::USDStablecoinFixedPrice::get())
 		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
 			let token_0: CurrencyId = symbol_0.into();
