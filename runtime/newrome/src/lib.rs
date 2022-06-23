@@ -119,7 +119,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SETM, ETH, WBTC, BNB, USDW, USDI,
+	OperatorMembershipInstanceSetheum, SETM, ETH, WBTC, BNB, USDI,
 };
 
 
@@ -132,7 +132,6 @@ mod benchmarking;
 
 // Pallet accounts of runtime
 parameter_types! {
-	pub const AirdropPalletId: PalletId = PalletId(*b"set/drop");		// 5EYCAe5jKgkuY1B3CkWQF41wzN62tTt8ptfmao31qYvMiVRD
 	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");	// 5EYCAe5jKgkuXyJQ3G8CXrRfmmqqe54Tye5wJDqim8cvHQi7
 	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");			// 5EYCAe5jKgkuYTiXRpXnghiur9sW2zJCp91xQRKKzhwjS2DC
 	pub const LoansPalletId: PalletId = PalletId(*b"set/loan");			// 5EYCAe5jKgkuYFMt7CDpD9JGyD8eLr9DKZZ9mBNibUbs5xXo
@@ -142,7 +141,6 @@ parameter_types! {
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![
-		AirdropPalletId::get().into_account(),
 		CDPTreasuryPalletId::get().into_account(),
 		DEXPalletId::get().into_account(),
 		LoansPalletId::get().into_account(),
@@ -580,7 +578,6 @@ parameter_type_with_key! {
 		match currency_id {
 			CurrencyId::Token(symbol) => match symbol {
 				TokenSymbol::USDI => 10 * cent(USDI), // 10 cents (0.1)
-				TokenSymbol::USDW => 10 * cent(USDW), // 10 cents (0.1)
 				TokenSymbol::ETH => 10 * cent(ETH), // 10 cents (0.1)
 				TokenSymbol::BNB => 10 * cent(BNB), // 10 cents (0.1)
 				TokenSymbol::WBTC => 10 * cent(WBTC), // 10 cents (0.1)
@@ -737,17 +734,14 @@ where
 
 parameter_types! {
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
+		vec![SETM],
 		vec![ETH],
 		vec![WBTC],
-		vec![SETM],
 		vec![BNB],
-		vec![SETM, USDW],
+		vec![USDI],
 		vec![SETM, USDI],
-		vec![ETH, USDW],
 		vec![ETH, USDI],
-		vec![WBTC, USDW],
 		vec![WBTC, USDI],
-		vec![BNB, USDW],
 		vec![BNB, USDI],
 	];
 	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, ETH, WBTC, BNB];
@@ -807,11 +801,6 @@ parameter_types! {
 		TradingPair::from_currency_ids(USDI, ETH).unwrap(),
 		TradingPair::from_currency_ids(USDI, WBTC).unwrap(),
 		TradingPair::from_currency_ids(USDI, BNB).unwrap(),
-		TradingPair::from_currency_ids(USDI, USDW).unwrap(),
-		TradingPair::from_currency_ids(USDW, SETM).unwrap(),
-		TradingPair::from_currency_ids(USDW, ETH).unwrap(),
-		TradingPair::from_currency_ids(USDW, WBTC).unwrap(),
-		TradingPair::from_currency_ids(USDW, BNB).unwrap(),
 	];
 }
 
@@ -846,13 +835,9 @@ impl cdp_treasury::Config for Runtime {
 parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![USDW, SETM],
 		vec![USDI, SETM],
-		vec![ETH, USDW, SETM],
 		vec![ETH, USDI, SETM],
-		vec![WBTC, USDW, SETM],
 		vec![WBTC, USDI, SETM],
-		vec![BNB, USDW, SETM],
 		vec![BNB, USDI, SETM],
 	];
 }
@@ -1464,35 +1449,35 @@ construct_runtime!(
 		NFT: module_nft::{Pallet, Call, Event<T>} = 33,
 
 		// Account lookup
-		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 35,
+		Indices: pallet_indices::{Pallet, Call, Storage, Config<T>, Event<T>} = 34,
 
 		// Tokens, Fees & Related
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 36,
-		Currencies: module_currencies::{Pallet, Call, Event<T>} = 37,
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 38,
-		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 39,
-		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 40,
-		Vesting: module_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 41,
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 35,
+		Currencies: module_currencies::{Pallet, Call, Event<T>} = 36,
+		Tokens: orml_tokens::{Pallet, Storage, Event<T>, Config<T>} = 37,
+		TransactionPayment: module_transaction_payment::{Pallet, Call, Storage} = 38,
+		TransactionPause: module_transaction_pause::{Pallet, Call, Storage, Event<T>} = 39,
+		Vesting: module_vesting::{Pallet, Storage, Call, Event<T>, Config<T>} = 40,
 
 		// Identity
-		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 42,
+		Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 41,
 
 		// Smart contracts
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 43,
-		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 44,
-		EVMBridge: module_evm_bridge::{Pallet} = 45,
-		EvmManager: module_evm_manager::{Pallet, Storage} = 46,
+		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 42,
+		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 43,
+		EVMBridge: module_evm_bridge::{Pallet} = 44,
+		EvmManager: module_evm_manager::{Pallet, Storage} = 45,
 
 		// Consensus
-		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 47,
-		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 48,
-		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 49,
-		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 50,
-		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 51,
-		Historical: pallet_session_historical::{Pallet} = 52,
-		Offences: pallet_offences::{Pallet, Storage, Event} = 53,
-		ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>} = 54,
-		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 55,
+		Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent} = 46,
+		Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned} = 47,
+		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event, ValidateUnsigned} = 48,
+		Staking: pallet_staking::{Pallet, Call, Config<T>, Storage, Event<T>} = 49,
+		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 50,
+		Historical: pallet_session_historical::{Pallet} = 51,
+		Offences: pallet_offences::{Pallet, Storage, Event} = 52,
+		ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>} = 53,
+		AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config} = 54,
 	}
 );
 

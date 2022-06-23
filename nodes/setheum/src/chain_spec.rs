@@ -42,7 +42,7 @@ use setheum_runtime::{
 	TokensConfig, OrmlNFTConfig,
 	NativeTokenExistentialDeposit, MaxNativeTokenExistentialDeposit,
 	//
-	SETM, ETH, WBTC, BNB, USDW, USDI,
+	SETM, ETH, WBTC, BNB, USDI,
 };
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
@@ -323,8 +323,8 @@ fn dev_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;	// 1,000,000 SETM/ETH/WBTC/BNB/USDW/USDI
-	let initial_staking: u128 = 2_000 * 1_000_000_000_000_000_000; 	// 258,000 SETM/ETH/WBTC/BNB/USDW/USDI
+	let initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;	// 1,000,000 SETM/ETH/WBTC/BNB/USDI
+	let initial_staking: u128 = 2_000 * 1_000_000_000_000_000_000; 	// 258,000 SETM/ETH/WBTC/BNB/USDI
 
 	let balances = initial_authorities
 		.iter()
@@ -424,7 +424,6 @@ fn dev_genesis(
 					(x.clone(), ETH, initial_balance),
 					(x.clone(), WBTC, initial_balance),
 					(x.clone(), BNB, initial_balance),
-					(x.clone(), USDW, initial_balance),
 					(x.clone(), USDI, initial_balance),
 					])
 				.collect(),
@@ -441,7 +440,6 @@ fn dev_genesis(
 				(x.clone(), ETH, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), WBTC, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), BNB, 10, 1, 3600, 100_000_000_000_000_000),
-				(x.clone(), USDW, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), USDI, 10, 1, 3600, 100_000_000_000_000_000),
 				])
 			.collect(),
@@ -682,11 +680,6 @@ fn mainnet_genesis(
 				(team.clone(), BNB, help_team_alloc),
 				(advisors_n_partners.clone(), BNB, help_advisors_n_partners_alloc),
 
-				(foundation.clone(), USDW, setr_foundation_alloc + setr_airdrop_alloc),
-				(spf.clone(), USDW, setr_spf_alloc),
-				(team.clone(), USDW, setr_team_alloc),
-				(advisors_n_partners.clone(), USDW, setr_advisors_n_partners_alloc),
-
 				(foundation.clone(), USDI, setusd_foundation_alloc + setusd_airdrop_alloc),
 				(spf.clone(), USDI, setusd_spf_alloc),
 				(team.clone(), USDI, setusd_team_alloc),
@@ -718,11 +711,6 @@ fn mainnet_genesis(
 				(spf.clone(), BNB, 313, 1, 35_784_000, help_spf_vesting),
 				(team.clone(), BNB, 313, 1, 97_128_000, help_team_vesting),
 				(advisors_n_partners.clone(), BNB, 313, 1, 25_560_000, help_advisors_n_partners_vesting),
-				
-				(foundation.clone(), USDW, 313, 1, 15_336_000, setr_foundation_vesting),
-				(spf.clone(), USDW, 313, 1, 15_336_000, setr_spf_vesting),
-				(team.clone(), USDW, 313, 1, 15_336_000, setr_team_vesting),
-				(advisors_n_partners.clone(), USDW, 313, 1, 15_336_000, setr_advisors_n_partners_vesting),
 				
 				(foundation.clone(), USDI, 313, 1, 10_224_000, setusd_foundation_vesting),
 				(spf.clone(), USDI, 313, 1, 10_224_000, setusd_spf_vesting),
@@ -785,7 +773,7 @@ pub fn setheum_properties() -> Properties {
 	let mut properties = Map::new();
 	let mut token_symbol: Vec<String> = vec![];
 	let mut token_decimals: Vec<u32> = vec![];
-	[SETM, ETH, WBTC, BNB, USDW, USDI].iter().for_each(|token| {
+	[SETM, ETH, WBTC, BNB, USDI].iter().for_each(|token| {
 		token_symbol.push(token.symbol().unwrap().to_string());
 		token_decimals.push(token.decimals().unwrap() as u32);
 	});
