@@ -549,61 +549,61 @@ fn dev_genesis(
 				])
 			.collect(),
 		},
-		serp_treasury: SerpTreasuryConfig {
-			stable_currency_inflation_rate: vec![
-				(SETR, 100_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
-				(SETUSD, 10_000_000_000_000_000_000),	// (currency_id, inflation rate of a setcurrency)
-			],
-			stable_currency_cashdrop: vec![
-				(SETR,  initial_balance), 	// (currency_id, cashdrop pool balance of a setcurrency)
-				(SETUSD,  initial_balance),  // (currency_id, cashdrop pool balance of a setcurrency)
-			],
-		},
-		cdp_treasury: CdpTreasuryConfig {
-			expected_collateral_auction_size: vec![
-				(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-			],
-		},
-		cdp_engine: CdpEngineConfig {
-			collaterals_params: vec![
-				(
-					SETM,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					SERP,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					DNAR,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					HELP,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-			],
-		},
-		dex: DexConfig {
-			initial_listing_trading_pairs: vec![],
-			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![],
-		},
+		// serp_treasury: SerpTreasuryConfig {
+		// 	stable_currency_inflation_rate: vec![
+		// 		(SETR, 100_000_000_000_000_000_000), 	// (currency_id, inflation rate of a setcurrency)
+		// 		(SETUSD, 10_000_000_000_000_000_000),	// (currency_id, inflation rate of a setcurrency)
+		// 	],
+		// 	stable_currency_cashdrop: vec![
+		// 		(SETR,  initial_balance), 	// (currency_id, cashdrop pool balance of a setcurrency)
+		// 		(SETUSD,  initial_balance),  // (currency_id, cashdrop pool balance of a setcurrency)
+		// 	],
+		// },
+		// cdp_treasury: CdpTreasuryConfig {
+		// 	expected_collateral_auction_size: vec![
+		// 		(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 	],
+		// },
+		// cdp_engine: CdpEngineConfig {
+		// 	collaterals_params: vec![
+		// 		(
+		// 			SETM,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			SERP,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			DNAR,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			HELP,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 	],
+		// },
+		// dex: DexConfig {
+		// 	initial_listing_trading_pairs: vec![],
+		// 	initial_enabled_trading_pairs: EnabledTradingPairs::get(),
+		// 	initial_added_liquidity_pools: vec![],
+		// },
 		orml_nft: OrmlNFTConfig { tokens: vec![] }
 	}
 }
@@ -796,61 +796,61 @@ fn testnet_genesis(
 				(team.clone(), SETUSD, 258, 1, 5_112_000, setusd_team_vesting),
 			]
 		},
-		serp_treasury: SerpTreasuryConfig {
-			stable_currency_inflation_rate: vec![
-				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
-				(SETUSD, 0),	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
-			],
-			stable_currency_cashdrop: vec![
-				(SETR,  setr_cashdrop_alloc), 	// (currency_id, cashdrop pool balance of a setcurrency)
-				(SETUSD,  setusd_cashdrop_alloc),  // (currency_id, cashdrop pool balance of a setcurrency)
-			],
-		},
-		cdp_treasury: CdpTreasuryConfig {
-			expected_collateral_auction_size: vec![
-				(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-			],
-		},
-		cdp_engine: CdpEngineConfig {
-			collaterals_params: vec![
-				(
-					SETM,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					SERP,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					DNAR,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					HELP,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-			],
-		},
-		dex: DexConfig {
-			initial_listing_trading_pairs: vec![],
-			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![],
-		},
+		// serp_treasury: SerpTreasuryConfig {
+		// 	stable_currency_inflation_rate: vec![
+		// 		(SETR, 0), 	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
+		// 		(SETUSD, 0),	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
+		// 	],
+		// 	stable_currency_cashdrop: vec![
+		// 		(SETR,  setr_cashdrop_alloc), 	// (currency_id, cashdrop pool balance of a setcurrency)
+		// 		(SETUSD,  setusd_cashdrop_alloc),  // (currency_id, cashdrop pool balance of a setcurrency)
+		// 	],
+		// },
+		// cdp_treasury: CdpTreasuryConfig {
+		// 	expected_collateral_auction_size: vec![
+		// 		(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 	],
+		// },
+		// cdp_engine: CdpEngineConfig {
+		// 	collaterals_params: vec![
+		// 		(
+		// 			SETM,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			SERP,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			DNAR,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			HELP,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 	],
+		// },
+		// dex: DexConfig {
+		// 	initial_listing_trading_pairs: vec![],
+		// 	initial_enabled_trading_pairs: EnabledTradingPairs::get(),
+		// 	initial_added_liquidity_pools: vec![],
+		// },
 		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
 }
@@ -1090,61 +1090,61 @@ fn mainnet_genesis(
 				(advisors_n_partners.clone(), SETUSD, 313, 1, 10_224_000, setusd_advisors_n_partners_vesting),
 			]
 		},
-		serp_treasury: SerpTreasuryConfig {
-			stable_currency_inflation_rate: vec![
-				(SETR, 0), 	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
-				(SETUSD, 0),	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
-			],
-			stable_currency_cashdrop: vec![
-				(SETR,  setr_cashdrop_alloc), 	// (currency_id, cashdrop pool balance of a setcurrency)
-				(SETUSD,  setusd_cashdrop_alloc),  // (currency_id, cashdrop pool balance of a setcurrency)
-			],
-		},
-		cdp_treasury: CdpTreasuryConfig {
-			expected_collateral_auction_size: vec![
-				(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-				(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
-			],
-		},
-		cdp_engine: CdpEngineConfig {
-			collaterals_params: vec![
-				(
-					SETM,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					SERP,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					DNAR,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-				(
-					HELP,
-					Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
-					Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
-					Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
-					25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
-				),
-			],
-		},
-		dex: DexConfig {
-			initial_listing_trading_pairs: vec![],
-			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
-			initial_added_liquidity_pools: vec![],
-		},
+		// serp_treasury: SerpTreasuryConfig {
+		// 	stable_currency_inflation_rate: vec![
+		// 		(SETR, 0), 	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
+		// 		(SETUSD, 0),	// (currency_id, inflation rate of a setcurrency) to be set on-chain;
+		// 	],
+		// 	stable_currency_cashdrop: vec![
+		// 		(SETR,  setr_cashdrop_alloc), 	// (currency_id, cashdrop pool balance of a setcurrency)
+		// 		(SETUSD,  setusd_cashdrop_alloc),  // (currency_id, cashdrop pool balance of a setcurrency)
+		// 	],
+		// },
+		// cdp_treasury: CdpTreasuryConfig {
+		// 	expected_collateral_auction_size: vec![
+		// 		(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 	],
+		// },
+		// cdp_engine: CdpEngineConfig {
+		// 	collaterals_params: vec![
+		// 		(
+		// 			SETM,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			SERP,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			DNAR,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 		(
+		// 			HELP,
+		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
+		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
+		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
+		// 			25_800_000 * 1_000_000_000_000_000_000,              // maximum debit value in SETUSD (cap)
+		// 		),
+		// 	],
+		// },
+		// dex: DexConfig {
+		// 	initial_listing_trading_pairs: vec![],
+		// 	initial_enabled_trading_pairs: EnabledTradingPairs::get(),
+		// 	initial_added_liquidity_pools: vec![],
+		// },
 		orml_nft: OrmlNFTConfig { tokens: vec![] },
 	}
 }
@@ -1171,7 +1171,7 @@ pub fn setheum_properties() -> Properties {
 pub fn evm_genesis() -> BTreeMap<H160, module_evm::GenesisAccount<Balance, Nonce>> {
 	let existential_deposit = MaxNativeTokenExistentialDeposit::get();
 	
-	let contracts_json = &include_bytes!("../../lib-serml/sevm/predeploy-contracts/resources/bytecodes.json")[..];
+	let contracts_json = &include_bytes!("../../predeploy-contracts/resources/bytecodes.json")[..];
 	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
 	let mut accounts = BTreeMap::new();
 	for (_, address, code_string) in contracts {
