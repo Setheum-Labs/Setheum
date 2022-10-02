@@ -23,7 +23,7 @@ pallet-membership = { git = "https://github.com/paritytech/substrate", branch = 
 orml-oracle = { path = "../../lib-orml/oracle", default-features = false }
 orml-traits = { path = "../../lib-orml/traits", default-features = false }
 
-module-evm = { path = "../../lib-serml/sevm/evm", default-features = false }
+module-evm = { path = "../../lib-serml//evm", default-features = false }
 module-support = { path = "../../lib-serml/support", default-features = false }
 module-transaction-payment = { path = "../../lib-serml/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
@@ -42,8 +42,8 @@ orml-tokens = { path = "../../lib-orml/tokens" }
 orml-nft = { path = "../../lib-orml/nft" }
 
 module-currencies = { path = "../../lib-serml/currencies" }
-module-evm-bridge = { path = "../../lib-serml/sevm/evm-bridge" }
-module-evm-manager = { path = "../../lib-serml/sevm/evm-manager" }
+module-evm-bridge = { path = "../../lib-serml//evm-bridge" }
+module-evm-manager = { path = "../../lib-serml//evm-manager" }
 module-nft = { path = "../../lib-serml/nft" }
 # module-dex = { path = "../../lib-serml/defi/setswap/dex" }
 module-prices = { path = "../../lib-serml/prices" }

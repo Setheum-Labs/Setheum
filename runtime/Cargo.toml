@@ -102,11 +102,11 @@ module-airdrop = { path = "../lib-serml/airdrop", default-features = false }
 
 module-currencies = { path = "../lib-serml/currencies", default-features = false }
 dex-oracle = { path = "../lib-serml/dex-oracle", default-features = false }
-module-evm = { path = "../lib-serml/sevm/evm", default-features = false }
-module-evm-accounts = { path = "../lib-serml/sevm/evm-accounts", default-features = false }
-module-evm-bridge = { path = "../lib-serml/sevm/evm-bridge", default-features = false }
-module-evm-rpc-runtime-api = { path = "../lib-serml/sevm/evm/rpc/runtime_api",  default-features = false }
-module-evm-manager = { path = "../lib-serml/sevm/evm-manager", default-features = false }
+module-evm = { path = "../lib-serml//evm", default-features = false }
+module-evm-accounts = { path = "../lib-serml//evm-accounts", default-features = false }
+module-evm-bridge = { path = "../lib-serml//evm-bridge", default-features = false }
+module-evm-rpc-runtime-api = { path = "../lib-serml//evm/rpc/runtime_api",  default-features = false }
+module-evm-manager = { path = "../lib-serml//evm-manager", default-features = false }
 
 # serp-treasury = { path = "../lib-serml/defi/serp", default-features = false }
 # serp-setmint = { path = "../lib-serml/defi/setmint/setmint-core", default-features = false }
