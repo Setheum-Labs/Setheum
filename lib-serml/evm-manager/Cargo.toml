@@ -15,16 +15,16 @@ sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-primitives = { package = "setheum-primitives", path = "../../../primitives", default-features = false }
-module-support = { path = "../../support", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
+module-support = { path = "../support", default-features = false }
 
 [dev-dependencies]
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-currencies = { path = "../../../lib-orml/currencies" }
-orml-tokens = { path = "../../../lib-orml/tokens" }
-orml-traits = { path = "../../../lib-orml/traits" }
-orml-utilities = { path = "../../../lib-orml/utilities" }
+orml-currencies = { path = "../../lib-orml/currencies" }
+orml-tokens = { path = "../../lib-orml/tokens" }
+orml-traits = { path = "../../lib-orml/traits" }
+orml-utilities = { path = "../../lib-orml/utilities" }
 module-evm = { path = "../evm" }
 module-evm-bridge = { path = "../evm-bridge" }
 

@@ -15,9 +15,9 @@ frame-support = { git = "https://github.com/paritytech/substrate", branch = "pol
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-orml-traits = { path = "../../../../lib-orml/traits", default-features = false }
-support = { package = "module-support", path = "../../../support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../../../primitives", default-features = false }
+orml-traits = { path = "../../lib-orml/traits", default-features = false }
+support = { package = "module-support", path = "../support", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
