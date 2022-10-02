@@ -193,23 +193,6 @@ impl module_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
-parameter_types! {
-	pub StableCurrencyIds: Vec<CurrencyId> = vec![
-		SETR,
-		SETUSD,
-	];
-	pub const GetSerpCurrencyId: CurrencyId = SERP;
-	pub const GetDinarCurrencyId: CurrencyId = DNAR;
-	pub const GetHelpCurrencyId: CurrencyId = HELP;
-	pub const SetterCurrencyId: CurrencyId = SETR;  // Setter  currency ticker is SETR/
-	pub const GetSetUSDId: CurrencyId = SETUSD;  // Setter  currency ticker is SETUSD/
-
-	pub const CDPTreasuryPalletId: PalletId = PalletId(*b"set/cdpt");
-	pub const SerpTreasuryPalletId: PalletId = PalletId(*b"set/serp");
-	pub CDPTreasuryAccount: AccountId = CDPTreasuryPalletId::get().into_account();
-
-}
-
 pub struct MockDEX;
 impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
@@ -337,39 +320,11 @@ ord_parameter_types! {
 	pub const Root: AccountId = alice();
 }
 
-impl serp_treasury::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
-	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
-	type CDPTreasuryAccountId = CDPTreasuryAccount;
-	type Dex = MockDEX;
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type PriceSource = MockPriceSource;
-	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
-	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
-	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
-	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
-	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
-	type UpdateOrigin = EnsureSignedBy<Root, AccountId>;
-	type PalletId = SerpTreasuryPalletId;
-	type WeightInfo = ();
-}
-
 impl Config for Runtime {
 	type Event = Event;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type StableCurrencyIds = StableCurrencyIds;
-	type SerpTreasury = SerpTreasuryModule;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = EVMBridge;
@@ -397,7 +352,6 @@ frame_support::construct_runtime!(
 		Currencies: currencies::{Pallet, Call, Event<T>},
 		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
 		EVMBridge: module_evm_bridge::{Pallet},
-		SerpTreasuryModule: serp_treasury::{Pallet, Storage, Call, Config, Event<T>},
 	}
 );
 
