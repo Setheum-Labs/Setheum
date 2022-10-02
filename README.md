@@ -1,6 +1,12 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Setheum Node (OUTDATED - So, Update!)
+# Setheum - Powering Ethical Web3 Solutions.
+
+* Decentralized
+* Ethical
+* Interoperable
+* Scalable
+* Secure
 
 Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Setheum SERML, ready for hacking :rocket:
 
@@ -17,40 +23,18 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 	
 </div>
 
-# Introduction
+## Introduction
 
-Setheum is founded and initiated and fascilitated by Muhammad-Jibril B.A. of Setheum Labs, Setheum Foundation and Slixon Technologies to steward and support the development and advancement of the Network, its ecosystem and its community to foster the development and adoption of decentralised finance by building and supporting cross-chain open finance infrastructure such as the SERP (Setheum Elastic Reserve Protocol) stablecoin system, the SetMint stablecoin minting system and Setheum's built-in payment system SetPay(CashDrops) that lets traders and transactors claim cashback (what we call CashDrop) on their transactions to speak of a few. 
+### SETHEUM means "Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market".
+
+Setheum is founded,  initiated and facilitated by Muhammad-Jibril B.A. of Setheum Labs, Slixon Technologies and Setheum Foundation to build, steward and support the development and advancement of Ethical Web3 with the Network, its ecosystem and its community to foster the development and adoption of ethical decentralised finance by  and Web3 in general by building and supporting interoperable Secure, Scalable and Decentralized Web3 Infrastructure.
 Setheum also deploys Advanced Incentivization mechanisms and economic models modeled under the Jurisdiction of Islamic Finance.
 
-### Founder/Developer:
-
-* [Muhammad-Jibril B.A.](https://github.com/JBA-Khalifa)
-
-## Core Products
-
-### The Tokens - [Currencies](./primitives/src/currency.rs#:~:text=%7D-,create_currency_id!%20%7B,%7D,-pub%20trait%20TokenInfo)
-
-```bash
-    SETM("Setheum", 12) = 0,
-    USDI("InterUSD", 12) = 1,
-```
-
-### The Protocols - [Projects]
-
-1. [The SEVM](./lib-serml/sevm) - The Setheum EVM is an Ethereum Virtual Machine (EVM) compatibility layer that implements the EVM on Setheum and bridges to Ethereum that opens the ground for interoperability between Ethereum and Setheum.
-The SEVM lets developers onboard, deploy or migrate their Ethereum Solidity Smart Contracts on Setheum seamlessly with little to no change in their code.
-The SetheumEVM has a beautiful library of developer tools that let developers deploy, manageand interact with their smart contracts and upgradable smart contracts on the S-EVM with popular and well documented tools like Truffle, MetaMask, et al.
-The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, to let users access the Setheum and the EVM both with a single wallet without having to use two separate wallets for compatibility.
-
-2. [ZIMS](./lib-serml/defi/setmint) - ZIMS is a CDP Stablecoin protocol in Setheum built for the Zero-Interest stablecoin market. Inspired by MakerDAO Protocol, the CDP (Collateralized Debt Position) protocol on Ethereum, the Setheum CDP protocol ZIMS has zero interest rates, zero stability fees, and is fully halal and over-collateralized as well as multicollateral. This lets the Ethical DEfi and Islamic Finance world to also participate in the industry and take part in trading and yield making strategies that are within their dome of principles, beliefs, and customs.
-
-For all the SERML (Setheum Runtime Module Library) modules Check the [lib-serml](./lib-serml)
-
-# Getting Started 
+## Getting Started 
 
 This project contains some configuration files to help get started :hammer_and_wrench:
 
-## Initialisation
+### Initialisation
 
 Clone this repository:
 
@@ -90,14 +74,14 @@ Install required tools and install git hooks:
 git submodule update --init --recursive
 ```
 
-### Start a development node
+#### Start a development node
 
 The `make run` command will launch a temporary node and its state will be discarded after you terminate the process.
 ```bash
 make run
 ```
 
-### Run a persistent single-node chain
+#### Run a persistent single-node chain
 
 Use the following command to build the node without launching it:
 
@@ -123,13 +107,13 @@ Start the development chain with detailed logging:
 RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum-node -lruntime=debug --dev
 ```
 
-### Run tests
+#### Run tests
 
 ```bash
 make test
 ```
 
-### Run benchmarks
+#### Run benchmarks
 
 Run runtime benchmark tests:
 ```bash
@@ -155,17 +139,17 @@ Run the module benchmarks and generate the weights file:
     --output=./lib-serml/currencies/src/weights.rs
 ```
 
-### Run in debugger
+#### Run in debugger
 
 ```bash
 make debug
 ```
 
-### Nodes
+#### Nodes
 
 For Docs on running nodes, check [./docs/nodes.md](./docs/nodes.md)
 
-### Embedded docs
+#### Embedded docs
 
 Once the project has been built, the following command can be used to explore all parameters and subcommands:
 
@@ -173,7 +157,7 @@ Once the project has been built, the following command can be used to explore al
 ./target/release/setheum-node -h
 ```
 
-### Release builds
+#### Release builds
 
 To list all available release builds run:
 ```bash
@@ -190,22 +174,22 @@ Then run this command to install appropriate compiler version and produce a bina
 make release
 ```
 
-### On-Chain upgrade builds
+#### On-Chain upgrade builds
 
 Build the wasm runtime with:
 ```bash
 make wasm
 ```
 
-## Update
+### Update
 
-### Update Cargo
+#### Update Cargo
 
 ```bash
 make update
 ```
 
-### Update ORML
+#### Update ORML
 
 ```bash
 cd lib-orml && git checkout master && git pull
@@ -213,7 +197,7 @@ git add lib-orml
 cargo update check-all
 ```
 
-### Update Predeploy-Contracts
+#### Update Predeploy-Contracts
 
 ```bash
 cd lib-serml/sevm/predeploy-contracts && git checkout master && git pull
@@ -221,7 +205,7 @@ git add predeploy-contracts
 cargo update check-all
 ```
 
-### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
+#### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
 
 ```bash
 make generate-tokens
@@ -229,25 +213,25 @@ make generate-tokens
 
 __Note:__ All build commands with `SKIP_WASM_BUILD` are designed for local development purposes and hence have the `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.
 
-## Bench Bot
+### Bench Bot
 
 Bench bot can take care of syncing branch with `master` and generating WeightInfos for module or runtime.
 
-### Generate Module weights
+#### Generate Module weights
 
-#### Generate Weights on Git with PR
+##### Generate Weights on Git with PR
 
 Comment on a PR `/bench runtime module <setheum_module_name>` i.e.: `serp_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
 
-#### Generate Runtime Module Weights Locally
+##### Generate Runtime Module Weights Locally
 
 ```bash
 make benchmark
 ```
 
-### Fork setheum-chain
+#### Fork setheum-chain
 
 You can create a fork of a live chain (testnet / mainnet) for development purposes.
 
