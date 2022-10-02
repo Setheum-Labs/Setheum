@@ -683,29 +683,29 @@ parameter_types! {
 	pub const AuctionDurationSoftCap: BlockNumber = 2 * HOURS;
 }
 
-impl auction_manager::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type Auction = Auction;
-	type MinimumIncrementSize = MinimumIncrementSize;
-	type AuctionTimeToClose = AuctionTimeToClose;
-	type AuctionDurationSoftCap = AuctionDurationSoftCap;
-	type GetSetUSDId = GetSetUSDId;
-	type CDPTreasury = CdpTreasury;
-	type DEX = Dex;
-	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
-	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
-	type EmergencyShutdown = EmergencyShutdown;
-	type WeightInfo = weights::module_auction_manager::WeightInfo<Runtime>;
-}
+// impl auction_manager::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Currencies;
+// 	type Auction = Auction;
+// 	type MinimumIncrementSize = MinimumIncrementSize;
+// 	type AuctionTimeToClose = AuctionTimeToClose;
+// 	type AuctionDurationSoftCap = AuctionDurationSoftCap;
+// 	type GetSetUSDId = GetSetUSDId;
+// 	type CDPTreasury = CdpTreasury;
+// 	type DEX = Dex;
+// 	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
+// 	type UnsignedPriority = runtime_common::AuctionManagerUnsignedPriority;
+// 	type EmergencyShutdown = EmergencyShutdown;
+// 	type WeightInfo = weights::module_auction_manager::WeightInfo<Runtime>;
+// }
 
-impl module_loans::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type RiskManager = CdpEngine;
-	type CDPTreasury = CdpTreasury;
-	type PalletId = LoansPalletId;
-}
+// impl module_loans::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Currencies;
+// 	type RiskManager = CdpEngine;
+// 	type CDPTreasury = CdpTreasury;
+// 	type PalletId = LoansPalletId;
+// }
 
 impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
 where
@@ -784,46 +784,46 @@ parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(15, 100);
 }
 
-impl cdp_engine::Config for Runtime {
-	type Event = Event;
-	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
-	type CollateralCurrencyIds = CollateralCurrencyIds;
-	type DefaultLiquidationRatio = DefaultLiquidationRatio;
-	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
-	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
-	type MinimumDebitValue = MinimumDebitValue;
-	type GetSetUSDId = GetSetUSDId;
-	type CDPTreasury = CdpTreasury;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
-	type EmergencyShutdown = EmergencyShutdown;
-	type Currency = Currencies;
-	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
-	type DEX = Dex;
-	type WeightInfo = weights::module_cdp_engine::WeightInfo<Runtime>;
-}
+// impl cdp_engine::Config for Runtime {
+// 	type Event = Event;
+// 	type PriceSource = module_prices::PriorityLockedPriceProvider<Runtime>;
+// 	type CollateralCurrencyIds = CollateralCurrencyIds;
+// 	type DefaultLiquidationRatio = DefaultLiquidationRatio;
+// 	type DefaultDebitExchangeRate = DefaultDebitExchangeRate;
+// 	type DefaultLiquidationPenalty = DefaultLiquidationPenalty;
+// 	type MinimumDebitValue = MinimumDebitValue;
+// 	type GetSetUSDId = GetSetUSDId;
+// 	type CDPTreasury = CdpTreasury;
+// 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+// 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+// 	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
+// 	type EmergencyShutdown = EmergencyShutdown;
+// 	type Currency = Currencies;
+// 	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
+// 	type DEX = Dex;
+// 	type WeightInfo = weights::module_cdp_engine::WeightInfo<Runtime>;
+// }
 
 parameter_types! {
 	pub DepositPerAuthorization: Balance = deposit(1, 64);
 }
 
-impl serp_setmint::Config for Runtime {
-	type Event = Event;
-	type Currency = Balances;
-	type DepositPerAuthorization = DepositPerAuthorization;
-	type WeightInfo = weights::serp_setmint::WeightInfo<Runtime>;
-}
+// impl serp_setmint::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Balances;
+// 	type DepositPerAuthorization = DepositPerAuthorization;
+// 	type WeightInfo = weights::serp_setmint::WeightInfo<Runtime>;
+// }
 
-impl emergency_shutdown::Config for Runtime {
-	type Event = Event;
-	type CollateralCurrencyIds = CollateralCurrencyIds;
-	type PriceSource = Prices;
-	type CDPTreasury = CdpTreasury;
-	type AuctionManagerHandler = AuctionManager;
-	type ShutdownOrigin = EnsureRootOrHalfShuraCouncil;
-	type WeightInfo = weights::emergency_shutdown::WeightInfo<Runtime>;
-}
+// impl emergency_shutdown::Config for Runtime {
+// 	type Event = Event;
+// 	type CollateralCurrencyIds = CollateralCurrencyIds;
+// 	type PriceSource = Prices;
+// 	type CDPTreasury = CdpTreasury;
+// 	type AuctionManagerHandler = AuctionManager;
+// 	type ShutdownOrigin = EnsureRootOrHalfShuraCouncil;
+// 	type WeightInfo = weights::emergency_shutdown::WeightInfo<Runtime>;
+// }
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (3, 1000);	// 0.3%
@@ -842,18 +842,18 @@ parameter_types! {
 	];
 }
 
-impl module_dex::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type GetExchangeFee = GetExchangeFee;
-	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
-	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
-	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
-	type WeightInfo = weights::module_dex::WeightInfo<Runtime>;
-	type ListingOrigin = EnsureRootOrHalfFinancialCouncil;
-}
+// impl module_dex::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Currencies;
+// 	type StableCurrencyIds = StableCurrencyIds;
+// 	type GetExchangeFee = GetExchangeFee;
+// 	type GetStableCurrencyExchangeFee = GetStableCurrencyExchangeFee;
+// 	type TradingPathLimit = TradingPathLimit;
+// 	type PalletId = DEXPalletId;
+// 	type CurrencyIdMapping = EvmCurrencyIdMapping<Runtime>;
+// 	type WeightInfo = weights::module_dex::WeightInfo<Runtime>;
+// 	type ListingOrigin = EnsureRootOrHalfFinancialCouncil;
+// }
 
 // parameter_types! {
 // 	pub const MaxAirdropListSize: usize = 250;
@@ -877,49 +877,49 @@ parameter_types! {
 	pub SetDollarMaximumClaimableTransferAmounts: Balance = 100_000 * dollar(SETUSD);
 }
 
-impl serp_treasury::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type StableCurrencyIds = StableCurrencyIds;
-	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
-	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
-	type GetNativeCurrencyId = GetNativeCurrencyId;
-	type GetSerpCurrencyId = GetSerpCurrencyId;
-	type GetDinarCurrencyId = GetDinarCurrencyId;
-	type GetHelpCurrencyId = GetHelpCurrencyId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type GetSetUSDId = GetSetUSDId;
-	type CDPTreasuryAccountId = CDPTreasuryAccount;
-	type Dex = Dex;
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
-	type PriceSource = module_prices::RealTimePriceProvider<Runtime>;
-	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
-	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
-	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
-	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
-	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type PalletId = SerpTreasuryPalletId;
-	type WeightInfo = ();
-}
+// impl serp_treasury::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Currencies;
+// 	type StableCurrencyIds = StableCurrencyIds;
+// 	type StableCurrencyInflationPeriod = StableCurrencyInflationPeriod;
+// 	type GetStableCurrencyMinimumSupply = GetStableCurrencyMinimumSupply;
+// 	type GetNativeCurrencyId = GetNativeCurrencyId;
+// 	type GetSerpCurrencyId = GetSerpCurrencyId;
+// 	type GetDinarCurrencyId = GetDinarCurrencyId;
+// 	type GetHelpCurrencyId = GetHelpCurrencyId;
+// 	type SetterCurrencyId = SetterCurrencyId;
+// 	type GetSetUSDId = GetSetUSDId;
+// 	type CDPTreasuryAccountId = CDPTreasuryAccount;
+// 	type Dex = Dex;
+// 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+// 	type PriceSource = module_prices::RealTimePriceProvider<Runtime>;
+// 	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
+// 	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
+// 	type SetterMaximumClaimableTransferAmounts = SetterMaximumClaimableTransferAmounts;
+// 	type SetDollarMinimumClaimableTransferAmounts = SetDollarMinimumClaimableTransferAmounts;
+// 	type SetDollarMaximumClaimableTransferAmounts = SetDollarMaximumClaimableTransferAmounts;
+// 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+// 	type PalletId = SerpTreasuryPalletId;
+// 	type WeightInfo = ();
+// }
 
 parameter_types! {
 	pub const MaxAuctionsCount: u32 = 100;
 }
 
-impl cdp_treasury::Config for Runtime {
-	type Event = Event;
-	type Currency = Currencies;
-	type GetSetUSDId = GetSetUSDId;
-	type AuctionManagerHandler = AuctionManager;
-	type DEX = Dex;
-	type MaxAuctionsCount = MaxAuctionsCount;
-	type PalletId = CDPTreasuryPalletId;
-	type SerpTreasury = SerpTreasury;
-	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
-	type WeightInfo = weights::module_cdp_treasury::WeightInfo<Runtime>;
-}
+// impl cdp_treasury::Config for Runtime {
+// 	type Event = Event;
+// 	type Currency = Currencies;
+// 	type GetSetUSDId = GetSetUSDId;
+// 	type AuctionManagerHandler = AuctionManager;
+// 	type DEX = Dex;
+// 	type MaxAuctionsCount = MaxAuctionsCount;
+// 	type PalletId = CDPTreasuryPalletId;
+// 	type SerpTreasury = SerpTreasury;
+// 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
+// 	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
+// 	type WeightInfo = weights::module_cdp_treasury::WeightInfo<Runtime>;
+// }
 
 parameter_types! {
 	// Sort by fee charge order
@@ -1030,8 +1030,8 @@ pub type ScheduleCallPrecompile = runtime_common::ScheduleCallPrecompile<
 	OriginCaller,
 	Runtime,
 >;
-pub type DexPrecompile =
-	runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, Dex>;
+// pub type DexPrecompile =
+// 	runtime_common::DexPrecompile<AccountId, EvmAddressMapping<Runtime>, EvmCurrencyIdMapping<Runtime>, Dex>;
 
 impl module_evm::Config for Runtime {
 	type AddressMapping = EvmAddressMapping<Runtime>;
@@ -1047,7 +1047,7 @@ impl module_evm::Config for Runtime {
 		StateRentPrecompile,
 		OraclePrecompile,
 		ScheduleCallPrecompile,
-		DexPrecompile,
+		// DexPrecompile,
 	>;
 	type ChainId = ChainId;
 	type GasToWeight = GasToWeight;
@@ -1494,13 +1494,13 @@ impl pallet_recovery::Config for Runtime {
 	type RecoveryDeposit = RecoveryDeposit;
 }
 
-impl orml_auction::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type AuctionId = AuctionId;
-	type Handler = AuctionManager;
-	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
-}
+// impl orml_auction::Config for Runtime {
+// 	type Event = Event;
+// 	type Balance = Balance;
+// 	type AuctionId = AuctionId;
+// 	type Handler = AuctionManager;
+// 	type WeightInfo = weights::orml_auction::WeightInfo<Runtime>;
+// }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
@@ -1524,14 +1524,14 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 3,
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 4,
 		Prices: module_prices::{Pallet, Storage, Call, Event<T>} = 5,
-		Dex: module_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 6,
+		// Dex: module_dex::{Pallet, Storage, Call, Event<T>, Config<T>} = 6,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 7,
 		Recovery: pallet_recovery::{Pallet, Call, Storage, Event<T>} = 8,
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 9,
 
 		// ORML Core
-		Auction: orml_auction::{Pallet, Storage, Call, Event<T>} = 10,
+		// Auction: orml_auction::{Pallet, Storage, Call, Event<T>} = 10,
 		OrmlNFT: orml_nft::{Pallet, Storage, Config<T>} = 11,
 
 		// Governance
@@ -1554,13 +1554,13 @@ construct_runtime!(
 		OperatorMembershipSetheum: pallet_membership::<Instance4>::{Pallet, Call, Storage, Event<T>, Config<T>} = 22,
 
 		// SERP
-		AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 23,
-		Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 24,
-		Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 25,
-		SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 26,
-		CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 27,
-		CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 28,
-		EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 29,
+		// AuctionManager: auction_manager::{Pallet, Storage, Call, Event<T>, ValidateUnsigned} = 23,
+		// Loans: module_loans::{Pallet, Storage, Call, Event<T>} = 24,
+		// Setmint: serp_setmint::{Pallet, Storage, Call, Event<T>} = 25,
+		// SerpTreasury: serp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 26,
+		// CdpTreasury: cdp_treasury::{Pallet, Storage, Call, Config, Event<T>} = 27,
+		// CdpEngine: cdp_engine::{Pallet, Storage, Call, Event<T>, Config, ValidateUnsigned} = 28,
+		// EmergencyShutdown: emergency_shutdown::{Pallet, Storage, Call, Event<T>} = 29,
 
 		// Treasury
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 30,
@@ -2002,14 +2002,14 @@ impl_runtime_apis! {
 
 			list_benchmark!(list, extra, module_nft, NftBench::<Runtime>);
 
-			orml_list_benchmark!(list, extra, module_dex, benchmarking::dex);
-			orml_list_benchmark!(list, extra, auction_manager, benchmarking::auction_manager);
-			orml_list_benchmark!(list, extra, cdp_engine, benchmarking::cdp_engine);
+			// orml_list_benchmark!(list, extra, module_dex, benchmarking::dex);
+			// orml_list_benchmark!(list, extra, auction_manager, benchmarking::auction_manager);
+			// orml_list_benchmark!(list, extra, cdp_engine, benchmarking::cdp_engine);
 			// orml_list_benchmark!(list, extra, emergency_shutdown, benchmarking::emergency_shutdown);
 			// orml_list_benchmark!(list, extra, module_evm, benchmarking::evm);
-			orml_list_benchmark!(list, extra, serp_setmint, benchmarking::serp_setmint);
-			orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
-			orml_list_benchmark!(list, extra, cdp_treasury, benchmarking::cdp_treasury);
+			// orml_list_benchmark!(list, extra, serp_setmint, benchmarking::serp_setmint);
+			// orml_list_benchmark!(list, extra, serp_treasury, benchmarking::serp_treasury);
+			// orml_list_benchmark!(list, extra, cdp_treasury, benchmarking::cdp_treasury);
 			orml_list_benchmark!(list, extra, module_transaction_pause, benchmarking::transaction_pause);
 			orml_list_benchmark!(list, extra, module_transaction_payment, benchmarking::transaction_payment);
 			orml_list_benchmark!(list, extra, module_prices, benchmarking::prices);
@@ -2060,14 +2060,14 @@ impl_runtime_apis! {
 			let params = (&config, &whitelist);
 
 			add_benchmark!(params, batches, module_nft, NftBench::<Runtime>);
-			orml_add_benchmark!(params, batches, module_dex, benchmarking::dex);
-			orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);
-			orml_add_benchmark!(params, batches, cdp_engine, benchmarking::cdp_engine);
+			// orml_add_benchmark!(params, batches, module_dex, benchmarking::dex);
+			// orml_add_benchmark!(params, batches, auction_manager, benchmarking::auction_manager);
+			// orml_add_benchmark!(params, batches, cdp_engine, benchmarking::cdp_engine);
 			// orml_add_benchmark!(params, batches, emergency_shutdown, benchmarking::emergency_shutdown);
 			// orml_add_benchmark!(params, batches, module_evm, benchmarking::evm);
-			orml_add_benchmark!(params, batches, serp_setmint, benchmarking::serp_setmint);
-			orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
-			orml_add_benchmark!(params, batches, cdp_treasury, benchmarking::cdp_treasury);
+			// orml_add_benchmark!(params, batches, serp_setmint, benchmarking::serp_setmint);
+			// orml_add_benchmark!(params, batches, serp_treasury, benchmarking::serp_treasury);
+			// orml_add_benchmark!(params, batches, cdp_treasury, benchmarking::cdp_treasury);
 			orml_add_benchmark!(params, batches, module_transaction_pause, benchmarking::transaction_pause);
 			orml_add_benchmark!(params, batches, module_transaction_payment, benchmarking::transaction_payment);
 			// orml_add_benchmark!(params, batches, dex_oracle, benchmarking::dex_oracle);
