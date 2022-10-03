@@ -1,3 +1,22 @@
+[submodule "lib-sepl/Calioce"]
+	path = lib-sepl/Calioce
+	url = https://github.com/Setheum-Labs/Calioce
+[submodule "lib-sepl/LiquidAir"]
+	path = lib-sepl/LiquidAir
+	url = https://github.com/Setheum-Labs/LiquidAir
+[submodule "lib-sepl/predeploy-contracts"]
+	path = lib-sepl/predeploy-contracts
+	url = https://github.com/Setheum-Labs/predeploy-contracts
+[submodule "lib-sepl/SIOTEE"]
+	path = lib-sepl/SIOTEE
+	url = https://github.com/Setheum-Labs/SIOTEE
+[submodule "lib-sepl/Slixon"]
+	path = lib-sepl/Slixon
+	url = https://github.com/Setheum-Labs/Slixon
+[submodule "lib-sepl/Zims"]
+	path = lib-sepl/Zims
+	url = https://github.com/Setheum-Labs/Zims
+
 [submodule "lib-orml"]
 	path = lib-orml
 	url = https://github.com/Slixon-Technologies/open-runtime-module-library

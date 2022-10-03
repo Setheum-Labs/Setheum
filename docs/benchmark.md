@@ -20,7 +20,7 @@
     --output=./lib-serml/{dir/module-inner-directory}/src/weights/
 ```
 
-for example, this is the command for generating the `serp_treasury` module weights:
+for example, this is the command for generating the `airdrop` module weights:
 
 ```bash
     cargo run --release --features=runtime-benchmarks \
@@ -29,13 +29,13 @@ for example, this is the command for generating the `serp_treasury` module weigh
     --chain=dev \
     --steps=50 \
     --repeat=20 \
-    '--pallet=serp_treasury' \
+    '--pallet=airdrop' \
     '--extrinsic=*' \
     --execution=wasm \
     --wasm-execution=compiled \
     --heap-pages=4096 \
     --template=./templates/runtime-weight-template.hbs \
-    --output=./lib-serml/defi/serp_treasury/src/weights/
+    --output=./lib-serml/airdrop/src/weights/
 ```
 
 ### Runtime Module weights
@@ -53,7 +53,7 @@ Or for a specific module:
     --chain=dev \
     --steps=50 \
     --repeat=20 \
-    '--pallet=serp_treasury' \
+    '--pallet=airdrop' \
     '--extrinsic=*' \
     --execution=wasm \
     --wasm-execution=compiled \
