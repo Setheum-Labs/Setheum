@@ -20,3 +20,6 @@
 [submodule "lib-orml"]
 	path = lib-orml
 	url = https://github.com/Slixon-Technologies/open-runtime-module-library
+[submodule "lib-sepl/HS3"]
+	path = lib-sepl/HS3
+	url = https://github.com/Setheum-Labs/HS3
