@@ -1,3 +1,5 @@
+بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge
