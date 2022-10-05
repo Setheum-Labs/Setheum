@@ -2,13 +2,13 @@
 
 # LiquidAir - Powering DeFi Liquid Derivatives.
 
-⚠️WIP - Work In Progress, Not Production Ready!
+⚠️WIP - This is Work In Progress!
 
 LiquidAir is Setheum's Super Protocol for One-Stop Cross-Chain Liquid Derivatives.
 
 ## Liquid Derivatives:
 
-### LiquidAirables - LA-Tokens: These are Liquidity tokens issued when `ground_liquidity` is deposited in LiquidAir as ZIMS colateral or Slixon liquidity.
+### LiquidAirables - LA-Tokens: These are Liquidity tokens issued when `ground_liquidity` is deposited in LiquidAir as ZIMS colateral or LiquidAir liquidity.
 ```
 LA_LAIR("LiquidAirable LAIR", 18),
 LA_SET("LiquidAirable SET", 18),
@@ -31,7 +31,7 @@ LA_ASTR("LiquidAirable ASTR", 18),
 ```
 
 ## Supported Protocols:
-- DEX - LiquidSlixon: Liquidity derived from Slixon LP-Tokens.
+- DEX - LiquidLiquidAir: Liquidity derived from LiquidAir LP-Tokens.
 - DeFi Loans - LiquidZIMS: Liquid Collaterals in ZIMS.
 - Staking - LiquidSET: Liquid Staking for SET.
 
