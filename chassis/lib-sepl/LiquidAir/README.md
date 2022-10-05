@@ -31,21 +31,29 @@ LA_ASTR("LiquidAirable ASTR", 18),
 ```
 
 ## Supported Protocols:
-- DEX - LiquidSlixon: Liquidity derived from Slixon LP-Tokens.
+- Staking - LiquidStaking: Liquid Staking for SET.
+- Bridging - LiquidSial: Liquidity deployed on SialBridge.
+- DEX - LiquidSlixon: Liquidity deployed on Slixon.
 - DeFi Loans - LiquidZIMS: Liquid Collaterals in ZIMS.
-- Staking - LiquidSET: Liquid Staking for SET.
 
-## Compatible Chains/Tokens - Cross-Chain:
-- Bitcoin BTC
-- Ethereum ETH
-- Polygon MATIC
-- Binance Smart Chain BNB
-- Avalanche AVAX
-- Polkadot DOT
-- Kusama KSM
-- Solana SOL
-- Moonbeam GLMR
-- Astar ASTR
+## Proposed Chains - Cross-Chain (A-Z):
+- ** {Setheum} **
+- Arbitrum
+- Astar
+- Avalanche
+- Bitcoin
+- BNB Chain
+- Ethereum
+- Fantom
+- Kusama
+- Moonbeam
+- Moonriver
+- Oasis
+- Optimism
+- Polkadot
+- Polygon
+- Solana
+- Tron
 
 ## LICENSE
 The primary license for LiquidAir is the Business Source License 1.1 (BUSL-1.1), see [LICENSE](https://github.com/Setheum-Labs/LiquidAir/blob/main/LICENSE.md).
