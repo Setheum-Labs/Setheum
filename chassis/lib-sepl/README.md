@@ -8,10 +8,10 @@ The projects in this library have different licenses which can be found in their
 
 ### The License Types
 
-1. [Apache-2.0](../LICENSES/Apache-2.0.md)
-2. [BUSL-1.1](../LICENSES/BUSL-1.1.md)
-3. [GPL3](../LICENSES/GPL3.md)
-4. [MIT](../LICENSES/MIT.md)
+1. [Apache-2.0](../../LICENSES/Apache-2.0.md)
+2. [BUSL-1.1](../../LICENSES/BUSL-1.1.md)
+3. [GPL3](../../LICENSES/GPL3.md)
+4. [MIT](../../LICENSES/MIT.md)
 
 ### The Projects
 
