@@ -1,12 +1,12 @@
+[submodule "chassis/lib-orml"]
+	path = chassis/lib-orml
+	url = https://github.com/Slixon-Technologies/open-runtime-module-library
 [submodule "chassis/lib-sepl/Calioce"]
 	path = chassis/lib-sepl/Calioce
 	url = https://github.com/Setheum-Labs/Calioce
 [submodule "chassis/lib-sepl/LiquidAir"]
 	path = chassis/lib-sepl/LiquidAir
 	url = https://github.com/Setheum-Labs/LiquidAir
-[submodule "chassis/lib-sepl/predeploy-contracts"]
-	path = chassis/lib-sepl/predeploy-contracts
-	url = https://github.com/Setheum-Labs/predeploy-contracts
 [submodule "chassis/lib-sepl/Shamce"]
 	path = chassis/lib-sepl/Shamce
 	url = https://github.com/Setheum-Labs/Shamce
@@ -14,14 +14,11 @@
 	path = chassis/lib-sepl/Sial
 	url = https://github.com/Setheum-Labs/Sial
 [submodule "chassis/lib-sepl/Siotee"]
-	path = chassis/chassis/lib-sepl/Siotee
+	path = chassis/lib-sepl/Siotee
 	url = https://github.com/Setheum-Labs/Siotee
 [submodule "chassis/lib-sepl/Slixon"]
 	path = chassis/lib-sepl/Slixon
 	url = https://github.com/Setheum-Labs/Slixon
-[submodule "chassis/lib-sepl/Zims"]
-	path = chassis/lib-sepl/Zims
-	url = https://github.com/Setheum-Labs/Zims
-[submodule "chassis/lib-orml"]
-	path = chassis/lib-orml
-	url = https://github.com/Slixon-Technologies/open-runtime-module-library
+[submodule "chassis/predeploy-contracts"]
+	path = chassis/predeploy-contracts
+	url = https://github.com/Setheum-Labs/predeploy-contracts

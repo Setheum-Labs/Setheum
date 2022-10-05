@@ -22,7 +22,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./chassis/lib-serml/dex/src/weights.rs
+// --output=./lib-serml/dex/src/weights.rs
 // --template=../../module-weight-template.hbs
 
 #![cfg_attr(rustfmt, rustfmt_skip)]

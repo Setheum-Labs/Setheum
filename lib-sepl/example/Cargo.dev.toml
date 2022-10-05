@@ -2,12 +2,9 @@ cargo-features = ["resolver"]
 
 [workspace]
 members = [
-	"auction-manager",
-	"cdp-engine",
-	"cdp-treasury",
-	"emergency-shutdown",
-	"loans",
-	"setmint-core",
+	"example",
+	"example",
+	"example",
 ]
 resolver = "2"
 
