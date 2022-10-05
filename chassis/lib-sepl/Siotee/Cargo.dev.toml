@@ -1,0 +1,12 @@
+cargo-features = ["resolver"]
+
+[workspace]
+members = [
+	"example",
+	"example",
+	"example",
+]
+resolver = "2"
+
+[profile.dev]
+split-debuginfo = "unpacked"

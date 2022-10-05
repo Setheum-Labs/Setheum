@@ -1,0 +1,15 @@
+cargo-features = ["resolver"]
+
+[workspace]
+members = [
+	"auction-manager",
+	"cdp-engine",
+	"cdp-treasury",
+	"emergency-shutdown",
+	"loans",
+	"setmint-core",
+]
+resolver = "2"
+
+[profile.dev]
+split-debuginfo = "unpacked"

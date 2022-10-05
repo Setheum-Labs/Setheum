@@ -81,42 +81,42 @@ pallet-identity = { git = "https://github.com/paritytech/substrate", default-fea
 
 # local dependencies
 
-orml-auction = { path = "../lib-orml/auction", default-features = false }
-orml-authority = { path = "../lib-orml/authority", default-features = false }
-orml-benchmarking = { path = "../lib-orml/benchmarking", default-features = false, optional = true }
-orml-oracle = { path = "../lib-orml/oracle", default-features = false }
-orml-oracle-rpc-runtime-api = { path = "../lib-orml/oracle/rpc/runtime-api", default-features = false }
-orml-tokens = { path = "../lib-orml/tokens", default-features = false }
-orml-traits = { path = "../lib-orml/traits", default-features = false }
-orml-nft= { path = "../lib-orml/nft", default-features = false }
+orml-auction = { path = "../chassis/lib-orml/auction", default-features = false }
+orml-authority = { path = "../chassis/lib-orml/authority", default-features = false }
+orml-benchmarking = { path = "../chassis/lib-orml/benchmarking", default-features = false, optional = true }
+orml-oracle = { path = "../chassis/lib-orml/oracle", default-features = false }
+orml-oracle-rpc-runtime-api = { path = "../chassis/lib-orml/oracle/rpc/runtime-api", default-features = false }
+orml-tokens = { path = "../chassis/lib-orml/tokens", default-features = false }
+orml-traits = { path = "../chassis/lib-orml/traits", default-features = false }
+orml-nft= { path = "../chassis/lib-orml/nft", default-features = false }
 
-module-transaction-pause = { path = "../lib-serml/transaction-pause", default-features = false }
-module-transaction-payment = { path = "../lib-serml/transaction-payment", default-features = false }
-module-airdrop = { path = "../lib-serml/airdrop", default-features = false }
+module-transaction-pause = { path = "../chassis/lib-serml/transaction-pause", default-features = false }
+module-transaction-payment = { path = "../chassis/lib-serml/transaction-payment", default-features = false }
+module-airdrop = { path = "../chassis/lib-serml/airdrop", default-features = false }
 
-# auction-manager = { path = "../lib-serml/defi/setmint/auction-manager", default-features = false }
-# cdp-engine = { path = "../lib-serml/defi/setmint/cdp-engine", default-features = false }
-# cdp-treasury = { path = "../lib-serml/defi/setmint/cdp-treasury", default-features = false }
-# module-dex = { path = "../lib-serml/defi/setswap/dex", default-features = false }
-# emergency-shutdown = { path = "../lib-serml/defi/setmint/emergency-shutdown", default-features = false }
+# auction-manager = { path = "../chassis/lib-serml/defi/setmint/auction-manager", default-features = false }
+# cdp-engine = { path = "../chassis/lib-serml/defi/setmint/cdp-engine", default-features = false }
+# cdp-treasury = { path = "../chassis/lib-serml/defi/setmint/cdp-treasury", default-features = false }
+# module-dex = { path = "../chassis/lib-serml/defi/setswap/dex", default-features = false }
+# emergency-shutdown = { path = "../chassis/lib-serml/defi/setmint/emergency-shutdown", default-features = false }
 
-module-currencies = { path = "../lib-serml/currencies", default-features = false }
-dex-oracle = { path = "../lib-serml/dex-oracle", default-features = false }
-module-evm = { path = "../lib-serml//evm", default-features = false }
-module-evm-accounts = { path = "../lib-serml//evm-accounts", default-features = false }
-module-evm-bridge = { path = "../lib-serml//evm-bridge", default-features = false }
-module-evm-rpc-runtime-api = { path = "../lib-serml//evm/rpc/runtime_api",  default-features = false }
-module-evm-manager = { path = "../lib-serml//evm-manager", default-features = false }
+module-currencies = { path = "../chassis/lib-serml/currencies", default-features = false }
+dex-oracle = { path = "../chassis/lib-serml/dex-oracle", default-features = false }
+module-evm = { path = "../chassis/lib-serml//evm", default-features = false }
+module-evm-accounts = { path = "../chassis/lib-serml//evm-accounts", default-features = false }
+module-evm-bridge = { path = "../chassis/lib-serml//evm-bridge", default-features = false }
+module-evm-rpc-runtime-api = { path = "../chassis/lib-serml//evm/rpc/runtime_api",  default-features = false }
+module-evm-manager = { path = "../chassis/lib-serml//evm-manager", default-features = false }
 
-# serp-treasury = { path = "../lib-serml/defi/serp", default-features = false }
-# serp-setmint = { path = "../lib-serml/defi/setmint/setmint-core", default-features = false }
-# module-loans = { path = "../lib-serml/defi/setmint/loans", default-features = false }
+# serp-treasury = { path = "../chassis/lib-serml/defi/serp", default-features = false }
+# serp-setmint = { path = "../chassis/lib-serml/defi/setmint/setmint-core", default-features = false }
+# module-loans = { path = "../chassis/lib-serml/defi/setmint/loans", default-features = false }
 
-module-nft = { path = "../lib-serml/nft", default-features = false }
-module-prices = { path = "../lib-serml/prices", default-features = false }
+module-nft = { path = "../chassis/lib-serml/nft", default-features = false }
+module-prices = { path = "../chassis/lib-serml/prices", default-features = false }
 
-module-support = { path = "../lib-serml/support", default-features = false }
-module-vesting = { path = "../lib-serml/vesting", default-features = false }
+module-support = { path = "../chassis/lib-serml/support", default-features = false }
+module-vesting = { path = "../chassis/lib-serml/vesting", default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
 runtime-common = { path = "common", default-features = false }
