@@ -2,9 +2,9 @@ cargo-features = ["resolver"]
 
 [workspace]
 members = [
-	"liquid-set",
-	"liquid-slixon",
-	"liquid-zims",
+	"example",
+	"example",
+	"example",
 ]
 resolver = "2"
 
