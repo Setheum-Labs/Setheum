@@ -25,5 +25,24 @@ SIAL is Setheum's Layer-2 blockchain Cross-Chain Interoperability protocol for c
 - Stablecoins;
 - ... Anything cross-chain under the sun?!;
 
+## Proposed Chain Bridges - Cross-Chain (A-Z):
+- ** {Setheum} **
+- Arbitrum
+- Astar
+- Avalanche
+- Bitcoin
+- BNB Chain
+- Ethereum
+- Fantom
+- Kusama
+- Moonbeam
+- Moonriver
+- Oasis
+- Optimism
+- Polkadot
+- Polygon
+- Solana
+- Tron
+
 ## LICENSE
 The primary license for Sial is the GPL3, see [LICENSE](https://github.com/Setheum-Labs/Sial/blob/main/LICENSE.md).
