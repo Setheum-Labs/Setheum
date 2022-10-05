@@ -1,9 +1,6 @@
 [submodule "lib-sepl/Calioce"]
 	path = lib-sepl/Calioce
 	url = https://github.com/Setheum-Labs/Calioce
-[submodule "lib-sepl/HS3"]
-	path = lib-sepl/HS3
-	url = https://github.com/Setheum-Labs/HS3
 [submodule "lib-sepl/LiquidAir"]
 	path = lib-sepl/LiquidAir
 	url = https://github.com/Setheum-Labs/LiquidAir
@@ -13,6 +10,9 @@
 [submodule "lib-sepl/Shamce"]
 	path = lib-sepl/Shamce
 	url = https://github.com/Setheum-Labs/Shamce
+[submodule "lib-sepl/Sial"]
+	path = lib-sepl/Sial
+	url = https://github.com/Setheum-Labs/Sial
 [submodule "lib-sepl/Siotee"]
 	path = lib-sepl/Siotee
 	url = https://github.com/Setheum-Labs/Siotee
@@ -22,7 +22,6 @@
 [submodule "lib-sepl/Zims"]
 	path = lib-sepl/Zims
 	url = https://github.com/Setheum-Labs/Zims
-
 [submodule "lib-orml"]
 	path = lib-orml
 	url = https://github.com/Slixon-Technologies/open-runtime-module-library
