@@ -10,9 +10,12 @@
 [submodule "lib-sepl/predeploy-contracts"]
 	path = lib-sepl/predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts
-[submodule "lib-sepl/SIOTEE"]
-	path = lib-sepl/SIOTEE
-	url = https://github.com/Setheum-Labs/SIOTEE
+[submodule "lib-sepl/Shamce"]
+	path = lib-sepl/Shamce
+	url = https://github.com/Setheum-Labs/Shamce
+[submodule "lib-sepl/Siotee"]
+	path = lib-sepl/Siotee
+	url = https://github.com/Setheum-Labs/Siotee
 [submodule "lib-sepl/Slixon"]
 	path = lib-sepl/Slixon
 	url = https://github.com/Setheum-Labs/Slixon
