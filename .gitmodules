@@ -22,3 +22,6 @@
 [submodule "chassis/predeploy-contracts"]
 	path = chassis/predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts
+[submodule "chassis/lib-sepl/Zims"]
+	path = chassis/lib-sepl/Zims
+	url = https://github.com/Setheum-Labs/Zims
