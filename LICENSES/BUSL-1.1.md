@@ -11,11 +11,10 @@ Parameters
 
 Licensor:             Setheum Labs
 
-Licensed Works:        HS3 Protocol, LiquidAir Protocol, Slixon Protocol, ZIMS Protocol
+Licensed Works:       LiquidAir Protocol, Slixon Protocol, ZIMS Protocol
                       The Licensed Works are (c) 2019-Present Setheum Labs
 
 Additional Use Grant: Any uses listed and defined at:
-- [https://github.com/Setheum-Labs/HS3/blob/main/BSL-ADDITIONAL-USE-GRANT.md](https://github.com/Setheum-Labs/HS3/blob/main/BSL-ADDITIONAL-USE-GRANT.md)
 - [https://github.com/Setheum-Labs/LiquidAir/blob/main/BSL-ADDITIONAL-USE-GRANT.md](https://github.com/Setheum-Labs/LiquidAir/blob/main/BSL-ADDITIONAL-USE-GRANT.md)
 - [https://github.com/Setheum-Labs/Slixon/blob/main/BSL-ADDITIONAL-USE-GRANT.md](https://github.com/Setheum-Labs/Slixon/blob/main/BSL-ADDITIONAL-USE-GRANT.md)
 - [https://github.com/Setheum-Labs/Zims/blob/main/BSL-ADDITIONAL-USE-GRANT.md](https://github.com/Setheum-Labs/Zims/blob/main/BSL-ADDITIONAL-USE-GRANT.md)
