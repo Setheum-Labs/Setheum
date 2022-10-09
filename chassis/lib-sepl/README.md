@@ -18,7 +18,7 @@ The projects in this library have different licenses which can be found in their
 - [Calioce License](https://github.com/Setheum-Labs/Calioce/blob/main/LICENSE.md)
 - [LiquidAir License](https://github.com/Setheum-Labs/LiquidAir/blob/main/LICENSE.md)
 - [predeploy-contracts License](https://github.com/Setheum-Labs/predeploy-contracts/blob/master/LICENSE.md)
-- [Shamce License](https://github.com/Setheum-Labs/Shamce/blob/main/LICENSE.md)
+- [Stance License](https://github.com/Setheum-Labs/Stance/blob/main/LICENSE.md)
 - [Sial License](https://github.com/Setheum-Labs/Sial/blob/main/LICENSE.md)
 - [Siotee License](https://github.com/Setheum-Labs/Siotee/blob/main/LICENSE.md)
 - [Slixon License](https://github.com/Setheum-Labs/Slixon/blob/main/LICENSE.md)
