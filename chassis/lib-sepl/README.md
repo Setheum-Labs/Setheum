@@ -20,6 +20,5 @@ The projects in this library have different licenses which can be found in their
 - [predeploy-contracts License](https://github.com/Setheum-Labs/predeploy-contracts/blob/master/LICENSE.md)
 - [Stance License](https://github.com/Setheum-Labs/Stance/blob/main/LICENSE.md)
 - [Sial License](https://github.com/Setheum-Labs/Sial/blob/main/LICENSE.md)
-- [Siotee License](https://github.com/Setheum-Labs/Siotee/blob/main/LICENSE.md)
 - [Slixon License](https://github.com/Setheum-Labs/Slixon/blob/main/LICENSE.md)
 - [Zims License](https://github.com/Setheum-Labs/Zims/blob/main/LICENSE.md)
