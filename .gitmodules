@@ -10,9 +10,6 @@
 [submodule "chassis/lib-sepl/Sial"]
 	path = chassis/lib-sepl/Sial
 	url = https://github.com/Setheum-Labs/Sial
-[submodule "chassis/lib-sepl/Siotee"]
-	path = chassis/lib-sepl/Siotee
-	url = https://github.com/Setheum-Labs/Siotee
 [submodule "chassis/lib-sepl/Slixon"]
 	path = chassis/lib-sepl/Slixon
 	url = https://github.com/Setheum-Labs/Slixon
