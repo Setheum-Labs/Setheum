@@ -5,6 +5,10 @@ toolchain:
 .PHONY: init
 init:
 	make toolchain
+	make submodule
+
+.PHONY: submodule
+submodule:
 	git submodule update --init --recursive
 
 .PHONY: release

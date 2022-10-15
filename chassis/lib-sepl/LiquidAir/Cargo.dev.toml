@@ -1,0 +1,12 @@
+cargo-features = ["resolver"]
+
+[workspace]
+members = [
+	"liquid-set",
+	"liquid-slixon",
+	"liquid-zims",
+]
+resolver = "2"
+
+[profile.dev]
+split-debuginfo = "unpacked"

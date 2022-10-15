@@ -1,22 +1,24 @@
-[submodule "lib-sepl/Calioce"]
-	path = lib-sepl/Calioce
-	url = https://github.com/Setheum-Labs/Calioce
-[submodule "lib-sepl/LiquidAir"]
-	path = lib-sepl/LiquidAir
-	url = https://github.com/Setheum-Labs/LiquidAir
-[submodule "lib-sepl/predeploy-contracts"]
-	path = lib-sepl/predeploy-contracts
-	url = https://github.com/Setheum-Labs/predeploy-contracts
-[submodule "lib-sepl/SIOTEE"]
-	path = lib-sepl/SIOTEE
-	url = https://github.com/Setheum-Labs/SIOTEE
-[submodule "lib-sepl/Slixon"]
-	path = lib-sepl/Slixon
-	url = https://github.com/Setheum-Labs/Slixon
-[submodule "lib-sepl/Zims"]
-	path = lib-sepl/Zims
-	url = https://github.com/Setheum-Labs/Zims
-
-[submodule "lib-orml"]
-	path = lib-orml
+[submodule "chassis/lib-orml"]
+	path = chassis/lib-orml
 	url = https://github.com/Slixon-Technologies/open-runtime-module-library
+[submodule "chassis/lib-sepl/Calioce"]
+	path = chassis/lib-sepl/Calioce
+	url = https://github.com/Setheum-Labs/Calioce
+[submodule "chassis/lib-sepl/LiquidAir"]
+	path = chassis/lib-sepl/LiquidAir
+	url = https://github.com/Setheum-Labs/LiquidAir
+[submodule "chassis/lib-sepl/Sial"]
+	path = chassis/lib-sepl/Sial
+	url = https://github.com/Setheum-Labs/Sial
+[submodule "chassis/lib-sepl/Slixon"]
+	path = chassis/lib-sepl/Slixon
+	url = https://github.com/Setheum-Labs/Slixon
+[submodule "chassis/predeploy-contracts"]
+	path = chassis/predeploy-contracts
+	url = https://github.com/Setheum-Labs/predeploy-contracts
+[submodule "chassis/lib-sepl/Zims"]
+	path = chassis/lib-sepl/Zims
+	url = https://github.com/Setheum-Labs/Zims
+[submodule "chassis/lib-sepl/Stance"]
+	path = chassis/lib-sepl/Stance
+	url = https://github.com/Setheum-Labs/Stance
