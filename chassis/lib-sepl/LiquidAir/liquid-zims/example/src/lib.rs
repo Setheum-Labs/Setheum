@@ -2,7 +2,7 @@
 //
 // This file is part of LiquidAir.
 //
-// Copyright (C) 2019-2022 Setheum Labs.
+// Copyright (C) 2019-Present Setheum Labs.
 // SPDX-License-Identifier: BUSL-1.1 (Business Source License 1.1)
 
 //! # Example Module

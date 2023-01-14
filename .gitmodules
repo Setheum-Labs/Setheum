@@ -22,3 +22,6 @@
 [submodule "chassis/lib-sepl/Stance"]
 	path = chassis/lib-sepl/Stance
 	url = https://github.com/Setheum-Labs/Stance
+[submodule "chassis/lib-sepl/Stem"]
+	path = chassis/lib-sepl/Stem
+	url = https://github.com/Setheum-Labs/Stem
