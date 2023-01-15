@@ -1,6 +1,6 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Setheum (OUTDATED - So, Update!) - Powering Ethical Web3 Solutions
+# Setheum (OUTDATED - So, [Latest is Here>](https://github.com/Setheum-Labs/Setheum/tree/v0.9.81-dev)) - Powering Ethical Web3 Solutions
 
 
 Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Setheum SERML, ready for hacking :rocket:
