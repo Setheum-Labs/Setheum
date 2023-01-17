@@ -1,6 +1,21 @@
-[submodule "chassis/lib-orml"]
-	path = chassis/lib-orml
-	url = https://github.com/Slixon-Technologies/open-runtime-module-library
-[submodule "chassis/predeploy-contracts"]
-	path = chassis/predeploy-contracts
-	url = https://github.com/Setheum-Labs/predeploy-contracts
+[submodule "chassis/lib-sesl/predeploy-contracts"]
+	path = chassis/lib-sesl/predeploy-contracts
+	url = https://github.com/Setheum-Labs/predeploy-contracts.git
+[submodule "chassis/lib-sesl/Stem"]
+	path = chassis/lib-sesl/Stem
+	url = https://github.com/Setheum-Labs/Stem
+[submodule "chassis/lib-sesl/Sial"]
+	path = chassis/lib-sesl/Sial
+	url = https://github.com/Setheum-Labs/Sial
+[submodule "chassis/lib-sesl/khalifa-ecdp"]
+	path = chassis/lib-sesl/khalifa-ecdp
+	url = https://github.com/Khalifa-Blockchain/ECDP
+[submodule "chassis/lib-sesl/khalifa-dex"]
+	path = chassis/lib-sesl/khalifa-dex
+	url = https://github.com/Khalifa-Blockchain/DEX
+[submodule "chassis/lib-sesl/Dagestan"]
+	path = chassis/lib-sesl/Dagestan
+	url = https://github.com/Setheum-Labs/Dagestan
+[submodule "chassis/lib-sesl/khalifa-liquid"]
+	path = chassis/lib-sesl/khalifa-liquid
+	url = https://github.com/Khalifa-Blockchain/liquid

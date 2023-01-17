@@ -11,13 +11,7 @@ Parameters
 
 Licensor:             Setheum Labs
 
-Licensed Works:       LiquidAir Protocol, Slixon Protocol, ZIMS Protocol
-                      The Licensed Works are (c) 2019-Present Setheum Labs
-
-Additional Use Grant: Any uses listed and defined at:
-- [https://github.com/Setheum-Labs/LiquidAir/blob/main/BSL-ADDITIONAL-USE-GRANT.md](https://github.com/Setheum-Labs/LiquidAir/blob/main/BSL-ADDITIONAL-USE-GRANT.md)
-- [https://github.com/Setheum-Labs/Slixon/blob/main/BSL-ADDITIONAL-USE-GRANT.md](https://github.com/Setheum-Labs/Slixon/blob/main/BSL-ADDITIONAL-USE-GRANT.md)
-- [https://github.com/Setheum-Labs/Zims/blob/main/BSL-ADDITIONAL-USE-GRANT.md](https://github.com/Setheum-Labs/Zims/blob/main/BSL-ADDITIONAL-USE-GRANT.md)
+Licensed Works:
 
 Change Date:          December 31, 2025
 
