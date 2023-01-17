@@ -10,3 +10,6 @@
 [submodule "chassis/lib-sesl/khalifa-ecdp"]
 	path = chassis/lib-sesl/khalifa-ecdp
 	url = https://github.com/Khalifa-Blockchain/ECDP
+[submodule "chassis/lib-sesl/khalifa-liquid-staking"]
+	path = chassis/lib-sesl/khalifa-liquid-staking
+	url = https://github.com/Khalifa-Blockchain/liquid-staking
