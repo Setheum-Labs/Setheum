@@ -7,3 +7,6 @@
 [submodule "chassis/lib-sesl/Sial"]
 	path = chassis/lib-sesl/Sial
 	url = https://github.com/Setheum-Labs/Sial
+[submodule "chassis/lib-sesl/khalifa-ecdp"]
+	path = chassis/lib-sesl/khalifa-ecdp
+	url = https://github.com/Khalifa-Blockchain/ECDP
