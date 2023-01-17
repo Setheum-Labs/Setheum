@@ -24,7 +24,7 @@ sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 orml-tokens = { path = "../../chassis/lib-orml/tokens" }
 module-currencies = { path = "../../tokens/currencies" }
-module-dex = { path = "../../chassis/lib-sepl/Slixon/dex" }
+module-dex = { path = "../../chassis/lib-sesl/Slixon/dex" }
 smallvec = "1.4.1"
 
 [features]

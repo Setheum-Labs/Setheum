@@ -204,7 +204,7 @@ cargo update check-all
 #### Update Predeploy-Contracts
 
 ```bash
-cd lib-serml//predeploy-contracts && git checkout master && git pull
+cd chassis/lib-sesl/predeploy-contracts && git checkout master && git pull
 git add predeploy-contracts
 cargo update check-all
 ```
