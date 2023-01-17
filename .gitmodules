@@ -13,3 +13,6 @@
 [submodule "chassis/lib-sesl/khalifa-liquid-staking"]
 	path = chassis/lib-sesl/khalifa-liquid-staking
 	url = https://github.com/Khalifa-Blockchain/liquid-staking
+[submodule "chassis/lib-sesl/khalifa-dex"]
+	path = chassis/lib-sesl/khalifa-dex
+	url = https://github.com/Khalifa-Blockchain/DEX
