@@ -1,9 +1,3 @@
-[submodule "chassis/lib-sepl/dagestan"]
-	path = chassis/lib-sepl/dagestan
-	url = https://github.com/Setheum-Labs/Dagestan.git
-[submodule "chassis/lib-sepl/predeploy-contracts"]
-	path = chassis/lib-sepl/predeploy-contracts
+[submodule "chassis/lib-sesl/predeploy-contracts"]
+	path = chassis/lib-sesl/predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts.git
-[submodule "chassis/lib-sepl/Sial"]
-	path = chassis/lib-sepl/Sial
-	url = https://github.com/Setheum-Labs/Sial
