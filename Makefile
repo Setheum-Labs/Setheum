@@ -5,6 +5,10 @@ toolchain:
 .PHONY: init
 init:
 	make toolchain
+	make submodule
+
+.PHONY: submodule
+submodule:
 	git submodule update --init --recursive
 
 .PHONY: release
@@ -121,4 +125,4 @@ endif
 .PHONY: generate-tokens
 generate-tokens:
 	cargo test -p setheum-primitives -- --ignored
-	cd lib-serml/sevm/predeploy-contracts && yarn && yarn run generate-bytecode
+	cd lib-serml//predeploy-contracts && yarn && yarn run generate-bytecode

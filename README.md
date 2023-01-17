@@ -1,11 +1,12 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Setheum (OUTDATED - So, [Latest is Here>](https://github.com/Setheum-Labs/Setheum/tree/v0.9.81-dev)) - Powering Ethical Web3 Solutions <!-- omit in toc -->
+# Setheum (OUTDATED - So, Update!) - Powering Ethical Web3 Solutions
 
-<p align="center">
-  <img src="./SetheumLabel.jpg" style="width:1300px" />
-</p>
-
+* Decentralized
+* Ethical
+* Interoperable
+* Scalable
+* Secure
 
 Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Setheum SERML, ready for hacking :rocket:
 
@@ -22,56 +23,18 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 	
 </div>
 
-# Introduction
+## Introduction
 
-Setheum is founded and initiated and fascilitated by Muhammad-Jibril B.A. of Setheum Labs, Setheum Foundation and Slixon Technologies to steward and support the development and advancement of the Network, its ecosystem and its community to foster the development and adoption of decentralised finance by building and supporting cross-chain open finance infrastructure such as the SERP (Setheum Elastic Reserve Protocol) stablecoin system, the SetMint stablecoin minting system and Setheum's built-in payment system SetPay(CashDrops) that lets traders and transactors claim cashback (what we call CashDrop) on their transactions to speak of a few. 
+### SETHEUM means "Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market".
+
+Setheum is founded,  initiated and facilitated by Muhammad-Jibril B.A. of Setheum Labs, Slixon Technologies and Setheum Foundation to build, steward and support the development and advancement of Ethical Web3 with the Network, its ecosystem and its community to foster the development and adoption of ethical decentralised finance by  and Web3 in general by building and supporting interoperable Secure, Scalable and Decentralized Web3 Infrastructure.
 Setheum also deploys Advanced Incentivization mechanisms and economic models modeled under the Jurisdiction of Islamic Finance.
 
-### Founder/Developer:
-
-* [Muhammad-Jibril B.A.](https://github.com/JBA-Khalifa)
-
-## Core Products - Mostly Unique to Setheum
-
-### The Tokens - [Currencies](./primitives/src/currency.rs#:~:text=%7D-,create_currency_id!%20%7B,%7D,-pub%20trait%20TokenInfo)
-
-
-```bash
-    SETM("Setheum", 12) = 0,
-    USDI("InterUSD", 12) = 1,
-```
-
-1. [The Setter](./primitives/src/currency.rs#:~:text=SETR(%22Setter%22%2C%2012)%20%3D%203%2C) - The Setter is a stable currency pegged to the US dollar at a ratio of 1:10, where 1 SETR = $0.25 USD (25 cents or $1 USD = 4 SETRs).
-
-2. [The SERP](./lib-serml/defi/serp) - The SERP (Setheum Elastic Reserve Protocol) is algorithmically responsible for stabilizing the prices of the Setheum Stable Currencies. No human interferrance is needed for this, it's all algorithmically handled by the SERP. The SERP is the backbone of Setheum, it is based on my TES (Token Elasticity of Supply) algorithm based on PES (Price Elasticity of Supply) such that the demand curve or price of a currency determines the supply serping point, meaning the supply curve of a SetCurrency will be adjusted according to the demand curve of that specific SetCurrency. The result will be burning or minting an amount equivalent to the serping point produced by the SERP-TES, the burning amount will be bought back by the SERP automatically through the built-in-DEX and the bought amount will be burnt to meet the satisfaction of the demand curve to prop the price back up to its peg, the opposite is done to lower the price of an under-supplied currency that is on demand and above its peg on the demand curve, for this the mint amount is divided into receipients including the SetPayTreasury where CashDrops are deposited for users to claim, the System Treasury under Governance, the Charity Fund stewarded by the Setheum Foundation, and the WelfareTreasury, more on the Welfare Treasury below.
-
-	In The SERP and Setheum lingua, I coined these terms:
-	* serp: to increase or decrease the supply of a Setheum stable Currency at its serping point in the curve, on either the x or y axis, the negative or the positive.
-	* serpup: to increase the supply of a Setheum stablecurrency at its serping point.
-	* serpdown: to decrease the supply of a Setheum stablecurrency at its serping point.
-
-3. [The CashDrops](./lib-serml/core/tokens/currencies/src/lib.rs#:~:text=T%3A%3ASerpTreasury%3A%3Aclaim_cashdrop(currency_id%2C%20%26from%2C%20amount)%3F) - The CashDrops that are dispatched by the SERP to the claimants (transactors/transactions that claim cashdrops). Whoever transacts witha SetCurrency (Setheum Stable Currency), they can toggle on claim cashdrop to get a cashback of (2% for SETUSD and/or 4% for SETR) of the amount they transferred/sent, this amount is only cashdropped if the CashDropPool has enough funds to cover that amount. The funds in the CashDropPool are provided by the SERP through SerpUps and through Serp Stablecoin Inflation. these funds are then transferred by the system to the SERP'S CashDropPool for CashDrops ready to be claimed.
-
-4. [The EFE and EFFECTs](./lib-serml/defi/setswap/dex/src/lib.rs#:~:text=type%20GetStableCurrencyExchangeFee%3A%20Get%3C(u32%2C%20u32)%3E%3B) - The EFE is the ExchangeFeeEvaluator, it basically takes lower exchange fees than the normal rate on DEX for stablecurrency pools, and the difference between those two rates is settled by the EFE to the LPs in stable currencies, to be eligible for the EFE one of the two currencies in the LP pair must be a Setheum stablecurrency. Therefore, the traders of that pool pay less fees and the LPs get more income because these pairs will attract more traders and that will in turn attract more liquidity by the LPs.
-
-5. [The SEVM](./lib-serml/sevm) - The Setheum EVM is an Ethereum Virtual Machine (EVM) compatibility layer that implements the EVM on Setheum and bridges to Ethereum that opens the ground for interoperability between Ethereum and Setheum.
-The SEVM lets developers onboard, deploy or migrate their Ethereum Solidity Smart Contracts on Setheum seamlessly with little to no change in their code.
-The SetheumEVM has a beautiful library of developer tools that let developers deploy, manageand interact with their smart contracts and upgradable smart contracts on the S-EVM with popular and well documented tools like Truffle, MetaMask, et al.
-The Setters.JS is the Web3 Ethers.JS compatibility library for the Setheum EVM, to let users access the Setheum and the EVM both with a single wallet without having to use two separate wallets for compatibility.
-
-6. [The SetMint](./lib-serml/defi/setmint) - Inspired by MakerDAO Protocol, the CDP (Collateralized Debt Position) protocol on Ethereum. The Setheum CDP has zero interest rates, zero stability fees, and is fully halal and collateralized. This differentiates SetMint from any other CDP Protocol, making it by far the only halal loan protocol in the entire industry. And it is Multi-Collateral.
-Just reserve some collateral to mint some SETUSD, when returning the loan just return exactly what was loaned and unreserve the collateral with no fees and no interest.
-This lets the muslim world also participate in the industry and take part in trading and yield making strategies that are within their dome of principles, for me this is a gamechanger that I wished was there for me, therefore I am building it for people like me who need it but haven’t been given the chance to be pleased by it, and also non-muslims that want to break-free from the interest-based alternatives to a more efficient system based on truth, fairness and equality.
-
-6. [The HELP (HighEnd LaunchPad)](./lib-serml/defi/highend) - The Setheum Help LaunchPad is a crowdfunding protocol for teams & projects to raise soney and launch their tokens to the public and add their tokens to the Setheum DEX (SetSwap). It provides halal incentives to LPs to provide liquidity for token launches to bootstrap on the SetSwap and lets the teams/projects raise funds while getting help listing bootstrap pool on DEX. Governed by the` LaunchPadCouncil`
-
-For all the SERML (Setheum Runtime Module Library) modules Check the [lib-serml](./lib-serml)
-
-# Getting Started 
+## Getting Started 
 
 This project contains some configuration files to help get started :hammer_and_wrench:
 
-## Initialisation
+### Initialisation
 
 Clone this repository:
 
@@ -111,14 +74,14 @@ Install required tools and install git hooks:
 git submodule update --init --recursive
 ```
 
-### Start a development node
+#### Start a development node
 
 The `make run` command will launch a temporary node and its state will be discarded after you terminate the process.
 ```bash
 make run
 ```
 
-### Run a persistent single-node chain
+#### Run a persistent single-node chain
 
 Use the following command to build the node without launching it:
 
@@ -144,13 +107,13 @@ Start the development chain with detailed logging:
 RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum-node -lruntime=debug --dev
 ```
 
-### Run tests
+#### Run tests
 
 ```bash
 make test
 ```
 
-### Run benchmarks
+#### Run benchmarks
 
 Run runtime benchmark tests:
 ```bash
@@ -173,20 +136,20 @@ Run the module benchmarks and generate the weights file:
     --execution=wasm \
     --wasm-execution=compiled \
     --heap-pages=4096 \
-    --output=./lib-serml/currencies/src/weights.rs
+    --output=./chassis/lib-serml/currencies/src/weights.rs
 ```
 
-### Run in debugger
+#### Run in debugger
 
 ```bash
 make debug
 ```
 
-### Nodes
+#### Nodes
 
 For Docs on running nodes, check [./docs/nodes.md](./docs/nodes.md)
 
-### Embedded docs
+#### Embedded docs
 
 Once the project has been built, the following command can be used to explore all parameters and subcommands:
 
@@ -194,7 +157,7 @@ Once the project has been built, the following command can be used to explore al
 ./target/release/setheum-node -h
 ```
 
-### Release builds
+#### Release builds
 
 To list all available release builds run:
 ```bash
@@ -211,22 +174,22 @@ Then run this command to install appropriate compiler version and produce a bina
 make release
 ```
 
-### On-Chain upgrade builds
+#### On-Chain upgrade builds
 
 Build the wasm runtime with:
 ```bash
 make wasm
 ```
 
-## Update
+### Update
 
-### Update Cargo
+#### Update Cargo
 
 ```bash
 make update
 ```
 
-### Update ORML
+#### Update ORML
 
 ```bash
 cd lib-orml && git checkout master && git pull
@@ -234,15 +197,15 @@ git add lib-orml
 cargo update check-all
 ```
 
-### Update Predeploy-Contracts
+#### Update Predeploy-Contracts
 
 ```bash
-cd lib-serml/sevm/predeploy-contracts && git checkout master && git pull
+cd lib-serml//predeploy-contracts && git checkout master && git pull
 git add predeploy-contracts
 cargo update check-all
 ```
 
-### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
+#### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
 
 ```bash
 make generate-tokens
@@ -250,25 +213,25 @@ make generate-tokens
 
 __Note:__ All build commands with `SKIP_WASM_BUILD` are designed for local development purposes and hence have the `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.
 
-## Bench Bot
+### Bench Bot
 
 Bench bot can take care of syncing branch with `master` and generating WeightInfos for module or runtime.
 
-### Generate Module weights
+#### Generate Module weights
 
-#### Generate Weights on Git with PR
+##### Generate Weights on Git with PR
 
 Comment on a PR `/bench runtime module <setheum_module_name>` i.e.: `serp_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
 
-#### Generate Runtime Module Weights Locally
+##### Generate Runtime Module Weights Locally
 
 ```bash
 make benchmark
 ```
 
-### Fork setheum-chain
+#### Fork setheum-chain
 
 You can create a fork of a live chain (testnet / mainnet) for development purposes.
 
@@ -282,3 +245,20 @@ make chain=testnet fork
 cd fork/data
 ./binary --chain fork.json --alice
 ```
+
+## LICENSES
+
+The projects included in this repo have different licenses which can be found in their individual directories listed below, some use `GPL3`, some `Apache-2.0` while some use the `Business Source License 1.1 (BUSL-1.1)`.
+
+- [ORML License](./chassis/lib-orml/LICENSE.md): Apache-2.0
+- [SEPL Licenses](): A mixture of different licenses for different projects (Apache2.0, GPL3, BUSL1.1)
+
+ Other than the listed above (which are all imported `submodules`), the remaining of the primary codebase in this repo, is under `GPL3`. 
+
+### The License Types
+
+For a look, check [./LICENSES](./LICENSES/README.md)
+
+1. [Apache-2.0](./Apache-2.0.md)
+2. [BUSL-1.1](./BUSL-1.1.md)
+3. [GPL3](./GPL3.md)
