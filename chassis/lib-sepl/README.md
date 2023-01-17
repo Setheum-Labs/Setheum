@@ -15,11 +15,11 @@ The projects in this library have different licenses which can be found in their
 
 ### The Projects
 
-- [Calioce License](https://github.com/Setheum-Labs/Calioce/blob/main/LICENSE.md)
-- [LiquidAir License](https://github.com/Setheum-Labs/LiquidAir/blob/main/LICENSE.md)
-- [predeploy-contracts License](https://github.com/Setheum-Labs/predeploy-contracts/blob/master/LICENSE.md)
+- [predeploy-contracts License](https://github.com/Setheum-Labs/predeploy-contracts/blob/master/LICENSE)
 - [Sial License](https://github.com/Setheum-Labs/Sial/blob/main/LICENSE.md)
-- [Slixon License](https://github.com/Setheum-Labs/Slixon/blob/main/LICENSE.md)
-- [Stance License](https://github.com/Setheum-Labs/Stance/blob/main/LICENSE.md)
-- [Stem License](https://github.com/Setheum-Labs/Stem/blob/main/LICENSE.md)
-- [Zims License](https://github.com/Setheum-Labs/Zims/blob/main/LICENSE.md)
+- [Khalifa DEX License](https://github.com/Khalifa-Blockchain/DEX/blob/main/LICENSE.md)
+- [Dagestan License](https://github.com/Setheum-Labs/Dagestan/blob/main/LICENSE.md)
+- [Stem License](https://github.com/Setheum-Labs/Stem/blob/main/LICENSE)
+- [ECDP License](https://github.com/Khalifa-Blockchain/ECDP/blob/main/LICENSE.md)
+
+- [Example Project](./example/LICENSE.md)
