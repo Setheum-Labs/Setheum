@@ -4,3 +4,6 @@
 [submodule "chassis/lib-sesl/Stem"]
 	path = chassis/lib-sesl/Stem
 	url = https://github.com/Setheum-Labs/Stem
+[submodule "chassis/lib-sesl/Sial"]
+	path = chassis/lib-sesl/Sial
+	url = https://github.com/Setheum-Labs/Sial
