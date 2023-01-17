@@ -16,3 +16,6 @@
 [submodule "chassis/lib-sesl/khalifa-dex"]
 	path = chassis/lib-sesl/khalifa-dex
 	url = https://github.com/Khalifa-Blockchain/DEX
+[submodule "chassis/lib-sesl/Dagestan"]
+	path = chassis/lib-sesl/Dagestan
+	url = https://github.com/Setheum-Labs/Dagestan
