@@ -4,3 +4,6 @@
 [submodule "chassis/lib-sepl/predeploy-contracts"]
 	path = chassis/lib-sepl/predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts.git
+[submodule "chassis/lib-sepl/Sial"]
+	path = chassis/lib-sepl/Sial
+	url = https://github.com/Setheum-Labs/Sial
