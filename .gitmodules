@@ -1,3 +1,6 @@
+[submodule "chassis/lib-sepl/dagestan"]
+	path = chassis/lib-sepl/dagestan
+	url = https://github.com/Setheum-Labs/Dagestan.git
 [submodule "chassis/lib-sepl/predeploy-contracts"]
 	path = chassis/lib-sepl/predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts.git
