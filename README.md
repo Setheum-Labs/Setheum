@@ -1,6 +1,10 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Setheum - Powering Ethical Web3 Solutions.
+# Setheum - Powering Scalable Web3 Solutions
+
+<p align="center">
+  <img src="./SetheumLabel.jpg" style="width:1300px" />
+</p>
 
 * Decentralized
 * Ethical
