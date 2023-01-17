@@ -1,3 +1,6 @@
 [submodule "chassis/lib-sesl/predeploy-contracts"]
 	path = chassis/lib-sesl/predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts.git
+[submodule "chassis/lib-sesl/Stem"]
+	path = chassis/lib-sesl/Stem
+	url = https://github.com/Setheum-Labs/Stem
