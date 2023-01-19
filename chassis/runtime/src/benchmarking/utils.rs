@@ -52,7 +52,7 @@ pub fn set_balance(currency_id: CurrencyId, who: &AccountId, balance: Balance) {
 }
 
 pub fn _set_setheum_balance(who: &AccountId, balance: Balance) {
-	set_balance(CurrencyId::Token(TokenSymbol::SETM), who, balance)
+	set_balance(CurrencyId::Token(TokenSymbol::SEE), who, balance)
 }
 
 pub fn feed_price(prices: Vec<(CurrencyId, Price)>) -> DispatchResult {

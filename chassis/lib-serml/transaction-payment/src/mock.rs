@@ -42,7 +42,7 @@ pub type BlockNumber = u64;
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
@@ -284,7 +284,7 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 }
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETM;
+	pub const GetNativeCurrencyId: CurrencyId = SEE;
 }
 
 parameter_types! {
@@ -322,7 +322,7 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 4;
 	pub GetStableCurrencyExchangeFee: (u32, u32) = (1, 200); // 0.5%
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SEE).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
 	];
 }
@@ -343,7 +343,7 @@ impl module_dex::Config for Runtime {
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
 	pub static TransactionByteFee: u128 = 1;
-	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETUSD, SETM], vec![DNAR, SETUSD, SETM]];
+	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![SETUSD, SEE], vec![DNAR, SETUSD, SEE]];
 }
 
 thread_local! {

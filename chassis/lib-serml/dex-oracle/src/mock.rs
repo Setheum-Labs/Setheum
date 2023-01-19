@@ -38,7 +38,7 @@ use support::SwapLimit;
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const LP_SETUSD_DNAR: CurrencyId =
@@ -50,7 +50,7 @@ mod dex_oracle {
 
 parameter_types! {
 	pub static SETUSDDNARPair: TradingPair = TradingPair::from_currency_ids(SETUSD, DNAR).unwrap();
-	pub static SETMDNARPair: TradingPair = TradingPair::from_currency_ids(SETM, DNAR).unwrap();
+	pub static SETMDNARPair: TradingPair = TradingPair::from_currency_ids(SEE, DNAR).unwrap();
 	pub const BlockHashCount: u64 = 250;
 }
 

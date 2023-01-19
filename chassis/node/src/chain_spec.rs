@@ -43,7 +43,7 @@ use setheum_runtime::{
 	TokensConfig, OrmlNFTConfig,
 	NativeTokenExistentialDeposit, MaxNativeTokenExistentialDeposit,
 	//
-	SETM, SERP, DNAR, HELP, SETR, SETUSD,
+	SEE, SERP, DNAR, HELP, SETR, SETUSD,
 };
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
@@ -426,8 +426,8 @@ fn dev_genesis(
 
 	let evm_genesis_accounts = evm_genesis();
 
-	let initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;	// 1,000,000 SETM/SERP/DNAR/HELP/SETR/SETUSD
-	let initial_staking: u128 = 2_000 * 1_000_000_000_000_000_000; 	// 258,000 SETM/SERP/DNAR/HELP/SETR/SETUSD
+	let initial_balance: u128 = 10_000 * 1_000_000_000_000_000_000;	// 1,000,000 SEE/SERP/DNAR/HELP/SETR/SETUSD
+	let initial_staking: u128 = 2_000 * 1_000_000_000_000_000_000; 	// 258,000 SEE/SERP/DNAR/HELP/SETR/SETUSD
 
 	let balances = initial_authorities
 		.iter()
@@ -540,7 +540,7 @@ fn dev_genesis(
 			vesting: endowed_accounts
 			.iter()
 			.flat_map(|x| vec![
-				(x.clone(), SETM, 10, 1, 3600, 100_000_000_000_000_000),
+				(x.clone(), SEE, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), SERP, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), DNAR, 10, 1, 3600, 100_000_000_000_000_000),
 				(x.clone(), HELP, 10, 1, 3600, 100_000_000_000_000_000),
@@ -561,7 +561,7 @@ fn dev_genesis(
 		// },
 		// cdp_treasury: CdpTreasuryConfig {
 		// 	expected_collateral_auction_size: vec![
-		// 		(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(SEE, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
@@ -570,7 +570,7 @@ fn dev_genesis(
 		// cdp_engine: CdpEngineConfig {
 		// 	collaterals_params: vec![
 		// 		(
-		// 			SETM,
+		// 			SEE,
 		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
@@ -777,8 +777,8 @@ fn testnet_genesis(
 		vesting: VestingConfig {
 			vesting: vec![
 				// All schedules here last 1 lunar year.
-				(foundation.clone(), SETM, 258, 1, 5_112_000, setm_foundation_vesting),
-				(team.clone(), SETM, 258, 1, 5_112_000, setm_team_vesting),
+				(foundation.clone(), SEE, 258, 1, 5_112_000, setm_foundation_vesting),
+				(team.clone(), SEE, 258, 1, 5_112_000, setm_team_vesting),
 
 				(foundation.clone(), SERP, 258, 1, 5_112_000, serp_foundation_vesting),
 				(team.clone(), SERP, 258, 1, 5_112_000, serp_team_vesting),
@@ -808,7 +808,7 @@ fn testnet_genesis(
 		// },
 		// cdp_treasury: CdpTreasuryConfig {
 		// 	expected_collateral_auction_size: vec![
-		// 		(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(SEE, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
@@ -817,7 +817,7 @@ fn testnet_genesis(
 		// cdp_engine: CdpEngineConfig {
 		// 	collaterals_params: vec![
 		// 		(
-		// 			SETM,
+		// 			SEE,
 		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
@@ -1059,10 +1059,10 @@ fn mainnet_genesis(
 		},
 		vesting: VestingConfig {
 			vesting: vec![
-				(foundation.clone(), SETM, 313, 1, 117_576_000, setm_foundation_vesting),
-				(spf.clone(), SETM, 313, 1, 96_008_000, setm_spf_vesting),
-				(team.clone(), SETM, 313, 1, 117_576_000, setm_team_vesting),
-				(advisors_n_partners.clone(), SETM, 313, 1, 35_784_000, setm_advisors_n_partners_vesting),
+				(foundation.clone(), SEE, 313, 1, 117_576_000, setm_foundation_vesting),
+				(spf.clone(), SEE, 313, 1, 96_008_000, setm_spf_vesting),
+				(team.clone(), SEE, 313, 1, 117_576_000, setm_team_vesting),
+				(advisors_n_partners.clone(), SEE, 313, 1, 35_784_000, setm_advisors_n_partners_vesting),
 				
 				(foundation.clone(), SERP, 313, 1, 97_128_000, serp_foundation_vesting),
 				(spf.clone(), SERP, 313, 1, 35_784_000, serp_spf_vesting),
@@ -1102,7 +1102,7 @@ fn mainnet_genesis(
 		// },
 		// cdp_treasury: CdpTreasuryConfig {
 		// 	expected_collateral_auction_size: vec![
-		// 		(SETM, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
+		// 		(SEE, 500 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(SERP, 300 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(DNAR, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
 		// 		(HELP, 100 * 1_000_000_000_000_000_000), 		// (currency_id, max size of a collateral auction)
@@ -1111,7 +1111,7 @@ fn mainnet_genesis(
 		// cdp_engine: CdpEngineConfig {
 		// 	collaterals_params: vec![
 		// 		(
-		// 			SETM,
+		// 			SEE,
 		// 			Some(FixedU128::saturating_from_rational(105, 100)), // liquidation ratio
 		// 			Some(FixedU128::saturating_from_rational(5, 100)),   // liquidation penalty rate
 		// 			Some(FixedU128::saturating_from_rational(110, 100)), // required liquidation ratio
@@ -1155,7 +1155,7 @@ pub fn setheum_properties() -> Properties {
 	let mut properties = Map::new();
 	let mut token_symbol: Vec<String> = vec![];
 	let mut token_decimals: Vec<u32> = vec![];
-	[SETM, SERP, DNAR, HELP, SETR, SETUSD].iter().for_each(|token| {
+	[SEE, SERP, DNAR, HELP, SETR, SETUSD].iter().for_each(|token| {
 		token_symbol.push(token.symbol().unwrap().to_string());
 		token_decimals.push(token.decimals().unwrap() as u32);
 	});

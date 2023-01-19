@@ -23,7 +23,7 @@
       18
     ],
     "tokenSymbol": [
-      "SETM",
+      "SEE",
       "SERP",
       "DNAR",
       "HELP",
@@ -49,7 +49,7 @@
         "initialEnabledTradingPairs": [
           [
             {
-              "token": "SETM"
+              "token": "SEE"
             },
             {
               "token": "SETUSD"
@@ -89,7 +89,7 @@
           ],
           [
             {
-              "token": "SETM"
+              "token": "SEE"
             },
             {
               "token": "SETR"
@@ -195,7 +195,7 @@
         "expectedCollateralAuctionSize": [
           [
             {
-              "token": "SETM"
+              "token": "SEE"
             },
             500000000000000000000
           ],
@@ -223,7 +223,7 @@
         "collateralsParams": [
           [
             {
-              "token": "SETM"
+              "token": "SEE"
             },
             "1050000000000000000",
             "50000000000000000",
@@ -394,7 +394,7 @@
           [
             "5DXRBvu4bnSm59rawKx9anL3Co9uU7LYDzDVmUy4c1s2Atxk",
             {
-              "token": "SETM"
+              "token": "SEE"
             },
             258,
             1,
@@ -404,7 +404,7 @@
           [
             "5CrDNWeB2XyZbTMidF4BB3UtHqocS9HeeyCUCCiGP8nWTH3S",
             {
-              "token": "SETM"
+              "token": "SEE"
             },
             258,
             1,

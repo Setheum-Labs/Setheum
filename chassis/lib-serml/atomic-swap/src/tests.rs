@@ -13,7 +13,7 @@
 // use primitives::{Amount, TokenSymbol};
 
 // Currencies constants - CurrencyId/TokenSymbol
-// pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+// pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 // pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 // pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
