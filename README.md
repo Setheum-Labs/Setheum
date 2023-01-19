@@ -7,7 +7,7 @@
 </p>
 
 * Decentralized
-* Ethical
+* Confdential
 * Interoperable
 * Scalable
 * Secure
