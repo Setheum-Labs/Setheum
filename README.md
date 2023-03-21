@@ -32,7 +32,7 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 ### SETHEUM means "Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market".
 
 Setheum is founded,  initiated and facilitated by Muhammad-Jibril B.A. of Setheum Labs, Slixon Technologies and Setheum Foundation to build, steward and support the development and advancement of Ethical Web3 with the Network, its ecosystem and its community to foster the development and adoption of ethical decentralised finance by  and Web3 in general by building and supporting interoperable Secure, Scalable and Decentralized Web3 Infrastructure.
-Setheum also deploys Advanced Incentivization mechanisms and economic models modeled under the Jurisdiction of Islamic Finance.
+Setheum also deploys Advanced Incentivization mechanisms and economic models modeled under the Jurisdiction of Islamic Finance via its Khalifa DeFi Subchain.
 
 ## Getting Started 
 
