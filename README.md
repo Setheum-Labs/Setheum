@@ -266,3 +266,7 @@ For a look, check [./LICENSES](./LICENSES/README.md)
 1. [Apache-2.0](./Apache-2.0.md)
 2. [BUSL-1.1](./BUSL-1.1.md)
 3. [GPL3](./GPL3.md)
+
+
+### TODO
+Update licenses and restructure repo
