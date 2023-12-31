@@ -6,11 +6,12 @@
   <img src="./SetheumLabel.jpg" style="width:1300px" />
 </p>
 
-* Decentralized
-* Confdential
-* Interoperable
-* Scalable
 * Secure
+* Decentralized
+* Scalable
+* Confdential
+* Ethical
+* Interoperable
 
 Setheum's Blockchain Network node Implementation in Rust, ready for hacking :rocket:
 
