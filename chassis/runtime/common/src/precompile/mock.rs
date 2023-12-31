@@ -81,7 +81,7 @@ impl frame_system::Config for Test {
 pub const DOLLARS: Balance = 1_000_000_000_000_000_000; // 18 DECIMALS
 
 parameter_types! {
-	pub const MaxNativeTokenExistentialDeposit: Balance = DOLLARS * 100; // 100 SETM
+	pub const MaxNativeTokenExistentialDeposit: Balance = DOLLARS * 100; // 100 SEE
 }
 
 parameter_types! {
@@ -308,15 +308,15 @@ impl SerpTreasury<AccountId> for MockSerpTreasury {
 	}
 }
 
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const LP_SETM_SETUSD: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SEE), DexShare::Token(TokenSymbol::SETUSD));
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETM;
+	pub const GetNativeCurrencyId: CurrencyId = SEE;
 	pub StableCurrencyIds: Vec<CurrencyId> = vec![
 		SETR,
 		SETUSD,
@@ -380,7 +380,7 @@ impl orml_nft::Config for Test {
 
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
-		pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![CurrencyId::Token(TokenSymbol::SETUSD), CurrencyId::Token(TokenSymbol::SETM)]];
+		pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![CurrencyId::Token(TokenSymbol::SETUSD), CurrencyId::Token(TokenSymbol::SEE)]];
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
 }
 
@@ -621,7 +621,7 @@ pub fn bob_evm_addr() -> EvmAddress {
 }
 
 pub fn setm_evm_address() -> EvmAddress {
-	EvmAddress::try_from(SETM).unwrap()
+	EvmAddress::try_from(SEE).unwrap()
 }
 
 pub fn setusd_evm_address() -> EvmAddress {

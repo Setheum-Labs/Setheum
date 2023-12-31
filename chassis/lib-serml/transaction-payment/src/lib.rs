@@ -223,7 +223,7 @@ pub mod module {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Native currency id, the actual received currency type as fee for
-		/// treasury. Should be SETM
+		/// treasury. Should be SEE
 		#[pallet::constant]
 		type NativeCurrencyId: Get<CurrencyId>;
 

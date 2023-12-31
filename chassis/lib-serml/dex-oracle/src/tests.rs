@@ -110,7 +110,7 @@ fn disable_average_price_work() {
 			Error::<Runtime>::InvalidCurrencyId
 		);
 		assert_noop!(
-			DexOracle::disable_average_price(Origin::signed(1), SETM, DNAR),
+			DexOracle::disable_average_price(Origin::signed(1), SEE, DNAR),
 			Error::<Runtime>::AveragePriceMustBeEnabled
 		);
 
@@ -149,7 +149,7 @@ fn update_average_price_interval_work() {
 			Error::<Runtime>::InvalidCurrencyId
 		);
 		assert_noop!(
-			DexOracle::update_average_price_interval(Origin::signed(1), SETM, DNAR, 0),
+			DexOracle::update_average_price_interval(Origin::signed(1), SEE, DNAR, 0),
 			Error::<Runtime>::AveragePriceMustBeEnabled
 		);
 		assert_noop!(
@@ -256,7 +256,7 @@ fn on_initialize_work() {
 			))
 		);
 		set_pool(&SETMDNARPair::get(), 1000, 1000);
-		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), SETM, DNAR, 2000));
+		assert_ok!(DexOracle::enable_average_price(Origin::signed(1), SEE, DNAR, 2000));
 		assert_eq!(
 			DexOracle::cumulatives(SETMDNARPair::get()),
 			(U256::from(0), U256::from(0), 0)
@@ -347,7 +347,7 @@ fn on_initialize_work() {
 			))
 		);
 
-		// elapsed time is lt the update interval of SETM/DNAR, update average price of SETM/DNAR after try
+		// elapsed time is lt the update interval of SEE/DNAR, update average price of SEE/DNAR after try
 		// update cumulatives.
 		set_pool(&SETMDNARPair::get(), 1000, 2000);
 		Timestamp::set_timestamp(2100);
@@ -478,7 +478,7 @@ fn on_initialize_work() {
 			))
 		);
 
-		// update average prices of SETUSD/DNAR and SETM/DNAR
+		// update average prices of SETUSD/DNAR and SEE/DNAR
 		set_pool(&SETUSDDNARPair::get(), 1000, 100);
 		set_pool(&SETMDNARPair::get(), 1000, 1000);
 		Timestamp::set_timestamp(7000);

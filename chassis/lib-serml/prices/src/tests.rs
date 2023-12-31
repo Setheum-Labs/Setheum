@@ -193,13 +193,13 @@ fn access_price_of_dex_share_currency() {
 #[test]
 fn access_price_of_other_currency() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(PricesModule::access_price(SETM), Some(Price::saturating_from_integer(0)));
+		assert_eq!(PricesModule::access_price(SEE), Some(Price::saturating_from_integer(0)));
 		assert_eq!(PricesModule::access_price(SETR), Some(Price::saturating_from_rational(1, 4)));
 
 		mock_oracle_update();
 
 		assert_eq!(
-			PricesModule::access_price(SETM),
+			PricesModule::access_price(SEE),
 			Some(Price::saturating_from_integer(30u128))
 		); // 30 USD, right shift the decimal point (18-12) places
 		assert_eq!(

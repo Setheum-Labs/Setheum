@@ -12,7 +12,7 @@
 * Scalable
 * Secure
 
-Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Setheum SERML, ready for hacking :rocket:
+Setheum's Blockchain Network node Implementation in Rust, ready for hacking :rocket:
 
 <div align="center">
 	
@@ -29,10 +29,32 @@ Setheum's Blockchain Network node Implementation in Rust, Substrate FRAME and Se
 
 ## Introduction
 
-### SETHEUM means "Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market".
+### SETHEUM means `Salam Ethereum`, it also means `The house of gifts` from the name `Seth/Sheeth` meaning `gift` in hebrew and the name of the Prophet Sheeth/Seth, 
+it also stands for `Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market`.
 
-Setheum is founded,  initiated and facilitated by Muhammad-Jibril B.A. of Setheum Labs, Slixon Technologies and Setheum Foundation to build, steward and support the development and advancement of Ethical Web3 with the Network, its ecosystem and its community to foster the development and adoption of ethical decentralised finance by  and Web3 in general by building and supporting interoperable Secure, Scalable and Decentralized Web3 Infrastructure.
-Setheum also deploys Advanced Incentivization mechanisms and economic models modeled under the Jurisdiction of Islamic Finance via its Khalifa DeFi Subchain.
+
+Setheum is a secure, confidential and interoperable decentralised internet cloud compute and storage blockchain network with EVM and WASM smart contracts, 
+web3 and web 2 Support. The intent of the Setheum Network is to improve upon Web3 and solve the blockchain trilemma with a mixture of approaches and a recipe 
+formed from what we have seen and considered to be some of the best solutions in the field, improving on scalability, security, mass adoption, diversity, 
+and ethics while preserving decentralisation and democratisation. Setheum intends to be the most scalable blockchain network in the world while providing 
+confidentiality for smart contracts, Cloud Computing and Storage Infrastructure for Web3 based Internet Solutions and Interoperability with both Web2 and 
+other Web3 Networks. The Setheum DAGESTAN architecture powers the network to be the most scalable network in the world; it enables near instant finality, 
+high throughput, high scalability and interoperability for the Setheum Network.
+
+Setheum, founded November 2019, achieves a high level of equilibrium in the trilemma by leveraging a Directed Acyclic Graph(DAG) to build the blockchain consensus 
+making it a Blockchain via DAG, achieve instant finality, high throughput and very fast blocktime while preserving network security and having a fairly decentralised network, 
+Setheum’s consensus system leans towards achieving high scalability and high security with an ethical, decent and equitably high level of decentralisation.
+
+Setheum is EVM(Ethereum Virtual Machine) compatible for smart contracts to thrive on its super fast blockchain, the entire chain is upgradable and forkless 
+enabling forkless upgrades as Setheum is built with the Substrate framework using the Rust programming language. Ethical DeFi Suite powers the Ethical DeFi revolution 
+on Setheum, being on the fastest public blockchain network in the world and leveraging all the benefits that come with being on Setheum, making it a DeFi optimised blockchain 
+especially exceptional for DeFi applications and solutions.
+
+Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including a cutting-edge AMM DEX, modules, 
+Decentralised Liquid Staking for Setheum SE and ethical zero-interest halal stablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD) 
+and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable 
+without compromising decentralisation or economic stability, offering zero-interest loans of stable cryptocurrencies that has scalable value and trust, 
+setheum provides just that, backed by crypto assets with efficient zero-interest loans.
 
 ## Getting Started 
 
@@ -266,3 +288,7 @@ For a look, check [./LICENSES](./LICENSES/README.md)
 1. [Apache-2.0](./Apache-2.0.md)
 2. [BUSL-1.1](./BUSL-1.1.md)
 3. [GPL3](./GPL3.md)
+
+
+### TODO
+Update licenses and restructure repo

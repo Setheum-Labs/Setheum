@@ -29,7 +29,7 @@ use frame_support::{
 };
 use mock::{
 	AccountId, BlockWeights, Call, Currencies, DEXModule, ExtBuilder, MockPriceSource, Origin, Runtime,
-	TransactionPayment, SETM, ALICE, SETUSD, BOB, CHARLIE, DNAR, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
+	TransactionPayment, SEE, ALICE, SETUSD, BOB, CHARLIE, DNAR, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
 };
 use orml_traits::MultiCurrency;
 use sp_runtime::{testing::TestXt, traits::One};
@@ -59,10 +59,10 @@ fn charges_fee_when_native_is_enough_but_cannot_keep_alive() {
 		assert_ok!(Currencies::update_balance(
 			Origin::root(),
 			ALICE,
-			SETM,
+			SEE,
 			fee.unique_saturated_into(),
 		));
-		assert_eq!(Currencies::free_balance(SETM, &ALICE), fee);
+		assert_eq!(Currencies::free_balance(SEE, &ALICE), fee);
 		assert_noop!(
 			ChargeTransactionPayment::<Runtime>::from(0).validate(&ALICE, CALL, &INFO, 23),
 			TransactionValidityError::Invalid(InvalidTransaction::Payment)
@@ -85,7 +85,7 @@ fn charges_fee_when_native_is_enough_but_cannot_keep_alive() {
 				.priority,
 			fee2.saturated_into::<u64>()
 		);
-		assert_eq!(Currencies::free_balance(SETM, &ALICE), Currencies::minimum_balance(SETM));
+		assert_eq!(Currencies::free_balance(SEE, &ALICE), Currencies::minimum_balance(SEE));
 	});
 }
 
@@ -103,7 +103,7 @@ fn charges_fee() {
 					.priority,
 				fee
 			);
-			assert_eq!(Currencies::free_balance(SETM, &ALICE), (100000 - fee).into());
+			assert_eq!(Currencies::free_balance(SEE, &ALICE), (100000 - fee).into());
 
 			let fee2 = 18 * 2 + 1000; // len * byte + weight
 			assert_eq!(
@@ -114,7 +114,7 @@ fn charges_fee() {
 				fee2
 			);
 			assert_eq!(
-				Currencies::free_balance(SETM, &ALICE),
+				Currencies::free_balance(SEE, &ALICE),
 				(100000 - fee - fee2).unique_saturated_into()
 			);
 		});
@@ -130,7 +130,7 @@ fn signed_extension_transaction_payment_work() {
 			let pre = ChargeTransactionPayment::<Runtime>::from(0)
 				.pre_dispatch(&ALICE, CALL, &INFO, 23)
 				.unwrap();
-			assert_eq!(Currencies::free_balance(SETM, &ALICE), 100000 - fee);
+			assert_eq!(Currencies::free_balance(SEE, &ALICE), 100000 - fee);
 			assert_ok!(ChargeTransactionPayment::<Runtime>::post_dispatch(
 				pre,
 				&INFO,
@@ -140,7 +140,7 @@ fn signed_extension_transaction_payment_work() {
 			));
 
 			let refund = 200; // 1000 - 800
-			assert_eq!(Currencies::free_balance(SETM, &ALICE), 100000 - fee + refund);
+			assert_eq!(Currencies::free_balance(SEE, &ALICE), 100000 - fee + refund);
 			assert_eq!(FEE_UNBALANCED_AMOUNT.with(|a| *a.borrow()), fee - refund);
 			assert_eq!(TIP_UNBALANCED_AMOUNT.with(|a| *a.borrow()), 0);
 
@@ -149,7 +149,7 @@ fn signed_extension_transaction_payment_work() {
 			let pre = ChargeTransactionPayment::<Runtime>::from(5 /* tipped */)
 				.pre_dispatch(&CHARLIE, CALL, &INFO, 23)
 				.unwrap();
-			assert_eq!(Currencies::free_balance(SETM, &CHARLIE), 100000 - fee - 5);
+			assert_eq!(Currencies::free_balance(SEE, &CHARLIE), 100000 - fee - 5);
 			assert_ok!(ChargeTransactionPayment::<Runtime>::post_dispatch(
 				pre,
 				&INFO,
@@ -157,7 +157,7 @@ fn signed_extension_transaction_payment_work() {
 				23,
 				&Ok(())
 			));
-			assert_eq!(Currencies::free_balance(SETM, &CHARLIE), 100000 - fee - 5 + refund);
+			assert_eq!(Currencies::free_balance(SEE, &CHARLIE), 100000 - fee - 5 + refund);
 			assert_eq!(FEE_UNBALANCED_AMOUNT.with(|a| *a.borrow()), fee - refund);
 			assert_eq!(TIP_UNBALANCED_AMOUNT.with(|a| *a.borrow()), 5);
 		});
@@ -173,7 +173,7 @@ fn charges_fee_when_pre_dispatch_and_native_currency_is_enough() {
 			assert!(ChargeTransactionPayment::<Runtime>::from(0)
 				.pre_dispatch(&ALICE, CALL, &INFO, 23)
 				.is_ok());
-			assert_eq!(Currencies::free_balance(SETM, &ALICE), 100000 - fee);
+			assert_eq!(Currencies::free_balance(SEE, &ALICE), 100000 - fee);
 		});
 }
 
@@ -187,11 +187,11 @@ fn refund_fee_according_to_actual_when_post_dispatch_and_native_currency_is_enou
 			let pre = ChargeTransactionPayment::<Runtime>::from(0)
 				.pre_dispatch(&ALICE, CALL, &INFO, 23)
 				.unwrap();
-			assert_eq!(Currencies::free_balance(SETM, &ALICE), 100000 - fee);
+			assert_eq!(Currencies::free_balance(SEE, &ALICE), 100000 - fee);
 
 			let refund = 200; // 1000 - 800
 			assert!(ChargeTransactionPayment::<Runtime>::post_dispatch(pre, &INFO, &POST_INFO, 23, &Ok(())).is_ok());
-			assert_eq!(Currencies::free_balance(SETM, &ALICE), 100000 - fee + refund);
+			assert_eq!(Currencies::free_balance(SEE, &ALICE), 100000 - fee + refund);
 		});
 }
 
@@ -204,7 +204,7 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 			// add liquidity to DEX
 			assert_ok!(DEXModule::add_liquidity(
 				Origin::signed(ALICE),
-				SETM,
+				SEE,
 				SETUSD,
 				10000,
 				1000,
@@ -212,9 +212,9 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 			));
 			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(SETUSD, &ALICE, &BOB, 1000));
 
-			assert_eq!(DEXModule::get_liquidity_pool(SETM, SETUSD), (10000, 1000));
-			assert_eq!(Currencies::total_balance(SETM, &BOB), 0);
-			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETM, &BOB), 0);
+			assert_eq!(DEXModule::get_liquidity_pool(SEE, SETUSD), (10000, 1000));
+			assert_eq!(Currencies::total_balance(SEE, &BOB), 0);
+			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SEE, &BOB), 0);
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETUSD, &BOB), 1000);
 
 			// total balance is lt ED, will swap fee and ED
@@ -226,11 +226,11 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 					.priority,
 				fee
 			);
-			assert_eq!(Currencies::total_balance(SETM, &BOB), 10);
-			assert_eq!(Currencies::free_balance(SETM, &BOB), 10);
+			assert_eq!(Currencies::total_balance(SEE, &BOB), 10);
+			assert_eq!(Currencies::free_balance(SEE, &BOB), 10);
 			assert_eq!(Currencies::free_balance(SETUSD, &BOB), 747);
 			assert_eq!(
-				DEXModule::get_liquidity_pool(SETM, SETUSD),
+				DEXModule::get_liquidity_pool(SEE, SETUSD),
 				(10000 - 2000 - 10, 1000 + 255)
 			);
 
@@ -244,10 +244,10 @@ fn charges_fee_when_validate_and_native_is_not_enough() {
 					.priority,
 				fee_2
 			);
-			assert_eq!(Currencies::total_balance(SETM, &BOB), 10);
-			assert_eq!(Currencies::free_balance(SETM, &BOB), 10);
+			assert_eq!(Currencies::total_balance(SEE, &BOB), 10);
+			assert_eq!(Currencies::free_balance(SEE, &BOB), 10);
 			assert_eq!(Currencies::free_balance(SETUSD, &BOB), 524);
-			assert_eq!(DEXModule::get_liquidity_pool(SETM, SETUSD), (7990 - 1200, 1252 + 228));
+			assert_eq!(DEXModule::get_liquidity_pool(SEE, SETUSD), (7990 - 1200, 1252 + 228));
 		});
 }
 
@@ -260,7 +260,7 @@ fn charges_fee_failed_by_slippage_limit() {
 			// add liquidity to DEX
 			assert_ok!(DEXModule::add_liquidity(
 				Origin::signed(ALICE),
-				SETM,
+				SEE,
 				SETUSD,
 				10000,
 				1000,
@@ -268,21 +268,21 @@ fn charges_fee_failed_by_slippage_limit() {
 			));
 			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(SETUSD, &ALICE, &BOB, 1000));
 
-			assert_eq!(DEXModule::get_liquidity_pool(SETM, SETUSD), (10000, 1000));
-			assert_eq!(Currencies::total_balance(SETM, &BOB), 0);
-			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETM, &BOB), 0);
+			assert_eq!(DEXModule::get_liquidity_pool(SEE, SETUSD), (10000, 1000));
+			assert_eq!(Currencies::total_balance(SEE, &BOB), 0);
+			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SEE, &BOB), 0);
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETUSD, &BOB), 1000);
 
 			// pool is enough, but slippage limit the swap
 			MockPriceSource::set_relative_price(Some(Price::saturating_from_rational(252, 4020)));
-			// assert_eq!(DEXModule::get_swap_supply_amount(&[SETUSD, SETM], 2010), Some(252));
-			// assert_eq!(DEXModule::get_swap_target_amount(&[SETUSD, SETM], 1000), Some(5000));
+			// assert_eq!(DEXModule::get_swap_supply_amount(&[SETUSD, SEE], 2010), Some(252));
+			// assert_eq!(DEXModule::get_swap_target_amount(&[SETUSD, SEE], 1000), Some(5000));
 
 			assert_noop!(
 				ChargeTransactionPayment::<Runtime>::from(0).validate(&BOB, CALL2, &INFO, 500),
 				TransactionValidityError::Invalid(InvalidTransaction::Payment)
 			);
-			assert_eq!(DEXModule::get_liquidity_pool(SETM, SETUSD), (10000, 1000));
+			assert_eq!(DEXModule::get_liquidity_pool(SEE, SETUSD), (10000, 1000));
 		});
 }
 
@@ -292,11 +292,11 @@ fn set_alternative_fee_swap_path_work() {
 		assert_eq!(TransactionPayment::alternative_fee_swap_path(&ALICE), None);
 		assert_ok!(TransactionPayment::set_alternative_fee_swap_path(
 			Origin::signed(ALICE),
-			Some(vec![SETUSD, SETM])
+			Some(vec![SETUSD, SEE])
 		));
 		assert_eq!(
 			TransactionPayment::alternative_fee_swap_path(&ALICE).unwrap(),
-			vec![SETUSD, SETM]
+			vec![SETUSD, SEE]
 		);
 		assert_ok!(TransactionPayment::set_alternative_fee_swap_path(
 			Origin::signed(ALICE),
@@ -305,7 +305,7 @@ fn set_alternative_fee_swap_path_work() {
 		assert_eq!(TransactionPayment::alternative_fee_swap_path(&ALICE), None);
 
 		assert_noop!(
-			TransactionPayment::set_alternative_fee_swap_path(Origin::signed(ALICE), Some(vec![SETM])),
+			TransactionPayment::set_alternative_fee_swap_path(Origin::signed(ALICE), Some(vec![SEE])),
 			Error::<Runtime>::InvalidSwapPath
 		);
 
@@ -315,7 +315,7 @@ fn set_alternative_fee_swap_path_work() {
 		);
 
 		assert_noop!(
-			TransactionPayment::set_alternative_fee_swap_path(Origin::signed(ALICE), Some(vec![SETM, SETM])),
+			TransactionPayment::set_alternative_fee_swap_path(Origin::signed(ALICE), Some(vec![SEE, SEE])),
 			Error::<Runtime>::InvalidSwapPath
 		);
 	});
@@ -330,7 +330,7 @@ fn charge_fee_by_default_swap_path() {
 			// add liquidity to DEX
 			assert_ok!(DEXModule::add_liquidity(
 				Origin::signed(ALICE),
-				SETM,
+				SEE,
 				SETUSD,
 				10000,
 				1000,
@@ -344,18 +344,18 @@ fn charge_fee_by_default_swap_path() {
 				1000,
 				0
 			));
-			assert_eq!(DEXModule::get_liquidity_pool(SETM, SETUSD), (10000, 1000));
+			assert_eq!(DEXModule::get_liquidity_pool(SEE, SETUSD), (10000, 1000));
 			assert_eq!(DEXModule::get_liquidity_pool(DNAR, SETUSD), (100, 1000));
 			assert_ok!(TransactionPayment::set_alternative_fee_swap_path(
 				Origin::signed(BOB),
-				Some(vec![DNAR, SETM])
+				Some(vec![DNAR, SEE])
 			));
 			assert_eq!(
 				TransactionPayment::alternative_fee_swap_path(&BOB).unwrap(),
-				vec![DNAR, SETM]
+				vec![DNAR, SEE]
 			);
 			assert_ok!(<Currencies as MultiCurrency<_>>::transfer(DNAR, &ALICE, &BOB, 100));
-			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETM, &BOB), 0);
+			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SEE, &BOB), 0);
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(SETUSD, &BOB), 0);
 			assert_eq!(<Currencies as MultiCurrency<_>>::free_balance(DNAR, &BOB), 100);
 
@@ -368,10 +368,10 @@ fn charge_fee_by_default_swap_path() {
 				fee
 			);
 
-			assert_eq!(Currencies::free_balance(SETM, &BOB), Currencies::minimum_balance(SETM));
+			assert_eq!(Currencies::free_balance(SEE, &BOB), Currencies::minimum_balance(SEE));
 			assert_eq!(Currencies::free_balance(SETUSD, &BOB), 0);
 			assert_eq!(Currencies::free_balance(DNAR, &BOB), 100 - 35);
-			assert_eq!(DEXModule::get_liquidity_pool(SETM, SETUSD), (10000 - 2000 - 10, 1255));
+			assert_eq!(DEXModule::get_liquidity_pool(SEE, SETUSD), (10000 - 2000 - 10, 1255));
 			assert_eq!(DEXModule::get_liquidity_pool(DNAR, SETUSD), (100 + 35, 1000 - 255));
 		});
 }

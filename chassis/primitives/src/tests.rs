@@ -28,12 +28,12 @@ use std::{
 
 #[test]
 fn trading_pair_works() {
-	let setm = CurrencyId::Token(TokenSymbol::SETM);
+	let setm = CurrencyId::Token(TokenSymbol::SEE);
 	let setusd = CurrencyId::Token(TokenSymbol::SETUSD);
 	let erc20 = CurrencyId::Erc20(EvmAddress::from_str("0x0000000000000000000000000000000000000000").unwrap());
-	let setm_setusd_lp = CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETM), DexShare::Token(TokenSymbol::SETUSD));
+	let setm_setusd_lp = CurrencyId::DexShare(DexShare::Token(TokenSymbol::SEE), DexShare::Token(TokenSymbol::SETUSD));
 	let erc20_setm_lp = CurrencyId::DexShare(
-		DexShare::Token(TokenSymbol::SETM),
+		DexShare::Token(TokenSymbol::SEE),
 		DexShare::Erc20(EvmAddress::from_str("0x0000000000000000000000000000000000000000").unwrap()),
 	);
 
@@ -68,14 +68,14 @@ fn trading_pair_works() {
 #[test]
 fn currency_id_try_from_vec_u8_works() {
 	assert_ok!(
-		"SETM".as_bytes().to_vec().try_into(),
-		CurrencyId::Token(TokenSymbol::SETM)
+		"SEE".as_bytes().to_vec().try_into(),
+		CurrencyId::Token(TokenSymbol::SEE)
 	);
 }
 
 #[test]
 fn currency_id_into_u32_works() {
-	let currency_id = DexShare::Token(TokenSymbol::SETM);
+	let currency_id = DexShare::Token(TokenSymbol::SEE);
 	assert_eq!(Into::<u32>::into(currency_id), 0x00);
 
 	let currency_id = DexShare::Token(TokenSymbol::SETUSD);
@@ -97,13 +97,13 @@ fn currency_id_into_u32_works() {
 #[test]
 fn currency_id_try_into_evm_address_works() {
 	assert_eq!(
-		EvmAddress::try_from(CurrencyId::Token(TokenSymbol::SETM,)),
+		EvmAddress::try_from(CurrencyId::Token(TokenSymbol::SEE,)),
 		Ok(EvmAddress::from_str("0x0000000000000000000000000000000001000000").unwrap())
 	);
 
 	assert_eq!(
 		EvmAddress::try_from(CurrencyId::DexShare(
-			DexShare::Token(TokenSymbol::SETM),
+			DexShare::Token(TokenSymbol::SEE),
 			DexShare::Token(TokenSymbol::SETUSD),
 		)),
 		Ok(EvmAddress::from_str("0x0000000000000000000000010000000000000005").unwrap())

@@ -39,7 +39,7 @@ use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
 use module_support::{DEXManager, SerpTreasury as SerpTreasurySupport, SerpTreasuryExtended, SwapLimit};
 
-const SETM: CurrencyId = GetNativeCurrencyId::get();
+const SEE: CurrencyId = GetNativeCurrencyId::get();
 const SETR: CurrencyId = SetterCurrencyId::get();
 const SETUSD: CurrencyId = GetSetUSDId::get();
 const DNAR: CurrencyId = GetDinarCurrencyId::get();
@@ -57,18 +57,18 @@ runtime_benchmarks! {
 		let caller: AccountId = whitelisted_caller();
 		set_balance(DNAR, &caller, 1000000000 * dollar(DNAR));
 		set_balance(SERP, &caller, 1000000000 * dollar(SERP));
-		set_balance(SETM, &caller, 1000000000 * dollar(SETM));
+		set_balance(SEE, &caller, 1000000000 * dollar(SEE));
 		set_balance(HELP, &caller, 1000000000 * dollar(HELP));
 		set_balance(SETR, &caller, 1000000000 * dollar(SETR));
 		set_balance(SETUSD, &caller, 1000000000 * dollar(SETUSD));
 		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETR, DNAR);
 		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETR, SERP);
-		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETR, SETM);
+		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETR, SEE);
 		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETR, HELP);
 		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETUSD, SETR);
 		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETUSD, DNAR);
 		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETUSD, SERP);
-		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETUSD, SETM);
+		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETUSD, SEE);
 		let _ = Dex::enable_trading_pair(RawOrigin::Root.into(), SETUSD, HELP);
 		Dex::add_liquidity(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -89,9 +89,9 @@ runtime_benchmarks! {
 		Dex::add_liquidity(
 			RawOrigin::Signed(caller.clone()).into(),
 			SETR,
-			SETM,
+			SEE,
 			1000 * dollar(SETR),
-			100 * dollar(SETM),
+			100 * dollar(SEE),
 			0,
 		)?;
 		Dex::add_liquidity(
@@ -128,9 +128,9 @@ runtime_benchmarks! {
 		Dex::add_liquidity(
 			RawOrigin::Signed(caller.clone()).into(),
 			SETUSD,
-			SETM,
+			SEE,
 			1000 * dollar(SETUSD),
-			100 * dollar(SETM),
+			100 * dollar(SEE),
 			0,
 		)?;
 		Dex::add_liquidity(
@@ -170,7 +170,7 @@ runtime_benchmarks! {
 				// 4
 				<SerpTreasury as SerpTreasuryExtended<AccountId>>::buyback_swap_with_exact_supply(
 					currency_id,
-					SETM,
+					SEE,
 					SwapLimit::ExactSupply(inflamounts, 0),
 				)?;
 				// 5

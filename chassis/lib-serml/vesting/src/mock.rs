@@ -23,7 +23,7 @@ pub type AccountId = u128;
 
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const HELP: CurrencyId = CurrencyId::Token(TokenSymbol::HELP);
@@ -116,7 +116,7 @@ parameter_types! {
 	];
 	pub const SetterCurrencyId: CurrencyId = SETR;  	// Setter  currency ticker is SETR/
 	pub const GetSetUSDId: CurrencyId = SETUSD;  		// SetDollar currency ticker is SETUSD/
-	pub const GetNativeCurrencyId: CurrencyId = SETM;  	// Setheum native currency ticker is SETM/
+	pub const GetNativeCurrencyId: CurrencyId = SEE;  	// Setheum native currency ticker is SEE/
 	pub const GetSerpCurrencyId: CurrencyId = SERP;  	// Serp currency ticker is SERP/
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;  	// The Dinar currency ticker is DNAR/
 	pub const GetHelpCurrencyId: CurrencyId = HELP;  	// HighEnd LaunchPad currency ticker is HELP/
@@ -192,19 +192,19 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self {
 			balances: vec![
-				(ALICE, SETM, 10000),
+				(ALICE, SEE, 10000),
 				(ALICE, SERP, 1000),
 				(ALICE, DNAR, 1000),
 				(ALICE, HELP, 1000),
 				(ALICE, SETR, 1000),
 				(ALICE, SETUSD, 1000),
-				(CHARLIE, SETM, 10000),
+				(CHARLIE, SEE, 10000),
 				(CHARLIE, SERP, 1000),
 				(CHARLIE, DNAR, 1000),
 				(CHARLIE, HELP, 1000),
 				(CHARLIE, SETR, 1000),
 				(CHARLIE, SETUSD, 1000),
-				(TREASURY, SETM, 10000),
+				(TREASURY, SEE, 10000),
 				(TREASURY, SERP, 1000),
 				(TREASURY, DNAR, 1000),
 				(TREASURY, HELP, 1000),
@@ -229,7 +229,7 @@ impl ExtBuilder {
 
 		vesting::GenesisConfig::<Runtime> {
 			// who, start, period, period_count, per_period
-			vesting: vec![(CHARLIE, SETM, 2, 3, 4, 5)],
+			vesting: vec![(CHARLIE, SEE, 2, 3, 4, 5)],
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
