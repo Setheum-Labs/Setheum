@@ -51,7 +51,7 @@ pub use precompile::{
 	StateRentPrecompile,
 };
 pub use primitives::{
-	currency::{TokenInfo, SETM, SERP, DNAR, HELP, SETR, SETUSD},
+	currency::{TokenInfo, SEE, SERP, DNAR, HELP, SETR, SETUSD},
 	AccountId,
 };
 
@@ -161,7 +161,7 @@ pub fn microcent(currency_id: CurrencyId) -> Balance {
 	millicent(currency_id) / 1000
 }
 
-// The nanoscent is only for currencies that have at least up to 12 decimals like the SETM
+// The nanoscent is only for currencies that have at least up to 12 decimals like the SEE
 // 12 decimals = 1 Trillion nanocents
 // 1 Trillion NANOCENTS = 1 DOLLAR
 pub fn nanocent(currency_id: CurrencyId) -> Balance {
@@ -169,7 +169,7 @@ pub fn nanocent(currency_id: CurrencyId) -> Balance {
 }
 
 pub fn deposit(items: u32, bytes: u32) -> Balance {
-	items as Balance * 1_000 * cent(SETM) + (bytes as Balance) * 100 * millicent(SETM)
+	items as Balance * 1_000 * cent(SEE) + (bytes as Balance) * 100 * millicent(SEE)
 }
 
 pub type ShuraCouncilInstance = pallet_collective::Instance1;

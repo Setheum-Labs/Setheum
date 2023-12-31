@@ -23,7 +23,7 @@
 /// Time and blocks.
 pub mod time {
 	use primitives::{Balance, BlockNumber, Moment};
-	// use runtime_common::{dollar, millicent, SETM};
+	// use runtime_common::{dollar, millicent, SEE};
 
 	// 3 seconds blocktime
 	pub const SECS_PER_BLOCK: Moment = 3;
@@ -64,7 +64,7 @@ pub mod fee {
 		WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
 	};
 	use primitives::Balance;
-	use runtime_common::{cent, SETM};
+	use runtime_common::{cent, SEE};
 	use smallvec::smallvec;
 	use sp_runtime::Perbill;
 
@@ -72,7 +72,7 @@ pub mod fee {
 	pub const TARGET_BLOCK_FULLNESS: Perbill = Perbill::from_percent(25);
 
 	fn base_tx_in_setm() -> Balance {
-		cent(SETM) / 10
+		cent(SEE) / 10
 	}
 
 	/// Handles converting a weight scalar to a fee value, based on the scale

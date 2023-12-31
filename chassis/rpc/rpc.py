@@ -28,7 +28,7 @@ s.query('Balances', 'TotalIssuance')
 ## current metadata
 s.get_runtime_metadata()
 
-## send 100 SETM from Alice -> Bob
+## send 100 SEE from Alice -> Bob
 from substrateinterface import Keypair
 alice = Keypair.create_from_uri('//Alice')
 bob = Keypair.create_from_uri('//Bob')

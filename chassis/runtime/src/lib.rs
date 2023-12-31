@@ -119,7 +119,7 @@ pub use runtime_common::{
 	EnsureRootOrOneThirdsTechnicalCommittee, EnsureRootOrTwoThirdsTechnicalCommittee,
 	EnsureRootOrThreeFourthsTechnicalCommittee, TechnicalCommitteeInstance, TechnicalCommitteeMembershipInstance,
 
-	OperatorMembershipInstanceSetheum, SETM, SERP, DNAR, HELP, SETR, SETUSD,
+	OperatorMembershipInstanceSetheum, SEE, SERP, DNAR, HELP, SETR, SETUSD,
 };
 
 
@@ -482,9 +482,9 @@ impl pallet_im_online::Config for Runtime {
 }
 
 parameter_types! {
-	pub BasicDeposit: Balance =      10 * dollar(SETM);
-	pub FieldDeposit: Balance =        1 * dollar(SETM);
-	pub SubAccountDeposit: Balance =  20 * dollar(SETM);
+	pub BasicDeposit: Balance =      10 * dollar(SEE);
+	pub FieldDeposit: Balance =        1 * dollar(SEE);
+	pub SubAccountDeposit: Balance =  20 * dollar(SEE);
 	pub const MaxSubAccounts: u32 = 100;
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 19;
@@ -507,7 +507,7 @@ impl pallet_identity::Config for Runtime {
 
 
 parameter_types! {
-	pub IndexDeposit: Balance = 1 * dollar(SETM);
+	pub IndexDeposit: Balance = 1 * dollar(SEE);
 }
 
 impl pallet_indices::Config for Runtime {
@@ -519,7 +519,7 @@ impl pallet_indices::Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetNativeCurrencyId: CurrencyId = SETM;
+	pub const GetNativeCurrencyId: CurrencyId = SEE;
 	pub const GetSerpCurrencyId: CurrencyId = SERP;
 	pub const GetDinarCurrencyId: CurrencyId = DNAR;
 	pub const GetHelpCurrencyId: CurrencyId = HELP;
@@ -606,7 +606,7 @@ parameter_type_with_key! {
 				TokenSymbol::SERP => 10 * cent(SERP), // 10 cents (0.1)
 				TokenSymbol::HELP => 10 * cent(HELP), // 10 cents (0.1)
 				TokenSymbol::DNAR => 10 * cent(DNAR), // 10 cents (0.1)
-				TokenSymbol::SETM => 10 * cent(SETM), // 10 cents (0.1)
+				TokenSymbol::SEE => 10 * cent(SEE), // 10 cents (0.1)
 			},
 			CurrencyId::DexShare(dex_share_0, _) => {
 				let currency_id_0: CurrencyId = (*dex_share_0).into();
@@ -765,10 +765,10 @@ parameter_types! {
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
 		vec![SERP],
 		vec![DNAR],
-		vec![SETM],
+		vec![SEE],
 		vec![HELP],
-		vec![SETM, SETR],
-		vec![SETM, SETUSD],
+		vec![SEE, SETR],
+		vec![SEE, SETUSD],
 		vec![SERP, SETR],
 		vec![SERP, SETUSD],
 		vec![DNAR, SETR],
@@ -776,7 +776,7 @@ parameter_types! {
 		vec![HELP, SETR],
 		vec![HELP, SETUSD],
 	];
-	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SETM, SERP, DNAR, HELP];
+	pub CollateralCurrencyIds: Vec<CurrencyId> = vec![SEE, SERP, DNAR, HELP];
 	pub DefaultLiquidationRatio: Ratio = Ratio::saturating_from_rational(110, 100);
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
@@ -830,12 +830,12 @@ parameter_types! {
 	pub const GetStableCurrencyExchangeFee: (u32, u32) = (1, 1000);	// 0.1%
 	pub const TradingPathLimit: u32 = 4;
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
-		TradingPair::from_currency_ids(SETUSD, SETM).unwrap(),
+		TradingPair::from_currency_ids(SETUSD, SEE).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, DNAR).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, HELP).unwrap(),
 		TradingPair::from_currency_ids(SETUSD, SETR).unwrap(),
-		TradingPair::from_currency_ids(SETR, SETM).unwrap(),
+		TradingPair::from_currency_ids(SETR, SEE).unwrap(),
 		TradingPair::from_currency_ids(SETR, SERP).unwrap(),
 		TradingPair::from_currency_ids(SETR, DNAR).unwrap(),
 		TradingPair::from_currency_ids(SETR, HELP).unwrap(),
@@ -924,14 +924,14 @@ parameter_types! {
 parameter_types! {
 	// Sort by fee charge order
 	pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETR, SETM],
-		vec![SETUSD, SETM],
-		vec![SERP, SETR, SETM],
-		vec![SERP, SETUSD, SETM],
-		vec![DNAR, SETR, SETM],
-		vec![DNAR, SETUSD, SETM],
-		vec![HELP, SETR, SETM],
-		vec![HELP, SETUSD, SETM],
+		vec![SETR, SEE],
+		vec![SETUSD, SEE],
+		vec![SERP, SETR, SEE],
+		vec![SERP, SETUSD, SEE],
+		vec![DNAR, SETR, SEE],
+		vec![DNAR, SETUSD, SEE],
+		vec![HELP, SETR, SEE],
+		vec![HELP, SETUSD, SEE],
 	];
 }
 
@@ -998,8 +998,8 @@ parameter_types! {
 parameter_types! {
 	pub const NewContractExtraBytes: u32 = 10_000;
 	pub StorageDepositPerByte: Balance = deposit(0, 1);
-	pub DeveloperDeposit: Balance = 7 * dollar(SETM);
-	pub DeploymentFee: Balance = 7 * dollar(SETM);
+	pub DeveloperDeposit: Balance = 7 * dollar(SEE);
+	pub DeploymentFee: Balance = 7 * dollar(SEE);
 }
 
 pub type MultiCurrencyPrecompile = runtime_common::MultiCurrencyPrecompile<
@@ -1073,8 +1073,8 @@ impl module_evm_bridge::Config for Runtime {
 }
 
 parameter_types! {
-	pub CreateClassDeposit: Balance = 11 * dollar(SETM);
-	pub CreateTokenDeposit: Balance = 7 * dollar(SETM);
+	pub CreateClassDeposit: Balance = 11 * dollar(SEE);
+	pub CreateTokenDeposit: Balance = 7 * dollar(SEE);
 	pub MaxAttributesBytes: u32 = 2048;
 }
 
@@ -1182,8 +1182,8 @@ impl pallet_proxy::Config for Runtime {
 parameter_types! {
 	// note: if we add other native tokens (SETUSD) we have to set native
 	// existential deposit to 0 or check for other tokens on account pruning
-	pub NativeTokenExistentialDeposit: Balance = 1 * dollar(SETM); // 1 SETM
-	pub MaxNativeTokenExistentialDeposit: Balance = 100 * dollar(SETM); // 100 SETM
+	pub NativeTokenExistentialDeposit: Balance = 1 * dollar(SEE); // 1 SEE
+	pub MaxNativeTokenExistentialDeposit: Balance = 100 * dollar(SEE); // 100 SEE
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = ReserveIdentifier::Count as u32;
 }
@@ -1417,7 +1417,7 @@ impl ContainsLengthBound for ShuraCouncilProvider {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(3);
-	pub ProposalBondMinimum: Balance = 1 * dollar(SETM); // 1 SETM
+	pub ProposalBondMinimum: Balance = 1 * dollar(SEE); // 1 SEE
 	pub const SpendPeriod: BlockNumber = 40 * DAYS;
 	pub const Burn: Permill = Permill::from_perthousand(0); // 0.0%
 	pub const MaxApprovals: u32 = 100;
@@ -1432,7 +1432,7 @@ parameter_types! {
 	pub const BountyDepositPayoutDelay: BlockNumber = DAYS;
 	pub const BountyUpdatePeriod: BlockNumber = 21 * DAYS;
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-	pub BountyValueMinimum: Balance = 1 * dollar(SETM); // 1 SETM
+	pub BountyValueMinimum: Balance = 1 * dollar(SEE); // 1 SEE
 	pub DataDepositPerByte: Balance = deposit(0, 1);
 	pub const MaximumReasonLength: u32 = 16384;
 }

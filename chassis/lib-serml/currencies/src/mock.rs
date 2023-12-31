@@ -57,13 +57,12 @@ pub type AccountId = AccountId32;
 pub type BlockNumber = u64;
 
 // Currencies constants - CurrencyId/TokenSymbol
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
 pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
 pub const HELP: CurrencyId = CurrencyId::Token(TokenSymbol::HELP);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
-pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
+pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
 
 impl frame_system::Config for Runtime {

@@ -152,7 +152,7 @@ pub mod module {
 		type MultiCurrency: MultiLockableCurrency<Self::AccountId, CurrencyId = CurrencyId>;
 
 		#[pallet::constant]
-		/// Native Setheum (SETM) currency id. [P]Pronounced "set M" or "setem"
+		/// Native Setheum (SEE) currency id. [P]Pronounced "set M" or "setem"
 		/// 
 		type GetNativeCurrencyId: Get<CurrencyId>;
 
@@ -194,7 +194,7 @@ pub mod module {
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
-		/// The maximum vesting schedules for SETM
+		/// The maximum vesting schedules for SEE
 		type MaxNativeVestingSchedules: Get<u32>;
 
 		/// The maximum vesting schedules for SERP
@@ -241,7 +241,7 @@ pub mod module {
 		VestingSchedulesUpdated(CurrencyIdOf<T>, T::AccountId),
 	}
 
-	/// Vesting schedules of an account under SETM currency.
+	/// Vesting schedules of an account under SEE currency.
 	///
 	/// NativeVestingSchedules: map AccountId => Vec<VestingSchedule>
 	#[pallet::storage]

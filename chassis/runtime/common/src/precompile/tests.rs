@@ -183,7 +183,7 @@ fn precompile_filter_does_not_work_on_non_system_contracts() {
 // 		expected_output[31] = 32;
 // 		// length
 // 		expected_output[63] = 3;
-// 		expected_output[64..64 + 3].copy_from_slice(&b"SETM"[..]);
+// 		expected_output[64..64 + 3].copy_from_slice(&b"SEE"[..]);
 // 		assert_eq!(resp.output, expected_output);
 // 		assert_eq!(resp.cost, 0);
 

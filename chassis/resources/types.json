@@ -65,7 +65,7 @@
     "VestingScheduleOf": "VestingSchedule",
     "TokenSymbol": {
         "_enum": {
-            "SETM": 0,
+            "SEE": 0,
             "SERP": 1,
             "DNAR": 2,
             "HELP": 3,
