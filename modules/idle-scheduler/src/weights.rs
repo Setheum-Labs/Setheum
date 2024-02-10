@@ -35,7 +35,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --template=./templates/module-weight-template.hbs
+// --template=.maintain/module-weight-template.hbs
 // --output=./chassis/lib-serml/idle-scheduler/src/weights.rs
 
 

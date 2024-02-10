@@ -36,7 +36,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --output=./chassis/lib-serml/transaction-pause/src/weights.rs
-// --template=./templates/module-weight-template.hbs
+// --template=.maintain/module-weight-template.hbs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]

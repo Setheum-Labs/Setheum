@@ -17,7 +17,7 @@
 // --heap-pages=4096
 // --output=./vesting/src/weights.rs
 // --template
-// ../templates/orml-weight-template.hbs
+// ..maintain/orml-weight-template.hbs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]

@@ -35,7 +35,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --template=./templates/runtime-weight-template.hbs
+// --template=.maintain/runtime-weight-template.hbs
 // --output=./runtime/setheum/src/weights/
 
 
