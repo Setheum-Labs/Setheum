@@ -3,7 +3,7 @@
 # Setheum - Powering Scalable Web3 Solutions
 
 <p align="center">
-  <img src="./SetheumLabel.jpg" style="width:1300px" />
+  <img src="./media/SetheumLabel.jpg" style="width:1300px" />
 </p>
 
 * Secure
@@ -30,8 +30,7 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 
 ## Introduction
 
-### SETHEUM means `Salam Ethereum`, it also means `The house of gifts` from the name `Seth/Sheeth` meaning `gift` in hebrew and the name of the Prophet Sheeth/Seth, 
-it also stands for `Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market`.
+SETHEUM means `Salam Ethereum`, it also means `The house of gifts` from the name `Seth/Sheeth` meaning `gift` in hebrew and the name of the Prophet Sheeth/Seth in Islam,  it also stands for `Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market`.
 
 
 Setheum is a secure, confidential and interoperable decentralised internet cloud compute and storage blockchain network with EVM and WASM smart contracts, 
