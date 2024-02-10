@@ -1,62 +1,63 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Setheum - Powering Scalable Web3 Solutions
+# Setheum - Powering The New Internet
 
 <p align="center">
   <img src="./media/SetheumLabel.jpg" style="width:1300px" />
 </p>
 
-* Secure
 * Decentralized
-* Scalable
-* Confdential
-* Ethical
+* Exceptional
+* Secure
 * Interoperable
+* Reliable
+* Ethical
+* Scalable
 
 Setheum's Blockchain Network node Implementation in Rust, ready for hacking :rocket:
 
 <div align="center">
-	
+
 [![Setheum version](https://img.shields.io/badge/Setheum-1.0.0-brightgreen?logo=Parity%20Substrate)](https://setheum.xyz/)
 [![Substrate version](https://img.shields.io/badge/Substrate-4.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
 [![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=green)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
  <br />
 
+[![Website](https://img.shields.io/badge/web-gray?logo=web)](https://setheum.xyz)
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FSetheum)](https://twitter.com/Setheum)
 [![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](https://t.me/SetheumNetwork)
 [![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](https://medium.com/setheum-labs)
-	
+
 </div>
 
 ## Introduction
 
 SETHEUM means `Salam Ethereum`, it also means `The house of gifts` from the name `Seth/Sheeth` meaning `gift` in hebrew and the name of the Prophet Sheeth/Seth in Islam,  it also stands for `Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market`.
 
+Setheum is a secure, confidential and interoperable decentralised internet cloud compute and storage blockchain network with EVM and WASM smart contracts,
+web3 and web 2 Support. The intent of the Setheum Network is to improve upon Web3 and solve the blockchain trilemma with a mixture of approaches and a recipe
+formed from what we have seen and considered to be some of the best solutions in the field, improving on scalability, security, mass adoption, diversity,
+and ethics while preserving decentralisation and democratisation. Setheum intends to be the most scalable blockchain network in the world while providing
+confidentiality for smart contracts, Cloud Computing and Storage Infrastructure for Web3 based Internet Solutions and Interoperability with both Web2 and
+other Web3 Networks. The AlephBFT Consensus Engine powers the Setheum Chain to have near instant finality,
+high throughput and high scalability.
 
-Setheum is a secure, confidential and interoperable decentralised internet cloud compute and storage blockchain network with EVM and WASM smart contracts, 
-web3 and web 2 Support. The intent of the Setheum Network is to improve upon Web3 and solve the blockchain trilemma with a mixture of approaches and a recipe 
-formed from what we have seen and considered to be some of the best solutions in the field, improving on scalability, security, mass adoption, diversity, 
-and ethics while preserving decentralisation and democratisation. Setheum intends to be the most scalable blockchain network in the world while providing 
-confidentiality for smart contracts, Cloud Computing and Storage Infrastructure for Web3 based Internet Solutions and Interoperability with both Web2 and 
-other Web3 Networks. The Setheum DAGESTAN architecture powers the network to be the most scalable network in the world; it enables near instant finality, 
-high throughput, high scalability and interoperability for the Setheum Network.
+Setheum, founded November 2019, achieves a high level of equilibrium in the trilemma by leveraging a Directed Acyclic Graph(DAG) to build the blockchain consensus
+making it a Blockchain via DAG, achieve instant finality, high throughput and very fast blocktime while preserving network security and having a fairly decentralised network,
+Setheum’s consensus system works to achieve high scalability and high security with an ethical and equitably high level of decentralisation.
 
-Setheum, founded November 2019, achieves a high level of equilibrium in the trilemma by leveraging a Directed Acyclic Graph(DAG) to build the blockchain consensus 
-making it a Blockchain via DAG, achieve instant finality, high throughput and very fast blocktime while preserving network security and having a fairly decentralised network, 
-Setheum’s consensus system leans towards achieving high scalability and high security with an ethical, decent and equitably high level of decentralisation.
-
-Setheum is EVM(Ethereum Virtual Machine) compatible for smart contracts to thrive on its super fast blockchain, the entire chain is upgradable and forkless 
-enabling forkless upgrades as Setheum is built with the Substrate framework using the Rust programming language. Ethical DeFi Suite powers the Ethical DeFi revolution 
-on Setheum, being on the fastest public blockchain network in the world and leveraging all the benefits that come with being on Setheum, making it a DeFi optimised blockchain 
+Setheum is EVM(Ethereum Virtual Machine) compatible for smart contracts to thrive on its super fast blockchain, the entire chain is upgradable and forkless
+enabling forkless upgrades as Setheum is built with the Substrate framework using the Rust programming language. Ethical DeFi Suite powers the Ethical DeFi revolution
+on Setheum, being on the fastest public blockchain network in the world and leveraging all the benefits that come with being on Setheum, making it a DeFi optimised blockchain
 especially exceptional for DeFi applications and solutions.
 
-Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including a cutting-edge AMM DEX, modules, 
-Decentralised Liquid Staking for Setheum SE and ethical zero-interest halal stablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD) 
-and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable 
-without compromising decentralisation or economic stability, offering zero-interest loans of stable cryptocurrencies that has scalable value and trust, 
+Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including a cutting-edge AMM DEX, modules,
+Decentralised Liquid Staking for Setheum SE and ethical zero-interest halal stablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD)
+and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable
+without compromising decentralisation or economic stability, offering zero-interest loans of stable cryptocurrencies that has scalable value and trust,
 setheum provides just that, backed by crypto assets with efficient zero-interest loans.
 
-## Getting Started 
+## Getting Started
 
 This project contains some configuration files to help get started :hammer_and_wrench:
 
@@ -100,14 +101,15 @@ Install required tools and install git hooks:
 git submodule update --init --recursive
 ```
 
-#### Start a development node
+### Start a development node
 
 The `make run` command will launch a temporary node and its state will be discarded after you terminate the process.
+
 ```bash
 make run
 ```
 
-#### Run a persistent single-node chain
+### Run a persistent single-node chain
 
 Use the following command to build the node without launching it:
 
@@ -133,26 +135,29 @@ Start the development chain with detailed logging:
 RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/setheum-node -lruntime=debug --dev
 ```
 
-#### Run tests
+### Run tests
 
 ```bash
 make test
 ```
 
-#### Run benchmarks
+### Run benchmarks
 
 Run runtime benchmark tests:
+
 ```bash
 make bench
 ```
 
 Run module benchmark tests:
+
 ```bash
 cargo test -p module-poc --all-features
 ```
 
 Run the module benchmarks and generate the weights file:
-```
+
+```bash
 ./target/release/setheum-node benchmark \
     --chain=dev \
     --steps=50 \
@@ -165,17 +170,17 @@ Run the module benchmarks and generate the weights file:
     --output=./chassis/lib-serml/currencies/src/weights.rs
 ```
 
-#### Run in debugger
+### Run in debugger
 
 ```bash
 make debug
 ```
 
-#### Nodes
+## Nodes
 
 For Docs on running nodes, check [./docs/nodes.md](./docs/nodes.md)
 
-#### Embedded docs
+### Embedded docs
 
 Once the project has been built, the following command can be used to explore all parameters and subcommands:
 
@@ -183,55 +188,59 @@ Once the project has been built, the following command can be used to explore al
 ./target/release/setheum-node -h
 ```
 
-#### Release builds
+### Release builds
 
 To list all available release builds run:
+
 ```bash
 git tag
 ```
 
 To create a corresponding production build, first checkout the tag:
+
 ```bash
 git checkout testnet-1
 ```
 
 Then run this command to install appropriate compiler version and produce a binary.
+
 ```bash
 make release
 ```
 
-#### On-Chain upgrade builds
+### On-Chain upgrade builds
 
 Build the wasm runtime with:
+
 ```bash
 make wasm
 ```
 
-### Update
+## Update
 
-#### Update Cargo
+### Update Cargo
 
 ```bash
 make update
 ```
 
-#### Update ORML
+### Update ORML
 
 ```bash
-cd lib-orml && git checkout master && git pull
-git add lib-orml
+cd orml && git checkout master && git pull
+git add orml
 cargo update check-all
 ```
 
-#### Update Predeploy-Contracts
+### Update Predeploy-Contracts
 
 ```bash
-cd chassis/lib-sesl/predeploy-contracts && git checkout master && git pull
+cd submodules/predeploy-contracts && git checkout master && git pull
 git add predeploy-contracts
 cargo update check-all
 ```
 
-#### Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
+## Generate Tokens & Predeploy Contracts - SetheumEVM (SEVM)
 
 ```bash
 make generate-tokens
@@ -239,56 +248,65 @@ make generate-tokens
 
 __Note:__ All build commands with `SKIP_WASM_BUILD` are designed for local development purposes and hence have the `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run use native execution mode.
 
-### Bench Bot
+## Bench Bot
 
 Bench bot can take care of syncing branch with `master` and generating WeightInfos for module or runtime.
 
-#### Generate Module weights
+### Generate Module weights
 
-##### Generate Weights on Git with PR
+#### Generate Weights on Git with PR
 
 Comment on a PR `/bench runtime module <setheum_module_name>` i.e.: `serp_prices`
 
 Bench bot will do the benchmarking, generate `weights.rs` file push changes into your branch.
 
-##### Generate Runtime Module Weights Locally
+#### Generate Runtime Module Weights Locally
 
 ```bash
 make benchmark
 ```
 
-#### Fork setheum-chain
+## Fork Setheum Chain
 
 You can create a fork of a live chain (testnet / mainnet) for development purposes.
 
 1) Build binary and sync with target chain on localhost defaults. You will need to use unsafe rpc.
 2) Execute the `Make` command ensuring to specify chain name (testnet / mainnet).
+
 ```bash
 make chain=testnet fork
 ```
+
 3) Now run a forked chain:
+
 ```bash
 cd fork/data
 ./binary --chain fork.json --alice
 ```
 
-## LICENSES
+## Contributing
 
-The projects included in this repo have different licenses which can be found in their individual directories listed below, some use `GPL3`, some `Apache-2.0` while some use the `Business Source License 1.1 (BUSL-1.1)`.
+If you would like to contribute, please fork the repository, introduce your changes and submit a pull request. All pull requests are warmly welcome.
 
-- [ORML License](./chassis/lib-orml/LICENSE.md): Apache-2.0
-- [SEPL Licenses](): A mixture of different licenses for different projects (Apache2.0, GPL3, BUSL1.1)
+## Licenses
 
- Other than the listed above (which are all imported `submodules`), the remaining of the primary codebase in this repo, is under `GPL3`. 
-
-### The License Types
-
-For a look, check [./LICENSES](.LICENSES/README.md)
+The code in this repository is licensed as follows:
 
 1. [Apache-2.0](.LICENSES/Apache-2.0.md)
 2. [GPL3](.LICENSES/GPL3.md)
 3. [MIT](.LICENSES/MIT.md)
 
+### [Apache-2.0 License](.LICENSES/Apache-2.0.md) / [MIT License](.LICENSES/MIT.md)
 
-### TODO
-Update licenses and restructure repo
+All crates under [/highend](./highend) directory are licensed under the terms of the [Apache-2.0 License](.LICENSES/Apache-2.0.md) and or the [MIT License](.LICENSES/MIT.md).
+
+* Apache-2.0 License
+* MIT License
+
+Unless you explicitly state otherwise, any contribution that you submit to this directory shall be dual licensed as above (as defined in the [Apache-2.0 License](.LICENSES/Apache-2.0.md) and or the [MIT License](.LICENSES/MIT.md)), without any additional terms or conditions.
+
+### [GPL-3 License](.LICENSES/GPL3.md)
+
+All rest are licensed under either of the following licenses, at your discretion.
+
+Unless you explicitly state otherwise, any contribution that you submit to this repo (outside of the [./highend](./highend) directory) shall be licensed as above (as defined in the [GNU GPL-3 Version 3.0 or later](.LICENSES/GPL3.md) WITH Classpath exception 2.0, without any additional terms or conditions.
