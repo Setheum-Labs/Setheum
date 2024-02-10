@@ -283,11 +283,11 @@ The projects included in this repo have different licenses which can be found in
 
 ### The License Types
 
-For a look, check [./LICENSES](./LICENSES/README.md)
+For a look, check [./LICENSES](.LICENSES/README.md)
 
-1. [Apache-2.0](./Apache-2.0.md)
-2. [BUSL-1.1](./BUSL-1.1.md)
-3. [GPL3](./GPL3.md)
+1. [Apache-2.0](.LICENSES/Apache-2.0.md)
+2. [GPL3](.LICENSES/GPL3.md)
+3. [MIT](.LICENSES/MIT.md)
 
 
 ### TODO
