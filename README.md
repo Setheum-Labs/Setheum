@@ -235,7 +235,7 @@ cargo update check-all
 ### Update Predeploy-Contracts
 
 ```bash
-cd submodules/predeploy-contracts && git checkout master && git pull
+cd highway/predeploy-contracts && git checkout master && git pull
 git add predeploy-contracts
 cargo update check-all
 ```
