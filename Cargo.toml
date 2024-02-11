@@ -11,7 +11,6 @@ members = [
     'chassis/primitives',
 	# SERML Modules
 	"chassis/lib-serml/airdrop",
-	# "lib-serml/atomic-swap",
 	"chassis/lib-serml/idle-scheduler",
 	"chassis/lib-serml/dex-oracle",
 	"chassis/lib-serml/prices",
@@ -27,7 +26,6 @@ members = [
 	"chassis/lib-serml//evm-bridge",
 	"chassis/lib-serml//evm-manager",
 	# ORML modules
-	"chassis/lib-orml/auction",
 	"chassis/lib-orml/authority",
 	"chassis/lib-orml/benchmarking",
 	"chassis/lib-orml/currencies",

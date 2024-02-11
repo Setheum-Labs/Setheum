@@ -81,7 +81,6 @@ pallet-identity = { git = "https://github.com/paritytech/substrate", default-fea
 
 # local dependencies
 
-orml-auction = { path = "../chassis/lib-orml/auction", default-features = false }
 orml-authority = { path = "../chassis/lib-orml/authority", default-features = false }
 orml-benchmarking = { path = "../chassis/lib-orml/benchmarking", default-features = false, optional = true }
 orml-oracle = { path = "../chassis/lib-orml/oracle", default-features = false }
@@ -94,23 +93,12 @@ module-transaction-pause = { path = "../chassis/lib-serml/transaction-pause", de
 module-transaction-payment = { path = "../chassis/lib-serml/transaction-payment", default-features = false }
 module-airdrop = { path = "../chassis/lib-serml/airdrop", default-features = false }
 
-# auction-manager = { path = "../chassis/lib-serml/defi/setmint/auction-manager", default-features = false }
-# cdp-engine = { path = "../chassis/lib-serml/defi/setmint/cdp-engine", default-features = false }
-# cdp-treasury = { path = "../chassis/lib-serml/defi/setmint/cdp-treasury", default-features = false }
-# module-dex = { path = "../chassis/lib-serml/defi/setswap/dex", default-features = false }
-# emergency-shutdown = { path = "../chassis/lib-serml/defi/setmint/emergency-shutdown", default-features = false }
-
 module-currencies = { path = "../chassis/lib-serml/currencies", default-features = false }
-dex-oracle = { path = "../chassis/lib-serml/dex-oracle", default-features = false }
 module-evm = { path = "../chassis/lib-serml//evm", default-features = false }
 module-evm-accounts = { path = "../chassis/lib-serml//evm-accounts", default-features = false }
 module-evm-bridge = { path = "../chassis/lib-serml//evm-bridge", default-features = false }
 module-evm-rpc-runtime-api = { path = "../chassis/lib-serml//evm/rpc/runtime_api",  default-features = false }
 module-evm-manager = { path = "../chassis/lib-serml//evm-manager", default-features = false }
-
-# serp-treasury = { path = "../chassis/lib-serml/defi/serp", default-features = false }
-# serp-setmint = { path = "../chassis/lib-serml/defi/setmint/setmint-core", default-features = false }
-# module-loans = { path = "../chassis/lib-serml/defi/setmint/loans", default-features = false }
 
 module-nft = { path = "../chassis/lib-serml/nft", default-features = false }
 module-prices = { path = "../chassis/lib-serml/prices", default-features = false }
@@ -191,20 +179,12 @@ std = [
 	"orml-oracle/std",
 
 	"module-airdrop/std",
-	# "auction-manager/std",
-	# "cdp-engine/std",
-	# "cdp-treasury/std",
-	# "emergency-shutdown/std",
-	# "module-dex/std",
 	"module-currencies/std",
-	"dex-oracle/std",
 	"module-evm/std",
 	"module-evm-accounts/std",
 	"module-evm-bridge/std",
 	"module-evm-manager/std",
-	# "serp-treasury/std",
-	# "serp-setmint/std",
-	# "module-loans/std",
+	"module-evm-rpc-runtime-api/std",
 	"module-nft/std",
 	"module-prices/std",
 	"module-support/std",
@@ -212,10 +192,8 @@ std = [
 	"module-vesting/std",
 
 	"primitives/std",
-
 	"runtime-common/std",
 
-	"module-evm-rpc-runtime-api/std",
 ]
 with-ethereum-compatibility = [
 	"evm",
