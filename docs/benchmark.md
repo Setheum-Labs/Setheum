@@ -16,8 +16,8 @@
     --execution=wasm \
     --wasm-execution=compiled \
     --heap-pages=4096 \
-    --template=./templates/runtime-weight-template.hbs \
-    --output=./chassis/lib-serml/{dir/module-inner-directory}/src/weights/
+    --template=.maintain/runtime-weight-template.hbs \
+    --output=./modules/{dir/module-inner-directory}/src/weights/
 ```
 
 for example, this is the command for generating the `airdrop` module weights:
@@ -34,8 +34,8 @@ for example, this is the command for generating the `airdrop` module weights:
     --execution=wasm \
     --wasm-execution=compiled \
     --heap-pages=4096 \
-    --template=./templates/runtime-weight-template.hbs \
-    --output=./chassis/lib-serml/airdrop/src/weights/
+    --template=.maintain/runtime-weight-template.hbs \
+    --output=./modules/airdrop/src/weights/
 ```
 
 ### Runtime Module weights
@@ -58,6 +58,6 @@ Or for a specific module:
     --execution=wasm \
     --wasm-execution=compiled \
     --heap-pages=4096 \
-    --template=./templates/runtime-weight-template.hbs \
+    --template=.maintain/runtime-weight-template.hbs \
     --output=./runtime/src/weights/
 ```

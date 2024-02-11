@@ -91,7 +91,7 @@ bench:
 
 .PHONY: benchmark
 benchmark:
-	 cargo run --release --features=runtime-benchmarks --features=with-ethereum-compatibility -- benchmark --chain=dev --steps=50 --repeat=20 '--pallet=*' '--extrinsic=*' --execution=wasm --wasm-execution=compiled --heap-pages=4096 --template=./templates/runtime-weight-template.hbs --output=./runtime/src/weights/
+	 cargo run --release --features=runtime-benchmarks --features=with-ethereum-compatibility -- benchmark --chain=dev --steps=50 --repeat=20 '--pallet=*' '--extrinsic=*' --execution=wasm --wasm-execution=compiled --heap-pages=4096 --template=.maintain/runtime-weight-template.hbs --output=./runtime/src/weights/
 
 .PHONY: doc
 doc:
@@ -125,4 +125,4 @@ endif
 .PHONY: generate-tokens
 generate-tokens:
 	cargo test -p setheum-primitives -- --ignored
-	cd chassis/lib-sesl/predeploy-contracts && yarn && yarn run generate-bytecode
+	cd highway/predeploy-contracts && yarn && yarn run generate-bytecode
