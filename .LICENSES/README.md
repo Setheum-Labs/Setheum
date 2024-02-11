@@ -1,14 +1,23 @@
-# LICENSES
 
-The projects included in this repo have different licenses which can be found in their individual directories listed below, some use `GPL3`, some `Apache-2.0` while some use the `Business Source License 1.1 (BUSL-1.1)`.
+## Licenses
 
-- [ORML License](../chassis/lib-orml/LICENSE): Apache-2.0
-- [SEPL Licenses](../chassis/lib-sesl/README.md#licenses): A mixture of different licenses for different projects (Apache2.0, MIT, GPL3, BUSL1.1)
+The code in this repository is licensed as follows:
 
- Other than the listed above (which are all imported `submodules`), the remaining of the primary codebase in this repo, is under `GPL3`. 
+1. [Apache-2.0](.LICENSES/Apache-2.0.md)
+2. [GPL3](.LICENSES/GPL3.md)
+3. [MIT](.LICENSES/MIT.md)
 
-### The License Types
-1. [Apache-2.0](./Apache-2.0.md)
-2. [BUSL-1.1](./BUSL-1.1.md)
-3. [GPL3](./GPL3.md)
-4. [MIT](./MIT.md)
+### [Apache-2.0 License](.LICENSES/Apache-2.0.md) / [MIT License](.LICENSES/MIT.md)
+
+All crates under [/highend](./highend) directory are licensed under the terms of the [Apache-2.0 License](.LICENSES/Apache-2.0.md) and or the [MIT License](.LICENSES/MIT.md).
+
+* Apache-2.0 License
+* MIT License
+
+Unless you explicitly state otherwise, any contribution that you submit to this directory shall be dual licensed as above (as defined in the [Apache-2.0 License](.LICENSES/Apache-2.0.md) and or the [MIT License](.LICENSES/MIT.md)), without any additional terms or conditions.
+
+### [GPL-3 License](.LICENSES/GPL3.md)
+
+All rest are licensed under either of the following licenses, at your discretion.
+
+Unless you explicitly state otherwise, any contribution that you submit to this repo (outside of the [./highend](./highend) directory) shall be licensed as above (as defined in the [GNU GPL-3 Version 3.0 or later](.LICENSES/GPL3.md) WITH Classpath exception 2.0, without any additional terms or conditions.
