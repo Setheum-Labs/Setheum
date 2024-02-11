@@ -18,8 +18,7 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 
 <div align="center">
 
-[![Setheum version](https://img.shields.io/badge/Setheum-1.0.0-blue?logo=Parity%20Substrate)](https://setheum.xyz/)
-[![Substrate version](https://img.shields.io/badge/Substrate-4.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.dev/)
+[![Setheum version](https://img.shields.io/badge/Setheum-0.9.80-blue?logo=Parity%20Substrate)](https://setheum.xyz/)
 [![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=blue)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributor/CONTRIBUTING.md)
 
