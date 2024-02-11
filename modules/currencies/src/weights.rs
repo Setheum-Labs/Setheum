@@ -36,7 +36,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --template=.maintain/module-weight-template.hbs
-// --output=./chassis/lib-serml/currencies/src/weights.rs
+// --output=./modules/currencies/src/weights.rs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]

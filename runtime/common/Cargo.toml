@@ -20,12 +20,12 @@ log = { version = "0.4.14", default-features = false }
 pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 pallet-membership = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-orml-oracle = { path = "../../chassis/lib-orml/oracle", default-features = false }
-orml-traits = { path = "../../chassis/lib-orml/traits", default-features = false }
+orml-oracle = { path = "../../highway/orml/oracle", default-features = false }
+orml-traits = { path = "../../highway/orml/traits", default-features = false }
 
-module-evm = { path = "../../chassis/lib-serml//evm", default-features = false }
-module-support = { path = "../../chassis/lib-serml/support", default-features = false }
-module-transaction-payment = { path = "../../chassis/lib-serml/transaction-payment", default-features = false }
+module-evm = { path = "../../modules//evm", default-features = false }
+module-support = { path = "../../modules/support", default-features = false }
+module-transaction-payment = { path = "../../modules/transaction-payment", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 primitives-proc-macro = { path = "../../primitives/proc-macro" }
 
@@ -38,16 +38,16 @@ pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "p
 pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
-orml-tokens = { path = "../../chassis/lib-orml/tokens" }
-orml-nft = { path = "../../chassis/lib-orml/nft" }
+orml-tokens = { path = "../../highway/orml/tokens" }
+orml-nft = { path = "../../highway/orml/nft" }
 
-module-currencies = { path = "../../chassis/lib-serml/currencies" }
-module-evm-bridge = { path = "../../chassis/lib-serml//evm-bridge" }
-module-evm-manager = { path = "../../chassis/lib-serml//evm-manager" }
-module-nft = { path = "../../chassis/lib-serml/nft" }
-# module-dex = { path = "../../chassis/lib-serml/defi/setswap/dex" }
-module-prices = { path = "../../chassis/lib-serml/prices" }
-module-transaction-payment = { path = "../../chassis/lib-serml/transaction-payment" }
+module-currencies = { path = "../../modules/currencies" }
+module-evm-bridge = { path = "../../modules//evm-bridge" }
+module-evm-manager = { path = "../../modules//evm-manager" }
+module-nft = { path = "../../modules/nft" }
+# module-dex = { path = "../../modules/defi/setswap/dex" }
+module-prices = { path = "../../modules/prices" }
+module-transaction-payment = { path = "../../modules/transaction-payment" }
 
 [features]
 default = ["std"]

@@ -35,7 +35,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./chassis/lib-serml/nft/src/weights.rs
+// --output=./modules/nft/src/weights.rs
 // --template=.maintain/module-weight-template.hbs
 
 

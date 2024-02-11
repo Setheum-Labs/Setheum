@@ -167,7 +167,7 @@ Run the module benchmarks and generate the weights file:
     --execution=wasm \
     --wasm-execution=compiled \
     --heap-pages=4096 \
-    --output=./chassis/lib-serml/currencies/src/weights.rs
+    --output=./modules/currencies/src/weights.rs
 ```
 
 ### Run in debugger

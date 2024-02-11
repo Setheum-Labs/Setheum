@@ -16,12 +16,12 @@ frame-system = { git = "https://github.com/paritytech/substrate", branch = "polk
 
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
-orml-traits = { path = "../../chassis/lib-orml/traits", default-features = false }
+orml-traits = { path = "../../highway/orml/traits", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-tokens = { path = "../../chassis/lib-orml/tokens" }
+orml-tokens = { path = "../../highway/orml/tokens" }
 
 [features]
 default = ["std"]

@@ -21,10 +21,10 @@ module-support = { path = "../support", default-features = false }
 [dev-dependencies]
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-currencies = { path = "../../chassis/lib-orml/currencies" }
-orml-tokens = { path = "../../chassis/lib-orml/tokens" }
-orml-traits = { path = "../../chassis/lib-orml/traits" }
-orml-utilities = { path = "../../chassis/lib-orml/utilities" }
+orml-currencies = { path = "../../highway/orml/currencies" }
+orml-tokens = { path = "../../highway/orml/tokens" }
+orml-traits = { path = "../../highway/orml/traits" }
+orml-utilities = { path = "../../highway/orml/utilities" }
 module-evm = { path = "../evm" }
 module-evm-bridge = { path = "../evm-bridge" }
 
