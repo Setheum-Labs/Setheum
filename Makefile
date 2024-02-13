@@ -28,10 +28,10 @@ wasm:
 .PHONY: genesis
 genesis:
 	make build
-	./target/release/setheum-node build-spec --chain testnet-new > resources/chain_spec_testnet.json
-	./target/release/setheum-node build-spec --chain mainnet-new > resources/chain_spec_mainnet.json
-	./target/release/setheum-node build-spec --chain testnet-new --raw > resources/chain_spec_testnet_raw.json
-	./target/release/setheum-node build-spec --chain mainnet-new --raw > resources/chain_spec_mainnet_raw.json
+	./target/release/setheum-node build-spec --chain testnet-new > blockchain/bin/resources/chain_spec_testnet.json
+	./target/release/setheum-node build-spec --chain mainnet-new > blockchain/bin/resources/chain_spec_mainnet.json
+	./target/release/setheum-node build-spec --chain testnet-new --raw > blockchain/bin/resources/chain_spec_testnet_raw.json
+	./target/release/setheum-node build-spec --chain mainnet-new --raw > blockchain/bin/resources/chain_spec_mainnet_raw.json
 
 .PHONY: check
 check:
@@ -118,11 +118,11 @@ ifeq (,$(wildcard fork/data))
 endif
 	cp target/release/setheum-node fork/data/binary
 	cp target/release/wbuild/setheum-runtime/setheum_runtime.compact.wasm fork/data/runtime.wasm
-	cp resources/types.json fork/data/schema.json
-	cp resources/chain_spec_$(chain)_raw.json fork/data/genesis.json
+	cp blockchain/bin/resources/types.json fork/data/schema.json
+	cp blockchain/bin/resources/chain_spec_$(chain)_raw.json fork/data/genesis.json
 	cd fork && npm start && cd ..
 
 .PHONY: generate-tokens
 generate-tokens:
 	cargo test -p setheum-primitives -- --ignored
-	cd highway/predeploy-contracts && yarn && yarn run generate-bytecode
+	cd blockchain/submodules/predeploy-contracts && yarn && yarn run generate-bytecode

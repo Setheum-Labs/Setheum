@@ -1,9 +1,9 @@
-[submodule "highway/predeploy-contracts"]
-	path = highway/predeploy-contracts
+[submodule "blockchain/submodules/predeploy-contracts"]
+	path = blockchain/submodules/predeploy-contracts
 	url = https://github.com/Setheum-Labs/predeploy-contracts.git
-[submodule "highway/EthicalDeFi"]
-	path = highway/EthicalDeFi
+[submodule "blockchain/submodules/EthicalDeFi"]
+	path = blockchain/submodules/EthicalDeFi
 	url = https://Setheum-Labs/EthicalDeFi.git
-[submodule "highway/orml"]
-	path = highway/orml
+[submodule "blockchain/submodules/orml"]
+	path = blockchain/submodules/orml
 	url = https://github.com/Slixon-Technologies/open-runtime-module-library
