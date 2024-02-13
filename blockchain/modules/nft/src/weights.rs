@@ -35,7 +35,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./modules/nft/src/weights.rs
+// --output=./blockchain/modules/nft/src/weights.rs
 // --template=.maintain/module-weight-template.hbs
 
 

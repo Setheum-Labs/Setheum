@@ -36,7 +36,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./modules/transaction-payment/src/weights.rs
+// --output=./blockchain/modules/transaction-payment/src/weights.rs
 // --template=.maintain/module-weight-template.hbs
 
 

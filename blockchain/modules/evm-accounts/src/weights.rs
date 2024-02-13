@@ -36,7 +36,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./modules/evm-accounts/src/weights.rs
+// --output=./blockchain/modules/evm-accounts/src/weights.rs
 // --template=.maintain/module-weight-template.hbs
 
 

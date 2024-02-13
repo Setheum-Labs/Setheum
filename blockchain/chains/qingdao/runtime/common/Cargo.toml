@@ -23,11 +23,11 @@ pallet-membership = { git = "https://github.com/paritytech/substrate", branch = 
 orml-oracle = { path = "../../submodules/orml/oracle", default-features = false }
 orml-traits = { path = "../../submodules/orml/traits", default-features = false }
 
-module-evm = { path = "../../modules//evm", default-features = false }
-module-support = { path = "../../modules/support", default-features = false }
-module-transaction-payment = { path = "../../modules/transaction-payment", default-features = false }
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-primitives-proc-macro = { path = "../../primitives/proc-macro" }
+module-evm = { path = "../../../modules//evm", default-features = false }
+module-support = { path = "../../../modules/support", default-features = false }
+module-transaction-payment = { path = "../../../modules/transaction-payment", default-features = false }
+primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
+primitives-proc-macro = { path = "../primitives/proc-macro" }
 
 [dev-dependencies]
 serde_json = "1.0.41"
@@ -41,13 +41,13 @@ pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "po
 orml-tokens = { path = "../../submodules/orml/tokens" }
 orml-nft = { path = "../../submodules/orml/nft" }
 
-module-currencies = { path = "../../modules/currencies" }
-module-evm-bridge = { path = "../../modules//evm-bridge" }
-module-evm-manager = { path = "../../modules//evm-manager" }
-module-nft = { path = "../../modules/nft" }
-# module-dex = { path = "../../modules/defi/setswap/dex" }
-module-prices = { path = "../../modules/prices" }
-module-transaction-payment = { path = "../../modules/transaction-payment" }
+module-currencies = { path = "../../../modules/currencies" }
+module-evm-bridge = { path = "../../../modules//evm-bridge" }
+module-evm-manager = { path = "../../../modules//evm-manager" }
+module-nft = { path = "../../../modules/nft" }
+# module-dex = { path = "../../../modules/defi/setswap/dex" }
+module-prices = { path = "../../../modules/prices" }
+module-transaction-payment = { path = "../../../modules/transaction-payment" }
 
 [features]
 default = ["std"]

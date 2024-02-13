@@ -20,8 +20,8 @@ primitive-types = { version = "0.10.0", default-features = false, features = ["r
 impl-trait-for-tuples = "0.2.1"
 ethereum-types = { version = "0.12.0", default-features = false }
 
-primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
-primitives-proc-macro = { path = "../../primitives/proc-macro" }
+primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
+primitives-proc-macro = { path = "../primitives/proc-macro" }
 support = { package = "module-support", path = "../support", default-features = false }
 module-evm = { path = "../evm", default-features = false }
 num_enum = { version = "0.5.1", default-features = false }

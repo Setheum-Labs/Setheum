@@ -11,7 +11,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 ethereum-types = { version = "0.12", default-features = false }
 
-primitives = { package = "setheum-primitives", path = "../../../../../primitives", default-features = false }
+primitives = { package = "setheum-primitives", path = "../../../../primitives", default-features = false }
 
 [features]
 default = ["std"]

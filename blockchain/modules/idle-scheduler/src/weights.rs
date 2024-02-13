@@ -36,7 +36,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --template=.maintain/module-weight-template.hbs
-// --output=./modules/idle-scheduler/src/weights.rs
+// --output=./blockchain/modules/idle-scheduler/src/weights.rs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]

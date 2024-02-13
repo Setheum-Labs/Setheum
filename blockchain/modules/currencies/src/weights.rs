@@ -36,7 +36,7 @@
 // --wasm-execution=compiled
 // --heap-pages=4096
 // --template=.maintain/module-weight-template.hbs
-// --output=./modules/currencies/src/weights.rs
+// --output=./blockchain/modules/currencies/src/weights.rs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
