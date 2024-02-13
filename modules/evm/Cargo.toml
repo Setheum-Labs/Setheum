@@ -28,7 +28,7 @@ sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-orml-traits = { path = "../../highway/orml/traits", default-features = false }
+orml-traits = { path = "../../submodules/orml/traits", default-features = false }
 
 module-support = { path = "../support", default-features = false }
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
@@ -36,8 +36,8 @@ primitives = { package = "setheum-primitives", path = "../../primitives", defaul
 [dev-dependencies]
 env_logger = "0.7"
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-currencies = { path = "../../highway/orml/currencies" }
-orml-tokens = { path = "../../highway/orml/tokens" }
+orml-currencies = { path = "../../submodules/orml/currencies" }
+orml-tokens = { path = "../../submodules/orml/tokens" }
 
 [features]
 default = ["std"]

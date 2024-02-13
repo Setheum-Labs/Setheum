@@ -81,30 +81,30 @@ pallet-identity = { git = "https://github.com/paritytech/substrate", default-fea
 
 # local dependencies
 
-orml-authority = { path = "../highway/orml/authority", default-features = false }
-orml-benchmarking = { path = "../highway/orml/benchmarking", default-features = false, optional = true }
-orml-oracle = { path = "../highway/orml/oracle", default-features = false }
-orml-oracle-rpc-runtime-api = { path = "../highway/orml/oracle/rpc/runtime-api", default-features = false }
-orml-tokens = { path = "../highway/orml/tokens", default-features = false }
-orml-traits = { path = "../highway/orml/traits", default-features = false }
-orml-nft= { path = "../highway/orml/nft", default-features = false }
+orml-authority = { path = "../../../submodules/orml/authority", default-features = false }
+orml-benchmarking = { path = "../../../submodules/orml/benchmarking", default-features = false, optional = true }
+orml-oracle = { path = "../../../submodules/orml/oracle", default-features = false }
+orml-oracle-rpc-runtime-api = { path = "../../../submodules/orml/oracle/rpc/runtime-api", default-features = false }
+orml-tokens = { path = "../../../submodules/orml/tokens", default-features = false }
+orml-traits = { path = "../../../submodules/orml/traits", default-features = false }
+orml-nft= { path = "../../../submodules/orml/nft", default-features = false }
 
-module-transaction-pause = { path = "../modules/transaction-pause", default-features = false }
-module-transaction-payment = { path = "../modules/transaction-payment", default-features = false }
-module-airdrop = { path = "../modules/airdrop", default-features = false }
+module-transaction-pause = { path = "../../modules/transaction-pause", default-features = false }
+module-transaction-payment = { path = "../../modules/transaction-payment", default-features = false }
+module-airdrop = { path = "../../modules/airdrop", default-features = false }
 
-module-currencies = { path = "../modules/currencies", default-features = false }
-module-evm = { path = "../modules//evm", default-features = false }
-module-evm-accounts = { path = "../modules//evm-accounts", default-features = false }
-module-evm-bridge = { path = "../modules//evm-bridge", default-features = false }
-module-evm-rpc-runtime-api = { path = "../modules//evm/rpc/runtime_api",  default-features = false }
-module-evm-manager = { path = "../modules//evm-manager", default-features = false }
+module-currencies = { path = "../../modules/currencies", default-features = false }
+module-evm = { path = "../../modules/evm", default-features = false }
+module-evm-accounts = { path = "../../modules/evm-accounts", default-features = false }
+module-evm-bridge = { path = "../../modules/evm-bridge", default-features = false }
+module-evm-rpc-runtime-api = { path = "../../modules/evm/rpc/runtime_api",  default-features = false }
+module-evm-manager = { path = "../../modules/evm-manager", default-features = false }
 
-module-nft = { path = "../modules/nft", default-features = false }
-module-prices = { path = "../modules/prices", default-features = false }
+module-nft = { path = "../../modules/nft", default-features = false }
+module-prices = { path = "../../modules/prices", default-features = false }
 
-module-support = { path = "../modules/support", default-features = false }
-module-vesting = { path = "../modules/vesting", default-features = false }
+module-support = { path = "../../modules/support", default-features = false }
+module-vesting = { path = "../../modules/vesting", default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
 runtime-common = { path = "common", default-features = false }

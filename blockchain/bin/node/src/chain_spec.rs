@@ -303,11 +303,11 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 
 
 pub fn live_mainnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../../resources/chain_spec_mainnet_raw.json")[..])
+	ChainSpec::from_json_bytes(&include_bytes!("../resources/chain_spec_mainnet_raw.json")[..])
 }
 
 pub fn live_testnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../../resources/chain_spec_testnet_raw.json")[..])
+	ChainSpec::from_json_bytes(&include_bytes!("../resources/chain_spec_testnet_raw.json")[..])
 }
 
 pub fn mainnet_config() -> Result<ChainSpec, String> {
@@ -1171,7 +1171,7 @@ pub fn setheum_properties() -> Properties {
 pub fn evm_genesis() -> BTreeMap<H160, module_evm::GenesisAccount<Balance, Nonce>> {
 	let existential_deposit = MaxNativeTokenExistentialDeposit::get();
 	
-	let contracts_json = &include_bytes!("../../lib-sesl/predeploy-contracts/resources/bytecodes.json")[..];
+	let contracts_json = &include_bytes!("../../../submodules/predeploy-contracts/resources/bytecodes.json")[..];
 	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
 	let mut accounts = BTreeMap::new();
 	for (_, address, code_string) in contracts {

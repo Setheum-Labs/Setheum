@@ -642,7 +642,7 @@ pub fn erc20_address_not_exists() -> EvmAddress {
 
 /// Predeployed contract addresses
 pub fn evm_genesis() -> BTreeMap<H160, module_evm::GenesisAccount<Balance, Nonce>> {
-	let contracts_json = &include_bytes!("../../../../highway/predeploy-contracts/resources/bytecodes.json")[..];
+	let contracts_json = &include_bytes!("../../../../submodules/predeploy-contracts/resources/bytecodes.json")[..];
 	let contracts: Vec<(String, String, String)> = serde_json::from_slice(contracts_json).unwrap();
 	let mut accounts = BTreeMap::new();
 	for (_, address, code_string) in contracts {

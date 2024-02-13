@@ -27,16 +27,16 @@ members = [
 	"modules/vesting",
 
 	# ORML modules
-	"highway/orml/authority",
-	"highway/orml/benchmarking",
-	"highway/orml/currencies",
-	"highway/orml/nft",
-	"highway/orml/oracle",
-	"highway/orml/oracle/rpc",
- 	"highway/orml/oracle/rpc/runtime-api",
-	"highway/orml/tokens",
-	"highway/orml/traits",
-	"highway/orml/utilities",
+	"submodules/orml/authority",
+	"submodules/orml/benchmarking",
+	"submodules/orml/currencies",
+	"submodules/orml/nft",
+	"submodules/orml/oracle",
+	"submodules/orml/oracle/rpc",
+ 	"submodules/orml/oracle/rpc/runtime-api",
+	"submodules/orml/tokens",
+	"submodules/orml/traits",
+	"submodules/orml/utilities",
 ]
 exclude = ['rpc']
 

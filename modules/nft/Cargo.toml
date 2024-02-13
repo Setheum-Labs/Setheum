@@ -16,8 +16,8 @@ pallet-proxy = { git = "https://github.com/paritytech/substrate", branch = "polk
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
 
-orml-nft = { path = "../../highway/orml/nft", default-features = false }
-orml-traits = { path = "../../highway/orml/traits", default-features = false }
+orml-nft = { path = "../../submodules/orml/nft", default-features = false }
+orml-traits = { path = "../../submodules/orml/traits", default-features = false }
 
 primitives = { package = "setheum-primitives", path = "../../primitives", default-features = false }
 
@@ -27,7 +27,7 @@ sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
-orml-tokens = { path = "../../highway/orml/tokens" }
+orml-tokens = { path = "../../submodules/orml/tokens" }
 module-currencies = { path = "../currencies" }
 support = { package = "module-support", path = "../support" }
 
