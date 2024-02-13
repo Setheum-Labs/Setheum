@@ -17,14 +17,14 @@ pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/parityt
 
 primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
-orml-traits = { path = "../../submodules/orml/traits", default-features = false }
+orml-traits = { path = "../submodules/orml/traits", default-features = false }
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-tokens = { path = "../../submodules/orml/tokens" }
+orml-tokens = { path = "../submodules/orml/tokens" }
 module-currencies = { path = "../../tokens/currencies" }
-# module-dex = { path = "../../submodules/EthicalDeFi/DEX" }
+# module-dex = { path = "../submodules/EthicalDeFi/DEX" }
 smallvec = "1.4.1"
 
 [features]

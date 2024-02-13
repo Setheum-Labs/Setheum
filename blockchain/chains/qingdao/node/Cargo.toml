@@ -69,7 +69,7 @@ sc-consensus-slots = { git = "https://github.com/paritytech/substrate", branch =
 
 node-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
 
-orml-oracle-rpc = { path = "../../../submodules/orml/oracle/rpc" }
+orml-oracle-rpc = { path = "../../submodules/orml/oracle/rpc" }
 
 module-nft = { path = "../../../modules/nft" }
 module-evm = { path = "../../../modules//evm" }

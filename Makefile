@@ -125,4 +125,4 @@ endif
 .PHONY: generate-tokens
 generate-tokens:
 	cargo test -p setheum-primitives -- --ignored
-	cd submodules/predeploy-contracts && yarn && yarn run generate-bytecode
+	cd blockchain/submodules/predeploy-contracts && yarn && yarn run generate-bytecode
