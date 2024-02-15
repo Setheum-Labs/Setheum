@@ -116,7 +116,7 @@ sudo apt-get install -y git make clang curl pkg-config libssl-dev llvm libudev-d
 
 You may need additional dependencies, checkout [substrate.io](https://docs.substrate.io/v3/getting-started/installation) for more info.
 
-Make sure you have `submodule.recurse` set to true to configure submodules.
+Make sure you have `submodule.recurse` set to true to ease submodule use.
 
 ```bash
 git config --global submodule.recurse true
@@ -210,25 +210,11 @@ Update Cargo:
 make update
 ```
 
-Update Submodules:
-
-```bash
-make update-submodules
-```
-
 Update ORML:
 
 ```bash
 cd orml && git checkout master && git pull
 git add orml
-cargo update check-all
-```
-
-Update Predeploy-Contracts:
-
-```bash
-cd blockchain/submodules/predeploy-contracts && git checkout master && git pull
-git add predeploy-contracts
 cargo update check-all
 ```
 
