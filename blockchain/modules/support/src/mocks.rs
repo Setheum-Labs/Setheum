@@ -18,16 +18,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{AddressMapping, CurrencyId, CurrencyIdMapping};
-use codec::Encode;
-use frame_support::pallet_prelude::DispatchResult;
-use primitives::{currency::TokenInfo, evm::EvmAddress, H160_POSITION_TOKEN, H160_PREFIX_TOKEN};
+#![allow(clippy::type_complexity)]
+use crate::{AddressMapping, CurrencyId, Erc20InfoMapping, TransactionPayment};
+use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
+use parity_scale_codec::Encode;
+use primitives::{
+	currency::TokenInfo,
+	evm::{EvmAddress, H160_POSITION_TOKEN},
+	Multiplier, ReserveIdentifier,
+};
 use sp_core::{crypto::AccountId32, H160};
 use sp_io::hashing::blake2_256;
-use sp_std::{
-	convert::{TryFrom, TryInto},
-	vec::Vec,
-};
+use sp_runtime::{transaction_validity::TransactionValidityError, DispatchError, DispatchResult};
+use sp_std::{marker::PhantomData, vec::Vec};
+
+#[cfg(feature = "std")]
+use frame_support::traits::Imbalance;
 
 pub struct MockAddressMapping;
 
@@ -41,7 +47,7 @@ impl AddressMapping<AccountId32> for MockAddressMapping {
 
 	fn get_evm_address(account_id: &AccountId32) -> Option<H160> {
 		let data: [u8; 32] = account_id.clone().into();
-		if data.starts_with(b"evm:") {
+		if data.starts_with(b"evm:") && data.ends_with(&[0u8; 8]) {
 			Some(H160::from_slice(&data[4..24]))
 		} else {
 			None
@@ -65,17 +71,9 @@ impl AddressMapping<AccountId32> for MockAddressMapping {
 	}
 }
 
-pub struct MockCurrencyIdMapping;
+pub struct MockErc20InfoMapping;
 
-impl CurrencyIdMapping for MockCurrencyIdMapping {
-	fn set_erc20_mapping(_address: EvmAddress) -> DispatchResult {
-		Ok(())
-	}
-
-	fn get_evm_address(_currency_id: u32) -> Option<EvmAddress> {
-		Some(EvmAddress::default())
-	}
-
+impl Erc20InfoMapping for MockErc20InfoMapping {
 	fn name(currency_id: CurrencyId) -> Option<Vec<u8>> {
 		currency_id.name().map(|v| v.as_bytes().to_vec())
 	}
@@ -93,11 +91,122 @@ impl CurrencyIdMapping for MockCurrencyIdMapping {
 	}
 
 	fn decode_evm_address(v: EvmAddress) -> Option<CurrencyId> {
-		let address = v.as_bytes();
-		if address.starts_with(&H160_PREFIX_TOKEN) {
-			address[H160_POSITION_TOKEN].try_into().map(CurrencyId::Token).ok()
-		} else {
-			None
-		}
+		let token = v.as_bytes()[H160_POSITION_TOKEN]
+			.try_into()
+			.map(CurrencyId::Token)
+			.ok()?;
+		EvmAddress::try_from(token)
+			.map(|addr| if addr == v { Some(token) } else { None })
+			.ok()?
+	}
+}
+
+#[cfg(feature = "std")]
+impl<AccountId, Balance: Default + Copy, NegativeImbalance: Imbalance<Balance>>
+	TransactionPayment<AccountId, Balance, NegativeImbalance> for ()
+{
+	fn reserve_fee(
+		_who: &AccountId,
+		_fee: Balance,
+		_named: Option<ReserveIdentifier>,
+	) -> Result<Balance, DispatchError> {
+		Ok(Default::default())
+	}
+
+	fn unreserve_fee(_who: &AccountId, _fee: Balance, _named: Option<ReserveIdentifier>) -> Balance {
+		Default::default()
+	}
+
+	fn unreserve_and_charge_fee(
+		_who: &AccountId,
+		_weight: Weight,
+	) -> Result<(Balance, NegativeImbalance), TransactionValidityError> {
+		Ok((Default::default(), Imbalance::zero()))
+	}
+
+	fn refund_fee(
+		_who: &AccountId,
+		_weight: Weight,
+		_payed: NegativeImbalance,
+	) -> Result<(), TransactionValidityError> {
+		Ok(())
+	}
+
+	fn charge_fee(
+		_who: &AccountId,
+		_len: u32,
+		_weight: Weight,
+		_tip: Balance,
+		_pays_fee: Pays,
+		_class: DispatchClass,
+	) -> Result<(), TransactionValidityError> {
+		Ok(())
+	}
+
+	fn weight_to_fee(_weight: Weight) -> Balance {
+		Default::default()
+	}
+
+	fn apply_multiplier_to_fee(_fee: Balance, _multiplier: Option<Multiplier>) -> Balance {
+		Default::default()
+	}
+}
+
+/// Given provided `Currency`, implements default reserve behavior
+pub struct MockReservedTransactionPayment<Currency>(PhantomData<Currency>);
+
+#[cfg(feature = "std")]
+impl<
+		AccountId,
+		Balance: Default + Copy,
+		NegativeImbalance: Imbalance<Balance>,
+		Currency: frame_support::traits::NamedReservableCurrency<
+			AccountId,
+			ReserveIdentifier = ReserveIdentifier,
+			Balance = Balance,
+		>,
+	> TransactionPayment<AccountId, Balance, NegativeImbalance> for MockReservedTransactionPayment<Currency>
+{
+	fn reserve_fee(who: &AccountId, fee: Balance, named: Option<ReserveIdentifier>) -> Result<Balance, DispatchError> {
+		Currency::reserve_named(&named.unwrap(), who, fee)?;
+		Ok(fee)
+	}
+
+	fn unreserve_fee(who: &AccountId, fee: Balance, named: Option<ReserveIdentifier>) -> Balance {
+		Currency::unreserve_named(&named.unwrap(), who, fee)
+	}
+
+	fn unreserve_and_charge_fee(
+		_who: &AccountId,
+		_weight: Weight,
+	) -> Result<(Balance, NegativeImbalance), TransactionValidityError> {
+		Ok((Default::default(), Imbalance::zero()))
+	}
+
+	fn refund_fee(
+		_who: &AccountId,
+		_weight: Weight,
+		_payed: NegativeImbalance,
+	) -> Result<(), TransactionValidityError> {
+		Ok(())
+	}
+
+	fn charge_fee(
+		_who: &AccountId,
+		_len: u32,
+		_weight: Weight,
+		_tip: Balance,
+		_pays_fee: Pays,
+		_class: DispatchClass,
+	) -> Result<(), TransactionValidityError> {
+		Ok(())
+	}
+
+	fn weight_to_fee(_weight: Weight) -> Balance {
+		Default::default()
+	}
+
+	fn apply_multiplier_to_fee(_fee: Balance, _multiplier: Option<Multiplier>) -> Balance {
+		Default::default()
 	}
 }
