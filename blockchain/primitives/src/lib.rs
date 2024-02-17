@@ -22,76 +22,33 @@
 #![allow(clippy::unnecessary_cast)]
 #![allow(clippy::upper_case_acronyms)]
 
+pub mod bonding;
 pub mod currency;
 pub mod evm;
+pub mod nft;
 pub mod signature;
 pub mod task;
+pub mod testing;
+pub mod unchecked_extrinsic;
 
-use codec::{Decode, Encode, MaxEncodedLen};
+pub use testing::*;
+
+use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
 use sp_core::U256;
-use core::ops::Range;
 use sp_runtime::{
 	generic,
 	traits::{BlakeTwo256, IdentifyAccount, Verify},
-	RuntimeDebug,
+	FixedU128, RuntimeDebug,
 };
+use sp_std::prelude::*;
 
 pub use currency::{CurrencyId, DexShare, TokenSymbol};
-
-#[cfg(feature = "std")]
-use serde::{Deserialize, Serialize};
+pub use evm::{convert_decimals_from_evm, convert_decimals_to_evm};
 
 #[cfg(test)]
 mod tests;
-
-/// Ethereum precompiles
-/// 0 - 0x400
-/// Setheum precompiles
-/// 0x400 - 0x800
-pub const PRECOMPILE_ADDRESS_START: u64 = 0x400;
-/// Predeployed system contracts (except Mirrored ERC20)
-/// 0x800 - 0x1000
-pub const PREDEPLOY_ADDRESS_START: u64 = 0x800;
-/// Mirrored Tokens (ensure length <= 4 bytes, encode to u32 will take the first 4 non-zero bytes)
-/// 0x1000000
-pub const MIRRORED_TOKENS_ADDRESS_START: u64 = 0x1000000;
-/// Mirrored NFT (ensure length <= 4 bytes, encode to u32 will take the first 4 non-zero bytes)
-/// 0x2000000
-pub const MIRRORED_NFT_ADDRESS_START: u64 = 0x2000000;
-/// Mirrored LP Tokens
-/// 0x10000000000000000
-pub const MIRRORED_LP_TOKENS_ADDRESS_START: u128 = 0x10000000000000000;
-/// System contract address prefix
-pub const SYSTEM_CONTRACT_ADDRESS_PREFIX: [u8; 11] = [0u8; 11];
-/// Network contracts
-/// 0x1000 - 0x01000000
-pub const NETWORK_CONTRACT_START: u64 = 0x1000;
-
-/// CurrencyId to H160([u8; 20]) bit encoding rule.
-///
-/// Token
-/// v[16] = 1 // MIRRORED_TOKENS_ADDRESS_START
-/// - v[19] = token(1 byte)
-///
-/// DexShare
-/// v[11] = 1 // MIRRORED_LP_TOKENS_ADDRESS_START
-/// - v[12..16] = dex left(4 bytes)
-/// - v[16..20] = dex right(4 bytes)
-///
-/// Erc20
-/// - v[0..20] = evm address(20 bytes)
-pub const H160_TYPE_TOKEN: u8 = 1;
-pub const H160_TYPE_DEXSHARE: u8 = 1;
-pub const H160_POSITION_TOKEN: usize = 19;
-pub const H160_POSITION_DEXSHARE_LEFT: Range<usize> = 12..16;
-pub const H160_POSITION_DEXSHARE_RIGHT: Range<usize> = 16..20;
-pub const H160_POSITION_ERC20: Range<usize> = 0..20;
-pub const H160_PREFIX_TOKEN: [u8; 19] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0];
-pub const H160_PREFIX_DEXSHARE: [u8; 12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
-
-/// NFT Balance type
-pub type NFTBalance = u128;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -155,29 +112,33 @@ pub type BlockId = generic::BlockId<Block>;
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum SerpStableCurrencyId {
-	SETR = 0,
-	SETUSD = 1,
-}
+/// Fee multiplier.
+pub type Multiplier = FixedU128;
 
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(
+	Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, Serialize, Deserialize,
+)]
 pub enum AuthoritysOriginId {
 	Root,
 	Treasury,
+	LiquidSeeStakingTreasury,
+	LiquidEdfStakingTreasury,
+	SetterEcdpTreasury,
+	SlickUsdEcdpTreasury,
+	TreasuryReserve,
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(
+	Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, Serialize, Deserialize,
+)]
 pub enum DataProviderId {
 	Aggregated = 0,
 	Setheum = 1,
 }
 
-#[derive(Encode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(
+	Encode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, MaxEncodedLen, Serialize, Deserialize,
+)]
 pub struct TradingPair(CurrencyId, CurrencyId);
 
 impl TradingPair {
@@ -211,20 +172,33 @@ impl TradingPair {
 }
 
 impl Decode for TradingPair {
-	fn decode<I: codec::Input>(input: &mut I) -> sp_std::result::Result<Self, codec::Error> {
+	fn decode<I: parity_scale_codec::Input>(input: &mut I) -> sp_std::result::Result<Self, parity_scale_codec::Error> {
 		let (first, second): (CurrencyId, CurrencyId) = Decode::decode(input)?;
-		TradingPair::from_currency_ids(first, second).ok_or_else(|| codec::Error::from("invalid currency id"))
+		TradingPair::from_currency_ids(first, second)
+			.ok_or_else(|| parity_scale_codec::Error::from("invalid currency id"))
 	}
+}
+
+#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default, MaxEncodedLen, TypeInfo)]
+pub struct Position {
+	/// The amount of collateral.
+	pub collateral: Balance,
+	/// The amount of debit.
+	pub debit: Balance,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, MaxEncodedLen, TypeInfo)]
 #[repr(u8)]
 pub enum ReserveIdentifier {
+	CollatorSelection,
 	EvmStorageDeposit,
 	EvmDeveloperDeposit,
-	Setmint,
+	SetterEcdp,
+	SlickUsdEcdp,
 	Nft,
 	TransactionPayment,
+	TransactionPaymentDeposit,
+
 	// always the last, indicate number of variants
 	Count,
 }
