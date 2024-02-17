@@ -82,7 +82,7 @@ Setheum’s consensus system works to achieve high scalability and high security
 
 ### 1.2. EthicalDeFi
 
-EthicalDeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including a cutting-edge AMM DEX, modules,
+EthicalDeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including AMM, Orderbook & Aggregated DEX modules,
 Decentralised Liquid Staking for Setheum SE and ethical zero-interest halal stablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD)
 and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable
 without compromising decentralisation or economic stability, offering zero-interest loans of stable cryptocurrencies that has scalable value and trust,
