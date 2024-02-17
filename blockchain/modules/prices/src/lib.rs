@@ -26,20 +26,22 @@
 //! process and feed prices for Setheum. Process include:
 //!   - specify a fixed price for stable currency
 //!   - feed price in USD or related price bewteen two currencies
-//!   - lock/unlock the price data get from oracle
+//!   - lock/unlock the price data got from oracle
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use frame_support::{pallet_prelude::*, transactional};
+use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
-use orml_traits::{DataFeeder, DataProvider, MultiCurrency};
-use primitives::{Balance, CurrencyId};
+use module_support::{SwapDexManager, Erc20InfoMapping, ExchangeRateProvider, LockablePrice, Price, PriceProvider, Rate};
+use orml_traits::{DataFeeder, DataProvider, GetByKey, MultiCurrency};
+use primitives::{Balance, CurrencyId, Lease};
 use sp_core::U256;
-use sp_runtime::FixedPointNumber;
-use sp_std::{convert::TryInto, marker::PhantomData};
-use support::{CurrencyIdMapping, DEXManager, LockablePrice, Price, PriceProvider};
-use integer_sqrt::*;
+use sp_runtime::{
+	traits::{BlockNumberProvider, CheckedMul, One, Saturating, UniqueSaturatedInto},
+	FixedPointNumber,
+};
+use sp_std::marker::PhantomData;
 
 mod mock;
 mod tests;
@@ -54,38 +56,62 @@ pub mod module {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// The data source, such as Oracle.
 		type Source: DataProvider<CurrencyId, Price> + DataFeeder<CurrencyId, Price, Self::AccountId>;
 
-		/// The stable currency id, it should be SETUSD in Setheum.
+		/// The fixed prices of USSD, it should be 1 USD in Setheum.
 		#[pallet::constant]
-		type GetSetUSDId: Get<CurrencyId>;
+		type USSDFixedPrice: Get<Price>;
 
-		/// The stable currency id, it should be SETR in Setheum.
+		/// The USSD CURRENCY id, it should be USSD in Setheum.
 		#[pallet::constant]
-		type SetterCurrencyId: Get<CurrencyId>;
+		type GetUSSDCurrencyId: Get<CurrencyId>;
 
-		/// The fixed prices of stable currency SETUSD, it should be 1 USD in Setheum.
+		/// The SEE currency id, it should be SEE in Setheum.
 		#[pallet::constant]
-		type SetUSDFixedPrice: Get<Price>;
+		type GetSEECurrencyId: Get<CurrencyId>;
 
-		/// The fixed prices of stable currency SETR, it should be 0.1 USD (10 cents) in Setheum.
+		/// The Liquid SEE currency id, it should be LSEE in Setheum.
 		#[pallet::constant]
-		type SetterFixedPrice: Get<Price>;
+		type GetLiquidSEECurrencyId: Get<CurrencyId>;
+
+		/// The EDF currency id, it should be EDF in Setheum.
+		#[pallet::constant]
+		type GetEDFCurrencyId: Get<CurrencyId>;
+
+		/// The Liquid EDF currency id, it should be LEDF in Setheum.
+		#[pallet::constant]
+		type GetLiquidEDFCurrencyId: Get<CurrencyId>;
 
 		/// The origin which may lock and unlock prices feed to system.
-		type LockOrigin: EnsureOrigin<Self::Origin>;
+		type LockOrigin: EnsureOrigin<Self::RuntimeOrigin>;
+
+		/// The provider of the exchange rate between liquid currency and
+		/// staking currency.
+		type LiquidStakingExchangeRateProvider: ExchangeRateProvider;
 
 		/// DEX provide liquidity info.
-		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
+		type DEX: SwapDexManager<Self::AccountId, Balance, CurrencyId>;
 
 		/// Currency provide the total insurance of LPToken.
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
 
 		/// Mapping between CurrencyId and ERC20 address so user can use Erc20.
-		type CurrencyIdMapping: CurrencyIdMapping;
+		type Erc20InfoMapping: Erc20InfoMapping;
+
+		/// Block number provider for the relaychain.
+		type RelayChainBlockNumber: BlockNumberProvider<BlockNumber = BlockNumberFor<Self>>;
+
+		/// The staking reward rate per relaychain block for StakingCurrency.
+		/// In fact, the staking reward is not settled according to the block on relaychain.
+		#[pallet::constant]
+		type RewardRatePerRelaychainBlock: Get<Rate>;
+
+		/// If a currency is pegged to another currency in price, price of this currency is
+		/// equal to the price of another.
+		type PricingPegged: GetByKey<CurrencyId, Option<CurrencyId>>;
 
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
@@ -102,14 +128,13 @@ pub mod module {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Lock price. \[currency_id, locked_price\]
-		LockPrice(CurrencyId, Price),
-		/// Unlock price. \[currency_id\]
-		UnlockPrice(CurrencyId),
-		/// Unlock price. \[relative_price\]
-		FetchPrice(CurrencyId, Option<Price>),
-		/// Unlock price. \[relative_price\]
-		RelativePrice(CurrencyId, CurrencyId, Option<Price>),
+		/// Lock price.
+		LockPrice {
+			currency_id: CurrencyId,
+			locked_price: Price,
+		},
+		/// Unlock price.
+		UnlockPrice { currency_id: CurrencyId },
 	}
 
 	/// Mapping from currency id to it's locked price
@@ -123,7 +148,7 @@ pub mod module {
 	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -132,8 +157,8 @@ pub mod module {
 		/// The dispatch origin of this call must be `LockOrigin`.
 		///
 		/// - `currency_id`: currency type.
+		#[pallet::call_index(0)]
 		#[pallet::weight((T::WeightInfo::lock_price(), DispatchClass::Operational))]
-		#[transactional]
 		pub fn lock_price(origin: OriginFor<T>, currency_id: CurrencyId) -> DispatchResult {
 			T::LockOrigin::ensure_origin(origin)?;
 			<Pallet<T> as LockablePrice<CurrencyId>>::lock_price(currency_id)?;
@@ -145,8 +170,8 @@ pub mod module {
 		/// The dispatch origin of this call must be `LockOrigin`.
 		///
 		/// - `currency_id`: currency type.
+		#[pallet::call_index(1)]
 		#[pallet::weight((T::WeightInfo::unlock_price(), DispatchClass::Operational))]
-		#[transactional]
 		pub fn unlock_price(origin: OriginFor<T>, currency_id: CurrencyId) -> DispatchResult {
 			T::LockOrigin::ensure_origin(origin)?;
 			<Pallet<T> as LockablePrice<CurrencyId>>::unlock_price(currency_id)?;
@@ -161,15 +186,27 @@ impl<T: Config> Pallet<T> {
 	///
 	/// Note: this returns the price for 1 basic unit
 	fn access_price(currency_id: CurrencyId) -> Option<Price> {
-		let maybe_price = if currency_id == T::GetSetUSDId::get() {
-			// if is SETUSD, use fixed price
-			Some(T::SetUSDFixedPrice::get())
-		} else if currency_id == T::SetterCurrencyId::get() {
-			// if is SETR, return Setter fixed price (currently $0.1)
-			Some(T::SetterFixedPrice::get())
-		} else if let CurrencyId::DexShare(symbol_0, symbol_1) = currency_id {
-			let token_0: CurrencyId = symbol_0.into();
-			let token_1: CurrencyId = symbol_1.into();
+		// if it's configured pegged to another currency id
+		let currency_id = if let Some(pegged_currency_id) = T::PricingPegged::get(&currency_id) {
+			pegged_currency_id
+		} else {
+			currency_id
+		};
+
+		let maybe_price = if currency_id == T::GetUSSDCurrencyId::get() {
+			// if is USSD stablecoin, use fixed price
+			Some(T::USSDFixedPrice::get())
+		} else if currency_id == T::GetLiquidSEECurrencyId::get() {
+			// directly return real-time the multiple of the price of SEECurrencyId and the exchange rate
+			return Self::access_price(T::GetSEECurrencyId::get())
+				.and_then(|n| n.checked_mul(&T::LiquidStakingExchangeRateProvider::get_exchange_rate()));
+		} else if currency_id == T::GetLiquidEDFCurrencyId::get() {
+			// directly return real-time the multiple of the price of EDFCurrencyId and the exchange rate
+			return Self::access_price(T::GetEDFCurrencyId::get())
+				.and_then(|n| n.checked_mul(&T::LiquidStakingExchangeRateProvider::get_exchange_rate()));
+		} else if let CurrencyId::DexShare(dex_share_0, dex_share_1) = currency_id {
+			let token_0: CurrencyId = dex_share_0.into();
+			let token_1: CurrencyId = dex_share_1.into();
 
 			// directly return the fair price
 			return {
@@ -186,7 +223,7 @@ impl<T: Config> Pallet<T> {
 			T::Source::get(&currency_id)
 		};
 
-		let maybe_adjustment_multiplier = 10u128.checked_pow(T::CurrencyIdMapping::decimals(currency_id)?.into());
+		let maybe_adjustment_multiplier = 10u128.checked_pow(T::Erc20InfoMapping::decimals(currency_id)?.into());
 
 		if let (Some(price), Some(adjustment_multiplier)) = (maybe_price, maybe_adjustment_multiplier) {
 			// return the price for 1 basic unit
@@ -202,14 +239,17 @@ impl<T: Config> LockablePrice<CurrencyId> for Pallet<T> {
 	fn lock_price(currency_id: CurrencyId) -> DispatchResult {
 		let price = Self::access_price(currency_id).ok_or(Error::<T>::AccessPriceFailed)?;
 		LockedPrice::<T>::insert(currency_id, price);
-		Pallet::<T>::deposit_event(Event::LockPrice(currency_id, price));
+		Pallet::<T>::deposit_event(Event::LockPrice {
+			currency_id,
+			locked_price: price,
+		});
 		Ok(())
 	}
 
 	/// Unlock the locked price
 	fn unlock_price(currency_id: CurrencyId) -> DispatchResult {
 		let _ = LockedPrice::<T>::take(currency_id).ok_or(Error::<T>::NoLockedPrice)?;
-		Pallet::<T>::deposit_event(Event::UnlockPrice(currency_id));
+		Pallet::<T>::deposit_event(Event::UnlockPrice { currency_id });
 		Ok(())
 	}
 }

@@ -23,50 +23,48 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types};
+use frame_support::{
+	construct_runtime, ord_parameter_types, parameter_types,
+	traits::{ConstU64, Everything, Nothing},
+};
 use frame_system::EnsureSignedBy;
+use module_support::{mocks::MockErc20InfoMapping, ExchangeRate, SwapLimit};
 use orml_traits::{parameter_type_with_key, DataFeeder};
 use primitives::{currency::DexShare, Amount, TokenSymbol};
 use sp_core::{H160, H256};
 use sp_runtime::{
-	testing::Header,
 	traits::{IdentityLookup, One as OneT, Zero},
-	DispatchError, FixedPointNumber,
+	BuildStorage, DispatchError, FixedPointNumber,
 };
 use sp_std::cell::RefCell;
-use support::{mocks::MockCurrencyIdMapping, SwapLimit};
 
 pub type AccountId = u128;
 pub type BlockNumber = u64;
 
-pub const SETM: CurrencyId = CurrencyId::Token(TokenSymbol::SETM);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SERP: CurrencyId = CurrencyId::Token(TokenSymbol::SERP);
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const LP_SETUSD_DNAR: CurrencyId =
-	CurrencyId::DexShare(DexShare::Token(TokenSymbol::SETUSD), DexShare::Token(TokenSymbol::DNAR));
+pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
+pub const LSEE: CurrencyId = CurrencyId::Token(TokenSymbol::LSEE);
+pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
+pub const TAI: CurrencyId = CurrencyId::Token(TokenSymbol::TAI);
+pub const KSM: CurrencyId = CurrencyId::Token(TokenSymbol::KSM);
+pub const LP_USSD_SEE: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USSD), DexShare::Token(TokenSymbol::SEE));
+
 
 mod prices {
 	pub use super::super::*;
 }
 
-parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-}
-
 impl frame_system::Config for Runtime {
-	type Origin = Origin;
-	type Index = u64;
-	type BlockNumber = BlockNumber;
-	type Call = Call;
+	type RuntimeOrigin = RuntimeOrigin;
+	type Nonce = u64;
+	type RuntimeCall = RuntimeCall;
 	type Hash = H256;
 	type Hashing = ::sp_runtime::traits::BlakeTwo256;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = Header;
-	type Event = Event;
-	type BlockHashCount = BlockHashCount;
+	type Block = Block;
+	type RuntimeEvent = RuntimeEvent;
+	type BlockHashCount = ConstU64<250>;
 	type BlockWeights = ();
 	type BlockLength = ();
 	type Version = ();
@@ -75,10 +73,11 @@ impl frame_system::Config for Runtime {
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type DbWeight = ();
-	type BaseCallFilter = ();
+	type BaseCallFilter = Everything;
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
 	type OnSetCode = ();
+	type MaxConsumers = ConstU32<16>;
 }
 
 thread_local! {
@@ -94,18 +93,20 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 	fn get(currency_id: &CurrencyId) -> Option<Price> {
 		if CHANGED.with(|v| *v.borrow_mut()) {
 			match *currency_id {
-				SETUSD => None,
-				SERP => Some(Price::saturating_from_integer(40000)),
-				DNAR => Some(Price::saturating_from_integer(10)),
-				SETM => Some(Price::saturating_from_integer(30)),
+				USSD => None,
+				TAI => Some(Price::saturating_from_integer(40000)),
+				SEE => Some(Price::saturating_from_integer(10)),
+				SEE => Some(Price::saturating_from_integer(30)),
+				KSM => Some(Price::saturating_from_integer(200)),
 				_ => None,
 			}
 		} else {
 			match *currency_id {
-				SETUSD => Some(Price::saturating_from_rational(99, 100)),
-				SERP => Some(Price::saturating_from_integer(50000)),
-				DNAR => Some(Price::saturating_from_integer(100)),
-				SETM => Some(Price::zero()),
+				USSD => Some(Price::saturating_from_rational(99, 100)),
+				TAI => Some(Price::saturating_from_integer(50000)),
+				SEE => Some(Price::saturating_from_integer(100)),
+				SEE => Some(Price::zero()),
+				KSM => None,
 				_ => None,
 			}
 		}
@@ -113,16 +114,27 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 }
 
 impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
-	fn feed_value(_: AccountId, _: CurrencyId, _: Price) -> sp_runtime::DispatchResult {
+	fn feed_value(_: Option<AccountId>, _: CurrencyId, _: Price) -> sp_runtime::DispatchResult {
 		Ok(())
 	}
 }
 
+pub struct MockLiquidStakingExchangeProvider;
+impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
+	fn get_exchange_rate() -> ExchangeRate {
+		if CHANGED.with(|v| *v.borrow_mut()) {
+			ExchangeRate::saturating_from_rational(3, 5)
+		} else {
+			ExchangeRate::saturating_from_rational(1, 2)
+		}
+	}
+}
+
 pub struct MockDEX;
-impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
+impl SwapDexManager<AccountId, Balance, CurrencyId> for MockDEX {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
-			(SETUSD, DNAR) => (10000, 200),
+			(USSD, SEE) => (10000, 200),
 			_ => (0, 0),
 		}
 	}
@@ -140,7 +152,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_: CurrencyId,
 		_: SwapLimit<Balance>,
 		_: Vec<Vec<CurrencyId>>,
-	) -> Option<Vec<CurrencyId>> {
+	) -> Option<(Vec<CurrencyId>, Balance, Balance)> {
 		unimplemented!()
 	}
 
@@ -152,23 +164,6 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		unimplemented!()
 	}
 
-	fn buyback_swap_with_specific_path(
-		_: &AccountId,
-		_: &[CurrencyId],
-		_: SwapLimit<Balance>,
-	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-
-	fn swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_exact_target_amount: Balance,
-		_max_supply_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
 	fn add_liquidity(
 		_who: &AccountId,
 		_currency_id_a: CurrencyId,
@@ -176,6 +171,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_max_amount_a: Balance,
 		_max_amount_b: Balance,
 		_min_share_increment: Balance,
+		_stake_increment_share: bool,
 	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
@@ -187,6 +183,7 @@ impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
 		_remove_share: Balance,
 		_min_withdrawn_a: Balance,
 		_min_withdrawn_b: Balance,
+		_by_unstake: bool,
 	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
 		unimplemented!()
 	}
@@ -199,15 +196,25 @@ parameter_type_with_key! {
 }
 
 impl orml_tokens::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type Amount = Amount;
 	type CurrencyId = CurrencyId;
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = ();
+	type CurrencyHooks = ();
 	type MaxLocks = ();
-	type DustRemovalWhitelist = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type DustRemovalWhitelist = Nothing;
+}
+
+impl BlockNumberProvider for MockRelayBlockNumberProvider {
+	type BlockNumber = BlockNumber;
+
+	fn current_block_number() -> Self::BlockNumber {
+		Self::get()
+	}
 }
 
 ord_parameter_types! {
@@ -215,38 +222,39 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetSetUSDId: CurrencyId = SETUSD;
-	pub const SetterCurrencyId: CurrencyId = SETR;
-	pub SetUSDFixedPrice: Price = Price::one();
-	pub SetterFixedPrice: Price = Price::saturating_from_rational(1, 4); // $0.25
+	pub const GetUSSDCurrencyId: CurrencyId = USSD;
+	pub const GetSEECurrencyId: CurrencyId = SEE;
+	pub const GetLiquidSEECurrencyId: CurrencyId = LSEE;
+	pub USSDFixedPrice: Price = Price::one();
+	pub static MockRelayBlockNumberProvider: BlockNumber = 0;
+	pub RewardRatePerRelaychainBlock: Rate = Rate::saturating_from_rational(1, 1000);
 }
 
 impl Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Source = MockDataProvider;
-	type GetSetUSDId = GetSetUSDId;
-	type SetterCurrencyId = SetterCurrencyId;
-	type SetUSDFixedPrice = SetUSDFixedPrice;
-	type SetterFixedPrice = SetterFixedPrice;
+	type GetUSSDCurrencyId = GetUSSDCurrencyId;
+	type USSDFixedPrice = USSDFixedPrice;
+	type GetSEECurrencyId = GetSEECurrencyId;
+	type GetLiquidSEECurrencyId = GetLiquidSEECurrencyId;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
+	type LiquidStakingExchangeRateProvider = MockLiquidStakingExchangeProvider;
 	type DEX = MockDEX;
 	type Currency = Tokens;
-	type CurrencyIdMapping = MockCurrencyIdMapping;
+	type Erc20InfoMapping = MockErc20InfoMapping;
+	type RelayChainBlockNumber = MockRelayBlockNumberProvider;
+	type RewardRatePerRelaychainBlock = RewardRatePerRelaychainBlock;
+	type PricingPegged = PricingPegged;
 	type WeightInfo = ();
 }
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 construct_runtime!(
-	pub enum Runtime where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic
-	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		PricesModule: prices::{Pallet, Storage, Call, Event<T>},
-		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>},
+	pub enum Runtime {
+		System: frame_system,
+		PricesModule: prices,
+		Tokens: orml_tokens,
 	}
 );
 
@@ -260,8 +268,8 @@ impl Default for ExtBuilder {
 
 impl ExtBuilder {
 	pub fn build(self) -> sp_io::TestExternalities {
-		let t = frame_system::GenesisConfig::default()
-			.build_storage::<Runtime>()
+		let t = frame_system::GenesisConfig::<Runtime>::default()
+			.build_storage()
 			.unwrap();
 
 		t.into()

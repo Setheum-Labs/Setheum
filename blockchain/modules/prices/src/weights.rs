@@ -26,7 +26,7 @@
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("dev"), DB CACHE: 128
 
 // Executed Command:
-// target/release/setheum-node
+// target/release/setheum
 // benchmark
 // --chain=dev
 // --steps=50
@@ -36,8 +36,8 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./blockchain/modules/prices/src/weights.rs
-// --template=.maintain/module-weight-template.hbs
+// --output=./modules/prices/src/weights.rs
+// --template=./templates/module-weight-template.hbs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
@@ -58,25 +58,25 @@ pub trait WeightInfo {
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn lock_price() -> Weight {
-		(53_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(11 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+		Weight::from_parts(53_000_000, 0)
+			.saturating_add(T::DbWeight::get().reads(11 as u64))
+			.saturating_add(T::DbWeight::get().writes(3 as u64))
 	}
 	fn unlock_price() -> Weight {
-		(12_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+		Weight::from_parts(12_000_000, 0)
+			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
 }
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
 	fn lock_price() -> Weight {
-		(53_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(11 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+		Weight::from_parts(53_000_000, 0)
+			.saturating_add(RocksDbWeight::get().reads(11 as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
 	fn unlock_price() -> Weight {
-		(12_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+		Weight::from_parts(12_000_000, 0)
+			.saturating_add(RocksDbWeight::get().writes(1 as u64))
 	}
 }
