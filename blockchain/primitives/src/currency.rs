@@ -202,7 +202,6 @@ pub trait TokenInfo {
 
 pub type ForeignAssetId = u16;
 pub type Erc20Id = u32;
-pub type Lease = BlockNumber;
 
 #[derive(
 	Encode,
@@ -223,7 +222,6 @@ pub type Lease = BlockNumber;
 pub enum DexShare {
 	Token(TokenSymbol),
 	Erc20(EvmAddress),
-	LiquidCrowdloan(Lease),
 	ForeignAsset(ForeignAssetId),
 }
 
