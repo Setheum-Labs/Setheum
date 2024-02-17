@@ -29,6 +29,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
+#![allow(clippy::type_complexity)]
 
 use frame_support::{pallet_prelude::*, transactional, PalletId, traits::Get};
 use frame_system::pallet_prelude::*;
@@ -38,6 +39,7 @@ use sp_std::vec::Vec;
 use sp_runtime::traits::AccountIdConversion;
 
 mod mock;
+mod tests;
 
 pub use module::*;
 
