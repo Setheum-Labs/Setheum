@@ -22,61 +22,44 @@
 
 #![cfg(test)]
 
-use frame_support::{assert_ok, ord_parameter_types, parameter_types, traits::GenesisBuild, PalletId};
-use orml_traits::parameter_type_with_key;
-use primitives::{CurrencyId, ReserveIdentifier, TokenSymbol};
-use sp_core::H256;
-use sp_runtime::{
-	testing::Header,
-	traits::{AccountIdConversion, IdentityLookup, One},
-	AccountId32, Perbill, FixedPointNumber,
-};
-use sp_std::cell::RefCell;
-use support::{
-	mocks::MockAddressMapping,
-	AddressMapping, DEXManager,
-	Ratio, Price, PriceProvider,
-	SwapLimit
-};
-
 use super::*;
-use frame_system::EnsureSignedBy;
-use sp_core::{bytes::from_hex, H160};
-use sp_std::str::FromStr;
-
 pub use crate as currencies;
 
-parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: u32 = 1024;
-	pub const MaximumBlockLength: u32 = 2 * 1024;
-	pub const AvailableBlockRatio: Perbill = Perbill::one();
-}
+use frame_support::{
+	assert_ok, ord_parameter_types, parameter_types,
+	traits::{ConstU128, ConstU32, ConstU64, Everything, Nothing},
+	PalletId,
+};
+use frame_system::EnsureSignedBy;
+use module_support::{mocks::MockAddressMapping, AddressMapping};
+use orml_traits::{currency::MutationHooks, parameter_type_with_key};
+use primitives::{evm::convert_decimals_to_evm, CurrencyId, ReserveIdentifier, TokenSymbol};
+use sp_core::H256;
+use sp_core::{H160, U256};
+use sp_runtime::{
+	testing::Header,
+	traits::{AccountIdConversion, IdentityLookup},
+	AccountId32, BuildStorage,
+};
+use sp_std::str::FromStr;
+
+pub const CHARLIE: AccountId = AccountId32::new([6u8; 32]);
+pub const DAVE: AccountId = AccountId32::new([7u8; 32]);
+pub const EVE: AccountId = AccountId32::new([8u8; 32]);
+pub const FERDIE: AccountId = AccountId32::new([9u8; 32]);
 
 pub type AccountId = AccountId32;
-pub type BlockNumber = u64;
-
-// Currencies constants - CurrencyId/TokenSymbol
-pub const DNAR: CurrencyId = CurrencyId::Token(TokenSymbol::DNAR);
-pub const HELP: CurrencyId = CurrencyId::Token(TokenSymbol::HELP);
-pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
-pub const SETUSD: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-
-pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
-pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SETUSD);
-
 impl frame_system::Config for Runtime {
-	type Origin = Origin;
-	type Call = Call;
-	type Index = u64;
-	type BlockNumber = BlockNumber;
+	type RuntimeOrigin = RuntimeOrigin;
+	type RuntimeCall = RuntimeCall;
+	type Nonce = u64;
 	type Hash = H256;
 	type Hashing = sp_runtime::traits::BlakeTwo256;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = Header;
-	type Event = Event;
-	type BlockHashCount = BlockHashCount;
+	type Block = Block;
+	type RuntimeEvent = RuntimeEvent;
+	type BlockHashCount = ConstU64<250>;
 	type BlockWeights = ();
 	type BlockLength = ();
 	type Version = ();
@@ -85,73 +68,90 @@ impl frame_system::Config for Runtime {
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type DbWeight = ();
-	type BaseCallFilter = ();
+	type BaseCallFilter = Everything;
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
 	type OnSetCode = ();
+	type MaxConsumers = ConstU32<16>;
 }
 
 type Balance = u128;
 
 parameter_type_with_key! {
 	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
-		if *currency_id == DNAR { return 2; }
+		if *currency_id == EDF { return 2; }
 		Default::default()
 	};
 }
 
 parameter_types! {
-	pub DustAccount: AccountId = PalletId(*b"srml/dst").into_account();
-	pub const MaxLocks: u32 = 100;
+	pub DustAccount: AccountId = PalletId(*b"orml/dst").into_account_truncating();
 }
 
-impl tokens::Config for Runtime {
-	type Event = Event;
+pub struct CurrencyHooks<T>(marker::PhantomData<T>);
+impl<T: orml_tokens::Config> MutationHooks<T::AccountId, T::CurrencyId, T::Balance> for CurrencyHooks<T>
+where
+	T::AccountId: From<AccountId>,
+{
+	type OnDust = orml_tokens::TransferDust<T, DustAccount>;
+	type OnSlash = ();
+	type PreDeposit = ();
+	type PostDeposit = ();
+	type PreTransfer = ();
+	type PostTransfer = ();
+	type OnNewTokenAccount = ();
+	type OnKilledTokenAccount = ();
+}
+
+impl orml_tokens::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type Amount = i64;
 	type CurrencyId = CurrencyId;
 	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = tokens::TransferDust<Runtime, DustAccount>;
+	type CurrencyHooks = CurrencyHooks<Runtime>;
 	type WeightInfo = ();
-	type MaxLocks = MaxLocks;
-	type DustRemovalWhitelist = ();
+	type MaxLocks = ConstU32<100>;
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type DustRemovalWhitelist = Nothing;
 }
+
+pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
+pub const X_TOKEN_ID: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
+pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
 
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
 }
 
-parameter_types! {
-	pub const ExistentialDeposit: u64 = 2;
-	pub const MaxReserves: u32 = 50;
-}
-
 impl pallet_balances::Config for Runtime {
 	type Balance = Balance;
 	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
+	type RuntimeEvent = RuntimeEvent;
+	type ExistentialDeposit = ConstU128<2>;
+	type AccountStore = module_support::SystemAccountStore<Runtime>;
 	type MaxLocks = ();
-	type MaxReserves = MaxReserves;
+	type MaxReserves = ConstU32<50>;
 	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
+	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = RuntimeFreezeReason;
+	type FreezeIdentifier = ();
+	type MaxHolds = ConstU32<1>;
+	type MaxFreezes = ();
 }
 
 pub type PalletBalances = pallet_balances::Pallet<Runtime>;
 
-parameter_types! {
-	pub const MinimumPeriod: u64 = 1000;
-}
 impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = ();
-	type MinimumPeriod = MinimumPeriod;
+	type MinimumPeriod = ConstU64<1000>;
 	type WeightInfo = ();
 }
 
 parameter_types! {
-	pub const NewContractExtraBytes: u32 = 1;
 	pub NetworkContractSource: H160 = alice_evm_addr();
 }
 
@@ -159,32 +159,43 @@ ord_parameter_types! {
 	pub const CouncilAccount: AccountId32 = AccountId32::from([1u8; 32]);
 	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
 	pub const NetworkContractAccount: AccountId32 = AccountId32::from([0u8; 32]);
-	pub const StorageDepositPerByte: u128 = 10;
+	pub const StorageDepositPerByte: u128 = convert_decimals_to_evm(10);
+	pub const TxFeePerGas: u128 = 10;
 	pub const DeveloperDeposit: u64 = 1000;
-	pub const DeploymentFee: u64 = 200;
+	pub const PublicationFee: u64 = 200;
+}
+
+pub struct GasToWeight;
+impl Convert<u64, Weight> for GasToWeight {
+	fn convert(a: u64) -> Weight {
+		Weight::from_parts(a, 0)
+	}
 }
 
 impl module_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = PalletBalances;
 	type TransferAll = ();
-	type NewContractExtraBytes = NewContractExtraBytes;
+	type NewContractExtraBytes = ConstU32<1>;
 	type StorageDepositPerByte = StorageDepositPerByte;
-	type Event = Event;
-	type Precompiles = ();
-	type ChainId = ();
-	type GasToWeight = ();
-	type ChargeTransactionPayment = ();
+	type TxFeePerGas = TxFeePerGas;
+	type RuntimeEvent = RuntimeEvent;
+	type PrecompilesType = ();
+	type PrecompilesValue = ();
+	type GasToWeight = GasToWeight;
+	type ChargeTransactionPayment = module_support::mocks::MockReservedTransactionPayment<Balances>;
 	type NetworkContractOrigin = EnsureSignedBy<NetworkContractAccount, AccountId>;
 	type NetworkContractSource = NetworkContractSource;
 
 	type DeveloperDeposit = DeveloperDeposit;
-	type DeploymentFee = DeploymentFee;
+	type PublicationFee = PublicationFee;
 	type TreasuryAccount = TreasuryAccount;
-	type FreeDeploymentOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
+	type FreePublicationOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
 
 	type Runner = module_evm::runner::stack::Runner<Self>;
 	type FindAuthor = ();
+	type Task = ();
+	type IdleScheduler = ();
 	type WeightInfo = ();
 }
 
@@ -192,141 +203,20 @@ impl module_evm_bridge::Config for Runtime {
 	type EVM = EVM;
 }
 
-pub struct MockDEX;
-impl DEXManager<AccountId, CurrencyId, Balance> for MockDEX {
-	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
-		match (currency_id_a, currency_id_b) {
-			(SETUSD, DNAR) => (10000, 200),
-			_ => (0, 0),
-		}
-	}
-
-	fn get_liquidity_token_address(_currency_id_a: CurrencyId, _currency_id_b: CurrencyId) -> Option<H160> {
-		unimplemented!()
-	}
-
-	fn get_swap_amount(_: &[CurrencyId], _: SwapLimit<Balance>) -> Option<(Balance, Balance)> {
-		unimplemented!()
-	}
-
-	fn get_best_price_swap_path(
-		_: CurrencyId,
-		_: CurrencyId,
-		_: SwapLimit<Balance>,
-		_: Vec<Vec<CurrencyId>>,
-	) -> Option<Vec<CurrencyId>> {
-		unimplemented!()
-	}
-
-	fn swap_with_specific_path(
-		_: &AccountId,
-		_: &[CurrencyId],
-		_: SwapLimit<Balance>,
-	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-
-	fn buyback_swap_with_specific_path(
-		_: &AccountId,
-		_: &[CurrencyId],
-		_: SwapLimit<Balance>,
-	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-
-	fn swap_with_exact_target(
-		_who: &AccountId,
-		_path: &[CurrencyId],
-		_exact_target_amount: Balance,
-		_max_supply_amount: Balance,
-	) -> DispatchResult {
-		unimplemented!()
-	}
-
-	fn add_liquidity(
-		_who: &AccountId,
-		_currency_id_a: CurrencyId,
-		_currency_id_b: CurrencyId,
-		_max_amount_a: Balance,
-		_max_amount_b: Balance,
-		_min_share_increment: Balance,
-	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-
-	fn remove_liquidity(
-		_who: &AccountId,
-		_currency_id_a: CurrencyId,
-		_currency_id_b: CurrencyId,
-		_remove_share: Balance,
-		_min_withdrawn_a: Balance,
-		_min_withdrawn_b: Balance,
-	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		unimplemented!()
-	}
-}
-
-thread_local! {
-	static RELATIVE_PRICE: RefCell<Option<Price>> = RefCell::new(Some(Price::one()));
-}
-
-pub struct MockPriceSource;
-impl MockPriceSource {
-	pub fn _set_relative_price(price: Option<Price>) {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut() = price);
-	}
-}
-impl PriceProvider<CurrencyId> for MockPriceSource {
-
-	fn get_relative_price(_base: CurrencyId, _quota: CurrencyId) -> Option<Price> {
-		RELATIVE_PRICE.with(|v| *v.borrow_mut())
-	}
-
-	fn get_price(_currency_id: CurrencyId) -> Option<Price> {
-		None
-	}
-
-}
-
-parameter_type_with_key! {
-	pub GetStableCurrencyMinimumSupply: |currency_id: CurrencyId| -> Balance {
-		match currency_id {
-			&SETR => 10_000,
-			&SETUSD => 10_000,
-			_ => 0,
-		}
-	};
-}
-
 parameter_types! {
-	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(1, 2);
-	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
-		vec![DNAR],
-	];
-	pub DefaultSwapParitalPathList: Vec<Vec<CurrencyId>> = vec![
-		vec![SETR, DNAR],
-		vec![SETUSD, SETR, DNAR]
-	];
-	pub const TradingPathLimit: u32 = 4;
-	pub StableCurrencyInflationPeriod: u64 = 5;
-	pub SetterMinimumClaimableTransferAmounts: Balance = 2;
-	pub SetterMaximumClaimableTransferAmounts: Balance = 200;
-	pub SetDollarMinimumClaimableTransferAmounts: Balance = 2;
-	pub SetDollarMaximumClaimableTransferAmounts: Balance = 200;
-}
-
-ord_parameter_types! {
-	pub const Root: AccountId = alice();
+	pub Erc20HoldingAccount: H160 = primitives::evm::ERC20_HOLDING_ACCOUNT;
 }
 
 impl Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
+	type Erc20HoldingAccount = Erc20HoldingAccount;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
-	type EVMBridge = EVMBridge;
+	type EVMBridge = module_evm_bridge::EVMBridge<Runtime>;
+	type GasToWeight = GasToWeight;
 	type SweepOrigin = EnsureSignedBy<CouncilAccount, AccountId>;
 	type OnDust = crate::TransferDust<Runtime, DustAccount>;
 }
@@ -337,20 +227,16 @@ pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Runtime, PalletBalances, i6
 pub type SignedExtra = module_evm::SetEvmOrigin<Runtime>;
 
 pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
-pub type UncheckedExtrinsic = sp_runtime::generic::UncheckedExtrinsic<u32, Call, u32, SignedExtra>;
+pub type UncheckedExtrinsic = sp_runtime::generic::UncheckedExtrinsic<u32, RuntimeCall, u32, SignedExtra>;
 
 frame_support::construct_runtime!(
-	pub enum Runtime where
-		Block = Block,
-	NodeBlock = Block,
-	UncheckedExtrinsic = UncheckedExtrinsic
-	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Tokens: tokens::{Pallet, Storage, Event<T>, Config<T>},
-		Currencies: currencies::{Pallet, Call, Event<T>},
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		EVMBridge: module_evm_bridge::{Pallet},
+	pub enum Runtime {
+		System: frame_system,
+		Balances: pallet_balances,
+		Tokens: orml_tokens,
+		Currencies: currencies,
+		EVM: module_evm,
+		EVMBridge: module_evm_bridge,
 	}
 );
 
@@ -381,34 +267,52 @@ pub fn eva_evm_addr() -> EvmAddress {
 pub const ID_1: LockIdentifier = *b"1       ";
 
 pub fn erc20_address() -> EvmAddress {
-	EvmAddress::from_str("0000000000000000000000000000000002000000").unwrap()
+	EvmAddress::from_str("0x5dddfce53ee040d9eb21afbc0ae1bb4dbb0ba643").unwrap()
 }
 
+pub fn erc20_address_not_exist() -> EvmAddress {
+	EvmAddress::from_str("0x00ddfce53ee040d9eb21afbc0ae1bb4dbb0ba600").unwrap()
+}
+
+pub const ALICE_BALANCE: u128 = 100_000_000_000_000_000_000_000u128;
+
 pub fn deploy_contracts() {
-	let code = from_hex(include!("../../../..//evm-bridge/src/erc20_demo_contract")).unwrap();
-	assert_ok!(EVM::create_network_contract(
-		Origin::signed(NetworkContractAccount::get()),
+	let json: serde_json::Value =
+		serde_json::from_str(include_str!("../../../ts-tests/build/Erc20DemoContract2.json")).unwrap();
+	let code = hex::decode(json.get("bytecode").unwrap().as_str().unwrap()).unwrap();
+	assert_ok!(EVM::create(
+		RuntimeOrigin::signed(alice()),
 		code,
 		0,
 		2_100_000,
-		10000
+		10_000,
+		vec![]
 	));
 
-	System::assert_last_event(Event::EVM(module_evm::Event::Created(
-		alice_evm_addr(),
-		erc20_address(),
-		vec![module_evm::Log {
-			address: H160::from_str("0x0000000000000000000000000000000002000000").unwrap(),
+	System::assert_last_event(RuntimeEvent::EVM(module_evm::Event::Created {
+		from: alice_evm_addr(),
+		contract: erc20_address(),
+		logs: vec![module_evm::Log {
+			address: H160::from_str("0x5dddfce53ee040d9eb21afbc0ae1bb4dbb0ba643").unwrap(),
 			topics: vec![
 				H256::from_str("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef").unwrap(),
 				H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
 				H256::from_str("0x0000000000000000000000001000000000000000000000000000000000000001").unwrap(),
 			],
-			data: H256::from_low_u64_be(10000).as_bytes().to_vec(),
+			data: {
+				let mut buf = [0u8; 32];
+				U256::from(ALICE_BALANCE).to_big_endian(&mut buf);
+				H256::from_slice(&buf).as_bytes().to_vec()
+			},
 		}],
-	)));
+		used_gas: 1235455,
+		used_storage: 5131,
+	}));
 
-	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
+	assert_ok!(EVM::publish_free(
+		RuntimeOrigin::signed(CouncilAccount::get()),
+		erc20_address()
+	));
 }
 
 pub struct ExtBuilder {
@@ -437,8 +341,8 @@ impl ExtBuilder {
 	}
 
 	pub fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default()
-			.build_storage::<Runtime>()
+		let mut t = frame_system::GenesisConfig::<Runtime>::default()
+			.build_storage()
 			.unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
@@ -453,7 +357,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		tokens::GenesisConfig::<Runtime> {
+		orml_tokens::GenesisConfig::<Runtime> {
 			balances: self
 				.balances
 				.into_iter()
