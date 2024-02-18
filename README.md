@@ -304,7 +304,7 @@ Run the module benchmarks and generate the weights file:
     --execution=wasm \
     --wasm-execution=compiled \
     --heap-pages=4096 \
-    --output=./modules/currencies/src/weights.rs
+    --output=./blockchain/modules/currencies/src/weights.rs
 ```
 
 ### 6.4. Bench Bot
