@@ -24,21 +24,21 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{alice, bob, Event, EvmAccountsModule, ExtBuilder, Origin, Runtime, System, ALICE, BOB};
+use mock::{alice, bob, EvmAccountsModule, ExtBuilder, Runtime, RuntimeEvent, RuntimeOrigin, System, ALICE, BOB};
 use std::str::FromStr;
 
 #[test]
 fn claim_account_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(EvmAccountsModule::claim_account(
-			Origin::signed(ALICE),
+			RuntimeOrigin::signed(ALICE),
 			EvmAccountsModule::eth_address(&alice()),
-			EvmAccountsModule::eth_sign(&alice(), &ALICE.encode(), &[][..])
+			EvmAccountsModule::eth_sign(&alice(), &ALICE)
 		));
-		System::assert_last_event(Event::EvmAccountsModule(crate::Event::ClaimAccount(
-			ALICE,
-			EvmAccountsModule::eth_address(&alice()),
-		)));
+		System::assert_last_event(RuntimeEvent::EvmAccountsModule(crate::Event::ClaimAccount {
+			account_id: ALICE,
+			evm_address: EvmAccountsModule::eth_address(&alice()),
+		}));
 		assert!(
 			Accounts::<Runtime>::contains_key(EvmAccountsModule::eth_address(&alice()))
 				&& EvmAddresses::<Runtime>::contains_key(ALICE)
@@ -51,46 +51,38 @@ fn claim_account_should_not_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
 			EvmAccountsModule::claim_account(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				EvmAccountsModule::eth_address(&bob()),
-				EvmAccountsModule::eth_sign(&bob(), &ALICE.encode(), &vec![1][..])
+				EvmAccountsModule::eth_sign(&bob(), &BOB)
 			),
 			Error::<Runtime>::InvalidSignature
 		);
 		assert_noop!(
 			EvmAccountsModule::claim_account(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				EvmAccountsModule::eth_address(&bob()),
-				EvmAccountsModule::eth_sign(&bob(), &BOB.encode(), &[][..])
-			),
-			Error::<Runtime>::InvalidSignature
-		);
-		assert_noop!(
-			EvmAccountsModule::claim_account(
-				Origin::signed(ALICE),
-				EvmAccountsModule::eth_address(&bob()),
-				EvmAccountsModule::eth_sign(&alice(), &ALICE.encode(), &[][..])
+				EvmAccountsModule::eth_sign(&alice(), &ALICE)
 			),
 			Error::<Runtime>::InvalidSignature
 		);
 		assert_ok!(EvmAccountsModule::claim_account(
-			Origin::signed(ALICE),
+			RuntimeOrigin::signed(ALICE),
 			EvmAccountsModule::eth_address(&alice()),
-			EvmAccountsModule::eth_sign(&alice(), &ALICE.encode(), &[][..])
+			EvmAccountsModule::eth_sign(&alice(), &ALICE)
 		));
 		assert_noop!(
 			EvmAccountsModule::claim_account(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				EvmAccountsModule::eth_address(&alice()),
-				EvmAccountsModule::eth_sign(&alice(), &ALICE.encode(), &[][..])
+				EvmAccountsModule::eth_sign(&alice(), &ALICE)
 			),
 			Error::<Runtime>::AccountIdHasMapped
 		);
 		assert_noop!(
 			EvmAccountsModule::claim_account(
-				Origin::signed(BOB),
+				RuntimeOrigin::signed(BOB),
 				EvmAccountsModule::eth_address(&alice()),
-				EvmAccountsModule::eth_sign(&alice(), &BOB.encode(), &[][..])
+				EvmAccountsModule::eth_sign(&alice(), &BOB)
 			),
 			Error::<Runtime>::EthAddressHasMapped
 		);
@@ -112,9 +104,9 @@ fn evm_get_account_id() {
 		);
 
 		assert_ok!(EvmAccountsModule::claim_account(
-			Origin::signed(ALICE),
+			RuntimeOrigin::signed(ALICE),
 			EvmAccountsModule::eth_address(&alice()),
-			EvmAccountsModule::eth_sign(&alice(), &ALICE.encode(), &[][..])
+			EvmAccountsModule::eth_sign(&alice(), &ALICE)
 		));
 
 		assert_eq!(EvmAddressMapping::<Runtime>::get_account_id(&evm_account), ALICE);
@@ -132,6 +124,22 @@ fn evm_get_account_id() {
 }
 
 #[test]
+fn validate_evm_account_id() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert!(EvmAddressMapping::<Runtime>::get_evm_address(&ALICE).is_none());
+
+		let no_zero_padding = AccountId32::new(*b"evm:aaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+		assert!(EvmAddressMapping::<Runtime>::get_evm_address(&no_zero_padding).is_none());
+
+		let valid_account_id = AccountId32::new(*b"evm:aaaaaaaaaaaaaaaaaaaa\0\0\0\0\0\0\0\0");
+		assert_eq!(
+			EvmAddressMapping::<Runtime>::get_evm_address(&valid_account_id).unwrap(),
+			EvmAddress::from(b"aaaaaaaaaaaaaaaaaaaa")
+		);
+	});
+}
+
+#[test]
 fn account_to_evm() {
 	ExtBuilder::default().build().execute_with(|| {
 		let default_evm_account = EvmAddress::from_str("f0bd9ffde7f9f4394d8cc1d86bf24d87e5d5a9a9").unwrap();
@@ -140,9 +148,9 @@ fn account_to_evm() {
 		let alice_evm_account = EvmAccountsModule::eth_address(&alice());
 
 		assert_ok!(EvmAccountsModule::claim_account(
-			Origin::signed(ALICE),
+			RuntimeOrigin::signed(ALICE),
 			alice_evm_account,
-			EvmAccountsModule::eth_sign(&alice(), &ALICE.encode(), &[][..])
+			EvmAccountsModule::eth_sign(&alice(), &ALICE)
 		));
 
 		assert_eq!(EvmAddressMapping::<Runtime>::get_account_id(&alice_evm_account), ALICE);
@@ -169,6 +177,10 @@ fn account_to_evm_with_create_default() {
 			EvmAddressMapping::<Runtime>::get_or_create_evm_address(&ALICE),
 			default_evm_account
 		);
+		System::assert_last_event(RuntimeEvent::EvmAccountsModule(crate::Event::ClaimAccount {
+			account_id: ALICE,
+			evm_address: default_evm_account,
+		}));
 		assert_eq!(
 			EvmAddressMapping::<Runtime>::get_evm_address(&ALICE),
 			Some(default_evm_account)
@@ -185,9 +197,9 @@ fn account_to_evm_with_create_default() {
 
 		assert_noop!(
 			EvmAccountsModule::claim_account(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				alice_evm_account,
-				EvmAccountsModule::eth_sign(&alice(), &ALICE.encode(), &[][..])
+				EvmAccountsModule::eth_sign(&alice(), &ALICE)
 			),
 			Error::<Runtime>::AccountIdHasMapped
 		);
