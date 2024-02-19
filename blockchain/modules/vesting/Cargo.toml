@@ -1,33 +1,35 @@
 [package]
 name = "module-vesting"
 description = "Provides scheduled balance locking mechanism, in a *graded vesting* way."
-version = "1.0.0"
+version = "0.9.81"
 authors = ["Setheum Labs"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-serde = { version = "1.0.124", optional = true }
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["max-encoded-len"] }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+scale-info = { workspace = true }
+serde = { workspace = true, optional = true }
+parity-scale-codec = {  version = "3.0.0", default-features = false, features = ["max-encoded-len"] }
+sp-runtime = { workspace = true }
+sp-io = { workspace = true }
+sp-std = { workspace = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
 
 primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
 support = { package = "module-support", path = "../support", default-features = false }
 orml-traits = { path = "../submodules/orml/traits", default-features = false }
 
 [dev-dependencies]
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-tokens = { path = "../submodules/orml/tokens" }
+sp-core = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true }
+orml-tokens = { workspace = true }
 
 [features]
 default = ["std"]
 std = [
+	"scale-info/std",
 	"serde",
-	"codec/std",
+	"parity-scale-codec/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	"sp-io/std",
@@ -40,4 +42,10 @@ std = [
 runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"sp-runtime/try-runtime",
 ]

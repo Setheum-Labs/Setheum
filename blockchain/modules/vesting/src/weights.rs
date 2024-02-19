@@ -10,7 +10,7 @@
 // --chain=dev
 // --steps=50
 // --repeat=20
-// --pallet=orlm_vesting
+// --pallet=module_vesting
 // --extrinsic=*
 // --execution=wasm
 // --wasm-execution=compiled
@@ -18,6 +18,7 @@
 // --output=./vesting/src/weights.rs
 // --template
 // ..maintain/orml-weight-template.hbs
+
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
@@ -28,7 +29,7 @@
 use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions needed for module_vesting.
+/// Weight functions needed for orml_vesting.
 pub trait WeightInfo {
 	fn vested_transfer() -> Weight;
 	fn claim(i: u32, ) -> Weight;
@@ -38,22 +39,22 @@ pub trait WeightInfo {
 /// Default weights.
 impl WeightInfo for () {
 	fn vested_transfer() -> Weight {
-		(69_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
+		Weight::from_parts(69_000_000, 0)
+			.saturating_add(RocksDbWeight::get().reads(4 as u64))
+			.saturating_add(RocksDbWeight::get().writes(4 as u64))
 	}
 	fn claim(i: u32, ) -> Weight {
-		(31_747_000 as Weight)
+		Weight::from_parts(31_747_000, 0)
 			// Standard Error: 4_000
-			.saturating_add((63_000 as Weight).saturating_mul(i as Weight))
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+			.saturating_add(Weight::from_parts(63_000, 0).saturating_mul(i as u64))
+			.saturating_add(RocksDbWeight::get().reads(2 as u64))
+			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
 	fn update_vesting_schedules(i: u32, ) -> Weight {
-		(29_457_000 as Weight)
+		Weight::from_parts(29_457_000, 0)
 			// Standard Error: 4_000
-			.saturating_add((117_000 as Weight).saturating_mul(i as Weight))
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+			.saturating_add(Weight::from_parts(117_000, 0).saturating_mul(i as u64))
+			.saturating_add(RocksDbWeight::get().reads(2 as u64))
+			.saturating_add(RocksDbWeight::get().writes(3 as u64))
 	}
 }
