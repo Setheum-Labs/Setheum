@@ -190,7 +190,7 @@ impl module_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const NftPalletId: PalletId = PalletId(*b"aca/aNFT");
+	pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
 }
 pub const CREATE_CLASS_DEPOSIT: u128 = 200;
 pub const CREATE_TOKEN_DEPOSIT: u128 = 100;

@@ -53,7 +53,7 @@ use sp_runtime::{
 	FixedPointNumber, FixedPointOperand, FixedU128, Perquintill,
 };
 use sp_std::{convert::TryInto, prelude::*, vec};
-use support::{DEXManager, PriceProvider, Ratio, TransactionPayment};
+use support::{SwapDexManager, PriceProvider, Ratio, TransactionPayment};
 
 mod mock;
 mod tests;
@@ -258,7 +258,7 @@ pub mod module {
 		type FeeMultiplierUpdate: MultiplierUpdate;
 
 		/// DEX to exchange currencies.
-		type DEX: DEXManager<Self::AccountId, CurrencyId, Balance>;
+		type DEX: SwapDexManager<Self::AccountId, CurrencyId, Balance>;
 
 		/// When swap with DEX, the acceptable max slippage for the price from oracle.
 		#[pallet::constant]

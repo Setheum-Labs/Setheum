@@ -1,8 +1,8 @@
 [package]
 name = "module-transaction-payment"
-version = "1.0.0"
+version = "0.9.81"
 authors = ["Setheum Labs"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.124", optional = true }
