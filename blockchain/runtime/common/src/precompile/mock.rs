@@ -479,7 +479,7 @@ parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
 	pub const GetStableCurrencyExchangeFee: (u32, u32) = (0, 100);
 	pub const TradingPathLimit: u32 = 3;
-	pub const DEXPalletId: PalletId = PalletId(*b"set/sdex");
+	pub const DEXPalletId: PalletId = PalletId(*b"edf/swap");
 }
 
 impl module_dex::Config for Test {

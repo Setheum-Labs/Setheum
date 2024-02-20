@@ -37,7 +37,7 @@ use frame_support::traits::OnInitialize;
 use orml_traits::MultiCurrency;
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
-use module_support::{DEXManager, SerpTreasury as SerpTreasurySupport, SerpTreasuryExtended, SwapLimit};
+use module_support::{SwapDexManager, SerpTreasury as SerpTreasurySupport, SerpTreasuryExtended, SwapLimit};
 
 const SEE: CurrencyId = GetNativeCurrencyId::get();
 const SETR: CurrencyId = SetterCurrencyId::get();
