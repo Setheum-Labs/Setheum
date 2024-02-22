@@ -18,11 +18,12 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 
 <div align="center">
 
-[![Setheum version](https://img.shields.io/badge/Setheum-0.9.80-blue?logo=Parity%20Substrate)](https://setheum.xyz/)
-[![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=blue)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
+[![Setheum version](https://img.shields.io/badge/Setheum-0.9.81-yellow?logo=Parity%20Substrate)](https://setheum.xyz/)
+[![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=blue)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributor/CONTRIBUTING.md)
 
- <br />
+[![Rust](https://github.com/Setheum-Labs/Setheum/actions/workflows/rust.yml/badge.svg)](https://github.com/Setheum-Labs/Setheum/actions/workflows/rust.yml)
+[![CodeQL](https://github.com/Setheum-Labs/Setheum/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Setheum-Labs/Setheum/actions/workflows/github-code-scanning/codeql)
 
 [![Website](https://img.shields.io/badge/web-gray?logo=web)](https://setheum.xyz)
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FSetheum)](https://twitter.com/Setheum)
