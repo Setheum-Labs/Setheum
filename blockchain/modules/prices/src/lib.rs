@@ -92,8 +92,8 @@ pub mod module {
 		/// staking currency.
 		type LiquidStakingExchangeRateProvider: ExchangeRateProvider;
 
-		/// DEX provide liquidity info.
-		type DEX: SwapDexManager<Self::AccountId, Balance, CurrencyId>;
+		/// SwapDex provide liquidity info.
+		type SwapDex: SwapDexManager<Self::AccountId, Balance, CurrencyId>;
 
 		/// Currency provide the total insurance of LPToken.
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;
@@ -211,7 +211,7 @@ impl<T: Config> Pallet<T> {
 			// directly return the fair price
 			return {
 				if let (Some(price_0), Some(price_1)) = (Self::access_price(token_0), Self::access_price(token_1)) {
-					let (pool_0, pool_1) = T::DEX::get_liquidity_pool(token_0, token_1);
+					let (pool_0, pool_1) = T::SwapDex::get_liquidity_pool(token_0, token_1);
 					let total_shares = T::Currency::total_issuance(currency_id);
 					lp_token_fair_price(total_shares, pool_0, pool_1, price_0, price_1)
 				} else {
