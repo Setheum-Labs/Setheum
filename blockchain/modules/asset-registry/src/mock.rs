@@ -253,7 +253,7 @@ impl ExtBuilder {
 			.unwrap();
 
 		asset_registry::GenesisConfig::<Runtime> {
-			assets: vec![(CurrencyId::Token(TokenSymbol::ACA), 1)],
+			assets: vec![(CurrencyId::Token(TokenSymbol::SEE), 1)],
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
