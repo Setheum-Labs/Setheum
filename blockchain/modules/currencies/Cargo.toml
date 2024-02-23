@@ -1,6 +1,6 @@
 [package]
 name = "module-currencies"
-version = "0.9.81"
+version = "0.9.81-dev"
 authors = ["Setheum Labs"]
 edition = "2021"
 
