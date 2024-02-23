@@ -1,0 +1,14 @@
+[package]
+name = "module-evm-utility-macro"
+version = "0.9.81-dev"
+authors = ["Setheum Labs"]
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = { workspace = true }
+syn = { workspace = true, features = ["full", "fold", "extra-traits", "visit"] }
+proc-macro2 = { workspace = true }
+module-evm-utility = { workspace = true, features = ["std"] }

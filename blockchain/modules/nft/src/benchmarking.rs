@@ -25,9 +25,10 @@
 use sp_std::vec;
 
 use frame_benchmarking::{account, benchmarks};
-use frame_support::{dispatch::DispatchErrorWithPostInfo, traits::Get, weights::DispatchClass};
+use frame_support::{dispatch::DispatchClass, dispatch::DispatchErrorWithPostInfo, traits::Get};
 use frame_system::RawOrigin;
 use sp_runtime::traits::{AccountIdConversion, StaticLookup, UniqueSaturatedInto};
+use sp_std::collections::btree_map::BTreeMap;
 
 pub use crate::*;
 use primitives::Balance;
@@ -50,10 +51,11 @@ fn test_attr() -> Attributes {
 }
 
 fn create_token_class<T: Config>(caller: T::AccountId) -> Result<T::AccountId, DispatchErrorWithPostInfo> {
-	let base_currency_amount = dollar(10000);
+	let base_currency_amount = dollar(1000);
 	<T as module::Config>::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 
-	let module_account: T::AccountId = T::PalletId::get().into_sub_account(orml_nft::Pallet::<T>::next_class_id());
+	let module_account: T::AccountId =
+		T::PalletId::get().into_sub_account_truncating(orml_nft::Pallet::<T>::next_class_id());
 	crate::Pallet::<T>::create_class(
 		RawOrigin::Signed(caller).into(),
 		vec![1],
@@ -78,7 +80,7 @@ benchmarks! {
 	// create NFT class
 	create_class {
 		let caller: T::AccountId = account("caller", 0, SEED);
-		let base_currency_amount = dollar(10000);
+		let base_currency_amount = dollar(1000);
 
 		<T as module::Config>::Currency::make_free_balance_be(&caller, base_currency_amount.unique_saturated_into());
 	}: _(RawOrigin::Signed(caller), vec![1], Properties(ClassProperty::Transferable | ClassProperty::Burnable), test_attr())
@@ -155,42 +157,32 @@ mod mock {
 	use super::*;
 	use crate as nft;
 
-	use codec::{Decode, Encode};
 	use frame_support::{
 		parameter_types,
-		traits::{Contains, InstanceFilter},
-		weights::Weight,
-		PalletId, RuntimeDebug,
+		traits::{ConstU128, ConstU32, ConstU64, Contains, InstanceFilter},
+		PalletId,
 	};
+	use parity_scale_codec::{Decode, Encode};
 	use sp_core::{crypto::AccountId32, H256};
 	use sp_runtime::{
-		testing::Header,
 		traits::{BlakeTwo256, IdentityLookup},
-		Perbill,
+		BuildStorage, RuntimeDebug,
 	};
-
-	parameter_types! {
-		pub const BlockHashCount: u64 = 250;
-		pub const MaximumBlockWeight: Weight = 1024;
-		pub const MaximumBlockLength: u32 = 2 * 1024;
-		pub const AvailableBlockRatio: Perbill = Perbill::one();
-	}
 
 	pub type AccountId = AccountId32;
 
 	impl frame_system::Config for Runtime {
 		type BaseCallFilter = BaseFilter;
-		type Origin = Origin;
-		type Index = u64;
-		type BlockNumber = u64;
+		type RuntimeOrigin = RuntimeOrigin;
+		type Nonce = u64;
 		type Hash = H256;
-		type Call = Call;
+		type RuntimeCall = RuntimeCall;
 		type Hashing = BlakeTwo256;
 		type AccountId = AccountId;
 		type Lookup = IdentityLookup<Self::AccountId>;
-		type Header = Header;
-		type Event = ();
-		type BlockHashCount = BlockHashCount;
+		type Block = Block;
+		type RuntimeEvent = ();
+		type BlockHashCount = ConstU64<250>;
 		type BlockWeights = ();
 		type BlockLength = ();
 		type DbWeight = ();
@@ -202,36 +194,31 @@ mod mock {
 		type SystemWeightInfo = ();
 		type SS58Prefix = ();
 		type OnSetCode = ();
-	}
-	parameter_types! {
-		pub const ExistentialDeposit: u64 = 1;
-		pub const MaxReserves: u32 = 50;
+		type MaxConsumers = ConstU32<16>;
 	}
 	impl pallet_balances::Config for Runtime {
 		type Balance = Balance;
-		type Event = ();
+		type RuntimeEvent = ();
 		type DustRemoval = ();
-		type ExistentialDeposit = ExistentialDeposit;
+		type ExistentialDeposit = ConstU128<1>;
 		type AccountStore = frame_system::Pallet<Runtime>;
 		type MaxLocks = ();
-		type MaxReserves = MaxReserves;
+		type MaxReserves = ConstU32<50>;
 		type ReserveIdentifier = ReserveIdentifier;
 		type WeightInfo = ();
+		type RuntimeHoldReason = RuntimeHoldReason;
+		type RuntimeFreezeReason = RuntimeFreezeReason;
+		type FreezeIdentifier = ();
+		type MaxHolds = ();
+		type MaxFreezes = ();
 	}
 	impl pallet_utility::Config for Runtime {
-		type Event = ();
-		type Call = Call;
+		type RuntimeEvent = ();
+		type RuntimeCall = RuntimeCall;
+		type PalletsOrigin = OriginCaller;
 		type WeightInfo = ();
 	}
-	parameter_types! {
-		pub const ProxyDepositBase: u64 = 1;
-		pub const ProxyDepositFactor: u64 = 1;
-		pub const MaxProxies: u16 = 4;
-		pub const MaxPending: u32 = 2;
-		pub const AnnouncementDepositBase: u64 = 1;
-		pub const AnnouncementDepositFactor: u64 = 1;
-	}
-	#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen)]
+	#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
 	pub enum ProxyType {
 		Any,
 		JustTransfer,
@@ -242,12 +229,15 @@ mod mock {
 			Self::Any
 		}
 	}
-	impl InstanceFilter<Call> for ProxyType {
-		fn filter(&self, c: &Call) -> bool {
+	impl InstanceFilter<RuntimeCall> for ProxyType {
+		fn filter(&self, c: &RuntimeCall) -> bool {
 			match self {
 				ProxyType::Any => true,
-				ProxyType::JustTransfer => matches!(c, Call::Balances(pallet_balances::Call::transfer(..))),
-				ProxyType::JustUtility => matches!(c, Call::Utility(..)),
+				ProxyType::JustTransfer => matches!(
+					c,
+					RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death { .. })
+				),
+				ProxyType::JustUtility => matches!(c, RuntimeCall::Utility(..)),
 			}
 		}
 		fn is_superset(&self, o: &Self) -> bool {
@@ -255,53 +245,44 @@ mod mock {
 		}
 	}
 	pub struct BaseFilter;
-	impl Contains<Call> for BaseFilter {
-		fn contains(c: &Call) -> bool {
+	impl Contains<RuntimeCall> for BaseFilter {
+		fn contains(c: &RuntimeCall) -> bool {
 			match *c {
 				// Remark is used as a no-op call in the benchmarking
-				Call::System(SystemCall::remark(_)) => true,
-				Call::System(_) => false,
+				RuntimeCall::System(SystemCall::remark { .. }) => true,
+				RuntimeCall::System(_) => false,
 				_ => true,
 			}
 		}
 	}
 	impl pallet_proxy::Config for Runtime {
-		type Event = ();
-		type Call = Call;
+		type RuntimeEvent = ();
+		type RuntimeCall = RuntimeCall;
 		type Currency = Balances;
 		type ProxyType = ProxyType;
-		type ProxyDepositBase = ProxyDepositBase;
-		type ProxyDepositFactor = ProxyDepositFactor;
-		type MaxProxies = MaxProxies;
+		type ProxyDepositBase = ConstU128<1>;
+		type ProxyDepositFactor = ConstU128<1>;
+		type MaxProxies = ConstU32<4>;
 		type WeightInfo = ();
 		type CallHasher = BlakeTwo256;
-		type MaxPending = MaxPending;
-		type AnnouncementDepositBase = AnnouncementDepositBase;
-		type AnnouncementDepositFactor = AnnouncementDepositFactor;
+		type MaxPending = ConstU32<2>;
+		type AnnouncementDepositBase = ConstU128<1>;
+		type AnnouncementDepositFactor = ConstU128<1>;
 	}
 
 	parameter_types! {
-		pub const CreateClassDeposit: Balance = 200;
-		pub const CreateTokenDeposit: Balance = 100;
-		pub const DataDepositPerByte: Balance = 10;
 		pub const NftPalletId: PalletId = PalletId(*b"set/sNFT");
-		pub MaxAttributesBytes: u32 = 2048;
 	}
 
 	impl crate::Config for Runtime {
-		type Event = ();
+		type RuntimeEvent = ();
 		type Currency = Balances;
-		type CreateClassDeposit = CreateClassDeposit;
-		type CreateTokenDeposit = CreateTokenDeposit;
-		type DataDepositPerByte = DataDepositPerByte;
+		type CreateClassDeposit = ConstU128<200>;
+		type CreateTokenDeposit = ConstU128<100>;
+		type DataDepositPerByte = ConstU128<10>;
 		type PalletId = NftPalletId;
-		type MaxAttributesBytes = MaxAttributesBytes;
+		type MaxAttributesBytes = ConstU32<2048>;
 		type WeightInfo = ();
-	}
-
-	parameter_types! {
-		pub const MaxClassMetadata: u32 = 1024;
-		pub const MaxTokenMetadata: u32 = 1024;
 	}
 
 	impl orml_nft::Config for Runtime {
@@ -309,33 +290,28 @@ mod mock {
 		type TokenId = u64;
 		type ClassData = ClassData<Balance>;
 		type TokenData = TokenData<Balance>;
-		type MaxClassMetadata = MaxClassMetadata;
-		type MaxTokenMetadata = MaxTokenMetadata;
+		type MaxClassMetadata = ConstU32<1024>;
+		type MaxTokenMetadata = ConstU32<1024>;
 	}
 
-	type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 	type Block = frame_system::mocking::MockBlock<Runtime>;
 
 	frame_support::construct_runtime!(
-		pub enum Runtime where
-			Block = Block,
-			NodeBlock = Block,
-			UncheckedExtrinsic = UncheckedExtrinsic,
-		{
-			System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-			Utility: pallet_utility::{Pallet, Call, Event},
-			Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-			Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>},
-			OrmlNFT: orml_nft::{Pallet, Storage, Config<T>},
-			NFT: nft::{Pallet, Call, Event<T>},
+		pub enum Runtime {
+			System: frame_system,
+			Utility: pallet_utility,
+			Balances: pallet_balances,
+			Proxy: pallet_proxy,
+			OrmlNFT: orml_nft,
+			NFT: nft,
 		}
 	);
 
 	use frame_system::Call as SystemCall;
 
 	pub fn new_test_ext() -> sp_io::TestExternalities {
-		let t = frame_system::GenesisConfig::default()
-			.build_storage::<Runtime>()
+		let t = frame_system::GenesisConfig::<Runtime>::default()
+			.build_storage()
 			.unwrap();
 
 		let mut ext = sp_io::TestExternalities::new(t);

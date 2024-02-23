@@ -22,16 +22,12 @@
 
 use crate::{evm::EvmAddress, *};
 use bstringify::bstringify;
-use codec::{Decode, Encode};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
+use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::RuntimeDebug;
-use sp_std::{
-	convert::{Into, TryFrom},
-	prelude::*, vec,
-};
+use sp_std::prelude::*;
 
-#[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
 macro_rules! create_currency_id {
@@ -122,64 +118,78 @@ macro_rules! create_currency_id {
 				address: EvmAddress,
 			}
 
-			let mut tokens = vec![
-				$(
-					Token {
+			// Setheum tokens
+			let mut tokens = vec![];
+			$(
+				if $val < 128 {
+					tokens.push(Token {
 						symbol: stringify!($symbol).to_string(),
 						address: EvmAddress::try_from(CurrencyId::Token(TokenSymbol::$symbol)).unwrap(),
-					},
-				)*
-			];
+					});
+				}
+			)*
 
-			// TODO: Remove
 			let mut lp_tokens = vec![
+				// SETR PAIRED POOLS
 				Token {
-					symbol: "LP_SETM_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SEE), DexShare::Token(SETUSD))).unwrap(),
+					symbol: "LP_SEE_SETR".to_string(),
+					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(SEE)).unwrap().dex_share_currency_id()).unwrap(),
 				},
 				Token {
-					symbol: "LP_DNAR_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETUSD))).unwrap(),
+					symbol: "LP_EDF_SETR".to_string(),
+					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(EDF)).unwrap().dex_share_currency_id()).unwrap(),
 				},
 				Token {
-					symbol: "LP_HELP_SETUSD".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HELP), DexShare::Token(SETUSD))).unwrap(),
+					symbol: "LP_LSEE_SETR".to_string(),
+					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(LSEE)).unwrap().dex_share_currency_id()).unwrap(),
 				},
 				Token {
-					symbol: "LP_SETM_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SEE), DexShare::Token(SETR))).unwrap(),
+					symbol: "LP_LEDF_SETR".to_string(),
+					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(LEDF)).unwrap().dex_share_currency_id()).unwrap(),
 				},
 				Token {
-					symbol: "LP_SERP_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(SERP), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_DNAR_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(DNAR), DexShare::Token(SETR))).unwrap(),
-				},
-				Token {
-					symbol: "LP_HELP_SETR".to_string(),
-					address: EvmAddress::try_from(CurrencyId::DexShare(DexShare::Token(HELP), DexShare::Token(SETR))).unwrap(),
+					symbol: "LP_USSD_SETR".to_string(),
+					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(USSD)).unwrap().dex_share_currency_id()).unwrap(),
 				},
 			];
 			tokens.append(&mut lp_tokens);
 
-			frame_support::assert_ok!(std::fs::write("../submodules/predeploy-contracts/resources/tokens.json", serde_json::to_string_pretty(&tokens).unwrap()));
+			let mut fa_tokens = vec![
+				Token {
+					symbol: "FA_WBTC".to_string(),
+					address: EvmAddress::try_from(CurrencyId::ForeignAsset(5)).unwrap(),
+				},
+				Token {
+					symbol: "FA_WETH".to_string(),
+					address: EvmAddress::try_from(CurrencyId::ForeignAsset(6)).unwrap(),
+				},
+			];
+			tokens.append(&mut fa_tokens);
+
+			frame_support::assert_ok!(std::fs::write("../predeploy-contracts/resources/tokens.json", serde_json::to_string_pretty(&tokens).unwrap()));
 		}
     }
 }
 
 create_currency_id! {
 	// Represent a Token symbol with 8 bit
-	#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, MaxEncodedLen)]
-	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+	//
+	// 0 - 19: Setheum native tokens
+	// 20 - 255: Reserved for future usage
+	#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, MaxEncodedLen, Serialize, Deserialize)]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		SEE("Setheum", 18) = 0,
-		KHA("Khalifa", 18) = 1,
-		SETR("Setter", 18) = 4,			// Stablecoin
-		GRA("Golden Ratio", 18) = 2, 	// Stablecoin
-		USSD("SetDollar", 18) = 5, 		// Stablecoin
+		// 0 - 128: Reserved for Setheum Native Assets
+			// Primary Protocol Tokens
+		SEE("Setheum", 12) = 0,
+		EDF("Ethical DeFi", 12) = 1,
+			// Liquid Staking Tokens
+		LSEE("Liquid SEE", 12) = 2,
+		LEDF("Liquid EDF", 12) = 3,
+			// ECDP Stablecoin Tokens
+		SETR("Setter", 12) = 4,
+		USSD("Slick USD", 12) = 5,
+		// 128 - 255: Reserved for future usage
 	}
 }
 
@@ -190,21 +200,52 @@ pub trait TokenInfo {
 	fn decimals(&self) -> Option<u8>;
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
+pub type ForeignAssetId = u16;
+pub type Erc20Id = u32;
+
+#[derive(
+	Encode,
+	Decode,
+	Eq,
+	PartialEq,
+	Copy,
+	Clone,
+	RuntimeDebug,
+	PartialOrd,
+	Ord,
+	TypeInfo,
+	MaxEncodedLen,
+	Serialize,
+	Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
 pub enum DexShare {
 	Token(TokenSymbol),
 	Erc20(EvmAddress),
+	ForeignAsset(ForeignAssetId),
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
+#[derive(
+	Encode,
+	Decode,
+	Eq,
+	PartialEq,
+	Copy,
+	Clone,
+	RuntimeDebug,
+	PartialOrd,
+	Ord,
+	TypeInfo,
+	MaxEncodedLen,
+	Serialize,
+	Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
 pub enum CurrencyId {
 	Token(TokenSymbol),
 	DexShare(DexShare, DexShare),
 	Erc20(EvmAddress),
+	ForeignAsset(ForeignAssetId),
 }
 
 impl CurrencyId {
@@ -220,10 +261,16 @@ impl CurrencyId {
 		matches!(self, CurrencyId::Erc20(_))
 	}
 
+	pub fn is_foreign_asset_currency_id(&self) -> bool {
+		matches!(self, CurrencyId::ForeignAsset(_))
+	}
+
 	pub fn is_trading_pair_currency_id(&self) -> bool {
 		matches!(
 			self,
-			CurrencyId::Token(_) | CurrencyId::Erc20(_)
+			CurrencyId::Token(_)
+				| CurrencyId::Erc20(_)
+				| CurrencyId::ForeignAsset(_)
 		)
 	}
 
@@ -242,36 +289,27 @@ impl CurrencyId {
 		let dex_share_0 = match currency_id_0 {
 			CurrencyId::Token(symbol) => DexShare::Token(symbol),
 			CurrencyId::Erc20(address) => DexShare::Erc20(address),
+			CurrencyId::ForeignAsset(foreign_asset_id) => DexShare::ForeignAsset(foreign_asset_id),
 			// Unsupported
 			CurrencyId::DexShare(..) => return None,
 		};
 		let dex_share_1 = match currency_id_1 {
 			CurrencyId::Token(symbol) => DexShare::Token(symbol),
 			CurrencyId::Erc20(address) => DexShare::Erc20(address),
+			CurrencyId::ForeignAsset(foreign_asset_id) => DexShare::ForeignAsset(foreign_asset_id),
 			// Unsupported
 			CurrencyId::DexShare(..) => return None,
 		};
 		Some(CurrencyId::DexShare(dex_share_0, dex_share_1))
 	}
-}
 
-/// H160 CurrencyId Type enum
-#[derive(
-	Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TryFromPrimitive, IntoPrimitive, TypeInfo,
-)]
-#[repr(u8)]
-pub enum CurrencyIdType {
-	Token = 1, // 0 is prefix of precompile and predeploy
-	DexShare,
-}
-
-#[derive(
-	Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TryFromPrimitive, IntoPrimitive, TypeInfo,
-)]
-#[repr(u8)]
-pub enum DexShareType {
-	Token,
-	Erc20,
+	pub fn erc20_address(&self) -> Option<EvmAddress> {
+		match self {
+			CurrencyId::Erc20(address) => Some(*address),
+			CurrencyId::Token(_) => EvmAddress::try_from(*self).ok(),
+			_ => None,
+		}
+	}
 }
 
 impl From<DexShare> for u32 {
@@ -289,6 +327,9 @@ impl From<DexShare> for u32 {
 				let index = if leading_zeros > 16 { 16 } else { leading_zeros };
 				bytes[..].copy_from_slice(&address[index..index + 4][..]);
 			}
+			DexShare::ForeignAsset(foreign_asset_id) => {
+				bytes[2..].copy_from_slice(&foreign_asset_id.to_be_bytes());
+			}
 		}
 		u32::from_be_bytes(bytes)
 	}
@@ -299,8 +340,30 @@ impl Into<CurrencyId> for DexShare {
 		match self {
 			DexShare::Token(token) => CurrencyId::Token(token),
 			DexShare::Erc20(address) => CurrencyId::Erc20(address),
+			DexShare::ForeignAsset(foreign_asset_id) => CurrencyId::ForeignAsset(foreign_asset_id),
 		}
 	}
+}
+
+/// H160 CurrencyId Type enum
+#[derive(
+	Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TryFromPrimitive, IntoPrimitive, TypeInfo,
+)]
+#[repr(u8)]
+pub enum CurrencyIdType {
+	Token = 1, // 0 is prefix of precompile and predeploy
+	DexShare,
+	ForeignAsset,
+}
+
+#[derive(
+	Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TryFromPrimitive, IntoPrimitive, TypeInfo,
+)]
+#[repr(u8)]
+pub enum DexShareType {
+	Token,
+	Erc20,
+	ForeignAsset,
 }
 
 impl Into<DexShareType> for DexShare {
@@ -308,34 +371,22 @@ impl Into<DexShareType> for DexShare {
 		match self {
 			DexShare::Token(_) => DexShareType::Token,
 			DexShare::Erc20(_) => DexShareType::Erc20,
+			DexShare::ForeignAsset(_) => DexShareType::ForeignAsset,
 		}
 	}
 }
 
-/// Generate the EvmAddress from CurrencyId so that evm contracts can call the erc20 contract.
-impl TryFrom<CurrencyId> for EvmAddress {
-	type Error = ();
+#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo)]
+pub enum AssetIds {
+	Erc20(EvmAddress),
+	ForeignAssetId(ForeignAssetId),
+	NativeAssetId(CurrencyId),
+}
 
-	fn try_from(val: CurrencyId) -> Result<Self, Self::Error> {
-		match val {
-			CurrencyId::Token(_) => Ok(EvmAddress::from_low_u64_be(
-				MIRRORED_TOKENS_ADDRESS_START | u64::from(val.currency_id().unwrap()),
-			)),
-			CurrencyId::DexShare(token_symbol_0, token_symbol_1) => {
-				let symbol_0 = match token_symbol_0 {
-					DexShare::Token(token) => CurrencyId::Token(token).currency_id().ok_or(()),
-					DexShare::Erc20(_) => Err(()),
-				}?;
-				let symbol_1 = match token_symbol_1 {
-					DexShare::Token(token) => CurrencyId::Token(token).currency_id().ok_or(()),
-					DexShare::Erc20(_) => Err(()),
-				}?;
-
-				let mut prefix = EvmAddress::default();
-				prefix[0..H160_PREFIX_DEXSHARE.len()].copy_from_slice(&H160_PREFIX_DEXSHARE);
-				Ok(prefix | EvmAddress::from_low_u64_be(u64::from(symbol_0) << 32 | u64::from(symbol_1)))
-			}
-			CurrencyId::Erc20(address) => Ok(address),
-		}
-	}
+#[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo)]
+pub struct AssetMetadata<Balance> {
+	pub name: Vec<u8>,
+	pub symbol: Vec<u8>,
+	pub decimals: u8,
+	pub minimal_balance: Balance,
 }

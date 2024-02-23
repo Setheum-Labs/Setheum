@@ -1,37 +1,38 @@
 [package]
 name = "module-evm-accounts"
-version = "1.0.0"
+version = "0.9.81-dev"
 authors = ["Setheum Labs"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-serde = { version = "1.0.124", optional = true }
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
-libsecp256k1 = { version = "0.3.4", default-features = false, features = ["hmac"] }
+parity-scale-codec = { workspace = true }
+libsecp256k1 = { workspace = true, features = ["hmac", "static-context"], optional = true }
+scale-info = { workspace = true }
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-core = { workspace = true }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
 
-orml-traits = { path = "../submodules/orml/traits", default-features = false }
-
-primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
-module-support = { path = "../support", default-features = false }
+orml-traits = { workspace = true }
+primitives = { workspace = true }
+module-support = { workspace = true }
+module-evm-utility-macro = { workspace = true }
 
 [dev-dependencies]
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-currencies = { path = "../submodules/orml/currencies" }
-orml-tokens = { path = "../submodules/orml/tokens" }
+pallet-balances = { workspace = true, features = ["std"] }
+orml-currencies = { workspace = true, features = ["std"] }
+orml-tokens = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
 std = [
-	"serde",
-	"codec/std",
+	"parity-scale-codec/std",
+	"libsecp256k1",
 	"libsecp256k1/std",
+	"scale-info/std",
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-io/std",
@@ -43,6 +44,12 @@ std = [
 	"module-support/std",
 ]
 runtime-benchmarks = [
+	"libsecp256k1/hmac",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
 ]

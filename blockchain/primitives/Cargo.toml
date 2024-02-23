@@ -1,40 +1,45 @@
 [package]
 name = "setheum-primitives"
-version = "1.0.0"
+version = "0.9.81-dev"
 authors = ["Setheum Labs"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-bstringify = "0.1.2"
-serde = { version = "1.0.124", optional = true }
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false, features = ["max-encoded-len"] }
-num_enum = { version = "0.5.1", default-features = false }
-scale-info = { version = "1.0", default-features = false, features = ["derive"] }
+log = { workspace = true }
+hex-literal = { workspace = true }
+bstringify = { workspace = true }
+serde = { workspace = true, features = ["alloc", "derive"] }
+parity-scale-codec = { workspace = true, features = ["max-encoded-len"] }
+num_enum = { workspace = true }
+scale-info = { workspace = true }
+enumflags2 = { workspace = true, features = ["serde"] }
+paste = { workspace = true }
 
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
+sp-io = { workspace = true }
+sp-api = { workspace = true }
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-ethereum-types = { version = "0.12.0", default-features = false }
-evm = { version = "0.30.1", default-features = false, features = ["with-codec"] }
-ethereum = { version = "0.9.0", default-features = false, features = ["with-codec"] }
+frame-support = { workspace = true }
+
+orml-traits = { workspace = true }
+
+module-evm-utility = { workspace = true }
+module-evm-utility-macro = { workspace = true }
 
 [dev-dependencies]
-serde_json = { version = "1.0.64" }
-hex-literal = "0.3.1"
-primitives-proc-macro = { path = "./proc-macro" }
+serde_json = { workspace = true, features = ["std"] }
+
 
 [features]
 default = ["std"]
 std = [
-	"serde",
-	"codec/std",
+	"serde/std",
+	"parity-scale-codec/std",
 	"num_enum/std",
-
 	"scale-info/std",
+	"enumflags2/serde",
 	"sp-runtime/std",
 	"sp-core/std",
 	"sp-std/std",
@@ -43,8 +48,8 @@ std = [
 
 	"frame-support/std",
 
-	"evm/std",
-	"evm/with-serde",
-	"ethereum/std",
-	"ethereum/with-serde",
+	"orml-traits/std",
+	"module-evm-utility/std",
 ]
+evm-tests = []
+try-runtime = []

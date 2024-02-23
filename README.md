@@ -18,11 +18,12 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 
 <div align="center">
 
-[![Setheum version](https://img.shields.io/badge/Setheum-0.9.80-blue?logo=Parity%20Substrate)](https://setheum.xyz/)
-[![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=blue)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE)
+[![Setheum version](https://img.shields.io/badge/Setheum-0.9.81-yellow?logo=Parity%20Substrate)](https://setheum.xyz/)
+[![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=blue)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributor/CONTRIBUTING.md)
 
- <br />
+[![Rust](https://github.com/Setheum-Labs/Setheum/actions/workflows/rust.yml/badge.svg)](https://github.com/Setheum-Labs/Setheum/actions/workflows/rust.yml)
+[![CodeQL](https://github.com/Setheum-Labs/Setheum/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Setheum-Labs/Setheum/actions/workflows/github-code-scanning/codeql)
 
 [![Website](https://img.shields.io/badge/web-gray?logo=web)](https://setheum.xyz)
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FSetheum)](https://twitter.com/Setheum)
@@ -82,7 +83,7 @@ Setheum’s consensus system works to achieve high scalability and high security
 
 ### 1.2. EthicalDeFi
 
-EthicalDeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including a cutting-edge AMM DEX, modules,
+EthicalDeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including AMM, Orderbook & Aggregated DEX modules,
 Decentralised Liquid Staking for Setheum SE and ethical zero-interest halal stablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD)
 and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable
 without compromising decentralisation or economic stability, offering zero-interest loans of stable cryptocurrencies that has scalable value and trust,
@@ -304,7 +305,7 @@ Run the module benchmarks and generate the weights file:
     --execution=wasm \
     --wasm-execution=compiled \
     --heap-pages=4096 \
-    --output=./modules/currencies/src/weights.rs
+    --output=./blockchain/modules/currencies/src/weights.rs
 ```
 
 ### 6.4. Bench Bot

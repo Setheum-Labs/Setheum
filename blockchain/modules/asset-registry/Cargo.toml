@@ -1,0 +1,49 @@
+[package]
+name = "module-asset-registry"
+version = "0.9.81-dev"
+authors = ["Setheum Labs"]
+edition = "2021"
+
+[dependencies]
+log = { workspace = true }
+scale-info = { workspace = true }
+parity-scale-codec = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true  }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+primitives = { workspace = true }
+
+xcm = { workspace = true }
+
+module-support = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true, features = ["std"] }
+hex = { workspace = true, features = ["std"] }
+sp-core = { workspace = true, features = ["std"] }
+sp-io = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
+
+module-evm = { workspace = true, features = ["std"] }
+module-evm-bridge = { workspace = true, features = ["std"] }
+
+[features]
+default = ["std"]
+std = [
+	"log/std",
+	"parity-scale-codec/std",
+	"scale-info/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"frame-support/std",
+	"frame-system/std",
+	"primitives/std",
+	"xcm/std",
+	"module-support/std",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+]

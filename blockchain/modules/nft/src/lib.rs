@@ -23,27 +23,31 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use enumflags2::BitFlags;
 use frame_support::{
 	pallet_prelude::*,
 	require_transactional,
 	traits::{
+		tokens::nonfungibles::{Inspect, Mutate, Transfer},
 		Currency,
 		ExistenceRequirement::{AllowDeath, KeepAlive},
 		NamedReservableCurrency,
 	},
-	transactional, PalletId,
+	PalletId,
 };
 use frame_system::pallet_prelude::*;
-use orml_traits::NFT;
-use primitives::{NFTBalance, ReserveIdentifier};
-#[cfg(feature = "std")]
+use orml_traits::InspectExtended;
+use primitives::{
+	nft::{Attributes, ClassProperty, NFTBalance, Properties, CID},
+	ReserveIdentifier,
+};
+use scale_info::TypeInfo;
+
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
 	traits::{AccountIdConversion, Hash, Saturating, StaticLookup, Zero},
 	DispatchResult, RuntimeDebug,
 };
-use sp_std::{collections::btree_map::BTreeMap, prelude::*};
+use sp_std::prelude::*;
 
 pub mod benchmarking;
 mod mock;
@@ -53,43 +57,7 @@ pub mod weights;
 pub use module::*;
 pub use weights::WeightInfo;
 
-pub type CID = Vec<u8>;
-pub type Attributes = BTreeMap<Vec<u8>, Vec<u8>>;
-
-#[repr(u8)]
-#[derive(Encode, Decode, Clone, Copy, BitFlags, RuntimeDebug, PartialEq, Eq)]
-pub enum ClassProperty {
-	/// Is token transferable
-	Transferable = 0b00000001,
-	/// Is token burnable
-	Burnable = 0b00000010,
-	/// Is minting new tokens allowed
-	Mintable = 0b00000100,
-	/// Is class properties mutable
-	ClassPropertiesMutable = 0b00001000,
-}
-
-#[derive(Clone, Copy, PartialEq, Default, RuntimeDebug)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct Properties(pub BitFlags<ClassProperty>);
-
-impl Eq for Properties {}
-impl Encode for Properties {
-	fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
-		self.0.bits().using_encoded(f)
-	}
-}
-impl Decode for Properties {
-	fn decode<I: codec::Input>(input: &mut I) -> sp_std::result::Result<Self, codec::Error> {
-		let field = u8::decode(input)?;
-		Ok(Self(
-			<BitFlags<ClassProperty>>::from_bits(field as u8).map_err(|_| "invalid value")?,
-		))
-	}
-}
-
-#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, TypeInfo, Serialize, Deserialize)]
 pub struct ClassData<Balance> {
 	/// Deposit reserved to create token class
 	pub deposit: Balance,
@@ -99,8 +67,7 @@ pub struct ClassData<Balance> {
 	pub attributes: Attributes,
 }
 
-#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, TypeInfo, Serialize, Deserialize)]
 pub struct TokenData<Balance> {
 	/// Deposit reserved to create token
 	pub deposit: Balance,
@@ -125,7 +92,7 @@ pub mod module {
 		+ orml_nft::Config<ClassData = ClassData<BalanceOf<Self>>, TokenData = TokenData<BalanceOf<Self>>>
 		+ pallet_proxy::Config
 	{
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Currency type for reserve balance.
 		type Currency: NamedReservableCurrency<
@@ -181,31 +148,55 @@ pub mod module {
 		Immutable,
 		/// Attributes too large
 		AttributesTooLarge,
+		/// The given token ID is not correct
+		IncorrectTokenId,
 	}
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
-	#[pallet::metadata(T::AccountId = "AccountId", ClassIdOf<T> = "ClassId", TokenIdOf<T> = "TokenId", T::Hash = "Hash")]
 	pub enum Event<T: Config> {
-		/// Created NFT class. \[owner, class_id\]
-		CreatedClass(T::AccountId, ClassIdOf<T>),
-		/// Minted NFT token. \[from, to, class_id, quantity\]
-		MintedToken(T::AccountId, T::AccountId, ClassIdOf<T>, u32),
-		/// Transferred NFT token. \[from, to, class_id, token_id\]
-		TransferredToken(T::AccountId, T::AccountId, ClassIdOf<T>, TokenIdOf<T>),
-		/// Burned NFT token. \[owner, class_id, token_id\]
-		BurnedToken(T::AccountId, ClassIdOf<T>, TokenIdOf<T>),
-		/// Burned NFT token with remark. \[owner, class_id, token_id, remark_hash\]
-		BurnedTokenWithRemark(T::AccountId, ClassIdOf<T>, TokenIdOf<T>, T::Hash),
-		/// Destroyed NFT class. \[owner, class_id\]
-		DestroyedClass(T::AccountId, ClassIdOf<T>),
+		/// Created NFT class.
+		CreatedClass {
+			owner: T::AccountId,
+			class_id: ClassIdOf<T>,
+		},
+		/// Minted NFT token.
+		MintedToken {
+			from: T::AccountId,
+			to: T::AccountId,
+			class_id: ClassIdOf<T>,
+			quantity: u32,
+		},
+		/// Transferred NFT token.
+		TransferredToken {
+			from: T::AccountId,
+			to: T::AccountId,
+			class_id: ClassIdOf<T>,
+			token_id: TokenIdOf<T>,
+		},
+		/// Burned NFT token.
+		BurnedToken {
+			owner: T::AccountId,
+			class_id: ClassIdOf<T>,
+			token_id: TokenIdOf<T>,
+		},
+		/// Burned NFT token with remark.
+		BurnedTokenWithRemark {
+			owner: T::AccountId,
+			class_id: ClassIdOf<T>,
+			token_id: TokenIdOf<T>,
+			remark_hash: T::Hash,
+		},
+		/// Destroyed NFT class.
+		DestroyedClass {
+			owner: T::AccountId,
+			class_id: ClassIdOf<T>,
+		},
 	}
 
 	#[pallet::pallet]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
-
-	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -213,8 +204,8 @@ pub mod module {
 		///
 		/// - `metadata`: external metadata
 		/// - `properties`: class property, include `Transferable` `Burnable`
+		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config>::WeightInfo::create_class())]
-		#[transactional]
 		pub fn create_class(
 			origin: OriginFor<T>,
 			metadata: CID,
@@ -223,7 +214,7 @@ pub mod module {
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 			let next_id = orml_nft::Pallet::<T>::next_class_id();
-			let owner: T::AccountId = T::PalletId::get().into_sub_account(next_id);
+			let owner: T::AccountId = T::PalletId::get().into_sub_account_truncating(next_id);
 			let class_deposit = T::CreateClassDeposit::get();
 
 			let data_deposit = Self::data_deposit(&metadata, &attributes)?;
@@ -231,8 +222,17 @@ pub mod module {
 			let deposit = class_deposit.saturating_add(data_deposit);
 			let total_deposit = proxy_deposit.saturating_add(deposit);
 
-			// ensure enough token for proxy deposit + class deposit + data deposit
-			<T as module::Config>::Currency::transfer(&who, &owner, total_deposit, KeepAlive)?;
+			// https://github.com/paritytech/substrate/blob/569aae5341ea0c1d10426fa1ec13a36c0b64393b/frame/balances/src/lib.rs#L965
+			// Now the pallet-balances judges whether provider is based on the `free balance` instead of
+			// `total balance`. When there's no other providers, error will throw in following reserve
+			// operation, which want to make `free balance` zero and `reserved balance` not zero.
+			// If receiver account doesn't have enough ED, transfer an additional ED to make sure of the subsequent
+			// reserve operation.
+			let total_transfer_amount =
+				total_deposit.saturating_add(<T as module::Config>::Currency::minimum_balance());
+
+			// ensure enough token for proxy deposit + class deposit + data deposit + ed
+			<T as module::Config>::Currency::transfer(&who, &owner, total_transfer_amount, KeepAlive)?;
 
 			<T as module::Config>::Currency::reserve_named(&RESERVE_ID, &owner, deposit)?;
 
@@ -246,7 +246,10 @@ pub mod module {
 			};
 			orml_nft::Pallet::<T>::create_class(&owner, metadata, data)?;
 
-			Self::deposit_event(Event::CreatedClass(owner, next_id));
+			Self::deposit_event(Event::CreatedClass {
+				owner,
+				class_id: next_id,
+			});
 			Ok(().into())
 		}
 
@@ -256,8 +259,8 @@ pub mod module {
 		/// - `class_id`: token belong to the class id
 		/// - `metadata`: external metadata
 		/// - `quantity`: token quantity
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as Config>::WeightInfo::mint(*quantity))]
-		#[transactional]
 		pub fn mint(
 			origin: OriginFor<T>,
 			to: <T::Lookup as StaticLookup>::Source,
@@ -268,15 +271,16 @@ pub mod module {
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
-			Self::do_mint(who, to, class_id, metadata, attributes, quantity)
+			Self::do_mint(&who, &to, class_id, metadata, attributes, quantity)?;
+			Ok(())
 		}
 
 		/// Transfer NFT token to another account
 		///
 		/// - `to`: the token owner's account
 		/// - `token`: (class_id, token_id)
+		#[pallet::call_index(2)]
 		#[pallet::weight(<T as Config>::WeightInfo::transfer())]
-		#[transactional]
 		pub fn transfer(
 			origin: OriginFor<T>,
 			to: <T::Lookup as StaticLookup>::Source,
@@ -290,8 +294,8 @@ pub mod module {
 		/// Burn NFT token
 		///
 		/// - `token`: (class_id, token_id)
+		#[pallet::call_index(3)]
 		#[pallet::weight(<T as Config>::WeightInfo::burn())]
-		#[transactional]
 		pub fn burn(origin: OriginFor<T>, token: (ClassIdOf<T>, TokenIdOf<T>)) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			Self::do_burn(who, token, None)
@@ -301,8 +305,8 @@ pub mod module {
 		///
 		/// - `token`: (class_id, token_id)
 		/// - `remark`: Vec<u8>
+		#[pallet::call_index(4)]
 		#[pallet::weight(<T as Config>::WeightInfo::burn_with_remark(remark.len() as u32))]
-		#[transactional]
 		pub fn burn_with_remark(
 			origin: OriginFor<T>,
 			token: (ClassIdOf<T>, TokenIdOf<T>),
@@ -317,8 +321,8 @@ pub mod module {
 		///
 		/// - `class_id`: The class ID to destroy
 		/// - `dest`: The proxy account that will receive free balance
+		#[pallet::call_index(5)]
 		#[pallet::weight(<T as Config>::WeightInfo::destroy_class())]
-		#[transactional]
 		pub fn destroy_class(
 			origin: OriginFor<T>,
 			class_id: ClassIdOf<T>,
@@ -349,7 +353,7 @@ pub mod module {
 				AllowDeath,
 			)?;
 
-			Self::deposit_event(Event::DestroyedClass(who, class_id));
+			Self::deposit_event(Event::DestroyedClass { owner: who, class_id });
 			Ok(().into())
 		}
 
@@ -358,8 +362,8 @@ pub mod module {
 		///
 		/// - `class_id`: The class ID to update
 		/// - `properties`: The new properties
+		#[pallet::call_index(6)]
 		#[pallet::weight(<T as Config>::WeightInfo::update_class_properties())]
-		#[transactional]
 		pub fn update_class_properties(
 			origin: OriginFor<T>,
 			class_id: ClassIdOf<T>,
@@ -370,7 +374,7 @@ pub mod module {
 				let class_info = class_info.as_mut().ok_or(Error::<T>::ClassIdNotFound)?;
 				ensure!(who == class_info.owner, Error::<T>::NoPermission);
 
-				let mut data = &mut class_info.data;
+				let data = &mut class_info.data;
 				ensure!(
 					data.properties.0.contains(ClassProperty::ClassPropertiesMutable),
 					Error::<T>::Immutable
@@ -386,7 +390,7 @@ pub mod module {
 
 impl<T: Config> Pallet<T> {
 	#[require_transactional]
-	fn do_transfer(from: &T::AccountId, to: &T::AccountId, token: (ClassIdOf<T>, TokenIdOf<T>)) -> DispatchResult {
+	pub fn do_transfer(from: &T::AccountId, to: &T::AccountId, token: (ClassIdOf<T>, TokenIdOf<T>)) -> DispatchResult {
 		let class_info = orml_nft::Pallet::<T>::classes(token.0).ok_or(Error::<T>::ClassIdNotFound)?;
 		let data = class_info.data;
 		ensure!(
@@ -398,26 +402,46 @@ impl<T: Config> Pallet<T> {
 
 		orml_nft::Pallet::<T>::transfer(from, to, token)?;
 
-		<T as module::Config>::Currency::unreserve_named(&RESERVE_ID, from, token_info.data.deposit);
-		<T as module::Config>::Currency::transfer(from, to, token_info.data.deposit, AllowDeath)?;
-		<T as module::Config>::Currency::reserve_named(&RESERVE_ID, to, token_info.data.deposit)?;
+		let reserve_balance = token_info.data.deposit;
 
-		Self::deposit_event(Event::TransferredToken(from.clone(), to.clone(), token.0, token.1));
+		// https://github.com/paritytech/substrate/blob/569aae5341ea0c1d10426fa1ec13a36c0b64393b/frame/balances/src/lib.rs#L965
+		// Now the pallet-balances judges whether provider is based on the `free balance` instead of
+		// `total balance`. When there's no other providers, error will throw in following reserve
+		// operation, which want to make `free balance` zero and `reserved balance` not zero.
+		// If receiver account doesn't have enough ED, transfer an additional ED to make sure of the subsequent
+		// reserve operation.
+		let transfer_amount =
+			if <T as module::Config>::Currency::free_balance(to) < <T as module::Config>::Currency::minimum_balance() {
+				reserve_balance.saturating_add(<T as module::Config>::Currency::minimum_balance())
+			} else {
+				reserve_balance
+			};
+
+		<T as module::Config>::Currency::unreserve_named(&RESERVE_ID, from, reserve_balance);
+		<T as module::Config>::Currency::transfer(from, to, transfer_amount, AllowDeath)?;
+		<T as module::Config>::Currency::reserve_named(&RESERVE_ID, to, reserve_balance)?;
+
+		Self::deposit_event(Event::TransferredToken {
+			from: from.clone(),
+			to: to.clone(),
+			class_id: token.0,
+			token_id: token.1,
+		});
 		Ok(())
 	}
 
 	#[require_transactional]
 	fn do_mint(
-		who: T::AccountId,
-		to: T::AccountId,
+		who: &T::AccountId,
+		to: &T::AccountId,
 		class_id: ClassIdOf<T>,
 		metadata: CID,
 		attributes: Attributes,
 		quantity: u32,
-	) -> DispatchResult {
+	) -> Result<Vec<TokenIdOf<T>>, DispatchError> {
 		ensure!(quantity >= 1, Error::<T>::InvalidQuantity);
 		let class_info = orml_nft::Pallet::<T>::classes(class_id).ok_or(Error::<T>::ClassIdNotFound)?;
-		ensure!(who == class_info.owner, Error::<T>::NoPermission);
+		ensure!(*who == class_info.owner, Error::<T>::NoPermission);
 
 		ensure!(
 			class_info.data.properties.0.contains(ClassProperty::Mintable),
@@ -428,18 +452,42 @@ impl<T: Config> Pallet<T> {
 		let deposit = T::CreateTokenDeposit::get().saturating_add(data_deposit);
 		let total_deposit = deposit.saturating_mul(quantity.into());
 
+		// https://github.com/paritytech/substrate/blob/569aae5341ea0c1d10426fa1ec13a36c0b64393b/frame/balances/src/lib.rs#L965
+		// Now the pallet-balances judges whether does provider is based on the `free balance` instead of
+		// `total balance`. When there's no other providers, error will throw in following reserve
+		// operation, which want to make `free balance` is zero and `reserved balance` is not zero.
+		// If receiver account has not enough ed, transfer an additional ED to make sure the subsequent
+		// reserve operation.
+		let total_transfer_amount =
+			if <T as module::Config>::Currency::free_balance(to) < <T as module::Config>::Currency::minimum_balance() {
+				total_deposit.saturating_add(<T as module::Config>::Currency::minimum_balance())
+			} else {
+				total_deposit
+			};
+
 		// `repatriate_reserved` will check `to` account exist and may return
 		// `DeadAccount`.
-		<T as module::Config>::Currency::transfer(&who, &to, total_deposit, KeepAlive)?;
-		<T as module::Config>::Currency::reserve_named(&RESERVE_ID, &to, total_deposit)?;
+		<T as module::Config>::Currency::transfer(who, to, total_transfer_amount, KeepAlive)?;
+		<T as module::Config>::Currency::reserve_named(&RESERVE_ID, to, total_deposit)?;
 
+		let mut token_ids = Vec::with_capacity(quantity as usize);
 		let data = TokenData { deposit, attributes };
 		for _ in 0..quantity {
-			orml_nft::Pallet::<T>::mint(&to, class_id, metadata.clone(), data.clone())?;
+			token_ids.push(orml_nft::Pallet::<T>::mint(
+				to,
+				class_id,
+				metadata.clone(),
+				data.clone(),
+			)?);
 		}
 
-		Self::deposit_event(Event::MintedToken(who, to, class_id, quantity));
-		Ok(())
+		Self::deposit_event(Event::MintedToken {
+			from: who.clone(),
+			to: to.clone(),
+			class_id,
+			quantity,
+		});
+		Ok(token_ids)
 	}
 
 	fn do_burn(who: T::AccountId, token: (ClassIdOf<T>, TokenIdOf<T>), remark: Option<Vec<u8>>) -> DispatchResult {
@@ -459,9 +507,18 @@ impl<T: Config> Pallet<T> {
 
 		if let Some(remark) = remark {
 			let hash = T::Hashing::hash(&remark[..]);
-			Self::deposit_event(Event::BurnedTokenWithRemark(who, token.0, token.1, hash));
+			Self::deposit_event(Event::BurnedTokenWithRemark {
+				owner: who,
+				class_id: token.0,
+				token_id: token.1,
+				remark_hash: hash,
+			});
 		} else {
-			Self::deposit_event(Event::BurnedToken(who, token.0, token.1));
+			Self::deposit_event(Event::BurnedToken {
+				owner: who,
+				class_id: token.0,
+				token_id: token.1,
+			});
 		}
 
 		Ok(())
@@ -483,20 +540,67 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> NFT<T::AccountId> for Pallet<T> {
-	type ClassId = ClassIdOf<T>;
-	type TokenId = TokenIdOf<T>;
+impl<T: Config> InspectExtended<T::AccountId> for Pallet<T> {
 	type Balance = NFTBalance;
 
 	fn balance(who: &T::AccountId) -> Self::Balance {
 		orml_nft::TokensByOwner::<T>::iter_prefix((who,)).count() as u128
 	}
 
-	fn owner(token: (Self::ClassId, Self::TokenId)) -> Option<T::AccountId> {
-		orml_nft::Pallet::<T>::tokens(token.0, token.1).map(|t| t.owner)
+	fn next_token_id(class: Self::CollectionId) -> Self::ItemId {
+		orml_nft::Pallet::<T>::next_token_id(class)
+	}
+}
+
+impl<T: Config> Inspect<T::AccountId> for Pallet<T> {
+	type ItemId = TokenIdOf<T>;
+	type CollectionId = ClassIdOf<T>;
+
+	fn owner(class: &Self::CollectionId, instance: &Self::ItemId) -> Option<T::AccountId> {
+		orml_nft::Pallet::<T>::tokens(class, instance).map(|t| t.owner)
 	}
 
-	fn transfer(from: &T::AccountId, to: &T::AccountId, token: (Self::ClassId, Self::TokenId)) -> DispatchResult {
-		Self::do_transfer(from, to, token)
+	fn collection_owner(class: &Self::CollectionId) -> Option<T::AccountId> {
+		orml_nft::Pallet::<T>::classes(class).map(|c| c.owner)
+	}
+
+	fn can_transfer(class: &Self::CollectionId, _: &Self::ItemId) -> bool {
+		orml_nft::Pallet::<T>::classes(class).map_or(false, |class_info| {
+			class_info.data.properties.0.contains(ClassProperty::Transferable)
+		})
+	}
+}
+
+impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
+	/// Mint some asset `instance` of `class` to be owned by `who`.
+	fn mint_into(class: &Self::CollectionId, instance: &Self::ItemId, who: &T::AccountId) -> DispatchResult {
+		// Ensure the next token ID is correct
+		ensure!(
+			orml_nft::Pallet::<T>::next_token_id(class) == *instance,
+			Error::<T>::IncorrectTokenId
+		);
+
+		let class_owner =
+			<Self as Inspect<T::AccountId>>::collection_owner(class).ok_or(Error::<T>::ClassIdNotFound)?;
+		Self::do_mint(&class_owner, who, *class, Default::default(), Default::default(), 1u32)?;
+		Ok(())
+	}
+
+	/// Burn some asset `instance` of `class`.
+	fn burn(
+		class: &Self::CollectionId,
+		instance: &Self::ItemId,
+		_maybe_check_owner: Option<&T::AccountId>,
+	) -> DispatchResult {
+		let owner = <Self as Inspect<T::AccountId>>::owner(class, instance).ok_or(Error::<T>::TokenIdNotFound)?;
+		Self::do_burn(owner, (*class, *instance), None)
+	}
+}
+
+impl<T: Config> Transfer<T::AccountId> for Pallet<T> {
+	/// Transfer asset `instance` of `class` into `destination` account.
+	fn transfer(class: &Self::CollectionId, instance: &Self::ItemId, destination: &T::AccountId) -> DispatchResult {
+		let owner = <Self as Inspect<T::AccountId>>::owner(class, instance).ok_or(Error::<T>::TokenIdNotFound)?;
+		Self::do_transfer(&owner, destination, (*class, *instance))
 	}
 }
