@@ -38,7 +38,10 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 - [Setheum - Powering The New Internet](#setheum---powering-the-new-internet)
   - [1.0. Introduction](#10-introduction)
     - [1.1. Setheum Chain](#11-setheum-chain)
-    - [1.2. EthicalDeFi](#12-ethicaldefi)
+    - [1.2. Ethical DeFi](#12-ethicaldefi)
+      - [1.2.1 Edfis - Ethical DeFi Swap](#121-edfis---ethical-defi-swap)
+      - [1.2.2 The Setter Stablecoin](#122-the-setter-stablecoin)
+      - [1.2.3 The Slick USD Stablecoin](#123-the-slick-usd-stablecoin)
   - [2.0. Getting Started](#20-getting-started)
     - [2.1. Build](#21-build)
     - [2.2. Run](#22-run)
@@ -81,13 +84,21 @@ high throughput and high scalability.
 
 Setheum’s consensus system works to achieve high scalability and high security with an ethical and equitably high level of decentralisation.
 
-### 1.2. EthicalDeFi
+### 1.2. Ethical DeFi
 
-EthicalDeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including AMM, Orderbook & Aggregated DEX modules,
-Decentralised Liquid Staking for Setheum SE and ethical zero-interest halal stablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD)
-and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable
-without compromising decentralisation or economic stability, offering zero-interest loans of stable cryptocurrencies that has scalable value and trust,
-setheum provides just that, backed by crypto assets with efficient zero-interest loans.
+Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including an AMM DEX (inspired by Uniswap v3), Decentralised Liquid Staking and Ethical Zero-interest Halal sStablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD) and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable without compromising decentralisation or economic stability, offering stable cryptocurrencies that have scalable value and reliability, setheum provides just that, backed by crypto assets on an efficient zero-interest debt-based system.
+
+#### 1.2.1. Edfis - Ethical DeFi Swap
+
+Edfis is Ethical DeFi Swap, the AMM (Automated Market Maker) DEX (Decentralized Exchange) Protocol of the Ethical DeFi Suite inspired by Uniswap v3 design natively built on the Setheum Network with optimisations and a native liquidity mining mechanism for incentivizing LPs.
+
+#### 1.2.2. The Setter Stablecoin
+
+The Setter is Ethical DeFi's flagship stablecoin, built on the `ECDP` (Ethical Collateralised Debt Position), the Unpegged ECDP Stablecoin Protocol of the Ethical DeFi Suite is inspired by MakerDAO's and RAI's design, natively built on the Setheum Network with Zero-interest loans with optimisations and native liquidation protocols which include our on-chain built-in DEX Edfis, a native auction system, as well as an on-chain native liquidation protection mechanism. The Setter uses a system we call `LVSI` (Low Volatility Stable Index) which makes the stablecoin float without a peg while remaining stable-ish, it is over-collateralised by the Setheum's native currency `SEE`.
+
+#### 1.2.3. The Slick USD Stablecoin
+
+The Slick USD is Ethical DeFi's USD-pegged stablecoin, built on the `ECDP` (Ethical Collateralised Debt Position), the Pegged ECDP Stablecoin Protocol of the Ethical DeFi Suite is inspired by MakerDAO's design, natively built on the Setheum Network with Zero-interest loans with optimisations and native liquidation protocols which include our on-chain built-in DEX Edfis, a native auction system, as well as an on-chain native liquidation protection mechanism. The SlickUSD is over-collateralised and multi-collateralised.
 
 ## 2.0. Getting Started
 
@@ -353,4 +364,4 @@ project adheres to the [Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.
 
 The code in this repository is licensed under the [GNU GPL Version 3 License](./LICENSE.md)
 
-Unless you explicitly state otherwise, any contribution that you submit to this repo shall be licensed as above (as defined in the [GNU GPL-3 Version 3.0 or later WITH Classpath-exception-2.0](./LICENSE.md), without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution that you submit to this repo shall be licensed as above (as defined in the [GNU GPL-3 Version 3.0 or later WITH Classpath-exception-2.0](./LICENSE.md)), without any additional terms or conditions.
