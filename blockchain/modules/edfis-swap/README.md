@@ -1,6 +1,6 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Edfis Swap DEX Module
+# Edfis Swap Module
 
 ## Overview
 
