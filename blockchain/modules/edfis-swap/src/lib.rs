@@ -36,7 +36,7 @@
 
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
-use module_support::{SwapDexIncentives, SwapDexManager, Erc20InfoMapping, ExchangeRate, Ratio, SwapLimit};
+use module_support::{SwapDexIncentives, SwapManager, Erc20InfoMapping, ExchangeRate, Ratio, SwapLimit};
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use parity_scale_codec::MaxEncodedLen;
 use primitives::{Balance, CurrencyId, TradingPair};
@@ -1403,7 +1403,7 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> SwapDexManager<T::AccountId, Balance, CurrencyId> for Pallet<T> {
+impl<T: Config> SwapManager<T::AccountId, Balance, CurrencyId> for Pallet<T> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		Self::get_liquidity(currency_id_a, currency_id_b)
 	}

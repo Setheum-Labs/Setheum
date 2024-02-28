@@ -22,7 +22,7 @@ use super::input::{Input, InputT, Output};
 use crate::precompile::PrecompileOutput;
 use frame_support::log;
 use module_evm::{Context, ExitError, ExitSucceed, Precompile};
-use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, SwapDexManager, SwapLimit};
+use module_support::{AddressMapping as AddressMappingT, CurrencyIdMapping as CurrencyIdMappingT, SwapManager, SwapLimit};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use primitives::{Balance, CurrencyId};
 use sp_runtime::RuntimeDebug;
@@ -61,7 +61,7 @@ where
 	AccountId: Debug + Clone,
 	AddressMapping: AddressMappingT<AccountId>,
 	CurrencyIdMapping: CurrencyIdMappingT,
-	Dex: SwapDexManager<AccountId, CurrencyId, Balance>,
+	Dex: SwapManager<AccountId, CurrencyId, Balance>,
 {
 	fn execute(
 		input: &[u8],

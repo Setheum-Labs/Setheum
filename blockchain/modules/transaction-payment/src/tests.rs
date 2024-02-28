@@ -33,7 +33,7 @@ use mock::{
 	RuntimeOrigin, System, TransactionPayment, ALICE, BOB, CHARLIE, DAVE, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
 	SEE, USSD, EDF, LSEE,
 };
-use module_support::{BuyWeightRate, DEXManager, Price, TransactionPayment as TransactionPaymentT};
+use module_support::{BuyWeightRate, SwapManager, Price, TransactionPayment as TransactionPaymentT};
 use orml_traits::{MultiCurrency, MultiLockableCurrency};
 use pallet_balances::ReserveData;
 use primitives::currency::*;

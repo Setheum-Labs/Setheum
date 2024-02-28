@@ -33,7 +33,7 @@
 
 use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
-use module_support::{SwapDexManager, Erc20InfoMapping, ExchangeRateProvider, LockablePrice, Price, PriceProvider, Rate};
+use module_support::{SwapManager, Erc20InfoMapping, ExchangeRateProvider, LockablePrice, Price, PriceProvider, Rate};
 use orml_traits::{DataFeeder, DataProvider, GetByKey, MultiCurrency};
 use primitives::{Balance, CurrencyId, Lease};
 use sp_core::U256;
@@ -93,7 +93,7 @@ pub mod module {
 		type LiquidStakingExchangeRateProvider: ExchangeRateProvider;
 
 		/// SwapDex provide liquidity info.
-		type SwapDex: SwapDexManager<Self::AccountId, Balance, CurrencyId>;
+		type SwapDex: SwapManager<Self::AccountId, Balance, CurrencyId>;
 
 		/// Currency provide the total insurance of LPToken.
 		type Currency: MultiCurrency<Self::AccountId, CurrencyId = CurrencyId, Balance = Balance>;

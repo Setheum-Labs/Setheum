@@ -35,7 +35,7 @@ pub enum SwapLimit<Balance> {
 	ExactTarget(Balance, Balance),
 }
 
-pub trait SwapDexManager<AccountId, Balance, CurrencyId> {
+pub trait SwapManager<AccountId, Balance, CurrencyId> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
 	fn get_liquidity_token_address(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> Option<H160>;
@@ -117,7 +117,7 @@ pub struct SpecificJointsSwap<Dex, Joints>(sp_std::marker::PhantomData<(Dex, Joi
 impl<AccountId, Balance, CurrencyId, Dex, Joints> Swap<AccountId, Balance, CurrencyId>
 	for SpecificJointsSwap<Dex, Joints>
 where
-	Dex: SwapDexManager<AccountId, Balance, CurrencyId>,
+	Dex: SwapManager<AccountId, Balance, CurrencyId>,
 	Joints: Get<Vec<Vec<CurrencyId>>>,
 	Balance: Clone,
 	CurrencyId: Clone,
@@ -127,7 +127,7 @@ where
 		target_currency_id: CurrencyId,
 		limit: SwapLimit<Balance>,
 	) -> Option<(Balance, Balance)> {
-		<Dex as SwapDexManager<AccountId, Balance, CurrencyId>>::get_best_price_swap_path(
+		<Dex as SwapManager<AccountId, Balance, CurrencyId>>::get_best_price_swap_path(
 			supply_currency_id,
 			target_currency_id,
 			limit,
@@ -142,7 +142,7 @@ where
 		target_currency_id: CurrencyId,
 		limit: SwapLimit<Balance>,
 	) -> sp_std::result::Result<(Balance, Balance), DispatchError> {
-		let path = <Dex as SwapDexManager<AccountId, Balance, CurrencyId>>::get_best_price_swap_path(
+		let path = <Dex as SwapManager<AccountId, Balance, CurrencyId>>::get_best_price_swap_path(
 			supply_currency_id,
 			target_currency_id,
 			limit.clone(),
@@ -151,7 +151,7 @@ where
 		.ok_or_else(|| Into::<DispatchError>::into(SwapError::CannotSwap))?
 		.0;
 
-		<Dex as SwapDexManager<AccountId, Balance, CurrencyId>>::swap_with_specific_path(who, &path, limit)
+		<Dex as SwapManager<AccountId, Balance, CurrencyId>>::swap_with_specific_path(who, &path, limit)
 	}
 
 	fn swap_by_path(
@@ -159,12 +159,12 @@ where
 		swap_path: &[CurrencyId],
 		limit: SwapLimit<Balance>,
 	) -> Result<(Balance, Balance), DispatchError> {
-		<Dex as SwapDexManager<AccountId, Balance, CurrencyId>>::swap_with_specific_path(who, swap_path, limit)
+		<Dex as SwapManager<AccountId, Balance, CurrencyId>>::swap_with_specific_path(who, swap_path, limit)
 	}
 }
 
 #[cfg(feature = "std")]
-impl<AccountId, CurrencyId, Balance> SwapDexManager<AccountId, Balance, CurrencyId> for ()
+impl<AccountId, CurrencyId, Balance> SwapManager<AccountId, Balance, CurrencyId> for ()
 where
 	Balance: Default,
 {

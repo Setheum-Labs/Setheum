@@ -128,7 +128,7 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 }
 
 pub struct MockSwapDex;
-impl SwapDexManager<AccountId, Balance, CurrencyId> for MockSwapDex {
+impl SwapManager<AccountId, Balance, CurrencyId> for MockSwapDex {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USSD, SEE) => (10000, 200),
