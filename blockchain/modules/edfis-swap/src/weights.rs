@@ -35,7 +35,7 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./modules/dex/src/weights.rs
+// --output=./blockchain/modules/dex/src/weights.rs
 // --template=.maintain/module-weight-template.hbs
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
@@ -65,7 +65,7 @@ pub trait WeightInfo {
 	fn abort_provisioning() -> Weight;
 }
 
-/// Weights for module_dex using the Acala node and recommended hardware.
+/// Weights for module_dex using the Setheum node and recommended hardware.
 pub struct SetheumWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 	fn enable_trading_pair() -> Weight {
