@@ -35,13 +35,6 @@ pub enum SwapLimit<Balance> {
 	ExactTarget(Balance, Balance),
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum AggregatedSwapPath<CurrencyId> {
-	SwapDex(Vec<CurrencyId>),
-	// OrderBookDex(Vec<CurrencyId>),
-}
-
 pub trait SwapDexManager<AccountId, Balance, CurrencyId> {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance);
 
@@ -103,15 +96,6 @@ where
 	fn swap_by_path(
 		who: &AccountId,
 		swap_path: &[CurrencyId],
-		limit: SwapLimit<Balance>,
-	) -> Result<(Balance, Balance), DispatchError> {
-		let aggregated_swap_path = AggregatedSwapPath::Dex(swap_path.to_vec());
-		Self::swap_by_aggregated_path(who, &[aggregated_swap_path], limit)
-	}
-
-	fn swap_by_aggregated_path(
-		who: &AccountId,
-		swap_path: &[AggregatedSwapPath<CurrencyId>],
 		limit: SwapLimit<Balance>,
 	) -> Result<(Balance, Balance), DispatchError>;
 }
@@ -176,20 +160,6 @@ where
 		limit: SwapLimit<Balance>,
 	) -> Result<(Balance, Balance), DispatchError> {
 		<Dex as SwapDexManager<AccountId, Balance, CurrencyId>>::swap_with_specific_path(who, swap_path, limit)
-	}
-
-	fn swap_by_aggregated_path(
-		who: &AccountId,
-		swap_path: &[AggregatedSwapPath<CurrencyId>],
-		limit: SwapLimit<Balance>,
-	) -> Result<(Balance, Balance), DispatchError> {
-		ensure!(swap_path.len() == 1, Into::<DispatchError>::into(SwapError::CannotSwap));
-		match swap_path.last() {
-			Some(AggregatedSwapPath::<CurrencyId>::Dex(path)) => {
-				<Dex as SwapDexManager<AccountId, Balance, CurrencyId>>::swap_with_specific_path(who, path, limit)
-			}
-			_ => Err(Into::<DispatchError>::into(SwapError::CannotSwap)),
-		}
 	}
 }
 
