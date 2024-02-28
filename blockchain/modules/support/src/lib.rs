@@ -97,7 +97,7 @@ pub trait PriceProvider<CurrencyId> {
 	}
 }
 
-pub trait SwapDexPriceProvider<CurrencyId> {
+pub trait SwapPriceProvider<CurrencyId> {
 	fn get_relative_price(base: CurrencyId, quote: CurrencyId) -> Option<ExchangeRate>;
 }
 

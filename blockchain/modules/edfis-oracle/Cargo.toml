@@ -1,33 +1,32 @@
 [package]
-name = "module-edfis-swap-dex"
+name = "module-edfis-oracle"
 version = "0.9.81-dev"
 authors = ["Setheum Labs"]
 edition = "2021"
 
 [dependencies]
-log = { workspace = true }
 parity-scale-codec = { workspace = true, features = ["max-encoded-len"] }
 scale-info = { workspace = true }
 sp-core = { workspace = true }
 sp-runtime = { workspace = true }
+frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 sp-std = { workspace = true }
 orml-traits = { workspace = true }
-
 module-support = { workspace = true }
 primitives = { workspace = true }
 
 [dev-dependencies]
-orml-tokens = { workspace = true, features = ["std"] }
 sp-core = { workspace = true, features = ["std"] }
 sp-io = { workspace = true, features = ["std"] }
-pallet-balances = { workspace = true, features = ["std"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
 std = [
 	"parity-scale-codec/std",
+	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
 	"orml-traits/std",

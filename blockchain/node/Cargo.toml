@@ -71,10 +71,10 @@ node-runtime = { git = "https://github.com/paritytech/substrate", branch = "polk
 
 orml-oracle-rpc = { path = "../../submodules/orml/oracle/rpc" }
 
-module-nft = { path = "../../../modules/nft" }
-module-evm = { path = "../../../modules//evm" }
-module-evm-rpc-runtime-api = { path = "../../../modules//evm/rpc/runtime_api" }
-evm-rpc = { path = "../../../modules//evm/rpc" }
+module-nft = { path = "../../../blockchain/modules/nft" }
+module-evm = { path = "../../../blockchain/modules//evm" }
+module-evm-rpc-runtime-api = { path = "../../../blockchain/modules//evm/rpc/runtime_api" }
+evm-rpc = { path = "../../../blockchain/modules//evm/rpc" }
 
 setheum-primitives = { path = "../../primitives" }
 

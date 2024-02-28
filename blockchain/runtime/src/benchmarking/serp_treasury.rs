@@ -23,7 +23,7 @@
 #![allow(unused_imports)]
 use crate::{
 	AccountId, Balance, CurrencyId, Currencies, dollar, Dex,
-	MaxSwapSlippageCompareToOracle, Prices, Ratio, Runtime,
+	MaxSwapSlippageComparedToOracle, Prices, Ratio, Runtime,
 	SerpTreasury, StableCurrencyIds, StableCurrencyInflationPeriod,
 	System, GetDinarCurrencyId, GetSerpCurrencyId, GetNativeCurrencyId,
 	GetHelpCurrencyId, GetSetUSDId, SetterCurrencyId, 
@@ -37,7 +37,7 @@ use frame_support::traits::OnInitialize;
 use orml_traits::MultiCurrency;
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
-use module_support::{SwapDexManager, SerpTreasury as SerpTreasurySupport, SerpTreasuryExtended, SwapLimit};
+use module_support::{SwapManager, SerpTreasury as SerpTreasurySupport, SerpTreasuryExtended, SwapLimit};
 
 const SEE: CurrencyId = GetNativeCurrencyId::get();
 const SETR: CurrencyId = SetterCurrencyId::get();

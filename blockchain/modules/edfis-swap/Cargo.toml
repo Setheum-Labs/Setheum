@@ -1,32 +1,28 @@
 [package]
-name = "module-transaction-payment"
+name = "module-edfis-swap"
 version = "0.9.81-dev"
 authors = ["Setheum Labs"]
 edition = "2021"
 
 [dependencies]
 log = { workspace = true }
-parity-scale-codec = { workspace = true }
+parity-scale-codec = { workspace = true, features = ["max-encoded-len"] }
 scale-info = { workspace = true }
+sp-core = { workspace = true }
 sp-runtime = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 sp-std = { workspace = true }
-sp-io= { workspace = true }
-pallet-transaction-payment = { workspace = true }
-pallet-transaction-payment-rpc-runtime-api = { workspace = true }
-primitives = { workspace = true }
-module-support = { workspace = true }
 orml-traits = { workspace = true }
-xcm = { workspace = true }
+
+module-support = { workspace = true }
+primitives = { workspace = true }
 
 [dev-dependencies]
-sp-core = { workspace = true, features = ["std"] }
-pallet-balances = { workspace = true, features = ["std"] }
 orml-tokens = { workspace = true, features = ["std"] }
-module-currencies = { workspace = true, features = ["std"] }
-module-dex = { workspace = true, features = ["std"] }
-smallvec = { workspace = true }
+sp-core = { workspace = true, features = ["std"] }
+sp-io = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
@@ -35,18 +31,13 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"orml-traits/std",
-	"pallet-transaction-payment-rpc-runtime-api/std",
-	"pallet-transaction-payment/std",
 	"primitives/std",
 	"scale-info/std",
-	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	"module-support/std",
-	"xcm/std",
 ]
 try-runtime = [
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
-	"pallet-transaction-payment/try-runtime",
 ]

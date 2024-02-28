@@ -781,7 +781,7 @@ parameter_types! {
 	pub DefaultDebitExchangeRate: ExchangeRate = ExchangeRate::saturating_from_rational(1, 10);
 	pub DefaultLiquidationPenalty: Rate = Rate::saturating_from_rational(5, 100);
 	pub MinimumDebitValue: Balance = 10 * dollar(SETUSD);
-	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(15, 100);
+	pub MaxSwapSlippageComparedToOracle: Ratio = Ratio::saturating_from_rational(15, 100);
 }
 
 // impl cdp_engine::Config for Runtime {
@@ -795,7 +795,7 @@ parameter_types! {
 // 	type GetSetUSDId = GetSetUSDId;
 // 	type CDPTreasury = CdpTreasury;
 // 	type UpdateOrigin = EnsureRootOrHalfFinancialCouncil;
-// 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+// 	type MaxSwapSlippageComparedToOracle = MaxSwapSlippageComparedToOracle;
 // 	type UnsignedPriority = runtime_common::CdpEngineUnsignedPriority;
 // 	type EmergencyShutdown = EmergencyShutdown;
 // 	type Currency = Currencies;
@@ -891,7 +891,7 @@ parameter_types! {
 // 	type GetSetUSDId = GetSetUSDId;
 // 	type CDPTreasuryAccountId = CDPTreasuryAccount;
 // 	type Dex = Dex;
-// 	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+// 	type MaxSwapSlippageComparedToOracle = MaxSwapSlippageComparedToOracle;
 // 	type PriceSource = module_prices::RealTimePriceProvider<Runtime>;
 // 	type AlternativeSwapPathJointList = AlternativeSwapPathJointList;
 // 	type SetterMinimumClaimableTransferAmounts = SetterMinimumClaimableTransferAmounts;
@@ -968,7 +968,7 @@ impl module_transaction_payment::Config for Runtime {
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = TargetedFeeAdjustment<Self, TargetBlockFullness, AdjustmentVariable, MinimumMultiplier>;
 	type DEX = Dex;
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type MaxSwapSlippageComparedToOracle = MaxSwapSlippageComparedToOracle;
 	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = module_prices::RealTimePriceProvider<Runtime>;
 	type WeightInfo = weights::module_transaction_payment::WeightInfo<Runtime>;

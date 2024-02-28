@@ -21,7 +21,7 @@
 use crate::{
 	dollar, AccountId, Address, Amount, Balance, CdpEngine, CollateralCurrencyIds, CurrencyId,
 	DefaultDebitExchangeRate, Dex, EmergencyShutdown, ExistentialDeposits, GetSetUSDId, GetDinarCurrencyId,
-	MaxSwapSlippageCompareToOracle, MinimumDebitValue, Price, Rate, Ratio, Runtime,
+	MaxSwapSlippageComparedToOracle, MinimumDebitValue, Price, Rate, Ratio, Runtime,
 };
 
 use super::utils::{feed_price, set_balance};
@@ -29,7 +29,7 @@ use core::convert::TryInto;
 use frame_benchmarking::account;
 use frame_support::traits::OnInitialize;
 use frame_system::RawOrigin;
-use module_support::SwapDexManager;
+use module_support::SwapManager;
 use orml_benchmarking::runtime_benchmarks;
 use orml_traits::{Change, GetByKey};
 use sp_runtime::{
@@ -137,7 +137,7 @@ runtime_benchmarks! {
 		let collateral_value = 2 * debit_value;
 		let collateral_amount = Price::saturating_from_rational(dollar(DINARID), dollar(STABLECOIN)).saturating_mul_int(collateral_value);
 		let collateral_price = Price::one();		// 1 USD
-		let max_slippage_swap_with_dex = MaxSwapSlippageCompareToOracle::get();
+		let max_slippage_swap_with_dex = MaxSwapSlippageComparedToOracle::get();
 		let collateral_amount_in_dex = max_slippage_swap_with_dex.reciprocal().unwrap().saturating_mul_int(collateral_amount);
 		let base_amount_in_dex = max_slippage_swap_with_dex.reciprocal().unwrap().saturating_mul_int(debit_value * 2);
 
