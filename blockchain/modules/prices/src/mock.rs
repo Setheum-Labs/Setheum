@@ -44,8 +44,7 @@ pub type BlockNumber = u64;
 pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 pub const LSEE: CurrencyId = CurrencyId::Token(TokenSymbol::LSEE);
 pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
-pub const TAI: CurrencyId = CurrencyId::Token(TokenSymbol::TAI);
-pub const KSM: CurrencyId = CurrencyId::Token(TokenSymbol::KSM);
+pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
 pub const LP_USSD_SEE: CurrencyId =
 	CurrencyId::DexShare(DexShare::Token(TokenSymbol::USSD), DexShare::Token(TokenSymbol::SEE));
 
@@ -94,19 +93,17 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 		if CHANGED.with(|v| *v.borrow_mut()) {
 			match *currency_id {
 				USSD => None,
-				TAI => Some(Price::saturating_from_integer(40000)),
 				SEE => Some(Price::saturating_from_integer(10)),
-				SEE => Some(Price::saturating_from_integer(30)),
-				KSM => Some(Price::saturating_from_integer(200)),
+				LSEE => Some(Price::saturating_from_integer(30)),
+				EDF => Some(Price::saturating_from_integer(200)),
 				_ => None,
 			}
 		} else {
 			match *currency_id {
 				USSD => Some(Price::saturating_from_rational(99, 100)),
-				TAI => Some(Price::saturating_from_integer(50000)),
 				SEE => Some(Price::saturating_from_integer(100)),
-				SEE => Some(Price::zero()),
-				KSM => None,
+				LSEE => Some(Price::zero()),
+				EDF => None,
 				_ => None,
 			}
 		}
