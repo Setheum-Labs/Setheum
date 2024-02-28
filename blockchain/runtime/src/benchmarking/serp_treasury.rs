@@ -23,7 +23,7 @@
 #![allow(unused_imports)]
 use crate::{
 	AccountId, Balance, CurrencyId, Currencies, dollar, Dex,
-	MaxSwapSlippageCompareToOracle, Prices, Ratio, Runtime,
+	MaxSwapSlippageComparedToOracle, Prices, Ratio, Runtime,
 	SerpTreasury, StableCurrencyIds, StableCurrencyInflationPeriod,
 	System, GetDinarCurrencyId, GetSerpCurrencyId, GetNativeCurrencyId,
 	GetHelpCurrencyId, GetSetUSDId, SetterCurrencyId, 

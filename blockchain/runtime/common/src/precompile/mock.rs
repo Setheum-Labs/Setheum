@@ -381,7 +381,7 @@ impl orml_nft::Config for Test {
 parameter_types! {
 	pub const TransactionByteFee: Balance = 10;
 		pub DefaultFeeSwapPathList: Vec<Vec<CurrencyId>> = vec![vec![CurrencyId::Token(TokenSymbol::SETUSD), CurrencyId::Token(TokenSymbol::SEE)]];
-	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
+	pub MaxSwapSlippageComparedToOracle: Ratio = Ratio::one();
 }
 
 impl module_transaction_payment::Config for Test {
@@ -394,7 +394,7 @@ impl module_transaction_payment::Config for Test {
 	type WeightToFee = IdentityFee<Balance>;
 	type FeeMultiplierUpdate = ();
 	type DEX = ();
-	type MaxSwapSlippageCompareToOracle = MaxSwapSlippageCompareToOracle;
+	type MaxSwapSlippageComparedToOracle = MaxSwapSlippageComparedToOracle;
 	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = module_prices::RealTimePriceProvider<Test>;
 	type WeightInfo = ();
