@@ -18,12 +18,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # Evm Accounts Module
+//! # Unified Accounts Module
 //!
 //! ## Overview
 //!
-//! Evm Accounts module provide a two way mapping between Substrate accounts and
-//! EVM accounts so user only has to deal with one account / private key.
+//! Unified Accounts module provide a two way mapping between Substrate accounts and
+//! EVM Accounts so the user only has to deal with one account / private key.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -35,7 +35,7 @@ use frame_support::{
 };
 use frame_system::{ensure_signed, pallet_prelude::*};
 use module_evm_utility_macro::keccak256;
-use module_support::{AddressMapping, EVMAccountsManager};
+use module_support::{AddressMapping, UnifiedAccountsManager};
 use orml_traits::currency::TransferAll;
 use parity_scale_codec::Encode;
 use primitives::{evm::EvmAddress, to_bytes, AccountIndex};
@@ -69,10 +69,10 @@ pub mod module {
 	pub trait Config: frame_system::Config {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
-		/// The Currency for managing Evm account assets.
+		/// The Currency for managing SUVE assets.
 		type Currency: Currency<Self::AccountId>;
 
-		/// Mapping from address to account id.
+		/// Mapping from EVM address to Substrate account id.
 		type AddressMapping: AddressMapping<Self::AccountId>;
 
 		/// Chain ID of EVM.
@@ -89,7 +89,7 @@ pub mod module {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Mapping between Substrate accounts and EVM accounts
+		/// Mapping between Substrate accounts and Unified Accounts
 		/// claim account.
 		ClaimAccount {
 			account_id: T::AccountId,
@@ -97,7 +97,7 @@ pub mod module {
 		},
 	}
 
-	/// Error for evm accounts module.
+	/// Error for Unified Accounts module.
 	#[pallet::error]
 	pub enum Error<T> {
 		/// AccountId has mapped
@@ -134,7 +134,7 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Claim account mapping between Substrate accounts and EVM accounts.
+		/// Claim account mapping between Substrate accounts and Unified Accounts.
 		/// Ensure eth_address has not been mapped.
 		///
 		/// - `eth_address`: The address to bind to the caller's account
@@ -370,7 +370,7 @@ impl<T: Config> StaticLookup for Pallet<T> {
 	}
 }
 
-impl<T: Config> EVMAccountsManager<T::AccountId> for Pallet<T> {
+impl<T: Config> UnifiedAccountsManager<T::AccountId> for Pallet<T> {
 	/// Returns the AccountId used to generate the given EvmAddress.
 	fn get_account_id(address: &EvmAddress) -> T::AccountId {
 		T::AddressMapping::get_account_id(address)

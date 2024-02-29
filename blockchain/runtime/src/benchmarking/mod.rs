@@ -33,7 +33,7 @@ pub mod dex;
 // pub mod dex_oracle;
 // pub mod emergency_shutdown;
 // pub mod evm;
-pub mod evm_accounts;
+pub mod unified_accounts;
 pub mod serp_setmint;
 pub mod serp_treasury;
 pub mod prices;

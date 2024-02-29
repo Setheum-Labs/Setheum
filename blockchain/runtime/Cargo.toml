@@ -95,7 +95,7 @@ module-airdrop = { path = "../../../blockchain/modules/airdrop", default-feature
 
 module-currencies = { path = "../../../blockchain/modules/currencies", default-features = false }
 module-evm = { path = "../../../blockchain/modules/evm", default-features = false }
-module-evm-accounts = { path = "../../../blockchain/modules/evm-accounts", default-features = false }
+module-unified-accounts = { path = "../../../blockchain/modules/unified-accounts", default-features = false }
 module-evm-bridge = { path = "../../../blockchain/modules/evm-bridge", default-features = false }
 module-evm-rpc-runtime-api = { path = "../../../blockchain/modules/evm/rpc/runtime_api",  default-features = false }
 module-evm-manager = { path = "../../../blockchain/modules/evm-manager", default-features = false }
@@ -181,7 +181,7 @@ std = [
 	"module-airdrop/std",
 	"module-currencies/std",
 	"module-evm/std",
-	"module-evm-accounts/std",
+	"module-unified-accounts/std",
 	"module-evm-bridge/std",
 	"module-evm-manager/std",
 	"module-evm-rpc-runtime-api/std",
@@ -213,7 +213,7 @@ runtime-benchmarks = [
 	'pallet-timestamp/runtime-benchmarks',
 	'sp-runtime/runtime-benchmarks',
 
-	"module-evm-accounts/runtime-benchmarks",
+	"module-unified-accounts/runtime-benchmarks",
 	"module-nft/runtime-benchmarks",
 	"module-vesting/runtime-benchmarks",
 

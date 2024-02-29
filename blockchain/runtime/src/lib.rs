@@ -85,7 +85,7 @@ use orml_traits::{
 };
 use module_evm::Runner;
 use module_evm::{CallInfo, CreateInfo};
-use module_evm_accounts::EvmAddressMapping;
+use module_unified_accounts::EvmAddressMapping;
 pub use module_evm_manager::EvmCurrencyIdMapping;
 use module_currencies::BasicCurrencyAdapter;
 use module_transaction_payment::{Multiplier, TargetedFeeAdjustment};
@@ -314,7 +314,7 @@ impl frame_system::Config for Runtime {
 	/// What to do if an account is fully reaped from the system.
 	type OnKilledAccount = (
 		module_evm::CallKillAccount<Runtime>,
-		module_evm_accounts::CallKillAccount<Runtime>,
+		module_unified_accounts::CallKillAccount<Runtime>,
 	);
 	/// The data to be stored in an account.
 	type AccountData = pallet_balances::AccountData<Balance>;
@@ -974,12 +974,12 @@ impl module_transaction_payment::Config for Runtime {
 	type WeightInfo = weights::module_transaction_payment::WeightInfo<Runtime>;
 }
 
-impl module_evm_accounts::Config for Runtime {
+impl module_unified_accounts::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type AddressMapping = EvmAddressMapping<Runtime>;
 	type TransferAll = Currencies;
-	type WeightInfo = weights::module_evm_accounts::WeightInfo<Runtime>;
+	type WeightInfo = weights::module_unified_accounts::WeightInfo<Runtime>;
 }
 
 impl module_evm_manager::Config for Runtime {
@@ -1589,7 +1589,7 @@ construct_runtime!(
 
 		// Smart contracts
 		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>} = 43,
-		EvmAccounts: module_evm_accounts::{Pallet, Call, Storage, Event<T>} = 44,
+		EvmAccounts: module_unified_accounts::{Pallet, Call, Storage, Event<T>} = 44,
 		EVMBridge: module_evm_bridge::{Pallet} = 45,
 		EvmManager: module_evm_manager::{Pallet, Storage} = 46,
 
@@ -2014,7 +2014,7 @@ impl_runtime_apis! {
 			orml_list_benchmark!(list, extra, module_transaction_payment, benchmarking::transaction_payment);
 			orml_list_benchmark!(list, extra, module_prices, benchmarking::prices);
 			// orml_list_benchmark!(list, extra, dex_oracle, benchmarking::dex_oracle);
-			orml_list_benchmark!(list, extra, module_evm_accounts, benchmarking::evm_accounts);
+			orml_list_benchmark!(list, extra, module_unified_accounts, benchmarking::unified_accounts);
 			orml_list_benchmark!(list, extra, module_currencies, benchmarking::currencies);
 			orml_list_benchmark!(list, extra, module_vesting, benchmarking::vesting);
 
@@ -2071,7 +2071,7 @@ impl_runtime_apis! {
 			orml_add_benchmark!(params, batches, module_transaction_pause, benchmarking::transaction_pause);
 			orml_add_benchmark!(params, batches, module_transaction_payment, benchmarking::transaction_payment);
 			// orml_add_benchmark!(params, batches, dex_oracle, benchmarking::dex_oracle);
-			orml_add_benchmark!(params, batches, module_evm_accounts, benchmarking::evm_accounts);
+			orml_add_benchmark!(params, batches, module_unified_accounts, benchmarking::unified_accounts);
 			orml_add_benchmark!(params, batches, module_currencies, benchmarking::currencies);
 
 			orml_add_benchmark!(params, batches, orml_tokens, benchmarking::tokens);
