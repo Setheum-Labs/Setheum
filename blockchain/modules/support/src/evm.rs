@@ -209,8 +209,8 @@ pub trait EVMManager<AccountId, Balance> {
 	fn disable_account_contract_development(who: AccountId) -> DispatchResult;
 }
 
-/// An abstraction of EVMAccountsManager
-pub trait EVMAccountsManager<AccountId> {
+/// An abstraction of UnifiedAccountsManager
+pub trait UnifiedAccountsManager<AccountId> {
 	/// Returns the AccountId used to generate the given EvmAddress.
 	fn get_account_id(address: &EvmAddress) -> AccountId;
 	/// Returns the EvmAddress associated with a given AccountId or the underlying EvmAddress of the

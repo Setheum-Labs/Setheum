@@ -48,7 +48,7 @@ pub fn bob_account_id() -> AccountId {
 }
 
 runtime_benchmarks! {
-	{ Runtime, module_evm_accounts }
+	{ Runtime, module_unified_accounts }
 
 	claim_account {
 		let caller: AccountId = whitelisted_caller();

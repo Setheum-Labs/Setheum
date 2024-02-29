@@ -1,5 +1,5 @@
 [package]
-name = "module-evm-accounts"
+name = "module-unified-accounts"
 version = "0.9.81-dev"
 authors = ["Setheum Labs"]
 edition = "2021"

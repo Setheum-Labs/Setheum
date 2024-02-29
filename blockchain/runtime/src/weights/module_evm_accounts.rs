@@ -41,9 +41,9 @@
 use frame_support::{traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
-/// Weight functions for module_evm_accounts.
+/// Weight functions for module_unified_accounts.
 pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Config> module_evm_accounts::WeightInfo for WeightInfo<T> {
+impl<T: frame_system::Config> module_unified_accounts::WeightInfo for WeightInfo<T> {
 	fn claim_account() -> Weight {
 		(241_291_000 as Weight)
 			.saturating_add(T::DbWeight::get().reads(3 as Weight))

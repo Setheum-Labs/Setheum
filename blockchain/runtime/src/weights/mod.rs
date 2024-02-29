@@ -29,7 +29,7 @@ pub mod module_currencies;
 pub mod module_dex;
 pub mod emergency_shutdown;
 pub mod module_evm;
-pub mod module_evm_accounts;
+pub mod module_unified_accounts;
 pub mod serp_setmint;
 pub mod serp_treasury;
 pub mod module_nft;

@@ -4036,7 +4036,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "module-evm-accounts"
+name = "module-unified-accounts"
 version = "1.0.0"
 dependencies = [
  "frame-support",
@@ -8018,7 +8018,7 @@ dependencies = [
  "module-currencies",
  "module-dex",
  "module-evm",
- "module-evm-accounts",
+ "module-unified-accounts",
  "module-evm-bridge",
  "module-evm-manager",
  "module-evm-rpc-runtime-api",
