@@ -135,25 +135,9 @@ pub trait DispatchableTask {
 	fn dispatch(self, weight: Weight) -> TaskResult;
 }
 
-/// Idle scheduler trait
-pub trait IdleScheduler<Task> {
-	fn schedule(task: Task) -> Result<Nonce, DispatchError>;
-	fn dispatch(id: Nonce, weight: Weight) -> Weight;
-}
-
 #[cfg(feature = "std")]
 impl DispatchableTask for () {
 	fn dispatch(self, _weight: Weight) -> TaskResult {
-		unimplemented!()
-	}
-}
-
-#[cfg(feature = "std")]
-impl<Task> IdleScheduler<Task> for () {
-	fn schedule(_task: Task) -> Result<Nonce, DispatchError> {
-		unimplemented!()
-	}
-	fn dispatch(_id: Nonce, _weight: Weight) -> Weight {
 		unimplemented!()
 	}
 }

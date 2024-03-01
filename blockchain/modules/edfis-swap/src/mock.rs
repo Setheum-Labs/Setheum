@@ -18,7 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the dex module.
+//! Mocks for the edfis_swap module.
 
 #![cfg(test)]
 
@@ -51,7 +51,7 @@ parameter_types! {
 	pub static EDFWBTCPair: TradingPair = TradingPair::from_currency_ids(EDF, WBTC).unwrap();
 }
 
-mod dex {
+mod edfis_swap {
 	pub use super::super::*;
 }
 
@@ -101,7 +101,7 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
-	pub const DEXPalletId: PalletId = PalletId(*b"aca/dexm");
+	pub const DEXPalletId: PalletId = PalletId(*b"set/edfis");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
 		vec![EDF],
 	];
@@ -140,15 +140,15 @@ parameter_types! {
 	pub SEEJoint: Vec<Vec<CurrencyId>> = vec![vec![SEE]];
 }
 
-pub type USSDJointSwap = SpecificJointsSwap<DexModule, USSDJoint>;
-pub type SEEJointSwap = SpecificJointsSwap<DexModule, SEEJoint>;
+pub type USSDJointSwap = SpecificJointsSwap<EdfisSwapModule, USSDJoint>;
+pub type SEEJointSwap = SpecificJointsSwap<EdfisSwapModule, SEEJoint>;
 
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 construct_runtime!(
 	pub enum Runtime {
 		System: frame_system,
-		DexModule: dex,
+		EdfisSwapModule: edfis_swap,
 		Tokens: orml_tokens,
 	}
 );
@@ -209,7 +209,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		dex::GenesisConfig::<Runtime> {
+		edfis_swap::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: self.initial_listing_trading_pairs,
 			initial_enabled_trading_pairs: self.initial_enabled_trading_pairs,
 			initial_added_liquidity_pools: self.initial_added_liquidity_pools,

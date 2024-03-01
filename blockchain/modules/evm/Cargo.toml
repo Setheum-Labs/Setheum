@@ -1,71 +1,118 @@
 [package]
 name = "module-evm"
-version = "1.0.0"
+version = "0.9.81-dev"
 authors = ["Setheum Labs"]
-edition = "2018"
+edition = "2021"
+
+[[bench]]
+name = "orml_benches"
+harness = false
+required-features = ["wasm-bench"]
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2.2.0", default-features = false }
-hex-literal = { version = "0.3.1" }
-impl-trait-for-tuples = "0.1"
-primitive-types = { version = "0.10.0", default-features = false, features = ["rlp", "byteorder"] }
-ripemd160 = { version = "0.9", default-features = false }
-rlp = { version = "0.5", default-features = false }
-serde = { version = "1.0.124", optional = true, features = ["derive"] }
-sha3 = { version = "0.9.1", default-features = false }
-tiny-keccak = { version = "2.0", features = ["fips202"] }
+log = { workspace = true }
+parity-scale-codec = { workspace = true }
+hex-literal = { workspace = true }
+ripemd = { workspace = true }
+rlp = { workspace = true }
+serde = { workspace = true, features = ["alloc", "derive"] }
+sha3 = { workspace = true }
+tiny-keccak = { workspace = true, features = ["fips202"] }
+scale-info = { workspace = true }
+serde_json = { workspace = true, features = ["alloc"], optional = true }
+hex = { workspace = true, features = ["alloc"], optional = true }
+num = { workspace = true, features = ["alloc"] }
+bn = { workspace = true }
 
-evm = { version = "0.30.0", default-features = false, features = ["with-codec" ] }
-evm-gasometer = { version = "0.30.0", default-features = false }
-evm-runtime = { version = "0.30.0", default-features = false }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-timestamp = { workspace = true }
+pallet-balances = { workspace = true, optional = true }
 
-frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-pallet-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+sp-core = { workspace = true }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
+orml-traits = { workspace = true }
+wasm-bencher = { workspace = true, optional = true }
+orml-currencies = { workspace = true, optional = true }
+orml-tokens = { workspace = true, optional = true }
 
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
+module-support = { workspace = true }
+module-evm-utility = { workspace = true }
+primitives = { workspace = true }
+module-idle-scheduler = { workspace = true, optional = true }
+module-transaction-payment = { workspace = true }
+module-dex = { workspace = true, optional = true }
 
-orml-traits = { path = "../submodules/orml/traits", default-features = false }
+xcm-builder = { workspace = true }
 
-module-support = { path = "../support", default-features = false }
-primitives = { package = "setheum-primitives", path = "../primitives", default-features = false }
+# we don't directly depends on this but need frame-benchmarking/std to fix build
+frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
-env_logger = "0.7"
-pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10" }
-orml-currencies = { path = "../submodules/orml/currencies" }
-orml-tokens = { path = "../submodules/orml/tokens" }
+hex = { workspace = true, features = ["std"] }
+env_logger = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
+pallet-utility = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
 std = [
-	"serde",
-	"codec/std",
-	"sp-core/std",
-	"sp-runtime/std",
+	"serde/std",
+
+	"parity-scale-codec/std",
 	"frame-support/std",
 	"frame-system/std",
-	"sp-io/std",
-	"sp-std/std",
-	"sha3/std",
-	"rlp/std",
-	"primitive-types/std",
-	"evm/std",
-	"evm/with-serde",
-	"evm-runtime/std",
-	"evm-gasometer/std",
-	"pallet-timestamp/std",
-	"ripemd160/std",
-	"primitives/std",
-	"orml-traits/std",
+	"module-dex/std",
+	"module-evm-utility/std",
+	"module-idle-scheduler/std",
 	"module-support/std",
+	"module-transaction-payment/std",
+	"num/std",
+	"wasm-bencher/std",
+	"orml-currencies/std",
+	"orml-tokens/std",
+	"orml-traits/std",
+	"pallet-balances/std",
+	"pallet-timestamp/std",
+	"primitives/std",
+	"ripemd/std",
+	"rlp/std",
+	"scale-info/std",
+	"sha3/std",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"xcm-builder/std",
+	"frame-benchmarking/std",
 ]
 with-ethereum-compatibility = []
-tracing = [
-	"evm/tracing",
-	"evm-gasometer/tracing",
-	"evm-runtime/tracing",
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"module-dex/try-runtime",
+	"module-idle-scheduler/try-runtime",
+	"module-transaction-payment/try-runtime",
+	"orml-currencies/try-runtime",
+	"orml-tokens/try-runtime",
+	"pallet-balances/try-runtime",
+	"pallet-timestamp/try-runtime",
+]
+tracing = ["module-evm-utility/tracing"]
+wasm-bench = [
+	"wasm-bencher/wasm-bench",
+	"hex",
+	"module-dex",
+	"module-idle-scheduler",
+	"orml-currencies",
+	"orml-tokens",
+	"pallet-balances",
+	"serde_json",
+	"sp-runtime/runtime-benchmarks",
+	"xcm-builder/runtime-benchmarks",
+]
+evm-tests = [
+	"primitives/evm-tests"
 ]

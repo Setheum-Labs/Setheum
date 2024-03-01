@@ -101,13 +101,8 @@ pub mod module {
 		/// Mapping between CurrencyId and ERC20 address so user can use Erc20.
 		type Erc20InfoMapping: Erc20InfoMapping;
 
-		/// Block number provider for the relaychain.
-		type RelayChainBlockNumber: BlockNumberProvider<BlockNumber = BlockNumberFor<Self>>;
-
-		/// The staking reward rate per relaychain block for StakingCurrency.
-		/// In fact, the staking reward is not settled according to the block on relaychain.
-		#[pallet::constant]
-		type RewardRatePerRelaychainBlock: Get<Rate>;
+		/// Block number provider.
+		type BlockNumber: BlockNumberProvider<BlockNumber = BlockNumberFor<Self>>;
 
 		/// If a currency is pegged to another currency in price, price of this currency is
 		/// equal to the price of another.

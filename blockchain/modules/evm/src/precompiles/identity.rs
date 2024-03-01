@@ -18,27 +18,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! A list of the different weight modules for our runtime.
-#![allow(clippy::unnecessary_cast)]
+use super::LinearCostPrecompile;
+use crate::PrecompileFailure;
+use module_evm_utility::evm::ExitSucceed;
+use sp_std::vec::Vec;
 
-// pub mod dex_oracle;
-pub mod module_auction_manager;
-pub mod module_cdp_engine;
-pub mod module_cdp_treasury;
-pub mod module_currencies;
-pub mod edfis_swap_module;
-pub mod emergency_shutdown;
-pub mod module_evm;
-pub mod module_unified_accounts;
-pub mod serp_setmint;
-pub mod serp_treasury;
-pub mod module_nft;
-pub mod module_prices;
-pub mod module_transaction_pause;
-pub mod module_transaction_payment;
-pub mod module_vesting;
+/// The identity precompile.
+pub struct Identity;
 
-pub mod orml_auction;
-pub mod orml_authority;
-pub mod orml_oracle;
-pub mod orml_tokens;
+impl LinearCostPrecompile for Identity {
+	const BASE: u64 = 15;
+	const WORD: u64 = 3;
+
+	fn execute(input: &[u8], _: u64) -> core::result::Result<(ExitSucceed, Vec<u8>), PrecompileFailure> {
+		Ok((ExitSucceed::Returned, input.to_vec()))
+	}
+}
