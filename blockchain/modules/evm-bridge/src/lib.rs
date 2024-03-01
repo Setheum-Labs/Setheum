@@ -22,22 +22,23 @@
 #![allow(clippy::unused_unit)]
 
 use ethereum_types::BigEndianHash;
-use frame_support::{
-	dispatch::{DispatchError, DispatchResult},
-	pallet_prelude::*,
-};
+use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
+use frame_system::pallet_prelude::*;
 use module_evm::{ExitReason, ExitSucceed};
+use module_support::{
+	evm::limits::{erc20, liquidation},
+	EVMBridge as EVMBridgeTrait, ExecutionMode, InvokeContext, LiquidationEvmBridge as LiquidationEvmBridgeT, EVM,
+};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
-use primitive_types::H256;
-use sp_core::{H160, U256};
-use sp_runtime::SaturatedConversion;
+use primitives::{evm::EvmAddress, Balance};
+use sp_core::{H160, H256, U256};
+use sp_runtime::{ArithmeticError, DispatchError, SaturatedConversion};
 use sp_std::vec::Vec;
-use support::{EVMBridge as EVMBridgeTrait, ExecutionMode, InvokeContext, EVM};
 
 type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 type BalanceOf<T> = <<T as Config>::EVM as EVM<AccountIdOf<T>>>::Balance;
 
-#[primitives_proc_macro::generate_function_selector]
+#[module_evm_utility_macro::generate_function_selector]
 #[derive(RuntimeDebug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
 #[repr(u32)]
 pub enum Action {
@@ -47,6 +48,9 @@ pub enum Action {
 	TotalSupply = "totalSupply()",
 	BalanceOf = "balanceOf(address)",
 	Transfer = "transfer(address,uint256)",
+	Liquidate = "liquidate(address,address,uint256,uint256)",
+	OnCollateralTransfer = "onCollateralTransfer(address,uint256)",
+	OnRepaymentRefund = "onRepaymentRefund(address,uint256)",
 }
 
 mod mock;
@@ -79,26 +83,36 @@ pub mod module {
 	}
 
 	#[pallet::pallet]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {}
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {}
 }
 
-impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
+pub struct EVMBridge<T>(sp_std::marker::PhantomData<T>);
+
+impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 	// Calls the name method on an ERC20 contract using the given context
 	// and returns the token name.
 	fn name(context: InvokeContext) -> Result<Vec<u8>, DispatchError> {
 		// ERC20.name method hash
 		let input = Into::<u32>::into(Action::Name).to_be_bytes().to_vec();
 
-		let info = T::EVM::execute(context, input, Default::default(), 2_100_000, 0, ExecutionMode::View)?;
+		let info = T::EVM::execute(
+			context,
+			input,
+			Default::default(),
+			erc20::NAME.gas,
+			erc20::NAME.storage,
+			ExecutionMode::View,
+		)?;
 
-		Self::handle_exit_reason(info.exit_reason)?;
-		Self::decode_string(info.value.as_slice().to_vec())
+		Pallet::<T>::handle_exit_reason(info.exit_reason)?;
+		Pallet::<T>::decode_string(info.value.as_slice().to_vec())
 	}
 
 	// Calls the symbol method on an ERC20 contract using the given context
@@ -107,10 +121,17 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 		// ERC20.symbol method hash
 		let input = Into::<u32>::into(Action::Symbol).to_be_bytes().to_vec();
 
-		let info = T::EVM::execute(context, input, Default::default(), 2_100_000, 0, ExecutionMode::View)?;
+		let info = T::EVM::execute(
+			context,
+			input,
+			Default::default(),
+			erc20::SYMBOL.gas,
+			erc20::SYMBOL.storage,
+			ExecutionMode::View,
+		)?;
 
-		Self::handle_exit_reason(info.exit_reason)?;
-		Self::decode_string(info.value.as_slice().to_vec())
+		Pallet::<T>::handle_exit_reason(info.exit_reason)?;
+		Pallet::<T>::decode_string(info.value.as_slice().to_vec())
 	}
 
 	// Calls the decimals method on an ERC20 contract using the given context
@@ -119,12 +140,21 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 		// ERC20.decimals method hash
 		let input = Into::<u32>::into(Action::Decimals).to_be_bytes().to_vec();
 
-		let info = T::EVM::execute(context, input, Default::default(), 2_100_000, 0, ExecutionMode::View)?;
+		let info = T::EVM::execute(
+			context,
+			input,
+			Default::default(),
+			erc20::DECIMALS.gas,
+			erc20::DECIMALS.storage,
+			ExecutionMode::View,
+		)?;
 
-		Self::handle_exit_reason(info.exit_reason)?;
+		Pallet::<T>::handle_exit_reason(info.exit_reason)?;
 
 		ensure!(info.value.len() == 32, Error::<T>::InvalidReturnValue);
-		let value = U256::from(info.value.as_slice()).saturated_into::<u8>();
+		let value: u8 = U256::from(info.value.as_slice())
+			.try_into()
+			.map_err(|_| ArithmeticError::Overflow)?;
 		Ok(value)
 	}
 
@@ -134,13 +164,23 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 		// ERC20.totalSupply method hash
 		let input = Into::<u32>::into(Action::TotalSupply).to_be_bytes().to_vec();
 
-		let info = T::EVM::execute(context, input, Default::default(), 2_100_000, 0, ExecutionMode::View)?;
+		let info = T::EVM::execute(
+			context,
+			input,
+			Default::default(),
+			erc20::TOTAL_SUPPLY.gas,
+			erc20::TOTAL_SUPPLY.storage,
+			ExecutionMode::View,
+		)?;
 
-		Self::handle_exit_reason(info.exit_reason)?;
+		Pallet::<T>::handle_exit_reason(info.exit_reason)?;
 
 		ensure!(info.value.len() == 32, Error::<T>::InvalidReturnValue);
-		let value = U256::from(info.value.as_slice()).saturated_into::<u128>();
-		Ok(value.saturated_into::<BalanceOf<T>>())
+		let value: u128 = U256::from(info.value.as_slice())
+			.try_into()
+			.map_err(|_| ArithmeticError::Overflow)?;
+		let supply = value.try_into().map_err(|_| ArithmeticError::Overflow)?;
+		Ok(supply)
 	}
 
 	// Calls the balanceOf method on an ERC20 contract using the given context
@@ -151,13 +191,22 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 		// append address
 		input.extend_from_slice(H256::from(address).as_bytes());
 
-		let info = T::EVM::execute(context, input, Default::default(), 2_100_000, 0, ExecutionMode::View)?;
+		let info = T::EVM::execute(
+			context,
+			input,
+			Default::default(),
+			erc20::BALANCE_OF.gas,
+			erc20::BALANCE_OF.storage,
+			ExecutionMode::View,
+		)?;
 
-		Self::handle_exit_reason(info.exit_reason)?;
+		Pallet::<T>::handle_exit_reason(info.exit_reason)?;
 
-		Ok(U256::from(info.value.as_slice())
-			.saturated_into::<u128>()
-			.saturated_into::<BalanceOf<T>>())
+		let value: u128 = U256::from(info.value.as_slice())
+			.try_into()
+			.map_err(|_| ArithmeticError::Overflow)?;
+		let balance = value.try_into().map_err(|_| ArithmeticError::Overflow)?;
+		Ok(balance)
 	}
 
 	// Calls the transfer method on an ERC20 contract using the given context.
@@ -169,18 +218,22 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 		// append amount to be transferred
 		input.extend_from_slice(H256::from_uint(&U256::from(value.saturated_into::<u128>())).as_bytes());
 
-		let storage_limit = if context.origin == Default::default() { 0 } else { 1_000 };
+		let storage_limit = if context.origin == Default::default() {
+			0
+		} else {
+			erc20::TRANSFER.storage
+		};
 
 		let info = T::EVM::execute(
 			context,
 			input,
 			Default::default(),
-			2_100_000,
+			erc20::TRANSFER.gas,
 			storage_limit,
 			ExecutionMode::Execute,
 		)?;
 
-		Self::handle_exit_reason(info.exit_reason)?;
+		Pallet::<T>::handle_exit_reason(info.exit_reason)?;
 
 		// return value is true.
 		let mut bytes = [0u8; 32];
@@ -200,6 +253,97 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for Pallet<T> {
 
 	fn set_origin(origin: AccountIdOf<T>) {
 		T::EVM::set_origin(origin);
+	}
+
+	fn kill_origin() {
+		T::EVM::kill_origin();
+	}
+
+	fn push_xcm_origin(origin: AccountIdOf<T>) {
+		T::EVM::push_xcm_origin(origin);
+	}
+
+	fn pop_xcm_origin() {
+		T::EVM::pop_xcm_origin();
+	}
+
+	fn kill_xcm_origin() {
+		T::EVM::kill_xcm_origin();
+	}
+
+	fn get_real_or_xcm_origin() -> Option<AccountIdOf<T>> {
+		T::EVM::get_real_or_xcm_origin()
+	}
+}
+
+pub struct LiquidationEvmBridge<T>(sp_std::marker::PhantomData<T>);
+
+impl<T: Config> LiquidationEvmBridgeT for LiquidationEvmBridge<T> {
+	fn liquidate(
+		context: InvokeContext,
+		collateral: EvmAddress,
+		repay_dest: EvmAddress,
+		amount: Balance,
+		min_repayment: Balance,
+	) -> DispatchResult {
+		// liquidation contract method hash
+		let mut input = Into::<u32>::into(Action::Liquidate).to_be_bytes().to_vec();
+
+		// append collateral ERC20 address
+		input.extend_from_slice(H256::from(collateral).as_bytes());
+		// append repay dest address
+		input.extend_from_slice(H256::from(repay_dest).as_bytes());
+		// append collateral amount
+		input.extend_from_slice(H256::from_uint(&U256::from(amount)).as_bytes());
+		// append minimum repayment amount
+		input.extend_from_slice(H256::from_uint(&U256::from(min_repayment)).as_bytes());
+
+		let info = T::EVM::execute(
+			context,
+			input,
+			Default::default(),
+			liquidation::LIQUIDATE.gas,
+			liquidation::LIQUIDATE.storage,
+			ExecutionMode::Execute,
+		)?;
+
+		Pallet::<T>::handle_exit_reason(info.exit_reason)
+	}
+
+	fn on_collateral_transfer(context: InvokeContext, collateral: EvmAddress, amount: Balance) {
+		// liquidation contract method hash
+		let mut input = Into::<u32>::into(Action::OnCollateralTransfer).to_be_bytes().to_vec();
+		// append collateral ERC20 address
+		input.extend_from_slice(H256::from(collateral).as_bytes());
+		// append collateral amount
+		input.extend_from_slice(H256::from_uint(&U256::from(amount)).as_bytes());
+
+		let _ = T::EVM::execute(
+			context,
+			input,
+			Default::default(),
+			liquidation::ON_COLLATERAL_TRANSFER.gas,
+			liquidation::ON_COLLATERAL_TRANSFER.storage,
+			ExecutionMode::Execute,
+		);
+	}
+
+	fn on_repayment_refund(context: InvokeContext, collateral: EvmAddress, repayment: Balance) {
+		// liquidation contract method hash
+		let mut input = Into::<u32>::into(Action::OnRepaymentRefund).to_be_bytes().to_vec();
+		// append collateral ERC20 address
+		input.extend_from_slice(H256::from(collateral).as_bytes());
+		// append repayment amount
+		input.extend_from_slice(H256::from_uint(&U256::from(repayment)).as_bytes());
+
+		let _ = T::EVM::execute(
+			context,
+			input,
+			Default::default(),
+			liquidation::ON_REPAYMENT_REFUND.gas,
+			liquidation::ON_REPAYMENT_REFUND.storage,
+			ExecutionMode::Execute,
+		);
 	}
 }
 

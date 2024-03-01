@@ -23,82 +23,57 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{assert_ok, construct_runtime, ord_parameter_types, parameter_types};
+use frame_support::{
+	assert_ok, construct_runtime, derive_impl, ord_parameter_types, parameter_types,
+	traits::{ConstU128, ConstU32, ConstU64},
+};
 use frame_system::EnsureSignedBy;
-use primitives::{evm::EvmAddress, ReserveIdentifier};
-use sp_core::{bytes::from_hex, crypto::AccountId32, H256};
-use sp_runtime::{testing::Header, traits::IdentityLookup};
-use sp_std::str::FromStr;
-use support::{mocks::MockAddressMapping, AddressMapping};
+use module_support::{mocks::MockAddressMapping, AddressMapping};
+use primitives::{evm::convert_decimals_to_evm, evm::EvmAddress, ReserveIdentifier};
+use sp_core::{crypto::AccountId32, H256};
+use sp_runtime::{traits::IdentityLookup, BuildStorage};
+pub use sp_std::str::FromStr;
 
 pub type AccountId = AccountId32;
-pub type BlockNumber = u64;
 pub type Balance = u128;
 
 mod evm_bridge {
 	pub use super::super::*;
 }
 
-parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-}
-
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
-	type BaseCallFilter = ();
-	type Origin = Origin;
-	type Call = Call;
-	type Index = u64;
-	type BlockNumber = BlockNumber;
-	type Hash = H256;
-	type Hashing = ::sp_runtime::traits::BlakeTwo256;
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = Header;
-	type Event = Event;
-	type BlockHashCount = BlockHashCount;
-	type DbWeight = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type Version = ();
-	type PalletInfo = PalletInfo;
+	type Block = Block;
 	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
-}
-
-parameter_types! {
-	pub const ExistentialDeposit: u64 = 1;
-	pub const MaxReserves: u32 = 50;
 }
 
 impl pallet_balances::Config for Runtime {
 	type Balance = Balance;
 	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
+	type RuntimeEvent = RuntimeEvent;
+	type ExistentialDeposit = ConstU128<1>;
+	type AccountStore = module_support::SystemAccountStore<Runtime>;
 	type MaxLocks = ();
-	type MaxReserves = MaxReserves;
+	type MaxReserves = ConstU32<50>;
 	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
-}
-
-parameter_types! {
-	pub const MinimumPeriod: u64 = 1000;
+	type RuntimeHoldReason = RuntimeHoldReason;
+	type RuntimeFreezeReason = RuntimeFreezeReason;
+	type FreezeIdentifier = ();
+	type MaxHolds = ();
+	type MaxFreezes = ();
 }
 
 impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = ();
-	type MinimumPeriod = MinimumPeriod;
+	type MinimumPeriod = ConstU64<1000>;
 	type WeightInfo = ();
 }
 
 parameter_types! {
-	pub const NewContractExtraBytes: u32 = 1;
 	pub NetworkContractSource: EvmAddress = alice_evm_addr();
 }
 
@@ -106,29 +81,28 @@ ord_parameter_types! {
 	pub const CouncilAccount: AccountId32 = AccountId32::from([1u8; 32]);
 	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
 	pub const NetworkContractAccount: AccountId32 = AccountId32::from([0u8; 32]);
-	pub const StorageDepositPerByte: u128 = 10;
-	pub const DeveloperDeposit: u64 = 1000;
-	pub const DeploymentFee: u64 = 200;
+	pub const StorageDepositPerByte: u128 = convert_decimals_to_evm(10);
 }
 
 impl module_evm::Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
 	type TransferAll = ();
-	type NewContractExtraBytes = NewContractExtraBytes;
+	type NewContractExtraBytes = ConstU32<1>;
 	type StorageDepositPerByte = StorageDepositPerByte;
-	type Event = Event;
-	type Precompiles = ();
-	type ChainId = ();
+	type TxFeePerGas = ConstU128<10>;
+	type RuntimeEvent = RuntimeEvent;
+	type PrecompilesType = ();
+	type PrecompilesValue = ();
 	type GasToWeight = ();
-	type ChargeTransactionPayment = ();
+	type ChargeTransactionPayment = module_support::mocks::MockReservedTransactionPayment<Balances>;
 	type NetworkContractOrigin = EnsureSignedBy<NetworkContractAccount, AccountId32>;
 	type NetworkContractSource = NetworkContractSource;
 
-	type DeveloperDeposit = DeveloperDeposit;
-	type DeploymentFee = DeploymentFee;
+	type DeveloperDeposit = ConstU128<1000>;
+	type PublicationFee = ConstU128<200>;
 	type TreasuryAccount = TreasuryAccount;
-	type FreeDeploymentOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
+	type FreePublicationOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
 
 	type Runner = module_evm::runner::stack::Runner<Self>;
 	type FindAuthor = ();
@@ -138,21 +112,15 @@ impl module_evm::Config for Runtime {
 impl Config for Runtime {
 	type EVM = EVM;
 }
-pub type EvmBridgeModule = Pallet<Runtime>;
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 construct_runtime!(
-	pub enum Runtime where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		EVMBridge: evm_bridge::{Pallet},
-		EVM: module_evm::{Pallet, Config<T>, Call, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+	pub enum Runtime {
+		System: frame_system,
+		EVMBridgeModule: evm_bridge,
+		EVM: module_evm,
+		Balances: pallet_balances,
 	}
 );
 
@@ -186,25 +154,100 @@ pub fn bob_evm_addr() -> EvmAddress {
 	EvmAddress::from_str("1000000000000000000000000000000000000002").unwrap()
 }
 
-pub fn deploy_contracts() {
-	let code = from_hex(include!("./erc20_demo_contract")).unwrap();
-	assert_ok!(EVM::create(Origin::signed(alice()), code, 0, 2_100_000, 10000));
+pub const ALICE_BALANCE: u128 = 100_000_000_000_000_000_000_000u128;
 
-	System::assert_last_event(Event::EVM(module_evm::Event::Created(
-		alice_evm_addr(),
-		erc20_address(),
-		vec![module_evm::Log {
+pub fn deploy_contracts() {
+	let json: serde_json::Value =
+		serde_json::from_str(include_str!("../../../ts-tests/build/Erc20DemoContract2.json")).unwrap();
+	let code = hex::decode(json.get("bytecode").unwrap().as_str().unwrap()).unwrap();
+	assert_ok!(EVM::create(
+		RuntimeOrigin::signed(alice()),
+		code,
+		0,
+		2_100_000,
+		10000,
+		vec![]
+	));
+
+	System::assert_last_event(RuntimeEvent::EVM(module_evm::Event::Created {
+		from: alice_evm_addr(),
+		contract: erc20_address(),
+		logs: vec![module_evm::Log {
 			address: erc20_address(),
 			topics: vec![
 				H256::from_str("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef").unwrap(),
 				H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
 				H256::from_str("0x0000000000000000000000001000000000000000000000000000000000000001").unwrap(),
 			],
-			data: H256::from_low_u64_be(10000).as_bytes().to_vec(),
+			data: {
+				let mut buf = [0u8; 32];
+				U256::from(ALICE_BALANCE).to_big_endian(&mut buf);
+				H256::from_slice(&buf).as_bytes().to_vec()
+			},
 		}],
-	)));
+		used_gas: 1235455,
+		used_storage: 5131,
+	}));
 
-	assert_ok!(EVM::deploy_free(Origin::signed(CouncilAccount::get()), erc20_address()));
+	assert_ok!(EVM::publish_free(
+		RuntimeOrigin::signed(CouncilAccount::get()),
+		erc20_address()
+	));
+}
+
+pub fn deploy_liquidation_ok_contracts() {
+	let json: serde_json::Value =
+		serde_json::from_str(include_str!("../../../ts-tests/build/LiquidationOk.json")).unwrap();
+	let code = hex::decode(json.get("bytecode").unwrap().as_str().unwrap()).unwrap();
+	assert_ok!(EVM::create(
+		RuntimeOrigin::signed(alice()),
+		code,
+		0,
+		2_100_000,
+		10000,
+		vec![]
+	));
+
+	System::assert_last_event(RuntimeEvent::EVM(module_evm::Event::Created {
+		from: alice_evm_addr(),
+		contract: erc20_address(),
+		logs: vec![],
+		used_gas: 235330,
+		used_storage: 844,
+	}));
+
+	assert_ok!(EVM::publish_free(
+		RuntimeOrigin::signed(CouncilAccount::get()),
+		erc20_address()
+	));
+}
+
+// TODO: Add ts-tests directory
+pub fn deploy_liquidation_err_contracts() {
+	let json: serde_json::Value =
+		serde_json::from_str(include_str!("../../../ts-tests/build/LiquidationErr.json")).unwrap();
+	let code = hex::decode(json.get("bytecode").unwrap().as_str().unwrap()).unwrap();
+	assert_ok!(EVM::create(
+		RuntimeOrigin::signed(alice()),
+		code,
+		0,
+		2_100_000,
+		10000,
+		vec![]
+	));
+
+	System::assert_last_event(RuntimeEvent::EVM(module_evm::Event::Created {
+		from: alice_evm_addr(),
+		contract: erc20_address(),
+		logs: vec![],
+		used_gas: 228338,
+		used_storage: 818,
+	}));
+
+	assert_ok!(EVM::publish_free(
+		RuntimeOrigin::signed(CouncilAccount::get()),
+		erc20_address()
+	));
 }
 
 impl ExtBuilder {
@@ -214,8 +257,8 @@ impl ExtBuilder {
 	}
 
 	pub fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default()
-			.build_storage::<Runtime>()
+		let mut t = frame_system::GenesisConfig::<Runtime>::default()
+			.build_storage()
 			.unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
