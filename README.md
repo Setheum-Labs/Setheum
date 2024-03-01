@@ -62,6 +62,7 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
       - [6.4.2. Generate Runtime Weights](#642-generate-runtime-weights)
   - [7.0. Fork Setheum Chain](#70-fork-setheum-chain)
   - [8.0. Contributing \& Code of Conduct](#80-contributing--code-of-conduct)
+    - [8.1. ToDo List](#81-todo-list)
   - [9.0. License](#90-license)
 <!-- /TOC -->
 
@@ -359,6 +360,13 @@ If you would like to contribute, please fork the repository, introduce your chan
 
 In every interaction and contribution, this
 project adheres to the [Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.md).
+
+### 8.1. ToDo List
+
+Note> Before adding/removing a TODO, please carefully read the [TODO.md file](./TODO.md)
+
+Whenever you write a TODO in any file, please add a reference to it [here](./TODO.md).
+Whenever you remove a TODO in any file, please remove its reference from [here](./TODO.md).
 
 ## 9.0. License
 
