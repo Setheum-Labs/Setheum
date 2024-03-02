@@ -1,6 +1,5 @@
 [package]
-name = "module-edfis-liquid-staking"
-description = "Provides a liquid staking platform on Edfis."
+name = "module-moya-liquid-see"
 version = "0.9.81-dev"
 authors = ["Setheum Labs"]
 edition = "2021"
