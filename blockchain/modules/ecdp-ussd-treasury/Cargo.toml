@@ -1,6 +1,5 @@
 [package]
-name = "ecdp-slick-usd-engine"
-description = "Provides USD-Pegged ECDP Slick USD Stablecoin."
+name = "module-ecdp-ussd-treasury"
 version = "0.9.81-dev"
 authors = ["Setheum Labs"]
 edition = "2021"
