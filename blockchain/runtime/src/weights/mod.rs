@@ -26,7 +26,7 @@ pub mod module_auction_manager;
 pub mod module_cdp_engine;
 pub mod module_cdp_treasury;
 pub mod module_currencies;
-pub mod edfis_swap_module;
+pub mod edfis_swap_legacy_module;
 pub mod emergency_shutdown;
 pub mod module_evm;
 pub mod module_unified_accounts;

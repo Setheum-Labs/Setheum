@@ -242,7 +242,7 @@ parameter_types! {
 	pub const DEXPalletId: PalletId = PalletId(*b"set/edfis");
 }
 
-impl edfis_swap_module::Config for Runtime {
+impl edfis_swap_legacy_module::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Tokens;
 	type GetExchangeFee = GetExchangeFee;
@@ -263,7 +263,7 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 construct_runtime!(
 	pub enum Runtime {
 		System: frame_system,
-		Dex: edfis_swap_module,
+		Dex: edfis_swap_legacy_module,
 		EVM: evm_module,
 		Tokens: orml_tokens,
 		Balances: pallet_balances,
