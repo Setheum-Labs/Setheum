@@ -1,6 +1,5 @@
 [package]
-name = "module-ecdp-setter-engine"
-description = "Provides Unpegged ECDP Setter Stablecoin."
+name = "module-ecdp-setr-engine"
 version = "0.9.81-dev"
 authors = ["Setheum Labs"]
 edition = "2021"
