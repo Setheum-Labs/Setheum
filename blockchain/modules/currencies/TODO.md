@@ -46,7 +46,7 @@ You can contribute to this list by completing tasks or by adding tasks(TODOs) th
 
 ## 3. Lists
 
-Each module/crate has its own `TODO.md`.
+Each package/module/directory has its own `TODO.md`.
 
 ## 4. Tasks
 
