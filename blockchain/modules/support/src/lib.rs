@@ -24,7 +24,7 @@
 #![allow(clippy::type_complexity)]
 
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
-use primitives::{task::TaskResult, Balance, CurrencyId, Multiplier, Nonce, ReserveIdentifier};
+use primitives::{task::TaskResult, Balance, CurrencyId, Fees, Multiplier, Nonce, ReserveIdentifier};
 use sp_runtime::{
 	traits::CheckedDiv, transaction_validity::TransactionValidityError, DispatchError, DispatchResult, FixedU128,
 };
@@ -32,7 +32,8 @@ use sp_std::{prelude::*, result::Result};
 use xcm::prelude::*;
 
 pub mod bounded;
-pub mod dex;
+pub mod edfis;
+pub mod edfis_legacy;
 pub mod evm;
 pub mod liquid_staking;
 pub mod ecdp;
@@ -40,7 +41,8 @@ pub mod incentives;
 pub mod mocks;
 
 pub use crate::bounded::*;
-pub use crate::dex::*;
+pub use crate::edfis::*;
+pub use crate::edfis_legacy::*;
 pub use crate::evm::*;
 pub use crate::liquid_staking::*;
 pub use crate::ecdp::*;

@@ -38,7 +38,7 @@ use frame_system::pallet_prelude::*;
 use module_support::{SwapDexIncentives, SwapManager, Erc20InfoMapping, ExchangeRate, Ratio, SwapLimit};
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use parity_scale_codec::MaxEncodedLen;
-use primitives::{Balance, CurrencyId, TradingPair};
+use primitives::{Balance, CurrencyId, Fees, TradingPair};
 use scale_info::TypeInfo;
 use sp_core::{H160, U256};
 use sp_runtime::{
@@ -63,6 +63,8 @@ pub struct ProvisioningParameters<Balance, BlockNumber> {
 	target_provision: (Balance, Balance),
 	/// accumulated provision amount for this Provisioning trading pair.
 	accumulated_provision: (Balance, Balance),
+	/// accumulated provision amount for this Provisioning trading pair.
+	trading_fee: (u32, u32),
 	/// The number of block that status can be converted to Enabled.
 	not_before: BlockNumber,
 }
@@ -391,14 +393,8 @@ pub mod module {
 		/// - `max_amount_b`: maximum amount of currency_id_b is allowed to inject to liquidity
 		///   pool.
 		/// - `min_share_increment`: minimum acceptable share amount.
-		/// - `stake_increment_share`: indicates whether to stake increased dex share to earn
-		///   incentives
 		#[pallet::call_index(2)]
-		#[pallet::weight(if *stake_increment_share {
-			<T as Config>::WeightInfo::add_liquidity_and_stake()
-		} else {
-			<T as Config>::WeightInfo::add_liquidity()
-		})]
+		#[pallet::weight(<T as Config>::WeightInfo::add_liquidity())]
 		pub fn add_liquidity(
 			origin: OriginFor<T>,
 			currency_id_a: CurrencyId,
@@ -406,7 +402,6 @@ pub mod module {
 			#[pallet::compact] max_amount_a: Balance,
 			#[pallet::compact] max_amount_b: Balance,
 			#[pallet::compact] min_share_increment: Balance,
-			stake_increment_share: bool,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			Self::do_add_liquidity(
@@ -416,7 +411,6 @@ pub mod module {
 				max_amount_a,
 				max_amount_b,
 				min_share_increment,
-				stake_increment_share,
 			)?;
 			Ok(())
 		}
@@ -987,7 +981,6 @@ impl<T: Config> Pallet<T> {
 		max_amount_a: Balance,
 		max_amount_b: Balance,
 		min_share_increment: Balance,
-		stake_increment_share: bool,
 	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError> {
 		let trading_pair =
 			TradingPair::from_currency_ids(currency_id_a, currency_id_b).ok_or(Error::<T>::InvalidCurrencyId)?;
@@ -1079,10 +1072,6 @@ impl<T: Config> Pallet<T> {
 
 				*pool_0 = pool_0.checked_add(pool_0_increment).ok_or(ArithmeticError::Overflow)?;
 				*pool_1 = pool_1.checked_add(pool_1_increment).ok_or(ArithmeticError::Overflow)?;
-
-				if stake_increment_share {
-					T::SwapDexIncentives::do_deposit_dex_share(who, dex_share_currency_id, share_increment)?;
-				}
 
 				Self::deposit_event(Event::AddLiquidity {
 					who: who.clone(),
@@ -1511,7 +1500,6 @@ impl<T: Config> SwapManager<T::AccountId, Balance, CurrencyId> for Pallet<T> {
 		max_amount_a: Balance,
 		max_amount_b: Balance,
 		min_share_increment: Balance,
-		stake_increment_share: bool,
 	) -> sp_std::result::Result<(Balance, Balance, Balance), DispatchError> {
 		Self::do_add_liquidity(
 			who,
@@ -1520,7 +1508,6 @@ impl<T: Config> SwapManager<T::AccountId, Balance, CurrencyId> for Pallet<T> {
 			max_amount_a,
 			max_amount_b,
 			min_share_increment,
-			stake_increment_share,
 		)
 	}
 

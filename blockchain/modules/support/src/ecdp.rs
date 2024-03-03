@@ -19,7 +19,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use parity_scale_codec::FullCodec;
-use primitives::Position;
+use primitives::ECDPPosition;
 use sp_core::U256;
 use sp_runtime::{DispatchError, DispatchResult};
 use sp_std::{
@@ -199,7 +199,7 @@ pub trait SlickUsdEcdpManager<AccountId, CurrencyId, Amount, Balance> {
 	/// Close ECDP loan using DEX
 	fn close_loan_by_dex(who: AccountId, currency_id: CurrencyId, max_collateral_amount: Balance) -> DispatchResult;
 	/// Get open ECDP corresponding to an account and collateral `CurrencyId`
-	fn get_position(who: &AccountId, currency_id: CurrencyId) -> Position;
+	fn get_position(who: &AccountId, currency_id: CurrencyId) -> ECDPPosition;
 	/// Get liquidation ratio for collateral `CurrencyId`
 	fn get_collateral_parameters(currency_id: CurrencyId) -> Vec<U256>;
 	/// Get current ratio of collateral to debit of open ECDP

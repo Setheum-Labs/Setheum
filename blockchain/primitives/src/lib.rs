@@ -91,6 +91,9 @@ pub type Balance = u128;
 /// Signed version of Balance
 pub type Amount = i128;
 
+/// Fees type primarily for Edfis `ExchangeFee` and `TradingFee`.
+pub type Fees = u128;
+
 /// Auction ID
 pub type AuctionId = u32;
 
@@ -180,7 +183,7 @@ impl Decode for TradingPair {
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default, MaxEncodedLen, TypeInfo)]
-pub struct Position {
+pub struct ECDPPosition {
 	/// The amount of collateral.
 	pub collateral: Balance,
 	/// The amount of debit.
