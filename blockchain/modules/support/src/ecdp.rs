@@ -34,7 +34,7 @@ pub trait EmergencyShutdown {
 	fn is_shutdown() -> bool;
 }
 
-pub trait AuctionManager<AccountId> {
+pub trait AuctionsManager<AccountId> {
 	type CurrencyId;
 	type Balance;
 	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
@@ -50,7 +50,7 @@ pub trait AuctionManager<AccountId> {
 	fn get_total_target_in_auction() -> Self::Balance;
 }
 
-pub trait PeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
+pub trait SlickUsdRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 	fn get_debit_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
 
 	fn check_position_valid(
@@ -64,7 +64,7 @@ pub trait PeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 }
 
 #[cfg(feature = "std")]
-impl<AccountId, CurrencyId, Balance: Default, DebitBalance> PeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance>
+impl<AccountId, CurrencyId, Balance: Default, DebitBalance> SlickUsdRiskManager<AccountId, CurrencyId, Balance, DebitBalance>
 	for ()
 {
 	fn get_debit_value(_currency_id: CurrencyId, _debit_balance: DebitBalance) -> Balance {
@@ -84,41 +84,6 @@ impl<AccountId, CurrencyId, Balance: Default, DebitBalance> PeggedRiskManager<Ac
 		Ok(())
 	}
 }
-
-// pub trait UnpeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
-// 	fn get_debit_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
-
-// 	fn check_position_valid(
-// 		currency_id: CurrencyId,
-// 		collateral_balance: Balance,
-// 		debit_balance: DebitBalance,
-// 		check_required_ratio: bool,
-// 	) -> DispatchResult;
-
-// 	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: DebitBalance) -> DispatchResult;
-// }
-
-// #[cfg(feature = "std")]
-// impl<AccountId, CurrencyId, Balance: Default, DebitBalance> UnpeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance>
-// 	for ()
-// {
-// 	fn get_debit_value(_currency_id: CurrencyId, _debit_balance: DebitBalance) -> Balance {
-// 		Default::default()
-// 	}
-
-// 	fn check_position_valid(
-// 		_currency_id: CurrencyId,
-// 		_collateral_balance: Balance,
-// 		_debit_balance: DebitBalance,
-// 		_check_required_ratio: bool,
-// 	) -> DispatchResult {
-// 		Ok(())
-// 	}
-
-// 	fn check_debit_cap(_currency_id: CurrencyId, _total_debit_balance: DebitBalance) -> DispatchResult {
-// 		Ok(())
-// 	}
-// }
 
 /// An abstraction of cdp treasury for SlickUSD ECDP Protocol.
 pub trait SlickUsdEcdpTreasury<AccountId> {
@@ -140,7 +105,7 @@ pub trait SlickUsdEcdpTreasury<AccountId> {
 	/// issue debit for cdp treasury
 	fn on_system_debit(amount: Self::Balance) -> DispatchResult;
 
-	/// issue surplus(stable currency) for cdp treasury
+	/// issue surplus(USSD) for cdp treasury
 	fn on_system_surplus(amount: Self::Balance) -> DispatchResult;
 
 	/// issue debit to `who`
@@ -148,13 +113,13 @@ pub trait SlickUsdEcdpTreasury<AccountId> {
 	/// assets, otherwise will increase same amount of debit to system debit.
 	fn issue_debit(who: &AccountId, debit: Self::Balance, backed: bool) -> DispatchResult;
 
-	/// burn debit(stable currency) of `who`
+	/// burn debit(USSD) of `who`
 	fn burn_debit(who: &AccountId, debit: Self::Balance) -> DispatchResult;
 
-	/// deposit surplus(stable currency) to cdp treasury by `from`
+	/// deposit surplus(USSD) to cdp treasury by `from`
 	fn deposit_surplus(from: &AccountId, surplus: Self::Balance) -> DispatchResult;
 
-	/// withdraw surplus(stable currency) from cdp treasury to `to`
+	/// withdraw surplus(USSD) from cdp treasury to `to`
 	fn withdraw_surplus(to: &AccountId, surplus: Self::Balance) -> DispatchResult;
 
 	/// deposit collateral assets to cdp treasury by `who`
@@ -165,7 +130,7 @@ pub trait SlickUsdEcdpTreasury<AccountId> {
 }
 
 pub trait SlickUsdEcdpTreasuryExtended<AccountId>: SlickUsdTreasury<AccountId> {
-	fn swap_collateral_to_stable(
+	fn swap_collateral_to_ussd(
 		currency_id: Self::CurrencyId,
 		limit: SwapLimit<Self::Balance>,
 		collateral_in_auction: bool,

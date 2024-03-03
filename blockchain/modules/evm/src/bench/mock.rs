@@ -172,7 +172,6 @@ impl Config for Runtime {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = USSD;
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
 	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
 	pub const TransactionPaymentPalletId: PalletId = PalletId(*b"set/fees");

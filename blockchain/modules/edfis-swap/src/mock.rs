@@ -41,7 +41,8 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
-pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::FA_WBTC);
+pub const WBTC: CurrencyId = CurrencyId::ForeignAsset(255);
+
 pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
 pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 

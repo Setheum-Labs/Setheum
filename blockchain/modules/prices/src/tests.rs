@@ -119,7 +119,7 @@ fn lp_token_fair_price_works() {
 }
 
 #[test]
-fn access_price_of_stable_currency() {
+fn access_price_of_ussd() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
 			PricesModule::access_price(USSD),

@@ -158,7 +158,7 @@ pub trait LiquidateCollateral<AccountId> {
 		who: &AccountId,
 		currency_id: CurrencyId,
 		amount: Balance,
-		target_stable_amount: Balance,
+		target_ussd_amount: Balance,
 	) -> DispatchResult;
 }
 
@@ -168,11 +168,11 @@ impl<AccountId> LiquidateCollateral<AccountId> for Tuple {
 		who: &AccountId,
 		currency_id: CurrencyId,
 		amount: Balance,
-		target_stable_amount: Balance,
+		target_ussd_amount: Balance,
 	) -> DispatchResult {
 		let mut last_error = None;
 		for_tuples!( #(
-			match Tuple::liquidate(who, currency_id, amount, target_stable_amount) {
+			match Tuple::liquidate(who, currency_id, amount, target_ussd_amount) {
 				Ok(_) => return Ok(()),
 				Err(e) => { last_error = Some(e) }
 			}
