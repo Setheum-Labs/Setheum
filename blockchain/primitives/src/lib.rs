@@ -24,6 +24,7 @@
 
 pub mod bonding;
 pub mod currency;
+pub mod edfis_launchpad;
 pub mod evm;
 pub mod nft;
 pub mod signature;
@@ -32,6 +33,7 @@ pub mod testing;
 pub mod unchecked_extrinsic;
 
 pub use testing::*;
+pub use edfis_launchpad::*;
 
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -96,9 +98,6 @@ pub type Fees = u128;
 
 /// Auction ID
 pub type AuctionId = u32;
-
-/// Launchpad Campaign ID
-pub type CampaignId = u32;
 
 /// Share type
 pub type Share = u128;

@@ -25,7 +25,7 @@
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("dev"), DB CACHE: 128
 
 // Executed Command:
-// target/release/setheum
+// target/release/setheum-node
 // benchmark
 // --chain=dev
 // --steps=50
@@ -35,8 +35,8 @@
 // --execution=wasm
 // --wasm-execution=compiled
 // --heap-pages=4096
-// --output=./modules/cdp-treasury/src/weights.rs
-// --template=./templates/module-weight-template.hbs
+// --output=./blockchain/modules/ecdp-ussd-treasury/src/weights.rs
+// --template=.maintain/module-weight-template.hbs
 
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
