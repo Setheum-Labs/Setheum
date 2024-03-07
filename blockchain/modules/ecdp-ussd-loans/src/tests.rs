@@ -108,7 +108,7 @@ fn adjust_position_should_work() {
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).debit, 300);
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).collateral, 500);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 150);
-		System::assert_has_event(RuntimeEvent::EcdpUssdLoansModule(crate::Event::PositionUpdated {
+		System::assert_has_event(RuntimeEvent::EcdpUssdLoansModule(crate::Event::EcdpPositionUpdated {
 			owner: ALICE,
 			collateral_type: BTC,
 			collateral_adjustment: 500,
@@ -131,7 +131,7 @@ fn update_loan_should_work() {
 		assert_eq!(EcdpUssdLoansModule::total_positions(BTC).collateral, 0);
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).debit, 0);
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).collateral, 0);
-		assert!(!<Positions<Runtime>>::contains_key(BTC, &ALICE));
+		assert!(!<EcdpPositions<Runtime>>::contains_key(BTC, &ALICE));
 
 		let alice_ref_count_0 = System::consumers(&ALICE);
 
@@ -152,11 +152,11 @@ fn update_loan_should_work() {
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
 
 		// should remove position storage if zero
-		assert!(<Positions<Runtime>>::contains_key(BTC, &ALICE));
+		assert!(<EcdpPositions<Runtime>>::contains_key(BTC, &ALICE));
 		assert_ok!(EcdpUssdLoansModule::update_loan(&ALICE, BTC, -3000, -2000));
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).debit, 0);
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).collateral, 0);
-		assert!(!<Positions<Runtime>>::contains_key(BTC, &ALICE));
+		assert!(!<EcdpPositions<Runtime>>::contains_key(BTC, &ALICE));
 
 		// decrease ref count after remove position
 		let alice_ref_count_2 = System::consumers(&ALICE);
@@ -202,14 +202,14 @@ fn confiscate_collateral_and_debit_work() {
 		);
 
 		assert_ok!(EcdpUssdLoansModule::adjust_position(&ALICE, BTC, 500, 300));
-		assert_eq!(SlickUsdEcdpTreasuryModule::get_total_collaterals(BTC), 0);
-		assert_eq!(SlickUsdEcdpTreasuryModule::debit_pool(), 0);
+		assert_eq!(EcdpUssdTreasuryModule::get_total_collaterals(BTC), 0);
+		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).debit, 300);
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).collateral, 500);
 
 		assert_ok!(EcdpUssdLoansModule::confiscate_collateral_and_debit(&ALICE, BTC, 300, 200));
-		assert_eq!(SlickUsdEcdpTreasuryModule::get_total_collaterals(BTC), 300);
-		assert_eq!(SlickUsdEcdpTreasuryModule::debit_pool(), 100);
+		assert_eq!(EcdpUssdTreasuryModule::get_total_collaterals(BTC), 300);
+		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 100);
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).debit, 100);
 		assert_eq!(EcdpUssdLoansModule::positions(BTC, &ALICE).collateral, 200);
 		System::assert_last_event(RuntimeEvent::EcdpUssdLoansModule(crate::Event::ConfiscateCollateralAndDebit {

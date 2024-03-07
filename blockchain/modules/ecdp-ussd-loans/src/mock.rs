@@ -29,7 +29,7 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::EnsureSignedBy;
-use module_support::{mocks::MockStableAsset, AuctionManager, SlickUsdRiskManager, SpecificJointsSwap};
+use module_support::{EcdpAuctionsManager, EcdpUssdRiskManager, SpecificJointsSwap};
 use orml_traits::parameter_type_with_key;
 use primitives::TokenSymbol;
 use sp_runtime::{
@@ -111,8 +111,8 @@ impl orml_currencies::Config for Runtime {
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, PalletBalances, Amount, BlockNumber>;
 
-pub struct MockAuctionManager;
-impl AuctionManager<AccountId> for MockAuctionManager {
+pub struct MockEcdpAuctionsManager;
+impl EcdpAuctionsManager<AccountId> for MockEcdpAuctionsManager {
 	type CurrencyId = CurrencyId;
 	type Balance = Balance;
 	type AuctionId = AuctionId;
@@ -144,30 +144,29 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const GetStableCurrencyId: CurrencyId = USSD;
-	pub const SlickUsdEcdpTreasuryPalletId: PalletId = PalletId(*b"aca/cdpt");
+	pub const GetUSSDCurrencyId: CurrencyId = USSD;
+	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"aca/cdpt");
 	pub TreasuryAccount: AccountId = PalletId(*b"aca/hztr").into_account_truncating();
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![];
 }
 
-impl module_ussd_ecdp_treasury::Config for Runtime {
+impl module_ecdp_ussd_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Currencies;
-	type GetStableCurrencyId = GetStableCurrencyId;
-	type AuctionManagerHandler = MockAuctionManager;
+	type GetUSSDCurrencyId = GetUSSDCurrencyId;
+	type EcdpAuctionsManagerHandler = MockEcdpAuctionsManager;
 	type UpdateOrigin = EnsureSignedBy<One, AccountId>;
 	type DEX = ();
 	type Swap = SpecificJointsSwap<(), AlternativeSwapPathJointList>;
 	type MaxAuctionsCount = ConstU32<10_000>;
-	type PalletId = SlickUsdEcdpTreasuryPalletId;
+	type PalletId = EcdpUssdTreasuryPalletId;
 	type TreasuryAccount = TreasuryAccount;
 	type WeightInfo = ();
-	type StableAsset = MockStableAsset<CurrencyId, Balance, AccountId, BlockNumber>;
 }
 
 // mock risk manager
-pub struct MockSlickUsdRiskManager;
-impl SlickUsdRiskManager<AccountId, CurrencyId, Balance, Balance> for MockSlickUsdRiskManager {
+pub struct MockEcdpUssdRiskManager;
+impl EcdpUssdRiskManager<AccountId, CurrencyId, Balance, Balance> for MockEcdpUssdRiskManager {
 	fn get_debit_value(_currency_id: CurrencyId, debit_balance: Balance) -> Balance {
 		debit_balance / Balance::from(2u64)
 	}
@@ -235,8 +234,8 @@ parameter_types! {
 impl Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Currencies;
-	type SlickUsdRiskManager = MockSlickUsdRiskManager;
-	type SlickUsdEcdpTreasury = SlickUsdEcdpTreasuryModule;
+	type EcdpUssdRiskManager = MockEcdpUssdRiskManager;
+	type EcdpUssdTreasury = EcdpUssdTreasuryModule;
 	type PalletId = EcdpUssdLoansPalletId;
 }
 
@@ -249,7 +248,7 @@ construct_runtime!(
 		Tokens: orml_tokens,
 		PalletBalances: pallet_balances,
 		Currencies: orml_currencies,
-		SlickUsdEcdpTreasuryModule: module_ussd_ecdp_treasury,
+		EcdpUssdTreasuryModule: module_ecdp_ussd_treasury,
 	}
 );
 

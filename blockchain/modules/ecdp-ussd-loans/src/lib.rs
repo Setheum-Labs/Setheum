@@ -30,9 +30,9 @@
 #![allow(clippy::collapsible_if)]
 
 use frame_support::{pallet_prelude::*, transactional, PalletId};
-use module_support::{SlickUsdEcdpTreasury, SlickUsdRiskManager};
+use module_support::{EcdpUssdTreasury, EcdpUssdRiskManager};
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
-use primitives::{Amount, Balance, CurrencyId, Position};
+use primitives::{Amount, Balance, CurrencyId, EcdpPosition};
 use sp_runtime::{
 	traits::{AccountIdConversion, Zero},
 	ArithmeticError, DispatchResult,
@@ -60,10 +60,10 @@ pub mod module {
 		>;
 
 		/// Risk manager is used to limit the debit size of CDP.
-		type SlickUsdRiskManager: SlickUsdRiskManager<Self::AccountId, CurrencyId, Balance, Balance>;
+		type EcdpUssdRiskManager: EcdpUssdRiskManager<Self::AccountId, CurrencyId, Balance, Balance>;
 
 		/// CDP treasury for issuing/burning USSD and debit value adjustment.
-		type SlickUsdEcdpTreasury: SlickUsdEcdpTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
+		type EcdpUssdTreasury: EcdpUssdTreasury<Self::AccountId, Balance = Balance, CurrencyId = CurrencyId>;
 
 		/// The loan's module id, keep all collaterals of CDPs.
 		#[pallet::constant]
@@ -82,8 +82,8 @@ pub mod module {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Position updated.
-		PositionUpdated {
+		/// EcdpPosition updated.
+		EcdpPositionUpdated {
 			owner: T::AccountId,
 			collateral_type: CurrencyId,
 			collateral_adjustment: Amount,
@@ -105,21 +105,21 @@ pub mod module {
 	}
 
 	/// The collateralized debit positions, map from
-	/// Owner -> CollateralType -> Position
+	/// Owner -> CollateralType -> EcdpPosition
 	///
-	/// Positions: double_map CurrencyId, AccountId => Position
+	/// EcdpPositions: double_map CurrencyId, AccountId => EcdpPosition
 	#[pallet::storage]
 	#[pallet::getter(fn positions)]
-	pub type Positions<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, CurrencyId, Twox64Concat, T::AccountId, Position, ValueQuery>;
+	pub type EcdpPositions<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, CurrencyId, Twox64Concat, T::AccountId, EcdpPosition, ValueQuery>;
 
 	/// The total collateralized debit positions, map from
-	/// CollateralType -> Position
+	/// CollateralType -> EcdpPosition
 	///
-	/// TotalPositions: CurrencyId => Position
+	/// TotalEcdpPositions: CurrencyId => EcdpPosition
 	#[pallet::storage]
 	#[pallet::getter(fn total_positions)]
-	pub type TotalPositions<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, Position, ValueQuery>;
+	pub type TotalEcdpPositions<T: Config> = StorageMap<_, Twox64Concat, CurrencyId, EcdpPosition, ValueQuery>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -148,11 +148,11 @@ impl<T: Config> Pallet<T> {
 		let debit_adjustment = Self::amount_try_from_balance(debit_decrease)?;
 
 		// transfer collateral to cdp treasury
-		T::SlickUsdEcdpTreasury::deposit_collateral(&Self::account_id(), currency_id, collateral_confiscate)?;
+		T::EcdpUssdTreasury::deposit_collateral(&Self::account_id(), currency_id, collateral_confiscate)?;
 
 		// deposit debit to cdp treasury
-		let bad_debt_value = T::SlickUsdRiskManager::get_debit_value(currency_id, debit_decrease);
-		T::SlickUsdEcdpTreasury::on_system_debit(bad_debt_value)?;
+		let bad_debt_value = T::EcdpUssdRiskManager::get_debit_value(currency_id, debit_decrease);
+		T::EcdpUssdTreasury::on_system_debit(bad_debt_value)?;
 
 		// update loan
 		Self::update_loan(
@@ -197,26 +197,26 @@ impl<T: Config> Pallet<T> {
 
 		if debit_adjustment.is_positive() {
 			// check debit cap when increase debit
-			T::SlickUsdRiskManager::check_debit_cap(currency_id, Self::total_positions(currency_id).debit)?;
+			T::EcdpUssdRiskManager::check_debit_cap(currency_id, Self::total_positions(currency_id).debit)?;
 
 			// issue debit with collateral backed by cdp treasury
-			T::SlickUsdEcdpTreasury::issue_debit(
+			T::EcdpUssdTreasury::issue_debit(
 				who,
-				T::SlickUsdRiskManager::get_debit_value(currency_id, debit_balance_adjustment),
+				T::EcdpUssdRiskManager::get_debit_value(currency_id, debit_balance_adjustment),
 				true,
 			)?;
 		} else if debit_adjustment.is_negative() {
 			// repay debit
 			// burn debit by cdp treasury
-			T::SlickUsdEcdpTreasury::burn_debit(
+			T::EcdpUssdTreasury::burn_debit(
 				who,
-				T::SlickUsdRiskManager::get_debit_value(currency_id, debit_balance_adjustment),
+				T::EcdpUssdRiskManager::get_debit_value(currency_id, debit_balance_adjustment),
 			)?;
 		}
 
 		// ensure pass risk check
-		let Position { collateral, debit } = Self::positions(currency_id, who);
-		T::SlickUsdRiskManager::check_position_valid(
+		let EcdpPosition { collateral, debit } = Self::positions(currency_id, who);
+		T::EcdpUssdRiskManager::check_position_valid(
 			currency_id,
 			collateral,
 			debit,
@@ -229,9 +229,9 @@ impl<T: Config> Pallet<T> {
 	/// transfer whole loan of `from` to `to`
 	pub fn transfer_loan(from: &T::AccountId, to: &T::AccountId, currency_id: CurrencyId) -> DispatchResult {
 		// get `from` position data
-		let Position { collateral, debit } = Self::positions(currency_id, from);
+		let EcdpPosition { collateral, debit } = Self::positions(currency_id, from);
 
-		let Position {
+		let EcdpPosition {
 			collateral: to_collateral,
 			debit: to_debit,
 		} = Self::positions(currency_id, to);
@@ -243,7 +243,7 @@ impl<T: Config> Pallet<T> {
 			.expect("existing debit balance cannot overflow; qed");
 
 		// check new position
-		T::SlickUsdRiskManager::check_position_valid(currency_id, new_to_collateral_balance, new_to_debit_balance, true)?;
+		T::EcdpUssdRiskManager::check_position_valid(currency_id, new_to_collateral_balance, new_to_debit_balance, true)?;
 
 		// balance -> amount
 		let collateral_adjustment = Self::amount_try_from_balance(collateral)?;
@@ -275,7 +275,7 @@ impl<T: Config> Pallet<T> {
 		let collateral_balance = Self::balance_try_from_amount_abs(collateral_adjustment)?;
 		let debit_balance = Self::balance_try_from_amount_abs(debit_adjustment)?;
 
-		<Positions<T>>::try_mutate_exists(currency_id, who, |may_be_position| -> DispatchResult {
+		<EcdpPositions<T>>::try_mutate_exists(currency_id, who, |may_be_position| -> DispatchResult {
 			let mut p = may_be_position.take().unwrap_or_default();
 			let new_collateral = if collateral_adjustment.is_positive() {
 				p.collateral
@@ -306,7 +306,7 @@ impl<T: Config> Pallet<T> {
 			}
 
 			// TODO:[src/lib.rs:0] - Remove this from this module and add it to `EcdpUssdLoans` module.
-			// Use the collateral amount (of a position that has fulfilled the `PositionCloudCreditRequirements` -
+			// Use the collateral amount (of a position that has fulfilled the `EcdpPositionCloudCreditRequirements` -
 			// this is only offered for SETR) as the shares for Cloud Credit.
 			//
 			// T::OnUpdateLoan::happened(&(who.clone(), currency_id, collateral_adjustment, p.collateral));
@@ -327,7 +327,7 @@ impl<T: Config> Pallet<T> {
 			Ok(())
 		})?;
 
-		TotalPositions::<T>::try_mutate(currency_id, |total_positions| -> DispatchResult {
+		TotalEcdpPositions::<T>::try_mutate(currency_id, |total_positions| -> DispatchResult {
 			total_positions.collateral = if collateral_adjustment.is_positive() {
 				total_positions
 					.collateral
@@ -355,7 +355,7 @@ impl<T: Config> Pallet<T> {
 			Ok(())
 		})?;
 
-		Self::deposit_event(Event::PositionUpdated {
+		Self::deposit_event(Event::EcdpPositionUpdated {
 			owner: who.clone(),
 			collateral_type: currency_id,
 			collateral_adjustment,
