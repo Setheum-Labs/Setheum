@@ -1319,7 +1319,7 @@ impl<T: Config> Pallet<T> {
 	//
 	/// We extend the principle of this EIP to also prevent `tx.sender` to be the address
 	/// of a precompile. While mainnet Ethereum currently only has stateless precompiles,
-	/// Setheum EVM+ can have stateful precompiles that can manage funds or
+	/// Setheum EVM can have stateful precompiles that can manage funds or
 	/// which calls other contracts that expects this precompile address to be trustworthy.
 	fn ensure_eoa(caller: &EvmAddress) -> DispatchResult {
 		if is_system_contract(caller) || Self::is_contract(caller) {

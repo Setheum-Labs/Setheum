@@ -152,7 +152,7 @@ pub trait SlickUsdEcdpTreasuryExtended<AccountId>: SlickUsdTreasury<AccountId> {
 	fn max_auction() -> u32;
 }
 
-/// Functionality of SlickUSD ECDP Protocol to be exposed to EVM+.
+/// Functionality of SlickUSD ECDP Protocol to be exposed to EVM.
 pub trait SlickUsdEcdpManager<AccountId, CurrencyId, Amount, Balance> {
 	/// Adjust ECDP loan
 	fn adjust_loan(
@@ -171,4 +171,24 @@ pub trait SlickUsdEcdpManager<AccountId, CurrencyId, Amount, Balance> {
 	fn get_current_collateral_ratio(who: &AccountId, currency_id: CurrencyId) -> Option<Ratio>;
 	/// Get exchange rate of debit units to debit value for a currency_id
 	fn get_debit_exchange_rate(currency_id: CurrencyId) -> ExchangeRate;
+}
+
+/// Functionality of Setter ECDP Protocol to be exposed to EVM.
+pub trait SetterEcdpManager<AccountId, Amount, Balance> {
+	/// Adjust ECDP loan
+	fn adjust_loan(
+		who: &AccountId,
+		collateral_adjustment: Amount,
+		debit_adjustment: Amount,
+	) -> DispatchResult;
+	/// Close ECDP loan using DEX
+	fn close_loan_by_dex(who: AccountId, max_collateral_amount: Balance) -> DispatchResult;
+	/// Get open ECDP corresponding to an account and collateral
+	fn get_position(who: &AccountId) -> ECDPPosition;
+	/// Get liquidation ratio for collateral
+	fn get_collateral_parameters() -> Vec<U256>;
+	/// Get current ratio of collateral to debit of open ECDP
+	fn get_current_collateral_ratio(who: &AccountId) -> Option<Ratio>;
+	/// Get exchange rate of debit units to debit value for a currency_id
+	fn get_debit_exchange_rate() -> ExchangeRate;
 }
