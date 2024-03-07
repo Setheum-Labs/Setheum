@@ -158,7 +158,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const DEXPalletId: PalletId = PalletId(*b"set/edfis");
+	pub const EdfisSwapPalletId: PalletId = PalletId(*b"set/edfis");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(USSD, SEE).unwrap(),
@@ -175,7 +175,7 @@ impl edfis_swap_legacy_module::Config for Runtime {
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = ();
 	type SwapDexIncentives = ();
 	type WeightInfo = ();

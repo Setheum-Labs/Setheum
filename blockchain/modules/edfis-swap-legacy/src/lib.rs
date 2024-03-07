@@ -463,7 +463,7 @@ pub mod module {
 
 		/// Remove liquidity from specific liquidity pool in the form of burning
 		/// shares, and withdrawing currencies in trading pairs from liquidity
-		/// pool in proportion, and withdraw liquidity incentive interest.
+		/// pool in proportion, and withdraw liquidity incentive.
 		///
 		/// - `currency_id_a`: currency id A.
 		/// - `currency_id_b`: currency id B.

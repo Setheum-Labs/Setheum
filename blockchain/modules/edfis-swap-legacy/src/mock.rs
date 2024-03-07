@@ -101,7 +101,7 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
-	pub const DEXPalletId: PalletId = PalletId(*b"set/edfis");
+	pub const EdfisSwapPalletId: PalletId = PalletId(*b"set/edfis");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
 		vec![EDF],
 	];
@@ -126,7 +126,7 @@ impl Config for Runtime {
 	type Currency = Tokens;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = ConstU32<3>;
-	type PalletId = DEXPalletId;
+	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = MockErc20InfoMapping;
 	type WeightInfo = ();
 	type SwapDexIncentives = MockSwapDexIncentives;

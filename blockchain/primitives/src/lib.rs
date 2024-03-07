@@ -182,7 +182,7 @@ impl Decode for TradingPair {
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default, MaxEncodedLen, TypeInfo)]
-pub struct ECDPPosition {
+pub struct EcdpPosition {
 	/// The amount of collateral.
 	pub collateral: Balance,
 	/// The amount of debit.
@@ -195,8 +195,7 @@ pub enum ReserveIdentifier {
 	CollatorSelection,
 	EvmStorageDeposit,
 	EvmDeveloperDeposit,
-	SetterEcdp,
-	SlickUsdEcdp,
+	Ecdp,
 	Nft,
 	TransactionPayment,
 	TransactionPaymentDeposit,

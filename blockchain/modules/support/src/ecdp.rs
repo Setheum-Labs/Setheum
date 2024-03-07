@@ -19,7 +19,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use parity_scale_codec::FullCodec;
-use primitives::ECDPPosition;
+use primitives::EcdpEcdpPosition;
 use sp_core::U256;
 use sp_runtime::{DispatchError, DispatchResult};
 use sp_std::{
@@ -30,11 +30,11 @@ use sp_std::{
 
 use crate::{dex::*, ExchangeRate, Ratio};
 
-pub trait EmergencyShutdown {
+pub trait EcdpEmergencyShutdown {
 	fn is_shutdown() -> bool;
 }
 
-pub trait AuctionsManager<AccountId> {
+pub trait EcdpAuctionsManager<AccountId> {
 	type CurrencyId;
 	type Balance;
 	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
@@ -50,7 +50,7 @@ pub trait AuctionsManager<AccountId> {
 	fn get_total_target_in_auction() -> Self::Balance;
 }
 
-pub trait SlickUsdRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
+pub trait EcdpUssdRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 	fn get_debit_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
 
 	fn check_position_valid(
@@ -64,7 +64,7 @@ pub trait SlickUsdRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 }
 
 #[cfg(feature = "std")]
-impl<AccountId, CurrencyId, Balance: Default, DebitBalance> SlickUsdRiskManager<AccountId, CurrencyId, Balance, DebitBalance>
+impl<AccountId, CurrencyId, Balance: Default, DebitBalance> EcdpUssdRiskManager<AccountId, CurrencyId, Balance, DebitBalance>
 	for ()
 {
 	fn get_debit_value(_currency_id: CurrencyId, _debit_balance: DebitBalance) -> Balance {
@@ -86,7 +86,7 @@ impl<AccountId, CurrencyId, Balance: Default, DebitBalance> SlickUsdRiskManager<
 }
 
 /// An abstraction of cdp treasury for SlickUSD ECDP Protocol.
-pub trait SlickUsdEcdpTreasury<AccountId> {
+pub trait EcdpUssdTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
 
@@ -129,7 +129,7 @@ pub trait SlickUsdEcdpTreasury<AccountId> {
 	fn withdraw_collateral(to: &AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 }
 
-pub trait SlickUsdEcdpTreasuryExtended<AccountId>: SlickUsdTreasury<AccountId> {
+pub trait EcdpUssdTreasuryExtended<AccountId>: SlickUsdTreasury<AccountId> {
 	fn swap_collateral_to_ussd(
 		currency_id: Self::CurrencyId,
 		limit: SwapLimit<Self::Balance>,
@@ -153,7 +153,7 @@ pub trait SlickUsdEcdpTreasuryExtended<AccountId>: SlickUsdTreasury<AccountId> {
 }
 
 /// Functionality of SlickUSD ECDP Protocol to be exposed to EVM.
-pub trait SlickUsdEcdpManager<AccountId, CurrencyId, Amount, Balance> {
+pub trait EcdpUssdManager<AccountId, CurrencyId, Amount, Balance> {
 	/// Adjust ECDP loan
 	fn adjust_loan(
 		who: &AccountId,
@@ -164,7 +164,7 @@ pub trait SlickUsdEcdpManager<AccountId, CurrencyId, Amount, Balance> {
 	/// Close ECDP loan using DEX
 	fn close_loan_by_dex(who: AccountId, currency_id: CurrencyId, max_collateral_amount: Balance) -> DispatchResult;
 	/// Get open ECDP corresponding to an account and collateral `CurrencyId`
-	fn get_position(who: &AccountId, currency_id: CurrencyId) -> ECDPPosition;
+	fn get_position(who: &AccountId, currency_id: CurrencyId) -> EcdpEcdpPosition;
 	/// Get liquidation ratio for collateral `CurrencyId`
 	fn get_collateral_parameters(currency_id: CurrencyId) -> Vec<U256>;
 	/// Get current ratio of collateral to debit of open ECDP
@@ -174,7 +174,7 @@ pub trait SlickUsdEcdpManager<AccountId, CurrencyId, Amount, Balance> {
 }
 
 /// Functionality of Setter ECDP Protocol to be exposed to EVM.
-pub trait SetterEcdpManager<AccountId, Amount, Balance> {
+pub trait EcdpSetrManager<AccountId, Amount, Balance> {
 	/// Adjust ECDP loan
 	fn adjust_loan(
 		who: &AccountId,
@@ -184,7 +184,7 @@ pub trait SetterEcdpManager<AccountId, Amount, Balance> {
 	/// Close ECDP loan using DEX
 	fn close_loan_by_dex(who: AccountId, max_collateral_amount: Balance) -> DispatchResult;
 	/// Get open ECDP corresponding to an account and collateral
-	fn get_position(who: &AccountId) -> ECDPPosition;
+	fn get_position(who: &AccountId) -> EcdpEcdpPosition;
 	/// Get liquidation ratio for collateral
 	fn get_collateral_parameters() -> Vec<U256>;
 	/// Get current ratio of collateral to debit of open ECDP

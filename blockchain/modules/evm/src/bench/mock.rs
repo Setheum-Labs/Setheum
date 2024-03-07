@@ -238,7 +238,7 @@ impl SwapDexIncentives<AccountId32, CurrencyId, Balance> for MockSwapDexIncentiv
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
-	pub const DEXPalletId: PalletId = PalletId(*b"set/edfis");
+	pub const EdfisSwapPalletId: PalletId = PalletId(*b"set/edfis");
 }
 
 impl edfis_swap_legacy_module::Config for Runtime {
@@ -246,7 +246,7 @@ impl edfis_swap_legacy_module::Config for Runtime {
 	type Currency = Tokens;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = MockErc20InfoMapping;
 	type WeightInfo = ();
 	type SwapDexIncentives = MockSwapDexIncentives;

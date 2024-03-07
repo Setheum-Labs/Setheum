@@ -25,7 +25,7 @@ sp-core = { workspace = true, features = ["std"] }
 pallet-balances = { workspace = true, features = ["std"] }
 orml-tokens = { workspace = true, features = ["std"] }
 module-currencies = { workspace = true, features = ["std"] }
-module-dex = { workspace = true, features = ["std"] }
+module-edfis_swap_legacy = { workspace = true, features = ["std"] }
 smallvec = { workspace = true }
 
 [features]

@@ -43,7 +43,7 @@ module-evm-utility = { workspace = true }
 primitives = { workspace = true }
 module-idle-scheduler = { workspace = true, optional = true }
 module-transaction-payment = { workspace = true }
-module-dex = { workspace = true, optional = true }
+module-edfis_swap_legacy = { workspace = true, optional = true }
 
 xcm-builder = { workspace = true }
 
@@ -64,7 +64,7 @@ std = [
 	"parity-scale-codec/std",
 	"frame-support/std",
 	"frame-system/std",
-	"module-dex/std",
+	"module-edfis_swap_legacy/std",
 	"module-evm-utility/std",
 	"module-idle-scheduler/std",
 	"module-support/std",
@@ -92,7 +92,7 @@ with-ethereum-compatibility = []
 try-runtime = [
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
-	"module-dex/try-runtime",
+	"module-edfis_swap_legacy/try-runtime",
 	"module-idle-scheduler/try-runtime",
 	"module-transaction-payment/try-runtime",
 	"orml-currencies/try-runtime",
@@ -104,7 +104,7 @@ tracing = ["module-evm-utility/tracing"]
 wasm-bench = [
 	"wasm-bencher/wasm-bench",
 	"hex",
-	"module-dex",
+	"module-edfis_swap_legacy",
 	"module-idle-scheduler",
 	"orml-currencies",
 	"orml-tokens",
