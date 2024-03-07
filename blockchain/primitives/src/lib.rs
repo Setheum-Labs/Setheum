@@ -24,6 +24,7 @@
 
 pub mod bonding;
 pub mod currency;
+pub mod edfis_launchpad;
 pub mod evm;
 pub mod nft;
 pub mod signature;
@@ -32,6 +33,7 @@ pub mod testing;
 pub mod unchecked_extrinsic;
 
 pub use testing::*;
+pub use edfis_launchpad::*;
 
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -91,11 +93,11 @@ pub type Balance = u128;
 /// Signed version of Balance
 pub type Amount = i128;
 
+/// Fees type primarily for Edfis `ExchangeFee` and `TradingFee`.
+pub type Fees = u128;
+
 /// Auction ID
 pub type AuctionId = u32;
-
-/// Launchpad Campaign ID
-pub type CampaignId = u32;
 
 /// Share type
 pub type Share = u128;
@@ -180,7 +182,7 @@ impl Decode for TradingPair {
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, Default, MaxEncodedLen, TypeInfo)]
-pub struct Position {
+pub struct EcdpPosition {
 	/// The amount of collateral.
 	pub collateral: Balance,
 	/// The amount of debit.
@@ -193,8 +195,7 @@ pub enum ReserveIdentifier {
 	CollatorSelection,
 	EvmStorageDeposit,
 	EvmDeveloperDeposit,
-	SetterEcdp,
-	SlickUsdEcdp,
+	Ecdp,
 	Nft,
 	TransactionPayment,
 	TransactionPaymentDeposit,

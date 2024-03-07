@@ -18,7 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the dex module.
+//! Mocks for the edfis_swap module.
 
 #![cfg(test)]
 
@@ -41,7 +41,8 @@ pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CAROL: AccountId = 3;
 pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
-pub const WBTC: CurrencyId = CurrencyId::Token(TokenSymbol::FA_WBTC);
+pub const WBTC: CurrencyId = CurrencyId::ForeignAsset(255);
+
 pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
 pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 
@@ -51,7 +52,7 @@ parameter_types! {
 	pub static EDFWBTCPair: TradingPair = TradingPair::from_currency_ids(EDF, WBTC).unwrap();
 }
 
-mod dex {
+mod edfis_swap {
 	pub use super::super::*;
 }
 
@@ -101,7 +102,7 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetExchangeFee: (u32, u32) = (1, 100);
-	pub const DEXPalletId: PalletId = PalletId(*b"aca/dexm");
+	pub const EdfisSwapPalletId: PalletId = PalletId(*b"set/edfis");
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
 		vec![EDF],
 	];
@@ -126,7 +127,7 @@ impl Config for Runtime {
 	type Currency = Tokens;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = ConstU32<3>;
-	type PalletId = DEXPalletId;
+	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = MockErc20InfoMapping;
 	type WeightInfo = ();
 	type SwapDexIncentives = MockSwapDexIncentives;
@@ -140,15 +141,15 @@ parameter_types! {
 	pub SEEJoint: Vec<Vec<CurrencyId>> = vec![vec![SEE]];
 }
 
-pub type USSDJointSwap = SpecificJointsSwap<DexModule, USSDJoint>;
-pub type SEEJointSwap = SpecificJointsSwap<DexModule, SEEJoint>;
+pub type USSDJointSwap = SpecificJointsSwap<EdfisSwapModule, USSDJoint>;
+pub type SEEJointSwap = SpecificJointsSwap<EdfisSwapModule, SEEJoint>;
 
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 construct_runtime!(
 	pub enum Runtime {
 		System: frame_system,
-		DexModule: dex,
+		EdfisSwapModule: edfis_swap,
 		Tokens: orml_tokens,
 	}
 );
@@ -209,7 +210,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		dex::GenesisConfig::<Runtime> {
+		edfis_swap::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: self.initial_listing_trading_pairs,
 			initial_enabled_trading_pairs: self.initial_enabled_trading_pairs,
 			initial_added_liquidity_pools: self.initial_added_liquidity_pools,

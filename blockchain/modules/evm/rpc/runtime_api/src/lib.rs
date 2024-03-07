@@ -21,8 +21,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::all)]
 
-use ethereum_types::H160;
-use primitives::evm::{CallInfo, CreateInfo, EstimateResourcesRequest};
+use primitives::evm::{AccessListItem, BlockLimits, CallInfo, CreateInfo, EstimateResourcesRequest};
+use sp_core::H160;
 use sp_runtime::{
 	codec::Codec,
 	traits::{MaybeDisplay, MaybeFromStr},
@@ -30,8 +30,10 @@ use sp_runtime::{
 use sp_std::vec::Vec;
 
 sp_api::decl_runtime_apis! {
-	pub trait EVMRuntimeRPCApi<Balance> where
+	#[api_version(2)]
+	pub trait EVMRuntimeRPCApi<Balance, AccountId> where
 		Balance: Codec + MaybeDisplay + MaybeFromStr,
+		AccountId: Codec + MaybeDisplay + MaybeFromStr,
 	{
 		fn call(
 			from: H160,
@@ -40,6 +42,7 @@ sp_api::decl_runtime_apis! {
 			value: Balance,
 			gas_limit: u64,
 			storage_limit: u32,
+			access_list: Option<Vec<AccessListItem>>,
 			estimate: bool,
 		) -> Result<CallInfo, sp_runtime::DispatchError>;
 
@@ -49,9 +52,33 @@ sp_api::decl_runtime_apis! {
 			value: Balance,
 			gas_limit: u64,
 			storage_limit: u32,
+			access_list: Option<Vec<AccessListItem>>,
 			estimate: bool,
 		) -> Result<CreateInfo, sp_runtime::DispatchError>;
 
 		fn get_estimate_resources_request(data: Vec<u8>) -> Result<EstimateResourcesRequest, sp_runtime::DispatchError>;
+
+		fn block_limits() -> BlockLimits;
+
+		fn account_call(
+			from: AccountId,
+			to: H160,
+			data: Vec<u8>,
+			value: Balance,
+			gas_limit: u64,
+			storage_limit: u32,
+			access_list: Option<Vec<AccessListItem>>,
+			estimate: bool,
+		) -> Result<CallInfo, sp_runtime::DispatchError>;
+
+		fn account_create(
+			from: AccountId,
+			data: Vec<u8>,
+			value: Balance,
+			gas_limit: u64,
+			storage_limit: u32,
+			access_list: Option<Vec<AccessListItem>>,
+			estimate: bool,
+		) -> Result<CreateInfo, sp_runtime::DispatchError>;
 	}
 }

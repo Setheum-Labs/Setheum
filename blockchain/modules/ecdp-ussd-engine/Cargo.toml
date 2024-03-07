@@ -1,0 +1,58 @@
+[package]
+name = "module-ecdp-ussd-engine"
+version = "0.9.81-dev"
+authors = ["Setheum Labs"]
+edition = "2021"
+
+[dependencies]
+log = { workspace = true }
+rand_chacha = { workspace = true }
+parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-application-crypto = {workspace = true }
+orml-traits = { workspace = true }
+orml-utilities = { workspace = true }
+sp-io = {workspace = true }
+sp-runtime = {workspace = true }
+sp-std = {workspace = true }
+module-support = { workspace = true }
+module-ecdp-ussd-loans = { workspace = true }
+primitives = { workspace = true }
+
+[dev-dependencies]
+sp-core = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
+orml-currencies = { workspace = true, features = ["std"] }
+module-edfis_swap_legacy = { workspace = true, features = ["std"] }
+module-ecdp-ussd-treasury = { workspace = true, features = ["std"] }
+module-evm-accounts = { workspace = true, features = ["std"] }
+orml-tokens = { workspace = true, features = ["std"] }
+module-evm = { workspace = true, features = ["std"] }
+module-evm-bridge = { workspace = true, features = ["std"] }
+
+[features]
+default = ["std"]
+std = [
+	"parity-scale-codec/std",
+	"frame-support/std",
+	"frame-system/std",
+	"module-ecdp-ussd-loans/std",
+	"orml-traits/std",
+	"orml-utilities/std",
+	"primitives/std",
+	"rand_chacha/std",
+	"scale-info/std",
+	"sp-application-crypto/std",
+	"sp-io/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"module-support/std",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"module-ecdp-ussd-loans/try-runtime",
+]

@@ -24,7 +24,7 @@
 #![allow(clippy::type_complexity)]
 
 use frame_support::pallet_prelude::{DispatchClass, Pays, Weight};
-use primitives::{task::TaskResult, Balance, CurrencyId, Multiplier, Nonce, ReserveIdentifier};
+use primitives::{task::TaskResult, Balance, CurrencyId, Fees, Multiplier, Nonce, ReserveIdentifier};
 use sp_runtime::{
 	traits::CheckedDiv, transaction_validity::TransactionValidityError, DispatchError, DispatchResult, FixedU128,
 };
@@ -32,7 +32,9 @@ use sp_std::{prelude::*, result::Result};
 use xcm::prelude::*;
 
 pub mod bounded;
-pub mod dex;
+pub mod edfis_launchpad;
+pub mod edfis_swap;
+pub mod edfis_swap_legacy;
 pub mod evm;
 pub mod liquid_staking;
 pub mod ecdp;
@@ -40,7 +42,9 @@ pub mod incentives;
 pub mod mocks;
 
 pub use crate::bounded::*;
-pub use crate::dex::*;
+pub use crate::edfis_launchpad::*;
+pub use crate::edfis_swap::*;
+pub use crate::edfis_swap_legacy::*;
 pub use crate::evm::*;
 pub use crate::liquid_staking::*;
 pub use crate::ecdp::*;
@@ -135,25 +139,9 @@ pub trait DispatchableTask {
 	fn dispatch(self, weight: Weight) -> TaskResult;
 }
 
-/// Idle scheduler trait
-pub trait IdleScheduler<Task> {
-	fn schedule(task: Task) -> Result<Nonce, DispatchError>;
-	fn dispatch(id: Nonce, weight: Weight) -> Weight;
-}
-
 #[cfg(feature = "std")]
 impl DispatchableTask for () {
 	fn dispatch(self, _weight: Weight) -> TaskResult {
-		unimplemented!()
-	}
-}
-
-#[cfg(feature = "std")]
-impl<Task> IdleScheduler<Task> for () {
-	fn schedule(_task: Task) -> Result<Nonce, DispatchError> {
-		unimplemented!()
-	}
-	fn dispatch(_id: Nonce, _weight: Weight) -> Weight {
 		unimplemented!()
 	}
 }
@@ -172,7 +160,7 @@ pub trait LiquidateCollateral<AccountId> {
 		who: &AccountId,
 		currency_id: CurrencyId,
 		amount: Balance,
-		target_stable_amount: Balance,
+		target_ussd_amount: Balance,
 	) -> DispatchResult;
 }
 
@@ -182,11 +170,11 @@ impl<AccountId> LiquidateCollateral<AccountId> for Tuple {
 		who: &AccountId,
 		currency_id: CurrencyId,
 		amount: Balance,
-		target_stable_amount: Balance,
+		target_ussd_amount: Balance,
 	) -> DispatchResult {
 		let mut last_error = None;
 		for_tuples!( #(
-			match Tuple::liquidate(who, currency_id, amount, target_stable_amount) {
+			match Tuple::liquidate(who, currency_id, amount, target_ussd_amount) {
 				Ok(_) => return Ok(()),
 				Err(e) => { last_error = Some(e) }
 			}
@@ -200,138 +188,139 @@ pub trait BuyWeightRate {
 	fn calculate_rate(location: MultiLocation) -> Option<Ratio>;
 }
 
-/// The Structure of a Campaign info.
-#[cfg_attr(feature = "std", derive(PartialEq, Eq, Encode, Decode, Debug, Clone))]
-pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
-	/// The Campaign Id
-	pub id: CampaignId,
-	/// Campaign Creator
-	pub origin: AccountId,
-	/// Project Name
-	pub project_name: Vec<u8>,
-	/// Project Logo
-	pub project_logo: Vec<u8>,
-	/// Project Description
-	pub project_description: Vec<u8>,
-	/// Project Website
-	pub project_website: Vec<u8>,
-	/// Campaign Beneficiary
-	pub beneficiary: AccountId,
-	/// Campaign Pool AccountId
-	pub pool: AccountId,
-	/// Currency type for the fundraise
-	pub raise_currency: CurrencyId,
-	/// Currency type (Token) for crowdsale
-	pub sale_token: CurrencyId,
-	/// Crowdsale Token Price - Amount of raise_currency per sale_token
-	pub token_price: Balance,
-	/// Crowdsale Token amount for sale
-	pub crowd_allocation: Balance,
-	/// The Fundraise Goal - HardCap
-	pub goal: Balance,
-	/// The Fundraise Amount raised - HardCap
-	pub raised: Balance,
-	/// The number of contributors to the campaign
-	pub contributors_count: u32,
-	/// The Campaign contributions
-	/// account_id, contribution, allocation, bool:claimed_allocation
-	pub contributions: Vec<(AccountId, Balance, Balance, bool)>,
-	/// The period that the campaign runs for.
-	pub period: BlockNumber,
-	/// The time when the campaign starts.
-	pub campaign_start: BlockNumber,
-	/// The time when the campaign ends.
-	pub campaign_end: BlockNumber,
-	/// The time when the campaign fund retires.
-	pub campaign_retirement_period: BlockNumber,
-	/// The time when a rejected proposal is removed from storage.
-	pub proposal_retirement_period: BlockNumber,
-	/// Is the campaign approved?
-	pub is_approved: bool,
-	/// Is the proposal rejected?
-	pub is_rejected: bool,
-	/// Is the campaign in waiting period?
-	pub is_waiting: bool,
-	/// Is the campaign active?
-	pub is_active: bool,
-	/// Is the campaign Successful?
-	pub is_successful: bool,
-	/// Is the campaign Failed?
-	pub is_failed: bool,
-	/// Is the campaign Ended?
-	pub is_ended: bool,
-	/// Is the campaign funds raised claimed
-	pub is_claimed: bool,
-}
+// TODO:[src/lib.rs:0] - Use this as reference to upgrade the existing implementation of the Launchpad
+// /// The Structure of a Campaign info.
+// #[cfg_attr(feature = "std", derive(PartialEq, Eq, Encode, Decode, Debug, Clone))]
+// pub struct CampaignInfo<AccountId, Balance, BlockNumber> {
+// 	/// The Campaign Id
+// 	pub id: CampaignId,
+// 	/// Campaign Creator
+// 	pub origin: AccountId,
+// 	/// Project Name
+// 	pub project_name: Vec<u8>,
+// 	/// Project Logo
+// 	pub project_logo: Vec<u8>,
+// 	/// Project Description
+// 	pub project_description: Vec<u8>,
+// 	/// Project Website
+// 	pub project_website: Vec<u8>,
+// 	/// Campaign Beneficiary
+// 	pub beneficiary: AccountId,
+// 	/// Campaign Pool AccountId
+// 	pub pool: AccountId,
+// 	/// Currency type for the fundraise
+// 	pub raise_currency: CurrencyId,
+// 	/// Currency type (Token) for crowdsale
+// 	pub sale_token: CurrencyId,
+// 	/// Crowdsale Token Price - Amount of raise_currency per sale_token
+// 	pub token_price: Balance,
+// 	/// Crowdsale Token amount for sale
+// 	pub crowd_allocation: Balance,
+// 	/// The Fundraise Goal - HardCap
+// 	pub goal: Balance,
+// 	/// The Fundraise Amount raised - HardCap
+// 	pub raised: Balance,
+// 	/// The number of contributors to the campaign
+// 	pub contributors_count: u32,
+// 	/// The Campaign contributions
+// 	/// account_id, contribution, allocation, bool:claimed_allocation
+// 	pub contributions: Vec<(AccountId, Balance, Balance, bool)>,
+// 	/// The period that the campaign runs for.
+// 	pub period: BlockNumber,
+// 	/// The time when the campaign starts.
+// 	pub campaign_start: BlockNumber,
+// 	/// The time when the campaign ends.
+// 	pub campaign_end: BlockNumber,
+// 	/// The time when the campaign fund retires.
+// 	pub campaign_retirement_period: BlockNumber,
+// 	/// The time when a rejected proposal is removed from storage.
+// 	pub proposal_retirement_period: BlockNumber,
+// 	/// Is the campaign approved?
+// 	pub is_approved: bool,
+// 	/// Is the proposal rejected?
+// 	pub is_rejected: bool,
+// 	/// Is the campaign in waiting period?
+// 	pub is_waiting: bool,
+// 	/// Is the campaign active?
+// 	pub is_active: bool,
+// 	/// Is the campaign Successful?
+// 	pub is_successful: bool,
+// 	/// Is the campaign Failed?
+// 	pub is_failed: bool,
+// 	/// Is the campaign Ended?
+// 	pub is_ended: bool,
+// 	/// Is the campaign funds raised claimed
+// 	pub is_claimed: bool,
+// }
 
-/// Abstraction over th Launchpad Proposal system.
-pub trait Proposal<AccountId, BlockNumber> {
-	/// Get all proposals
-	fn all_proposals() -> Vec<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
-	/// The Campaign Proposal info of `id`
-	fn proposal_info(id: CampaignId) -> Option<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
-	/// Create new Campaign Proposal with specific `CampaignInfo`, return the `id` of the Campaign
-	fn new_proposal(
-		origin: AccountId,
-		project_name: Vec<u8>,
-		project_logo: Vec<u8>,
-		project_description: Vec<u8>,
-		project_website: Vec<u8>,
-		beneficiary: AccountId,
-		raise_currency: CurrencyId,
-		sale_token: CurrencyId,
-		token_price: AsBalance,
-		crowd_allocation: AsBalance,
-		goal: AsBalance,
-		period: BlockNumber,
-	) -> DispatchResult;
-    /// Approve Proposal by `id` at `now`.
-    fn on_approve_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
-	/// Reject Proposal by `id` and update storage
-	fn on_reject_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
-	/// Remove Proposal by `id` from storage
-	fn remove_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
-}
+// /// Abstraction over th Launchpad Proposal system.
+// pub trait Proposal<AccountId, BlockNumber> {
+// 	/// Get all proposals
+// 	fn all_proposals() -> Vec<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
+// 	/// The Campaign Proposal info of `id`
+// 	fn proposal_info(id: CampaignId) -> Option<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
+// 	/// Create new Campaign Proposal with specific `CampaignInfo`, return the `id` of the Campaign
+// 	fn new_proposal(
+// 		origin: AccountId,
+// 		project_name: Vec<u8>,
+// 		project_logo: Vec<u8>,
+// 		project_description: Vec<u8>,
+// 		project_website: Vec<u8>,
+// 		beneficiary: AccountId,
+// 		raise_currency: CurrencyId,
+// 		sale_token: CurrencyId,
+// 		token_price: AsBalance,
+// 		crowd_allocation: AsBalance,
+// 		goal: AsBalance,
+// 		period: BlockNumber,
+// 	) -> DispatchResult;
+//     /// Approve Proposal by `id` at `now`.
+//     fn on_approve_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
+// 	/// Reject Proposal by `id` and update storage
+// 	fn on_reject_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
+// 	/// Remove Proposal by `id` from storage
+// 	fn remove_proposal(id: CampaignId) -> sp_std::result::Result<(), DispatchError>;
+// }
 
-/// Abstraction over the Launchpad Campaign system.
-pub trait CampaignManager<AccountId, BlockNumber> {
-	/// The Campaign info of `id`
-	fn campaign_info(id: CampaignId) -> Option<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
-	/// Get all proposals
-	fn all_campaigns() -> Vec<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
-	/// Called when a contribution is received.
-	fn on_contribution(
-		who: AccountId,
-		id: CampaignId,
-		amount: AsBalance,
-	) -> DispatchResult;
-	/// Called when a contribution allocation is claimed
-	fn on_claim_allocation(
-		who: AccountId,
-		id: CampaignId,
-	) -> DispatchResult;
-	/// Called when a campaign's raised fund is claimed
-	fn on_claim_campaign(
-		who: AccountId,
-		id: CampaignId,
-	) -> DispatchResult;
-	/// Called when a failed campaign is claimed by the proposer
-	fn on_claim_failed_campaign(
-		who: AccountId,
-		id: CampaignId,
-	) -> DispatchResult;
-	/// Activate a campaign by `id`
-	fn activate_campaign(id: CampaignId) -> DispatchResult;
-	/// Ensure campaign is Valid and Successfully Ended
-	fn ensure_successfully_ended_campaign(id: CampaignId) -> DispatchResult;
-	/// Record Successful Campaign by `id`
-	fn on_successful_campaign(now: BlockNumber, id: CampaignId) -> DispatchResult ;
-	/// Record Failed Campaign by `id`
-	fn on_failed_campaign(now: BlockNumber, id: CampaignId) -> DispatchResult ;
-	/// Called when pool is retired
-	fn on_retire(id: CampaignId)-> DispatchResult;
-	/// Get amount of contributors in a campaign
-	fn get_contributors_count(id: CampaignId) -> u32;
-	/// Get the total amounts raised in protocol
-	fn get_total_amounts_raised() -> Vec<(CurrencyId, AsBalance)>;
-}
+// /// Abstraction over the Launchpad Campaign system.
+// pub trait CampaignManager<AccountId, BlockNumber> {
+// 	/// The Campaign info of `id`
+// 	fn campaign_info(id: CampaignId) -> Option<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
+// 	/// Get all proposals
+// 	fn all_campaigns() -> Vec<CampaignInfo<AccountId, AsBalance, BlockNumber>>;
+// 	/// Called when a contribution is received.
+// 	fn on_contribution(
+// 		who: AccountId,
+// 		id: CampaignId,
+// 		amount: AsBalance,
+// 	) -> DispatchResult;
+// 	/// Called when a contribution allocation is claimed
+// 	fn on_claim_allocation(
+// 		who: AccountId,
+// 		id: CampaignId,
+// 	) -> DispatchResult;
+// 	/// Called when a campaign's raised fund is claimed
+// 	fn on_claim_campaign(
+// 		who: AccountId,
+// 		id: CampaignId,
+// 	) -> DispatchResult;
+// 	/// Called when a failed campaign is claimed by the proposer
+// 	fn on_claim_failed_campaign(
+// 		who: AccountId,
+// 		id: CampaignId,
+// 	) -> DispatchResult;
+// 	/// Activate a campaign by `id`
+// 	fn activate_campaign(id: CampaignId) -> DispatchResult;
+// 	/// Ensure campaign is Valid and Successfully Ended
+// 	fn ensure_successfully_ended_campaign(id: CampaignId) -> DispatchResult;
+// 	/// Record Successful Campaign by `id`
+// 	fn on_successful_campaign(now: BlockNumber, id: CampaignId) -> DispatchResult ;
+// 	/// Record Failed Campaign by `id`
+// 	fn on_failed_campaign(now: BlockNumber, id: CampaignId) -> DispatchResult ;
+// 	/// Called when pool is retired
+// 	fn on_retire(id: CampaignId)-> DispatchResult;
+// 	/// Get amount of contributors in a campaign
+// 	fn get_contributors_count(id: CampaignId) -> u32;
+// 	/// Get the total amounts raised in protocol
+// 	fn get_total_amounts_raised() -> Vec<(CurrencyId, AsBalance)>;
+// }

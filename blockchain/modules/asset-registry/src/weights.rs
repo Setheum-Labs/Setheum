@@ -25,7 +25,7 @@
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("dev"), DB CACHE: 1024
 
 // Executed Command:
-// target/release/setheum
+// target/release/setheum-node
 // benchmark
 // --chain=dev
 // --steps=50
@@ -50,8 +50,6 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
 	fn register_foreign_asset() -> Weight;
 	fn update_foreign_asset() -> Weight;
-	fn register_stable_asset() -> Weight;
-	fn update_stable_asset() -> Weight;
 	fn register_erc20_asset() -> Weight;
 	fn update_erc20_asset() -> Weight;
 	fn register_native_asset() -> Weight;
@@ -76,19 +74,6 @@ impl<T: frame_system::Config> WeightInfo for SetheumWeight<T> {
 		Weight::from_parts(19_334_000, 0)
 			.saturating_add(T::DbWeight::get().reads(2 as u64))
 			.saturating_add(T::DbWeight::get().writes(2 as u64))
-	}
-	// Storage: AssetRegistry NextStableAssetId (r:1 w:1)
-	// Storage: AssetRegistry AssetMetadatas (r:1 w:1)
-	fn register_stable_asset() -> Weight {
-		Weight::from_parts(15_830_000, 0)
-			.saturating_add(T::DbWeight::get().reads(2 as u64))
-			.saturating_add(T::DbWeight::get().writes(2 as u64))
-	}
-	// Storage: AssetRegistry AssetMetadatas (r:1 w:1)
-	fn update_stable_asset() -> Weight {
-		Weight::from_parts(14_342_000, 0)
-			.saturating_add(T::DbWeight::get().reads(1 as u64))
-			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
 	// Storage: EVM Accounts (r:2 w:0)
 	// Storage: EVM Codes (r:1 w:0)
@@ -131,16 +116,6 @@ impl WeightInfo for () {
 		Weight::from_parts(19_334_000, 0)
 			.saturating_add(RocksDbWeight::get().reads(2 as u64))
 			.saturating_add(RocksDbWeight::get().writes(2 as u64))
-	}
-	fn register_stable_asset() -> Weight {
-		Weight::from_parts(15_830_000, 0)
-			.saturating_add(RocksDbWeight::get().reads(2 as u64))
-			.saturating_add(RocksDbWeight::get().writes(2 as u64))
-	}
-	fn update_stable_asset() -> Weight {
-		Weight::from_parts(14_342_000, 0)
-			.saturating_add(RocksDbWeight::get().reads(1 as u64))
-			.saturating_add(RocksDbWeight::get().writes(1 as u64))
 	}
 	fn register_erc20_asset() -> Weight {
 		Weight::from_parts(187_828_000, 0)

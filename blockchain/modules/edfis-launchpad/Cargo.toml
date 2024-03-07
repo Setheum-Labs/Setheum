@@ -6,8 +6,6 @@ authors = ["Setheum Labs"]
 edition = "2021"
 
 [dependencies]
-scale-info = { workspace = true }
-serde = { workspace = true, optional = true }
 parity-scale-codec = {  version = "3.0.0", default-features = false, features = ["max-encoded-len"] }
 sp-runtime = { workspace = true }
 sp-io = { workspace = true }
@@ -27,8 +25,6 @@ orml-tokens = { workspace = true }
 [features]
 default = ["std"]
 std = [
-	"scale-info/std",
-	"serde",
 	"parity-scale-codec/std",
 	"sp-runtime/std",
 	"sp-std/std",

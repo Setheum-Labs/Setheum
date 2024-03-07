@@ -19,7 +19,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use parity_scale_codec::FullCodec;
-use primitives::Position;
+use primitives::EcdpEcdpPosition;
 use sp_core::U256;
 use sp_runtime::{DispatchError, DispatchResult};
 use sp_std::{
@@ -30,11 +30,11 @@ use sp_std::{
 
 use crate::{dex::*, ExchangeRate, Ratio};
 
-pub trait EmergencyShutdown {
+pub trait EcdpEmergencyShutdown {
 	fn is_shutdown() -> bool;
 }
 
-pub trait AuctionManager<AccountId> {
+pub trait EcdpAuctionsManager<AccountId> {
 	type CurrencyId;
 	type Balance;
 	type AuctionId: FullCodec + Debug + Clone + Eq + PartialEq;
@@ -50,7 +50,7 @@ pub trait AuctionManager<AccountId> {
 	fn get_total_target_in_auction() -> Self::Balance;
 }
 
-pub trait PeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
+pub trait EcdpUssdRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 	fn get_debit_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
 
 	fn check_position_valid(
@@ -64,7 +64,7 @@ pub trait PeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
 }
 
 #[cfg(feature = "std")]
-impl<AccountId, CurrencyId, Balance: Default, DebitBalance> PeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance>
+impl<AccountId, CurrencyId, Balance: Default, DebitBalance> EcdpUssdRiskManager<AccountId, CurrencyId, Balance, DebitBalance>
 	for ()
 {
 	fn get_debit_value(_currency_id: CurrencyId, _debit_balance: DebitBalance) -> Balance {
@@ -85,43 +85,8 @@ impl<AccountId, CurrencyId, Balance: Default, DebitBalance> PeggedRiskManager<Ac
 	}
 }
 
-// pub trait UnpeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance> {
-// 	fn get_debit_value(currency_id: CurrencyId, debit_balance: DebitBalance) -> Balance;
-
-// 	fn check_position_valid(
-// 		currency_id: CurrencyId,
-// 		collateral_balance: Balance,
-// 		debit_balance: DebitBalance,
-// 		check_required_ratio: bool,
-// 	) -> DispatchResult;
-
-// 	fn check_debit_cap(currency_id: CurrencyId, total_debit_balance: DebitBalance) -> DispatchResult;
-// }
-
-// #[cfg(feature = "std")]
-// impl<AccountId, CurrencyId, Balance: Default, DebitBalance> UnpeggedRiskManager<AccountId, CurrencyId, Balance, DebitBalance>
-// 	for ()
-// {
-// 	fn get_debit_value(_currency_id: CurrencyId, _debit_balance: DebitBalance) -> Balance {
-// 		Default::default()
-// 	}
-
-// 	fn check_position_valid(
-// 		_currency_id: CurrencyId,
-// 		_collateral_balance: Balance,
-// 		_debit_balance: DebitBalance,
-// 		_check_required_ratio: bool,
-// 	) -> DispatchResult {
-// 		Ok(())
-// 	}
-
-// 	fn check_debit_cap(_currency_id: CurrencyId, _total_debit_balance: DebitBalance) -> DispatchResult {
-// 		Ok(())
-// 	}
-// }
-
 /// An abstraction of cdp treasury for SlickUSD ECDP Protocol.
-pub trait SlickUsdEcdpTreasury<AccountId> {
+pub trait EcdpUssdTreasury<AccountId> {
 	type Balance;
 	type CurrencyId;
 
@@ -140,7 +105,7 @@ pub trait SlickUsdEcdpTreasury<AccountId> {
 	/// issue debit for cdp treasury
 	fn on_system_debit(amount: Self::Balance) -> DispatchResult;
 
-	/// issue surplus(stable currency) for cdp treasury
+	/// issue surplus(USSD) for cdp treasury
 	fn on_system_surplus(amount: Self::Balance) -> DispatchResult;
 
 	/// issue debit to `who`
@@ -148,13 +113,13 @@ pub trait SlickUsdEcdpTreasury<AccountId> {
 	/// assets, otherwise will increase same amount of debit to system debit.
 	fn issue_debit(who: &AccountId, debit: Self::Balance, backed: bool) -> DispatchResult;
 
-	/// burn debit(stable currency) of `who`
+	/// burn debit(USSD) of `who`
 	fn burn_debit(who: &AccountId, debit: Self::Balance) -> DispatchResult;
 
-	/// deposit surplus(stable currency) to cdp treasury by `from`
+	/// deposit surplus(USSD) to cdp treasury by `from`
 	fn deposit_surplus(from: &AccountId, surplus: Self::Balance) -> DispatchResult;
 
-	/// withdraw surplus(stable currency) from cdp treasury to `to`
+	/// withdraw surplus(USSD) from cdp treasury to `to`
 	fn withdraw_surplus(to: &AccountId, surplus: Self::Balance) -> DispatchResult;
 
 	/// deposit collateral assets to cdp treasury by `who`
@@ -164,8 +129,8 @@ pub trait SlickUsdEcdpTreasury<AccountId> {
 	fn withdraw_collateral(to: &AccountId, currency_id: Self::CurrencyId, amount: Self::Balance) -> DispatchResult;
 }
 
-pub trait SlickUsdEcdpTreasuryExtended<AccountId>: SlickUsdTreasury<AccountId> {
-	fn swap_collateral_to_stable(
+pub trait EcdpUssdTreasuryExtended<AccountId>: SlickUsdTreasury<AccountId> {
+	fn swap_collateral_to_ussd(
 		currency_id: Self::CurrencyId,
 		limit: SwapLimit<Self::Balance>,
 		collateral_in_auction: bool,
@@ -187,8 +152,8 @@ pub trait SlickUsdEcdpTreasuryExtended<AccountId>: SlickUsdTreasury<AccountId> {
 	fn max_auction() -> u32;
 }
 
-/// Functionality of SlickUSD ECDP Protocol to be exposed to EVM+.
-pub trait SlickUsdEcdpManager<AccountId, CurrencyId, Amount, Balance> {
+/// Functionality of SlickUSD ECDP Protocol to be exposed to EVM.
+pub trait EcdpUssdManager<AccountId, CurrencyId, Amount, Balance> {
 	/// Adjust ECDP loan
 	fn adjust_loan(
 		who: &AccountId,
@@ -199,11 +164,31 @@ pub trait SlickUsdEcdpManager<AccountId, CurrencyId, Amount, Balance> {
 	/// Close ECDP loan using DEX
 	fn close_loan_by_dex(who: AccountId, currency_id: CurrencyId, max_collateral_amount: Balance) -> DispatchResult;
 	/// Get open ECDP corresponding to an account and collateral `CurrencyId`
-	fn get_position(who: &AccountId, currency_id: CurrencyId) -> Position;
+	fn get_position(who: &AccountId, currency_id: CurrencyId) -> EcdpEcdpPosition;
 	/// Get liquidation ratio for collateral `CurrencyId`
 	fn get_collateral_parameters(currency_id: CurrencyId) -> Vec<U256>;
 	/// Get current ratio of collateral to debit of open ECDP
 	fn get_current_collateral_ratio(who: &AccountId, currency_id: CurrencyId) -> Option<Ratio>;
 	/// Get exchange rate of debit units to debit value for a currency_id
 	fn get_debit_exchange_rate(currency_id: CurrencyId) -> ExchangeRate;
+}
+
+/// Functionality of Setter ECDP Protocol to be exposed to EVM.
+pub trait EcdpSetrManager<AccountId, Amount, Balance> {
+	/// Adjust ECDP loan
+	fn adjust_loan(
+		who: &AccountId,
+		collateral_adjustment: Amount,
+		debit_adjustment: Amount,
+	) -> DispatchResult;
+	/// Close ECDP loan using DEX
+	fn close_loan_by_dex(who: AccountId, max_collateral_amount: Balance) -> DispatchResult;
+	/// Get open ECDP corresponding to an account and collateral
+	fn get_position(who: &AccountId) -> EcdpEcdpPosition;
+	/// Get liquidation ratio for collateral
+	fn get_collateral_parameters() -> Vec<U256>;
+	/// Get current ratio of collateral to debit of open ECDP
+	fn get_current_collateral_ratio(who: &AccountId) -> Option<Ratio>;
+	/// Get exchange rate of debit units to debit value for a currency_id
+	fn get_debit_exchange_rate() -> ExchangeRate;
 }

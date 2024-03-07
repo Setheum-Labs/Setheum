@@ -1,0 +1,47 @@
+[package]
+name = "module-ecdp-auctions"
+version = "0.9.81-dev"
+authors = ["Setheum Labs"]
+edition = "2021"
+
+[dependencies]
+log = { workspace = true }
+parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
+orml-traits = { workspace = true }
+orml-utilities = { workspace = true }
+module-support = { workspace = true }
+primitives = { workspace = true }
+
+[dev-dependencies]
+sp-core = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
+orml-auction = { workspace = true, features = ["std"] }
+module-ecdp-ussd-treasury = { workspace = true, features = ["std"] }
+module-edfis-legacy = { workspace = true, features = ["std"] }
+orml-tokens = { workspace = true, features = ["std"] }
+
+[features]
+default = ["std"]
+std = [
+	"parity-scale-codec/std",
+	"frame-support/std",
+	"frame-system/std",
+	"orml-traits/std",
+	"orml-utilities/std",
+	"primitives/std",
+	"scale-info/std",
+	"sp-io/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"module-support/std",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+]

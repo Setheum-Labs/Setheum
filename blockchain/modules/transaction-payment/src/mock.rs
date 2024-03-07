@@ -158,7 +158,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const DEXPalletId: PalletId = PalletId(*b"set/edfis");
+	pub const EdfisSwapPalletId: PalletId = PalletId(*b"set/edfis");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(USSD, SEE).unwrap(),
@@ -170,14 +170,14 @@ parameter_types! {
 	pub const TradingPathLimit: u32 = 4;
 }
 
-impl module_dex::Config for Runtime {
+impl edfis_swap_legacy_module::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Currencies;
 	type GetExchangeFee = GetExchangeFee;
 	type TradingPathLimit = TradingPathLimit;
-	type PalletId = DEXPalletId;
+	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = ();
-	type DEXIncentives = ();
+	type SwapDexIncentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<Zero, AccountId>;
 	type ExtendedProvisioningBlocks = ConstU64<0>;
@@ -272,7 +272,7 @@ impl Config for Runtime {
 	type WeightToFee = WeightToFee;
 	type LengthToFee = TransactionByteFee;
 	type FeeMultiplierUpdate = ();
-	type Swap = SpecificJointsSwap<DEXModule, AlternativeSwapPathJointList>;
+	type Swap = SpecificJointsSwap<EdfisSwapLegacyModule, AlternativeSwapPathJointList>;
 	type MaxSwapSlippageComparedToOracle = MaxSwapSlippageComparedToOracle;
 	type TradingPathLimit = TradingPathLimit;
 	type PriceSource = MockPriceSource;
@@ -312,7 +312,7 @@ construct_runtime!(
 		PalletBalances: pallet_balances,
 		Tokens: orml_tokens,
 		Currencies: module_currencies,
-		DEXModule: module_dex,
+		EdfisSwapLegacyModule: edfis_swap_legacy_module,
 	}
 );
 
@@ -388,7 +388,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		module_dex::GenesisConfig::<Runtime> {
+		edfis_swap_legacy_module::GenesisConfig::<Runtime> {
 			initial_listing_trading_pairs: vec![],
 			initial_enabled_trading_pairs: EnabledTradingPairs::get(),
 			initial_added_liquidity_pools: vec![],

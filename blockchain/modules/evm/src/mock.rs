@@ -22,95 +22,78 @@
 
 use super::*;
 
-use frame_support::{construct_runtime, ord_parameter_types, parameter_types, traits::FindAuthor, ConsensusEngineId};
+use frame_support::{
+	construct_runtime, derive_impl, ord_parameter_types, parameter_types,
+	traits::{ConstU128, ConstU32, ConstU64, FindAuthor, Nothing},
+	ConsensusEngineId,
+};
 use frame_system::EnsureSignedBy;
 use module_support::mocks::MockAddressMapping;
 use orml_traits::parameter_type_with_key;
 use primitives::{Amount, BlockNumber, CurrencyId, ReserveIdentifier, TokenSymbol};
-use sp_core::{H160, H256};
+use sp_core::{bytes::from_hex, H160};
 use sp_runtime::{
-	testing::Header,
-	traits::{BlakeTwo256, IdentityLookup},
-	AccountId32,
+	traits::{BlockNumberProvider, IdentityLookup},
+	AccountId32, BuildStorage,
 };
 use std::{collections::BTreeMap, str::FromStr};
 
-mod evm_mod {
+type Balance = u128;
+
+pub mod evm_module {
 	pub use super::super::*;
 }
 
-parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-}
-
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
-	type BaseCallFilter = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type Origin = Origin;
-	type Call = Call;
-	type Index = u64;
-	type BlockNumber = u64;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
 	type AccountId = AccountId32;
 	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = Header;
-	type Event = Event;
-	type BlockHashCount = BlockHashCount;
-	type DbWeight = ();
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u64>;
-	type OnNewAccount = ();
-	type OnKilledAccount = crate::CallKillAccount<Runtime>;
-	type SystemWeightInfo = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
+	type Block = Block;
+	type AccountData = pallet_balances::AccountData<Balance>;
 }
 
-parameter_types! {
-	pub const ExistentialDeposit: u64 = 1;
-	pub const MaxReserves: u32 = 50;
-}
 impl pallet_balances::Config for Runtime {
-	type Balance = u64;
+	type Balance = Balance;
 	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
+	type RuntimeEvent = RuntimeEvent;
+	type ExistentialDeposit = ConstU128<2>;
+	type AccountStore = module_support::SystemAccountStore<Runtime>;
 	type MaxLocks = ();
-	type MaxReserves = MaxReserves;
+	type MaxReserves = ConstU32<50>;
 	type ReserveIdentifier = ReserveIdentifier;
 	type WeightInfo = ();
+	type RuntimeHoldReason = RuntimeHoldReason;
+	type RuntimeFreezeReason = RuntimeFreezeReason;
+	type FreezeIdentifier = ();
+	type MaxHolds = ();
+	type MaxFreezes = ();
 }
 
-parameter_types! {
-	pub const MinimumPeriod: u64 = 1000;
-}
 impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = ();
-	type MinimumPeriod = MinimumPeriod;
+	type MinimumPeriod = ConstU64<1000>;
 	type WeightInfo = ();
 }
 
 parameter_type_with_key! {
-	pub ExistentialDeposits: |_currency_id: CurrencyId| -> u64 {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
 	};
 }
 
 impl orml_tokens::Config for Runtime {
-	type Event = Event;
-	type Balance = u64;
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
 	type Amount = Amount;
 	type CurrencyId = CurrencyId;
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = ();
+	type CurrencyHooks = ();
 	type MaxLocks = ();
-	type DustRemovalWhitelist = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = ReserveIdentifier;
+	type DustRemovalWhitelist = Nothing;
 }
 
 parameter_types! {
@@ -118,7 +101,6 @@ parameter_types! {
 }
 
 impl orml_currencies::Config for Runtime {
-	type Event = Event;
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
@@ -126,11 +108,18 @@ impl orml_currencies::Config for Runtime {
 }
 pub type AdaptedBasicCurrency = orml_currencies::BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = ();
+}
+
 pub struct GasToWeight;
 
-impl Convert<u64, u64> for GasToWeight {
-	fn convert(a: u64) -> u64 {
-		a
+impl Convert<u64, Weight> for GasToWeight {
+	fn convert(a: u64) -> Weight {
+		Weight::from_parts(a, 0)
 	}
 }
 
@@ -140,7 +129,9 @@ impl FindAuthor<AccountId32> for AuthorGiven {
 	where
 		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
 	{
-		Some(AccountId32::from_str("1234500000000000000000000000000000000000").unwrap())
+		Some(<Runtime as Config>::AddressMapping::get_account_id(
+			&H160::from_str("1234500000000000000000000000000000000000").unwrap(),
+		))
 	}
 }
 
@@ -152,56 +143,53 @@ ord_parameter_types! {
 	pub const CouncilAccount: AccountId32 = AccountId32::from([1u8; 32]);
 	pub const TreasuryAccount: AccountId32 = AccountId32::from([2u8; 32]);
 	pub const NetworkContractAccount: AccountId32 = AccountId32::from([0u8; 32]);
-	pub const NewContractExtraBytes: u32 = 100;
-	pub const StorageDepositPerByte: u64 = 10;
-	pub const DeveloperDeposit: u64 = 1000;
-	pub const DeploymentFee: u64 = 200;
-	pub const ChainId: u64 = 1;
+	pub const StorageDepositPerByte: Balance = convert_decimals_to_evm(10);
 }
 
+pub const NEW_CONTRACT_EXTRA_BYTES: u32 = 100;
+pub const DEVELOPER_DEPOSIT: u128 = 1000;
+pub const PUBLICATION_FEE: u128 = 200;
 impl Config for Runtime {
 	type AddressMapping = MockAddressMapping;
 	type Currency = Balances;
 	type TransferAll = Currencies;
-	type NewContractExtraBytes = NewContractExtraBytes;
+	type NewContractExtraBytes = ConstU32<NEW_CONTRACT_EXTRA_BYTES>;
 	type StorageDepositPerByte = StorageDepositPerByte;
+	type TxFeePerGas = ConstU128<20_000_000>;
 
-	type Event = Event;
-	type Precompiles = ();
-	type ChainId = ChainId;
+	type RuntimeEvent = RuntimeEvent;
+	type PrecompilesType = ();
+	type PrecompilesValue = ();
 	type GasToWeight = GasToWeight;
-	type ChargeTransactionPayment = ();
+	type ChargeTransactionPayment = module_support::mocks::MockReservedTransactionPayment<Balances>;
 
 	type NetworkContractOrigin = EnsureSignedBy<NetworkContractAccount, AccountId32>;
 	type NetworkContractSource = NetworkContractSource;
-	type DeveloperDeposit = DeveloperDeposit;
-	type DeploymentFee = DeploymentFee;
+	type DeveloperDeposit = ConstU128<DEVELOPER_DEPOSIT>;
+	type PublicationFee = ConstU128<PUBLICATION_FEE>;
 	type TreasuryAccount = TreasuryAccount;
-	type FreeDeploymentOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
+	type FreePublicationOrigin = EnsureSignedBy<CouncilAccount, AccountId32>;
 
 	type Runner = crate::runner::stack::Runner<Self>;
 	type FindAuthor = AuthorGiven;
 	type WeightInfo = ();
 }
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 construct_runtime!(
-	pub enum Runtime where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		EVM: evm_mod::{Pallet, Config<T>, Call, Storage, Event<T>},
-		Tokens: orml_tokens::{Pallet, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Currencies: orml_currencies::{Pallet, Call, Event<T>},
+	pub enum Runtime {
+		System: frame_system,
+		Timestamp: pallet_timestamp,
+		EVM: evm_module,
+		Tokens: orml_tokens,
+		Balances: pallet_balances,
+		Currencies: orml_currencies,
+		Utility: pallet_utility,
 	}
 );
 
-pub const INITIAL_BALANCE: u64 = 1_000_000_000_000;
+pub const INITIAL_BALANCE: Balance = 1_000_000_000_000_000;
 
 pub fn contract_a() -> H160 {
 	H160::from_str("2000000000000000000000000000000000000001").unwrap()
@@ -224,28 +212,31 @@ pub fn charlie() -> H160 {
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = frame_system::GenesisConfig::default()
-		.build_storage::<Runtime>()
+	let mut t = frame_system::GenesisConfig::<Runtime>::default()
+		.build_storage()
 		.unwrap();
 
 	let mut accounts = BTreeMap::new();
+
+	// pragma solidity >=0.8.2 <0.9.0;
+	// contract Test {}
+	let contract = from_hex(
+		"0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220199b6fd928fecd2e7ce866eb76c49927191c7a839fd75192acc84b773e5dbf1e64736f6c63430008120033"
+	).unwrap();
 
 	accounts.insert(
 		contract_a(),
 		GenesisAccount {
 			nonce: 1,
-			balance: Default::default(),
-			storage: Default::default(),
-			code: Default::default(),
+			code: contract.clone(),
+			..Default::default()
 		},
 	);
 	accounts.insert(
 		contract_b(),
 		GenesisAccount {
 			nonce: 1,
-			balance: Default::default(),
-			storage: Default::default(),
-			code: Default::default(),
+			..Default::default()
 		},
 	);
 
@@ -254,8 +245,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		GenesisAccount {
 			nonce: 1,
 			balance: INITIAL_BALANCE,
-			storage: Default::default(),
-			code: Default::default(),
+			..Default::default()
 		},
 	);
 	accounts.insert(
@@ -263,8 +253,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		GenesisAccount {
 			nonce: 1,
 			balance: INITIAL_BALANCE,
-			storage: Default::default(),
-			code: Default::default(),
+			..Default::default()
 		},
 	);
 
@@ -273,29 +262,32 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();
-	evm_mod::GenesisConfig::<Runtime> {
-		accounts,
-		treasury: Default::default(),
-	}
-	.assimilate_storage(&mut t)
-	.unwrap();
+	evm_module::GenesisConfig::<Runtime> { chain_id: 1, accounts }
+		.assimilate_storage(&mut t)
+		.unwrap();
 
 	let mut ext = sp_io::TestExternalities::new(t);
-	ext.execute_with(|| System::set_block_number(1));
+	ext.execute_with(|| {
+		System::set_block_number(1);
+	});
 	ext
 }
 
-pub fn balance(address: H160) -> u64 {
+pub fn balance(address: H160) -> Balance {
 	let account_id = <Runtime as Config>::AddressMapping::get_account_id(&address);
 	Balances::free_balance(account_id)
 }
 
-pub fn reserved_balance(address: H160) -> u64 {
+pub fn eth_balance(address: H160) -> U256 {
+	EVM::account_basic(&address).balance
+}
+
+pub fn reserved_balance(address: H160) -> Balance {
 	let account_id = <Runtime as Config>::AddressMapping::get_account_id(&address);
 	Balances::reserved_balance(account_id)
 }
 
 #[cfg(not(feature = "with-ethereum-compatibility"))]
-pub fn deploy_free(contract: H160) {
-	let _ = EVM::deploy_free(Origin::signed(CouncilAccount::get()), contract);
+pub fn publish_free(contract: H160) {
+	let _ = EVM::publish_free(RuntimeOrigin::signed(CouncilAccount::get()), contract);
 }

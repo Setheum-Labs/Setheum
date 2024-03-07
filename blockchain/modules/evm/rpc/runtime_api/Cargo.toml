@@ -1,17 +1,15 @@
 [package]
 name = "module-evm-rpc-runtime-api"
-version = "1.0.0"
+version = "0.9.81-dev"
 authors = ["Setheum Labs"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.10", default-features = false }
-ethereum-types = { version = "0.12", default-features = false }
-
-primitives = { package = "setheum-primitives", path = "../../../../primitives", default-features = false }
+sp-runtime = { workspace = true }
+sp-api = { workspace = true }
+sp-std = { workspace = true }
+sp-core = { workspace = true }
+primitives = { workspace = true }
 
 [features]
 default = ["std"]
@@ -20,6 +18,5 @@ std = [
 	"sp-api/std",
 	"sp-std/std",
 	"sp-core/std",
-	"ethereum-types/std",
 	"primitives/std",
 ]
