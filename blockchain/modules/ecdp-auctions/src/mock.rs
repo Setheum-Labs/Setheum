@@ -99,8 +99,8 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetUSSDCurrencyId: CurrencyId = USSD;
 	pub const MaxAuctionsCount: u32 = 10_000;
-	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"aca/cdpt");
-	pub TreasuryAccount: AccountId = PalletId(*b"aca/hztr").into_account_truncating();
+	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"set/ussdtrsymod");
+	pub TreasuryAccount: AccountId = PalletId(*b"set/ussdtrsyacc").into_account_truncating();
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
 		vec![EDF],
 	];
@@ -141,7 +141,7 @@ impl PriceProvider<CurrencyId> for MockPriceSource {
 }
 
 parameter_types! {
-	pub const EdfisSwapPalletId: PalletId = PalletId(*b"aca/dexm");
+	pub const EdfisSwapPalletId: PalletId = PalletId(*b"set/edfis");
 	pub const GetExchangeFee: (u32, u32) = (0, 100);
 	pub EnabledTradingPairs: Vec<TradingPair> = vec![
 		TradingPair::from_currency_ids(USSD, BTC).unwrap(),
@@ -157,7 +157,7 @@ impl module_edfis_swap_legacy::Config for Runtime {
 	type TradingPathLimit = ConstU32<4>;
 	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = ();
-	type SwapDexIncentives = ();
+	type Incentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 	type ExtendedProvisioningBlocks = ConstU64<0>;

@@ -365,7 +365,7 @@ pub mod module {
 		fn build(&self) {
 			use sp_std::rc::Rc;
 
-			// NOTE: Only applicable for mandala testnet, unit test and integration test.
+			// NOTE: Only applicable for Qingdao Devnet, unit test and integration test.
 			// Use create_predeploy_contract to deploy predeploy contracts on the mainnet.
 			let source = T::NetworkContractSource::get();
 

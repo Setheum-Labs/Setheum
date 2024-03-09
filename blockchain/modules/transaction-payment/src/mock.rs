@@ -177,7 +177,7 @@ impl edfis_swap_legacy_module::Config for Runtime {
 	type TradingPathLimit = TradingPathLimit;
 	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = ();
-	type SwapDexIncentives = ();
+	type Incentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<Zero, AccountId>;
 	type ExtendedProvisioningBlocks = ConstU64<0>;

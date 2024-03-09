@@ -145,8 +145,8 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetUSSDCurrencyId: CurrencyId = USSD;
-	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"aca/cdpt");
-	pub TreasuryAccount: AccountId = PalletId(*b"aca/hztr").into_account_truncating();
+	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"set/ussdtrsymod");
+	pub TreasuryAccount: AccountId = PalletId(*b"set/ussdtrsyacc").into_account_truncating();
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![];
 }
 
@@ -228,7 +228,7 @@ thread_local! {
 // }
 
 parameter_types! {
-	pub const EcdpUssdLoansPalletId: PalletId = PalletId(*b"aca/loan");
+	pub const EcdpUssdLoansPalletId: PalletId = PalletId(*b"set/ussdloan");
 }
 
 impl Config for Runtime {

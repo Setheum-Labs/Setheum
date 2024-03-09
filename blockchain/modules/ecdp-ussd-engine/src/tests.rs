@@ -533,7 +533,7 @@ fn expand_position_collateral_work() {
 }
 
 #[test]
-fn expand_position_collateral_for_lp_ausd_dot_work() {
+fn expand_position_collateral_for_lp_ussd_edf_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(EdfisSwapModule::add_liquidity(
 			RuntimeOrigin::signed(CAROL),
@@ -698,7 +698,7 @@ fn shrink_position_debit_work() {
 }
 
 #[test]
-fn shrink_position_debit_for_lp_ausd_dot_work() {
+fn shrink_position_debit_for_lp_ussd_edf_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		MockPriceSource::set_price(LP_USSD_EDF, Some(Price::saturating_from_rational(1, 1)));
 		assert_ok!(EdfisSwapModule::add_liquidity(
@@ -997,7 +997,7 @@ fn liquidate_unsafe_cdp_by_swap() {
 }
 
 #[test]
-fn liquidate_unsafe_cdp_of_lp_ausd_dot_and_swap_dot() {
+fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_swap_edf() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(EcdpUssdEngineModule::set_collateral_params(
@@ -1095,7 +1095,7 @@ fn liquidate_unsafe_cdp_of_lp_ausd_dot_and_swap_dot() {
 }
 
 #[test]
-fn liquidate_unsafe_cdp_of_lp_ausd_dot_and_ausd_take_whole_target() {
+fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_ussd_take_whole_target() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(EcdpUssdEngineModule::set_collateral_params(
@@ -1193,7 +1193,7 @@ fn liquidate_unsafe_cdp_of_lp_ausd_dot_and_ausd_take_whole_target() {
 }
 
 #[test]
-fn liquidate_unsafe_cdp_of_lp_ausd_dot_and_create_dot_auction() {
+fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_create_edf_auction() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(EcdpUssdEngineModule::set_collateral_params(

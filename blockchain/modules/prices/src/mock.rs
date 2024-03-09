@@ -127,8 +127,8 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 	}
 }
 
-pub struct MockSwapDex;
-impl SwapManager<AccountId, Balance, CurrencyId> for MockSwapDex {
+pub struct MockSwapManager;
+impl SwapManager<AccountId, Balance, CurrencyId> for MockSwapManager {
 	fn get_liquidity_pool(currency_id_a: CurrencyId, currency_id_b: CurrencyId) -> (Balance, Balance) {
 		match (currency_id_a, currency_id_b) {
 			(USSD, SEE) => (10000, 200),
@@ -235,7 +235,7 @@ impl Config for Runtime {
 	type GetLiquidSEECurrencyId = GetLiquidSEECurrencyId;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
 	type LiquidStakingExchangeRateProvider = MockLiquidStakingExchangeProvider;
-	type SwapDex = MockSwapDex;
+	type SwapManager = MockSwapManager;
 	type Currency = Tokens;
 	type Erc20InfoMapping = MockErc20InfoMapping;
 	type BlockNumber = MockBlockNumberProvider;

@@ -20,6 +20,8 @@ The protocol uses `MultiCurrency` to let the Campaign Creator choose which curre
 
 There is a `goal` that is set by the Campaign Creator, the beneficiary of the fund and the Period (campaign period - amount of blocks a campaign should stay active) of the campaign and other information that describes the campaign.
 
+In order to be eligible to buy into a launchpad offering (Launch), one needs to have the `LaunchpadEligibilityAmount` in the `raise_currency` of the Launch in their `slick-wallet` (Slick Wallet is an on-chain cross-chain multichain wallet built on Setheum). This allows cross-chain and multichain participation in Edfis Launchpad.
+
 ### The Lifecycle of a Campaign
 
 A Launchpad Campaign has three stages in its lifecycle, they are as follows:

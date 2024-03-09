@@ -147,7 +147,7 @@ fn update_loan_should_work() {
 		let alice_ref_count_1 = System::consumers(&ALICE);
 		assert_eq!(alice_ref_count_1, alice_ref_count_0 + 1);
 
-		// dot not manipulate balance
+		// does not manipulate balance
 		assert_eq!(Currencies::free_balance(BTC, &EcdpUssdLoansModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
 

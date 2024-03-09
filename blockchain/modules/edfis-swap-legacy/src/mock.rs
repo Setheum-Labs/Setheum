@@ -83,8 +83,8 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = Nothing;
 }
 
-pub struct MockSwapDexIncentives;
-impl SwapDexIncentives<AccountId, CurrencyId, Balance> for MockSwapDexIncentives {
+pub struct MockIncentives;
+impl Incentives<AccountId, CurrencyId, Balance> for MockIncentives {
 	fn do_deposit_dex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		Tokens::reserve(lp_currency_id, who, amount)
 	}
@@ -129,7 +129,7 @@ impl Config for Runtime {
 	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = MockErc20InfoMapping;
 	type WeightInfo = ();
-	type SwapDexIncentives = MockSwapDexIncentives;
+	type Incentives = MockIncentives;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId>;
 	type ExtendedProvisioningBlocks = ConstU64<2000>;
 	type OnLiquidityPoolUpdated = MockOnLiquidityPoolUpdated;

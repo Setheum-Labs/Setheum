@@ -358,7 +358,7 @@ pub mod module {
 			let who = ensure_signed(origin)?;
 			let debit_amount: Amount = debit_transfer.try_into().map_err(|_| ArithmeticError::Overflow)?;
 			let negative_debit = debit_amount.checked_neg().ok_or(ArithmeticError::Overflow)?;
-			// Adds ausd to user account momentarily to adjust loan
+			// Adds USSD to user account momentarily to adjust loan
 			<T as module_cdp_engine::Config>::EcdpUssdTreasury::issue_debit(&who, debit_transfer, true)?;
 
 			<module_cdp_engine::Pallet<T>>::adjust_position(&who, from_currency, Zero::zero(), negative_debit)?;

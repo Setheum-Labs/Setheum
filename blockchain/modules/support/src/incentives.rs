@@ -26,22 +26,37 @@ use sp_runtime::{DispatchResult, RuntimeDebug};
 use sp_std::prelude::*;
 
 /// PoolId for various rewards pools
+// Pool types:
+// 1. EcdpSetrLiquidityRewards: record the shares and rewards for Setter (SETR)) ECDP users who are staking LP tokens.
+// 2. EcdpUssdLiquidityRewards: record the shares and rewards for Slick USD (USSD) ECDP users who are staking LP tokens.
+// 3. EdfisLiquidityRewards: record the shares and rewards for Edfis makers who are staking LP token.
+// 4. EdfisXLiquidityRewards: record the shares and rewards for Edfis X (Cross-chain) makers who are staking LP token.
+// 5. MoyaEarnRewards: record the shares and rewards for users of Moya Earn (Moya Liquid Staking Protocol).
 #[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, RuntimeDebug, TypeInfo)]
 pub enum PoolId {
-	/// Rewards and shares pool for Swap market makers who stake LP token(LPCurrencyId)
-	SwapDex(CurrencyId),
+	/// Rewards and shares pool for Setter (SETR)) ECDP users who are staking LP token(LPCurrencyId)
+	EcdpSetrLiquidityRewards(CurrencyId),
 
-	/// Rewards and shares pool for Orderbook market makers
-	OrderBookDex(CurrencyId),
+	/// Rewards and shares pool for Slick USD (USSD) ECDP users who are staking LP token(LPCurrencyId)
+	EcdpUssdLiquidityRewards(CurrencyId),
+
+	/// Rewards and shares pool for Edfis market makers who stake LP token(LPCurrencyId)
+	EdfisLiquidityRewards(CurrencyId),
+
+	/// Rewards and shares pool for Edfis X (Cross-chain) market makers who stake LP token(LPCurrencyId)
+	EdfisXLiquidityRewards(CurrencyId),
+
+	/// Rewards and shares pool for Moya Earn
+	MoyaEarnRewards(CurrencyId),
 }
 
 pub trait IncentivesManager<AccountId, Balance, CurrencyId, PoolId> {
 	/// Gets reward amount for the given reward currency added per period
 	fn get_incentive_reward_amount(pool_id: PoolId, currency_id: CurrencyId) -> Balance;
 	/// Stake LP token to add shares to pool
-	fn deposit_swapdex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
+	fn deposit_edfis_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 	/// Unstake LP token to remove shares from pool
-	fn withdraw_swapdex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
+	fn withdraw_edfis_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 	/// Claim all available rewards for specific `PoolId`
 	fn claim_rewards(who: AccountId, pool_id: PoolId) -> DispatchResult;
 	/// Gets deduction reate for claiming reward early
@@ -50,18 +65,18 @@ pub trait IncentivesManager<AccountId, Balance, CurrencyId, PoolId> {
 	fn get_pending_rewards(pool_id: PoolId, who: AccountId, reward_currency: Vec<CurrencyId>) -> Vec<Balance>;
 }
 
-pub trait SwapDexIncentives<AccountId, CurrencyId, Balance> {
-	fn do_deposit_swapdex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
-	fn do_withdraw_swapdex_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
+pub trait Incentives<AccountId, CurrencyId, Balance> {
+	fn do_deposit_edfis_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
+	fn do_withdraw_edfis_share(who: &AccountId, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult;
 }
 
 #[cfg(feature = "std")]
-impl<AccountId, CurrencyId, Balance> SwapDexIncentives<AccountId, CurrencyId, Balance> for () {
-	fn do_deposit_swapdex_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
+impl<AccountId, CurrencyId, Balance> Incentives<AccountId, CurrencyId, Balance> for () {
+	fn do_deposit_edfis_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
 		Ok(())
 	}
 
-	fn do_withdraw_swapdex_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
+	fn do_withdraw_edfis_share(_: &AccountId, _: CurrencyId, _: Balance) -> DispatchResult {
 		Ok(())
 	}
 }

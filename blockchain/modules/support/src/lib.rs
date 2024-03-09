@@ -32,23 +32,23 @@ use sp_std::{prelude::*, result::Result};
 use xcm::prelude::*;
 
 pub mod bounded;
+pub mod ecdp;
 pub mod edfis_launchpad;
+pub mod edfis_mining;
 pub mod edfis_swap;
 pub mod edfis_swap_legacy;
 pub mod evm;
 pub mod liquid_staking;
-pub mod ecdp;
-pub mod incentives;
 pub mod mocks;
 
 pub use crate::bounded::*;
+pub use crate::ecdp::*;
 pub use crate::edfis_launchpad::*;
+pub use crate::edfis_mining::*;
 pub use crate::edfis_swap::*;
 pub use crate::edfis_swap_legacy::*;
 pub use crate::evm::*;
 pub use crate::liquid_staking::*;
-pub use crate::ecdp::*;
-pub use crate::incentives::*;
 
 pub type Price = FixedU128;
 pub type ExchangeRate = FixedU128;
