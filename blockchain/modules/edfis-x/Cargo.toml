@@ -2,8 +2,10 @@
 name = "module-edfis-x"
 description = "Provides cross-chain multichain Swaps on Edfis Exchange."
 version = "0.9.81-dev"
-authors = ["Setheum Labs"]
-edition = "2021"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
 
 [dependencies]
 parity-scale-codec = {  version = "3.0.0", default-features = false, features = ["max-encoded-len"] }
