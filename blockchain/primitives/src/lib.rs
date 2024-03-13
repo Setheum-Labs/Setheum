@@ -22,6 +22,7 @@
 #![allow(clippy::unnecessary_cast)]
 #![allow(clippy::upper_case_acronyms)]
 
+pub mod aleph;
 pub mod bonding;
 pub mod currency;
 pub mod edfis_launchpad;
@@ -33,7 +34,6 @@ pub mod testing;
 pub mod unchecked_extrinsic;
 
 pub use testing::*;
-pub use edfis_launchpad::*;
 
 use parity_scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -110,6 +110,18 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 
 /// Block ID.
 pub type BlockId = generic::BlockId<Block>;
+
+/// Block Count
+pub type BlockCount = u32;
+
+/// BlockHash
+pub type BlockHash = <Header as HeaderT>::Hash;
+
+/// Session Count
+pub type SessionCount = u32;
+
+/// Version
+pub type Version = u32;\
 
 /// Opaque, encoded, unchecked extrinsic.
 pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
