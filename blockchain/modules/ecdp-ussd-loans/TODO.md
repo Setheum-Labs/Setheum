@@ -8,7 +8,7 @@ This list contains all TODOs in the Repo
   - [1. Introduction](#1-guidelines)
   - [2. Contribution](#2-contribution)
   - [3. Lists](#3-lists)
-  - [4. Tasks](#3-tasks)
+  - [4. Tasks](#4-tasks)
 <!-- /TOC -->
 
 

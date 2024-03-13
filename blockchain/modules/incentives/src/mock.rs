@@ -1,0 +1,173 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+
+// This file is part of Setheum.
+
+// Copyright (C) 2019-Present Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+//! Mocks for the incentives module.
+
+#![cfg(test)]
+
+use super::*;
+use frame_support::{
+	construct_runtime, derive_impl, ord_parameter_types, parameter_types,
+	traits::{ConstU64, Nothing},
+};
+use frame_system::EnsureSignedBy;
+pub use module_support::{Price, Ratio, SwapLimit};
+use orml_traits::parameter_type_with_key;
+use primitives::{DexShare, TokenSymbol};
+use sp_runtime::{traits::IdentityLookup, AccountId32, BuildStorage};
+use sp_std::cell::RefCell;
+
+pub type AccountId = AccountId32;
+
+pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
+pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
+pub const LEDF: CurrencyId = CurrencyId::Token(TokenSymbol::LEDF);
+pub const BTC: CurrencyId = CurrencyId::ForeignAsset(255);
+pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
+pub const BTC_USSD_LP: CurrencyId =
+	CurrencyId::DexShare(DexShare::ForeignAsset(255), DexShare::Token(TokenSymbol::USSD));
+pub const EDF_USSD_LP: CurrencyId =
+	CurrencyId::DexShare(DexShare::Token(TokenSymbol::EDF), DexShare::Token(TokenSymbol::USSD));
+
+mod incentives {
+	pub use super::super::*;
+}
+
+ord_parameter_types! {
+	pub const ALICE: AccountId = AccountId::from([1u8; 32]);
+	pub const BOB: AccountId = AccountId::from([2u8; 32]);
+	pub const VAULT: AccountId = IncentivesModule::account_id();
+	pub const RewardsSource: AccountId = AccountId::from([3u8; 32]);
+	pub const ROOT: AccountId = AccountId32::new([255u8; 32]);
+}
+
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
+impl frame_system::Config for Runtime {
+	type AccountId = AccountId;
+	type Lookup = IdentityLookup<Self::AccountId>;
+	type Block = Block;
+	type AccountData = pallet_balances::AccountData<Balance>;
+}
+
+parameter_type_with_key! {
+	pub ExistentialDeposits: |currency_id: CurrencyId| -> Balance {
+
+		match currency_id {
+			CurrencyId::Token(TokenSymbol::USSD) => 10,
+			_ => Default::default()
+		}
+	};
+}
+
+impl orml_tokens::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type Amount = Amount;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type CurrencyHooks = ();
+	type MaxLocks = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type DustRemovalWhitelist = Nothing;
+}
+
+thread_local! {
+	static IS_SHUTDOWN: RefCell<bool> = RefCell::new(false);
+}
+
+pub fn mock_shutdown() {
+	IS_SHUTDOWN.with(|v| *v.borrow_mut() = true)
+}
+
+pub struct MockEmergencyShutdown;
+impl EmergencyShutdown for MockEmergencyShutdown {
+	fn is_shutdown() -> bool {
+		IS_SHUTDOWN.with(|v| *v.borrow_mut())
+	}
+}
+
+impl orml_rewards::Config for Runtime {
+	type Share = Balance;
+	type Balance = Balance;
+	type PoolId = PoolId;
+	type CurrencyId = CurrencyId;
+	type Handler = IncentivesModule;
+}
+
+parameter_types! {
+	pub const GetNativeCurrencyId: CurrencyId = SEE;
+	pub const IncentivesPalletId: PalletId = PalletId(*b"set/inct");
+}
+
+ord_parameter_types! {
+	pub const Root: AccountId = ROOT::get();
+}
+
+impl Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RewardsSource = RewardsSource;
+	type AccumulatePeriod = ConstU64<10>;
+	type NativeCurrencyId = GetNativeCurrencyId;
+	type UpdateOrigin = EnsureSignedBy<ROOT, AccountId>;
+	type Currency = TokensModule;
+	type EmergencyShutdown = MockEmergencyShutdown;
+	type PalletId = IncentivesPalletId;
+	type WeightInfo = ();
+}
+
+type Block = frame_system::mocking::MockBlock<Runtime>;
+
+construct_runtime!(
+	pub enum Runtime {
+		System: frame_system,
+		IncentivesModule: incentives,
+		TokensModule: orml_tokens,
+		RewardsModule: orml_rewards,
+	}
+);
+
+pub struct ExtBuilder {
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
+}
+
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		Self { balances: vec![] }
+	}
+}
+
+impl ExtBuilder {
+	pub fn build(self) -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::<Runtime>::default()
+			.build_storage()
+			.unwrap();
+		orml_tokens::GenesisConfig::<Runtime> {
+			balances: self.balances,
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| System::set_block_number(1));
+		ext
+	}
+}

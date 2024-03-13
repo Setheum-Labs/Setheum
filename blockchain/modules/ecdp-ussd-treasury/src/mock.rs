@@ -118,7 +118,7 @@ parameter_types! {
 		TradingPair::from_currency_ids(USSD, EDF).unwrap(),
 		TradingPair::from_currency_ids(BTC, EDF).unwrap(),
 	];
-	pub const EdfisSwapPalletId: PalletId = PalletId(*b"aca/dexm");
+	pub const EdfisSwapPalletId: PalletId = PalletId(*b"set/edfis");
 }
 
 impl module_edfis_swap_legacy::Config for Runtime {
@@ -128,7 +128,7 @@ impl module_edfis_swap_legacy::Config for Runtime {
 	type TradingPathLimit = ConstU32<4>;
 	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = ();
-	type SwapDexIncentives = ();
+	type Incentives = ();
 	type WeightInfo = ();
 	type ListingOrigin = EnsureSignedBy<One, AccountId>;
 	type ExtendedProvisioningBlocks = ConstU64<0>;
@@ -175,7 +175,7 @@ ord_parameter_types! {
 }
 
 parameter_types! {
-	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"aca/cdpt");
+	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"set/ussdtrsymod");
 	pub const TreasuryAccount: AccountId = 10;
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
 		vec![EDF],

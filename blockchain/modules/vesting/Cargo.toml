@@ -2,8 +2,10 @@
 name = "module-vesting"
 description = "Provides scheduled balance locking mechanism, in a *graded vesting* way."
 version = "0.9.81-dev"
-authors = ["Setheum Labs"]
-edition = "2021"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
 
 [dependencies]
 scale-info = { workspace = true }

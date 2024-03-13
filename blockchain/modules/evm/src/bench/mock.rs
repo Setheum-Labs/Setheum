@@ -31,7 +31,7 @@ use frame_support::{
 use frame_system::EnsureSignedBy;
 use module_support::{
 	mocks::{MockAddressMapping, MockErc20InfoMapping},
-	SwapDexIncentives, Price, PriceProvider, SpecificJointsSwap,
+	Incentives, Price, PriceProvider, SpecificJointsSwap,
 };
 use orml_traits::{parameter_type_with_key, MultiReservableCurrency};
 pub use primitives::{Address, Amount, BlockNumber, CurrencyId, Header, Multiplier, ReserveIdentifier, Signature,
@@ -224,8 +224,8 @@ impl module_transaction_payment::Config for Runtime {
 	type DefaultFeeTokens = DefaultFeeTokens;
 }
 
-pub struct MockSwapDexIncentives;
-impl SwapDexIncentives<AccountId32, CurrencyId, Balance> for MockSwapDexIncentives {
+pub struct MockIncentives;
+impl Incentives<AccountId32, CurrencyId, Balance> for MockIncentives {
 	fn do_deposit_dex_share(who: &AccountId32, lp_currency_id: CurrencyId, amount: Balance) -> DispatchResult {
 		Tokens::reserve(lp_currency_id, who, amount)
 	}
@@ -249,7 +249,7 @@ impl edfis_swap_legacy_module::Config for Runtime {
 	type PalletId = EdfisSwapPalletId;
 	type Erc20InfoMapping = MockErc20InfoMapping;
 	type WeightInfo = ();
-	type SwapDexIncentives = MockSwapDexIncentives;
+	type Incentives = MockIncentives;
 	type ListingOrigin = EnsureSignedBy<ListingOrigin, AccountId32>;
 	type ExtendedProvisioningBlocks = ConstU32<0>;
 	type OnLiquidityPoolUpdated = ();

@@ -144,7 +144,7 @@ fn access_price_of_liquid_currency() {
 		assert_eq!(
 			PricesModule::access_price(LSEE),
 			Some(Price::saturating_from_integer(5000000000u128))
-		); // dot_price * 1/2
+		); // see_price * 1/2
 
 		mock_oracle_update();
 		assert_eq!(
@@ -154,7 +154,7 @@ fn access_price_of_liquid_currency() {
 		assert_eq!(
 			PricesModule::access_price(LSEE),
 			Some(Price::saturating_from_integer(600000000u128))
-		); // dot_price * 3/5
+		); // see_price * 3/5
 	});
 }
 

@@ -22,35 +22,14 @@
 
 /// Time and blocks.
 pub mod time {
-	use primitives::{Balance, BlockNumber, Moment};
+	use primitives::{MILLISECS_PER_BLOCK, Balance, BlockNumber, Moment};
 	// use runtime_common::{dollar, millicent, SEE};
 
-	// 3 seconds blocktime
-	pub const SECS_PER_BLOCK: Moment = 3;
-	pub const MILLISECS_PER_BLOCK: Moment = SECS_PER_BLOCK * 1000;
-
 	// These time units are defined in number of blocks.
-	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
+	pub const MINUTES: BlockNumber = 60 / (MILLISECS_PER_BLOCK as BlockNumber);
 	pub const HOURS: BlockNumber = MINUTES * 60;
 	pub const DAYS: BlockNumber = HOURS * 24;
 
-	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
-
-	// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
-	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
-
-    // Use different settings in the test
-    #[cfg(feature = "test")]
-    pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
-    #[cfg(not(feature = "test"))]
-    pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = HOURS;
-    
-	pub const EPOCH_DURATION_IN_SLOTS: u64 = {
-		const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
-
-		(EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
-	};
-	
 	pub fn deposit(items: u32, bytes: u32) -> Balance {
 		// 2_000_000_000_000_000_000 = 2 dollars; 100_000_000_000_000 = 10 millicents;
 		items as Balance * 2_000_000_000_000_000_000 + (bytes as Balance) * 100_000_000_000_000

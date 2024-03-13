@@ -22,7 +22,7 @@
 //!
 //! ## Overview
 //!
-//! Ethical DeFi's Built-in decentralized exchange `SwapDex` (Swap Exchange) module, the swap
+//! Ethical DeFi's Built-in decentralized exchange module, the swap
 //! mechanism refers to the design of `Uniswap V3` with additional features and functionalities
 //! that makes Edfis unique. In addition to being used for trading, DEX also participates 
 //! in `ECDP liquidation`, which is faster than Liquidation By Auction when the liquidity is sufficient.
@@ -35,7 +35,7 @@
 
 use frame_support::{pallet_prelude::*, transactional, PalletId};
 use frame_system::pallet_prelude::*;
-use module_support::{SwapDexIncentives, SwapManager, Erc20InfoMapping, ExchangeRate, Ratio, SwapLimit};
+use module_support::{Incentives, SwapManager, Erc20InfoMapping, ExchangeRate, Ratio, SwapLimit};
 use orml_traits::{Happened, MultiCurrency, MultiCurrencyExtended};
 use parity_scale_codec::MaxEncodedLen;
 use primitives::{Balance, CurrencyId, Fees, TradingPair};
@@ -123,8 +123,8 @@ pub mod module {
 		/// Weight information for the extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
-		/// DEX incentives
-		type SwapDexIncentives: SwapDexIncentives<Self::AccountId, CurrencyId, Balance>;
+		/// Edfis Liquidity Rewards Incentives
+		type Incentives: Incentives<Self::AccountId, CurrencyId, Balance>;
 
 		/// The origin which may list, enable or disable trading pairs.
 		type ListingOrigin: EnsureOrigin<Self::RuntimeOrigin>;
@@ -1129,7 +1129,7 @@ impl<T: Config> Pallet<T> {
 				);
 
 				if by_unstake {
-					T::SwapDexIncentives::do_withdraw_dex_share(who, dex_share_currency_id, remove_share)?;
+					T::Incentives::do_withdraw_dex_share(who, dex_share_currency_id, remove_share)?;
 				}
 				T::Currency::withdraw(dex_share_currency_id, who, remove_share)?;
 				T::Currency::transfer(trading_pair.first(), &module_account_id, who, pool_0_decrement)?;

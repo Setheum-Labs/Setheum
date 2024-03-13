@@ -120,7 +120,7 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const LoansPalletId: PalletId = PalletId(*b"aca/loan");
+	pub const EcdpUssdLoansPalletId: PalletId = PalletId(*b"set/ussdloan");
 }
 
 impl module_ecdp_ussd_loans::Config for Runtime {
@@ -128,7 +128,7 @@ impl module_ecdp_ussd_loans::Config for Runtime {
 	type Currency = Tokens;
 	type RiskManager = EcdpUssdEngineModule;
 	type EcdpUssdTreasury = EcdpUssdTreasuryModule;
-	type PalletId = LoansPalletId;
+	type PalletId = EcdpUssdLoansPalletId;
 	type OnUpdateLoan = ();
 }
 
@@ -192,8 +192,8 @@ ord_parameter_types! {
 
 parameter_types! {
 	pub const GetUSSDCurrencyId: CurrencyId = USSD;
-	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"aca/cdpt");
-	pub TreasuryAccount: AccountId = PalletId(*b"aca/hztr").into_account_truncating();
+	pub const EcdpUssdTreasuryPalletId: PalletId = PalletId(*b"set/ussdtrsymod");
+	pub TreasuryAccount: AccountId = PalletId(*b"set/ussdtrsyacc").into_account_truncating();
 	pub AlternativeSwapPathJointList: Vec<Vec<CurrencyId>> = vec![
 		vec![USSD],
 	];
@@ -282,7 +282,7 @@ parameter_types! {
 	pub DefaultLiquidationPenalty: FractionalRate = FractionalRate::try_from(Rate::saturating_from_rational(10, 100)).unwrap();
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::saturating_from_rational(50, 100);
 	pub MaxLiquidationContractSlippage: Ratio = Ratio::saturating_from_rational(80, 100);
-	pub const EcdpUssdEnginePalletId: PalletId = PalletId(*b"aca/cdpe");
+	pub const EcdpUssdEnginePalletId: PalletId = PalletId(*b"set/ussde");
 	pub const SettleErc20EvmOrigin: AccountId = AccountId32::new([255u8; 32]);
 }
 

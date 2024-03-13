@@ -305,7 +305,7 @@ fn transfer_debit_works() {
 }
 
 #[test]
-fn transfer_debit_no_ausd() {
+fn transfer_debit_no_ussd() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
 		assert_ok!(EcdpUssdEngineModule::set_collateral_params(
