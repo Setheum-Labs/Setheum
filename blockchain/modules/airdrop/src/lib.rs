@@ -36,6 +36,7 @@ use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{Balance, CurrencyId};
 use sp_std::vec::Vec;
+use sp_std::collections::btree_set::BTreeSet;
 use sp_runtime::traits::AccountIdConversion;
 
 mod mock;
@@ -165,10 +166,7 @@ impl<T: Config> Pallet<T> {
 	fn do_make_airdrop(currency_id: CurrencyId, airdrop_list: Vec<(T::AccountId, Balance)>) -> DispatchResult {
 
 		// Make sure only unique accounts receive Airdrop
-        let unique_accounts = airdrop_list
-		.iter()
-		.map(|(x,_)| x)
-		.cloned();
+		let unique_accounts: BTreeSet<_> = airdrop_list.iter().map(|(x, _)| x).collect();
         ensure!(
             unique_accounts.len() == airdrop_list.len(),
             Error::<T>::DuplicateAccounts,
