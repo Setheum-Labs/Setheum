@@ -110,18 +110,6 @@ purge: target/debug/setheum-node
 .PHONY: restart
 restart: purge run
 
-.PHONY: fork
-fork:
-	npm i --prefix fork fork
-ifeq (,$(wildcard fork/data))
-	mkdir fork/data
-endif
-	cp target/release/setheum-node fork/data/binary
-	cp target/release/wbuild/setheum-runtime/setheum_runtime.compact.wasm fork/data/runtime.wasm
-	cp blockchain/bin/resources/types.json fork/data/schema.json
-	cp blockchain/bin/resources/chain_spec_$(chain)_raw.json fork/data/genesis.json
-	cd fork && npm start && cd ..
-
 .PHONY: generate-tokens
 generate-tokens:
 	cargo test -p setheum-primitives -- --ignored
