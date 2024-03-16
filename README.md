@@ -38,10 +38,10 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 - [Setheum - Powering The New Internet](#setheum---powering-the-new-internet)
   - [1.0. Introduction](#10-introduction)
     - [1.1. Setheum Chain](#11-setheum-chain)
-    - [1.2. Ethical DeFi](#12-ethicaldefi)
-      - [1.2.1 Edfis - Ethical DeFi Swap](#121-edfis---ethical-defi-swap)
-      - [1.2.2 The Setter Stablecoin](#122-the-setter-stablecoin)
-      - [1.2.3 The Slick USD Stablecoin](#123-the-slick-usd-stablecoin)
+    - [1.2. Ethical DeFi](#12-ethical-defi)
+      - [1.2.1. Edfis - Ethical DeFi Swap](#121-edfis---ethical-defi-swap)
+      - [1.2.2. The Setter Stablecoin](#122-the-setter-stablecoin)
+      - [1.2.3. The Slick USD Stablecoin](#123-the-slick-usd-stablecoin)
   - [2.0. Getting Started](#20-getting-started)
     - [2.1. Build](#21-build)
     - [2.2. Run](#22-run)
@@ -363,10 +363,10 @@ project adheres to the [Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.
 
 ### 8.1. ToDo List
 
-Note> Before adding/removing a TODO, please carefully read the [TODO.md file](./TODO.md)
+Note> Before adding/removing a TODO, please carefully read the [TODO.md file](./docs/TODO.md)
 
-Whenever you write a TODO in any file, please add a reference to it [here](./TODO.md).
-Whenever you remove a TODO in any file, please remove its reference from [here](./TODO.md).
+Whenever you write a TODO in any file, please add a reference to it [here](./docs/TODO.md).
+Whenever you remove a TODO in any file, please remove its reference from [here](./docs/TODO.md).
 
 ## 9.0. License
 
