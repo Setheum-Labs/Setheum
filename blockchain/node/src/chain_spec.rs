@@ -303,11 +303,11 @@ pub fn public_testnet_config() -> Result<ChainSpec, String> {
 
 
 pub fn live_mainnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../../resources/chain_spec_mainnet_raw.json")[..])
+	ChainSpec::from_json_bytes(&include_bytes!("../../../resources/chain_spec_mainnet_raw.json")[..])
 }
 
 pub fn live_testnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../../resources/chain_spec_testnet_raw.json")[..])
+	ChainSpec::from_json_bytes(&include_bytes!("../../../resources/chain_spec_testnet_raw.json")[..])
 }
 
 pub fn mainnet_config() -> Result<ChainSpec, String> {

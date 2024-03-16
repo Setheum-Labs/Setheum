@@ -1,0 +1,52 @@
+[package]
+name = "module-committee-management"
+version = "0.2.0"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[dependencies]
+parity-scale-codec = { workspace = true, features = ["derive"] }
+rand = { workspace = true }
+rand_pcg = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
+log = { workspace = true }
+
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-authorship = { workspace = true }
+pallet-session = { workspace = true }
+pallet-staking = { workspace = true }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+sp-staking = { workspace = true }
+sp-std = { workspace = true }
+
+module-support = { workspace = true }
+primitives = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+    "parity-scale-codec/std",
+    "rand/std",
+    "scale-info/std",
+    "log/std",
+
+    "frame-support/std",
+    "frame-system/std",
+    "pallet-authorship/std",
+    "pallet-session/std",
+    "pallet-staking/std",
+    "sp-io/std",
+    "sp-runtime/std",
+    "sp-staking/std",
+    "sp-std/std",
+    "primitives/std",
+    "module-support/std",
+]
+
+try-runtime = [
+    "frame-support/try-runtime",
+]

@@ -54,10 +54,11 @@ lto = true
 codegen-units = 1
 
 [workspace.package]
-authors = ["Setheum Labs", "Open Web3 Foundation"]
+authors = [ "Open Web3 Foundation", "Setheum Labs", "Slixon Technologies"]
 edition = "2021"
 homepage = "https://setheum.xyz"
 repository = "https://github.com/Setheum-Labs/Setheum"
+version = "0.9.81-dev"
 
 # The list of dependencies below (which can be both direct and indirect dependencies) are crates
 # that are suspected to be CPU-intensive, and that are unlikely to require debugging (as some of
@@ -202,7 +203,7 @@ orml-xtokens = { path = "orml/xtokens", default-features = false }
 wasm-bencher = { git = "https://github.com/open-web3-stack/wasm-bencher", branch = "polkadot-v1.3.0", default-features = false }
 
 # Setheum (WASM)
-primitives = { package = "setheum-primitives", path = "blockchain/primitives", default-features = false }
+primitives = { package = "setheum-primitives", path = "primitives", default-features = false }
 runtime-common = { path = "blockchain/runtime/common", default-features = false }
 qingdao-runtime = { path = "blockchain/runtime/qingdao", default-features = false }
 setheum-runtime = { path = "blockchain/runtime/setheum", default-features = false }
