@@ -10,7 +10,7 @@ repository.workspace = true
 impl-trait-for-tuples = { workspace = true }
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
-serde = { workspace = true, features = ["std"], optional = true }
+serde = { workspace = true, features = ["derive", "std"], optional = true }
 
 frame-support = { workspace = true }
 frame-system = { workspace = true }

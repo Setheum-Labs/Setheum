@@ -24,7 +24,7 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Airdrop, Event, ExtBuilder, Origin, System, SETR, ALICE, BOB, CHARLIE, DAVE, EVE, TREASURY, SETUSD};
+use mock::*;
 use sp_runtime::traits::BadOrigin;
 
 #[test]
@@ -172,4 +172,101 @@ fn make_airdrop_does_not_work() {
         Error::<Runtime>::OverSizedAirdropList,
         );
 	});
+}
+#[test]
+fn make_airdrop_with_json_works() {
+    ExtBuilder::default().build().execute_with(|| {
+        let valid_json = br#"
+        [
+            {"account": "ALICE", "amount": 10},
+            {"account": "BOB", "amount": 5},
+            {"account": "CHARLIE", "amount": 20}
+        ]
+        "#.as_bytes().to_vec();
+
+        assert_noop!(
+            Airdrop::make_airdrop_with_json(
+                Origin::signed(BOB),
+                SETUSD,
+                valid_json.clone()
+            ),
+            BadOrigin
+        );
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETR,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETR, Airdrop::account_id()), 258);
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETUSD, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETUSD,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETUSD, Airdrop::account_id()), 258);
+
+        assert_ok!(Airdrop::make_airdrop_with_json(
+            Origin::signed(ALICE),
+            SETR,
+            valid_json.clone()
+        ));
+
+        assert_ok!(Airdrop::make_airdrop_with_json(
+            Origin::signed(ALICE),
+            SETUSD,
+            valid_json
+        ));
+    });
+}
+
+#[test]
+fn make_airdrop_with_json_does_not_work() {
+    ExtBuilder::default().build().execute_with(|| {
+        // Example of oversized JSON input
+        let oversized_json = br#"
+        [
+            {"account": "ALICE", "amount": 10},
+            {"account": "BOB", "amount": 5},
+            {"account": "CHARLIE", "amount": 20},
+            {"account": "DAVE", "amount": 20},
+            {"account": "EVE", "amount": 20}
+        ]
+        "#.as_bytes().to_vec();
+
+        assert_noop!(
+            Airdrop::make_airdrop_with_json(
+                Origin::signed(BOB),
+                SETUSD,
+                oversized_json.clone()
+            ),
+            BadOrigin
+        );
+
+        assert_ok!(Airdrop::fund_airdrop_treasury(Origin::signed(ALICE), SETR, 258));
+        System::assert_last_event(Event::AirDrop(
+            crate::Event::FundAirdropTreasury {
+                funder: ALICE,
+                currency_id: SETR,
+                amount: 258
+            },
+        ));
+        assert_eq!(Tokens::free_balance(SETR, Airdrop::account_id()), 258);
+
+        assert_noop!(
+            Airdrop::make_airdrop_with_json(
+                Origin::signed(ALICE),
+                SETR,
+                oversized_json
+            ),
+            Error::<Runtime>::OverSizedAirdropList
+        );
+    });
 }

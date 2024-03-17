@@ -35,25 +35,16 @@ use frame_support::{pallet_prelude::*, transactional, PalletId, traits::Get};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
 use primitives::{AccountId, Balance, CurrencyId};
+use module_support::AirdropList;
 use sp_std::vec::Vec;
 use sp_std::collections::btree_set::BTreeSet;
 use sp_runtime::traits::AccountIdConversion;
-use serde::{Deserialize, Serialize};
 use frame_support::storage::TransactionOutcome;
 
 mod mock;
 mod tests;
 
 pub use module::*;
-
-#[derive(Deserialize, Debug)]
-struct AirdropEntry {
-    account: AccountId,
-    amount: Balance,
-}
-
-#[derive(Deserialize, Debug)]
-struct AirdropList(Vec<AirdropEntry>);
 
 type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
 
