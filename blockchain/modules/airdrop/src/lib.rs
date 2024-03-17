@@ -34,15 +34,26 @@
 use frame_support::{pallet_prelude::*, transactional, PalletId, traits::Get};
 use frame_system::pallet_prelude::*;
 use orml_traits::{MultiCurrency, MultiCurrencyExtended};
-use primitives::{Balance, CurrencyId};
+use primitives::{AccountId, Balance, CurrencyId};
 use sp_std::vec::Vec;
 use sp_std::collections::btree_set::BTreeSet;
 use sp_runtime::traits::AccountIdConversion;
+use serde::{Deserialize, Serialize};
+use frame_support::storage::TransactionOutcome;
 
 mod mock;
 mod tests;
 
 pub use module::*;
+
+#[derive(Deserialize, Debug)]
+struct AirdropEntry {
+    account: AccountId,
+    amount: Balance,
+}
+
+#[derive(Deserialize, Debug)]
+struct AirdropList(Vec<AirdropEntry>);
 
 type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<<T as frame_system::Config>::AccountId>>::Balance;
 
@@ -79,6 +90,10 @@ pub mod module {
 		DuplicateAccounts,
 		// The airdrop list is over the max size limit `MaxAirdropListSize`
 		OverSizedAirdropList,
+		// Error parsing the JSON data
+		InvalidJson,
+		// Invalid Account ID
+		InvalidAccountId,
 	}
 
 	#[pallet::event]
@@ -89,6 +104,11 @@ pub mod module {
 		Airdrop {
 			currency_id: CurrencyId,
 			airdrop_list: Vec<(T::AccountId, Balance)>
+		},
+		/// Drop Airdrop with JSON Data
+		AirdropWithJson {
+			currency_id: CurrencyId,
+			airdrop_list: AirdropList
 		},
 		/// Fund the Airdrop Treasury from `FundingOrigin` \[from, currency_id, amount\]
 		FundAirdropTreasury {
@@ -136,7 +156,7 @@ pub mod module {
 		/// The dispatch origin of this call must be `DropOrigin`.
 		///
 		/// - `currency_id`: `CurrencyId` airdrop currency type.
-		/// - `airdrop_list_json`: airdrop accounts and respective amounts in json format.
+		/// - `airdrop_list_json`: airdrop accounts and respective amounts in Vec<(T::AccountId, Balance)> format.
 		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
 		#[transactional]
 		pub fn make_airdrop(
@@ -154,6 +174,32 @@ pub mod module {
 			Self::do_make_airdrop(currency_id, airdrop_list)?;
 			Ok(())
 		}
+
+        /// Make Airdrop with JSON data.
+        ///
+        /// The dispatch origin of this call must be `DropOrigin`.
+        ///
+        /// - `currency_id`: `CurrencyId` airdrop currency type.
+        /// - `airdrop_list_json`: airdrop accounts and respective amounts in json format as a byte vector.
+        #[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
+        #[transactional]
+        pub fn make_airdrop_with_json(
+            origin: OriginFor<T>,
+            currency_id: CurrencyId,
+            airdrop_list_json: Vec<u8>,
+        ) -> DispatchResult {
+            T::DropOrigin::ensure_origin(origin)?;
+
+            let airdrop_entries = Self::parse_airdrop_json(airdrop_list_json)?;
+
+            ensure!(
+                airdrop_entries.len() <= T::MaxAirdropListSize::get(),
+                Error::<T>::OverSizedAirdropList,
+            );
+
+            Self::do_make_airdrop(currency_id, airdrop_entries)?;
+            Ok(())
+        }
 	}
 }
 
@@ -164,19 +210,29 @@ impl<T: Config> Pallet<T> {
 	}
 
 	fn do_make_airdrop(currency_id: CurrencyId, airdrop_list: Vec<(T::AccountId, Balance)>) -> DispatchResult {
-
-		// Make sure only unique accounts receive Airdrop
-		let unique_accounts: BTreeSet<_> = airdrop_list.iter().map(|(x, _)| x).collect();
-        ensure!(
-            unique_accounts.len() == airdrop_list.len(),
-            Error::<T>::DuplicateAccounts,
-        );
-
-		for (beneficiary, amount) in airdrop_list.iter() {
-			T::MultiCurrency::transfer(currency_id, &Self::account_id(), beneficiary, *amount)?;
-		}
-
-		Self::deposit_event(Event::Airdrop { currency_id, airdrop_list });
-		Ok(())
+        frame_support::storage::with_transaction(|| {
+            let mut processed_accounts = sp_std::collections::btree_set::BTreeSet::new();
+            for (beneficiary, amount) in airdrop_list.iter() {
+                if !processed_accounts.insert(beneficiary) {
+                    return TransactionOutcome::Rollback(Err(Error::<T>::DuplicateAccounts.into()));
+                }
+                let transfer_result = T::MultiCurrency::transfer(currency_id, &Self::account_id(), beneficiary, *amount);
+                if transfer_result.is_err() {
+                    return TransactionOutcome::Rollback(Err(transfer_result.err().unwrap()));
+                }
+            }
+            TransactionOutcome::Commit(Ok(()))
+        })
+    }
+	
+	fn parse_airdrop_json(airdrop_list_json: Vec<u8>) -> Result<Vec<(T::AccountId, Balance)>, Error<T>> {
+		let airdrop_list: AirdropList = serde_json::from_slice(&airdrop_list_json)
+			.map_err(|_| Error::<T>::InvalidJson)?;
+	
+		airdrop_list.0.into_iter().map(|entry| {
+			let account_id = T::AccountId::decode(&mut &entry.account.encode()[..])
+				.map_err(|_| Error::<T>::InvalidAccountId)?;
+			Ok((account_id, entry.amount))
+		}).collect()
 	}
 }
