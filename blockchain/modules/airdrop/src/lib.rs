@@ -64,15 +64,7 @@ pub mod module {
 
 		#[pallet::constant]
 		/// The Airdrop module pallet id, keeps airdrop funds.
-		type FundingOrigin: Get<Self::AccountId>;
-
-		/// The origin which may update and fund the Airdrop Treasury.
-		type DropOrigin: EnsureOrigin<Self::Origin>;
-		
-		#[pallet::constant]
-		/// The Airdrop module pallet id, keeps airdrop funds.
 		type PalletId: Get<PalletId>;
-
 	}
 
 	#[pallet::error]
@@ -101,12 +93,6 @@ pub mod module {
 			currency_id: CurrencyId,
 			airdrop_list: AirdropList
 		},
-		/// Fund the Airdrop Treasury from `FundingOrigin` \[from, currency_id, amount\]
-		FundAirdropTreasury {
-			funder: T::AccountId,
-			currency_id: CurrencyId,
-			amount: BalanceOf<T>
-		}
 	}
 
 	#[pallet::pallet]
@@ -117,37 +103,12 @@ pub mod module {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Fund Airdrop Treasury from deposit creation.
-		///
-		/// The dispatch origin of this call must be `DropOrigin`.
-		///
-		/// - `currency_id`: `CurrencyId` funding currency type.
-		/// - `amount`: `BalanceOf<T>` funding amounts.
-		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
-		#[transactional]
-		pub fn fund_airdrop_treasury(
-			origin: OriginFor<T>,
-			currency_id: CurrencyId,
-			amount: BalanceOf<T>,
-		) -> DispatchResult {
-			T::DropOrigin::ensure_origin(origin)?;
-
-			T::MultiCurrency::transfer(currency_id, &T::FundingOrigin::get(), &Self::account_id(), amount)?;
-			
-			Self::deposit_event(Event::FundAirdropTreasury {
-				funder: T::FundingOrigin::get(),
-				currency_id,
-				amount
-			});
-			Ok(())
-		}
-
 		/// Make Airdrop to beneficiaries.
 		///
-		/// The dispatch origin of this call must be `DropOrigin`.
+		/// Any account can call this function.
 		///
 		/// - `currency_id`: `CurrencyId` airdrop currency type.
-		/// - `airdrop_list_json`: airdrop accounts and respective amounts in Vec<(T::AccountId, Balance)> format.
+		/// - `airdrop_list`: airdrop accounts and respective amounts in Vec<(T::AccountId, Balance)> format.
 		#[pallet::weight((100_000_000 as Weight, DispatchClass::Operational))]
 		#[transactional]
 		pub fn make_airdrop(
@@ -155,20 +116,20 @@ pub mod module {
 			currency_id: CurrencyId,
 			airdrop_list: Vec<(T::AccountId, Balance)>,
 		) -> DispatchResult {
-			T::DropOrigin::ensure_origin(origin)?;
-			
+			let who = ensure_signed(origin)?;
+
 			ensure!(
 				airdrop_list.len() <= T::MaxAirdropListSize::get(),
 				Error::<T>::OverSizedAirdropList,
 			);
 
-			Self::do_make_airdrop(currency_id, airdrop_list)?;
+			Self::do_make_airdrop(who, currency_id, airdrop_list)?;
 			Ok(())
 		}
 
         /// Make Airdrop with JSON data.
         ///
-        /// The dispatch origin of this call must be `DropOrigin`.
+        /// Any account can call this function.
         ///
         /// - `currency_id`: `CurrencyId` airdrop currency type.
         /// - `airdrop_list_json`: airdrop accounts and respective amounts in json format as a byte vector.
@@ -179,7 +140,7 @@ pub mod module {
             currency_id: CurrencyId,
             airdrop_list_json: Vec<u8>,
         ) -> DispatchResult {
-            T::DropOrigin::ensure_origin(origin)?;
+            let who = ensure_signed(origin)?;
 
             let airdrop_entries = Self::parse_airdrop_json(airdrop_list_json)?;
 
@@ -188,10 +149,10 @@ pub mod module {
                 Error::<T>::OverSizedAirdropList,
             );
 
-            Self::do_make_airdrop(currency_id, airdrop_entries)?;
+            Self::do_make_airdrop(who, currency_id, airdrop_entries)?;
             Ok(())
         }
-	}
+    }
 }
 
 impl<T: Config> Pallet<T> {
@@ -200,14 +161,14 @@ impl<T: Config> Pallet<T> {
 		T::PalletId::get().into_account()
 	}
 
-	fn do_make_airdrop(currency_id: CurrencyId, airdrop_list: Vec<(T::AccountId, Balance)>) -> DispatchResult {
+	fn do_make_airdrop(who: T::AccountId, currency_id: CurrencyId, airdrop_list: Vec<(T::AccountId, Balance)>) -> DispatchResult {
         frame_support::storage::with_transaction(|| {
             let mut processed_accounts = sp_std::collections::btree_set::BTreeSet::new();
             for (beneficiary, amount) in airdrop_list.iter() {
                 if !processed_accounts.insert(beneficiary) {
                     return TransactionOutcome::Rollback(Err(Error::<T>::DuplicateAccounts.into()));
                 }
-                let transfer_result = T::MultiCurrency::transfer(currency_id, &Self::account_id(), beneficiary, *amount);
+                let transfer_result = T::MultiCurrency::transfer(currency_id, &who, beneficiary, *amount);
                 if transfer_result.is_err() {
                     return TransactionOutcome::Rollback(Err(transfer_result.err().unwrap()));
                 }
