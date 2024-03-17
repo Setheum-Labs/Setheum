@@ -9,8 +9,8 @@ members = [
 	"blockchain/modules/*",
 	"blockchain/modules/currencies/runtime-api",
 	"blockchain/modules/evm-utility/macro",
-	"blockchain/primitives",
-	"blockchain/rpc",
+	"primitives",
+	# "blockchain/rpc",
 
 	"blockchainruntime/common",
 	"blockchainruntime/qingdao",
