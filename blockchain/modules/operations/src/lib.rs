@@ -34,10 +34,10 @@ mod tests;
 use frame_support::traits::{LockIdentifier, StorageVersion};
 
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
-pub const LOG_TARGET: &str = "pallet-operations";
+pub const LOG_TARGET: &str = "module-operations";
 // harcoding as those consts are not public in substrate
-pub const STAKING_ID: LockIdentifier = *b"staking ";
-pub const VESTING_ID: LockIdentifier = *b"vesting ";
+pub const STAKING_ID: LockIdentifier = *b"set/stake";
+pub const VESTING_ID: LockIdentifier = *b"set/vest";
 
 pub use pallet::*;
 

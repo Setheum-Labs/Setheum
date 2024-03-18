@@ -34,7 +34,7 @@ use sp_runtime::{
     BuildStorage,
 };
 
-use crate as pallet_operations;
+use crate as module_operations;
 pub(crate) type AccountId = u64;
 
 construct_runtime!(

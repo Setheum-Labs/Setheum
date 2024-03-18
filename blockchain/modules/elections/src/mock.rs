@@ -36,7 +36,7 @@ use sp_staking::EraIndex;
 use sp_std::cell::RefCell;
 
 use super::*;
-use crate as pallet_elections;
+use crate as module_elections;
 use crate::traits::ValidatorProvider;
 
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -45,7 +45,7 @@ construct_runtime!(
     pub struct Test {
         System: frame_system,
         Balances: pallet_balances,
-        Elections: pallet_elections,
+        Elections: module_elections,
     }
 );
 
