@@ -76,7 +76,7 @@ mod weights;
 pub use module::*;
 pub use weights::WeightInfo;
 
-pub const VESTING_LOCK_ID: LockIdentifier = *b"setvest";
+pub const VESTING_LOCK_ID: LockIdentifier = *b"set/vest";
 
 /// The vesting schedule.
 ///

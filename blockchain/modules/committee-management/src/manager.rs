@@ -74,7 +74,7 @@ where
 /// 3. If session starts era EM::new_era_start invoked
 /// 4. If session starts era logic related to new era from this pallet is invoked
 ///
-/// In the runtime we set EM to pallet_elections and T to combination of staking and historical_session.
+/// In the runtime we set EM to module_elections and T to combination of staking and historical_session.
 pub struct SessionAndEraManager<E, EM, T, C>(PhantomData<(E, EM, T, C)>)
 where
     E: EraInfoProvider,

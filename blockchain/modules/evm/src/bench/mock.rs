@@ -173,7 +173,7 @@ impl Config for Runtime {
 
 parameter_types! {
 	pub MaxSwapSlippageCompareToOracle: Ratio = Ratio::one();
-	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsy");
+	pub const TreasuryPalletId: PalletId = PalletId(*b"set/trsry");
 	pub const TransactionPaymentPalletId: PalletId = PalletId(*b"set/fees");
 	pub SetheumTreasuryAccount: AccountId32 = TreasuryPalletId::get().into_account_truncating();
 	pub const CustomFeeSurplus: Percent = Percent::from_percent(50);

@@ -1,0 +1,36 @@
+[package]
+name = "setheum_client"
+version = "0.1.0"
+edition = "2021"
+authors = ["Setheum Labs", "Open Web3 Foundation"]
+documentation = "https://docs.rs/setheum_client"
+readme = "README.md"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "Apache-2.0"
+homepage = "https://setheum.xyz"
+repository = "https://github.com/Setheum-Labs/Setheum"
+description = "This crate provides a Rust application interface for submitting transactions to `setheum` chain."
+
+[dependencies]
+async-trait = "0.1.58"
+anyhow = "1.0"
+codec = { package = 'parity-scale-codec', version = "3.0.0", features = ['derive'] }
+hex = { version = "0.4.3", features = ["alloc"] }
+log = "0.4"
+thiserror = "1.0"
+serde_json = { version = "1.0.94" }
+contract-transcode = "3.2.0"
+ink_metadata = { version = "4.3.0" }
+subxt = { version = "0.30.1", features = ["substrate-compat"] }
+futures = "0.3.25"
+serde = { version = "1.0", features = ["derive"] }
+
+pallet-contracts-primitives = { git = "https://github.com/Cardinal-Cryptography/polkadot-sdk.git", branch = "aleph-v1.3.0", default-features = false }
+
+primitives = { path = "../primitives" }
+
+[dev-dependencies]
+tokio = "1.21"
