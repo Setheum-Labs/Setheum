@@ -193,7 +193,7 @@ pub mod module {
 			let from = T::Lookup::lookup(from)?;
 			ensure!(!T::EcdpEmergencyShutdown::is_shutdown(), Error::<T>::AlreadyShutdown);
 			Self::check_authorization(&from, &to, currency_id)?;
-			<module_ecdp_ussd_loans::Pallet<T>>::transfer_loan(&from, &to, currency_id)?;
+			<module_ecdp_loans::Pallet<T>>::transfer_loan(&from, &to, currency_id)?;
 			Ok(())
 		}
 
@@ -426,7 +426,7 @@ impl<T: Config> EcdpUssdManager<T::AccountId, CurrencyId, Amount, Balance> for P
 	}
 
 	fn get_position(who: &T::AccountId, currency_id: CurrencyId) -> EcdpPosition {
-		<module_ecdp_ussd_loans::Pallet<T>>::positions(currency_id, who)
+		<module_ecdp_loans::Pallet<T>>::positions(currency_id, who)
 	}
 
 	fn get_collateral_parameters(currency_id: CurrencyId) -> Vec<U256> {
@@ -441,7 +441,7 @@ impl<T: Config> EcdpUssdManager<T::AccountId, CurrencyId, Amount, Balance> for P
 	}
 
 	fn get_current_collateral_ratio(who: &T::AccountId, currency_id: CurrencyId) -> Option<Ratio> {
-		let EcdpPosition { collateral, debit } = <module_ecdp_ussd_loans::Pallet<T>>::positions(currency_id, who);
+		let EcdpPosition { collateral, debit } = <module_ecdp_loans::Pallet<T>>::positions(currency_id, who);
 		let stable_currency_id = T::GetUSSDCurrencyId::get();
 
 		T::PriceSource::get_relative_price(currency_id, stable_currency_id).map(|price| {

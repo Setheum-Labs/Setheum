@@ -1,0 +1,330 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+
+// This file is part of Setheum.
+
+// Copyright (C) 2019-Present Setheum Labs.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+use std::{
+    error::Error,
+    fmt::{Debug, Display, Error as FmtError, Formatter},
+};
+
+use futures::channel::mpsc::{self, TrySendError, UnboundedReceiver, UnboundedSender};
+use log::{debug, warn};
+use sc_consensus::{
+    BlockCheckParams, BlockImport, BlockImportParams, ImportResult, JustificationImport,
+};
+use sp_consensus::{BlockOrigin, Error as ConsensusError};
+use sp_runtime::{traits::Header as HeaderT, Justification as SubstrateJustification};
+
+use crate::{
+    primitives ::{Block, BlockHash, BlockNumber, ALEPH_ENGINE_ID},
+    block::substrate::{Justification, JustificationTranslator, TranslateError},
+    justification::{backwards_compatible_decode, DecodeError},
+    metrics::{AllBlockMetrics, Checkpoint},
+    BlockId,
+};
+
+/// A wrapper around a block import that also marks the start and end of the import of every block
+/// in the metrics, if provided.
+#[derive(Clone)]
+pub struct TracingBlockImport<I>
+where
+    I: BlockImport<Block> + Send + Sync,
+{
+    inner: I,
+    metrics: AllBlockMetrics,
+}
+
+impl<I> TracingBlockImport<I>
+where
+    I: BlockImport<Block> + Send + Sync,
+{
+    pub fn new(inner: I, metrics: AllBlockMetrics) -> Self {
+        TracingBlockImport { inner, metrics }
+    }
+}
+
+#[async_trait::async_trait]
+impl<I> BlockImport<Block> for TracingBlockImport<I>
+where
+    I: BlockImport<Block> + Send + Sync,
+{
+    type Error = I::Error;
+
+    async fn check_block(
+        &mut self,
+        block: BlockCheckParams<Block>,
+    ) -> Result<ImportResult, Self::Error> {
+        self.inner.check_block(block).await
+    }
+
+    async fn import_block(
+        &mut self,
+        block: BlockImportParams<Block>,
+    ) -> Result<ImportResult, Self::Error> {
+        let post_hash = block.post_hash();
+        let number = *block.post_header().number();
+        let is_own = block.origin == BlockOrigin::Own;
+        // Self-created blocks are imported without using the import queue,
+        // so we need to report them here.
+        self.metrics.report_block(
+            BlockId::new(post_hash, number),
+            Checkpoint::Importing,
+            Some(is_own),
+        );
+
+        let result = self.inner.import_block(block).await;
+
+        if let Ok(ImportResult::Imported(_)) = &result {
+            self.metrics.report_block(
+                BlockId::new(post_hash, number),
+                Checkpoint::Imported,
+                Some(is_own),
+            );
+        }
+        result
+    }
+}
+
+/// A wrapper around a block import that also extracts any present justifications and sends them to
+/// our components which will process them further and possibly finalize the block.
+#[derive(Clone)]
+pub struct AlephBlockImport<I>
+where
+    I: BlockImport<Block> + Clone + Send,
+{
+    inner: I,
+    justification_tx: UnboundedSender<Justification>,
+    translator: JustificationTranslator,
+}
+
+#[derive(Debug)]
+enum SendJustificationError<TE: Debug> {
+    Send(Box<TrySendError<Justification>>),
+    Consensus(Box<ConsensusError>),
+    Decode(DecodeError),
+    Translate(TE),
+}
+
+impl<TE: Debug> From<DecodeError> for SendJustificationError<TE> {
+    fn from(decode_error: DecodeError) -> Self {
+        Self::Decode(decode_error)
+    }
+}
+
+impl<I> AlephBlockImport<I>
+where
+    I: BlockImport<Block> + Clone + Send,
+{
+    pub fn new(
+        inner: I,
+        justification_tx: UnboundedSender<Justification>,
+        translator: JustificationTranslator,
+    ) -> AlephBlockImport<I> {
+        AlephBlockImport {
+            inner,
+            justification_tx,
+            translator,
+        }
+    }
+
+    fn send_justification(
+        &mut self,
+        block_id: BlockId,
+        justification: SubstrateJustification,
+    ) -> Result<(), SendJustificationError<TranslateError>> {
+        debug!(target: "aleph-justification", "Importing justification for block {}.", block_id);
+        if justification.0 != ALEPH_ENGINE_ID {
+            return Err(SendJustificationError::Consensus(Box::new(
+                ConsensusError::ClientImport("Aleph can import only Aleph justifications.".into()),
+            )));
+        }
+        let justification_raw = justification.1;
+        let aleph_justification = backwards_compatible_decode(justification_raw)?;
+        let justification = self
+            .translator
+            .translate(aleph_justification, block_id)
+            .map_err(SendJustificationError::Translate)?;
+
+        self.justification_tx
+            .unbounded_send(justification)
+            .map_err(|e| SendJustificationError::Send(Box::new(e)))
+    }
+}
+
+#[async_trait::async_trait]
+impl<I> BlockImport<Block> for AlephBlockImport<I>
+where
+    I: BlockImport<Block> + Clone + Send,
+{
+    type Error = I::Error;
+
+    async fn check_block(
+        &mut self,
+        block: BlockCheckParams<Block>,
+    ) -> Result<ImportResult, Self::Error> {
+        self.inner.check_block(block).await
+    }
+
+    async fn import_block(
+        &mut self,
+        mut block: BlockImportParams<Block>,
+    ) -> Result<ImportResult, Self::Error> {
+        let number = *block.header.number();
+        let post_hash = block.post_hash();
+
+        let justifications = block.justifications.take();
+
+        debug!(target: "aleph-justification", "Importing block {:?} {:?} {:?}", number, block.header.hash(), block.post_hash());
+        let result = self.inner.import_block(block).await;
+
+        if let Ok(ImportResult::Imported(_)) = result {
+            if let Some(justification) =
+                justifications.and_then(|just| just.into_justification(ALEPH_ENGINE_ID))
+            {
+                debug!(target: "aleph-justification", "Got justification along imported block {:?}", number);
+
+                if let Err(e) = self.send_justification(
+                    BlockId::new(post_hash, number),
+                    (ALEPH_ENGINE_ID, justification),
+                ) {
+                    warn!(target: "aleph-justification", "Error while receiving justification for block {:?}: {:?}", post_hash, e);
+                }
+            }
+        }
+
+        result
+    }
+}
+
+#[async_trait::async_trait]
+impl<I> JustificationImport<Block> for AlephBlockImport<I>
+where
+    I: BlockImport<Block> + Clone + Send,
+{
+    type Error = ConsensusError;
+
+    async fn on_start(&mut self) -> Vec<(BlockHash, BlockNumber)> {
+        debug!(target: "aleph-justification", "On start called");
+        Vec::new()
+    }
+
+    async fn import_justification(
+        &mut self,
+        hash: BlockHash,
+        number: BlockNumber,
+        justification: SubstrateJustification,
+    ) -> Result<(), Self::Error> {
+        use SendJustificationError::*;
+        debug!(target: "aleph-justification", "import_justification called on {:?}", justification);
+        self.send_justification(BlockId::new(hash, number), justification)
+            .map_err(|error| match error {
+                Send(_) => ConsensusError::ClientImport(String::from(
+                    "Could not send justification to ConsensusParty",
+                )),
+                Consensus(e) => *e,
+                Decode(e) => ConsensusError::ClientImport(format!(
+                    "Justification for block {number:?} decoded incorrectly: {e}"
+                )),
+                Translate(e) => {
+                    ConsensusError::ClientImport(format!("Could not translate justification: {e}"))
+                }
+            })
+    }
+}
+
+/// A wrapper around a block import that actually sends all the blocks elsewhere through a channel.
+/// Very barebones, e.g. does not work with justifications, but sufficient for passing to Aura.
+#[derive(Clone)]
+pub struct RedirectingBlockImport<I>
+where
+    I: BlockImport<Block> + Clone + Send,
+{
+    inner: I,
+    blocks_tx: UnboundedSender<Block>,
+}
+
+impl<I> RedirectingBlockImport<I>
+where
+    I: BlockImport<Block> + Clone + Send,
+{
+    pub fn new(inner: I) -> (Self, UnboundedReceiver<Block>) {
+        let (blocks_tx, blocks_rx) = mpsc::unbounded();
+        (Self { inner, blocks_tx }, blocks_rx)
+    }
+}
+
+/// What can go wrong when redirecting a block import.
+#[derive(Debug)]
+pub enum RedirectingImportError<E> {
+    Inner(E),
+    MissingBody,
+    ChannelClosed,
+}
+
+impl<E: Display> Display for RedirectingImportError<E> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), FmtError> {
+        use RedirectingImportError::*;
+        match self {
+            Inner(e) => write!(f, "{}", e),
+            MissingBody => write!(
+                f,
+                "redirecting block import does not support importing blocks without a body"
+            ),
+            ChannelClosed => write!(f, "channel closed, cannot redirect import"),
+        }
+    }
+}
+
+impl<E: Display + Debug> Error for RedirectingImportError<E> {}
+
+#[async_trait::async_trait]
+impl<I> BlockImport<Block> for RedirectingBlockImport<I>
+where
+    I: BlockImport<Block> + Clone + Send,
+{
+    type Error = RedirectingImportError<I::Error>;
+
+    async fn check_block(
+        &mut self,
+        block: BlockCheckParams<Block>,
+    ) -> Result<ImportResult, Self::Error> {
+        self.inner
+            .check_block(block)
+            .await
+            .map_err(RedirectingImportError::Inner)
+    }
+
+    async fn import_block(
+        &mut self,
+        block: BlockImportParams<Block>,
+    ) -> Result<ImportResult, Self::Error> {
+        let header = block.post_header();
+        let BlockImportParams { body, .. } = block;
+
+        let extrinsics = body.ok_or(RedirectingImportError::MissingBody)?;
+
+        self.blocks_tx
+            .unbounded_send(Block { header, extrinsics })
+            .map_err(|_| RedirectingImportError::ChannelClosed)?;
+
+        // We claim it was successfully imported and no further action is necessary.
+        // This is likely inaccurate, but again, should be enough for Aura.
+        Ok(ImportResult::Imported(Default::default()))
+    }
+}

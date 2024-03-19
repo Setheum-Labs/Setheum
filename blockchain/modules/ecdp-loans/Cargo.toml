@@ -1,0 +1,47 @@
+[package]
+name = "module-ecdp-loans"
+version = "0.9.81-dev"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[dependencies]
+log = { workspace = true }
+parity-scale-codec = { workspace = true, features = ["max-encoded-len"] }
+scale-info = { workspace = true }
+
+frame-system = { workspace = true }
+frame-support = { workspace = true }
+sp-std = { workspace = true }
+sp-runtime = { workspace = true }
+
+orml-traits = { workspace = true }
+primitives = { workspace = true }
+module-support = { workspace = true }
+
+[dev-dependencies]
+sp-core = { workspace = true, features = ["std"] }
+sp-io = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
+orml-currencies = { workspace = true, features = ["std"] }
+orml-tokens = { workspace = true, features = ["std"] }
+module-ecdp-ussd-treasury = { workspace = true, features = ["std"] }
+
+[features]
+default = ["std"]
+std = [
+	"parity-scale-codec/std",
+	"frame-support/std",
+	"frame-system/std",
+	"orml-traits/std",
+	"primitives/std",
+	"scale-info/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"module-support/std",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+]

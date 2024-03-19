@@ -361,19 +361,19 @@ fn adjust_position_work() {
 		);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 100, 500));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 		assert!(!EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 0, 200).is_ok());
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 0, -200));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 30);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 300);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 300);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 	});
 }
 
@@ -389,26 +389,26 @@ fn adjust_position_by_debit_value_work() {
 
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
 
 		assert_ok!(EcdpUssdEngineModule::adjust_position_by_debit_value(&ALICE, BTC, 100, 0));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
 
 		assert_ok!(EcdpUssdEngineModule::adjust_position_by_debit_value(&ALICE, BTC, 100, 100));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 800);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 200);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 1000);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 200);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 1000);
 
 		assert_ok!(EcdpUssdEngineModule::adjust_position_by_debit_value(&ALICE, BTC, 0, -30));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 800);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 70);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 200);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 700);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 200);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 700);
 
 		assert_noop!(
 			EcdpUssdEngineModule::adjust_position_by_debit_value(&ALICE, BTC, 0, -69),
@@ -419,8 +419,8 @@ fn adjust_position_by_debit_value_work() {
 		assert_ok!(EcdpUssdEngineModule::adjust_position_by_debit_value(&ALICE, BTC, 0, -999999));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 800);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 200);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 200);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
 	});
 }
 
@@ -440,7 +440,7 @@ fn expand_position_collateral_work() {
 		));
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, EDF, 100, 2500));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(EDF, ALICE),
+			EcdpLoansModule::positions(EDF, ALICE),
 			EcdpPosition {
 				collateral: 100,
 				debit: 2500
@@ -450,8 +450,8 @@ fn expand_position_collateral_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 250);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 100);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 100);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 
 		assert_noop!(
 			EcdpUssdEngineModule::expand_position_collateral(&ALICE, EDF, 0, 1),
@@ -475,7 +475,7 @@ fn expand_position_collateral_work() {
 
 		assert_ok!(EcdpUssdEngineModule::expand_position_collateral(&ALICE, EDF, 250, 20));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(EDF, ALICE),
+			EcdpLoansModule::positions(EDF, ALICE),
 			EcdpPosition {
 				collateral: 124,
 				debit: 5000
@@ -485,26 +485,26 @@ fn expand_position_collateral_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 250);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 124);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 124);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (976, 10250));
 
 		assert_ok!(EcdpUssdEngineModule::expand_position_collateral(&ALICE, EDF, 200, 18));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(EDF, ALICE),
+			EcdpLoansModule::positions(EDF, ALICE),
 			EcdpPosition {
 				collateral: 142,
 				debit: 7000
 			}
 		);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 142);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 142);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (958, 10450));
 
 		// make position below the RequireCollateralRatio
 		assert_ok!(EcdpUssdEngineModule::expand_position_collateral(&ALICE, EDF, 100, 0));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(EDF, ALICE),
+			EcdpLoansModule::positions(EDF, ALICE),
 			EcdpPosition {
 				collateral: 151,
 				debit: 8000,
@@ -567,7 +567,7 @@ fn expand_position_collateral_for_lp_ussd_edf_work() {
 
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, LP_USSD_EDF, 1000, 2000));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE),
+			EcdpLoansModule::positions(LP_USSD_EDF, ALICE),
 			EcdpPosition {
 				collateral: 1000,
 				debit: 2000
@@ -578,9 +578,9 @@ fn expand_position_collateral_for_lp_ussd_edf_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 200);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 1000);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 1000);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (1000, 10000));
 
 		assert_noop!(
@@ -595,7 +595,7 @@ fn expand_position_collateral_for_lp_ussd_edf_work() {
 			100
 		));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE),
+			EcdpLoansModule::positions(LP_USSD_EDF, ALICE),
 			EcdpPosition {
 				collateral: 1283,
 				debit: 5000
@@ -606,9 +606,9 @@ fn expand_position_collateral_for_lp_ussd_edf_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 206);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 1283);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 1283);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (1000, 10294));
 	});
 }
@@ -629,7 +629,7 @@ fn shrink_position_debit_work() {
 		setup_default_collateral(USSD);
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, EDF, 100, 5000));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(EDF, ALICE),
+			EcdpLoansModule::positions(EDF, ALICE),
 			EcdpPosition {
 				collateral: 100,
 				debit: 5000
@@ -639,8 +639,8 @@ fn shrink_position_debit_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 500);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 100);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 100);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 
 		MockPriceSource::set_price(EDF, Some(Price::saturating_from_rational(8, 1)));
 		assert_noop!(
@@ -665,7 +665,7 @@ fn shrink_position_debit_work() {
 
 		assert_ok!(EcdpUssdEngineModule::shrink_position_debit(&ALICE, EDF, 10, 70));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(EDF, ALICE),
+			EcdpLoansModule::positions(EDF, ALICE),
 			EcdpPosition {
 				collateral: 90,
 				debit: 4210
@@ -675,13 +675,13 @@ fn shrink_position_debit_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 500);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 90);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 90);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (1010, 7921));
 
 		assert_ok!(EcdpUssdEngineModule::shrink_position_debit(&ALICE, EDF, 70, 0));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(EDF, ALICE),
+			EcdpLoansModule::positions(EDF, ALICE),
 			EcdpPosition {
 				collateral: 20,
 				debit: 0
@@ -691,8 +691,8 @@ fn shrink_position_debit_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 592);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 20);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 20);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (1080, 7408));
 	});
 }
@@ -732,7 +732,7 @@ fn shrink_position_debit_for_lp_ussd_edf_work() {
 		setup_default_collateral(USSD);
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, LP_USSD_EDF, 1000, 5000));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE),
+			EcdpLoansModule::positions(LP_USSD_EDF, ALICE),
 			EcdpPosition {
 				collateral: 1000,
 				debit: 5000
@@ -743,9 +743,9 @@ fn shrink_position_debit_for_lp_ussd_edf_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 500);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 1000);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 1000);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (1000, 10000));
 
 		assert_noop!(
@@ -755,7 +755,7 @@ fn shrink_position_debit_for_lp_ussd_edf_work() {
 
 		assert_ok!(EcdpUssdEngineModule::shrink_position_debit(&ALICE, LP_USSD_EDF, 100, 80));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE),
+			EcdpLoansModule::positions(LP_USSD_EDF, ALICE),
 			EcdpPosition {
 				collateral: 900,
 				debit: 4010
@@ -766,14 +766,14 @@ fn shrink_position_debit_for_lp_ussd_edf_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 500);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 900);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 900);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (1000, 9901));
 
 		assert_ok!(EcdpUssdEngineModule::shrink_position_debit(&ALICE, LP_USSD_EDF, 600, 500));
 		assert_eq!(
-			EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE),
+			EcdpLoansModule::positions(LP_USSD_EDF, ALICE),
 			EcdpPosition {
 				collateral: 300,
 				debit: 0
@@ -784,9 +784,9 @@ fn shrink_position_debit_for_lp_ussd_edf_work() {
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 685);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::surplus_pool(), 0);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 300);
-		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdLoansModule::account_id()), 0);
-		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 300);
+		assert_eq!(Currencies::free_balance(EDF, &EcdpLoansModule::account_id()), 0);
+		assert_eq!(Currencies::free_balance(USSD, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(EDF, USSD), (1000, 9315));
 	});
 }
@@ -829,8 +829,8 @@ fn liquidate_unsafe_cdp_by_collateral_auction() {
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 100, 500));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 		assert_noop!(
 			EcdpUssdEngineModule::liquidate_unsafe_cdp(ALICE, BTC),
 			Error::<Runtime>::MustBeUnsafe,
@@ -856,8 +856,8 @@ fn liquidate_unsafe_cdp_by_collateral_auction() {
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 50);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
 
 		mock_shutdown();
 		assert_noop!(
@@ -895,8 +895,8 @@ fn liquidate_unsafe_cdp_by_collateral_auction_when_limited_by_slippage() {
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 100, 500));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 
 		assert_ok!(EcdpUssdEngineModule::set_collateral_params(
 			RuntimeOrigin::signed(ALICE),
@@ -931,8 +931,8 @@ fn liquidate_unsafe_cdp_by_collateral_auction_when_limited_by_slippage() {
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 50);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
 	});
 }
 
@@ -965,8 +965,8 @@ fn liquidate_unsafe_cdp_by_swap() {
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 100, 500));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 
 		assert_ok!(EcdpUssdEngineModule::set_collateral_params(
 			RuntimeOrigin::signed(ALICE),
@@ -991,8 +991,8 @@ fn liquidate_unsafe_cdp_by_swap() {
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 50);
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 901);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
 	});
 }
 
@@ -1040,9 +1040,9 @@ fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_swap_edf() {
 		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &ALICE), 0);
 		assert_eq!(Currencies::free_balance(EDF, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 500);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).debit, 5000);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 1000);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 1000);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).debit, 5000);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 1000);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 1000);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdTreasuryModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdTreasuryModule::account_id()), 0);
@@ -1080,9 +1080,9 @@ fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_swap_edf() {
 		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &ALICE), 0);
 		assert_eq!(Currencies::free_balance(EDF, &ALICE), 1019);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 500);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 0);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 0);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 500);
 		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdTreasuryModule::account_id()), 600);
 		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdTreasuryModule::account_id()), 0);
@@ -1138,9 +1138,9 @@ fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_ussd_take_whole_target() {
 		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &ALICE), 0);
 		assert_eq!(Currencies::free_balance(EDF, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 200);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).debit, 2000);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 1000);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 1000);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).debit, 2000);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 1000);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 1000);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdTreasuryModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdTreasuryModule::account_id()), 0);
@@ -1178,9 +1178,9 @@ fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_ussd_take_whole_target() {
 		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &ALICE), 0);
 		assert_eq!(Currencies::free_balance(EDF, &ALICE), 1025);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 460);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 0);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 0);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 200);
 		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdTreasuryModule::account_id()), 240);
 		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdTreasuryModule::account_id()), 0);
@@ -1236,9 +1236,9 @@ fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_create_edf_auction() {
 		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &ALICE), 0);
 		assert_eq!(Currencies::free_balance(EDF, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 500);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).debit, 5000);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 1000);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 1000);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).debit, 5000);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 1000);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 1000);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdTreasuryModule::account_id()), 0);
 		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdTreasuryModule::account_id()), 0);
@@ -1276,9 +1276,9 @@ fn liquidate_unsafe_cdp_of_lp_ussd_edf_and_create_edf_auction() {
 		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &ALICE), 0);
 		assert_eq!(Currencies::free_balance(EDF, &ALICE), 1000);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 500);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 0);
-		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpUssdLoansModule::account_id()), 0);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(LP_USSD_EDF, ALICE).collateral, 0);
+		assert_eq!(Currencies::free_balance(LP_USSD_EDF, &EcdpLoansModule::account_id()), 0);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 500);
 		assert_eq!(Currencies::free_balance(USSD, &EcdpUssdTreasuryModule::account_id()), 500);
 		assert_eq!(Currencies::free_balance(EDF, &EcdpUssdTreasuryModule::account_id()), 25);
@@ -1305,14 +1305,14 @@ fn settle_cdp_has_debit_work() {
 		));
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 100, 0));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 		assert_noop!(
 			EcdpUssdEngineModule::settle_cdp_has_debit(ALICE, BTC),
 			Error::<Runtime>::NoDebitValue,
 		);
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 0, 500));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::total_collaterals(BTC), 0);
 		assert_ok!(EcdpUssdEngineModule::settle_cdp_has_debit(ALICE, BTC));
@@ -1320,7 +1320,7 @@ fn settle_cdp_has_debit_work() {
 			collateral_type: BTC,
 			owner: ALICE,
 		}));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
 		assert_eq!(EcdpUssdTreasuryModule::debit_pool(), 50);
 		assert_eq!(EcdpUssdTreasuryModule::total_collaterals(BTC), 50);
 
@@ -1357,8 +1357,8 @@ fn close_cdp_has_debit_by_dex_work() {
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 100, 0));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 
 		assert_noop!(
 			EcdpUssdEngineModule::close_cdp_has_debit_by_dex(ALICE, BTC, 100),
@@ -1368,8 +1368,8 @@ fn close_cdp_has_debit_by_dex_work() {
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 0, 500));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 		assert_eq!(EcdpUssdTreasuryModule::get_surplus_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::get_debit_pool(), 0);
 
@@ -1416,8 +1416,8 @@ fn close_cdp_has_debit_by_dex_work() {
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(BTC, USSD), (106, 950));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 994);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
 		assert_eq!(EcdpUssdTreasuryModule::get_surplus_pool(), 50);
 		assert_eq!(EcdpUssdTreasuryModule::get_debit_pool(), 50);
 	});
@@ -1460,8 +1460,8 @@ fn close_cdp_has_debit_by_swap_on_alternative_path() {
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&ALICE, BTC, 100, 500));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 		assert_eq!(EcdpUssdTreasuryModule::get_surplus_pool(), 0);
 		assert_eq!(EcdpUssdTreasuryModule::get_debit_pool(), 0);
 
@@ -1486,8 +1486,8 @@ fn close_cdp_has_debit_by_swap_on_alternative_path() {
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(BTC, SEE), (106, 947));
 		assert_eq!(EdfisSwapModule::get_liquidity_pool(SEE, USSD), (1053, 950));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 994);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
 		assert_eq!(EcdpUssdTreasuryModule::get_surplus_pool(), 50);
 		assert_eq!(EcdpUssdTreasuryModule::get_debit_pool(), 50);
 	});
@@ -1517,16 +1517,16 @@ fn offchain_worker_works_cdp() {
 		assert_ok!(EcdpUssdEngineModule::adjust_position(&BOB, BTC, 100, 100));
 		assert_eq!(Currencies::free_balance(BTC, &ALICE), 900);
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 50);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 		// jump 2 blocks at a time because code rotates through the different supported collateral
 		// currencies
 		run_to_block_offchain(System::block_number() + collateral_currencies_num);
 
 		// checks that offchain worker tx pool is empty (therefore tx to liquidate alice is not present)
 		assert!(pool_state.write().transactions.pop().is_none());
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 
 		// changes alice into unsafe position
 		assert_ok!(EcdpUssdEngineModule::set_collateral_params(
@@ -1557,10 +1557,10 @@ fn offchain_worker_works_cdp() {
 		// empty offchain tx pool (Bob was not liquidated)
 		assert!(pool_state.write().transactions.pop().is_none());
 		// alice is liquidated but bob is not
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, BOB).debit, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, BOB).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, BOB).debit, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, BOB).collateral, 100);
 
 		// emergency shutdown will settle Bobs debit position
 		mock_shutdown();
@@ -1577,8 +1577,8 @@ fn offchain_worker_works_cdp() {
 			assert_ok!(EcdpUssdEngineModule::settle(RuntimeOrigin::none(), currency_call, who_call));
 		}
 		// emergency shutdown settles bob's debit position
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, BOB).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, BOB).collateral, 90);
+		assert_eq!(EcdpLoansModule::positions(BTC, BOB).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, BOB).collateral, 90);
 	});
 }
 
@@ -1632,8 +1632,8 @@ fn offchain_worker_iteration_limit_works() {
 			));
 		}
 		// alice is liquidated but not bob, he will get liquidated next block due to iteration limit
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
 		// only one tx is submitted due to iteration limit
 		assert!(pool_state.write().transactions.pop().is_none());
 
@@ -1652,8 +1652,8 @@ fn offchain_worker_iteration_limit_works() {
 				who_call
 			));
 		}
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, BOB).debit, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, BOB).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, BOB).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, BOB).collateral, 0);
 		assert!(pool_state.write().transactions.pop().is_none());
 	});
 }

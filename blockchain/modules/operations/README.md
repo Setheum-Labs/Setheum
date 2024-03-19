@@ -5,8 +5,8 @@ General ChainOps extrinsic that are used in chain maintenance activities.
 ## fix_accounts_consumers_underflow
 
 An account can have an underflow of a `consumers` counter. 
-Account categories that are impacted by this issue depends on a chain runtime,
-but specifically for AlephNode runtime are as follows:
+Account categories that are impacted by this issue depends on a chain's runtime,
+but specifically for Setheum Runtime are as follows:
 
 * `consumers`  == 0, `reserved`  > 0
 * `consumers`  == 1, `balances.Locks` contain an entry with `id`  == `vesting`
