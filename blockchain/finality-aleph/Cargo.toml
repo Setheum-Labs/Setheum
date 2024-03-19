@@ -70,7 +70,7 @@ sp-runtime = { workspace = true }
 sp-state-machine = { workspace = true }
 sp-timestamp = { workspace = true }
 sp-trie = { workspace = true }
-aleph-runtime = { workspace = true }
+setheum-runtime = { workspace = true }
 
 [dev-dependencies]
 substrate-test-runtime-client = { workspace = true }

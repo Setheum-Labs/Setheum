@@ -80,7 +80,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "aleph-runtime"
+name = "setheum-runtime"
 version = "0.14.0+dev"
 dependencies = [
  "black-box-extension",
@@ -89,14 +89,14 @@ dependencies = [
  "frame-system",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "pallet-aleph",
+ "module-aleph",
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
  "module-committee-management",
  "pallet-contracts",
  "pallet-contracts-primitives",
- "pallet-elections",
+ "module-elections",
  "module-feature-control",
  "pallet-identity",
  "pallet-insecure-randomness-collective-flip",
@@ -113,7 +113,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
  "pallet-utility",
- "pallet-vesting",
+ "module-vesting",
  "module-vk-storage",
  "parity-scale-codec",
  "primitives",
@@ -136,7 +136,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "aleph-runtime-interfaces"
+name = "setheum-runtime-interfaces"
 version = "0.1.0"
 dependencies = [
  "halo2_proofs",
@@ -432,8 +432,8 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 name = "black-box-extension"
 version = "0.1.0"
 dependencies = [
- "aleph-runtime",
- "aleph-runtime-interfaces",
+ "setheum-runtime",
+ "setheum-runtime-interfaces",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -2876,7 +2876,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-session",
  "pallet-staking",
- "pallets-support",
+ "module-support",
  "parity-scale-codec",
  "primitives",
  "rand 0.8.5",
@@ -2941,7 +2941,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-elections"
+name = "module-elections"
 version = "0.6.0"
 dependencies = [
  "frame-election-provider-support",
@@ -2950,7 +2950,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-staking",
- "pallets-support",
+ "module-support",
  "parity-scale-codec",
  "primitives",
  "rand 0.8.5",
@@ -3257,7 +3257,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallets-support"
+name = "module-support"
 version = "0.1.4"
 dependencies = [
  "frame-support",

@@ -56,7 +56,7 @@ runtime = [
     "sp-std",
     "module-feature-control",
     "module-vk-storage",
-    "aleph-runtime-interfaces",
+    "setheum-runtime-interfaces",
 ]
 runtime-std = [
     "runtime",
@@ -68,7 +68,7 @@ runtime-std = [
     "sp-std/std",
     "module-feature-control/std",
     "module-vk-storage/std",
-    "aleph-runtime-interfaces/std",
+    "setheum-runtime-interfaces/std",
 ]
 
 # `ink` and `ink-std` features are dedicated to the ink! part of the extension. They bring the smart contract part of

@@ -1,5 +1,7 @@
 # Elections Module
 
+## Overview
+
 This module manages changes in the committee responsible for producing blocks and establishing consensus.
 
 ## Terminology
