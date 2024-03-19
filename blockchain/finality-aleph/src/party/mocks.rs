@@ -28,7 +28,7 @@ use std::{
 use async_trait::async_trait;
 
 use crate::{
-    aleph_primitives::BlockNumber,
+    primitives ::BlockNumber,
     oneshot,
     party::{
         backup::ABFTBackup,

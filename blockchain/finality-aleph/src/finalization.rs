@@ -30,7 +30,7 @@ use sp_runtime::{
 };
 
 use crate::{
-    aleph_primitives::{BlockHash, BlockNumber},
+    primitives ::{BlockHash, BlockNumber},
     metrics::{AllBlockMetrics, Checkpoint},
     BlockId,
 };

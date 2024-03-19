@@ -23,7 +23,7 @@ use sp_consensus::BlockOrigin;
 use sp_runtime::traits::{CheckedSub, Header as _, One};
 
 use crate::{
-    aleph_primitives::{Block, Header},
+    primitives ::{Block, Header},
     block::{Block as BlockT, BlockId, BlockImport, Header as HeaderT, UnverifiedHeader},
     metrics::{AllBlockMetrics, Checkpoint},
 };

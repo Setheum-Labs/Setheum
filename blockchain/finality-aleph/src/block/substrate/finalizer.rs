@@ -23,7 +23,7 @@ use sp_blockchain::Error as ClientError;
 use sp_runtime::traits::Header as SubstrateHeader;
 
 use crate::{
-    aleph_primitives::Block,
+    primitives ::Block,
     block::{
         substrate::{InnerJustification, Justification},
         Finalizer,

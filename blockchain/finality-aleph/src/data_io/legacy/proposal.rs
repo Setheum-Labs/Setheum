@@ -24,7 +24,7 @@ use parity_scale_codec::{Decode, Encode};
 use sp_runtime::SaturatedConversion;
 
 use crate::{
-    aleph_primitives::{BlockHash, BlockNumber},
+    primitives ::{BlockHash, BlockNumber},
     data_io::legacy::MAX_DATA_BRANCH_LEN,
     BlockId, SessionBoundaries,
 };
@@ -224,7 +224,7 @@ mod tests {
 
     use super::{UnvalidatedAlephProposal, ValidationError::*};
     use crate::{
-        aleph_primitives::BlockNumber, data_io::MAX_DATA_BRANCH_LEN, SessionBoundaryInfo,
+        primitives ::BlockNumber, data_io::MAX_DATA_BRANCH_LEN, SessionBoundaryInfo,
         SessionId, SessionPeriod,
     };
 

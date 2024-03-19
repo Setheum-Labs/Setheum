@@ -28,7 +28,7 @@ use sp_core::crypto::KeyTypeId;
 use tokio::net::{TcpListener, TcpStream, ToSocketAddrs};
 
 use crate::{
-    aleph_primitives::AuthorityId,
+    primitives ::AuthorityId,
     crypto::{verify, AuthorityPen, Signature},
     network::{AddressingInformation, NetworkIdentity},
 };

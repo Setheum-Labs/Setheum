@@ -24,7 +24,7 @@ use log::{debug, info};
 use lru::LruCache;
 
 use crate::{
-    aleph_primitives::{BlockHash, BlockNumber},
+    primitives ::{BlockHash, BlockNumber},
     block::{Header, HeaderBackend},
     data_io::ChainInfoCacheConfig,
     BlockId,

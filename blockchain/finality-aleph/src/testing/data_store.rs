@@ -31,7 +31,7 @@ use sp_core::hash::H256;
 use tokio::time::timeout;
 
 use crate::{
-    aleph_primitives::BlockNumber,
+    primitives ::BlockNumber,
     block::{Block, Header},
     data_io::{AlephData, AlephNetworkMessage, DataStore, DataStoreConfig, MAX_DATA_BRANCH_LEN},
     network::{

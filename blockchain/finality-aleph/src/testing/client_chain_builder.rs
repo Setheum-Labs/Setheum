@@ -29,7 +29,7 @@ use substrate_test_runtime::ExtrinsicBuilder;
 use substrate_test_runtime_client::{ClientBlockImportExt, ClientExt};
 
 use crate::{
-    aleph_primitives::BlockNumber,
+    primitives ::BlockNumber,
     testing::mocks::{TBlock, THeader, TestClient},
     BlockId,
 };

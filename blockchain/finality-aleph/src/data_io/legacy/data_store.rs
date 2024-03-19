@@ -37,7 +37,7 @@ use log::{debug, error, info, trace, warn};
 use lru::LruCache;
 
 use crate::{
-    aleph_primitives::BlockNumber,
+    primitives ::BlockNumber,
     block::{
         BlockchainEvents, ChainStatusNotification, ChainStatusNotifier, Header, HeaderBackend,
     },

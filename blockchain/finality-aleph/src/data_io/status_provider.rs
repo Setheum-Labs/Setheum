@@ -22,7 +22,7 @@ use log::{debug, warn};
 use sp_runtime::SaturatedConversion;
 
 use crate::{
-    aleph_primitives::BlockNumber,
+    primitives ::BlockNumber,
     block::{Header, HeaderVerifier, UnverifiedHeader},
     data_io::{
         chain_info::ChainInfoProvider,

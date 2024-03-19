@@ -25,7 +25,7 @@ use parity_scale_codec::{Decode, Encode, Error as CodecError, Input as CodecInpu
 use static_assertions::const_assert;
 
 use crate::{
-    aleph_primitives::MAX_BLOCK_SIZE,
+    primitives ::MAX_BLOCK_SIZE,
     block::{
         Block, Header, Justification, UnverifiedHeader, UnverifiedHeaderFor,
         UnverifiedJustification,

@@ -33,7 +33,7 @@ use crate::{
         current_create_aleph_config, legacy_create_aleph_config, run_current_member,
         run_legacy_member, SpawnHandle,
     },
-    aleph_primitives::{AlephSessionApi, BlockHash, BlockNumber, KEY_TYPE},
+    primitives ::{AlephSessionApi, BlockHash, BlockNumber, KEY_TYPE},
     block::{
         substrate::{Justification, JustificationTranslator},
         BestBlockSelector, Block, Header, HeaderVerifier, UnverifiedHeader,

@@ -23,7 +23,7 @@ use std::fmt::{Display, Error as FmtError, Formatter};
 use sp_runtime::RuntimeAppPublic;
 
 use crate::{
-    aleph_primitives::SessionAuthorityData, crypto::AuthorityVerifier,
+    primitives ::SessionAuthorityData, crypto::AuthorityVerifier,
     justification::AlephJustification, AuthorityId,
 };
 

@@ -29,7 +29,7 @@ use std::{
 use static_assertions::const_assert;
 
 use crate::{
-    aleph_primitives::DEFAULT_SESSION_PERIOD,
+    primitives ::DEFAULT_SESSION_PERIOD,
     block::{Block, ChainStatus, Header, Justification, UnverifiedHeader, UnverifiedHeaderFor},
     sync::{
         data::{BranchKnowledge, MaybeHeader},

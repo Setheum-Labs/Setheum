@@ -27,7 +27,7 @@ use legacy_aleph_aggregator::NetworkError as LegacyNetworkError;
 
 use crate::{
     abft::SignatureSet,
-    aleph_primitives::BlockHash,
+    primitives ::BlockHash,
     crypto::Signature,
     mpsc,
     network::{

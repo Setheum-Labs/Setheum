@@ -28,7 +28,7 @@ use sp_runtime::RuntimeAppPublic;
 
 use crate::{
     abft::{NodeCount, NodeIndex, SignatureSet},
-    aleph_primitives::{AuthorityId, AuthoritySignature, KEY_TYPE},
+    primitives ::{AuthorityId, AuthoritySignature, KEY_TYPE},
 };
 
 #[derive(Debug)]

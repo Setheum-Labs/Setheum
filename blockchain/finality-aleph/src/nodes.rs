@@ -32,7 +32,7 @@ use sp_consensus::SelectChain;
 use sp_consensus_aura::AuraApi;
 
 use crate::{
-    aleph_primitives::{AlephSessionApi, AuraId, Block},
+    primitives ::{AlephSessionApi, AuraId, Block},
     block::{
         substrate::{JustificationTranslator, SubstrateFinalizationInfo, VerifierCache},
         BlockchainEvents, ChainStatus, FinalizationStatus, Justification,

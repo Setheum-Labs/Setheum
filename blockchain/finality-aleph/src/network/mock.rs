@@ -27,7 +27,7 @@ use sp_keystore::Keystore as _;
 use tokio::time::timeout;
 
 use crate::{
-    aleph_primitives::KEY_TYPE,
+    primitives ::KEY_TYPE,
     crypto::{AuthorityPen, AuthorityVerifier},
     AuthorityId, NodeIndex,
 };

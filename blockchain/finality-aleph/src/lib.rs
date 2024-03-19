@@ -36,7 +36,7 @@ use futures::{
     Future,
 };
 use parity_scale_codec::{Decode, Encode, Output};
-use primitives as aleph_primitives;
+use primitives as primitives ;
 use primitives::{AuthorityId, Block as AlephBlock, BlockHash, BlockNumber, Hash as AlephHash};
 use sc_client_api::{
     Backend, BlockBackend, BlockchainEvents, Finalizer, LockImportRun, StorageProvider,

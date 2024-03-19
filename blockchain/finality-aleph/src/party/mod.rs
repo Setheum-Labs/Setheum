@@ -283,7 +283,7 @@ mod tests {
     use tokio::{task::JoinHandle, time::sleep};
 
     use crate::{
-        aleph_primitives::{AuthorityId, SessionAuthorityData},
+        primitives ::{AuthorityId, SessionAuthorityData},
         party::{
             mocks::{MockChainState, MockNodeSessionManager},
             ConsensusParty, ConsensusPartyParams, SESSION_STATUS_CHECK_PERIOD,

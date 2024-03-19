@@ -23,7 +23,7 @@ use std::{marker::PhantomData, sync::Arc};
 use sc_client_api::Backend;
 use sp_runtime::traits::{Block as BlockT, Header as HeaderT};
 
-use crate::{aleph_primitives::BlockNumber, party::traits::ChainState, ClientForAleph};
+use crate::{primitives ::BlockNumber, party::traits::ChainState, ClientForAleph};
 
 pub struct ChainStateImpl<B, BE, CFA>
 where

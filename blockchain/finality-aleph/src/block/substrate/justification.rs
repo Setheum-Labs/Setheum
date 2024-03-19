@@ -23,7 +23,7 @@ use std::fmt::{Debug, Display, Error as FmtError, Formatter};
 use parity_scale_codec::{Decode, Encode};
 
 use crate::{
-    aleph_primitives::Header,
+    primitives ::Header,
     block::{
         substrate::{
             chain_status::{Error as ChainStatusError, SubstrateChainStatus},

@@ -30,7 +30,7 @@ use sp_blockchain::{Backend as _, Error as BackendError, Info};
 use sp_runtime::traits::{Block as SubstrateBlock, Header as SubstrateHeader};
 
 use crate::{
-    aleph_primitives::{
+    primitives ::{
         Block, BlockNumber, Hash as AlephHash, Header as AlephHeader, ALEPH_ENGINE_ID,
     },
     block::{

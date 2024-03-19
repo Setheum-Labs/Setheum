@@ -23,7 +23,7 @@ use std::fmt::Display;
 use async_trait::async_trait;
 
 use crate::{
-    aleph_primitives::BlockNumber,
+    primitives ::BlockNumber,
     party::{backup::ABFTBackup, manager::AuthorityTask},
     AuthorityId, NodeIndex, SessionId,
 };

@@ -231,7 +231,7 @@ mod test {
         VersionedAlephJustification,
     };
     use crate::{
-        aleph_primitives::{AuthorityPair, AuthoritySignature},
+        primitives ::{AuthorityPair, AuthoritySignature},
         crypto::{Signature, SignatureV1},
         justification::AlephJustification,
         NodeCount, SignatureSet, Version,

@@ -26,7 +26,7 @@ use parking_lot::Mutex;
 use sp_runtime::{traits::Zero, SaturatedConversion};
 
 use crate::{
-    aleph_primitives::BlockNumber,
+    primitives ::BlockNumber,
     block::{BestBlockSelector, Header, HeaderBackend, UnverifiedHeader},
     data_io::{proposal::UnvalidatedAlephProposal, AlephData, MAX_DATA_BRANCH_LEN},
     metrics::{AllBlockMetrics, Checkpoint},

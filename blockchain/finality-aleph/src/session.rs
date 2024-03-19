@@ -21,7 +21,7 @@
 use parity_scale_codec::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
-use crate::aleph_primitives::BlockNumber;
+use crate::primitives ::BlockNumber;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct SessionBoundaries {
@@ -77,7 +77,7 @@ impl SessionBoundaryInfo {
 pub mod testing {
     use sp_runtime::testing::UintAuthorityId;
 
-    use crate::aleph_primitives::SessionAuthorityData;
+    use crate::primitives ::SessionAuthorityData;
 
     pub fn authority_data(from: u32, to: u32) -> SessionAuthorityData {
         SessionAuthorityData::new(

@@ -35,7 +35,7 @@ use substrate_prometheus_endpoint::{
 };
 
 use crate::{
-    aleph_primitives::BlockHash,
+    primitives ::BlockHash,
     metrics::{exponential_buckets_two_sided, LOG_TARGET},
     Display,
 };

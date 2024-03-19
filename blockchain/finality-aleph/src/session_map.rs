@@ -32,7 +32,7 @@ use tokio::sync::{
 };
 
 use crate::{
-    aleph_primitives::{
+    primitives ::{
         AccountId, AlephSessionApi, AuraId, BlockHash, BlockNumber, SessionAuthorityData,
     },
     runtime_api::RuntimeApi,
@@ -61,7 +61,7 @@ pub trait AuthorityProvider: Clone + Send + Sync + 'static {
 pub struct AuthorityProviderImpl<C, B, BE, RA>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B> + AuraApi<B, AuraId>,
+    C::Api: crate::primitives ::AlephSessionApi<B> + AuraApi<B, AuraId>,
     B: Block<Hash = BlockHash>,
     BE: Backend<B> + 'static,
     RA: RuntimeApi,
@@ -74,7 +74,7 @@ where
 impl<C, B, BE, RA> Clone for AuthorityProviderImpl<C, B, BE, RA>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B> + AuraApi<B, AuraId>,
+    C::Api: crate::primitives ::AlephSessionApi<B> + AuraApi<B, AuraId>,
     B: Block<Hash = BlockHash>,
     B::Header: Header<Number = BlockNumber>,
     BE: Backend<B> + 'static,
@@ -88,7 +88,7 @@ where
 impl<C, B, BE, RA> AuthorityProviderImpl<C, B, BE, RA>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B> + AuraApi<B, AuraId>,
+    C::Api: crate::primitives ::AlephSessionApi<B> + AuraApi<B, AuraId>,
     B: Block<Hash = BlockHash>,
     B::Header: Header<Number = BlockNumber>,
     BE: Backend<B> + 'static,
@@ -182,7 +182,7 @@ pub trait FinalityNotifier {
 pub struct FinalityNotifierImpl<C, B, BE>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B>,
+    C::Api: crate::primitives ::AlephSessionApi<B>,
     B: Block,
     B::Header: Header<Number = BlockNumber>,
     BE: Backend<B> + 'static,
@@ -195,7 +195,7 @@ where
 impl<C, B, BE> FinalityNotifierImpl<C, B, BE>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B>,
+    C::Api: crate::primitives ::AlephSessionApi<B>,
     B: Block,
     B::Header: Header<Number = BlockNumber>,
     BE: Backend<B> + 'static,
@@ -213,7 +213,7 @@ where
 impl<C, B, BE> FinalityNotifier for FinalityNotifierImpl<C, B, BE>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B>,
+    C::Api: crate::primitives ::AlephSessionApi<B>,
     B: Block,
     B::Header: Header<Number = BlockNumber>,
     BE: Backend<B> + 'static,
@@ -449,7 +449,7 @@ mod tests {
     use tokio::sync::oneshot::error::TryRecvError;
 
     use super::*;
-    use crate::{aleph_primitives::BlockNumber, session::testing::authority_data};
+    use crate::{primitives ::BlockNumber, session::testing::authority_data};
 
     const FIRST_THRESHOLD: u32 = PRUNING_THRESHOLD + 1;
     const SECOND_THRESHOLD: u32 = 2 * PRUNING_THRESHOLD + 1;

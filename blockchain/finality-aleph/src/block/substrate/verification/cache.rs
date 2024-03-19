@@ -34,7 +34,7 @@ use sp_runtime::{
 };
 
 use crate::{
-    aleph_primitives::{
+    primitives ::{
         AccountId, AuraId, AuthoritySignature, Block, BlockNumber, Header, MILLISECS_PER_BLOCK,
     },
     block::{
@@ -475,7 +475,7 @@ mod tests {
         SessionVerifier, VerifierCache,
     };
     use crate::{
-        aleph_primitives::SessionAuthorityData,
+        primitives ::SessionAuthorityData,
         block::mock::MockHeader,
         session::{testing::authority_data, SessionBoundaryInfo, SessionId},
         SessionPeriod,

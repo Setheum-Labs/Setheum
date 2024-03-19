@@ -29,7 +29,7 @@ pub use proposal::{
 use sp_core::H256;
 
 use crate::{
-    aleph_primitives::{Block, Header},
+    primitives ::{Block, Header},
     block::{EquivocationProof, HeaderVerifier, VerifiedHeader},
 };
 

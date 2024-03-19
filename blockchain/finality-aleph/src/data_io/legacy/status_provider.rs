@@ -22,7 +22,7 @@ use log::debug;
 use sp_runtime::SaturatedConversion;
 
 use crate::{
-    aleph_primitives::BlockNumber,
+    primitives ::BlockNumber,
     data_io::{
         chain_info::ChainInfoProvider,
         legacy::proposal::{AlephProposal, PendingProposalStatus, ProposalStatus},

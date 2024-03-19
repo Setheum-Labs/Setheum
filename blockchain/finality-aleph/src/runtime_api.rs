@@ -33,7 +33,7 @@ use sp_core::twox_128;
 use sp_runtime::traits::{Block, OpaqueKeys};
 
 use crate::{
-    aleph_primitives::{AccountId, AlephSessionApi, AuraId},
+    primitives ::{AccountId, AlephSessionApi, AuraId},
     BlockHash, ClientForAleph,
 };
 

@@ -23,7 +23,7 @@ use sp_runtime::Justification;
 
 use crate::{
     abft::SignatureSet,
-    aleph_primitives::{AuthoritySignature, ALEPH_ENGINE_ID},
+    primitives ::{AuthoritySignature, ALEPH_ENGINE_ID},
     crypto::Signature,
 };
 

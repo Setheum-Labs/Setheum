@@ -32,7 +32,7 @@ use sp_consensus::{BlockOrigin, Error as ConsensusError};
 use sp_runtime::{traits::Header as HeaderT, Justification as SubstrateJustification};
 
 use crate::{
-    aleph_primitives::{Block, BlockHash, BlockNumber, ALEPH_ENGINE_ID},
+    primitives ::{Block, BlockHash, BlockNumber, ALEPH_ENGINE_ID},
     block::substrate::{Justification, JustificationTranslator, TranslateError},
     justification::{backwards_compatible_decode, DecodeError},
     metrics::{AllBlockMetrics, Checkpoint},

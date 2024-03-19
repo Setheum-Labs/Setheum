@@ -28,7 +28,7 @@ mod traits;
 pub use network::NetworkData;
 
 use super::common::{sanity_check_round_delays, unit_creation_delay_fn, MAX_ROUNDS};
-pub use crate::aleph_primitives::{BlockHash, BlockNumber, LEGACY_FINALITY_VERSION as VERSION};
+pub use crate::primitives ::{BlockHash, BlockNumber, LEGACY_FINALITY_VERSION as VERSION};
 use crate::{
     abft::NetworkWrapper,
     block::{Header, HeaderBackend},

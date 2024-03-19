@@ -212,7 +212,7 @@ mod test {
     /// external_addresses: [String::from("addr1"), String::from("addr2"), String::from("addr3")]
     /// derived from mnemonic "ring cool spatial rookie need wing opinion pond fork garbage more april"
     /// for node index 21 and session id 37
-    /// encoded at version of Aleph Node after 8.0
+    /// encoded at version of Setheum Node after 8.0
     fn raw_authentication_v2() -> Vec<u8> {
         vec![
             2, 0, 191, 0, 50, 40, 192, 239, 72, 72, 119, 156, 76, 37, 212, 220, 76, 165, 39, 73,

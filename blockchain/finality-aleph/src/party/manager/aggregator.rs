@@ -32,7 +32,7 @@ use tokio::time;
 use crate::{
     abft::SignatureSet,
     aggregation::Aggregator,
-    aleph_primitives::BlockHash,
+    primitives ::BlockHash,
     block::{
         substrate::{Justification, JustificationTranslator},
         Header, HeaderBackend,

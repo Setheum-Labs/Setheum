@@ -29,7 +29,7 @@ use sc_consensus_aura::standalone::PreDigestLookupError;
 use sp_consensus_slots::Slot;
 
 use crate::{
-    aleph_primitives::{AccountId, AuraId, Block, BlockNumber, Header},
+    primitives ::{AccountId, AuraId, Block, BlockNumber, Header},
     block::{
         substrate::verification::{cache::CacheError, verifier::SessionVerificationError},
         EquivocationProof as EquivocationProofT, Header as HeaderT,

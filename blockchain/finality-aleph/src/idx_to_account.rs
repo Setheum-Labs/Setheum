@@ -40,7 +40,7 @@ pub trait ValidatorIndexToAccountIdConverter {
 pub struct ValidatorIndexToAccountIdConverterImpl<C, B, BE, RA>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B> + AuraApi<B, AuraId>,
+    C::Api: crate::primitives ::AlephSessionApi<B> + AuraApi<B, AuraId>,
     B: Block<Hash = BlockHash>,
     BE: Backend<B> + 'static,
     RA: RuntimeApi,
@@ -53,7 +53,7 @@ where
 impl<C, B, BE, RA> ValidatorIndexToAccountIdConverterImpl<C, B, BE, RA>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B> + AuraApi<B, AuraId>,
+    C::Api: crate::primitives ::AlephSessionApi<B> + AuraApi<B, AuraId>,
     B: Block<Hash = BlockHash>,
     B::Header: Header<Number = BlockNumber>,
     BE: Backend<B> + 'static,
@@ -72,7 +72,7 @@ impl<C, B, BE, RA> ValidatorIndexToAccountIdConverter
     for ValidatorIndexToAccountIdConverterImpl<C, B, BE, RA>
 where
     C: ClientForAleph<B, BE> + Send + Sync + 'static,
-    C::Api: crate::aleph_primitives::AlephSessionApi<B> + AuraApi<B, AuraId>,
+    C::Api: crate::primitives ::AlephSessionApi<B> + AuraApi<B, AuraId>,
     B: Block<Hash = BlockHash>,
     B::Header: Header<Number = BlockNumber>,
     BE: Backend<B> + 'static,
