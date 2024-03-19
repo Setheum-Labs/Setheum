@@ -20,7 +20,7 @@ sp-io = {workspace = true }
 sp-runtime = {workspace = true }
 sp-std = {workspace = true }
 module-support = { workspace = true }
-module-ecdp-ussd-loans = { workspace = true }
+module-ecdp-loans = { workspace = true }
 primitives = { workspace = true }
 
 [dev-dependencies]
@@ -41,7 +41,7 @@ std = [
 	"parity-scale-codec/std",
 	"frame-support/std",
 	"frame-system/std",
-	"module-ecdp-ussd-loans/std",
+	"module-ecdp-loans/std",
 	"orml-traits/std",
 	"orml-utilities/std",
 	"primitives/std",
@@ -56,5 +56,5 @@ std = [
 try-runtime = [
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
-	"module-ecdp-ussd-loans/try-runtime",
+	"module-ecdp-loans/try-runtime",
 ]

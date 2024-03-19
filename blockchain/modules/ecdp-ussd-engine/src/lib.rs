@@ -23,7 +23,7 @@
 //! ## Overview
 //!
 //! The core module of Slick USD ECDP Protocol. ECDP USSD Engine is responsible for handling
-//! internal processes about CDPs, including liquidation, settlement and risk
+//! internal processes about ECDPs, including liquidation, settlement and risk
 //! management.
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -78,7 +78,7 @@ pub const OFFCHAIN_WORKER_MAX_ITERATIONS: &[u8] = b"setheum/ecdp-ussd-engine/max
 pub const LOCK_DURATION: u64 = 100;
 pub const DEFAULT_MAX_ITERATIONS: u32 = 1000;
 
-pub type LoansOf<T> = module_ecdp_ussd_loans::Pallet<T>;
+pub type LoansOf<T> = module_ecdp_loans::Pallet<T>;
 pub type CurrencyOf<T> = <T as Config>::Currency;
 
 /// Risk management params
@@ -124,7 +124,7 @@ pub mod module {
 	use super::*;
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + module_ecdp_ussd_loans::Config + SendTransactionTypes<Call<Self>> {
+	pub trait Config: frame_system::Config + module_ecdp_loans::Config + SendTransactionTypes<Call<Self>> {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// The origin which may update risk management parameters. Root can
@@ -651,10 +651,10 @@ impl<T: Config> Pallet<T> {
 		let is_shutdown = T::EcdpEmergencyShutdown::is_shutdown();
 
 		// If start key is Some(value) continue iterating from that point in storage otherwise start
-		// iterating from the beginning of <module_ecdp_ussd_loans::EcdpPositions<T>>
+		// iterating from the beginning of <module_ecdp_loans::EcdpPositions<T>>
 		let mut map_iterator = match start_key.clone() {
-			Some(key) => <module_ecdp_ussd_loans::EcdpPositions<T>>::iter_prefix_from(currency_id, key),
-			None => <module_ecdp_ussd_loans::EcdpPositions<T>>::iter_prefix(currency_id),
+			Some(key) => <module_ecdp_loans::EcdpPositions<T>>::iter_prefix_from(currency_id, key),
+			None => <module_ecdp_loans::EcdpPositions<T>>::iter_prefix(currency_id),
 		};
 
 		let mut finished = true;

@@ -18,11 +18,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! # ECDP USSD Loans Module
+//! # ECDP Loans Module
 //!
 //! ## Overview
 //!
-//! ECDP USSD Loans module manages ECDP's collateral assets and the debits backed by these
+//! ECDP Loans module manages ECDP's collateral assets and the debits backed by these
 //! assets.
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -305,7 +305,7 @@ impl<T: Config> Pallet<T> {
 				}
 			}
 
-			// TODO:[src/lib.rs:0] - Remove this from this module and add it to `EcdpUssdLoans` module.
+			// TODO:[src/lib.rs:0] - Remove this from this module and add it to `EcdpLoans` module.
 			// Use the collateral amount (of a position that has fulfilled the `EcdpPositionCloudCreditRequirements` -
 			// this is only offered for SETR) as the shares for Cloud Credit.
 			//

@@ -120,8 +120,8 @@ fn transfer_loan_from_should_work() {
 		assert_ok!(EcdpModule::adjust_loan(RuntimeOrigin::signed(ALICE), BTC, 100, 50));
 		assert_ok!(EcdpModule::authorize(RuntimeOrigin::signed(ALICE), BTC, BOB));
 		assert_ok!(EcdpModule::transfer_loan_from(RuntimeOrigin::signed(BOB), BTC, ALICE));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, BOB).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, BOB).debit, 50);
+		assert_eq!(EcdpLoansModule::positions(BTC, BOB).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, BOB).debit, 50);
 	});
 }
 
@@ -148,8 +148,8 @@ fn adjust_loan_should_work() {
 			Change::NewValue(10000),
 		));
 		assert_ok!(EcdpModule::adjust_loan(RuntimeOrigin::signed(ALICE), BTC, 100, 50));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 50);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 50);
 	});
 }
 
@@ -172,8 +172,8 @@ fn adjust_loan_by_debit_value_should_work() {
 			100,
 			50
 		));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
 
 		assert_ok!(EcdpModule::adjust_loan_by_debit_value(
 			RuntimeOrigin::signed(ALICE),
@@ -181,8 +181,8 @@ fn adjust_loan_by_debit_value_should_work() {
 			-10,
 			-5
 		));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 90);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 450);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 90);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 450);
 	});
 }
 
@@ -218,16 +218,16 @@ fn close_loan_has_debit_by_dex_work() {
 			Change::NewValue(10000),
 		));
 		assert_ok!(EcdpModule::adjust_loan(RuntimeOrigin::signed(ALICE), BTC, 100, 50));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 50);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 50);
 
 		assert_ok!(EcdpModule::close_loan_has_debit_by_dex(
 			RuntimeOrigin::signed(ALICE),
 			BTC,
 			100,
 		));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 0);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 0);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 0);
 	});
 }
 
@@ -256,12 +256,12 @@ fn transfer_debit_works() {
 
 		// set up two loans
 		assert_ok!(EcdpModule::adjust_loan(RuntimeOrigin::signed(ALICE), BTC, 100, 500));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
 
 		assert_ok!(EcdpModule::adjust_loan(RuntimeOrigin::signed(ALICE), EDF, 100, 500));
-		assert_eq!(EcdpUssdLoansModule::positions(EDF, ALICE).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(EDF, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(EDF, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(EDF, ALICE).debit, 500);
 
 		// Will not work for account with no open CDP
 		assert_noop!(
@@ -296,11 +296,11 @@ fn transfer_debit_works() {
 			amount: 50,
 		}));
 
-		assert_eq!(EcdpUssdLoansModule::positions(EDF, ALICE).debit, 550);
-		assert_eq!(EcdpUssdLoansModule::positions(EDF, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(EDF, ALICE).debit, 550);
+		assert_eq!(EcdpLoansModule::positions(EDF, ALICE).collateral, 100);
 
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 450);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 450);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
 	});
 }
 
@@ -329,12 +329,12 @@ fn transfer_debit_no_ussd() {
 
 		// set up two loans
 		assert_ok!(EcdpModule::adjust_loan(RuntimeOrigin::signed(ALICE), BTC, 100, 500));
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(BTC, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(BTC, ALICE).debit, 500);
 
 		assert_ok!(EcdpModule::adjust_loan(RuntimeOrigin::signed(ALICE), EDF, 100, 500));
-		assert_eq!(EcdpUssdLoansModule::positions(EDF, ALICE).collateral, 100);
-		assert_eq!(EcdpUssdLoansModule::positions(EDF, ALICE).debit, 500);
+		assert_eq!(EcdpLoansModule::positions(EDF, ALICE).collateral, 100);
+		assert_eq!(EcdpLoansModule::positions(EDF, ALICE).debit, 500);
 
 		assert_eq!(Currencies::free_balance(USSD, &ALICE), 100);
 		assert_ok!(Currencies::transfer(RuntimeOrigin::signed(ALICE), BOB, USSD, 100));

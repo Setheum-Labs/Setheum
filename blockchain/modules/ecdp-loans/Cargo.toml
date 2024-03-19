@@ -1,5 +1,5 @@
 [package]
-name = "module-ecdp-ussd-loans"
+name = "module-ecdp-loans"
 version = "0.9.81-dev"
 authors.workspace = true
 edition.workspace = true

@@ -18,7 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Mocks for the ecdp_ussd_loans module.
+//! Mocks for the ecdp_loans module.
 
 #![cfg(test)]
 
@@ -50,7 +50,7 @@ pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
 pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
 pub const BTC: CurrencyId = CurrencyId::ForeignAsset(255);
 
-mod ecdp_ussd_loans {
+mod ecdp_loans {
 	pub use super::super::*;
 }
 
@@ -228,7 +228,7 @@ thread_local! {
 // }
 
 parameter_types! {
-	pub const EcdpUssdLoansPalletId: PalletId = PalletId(*b"set/ussdloan");
+	pub const EcdpLoansPalletId: PalletId = PalletId(*b"set/ussdloan");
 }
 
 impl Config for Runtime {
@@ -236,7 +236,7 @@ impl Config for Runtime {
 	type Currency = Currencies;
 	type EcdpUssdRiskManager = MockEcdpUssdRiskManager;
 	type EcdpUssdTreasury = EcdpUssdTreasuryModule;
-	type PalletId = EcdpUssdLoansPalletId;
+	type PalletId = EcdpLoansPalletId;
 }
 
 type Block = frame_system::mocking::MockBlock<Runtime>;
@@ -244,7 +244,7 @@ type Block = frame_system::mocking::MockBlock<Runtime>;
 construct_runtime!(
 	pub enum Runtime {
 		System: frame_system,
-		EcdpUssdLoansModule: ecdp_ussd_loans,
+		EcdpLoansModule: ecdp_loans,
 		Tokens: orml_tokens,
 		PalletBalances: pallet_balances,
 		Currencies: orml_currencies,

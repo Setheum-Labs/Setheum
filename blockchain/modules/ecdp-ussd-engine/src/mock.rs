@@ -117,15 +117,15 @@ impl orml_currencies::Config for Runtime {
 }
 
 parameter_types! {
-	pub const EcdpUssdLoansPalletId: PalletId = PalletId(*b"set/ussdloan");
+	pub const EcdpLoansPalletId: PalletId = PalletId(*b"set/ussdloan");
 }
 
-impl module_ecdp_ussd_loans::Config for Runtime {
+impl module_ecdp_loans::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Currencies;
 	type EcdpUssdRiskManager = EcdpUssdEngineModule;
 	type EcdpUssdTreasury = EcdpUssdTreasuryModule;
-	type PalletId = EcdpUssdLoansPalletId;
+	type PalletId = EcdpLoansPalletId;
 	type OnUpdateLoan = ();
 }
 
@@ -444,7 +444,7 @@ construct_runtime!(
 		EcdpUssdTreasuryModule: module_ecdp_ussd_treasury,
 		Currencies: orml_currencies,
 		Tokens: orml_tokens,
-		EcdpUssdLoansModule: module_ecdp_ussd_loans,
+		EcdpLoansModule: module_ecdp_loans,
 		PalletBalances: pallet_balances,
 		EdfisSwapModule: module_edfis_swap_legacy,
 		Timestamp: pallet_timestamp,

@@ -15,7 +15,7 @@ frame-support = { workspace = true }
 frame-system = { workspace = true }
 sp-std = { workspace = true }
 module-ecdp-ussd-engine = { workspace = true }
-module-ecdp-ussd-loans = { workspace = true }
+module-ecdp-loans = { workspace = true }
 module-support = { workspace = true }
 primitives = { workspace = true }
 
@@ -39,7 +39,7 @@ std = [
 	"parity-scale-codec/std",
 	"frame-support/std",
 	"frame-system/std",
-	"module-ecdp-ussd-loans/std",
+	"module-ecdp-loans/std",
 	"primitives/std",
 	"scale-info/std",
 	"sp-core/std",
@@ -51,5 +51,5 @@ try-runtime = [
 	"module-ecdp-ussd-engine/try-runtime",
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
-	"module-ecdp-ussd-loans/try-runtime",
+	"module-ecdp-loans/try-runtime",
 ]
