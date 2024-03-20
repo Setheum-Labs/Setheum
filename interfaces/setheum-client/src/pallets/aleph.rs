@@ -150,7 +150,7 @@ impl<C: ConnectionApi> AlephRpc for C {
         hash: BlockHash,
         key_pair: AlephKeyPair,
     ) -> anyhow::Result<()> {
-        let method = "alephNode_emergencyFinalize";
+        let method = "setheumNode_emergencyFinalize";
         let signature = key_pair.sign(&hash.encode());
         let raw_signature = Bytes::from(signature.0.to_vec());
         let params = rpc_params![raw_signature, hash, number];
