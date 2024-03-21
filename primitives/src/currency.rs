@@ -179,7 +179,7 @@ create_currency_id! {
 	#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, MaxEncodedLen, Serialize, Deserialize)]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		// 0 - 128: Reserved for Setheum Native Assets
+		// 0 - 100: Reserved for Setheum Native Assets
 			// Primary Protocol Tokens
 		SEE("Setheum", 12) = 0,
 		EDF("Ethical DeFi", 12) = 1,
@@ -189,7 +189,110 @@ create_currency_id! {
 			// ECDP Stablecoin Tokens
 		SETR("Setter", 12) = 4,
 		USSD("Slick USD", 12) = 5,
-		// 128 - 255: Reserved for future usage
+
+		// 101-255: Reserved for Fiat Currencies
+		AED("UAE Dirham", 2) = 101,
+		AMD("Armenian Dram", 2) = 102,
+		AOA("Angolan Kwanza", 2) = 103,
+		ARS("Argentine Peso", 2) = 104,
+		AUD("Australian Dollar", 2) = 105,
+		AZN("Azerbaijani Manat", 2) = 106,
+		BHD("Bahraini Dinar", 3) = 107,
+		BIF("Burundian Franc", 2) = 108,
+		BND("Brunei Dollar", 2) = 109,
+		BRL("Brazilian Real", 2) = 110,
+		BSD("Bahamian Dollar", 2) = 111,
+		BWP("Botswana Pula", 2) = 112,
+		BYN("Belarusian Ruble", 2) = 113,
+		CAD("Canadian Dollar", 2) = 114,
+		CHF("Swiss Franc", 2) = 115,
+		CLP("Chilean Peso", 2) = 116,
+		CNY("Chinese Renminbi", 2) = 117,
+		COM("Comorian Franc", 2) = 118,
+		COP("Colombian Peso", 2) = 119,
+		CRC("Costa Rican Colón", 2) = 120,
+		CUP("Cuban Peso", 2) = 121,
+		CVE("Cape Verdean Escudo", 2) = 122,
+		CZK("Czech Koruna", 2) = 123,
+		DJF("Djiboutian Franc", 2) = 124,
+		DKK("Danish Krone", 2) = 125,
+		DOP("Dominican Peso", 2) = 126,
+		DZD("Algerian Dinar", 2) = 127,
+		EGP("Egyptian Pound", 2) = 128,
+		ERN("Eritrean Nakfa", 2) = 129,
+		ETB("Ethiopian Birr", 2) = 130,
+		EUR("Euro", 2) = 131,
+		GBP("British Pound", 2) = 132,
+		GEL("Georgian Lari", 2) = 133,
+		GHS("Ghanaian Cedi", 2) = 134,
+		GMD("Gambian Dalasi", 2) = 135,
+		GNF("Guinean Franc", 2) = 136,
+		HKD("Hong Kong Dollar", 2) = 137,
+		HUF("Hungarian Forint", 2) = 138,
+		IDR("Indonesian Rupiah", 2) = 139,
+		INR("Indian Rupee", 2) = 140,
+		ISK("Icelandic Krona", 2) = 141,
+		JOD("Jordanian Dinar", 2) = 142,
+		JPY("Japanese Yen", 2) = 143,
+		KES("Kenyan Shilling", 2) = 144,
+		KHR("Cambodian Riel", 2) = 145,
+		KMF("Comorian Franc", 2) = 146,
+		KRW("South Korean Won", 2) = 147,
+		KWD("Kuwaiti Dinar", 2) = 148,
+		KZT("Kazakhstani Tenge", 2) = 149,
+		LBP("Lebanese Pound", 2) = 150,
+		LKR("Sri Lankan Rupee", 2) = 151,
+		LSL("Lesotho Loti", 2) = 152,
+		LRD("Liberian Dollar", 2) = 153,
+		MAD("Moroccan Dirham", 2) = 154,
+		MDL("Moldovan Leu", 2) = 155,
+		MGA("Malagasy Ariary", 2) = 156,
+		MNT("Mongolian Tugrik", 2) = 157,
+		MRU("Mauritanian Ouguiya", 2) = 158,
+		MUR("Mauritian Rupee", 2) = 159,
+		MWK("Malawian Kwacha", 2) = 160,
+		MXN("Mexican Peso", 2) = 161,
+		MYR("Malaysian Ringgit", 2) = 162,
+		MZN("Mozambican Metical", 2) = 163,
+		NAD("Namibian Dollar", 2) = 164,
+		NGN("Nigerian Naira", 2) = 165,
+		NOK("Norwegian Krone", 2) = 166,
+		NPR("Nepalese Rupee", 2) = 167,
+		NZD("New Zealand Dollar", 2) = 168,
+		OMR("Omani Rial", 2) = 169,
+		PEN("Peruvian Sol", 2) = 170,
+		PHP("Philippine Peso", 2) = 171,
+		PKR("Pakistani Rupee", 2) = 172,
+		QAR("Qatari Riyal", 2) = 173,
+		RON("Romanian Leu", 2) = 174,
+		RSD("Serbian Dinar", 2) = 175,
+		RUB("Russian Ruble", 2) = 176,
+		RWF("Rwandan Franc", 2) = 177,
+		SAR("Saudi Riyal", 2) = 178,
+		SCR("Seychellois Rupee", 2) = 179,
+		SEK("Swedish Krona", 2) = 180,
+		SGD("Singapore Dollar", 2) = 181,
+		SHP("Saint Helena Pound", 2) = 182,
+		SLE("Sierra Leonean Leone", 2) = 183,
+		SZL("Swazi Lilangeni", 2) = 184,
+		THB("Thai Baht", 2) = 185,
+		TJS("Tajikistani Somoni", 2) = 186,
+		TND("Tunisian Dinar", 2) = 187,
+		TTD("Trinidadian Dollar", 2) = 188,
+		TWD("New Taiwan Dollar", 2) = 189,
+		TZS("Tanzanian Shilling", 2) = 190,
+		TRY("Turkish Lira", 2) = 191,
+		UAH("Ukrainian Hryvnia", 2) = 192,
+		UGX("Ugandan Shilling", 2) = 193,
+		USD("United States Dollar", 2) = 194,
+		UZS("Uzbekistani Som", 2) = 195,
+		VES("Venezuelan Bolivar", 2) = 196,
+		VND("Vietnamese Dong", 2) = 197,
+		XAF("Central African CFA Franc", 2) = 198,
+		XOF("West African CFA Franc", 2) = 199,
+		ZAR("South African Rand", 2) = 200,
+		ZMW("Zambian Kwacha", 2) = 201,
+		ZWL("Zimbabwean Dollar", 2) = 202,
 	}
 }
 
@@ -200,6 +303,7 @@ pub trait TokenInfo {
 	fn decimals(&self) -> Option<u8>;
 }
 
+pub type FiatCurrencyId = u8;
 pub type ForeignAssetId = u16;
 pub type Erc20Id = u32;
 
@@ -246,6 +350,7 @@ pub enum CurrencyId {
 	DexShare(DexShare, DexShare),
 	Erc20(EvmAddress),
 	ForeignAsset(ForeignAssetId),
+	FiatCurrency(FiatCurrencyId),
 }
 
 impl CurrencyId {
@@ -263,6 +368,10 @@ impl CurrencyId {
 
 	pub fn is_foreign_asset_currency_id(&self) -> bool {
 		matches!(self, CurrencyId::ForeignAsset(_))
+	}
+
+	pub fn is_fiat_asset_currency_id(&self) -> bool {
+		matches!(self, CurrencyId::FiatCurrency(_))
 	}
 
 	pub fn is_trading_pair_currency_id(&self) -> bool {
@@ -354,6 +463,7 @@ pub enum CurrencyIdType {
 	Token = 1, // 0 is prefix of precompile and predeploy
 	DexShare,
 	ForeignAsset,
+	FiatCurrency,
 }
 
 #[derive(
@@ -381,6 +491,7 @@ pub enum AssetIds {
 	Erc20(EvmAddress),
 	ForeignAssetId(ForeignAssetId),
 	NativeAssetId(CurrencyId),
+	FiatCurrencyId,(FiatCurrencyId),
 }
 
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, TypeInfo)]
