@@ -171,7 +171,7 @@ pub mod module {
 		/// The overarching event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// The liquid representation of the staking token.
-		type LiquidTokenCurrency: BasicLockableCurrency<Self::AccountId, Balance = Balance>;
+		type LiquidSEECurrency: BasicLockableCurrency<Self::AccountId, Balance = Balance>;
 		#[pallet::constant]
 		/// The minimum amount of tokens that can be bonded to a validator.
 		type MinBondAmount: Get<Balance>;
@@ -288,7 +288,7 @@ pub mod module {
 			#[pallet::compact] amount: Balance,
 		) -> DispatchResult {
 			let guarantor = ensure_signed(origin)?;
-			let free_balance = T::LiquidTokenCurrency::free_balance(&guarantor);
+			let free_balance = T::LiquidSEECurrency::free_balance(&guarantor);
 			let total_should_locked = Self::total_locked_by_guarantor(&guarantor).unwrap_or_default();
 
 			if let Some(extra) = free_balance.checked_sub(total_should_locked) {
@@ -480,7 +480,7 @@ pub mod module {
 						let should_slashing = Ratio::checked_from_rational(guarantee.total, total_insurance)
 							.unwrap_or_else(Ratio::max_value)
 							.saturating_mul_int(insurance_loss);
-						let gap = T::LiquidTokenCurrency::slash(&guarantor, should_slashing);
+						let gap = T::LiquidSEECurrency::slash(&guarantor, should_slashing);
 						let actual_slashing = should_slashing.saturating_sub(gap);
 						*guarantee = guarantee.slash(actual_slashing);
 						Self::deposit_event(Event::SlashGuarantee {
@@ -545,10 +545,10 @@ impl<T: Config> Pallet<T> {
 
 									if tl.is_zero() {
 										*maybe_total_locked = None;
-										T::LiquidTokenCurrency::remove_lock(EDFIS_LIQUID_STAKING_VALIDATOR_LIST_ID, guarantor)?;
+										T::LiquidSEECurrency::remove_lock(EDFIS_LIQUID_STAKING_VALIDATOR_LIST_ID, guarantor)?;
 									} else {
 										*maybe_total_locked = Some(tl);
-										T::LiquidTokenCurrency::set_lock(EDFIS_LIQUID_STAKING_VALIDATOR_LIST_ID, guarantor, tl)?;
+										T::LiquidSEECurrency::set_lock(EDFIS_LIQUID_STAKING_VALIDATOR_LIST_ID, guarantor, tl)?;
 									}
 
 									*maybe_validator_backing = Some(vb);

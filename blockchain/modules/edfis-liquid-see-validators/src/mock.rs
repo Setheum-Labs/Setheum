@@ -181,7 +181,7 @@ ord_parameter_types! {
 
 impl Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type LiquidTokenCurrency = LSEECurrency;
+	type LiquidSEECurrency = LSEECurrency;
 	type MinBondAmount = ConstU128<100>;
 	type BondingDuration = ConstU64<100>;
 	type ValidatorInsuranceThreshold = ConstU128<200>;
