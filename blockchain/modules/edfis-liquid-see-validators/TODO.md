@@ -54,3 +54,4 @@ These tasks are just for this file specifically.
 
 - [x] [[TODO.md:0] - Add TODO.md File](TODO.md): Add a TODO.md file to organise TODOs in the repo.
 - [x] [[TODO.md:1] - Add a `task_title`](/TODO.md/#tasks): Adda `task_title`.
+- [ ] [[src/lib.rs:0]: Do benchmarking test](src/lib.rs)

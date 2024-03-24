@@ -39,9 +39,7 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
   - [1.0. Introduction](#10-introduction)
     - [1.1. Setheum Chain](#11-setheum-chain)
     - [1.2. Ethical DeFi](#12-ethical-defi)
-      - [1.2.1. Edfis - Ethical DeFi Swap](#121-edfis---ethical-defi-swap)
-      - [1.2.2. The Setter Stablecoin](#122-the-setter-stablecoin)
-      - [1.2.3. The Slick USD Stablecoin](#123-the-slick-usd-stablecoin)
+      - [1.2.1. Ethical DeFi Projects](#121-ethical-defi-projects)
   - [2.0. Getting Started](#20-getting-started)
     - [2.1. Build](#21-build)
     - [2.2. Run](#22-run)
@@ -70,36 +68,23 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 
 ### 1.1. Setheum Chain
 
-Founded November 2019,Setheum achieves a high level of equilibrium in the trilemma by leveraging a Directed Acyclic Graph(DAG) to build the blockchain consensus
-making it a Blockchain via DAG, achieve instant finality, high throughput and very fast blocktime while preserving network security and having a fairly decentralised network,
+Founded November 2019,Setheum achieves a high level of equilibrium in the trilemma by leveraging a Directed Acyclic Graph(DAG) to build the blockchain consensus - making it a Blockchain via DAG, achieve instant finality, high throughput and very fast blocktime while preserving network security and having a fairly decentralised network,
 
-Setheum is a secure, confidential and interoperable decentralised internet cloud compute and storage blockchain network with EVM and WASM smart contracts,
-web3 and web 2 Support. The intent of the Setheum Network is to improve upon Web3 and solve the blockchain trilemma with a mixture of approaches and a recipe
-formed from what we have seen and considered to be some of the best solutions in the field, improving on scalability, security, mass adoption, diversity,
-and ethics while preserving decentralisation and democratisation.
-
-etheum intends to be the most scalable blockchain network in the world while providing
-confidentiality for smart contracts, Cloud Computing and Storage Infrastructure for Web3 based Internet Solutions and Interoperability with both Web2 and
-other Web3 Networks. The AlephBFT Consensus Engine powers the Setheum Chain to have near instant finality,
-high throughput and high scalability.
-
-Setheum’s consensus system works to achieve high scalability and high security with an ethical and equitably high level of decentralisation.
+Setheum is a light-speed decentralised blockchain network with EVM and WASM smart contracts, built from a mixture of what we have seen and considered to be some of the best solutions in the industry, improving on scalability, security, user experience, ethics,decentralisation and democratisation. Setheum intends to be the most complete blockchain network in the world. The AlephBFT Consensus Engine powers the Setheum Chain to have near instant finality, high throughput and high scalability and high security.
 
 ### 1.2. Ethical DeFi
 
 Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including an AMM DEX (inspired by Uniswap v3), Decentralised Liquid Staking and Ethical Zero-interest Halal sStablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD) and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable without compromising decentralisation or economic stability, offering stable cryptocurrencies that have scalable value and reliability, setheum provides just that, backed by crypto assets on an efficient zero-interest debt-based system.
 
-#### 1.2.1. Edfis - Ethical DeFi Swap
+#### 1.2.1. Ethical DeFi Projects:
 
-Edfis is Ethical DeFi Swap, the AMM (Automated Market Maker) DEX (Decentralized Exchange) Protocol of the Ethical DeFi Suite inspired by Uniswap v3 design natively built on the Setheum Network with optimisations and a native liquidity mining mechanism for incentivizing LPs.
-
-#### 1.2.2. The Setter Stablecoin
-
-The Setter is Ethical DeFi's flagship stablecoin, built on the `ECDP` (Ethical Collateralised Debt Position), the Unpegged ECDP Stablecoin Protocol of the Ethical DeFi Suite is inspired by MakerDAO's and RAI's design, natively built on the Setheum Network with Zero-interest loans with optimisations and native liquidation protocols which include our on-chain built-in DEX Edfis, a native auction system, as well as an on-chain native liquidation protection mechanism. The Setter uses a system we call `LVSI` (Low Volatility Stable Index) which makes the stablecoin float without a peg while remaining stable-ish, it is over-collateralised by the Setheum's native currency `SEE`.
-
-#### 1.2.3. The Slick USD Stablecoin
-
-The Slick USD is Ethical DeFi's USD-pegged stablecoin, built on the `ECDP` (Ethical Collateralised Debt Position), the Pegged ECDP Stablecoin Protocol of the Ethical DeFi Suite is inspired by MakerDAO's design, natively built on the Setheum Network with Zero-interest loans with optimisations and native liquidation protocols which include our on-chain built-in DEX Edfis, a native auction system, as well as an on-chain native liquidation protection mechanism. The SlickUSD is over-collateralised and multi-collateralised.
+- `Edfis`: DEX (Decentralized Exchange)
+  - `Edfis Exchange`: AMM (Automated Market Maker) DEX Protocol inspired by Uniswap v3 design
+  - `Edfis Launchpad`: Launchpad Crowdsales protocol for bootstrapping pools on Edfis Exchange
+  - `Edfis Launchpool`: Launchpool protocol for bootstrapping pools on Edfis Exchange
+  - `Edfis Liquid Staking`: Liquid Staking Protocol
+- `Setter`: Unpegged ECDP Stablecoin
+- `SlickUSD`: USD Pegged ECDP Stablecoin
 
 ## 2.0. Getting Started
 
