@@ -82,7 +82,7 @@ Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all 
   - `Edfis Exchange`: AMM (Automated Market Maker) DEX Protocol inspired by Uniswap v3 design
   - `Edfis Launchpad`: Launchpad Crowdsales protocol for bootstrapping pools on Edfis Exchange
   - `Edfis Launchpool`: Launchpool protocol for bootstrapping pools on Edfis Exchange
-- `Moya`: Liquid Staking Protocol
+  - `Edfis Liquid Staking`: Liquid Staking Protocol
 - `Setter`: Unpegged ECDP Stablecoin
 - `SlickUSD`: USD Pegged ECDP Stablecoin
 
