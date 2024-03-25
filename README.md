@@ -18,14 +18,18 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 
 <div align="center">
 
-[![Setheum version](https://img.shields.io/badge/Setheum-0.9.81-yellow?logo=Parity%20Substrate)](https://setheum.xyz/)
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/Setheum-Labs/Setheum?color=yellow)](https://github.com/Setheum-Labs/Setheum/tags)
 [![License](https://img.shields.io/github/license/Setheum-Labs/Setheum?color=blue)](https://github.com/Setheum-Labs/Setheum/blob/master/LICENSE.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/contributor/CONTRIBUTING.md)
 
-[![Rust](https://github.com/Setheum-Labs/Setheum/actions/workflows/rust.yml/badge.svg)](https://github.com/Setheum-Labs/Setheum/actions/workflows/rust.yml)
+<br />
+
+[![Build](https://github.com/Setheum-Labs/Setheum/actions/workflows/rust.yml/badge.svg)](https://github.com/Setheum-Labs/Setheum/actions/workflows/rust.yml)
 [![CodeQL](https://github.com/Setheum-Labs/Setheum/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Setheum-Labs/Setheum/actions/workflows/github-code-scanning/codeql)
 
-[![Website](https://img.shields.io/badge/web-gray?logo=web)](https://setheum.xyz)
+<br />
+
+[![Website](https://img.shields.io/badge/Website-gray?logo=web)](https://setheum.xyz)
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FSetheum)](https://twitter.com/Setheum)
 [![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](https://t.me/SetheumNetwork)
 [![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](https://medium.com/setheum-labs)
@@ -212,7 +216,15 @@ Update ORML:
 
 ```bash
 cd orml && git checkout master && git pull
-git add orml
+git add .
+cargo update check-all
+```
+
+Update Sygma:
+
+```bash
+cd sygma && git checkout master && git pull
+git add .
 cargo update check-all
 ```
 
