@@ -56,7 +56,7 @@ use sp_runtime::{
 		Duration,
 	},
 	traits::{
-		AccountIdConversion, BlockNumberProvider, Bounded, One, Saturating, StaticLookup, UniqueSaturatedInto, Zero,
+		AccountIdConversion, Bounded, One, Saturating, StaticLookup, UniqueSaturatedInto, Zero,
 	},
 	transaction_validity::{
 		InvalidTransaction, TransactionPriority, TransactionSource, TransactionValidity, ValidTransaction,
@@ -1296,7 +1296,7 @@ impl<T: Config> LiquidateCollateral<T::AccountId> for LiquidateViaContracts<T> {
 		let stable_coin = T::GetUSSDCurrencyId::get();
 
 		let contracts_by_priority = {
-			let now: usize = frame_system::Pallet::<T>::current_block_number()
+			let now: usize = frame_system::Pallet::<T>::block_number()
 				.try_into()
 				.map_err(|_| ArithmeticError::Overflow)?;
 			// can't fail as ensured `liquidation_contracts_len` non-zero
