@@ -56,7 +56,6 @@ pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 pub const SETR: CurrencyId = CurrencyId::Token(TokenSymbol::SETR);
 pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
 pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
-pub const LSEE: CurrencyId = CurrencyId::Token(TokenSymbol::LSEE);
 
 parameter_types! {
 	static ExtrinsicBaseWeight: Weight = Weight::zero();
@@ -91,7 +90,7 @@ parameter_type_with_key! {
 		match *currency_id {
 			USSD => 100,
 			SETR => 100,
-			EDF | LSEE => 1,
+			EDF => 1,
 			_ => Default::default(),
 		}
 	};
@@ -165,7 +164,6 @@ parameter_types! {
 		TradingPair::from_currency_ids(USSD, SETR).unwrap(),
 		TradingPair::from_currency_ids(SETR, SEE).unwrap(),
 		TradingPair::from_currency_ids(USSD, EDF).unwrap(),
-		TradingPair::from_currency_ids(SEE, LSEE).unwrap(),
 	];
 	pub const TradingPathLimit: u32 = 4;
 }
@@ -332,7 +330,6 @@ impl Default for ExtBuilder {
 				(ALICE, USSD, 10000),
 				(ALICE, SETR, 10000),
 				(ALICE, EDF, 1000),
-				(ALICE, LSEE, 1000)
 			],
 			base_weight: Weight::zero(),
 			byte_fee: 2,

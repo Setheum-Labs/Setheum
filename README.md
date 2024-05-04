@@ -1,6 +1,6 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Setheum - Powering The New Internet
+# Setheum - Powering Light-Speed Web3 Solutions
 
 <p align="center">
   <img src="./media/SetheumLabel.jpg" style="width:1300px" />
@@ -33,10 +33,10 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FSetheum)](https://twitter.com/Setheum)
 [![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](https://t.me/SetheumNetwork)
 [![Medium](https://img.shields.io/badge/Medium-gray?logo=medium)](https://medium.com/setheum-labs)
-
+[![Lines of Code](https://img.shields.io/badge/LinesOfCode-gray?logo=LinesOfCode)](https://cloc.info/github.com/Setheum-Labs/Setheum)
 </div>
 
-> NOTE: SETHEUM means `Salam Ethereum`, it also means `The house of gifts` from the name `Seth/Sheeth` meaning `gift` in hebrew and the name of the Prophet Sheeth/Seth in Islam,  it also stands for `Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market`.
+> NOTE: SETHEUM means `Salam Eth`, `Super Eth`, `The house of gifts` and `gifted`. Originally from the name `Seth/Sheeth` mixed with `Ethereum`, it also stands for `Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market`.
 
 <!-- TOC -->
 - [Setheum - Powering The New Internet](#setheum---powering-the-new-internet)
@@ -78,7 +78,7 @@ Setheum is a light-speed decentralised blockchain network with EVM and WASM smar
 
 ### 1.2. Ethical DeFi
 
-Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including an AMM DEX (inspired by Uniswap v3), Decentralised Liquid Staking and Ethical Zero-interest Halal sStablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD) and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable without compromising decentralisation or economic stability, offering stable cryptocurrencies that have scalable value and reliability, setheum provides just that, backed by crypto assets on an efficient zero-interest debt-based system.
+Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including an AMM DEX (inspired by Uniswap v3), Ethical Zero-interest Halal Stablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD) and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable without compromising decentralisation or economic stability, offering stable cryptocurrencies that have scalable value and reliability, setheum provides just that, backed by crypto assets on an efficient zero-interest debt-based system.
 
 #### 1.2.1. Ethical DeFi Projects:
 
@@ -87,7 +87,7 @@ Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all 
   - `Edfis Exchange`: AMM (Automated Market Maker) DEX Protocol inspired by Uniswap v3 design
   - `Edfis Launchpad`: Launchpad Crowdsales protocol for bootstrapping pools on Edfis Exchange
   - `Edfis Launchpool`: Launchpool protocol for bootstrapping pools on Edfis Exchange
-  - `Edfis Liquid Staking`: Liquid Staking Protocol
+  - `Edfis Pay`: Decentralised Escrow Payment Protocol
 - `Setter`: Unpegged ECDP Stablecoin
 - `SlickUSD`: USD Pegged ECDP Stablecoin
 

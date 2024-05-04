@@ -31,7 +31,7 @@ use frame_support::{
 use mock::{
 	AccountId, BlockWeights, Currencies, EdfisSwapLegacyModule, ExtBuilder, FeePoolSize, MockPriceSource, Runtime, RuntimeCall,
 	RuntimeOrigin, System, TransactionPayment, ALICE, BOB, CHARLIE, DAVE, FEE_UNBALANCED_AMOUNT, TIP_UNBALANCED_AMOUNT,
-	SEE, USSD, EDF, LSEE,
+	SEE, USSD, EDF,
 };
 use module_support::{BuyWeightRate, SwapManager, Price, TransactionPayment as TransactionPaymentT};
 use orml_traits::{MultiCurrency, MultiLockableCurrency};
@@ -114,7 +114,7 @@ fn enable_dex_and_tx_fee_pool() {
 		SEE,
 		(init_balance * 100).unique_saturated_into(),
 	));
-	vec![USSD, SETR, EDF, LSEE].iter().for_each(|token| {
+	vec![USSD, SETR, EDF].iter().for_each(|token| {
 		let ed = (<Currencies as MultiCurrency<AccountId>>::minimum_balance(token.clone())).unique_saturated_into();
 		assert_ok!(Currencies::update_balance(
 			RuntimeOrigin::root(),
@@ -153,18 +153,8 @@ fn enable_dex_and_tx_fee_pool() {
 		0,
 		false
 	));
-	assert_ok!(EdfisSwapLegacyModule::add_liquidity(
-		RuntimeOrigin::signed(ALICE),
-		LSEE,
-		SEE,
-		100,
-		1000,
-		0,
-		false
-	));
 	assert_eq!(EdfisSwapLegacyModule::get_liquidity_pool(SEE, USSD), (10000, 1000));
 	assert_eq!(EdfisSwapLegacyModule::get_liquidity_pool(EDF, USSD), (100, 1000));
-	assert_eq!(EdfisSwapLegacyModule::get_liquidity_pool(LSEE, SEE), (100, 1000));
 	assert_eq!(EdfisSwapLegacyModule::get_liquidity_pool(EDF, SEE), (0, 0));
 
 	// enable tx fee pool for USSD and EDF token.
@@ -534,16 +524,16 @@ fn pre_post_dispatch_and_refund_with_fee_currency_call(token: CurrencyId, surplu
 
 #[test]
 fn pre_post_dispatch_and_refund_with_fee_currency_call_use_dex() {
-	pre_post_dispatch_and_refund_with_fee_call_use_dex(with_fee_currency_call(LSEE));
+	pre_post_dispatch_and_refund_with_fee_call_use_dex(with_fee_currency_call(EDF));
 }
 
 #[test]
 fn pre_post_dispatch_and_refund_with_fee_path_call_use_dex() {
-	pre_post_dispatch_and_refund_with_fee_call_use_dex(with_fee_path_call(vec![LSEE, SEE]));
+	pre_post_dispatch_and_refund_with_fee_call_use_dex(with_fee_path_call(vec![EDF, SEE]));
 }
 
 fn pre_post_dispatch_and_refund_with_fee_call_use_dex(with_fee_call: <Runtime as Config>::RuntimeCall) {
-	let (token, surplus_percent) = (LSEE, CustomFeeSurplus::get());
+	let (token, surplus_percent) = (EDF, CustomFeeSurplus::get());
 	builder_with_dex_and_fee_pool(true).execute_with(|| {
 		// without tip
 		let dex_acc: AccountId = PalletId(*b"set/edfis").into_account_truncating();
@@ -561,7 +551,7 @@ fn pre_post_dispatch_and_refund_with_fee_call_use_dex(with_fee_call: <Runtime as
 		assert_eq!(pre.3, fee_surplus);
 		System::assert_has_event(crate::mock::RuntimeEvent::EdfisSwapLegacyModule(edfis_swap_legacy_module::Event::Swap {
 			trader: ALICE,
-			path: vec![LSEE, SEE],
+			path: vec![EDF, SEE],
 			liquidity_changes: vec![43, 300],
 		}));
 		assert_eq!(dex_see - 300, Currencies::free_balance(SEE, &dex_acc));
@@ -771,12 +761,12 @@ fn refund_should_not_works() {
 
 #[test]
 fn charges_fee_when_validate_with_fee_currency_call_use_swap() {
-	charges_fee_when_validate_with_fee_call_use_swap(with_fee_currency_call(LSEE));
+	charges_fee_when_validate_with_fee_call_use_swap(with_fee_currency_call(EDF));
 }
 
 #[test]
 fn charges_fee_when_validate_with_fee_path_call_use_swap() {
-	charges_fee_when_validate_with_fee_call_use_swap(with_fee_path_call(vec![LSEE, SEE]));
+	charges_fee_when_validate_with_fee_call_use_swap(with_fee_path_call(vec![EDF, SEE]));
 }
 
 fn charges_fee_when_validate_with_fee_call_use_swap(with_fee_call: <Runtime as Config>::RuntimeCall) {
@@ -786,19 +776,19 @@ fn charges_fee_when_validate_with_fee_call_use_swap(with_fee_call: <Runtime as C
 		let dex_see = Currencies::free_balance(SEE, &dex_acc);
 
 		// first tx consider existential deposit.
-		// LSEE is not enabled charge fee pool, so use dex swap.
+		// EDF is not enabled charge fee pool, so use dex swap.
 		let fee: Balance = 50 * 2 + 100 + 10;
 		let fee_surplus = fee + CustomFeeSurplus::get().mul_ceil(fee);
 		assert_eq!(315, fee_surplus);
-		assert_ok!(Currencies::update_balance(RuntimeOrigin::root(), BOB, LSEE, 1000));
+		assert_ok!(Currencies::update_balance(RuntimeOrigin::root(), BOB, EDF, 1000));
 
 		assert_ok!(ChargeTransactionPayment::<Runtime>::from(0).validate(&BOB, &with_fee_call, &INFO2, 50));
 		System::assert_has_event(crate::mock::RuntimeEvent::EdfisSwapLegacyModule(edfis_swap_legacy_module::Event::Swap {
 			trader: BOB,
-			path: vec![LSEE, SEE],
+			path: vec![EDF, SEE],
 			liquidity_changes: vec![46, 315],
 		}));
-		assert_eq!(1000 - 46, Currencies::free_balance(LSEE, &BOB));
+		assert_eq!(1000 - 46, Currencies::free_balance(EDF, &BOB));
 		assert_eq!(10, Currencies::free_balance(SEE, &BOB));
 		assert_eq!(dex_see - 315, Currencies::free_balance(SEE, &dex_acc));
 
@@ -810,10 +800,10 @@ fn charges_fee_when_validate_with_fee_call_use_swap(with_fee_call: <Runtime as C
 		assert_ok!(ChargeTransactionPayment::<Runtime>::from(0).validate(&BOB, &with_fee_call, &INFO2, 50));
 		System::assert_has_event(crate::mock::RuntimeEvent::EdfisSwapLegacyModule(edfis_swap_legacy_module::Event::Swap {
 			trader: BOB,
-			path: vec![LSEE, SEE],
+			path: vec![EDF, SEE],
 			liquidity_changes: vec![114, 300],
 		}));
-		assert_eq!(1000 - 46 - 114, Currencies::free_balance(LSEE, &BOB));
+		assert_eq!(1000 - 46 - 114, Currencies::free_balance(EDF, &BOB));
 		assert_eq!(10, Currencies::free_balance(SEE, &BOB));
 		assert_eq!(dex_see - 315 - 300, Currencies::free_balance(SEE, &dex_acc));
 	});
@@ -1630,7 +1620,7 @@ fn buy_weight_transaction_fee_pool_works() {
 		assert_eq!(rate, None);
 
 		// Token not in charge fee pool
-		let currency_id = CurrencyId::Token(TokenSymbol::LSEE);
+		let currency_id = CurrencyId::Token(TokenSymbol::EDF);
 
 		let location = MultiLocation::new(
 			1,
@@ -2113,11 +2103,11 @@ fn charge_fee_pool_operation_works() {
 		);
 
 		assert_noop!(
-			Pallet::<Runtime>::enable_charge_fee_pool(RuntimeOrigin::signed(ALICE), LEDF, pool_size, swap_threshold),
+			Pallet::<Runtime>::enable_charge_fee_pool(RuntimeOrigin::signed(ALICE), EDF, pool_size, swap_threshold),
 			Error::<Runtime>::DexNotAvailable
 		);
 		assert_noop!(
-			Pallet::<Runtime>::disable_charge_fee_pool(RuntimeOrigin::signed(ALICE), LEDF),
+			Pallet::<Runtime>::disable_charge_fee_pool(RuntimeOrigin::signed(ALICE), EDF),
 			Error::<Runtime>::InvalidToken
 		);
 
@@ -2162,15 +2152,8 @@ fn with_fee_call_validation_works() {
 				1000000,
 			));
 			assert_ok!(Currencies::update_balance(RuntimeOrigin::root(), CHARLIE, EDF, 1000000,));
-			assert_ok!(Currencies::update_balance(
-				RuntimeOrigin::root(),
-				CHARLIE,
-				LSEE,
-				1000000,
-			));
 			assert_eq!(1000000, Currencies::free_balance(USSD, &CHARLIE));
 			assert_eq!(1000000, Currencies::free_balance(EDF, &CHARLIE));
-			assert_eq!(1000000, Currencies::free_balance(LSEE, &CHARLIE));
 
 			assert_eq!(OverrideChargeFeeMethod::<Runtime>::get(), None);
 
@@ -2301,17 +2284,6 @@ fn with_fee_call_validation_works() {
 					Some(ChargeFeeMethod::FeeCurrency(token))
 				);
 			}
-
-			// LSEE is not enabled fee pool, cannot charge fee by with_fee_currency
-			assert_noop!(
-				ChargeTransactionPayment::<Runtime>::from(0).pre_dispatch(
-					&CHARLIE,
-					&with_fee_currency_call(LSEE),
-					&INFO,
-					10
-				),
-				TransactionValidityError::Invalid(InvalidTransaction::Payment)
-			);
 
 			for path in vec![vec![EDF, USSD, SEE], vec![USSD, SEE]] {
 				assert_ok!(ChargeTransactionPayment::<Runtime>::from(0).pre_dispatch(

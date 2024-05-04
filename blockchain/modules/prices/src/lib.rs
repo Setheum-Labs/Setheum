@@ -38,7 +38,7 @@ use orml_traits::{DataFeeder, DataProvider, GetByKey, MultiCurrency};
 use primitives::{Balance, CurrencyId, Lease};
 use sp_core::U256;
 use sp_runtime::{
-	traits::{BlockNumberProvider, CheckedMul, One, Saturating, UniqueSaturatedInto},
+	traits::{CheckedMul, One, Saturating, UniqueSaturatedInto},
 	FixedPointNumber,
 };
 use sp_std::marker::PhantomData;
@@ -73,24 +73,12 @@ pub mod module {
 		#[pallet::constant]
 		type GetSEECurrencyId: Get<CurrencyId>;
 
-		/// The Liquid SEE currency id, it should be LSEE in Setheum.
-		#[pallet::constant]
-		type GetLiquidSEECurrencyId: Get<CurrencyId>;
-
 		/// The EDF currency id, it should be EDF in Setheum.
 		#[pallet::constant]
 		type GetEDFCurrencyId: Get<CurrencyId>;
 
-		/// The Liquid EDF currency id, it should be LEDF in Setheum.
-		#[pallet::constant]
-		type GetLiquidEDFCurrencyId: Get<CurrencyId>;
-
 		/// The origin which may lock and unlock prices feed to system.
 		type LockOrigin: EnsureOrigin<Self::RuntimeOrigin>;
-
-		/// The provider of the exchange rate between liquid currency and
-		/// staking currency.
-		type LiquidStakingExchangeRateProvider: ExchangeRateProvider;
 
 		/// SwapManager provide liquidity info.
 		type SwapManager: SwapManager<Self::AccountId, Balance, CurrencyId>;
@@ -100,9 +88,6 @@ pub mod module {
 
 		/// Mapping between CurrencyId and ERC20 address so user can use Erc20.
 		type Erc20InfoMapping: Erc20InfoMapping;
-
-		/// Block number provider.
-		type BlockNumber: BlockNumberProvider<BlockNumber = BlockNumberFor<Self>>;
 
 		/// If a currency is pegged to another currency in price, price of this currency is
 		/// equal to the price of another.
@@ -191,14 +176,6 @@ impl<T: Config> Pallet<T> {
 		let maybe_price = if currency_id == T::GetUSSDCurrencyId::get() {
 			// if is USSD stablecoin, use fixed price
 			Some(T::USSDFixedPrice::get())
-		} else if currency_id == T::GetLiquidSEECurrencyId::get() {
-			// directly return real-time the multiple of the price of SEECurrencyId and the exchange rate
-			return Self::access_price(T::GetSEECurrencyId::get())
-				.and_then(|n| n.checked_mul(&T::LiquidStakingExchangeRateProvider::get_exchange_rate()));
-		} else if currency_id == T::GetLiquidEDFCurrencyId::get() {
-			// directly return real-time the multiple of the price of EDFCurrencyId and the exchange rate
-			return Self::access_price(T::GetEDFCurrencyId::get())
-				.and_then(|n| n.checked_mul(&T::LiquidStakingExchangeRateProvider::get_exchange_rate()));
 		} else if let CurrencyId::DexShare(dex_share_0, dex_share_1) = currency_id {
 			let token_0: CurrencyId = dex_share_0.into();
 			let token_1: CurrencyId = dex_share_1.into();

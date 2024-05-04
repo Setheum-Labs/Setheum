@@ -42,7 +42,6 @@ pub type AccountId = u128;
 pub type BlockNumber = u64;
 
 pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
-pub const LSEE: CurrencyId = CurrencyId::Token(TokenSymbol::LSEE);
 pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
 pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
 pub const LP_USSD_SEE: CurrencyId =
@@ -94,7 +93,6 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 			match *currency_id {
 				USSD => None,
 				SEE => Some(Price::saturating_from_integer(10)),
-				LSEE => Some(Price::saturating_from_integer(30)),
 				EDF => Some(Price::saturating_from_integer(200)),
 				_ => None,
 			}
@@ -102,7 +100,6 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 			match *currency_id {
 				USSD => Some(Price::saturating_from_rational(99, 100)),
 				SEE => Some(Price::saturating_from_integer(100)),
-				LSEE => Some(Price::zero()),
 				EDF => None,
 				_ => None,
 			}
@@ -113,17 +110,6 @@ impl DataProvider<CurrencyId, Price> for MockDataProvider {
 impl DataFeeder<CurrencyId, Price, AccountId> for MockDataProvider {
 	fn feed_value(_: Option<AccountId>, _: CurrencyId, _: Price) -> sp_runtime::DispatchResult {
 		Ok(())
-	}
-}
-
-pub struct MockLiquidStakingExchangeProvider;
-impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
-	fn get_exchange_rate() -> ExchangeRate {
-		if CHANGED.with(|v| *v.borrow_mut()) {
-			ExchangeRate::saturating_from_rational(3, 5)
-		} else {
-			ExchangeRate::saturating_from_rational(1, 2)
-		}
 	}
 }
 
@@ -206,14 +192,6 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = Nothing;
 }
 
-impl BlockNumberProvider for MockBlockNumberProvider {
-	type BlockNumber = BlockNumber;
-
-	fn current_block_number() -> Self::BlockNumber {
-		Self::get()
-	}
-}
-
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
@@ -221,9 +199,7 @@ ord_parameter_types! {
 parameter_types! {
 	pub const GetUSSDCurrencyId: CurrencyId = USSD;
 	pub const GetSEECurrencyId: CurrencyId = SEE;
-	pub const GetLiquidSEECurrencyId: CurrencyId = LSEE;
 	pub USSDFixedPrice: Price = Price::one();
-	pub static MockBlockNumberProvider: BlockNumber = 0;
 }
 
 impl Config for Runtime {
@@ -232,13 +208,10 @@ impl Config for Runtime {
 	type GetUSSDCurrencyId = GetUSSDCurrencyId;
 	type USSDFixedPrice = USSDFixedPrice;
 	type GetSEECurrencyId = GetSEECurrencyId;
-	type GetLiquidSEECurrencyId = GetLiquidSEECurrencyId;
 	type LockOrigin = EnsureSignedBy<One, AccountId>;
-	type LiquidStakingExchangeRateProvider = MockLiquidStakingExchangeProvider;
 	type SwapManager = MockSwapManager;
 	type Currency = Tokens;
 	type Erc20InfoMapping = MockErc20InfoMapping;
-	type BlockNumber = MockBlockNumberProvider;
 	type PricingPegged = PricingPegged;
 	type WeightInfo = ();
 }

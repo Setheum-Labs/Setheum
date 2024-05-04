@@ -38,7 +38,6 @@ pub type AccountId = AccountId32;
 
 pub const SEE: CurrencyId = CurrencyId::Token(TokenSymbol::SEE);
 pub const USSD: CurrencyId = CurrencyId::Token(TokenSymbol::USSD);
-pub const LEDF: CurrencyId = CurrencyId::Token(TokenSymbol::LEDF);
 pub const BTC: CurrencyId = CurrencyId::ForeignAsset(255);
 pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::EDF);
 pub const BTC_USSD_LP: CurrencyId =

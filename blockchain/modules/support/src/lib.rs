@@ -48,7 +48,6 @@ pub mod edfis_mining;
 pub mod edfis_swap;
 pub mod edfis_swap_legacy;
 pub mod evm;
-pub mod liquid_staking;
 pub mod migration;
 pub mod mocks;
 
@@ -59,7 +58,6 @@ pub use crate::edfis_mining::*;
 pub use crate::edfis_swap::*;
 pub use crate::edfis_swap_legacy::*;
 pub use crate::evm::*;
-pub use crate::liquid_staking::*;
 pub use crate::migration::*;
 
 pub type Price = FixedU128;

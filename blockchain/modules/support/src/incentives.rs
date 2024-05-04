@@ -30,8 +30,6 @@ use sp_std::prelude::*;
 // 1. EcdpSetrLiquidityRewards: record the shares and rewards for Setter (SETR)) ECDP users who are staking LP tokens.
 // 2. EcdpUssdLiquidityRewards: record the shares and rewards for Slick USD (USSD) ECDP users who are staking LP tokens.
 // 3. EdfisLiquidityRewards: record the shares and rewards for Edfis makers who are staking LP token.
-// 4. EdfisXLiquidityRewards: record the shares and rewards for Edfis X (Cross-chain) makers who are staking LP token.
-// 5. MoyaEarnRewards: record the shares and rewards for users of Moya Earn (Moya Liquid Staking Protocol).
 #[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, RuntimeDebug, TypeInfo)]
 pub enum PoolId {
 	/// Rewards and shares pool for Setter (SETR)) ECDP users who are staking LP token(LPCurrencyId)
@@ -42,9 +40,6 @@ pub enum PoolId {
 
 	/// Rewards and shares pool for Edfis market makers who stake LP token(LPCurrencyId)
 	EdfisLiquidityRewards(CurrencyId),
-
-	/// Rewards and shares pool for Edfis X (Cross-chain) market makers who stake LP token(LPCurrencyId)
-	EdfisXLiquidityRewards(CurrencyId),
 
 	/// Rewards and shares pool for Moya Earn
 	MoyaEarnRewards(CurrencyId),

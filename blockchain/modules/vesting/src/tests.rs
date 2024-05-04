@@ -36,7 +36,7 @@ fn vesting_from_chain_spec_works() {
 			]
 		);
 
-		MockBlockNumberProvider::set(13);
+		System::set_block_number(13);
 
 		assert_ok!(Vesting::claim(RuntimeOrigin::signed(CHARLIE), SEE));
 
@@ -47,7 +47,7 @@ fn vesting_from_chain_spec_works() {
 		));
 		assert!(Tokens::ensure_can_withdraw(SEE, &CHARLIE, 26).is_err());
 
-		MockBlockNumberProvider::set(14);
+		System::set_block_number(14);
 
 		assert_ok!(Vesting::claim(RuntimeOrigin::signed(CHARLIE), SEE));
 
@@ -136,7 +136,7 @@ fn add_new_vesting_schedule_merges_with_current_locked_balance_and_until() {
 		};
 		assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(ALICE), SEE, BOB, schedule));
 
-		MockBlockNumberProvider::set(12);
+		System::set_block_number(12);
 
 		let another_schedule = VestingSchedule {
 			start: 10u64,
@@ -272,7 +272,7 @@ fn claim_works() {
 		};
 		assert_ok!(Vesting::vested_transfer(RuntimeOrigin::signed(ALICE), SEE, BOB, schedule));
 
-		MockBlockNumberProvider::set(11);
+		System::set_block_number(11);
 		// remain locked if not claimed
 		assert!(Tokens::transfer(&BOB, &ALICE, SEE, 10).is_err());
 		// unlocked after claiming
@@ -282,7 +282,7 @@ fn claim_works() {
 		// more are still locked
 		assert!(Tokens::transfer(&BOB, &ALICE, SEE, 1).is_err());
 
-		MockBlockNumberProvider::set(21);
+		System::set_block_number(21);
 		// claim more
 		assert_ok!(Vesting::claim(RuntimeOrigin::signed(BOB), SEE));
 		assert!(!NativeVestingSchedules::<Runtime>::contains_key(BOB));
@@ -317,7 +317,7 @@ fn claim_for_works() {
 		);
 		assert!(NativeVestingSchedules::<Runtime>::contains_key(&BOB));
 
-		MockBlockNumberProvider::set(21);
+		System::set_block_number(21);
 
 		assert_ok!(Vesting::claim_for(RuntimeOrigin::signed(ALICE), SEE, BOB));
 
@@ -351,11 +351,11 @@ fn update_vesting_schedules_works() {
 			vec![updated_schedule]
 		));
 
-		MockBlockNumberProvider::set(11);
+		System::set_block_number(11);
 		assert_ok!(Vesting::claim(RuntimeOrigin::signed(BOB), SEE));
 		assert!(Tokens::transfer(&BOB, &ALICE, SEE, 1).is_err());
 
-		MockBlockNumberProvider::set(21);
+		System::set_block_number(21);
 		assert_ok!(Vesting::claim(RuntimeOrigin::signed(BOB), SEE));
 		assert_ok!(Tokens::transfer(&BOB, &ALICE, SEE, 10));
 
@@ -419,13 +419,13 @@ fn multiple_vesting_schedule_claim_works() {
 
 		assert_eq!(Vesting::native_vesting_schedules(&BOB), vec![schedule, schedule2.clone()]);
 
-		MockBlockNumberProvider::set(21);
+		System::set_block_number(21);
 
 		assert_ok!(Vesting::claim(RuntimeOrigin::signed(BOB, SEE)));
 
 		assert_eq!(Vesting::native_vesting_schedules(&BOB), vec![schedule2]);
 
-		MockBlockNumberProvider::set(31);
+		System::set_block_number(31);
 
 		assert_ok!(Vesting::claim(RuntimeOrigin::signed(BOB, SEE)));
 
@@ -495,7 +495,7 @@ fn cliff_vesting_works() {
 		assert_eq!(Tokens::locks(&BOB, SEE), vec![balance_lock.clone()]);
 
 		for i in 1..VESTING_PERIOD {
-			MockBlockNumberProvider::set(i);
+			System::set_block_number(i);
 			assert_ok!(Vesting::claim(RuntimeOrigin::signed(BOB), SEE));
 			assert_eq!(Tokens::free_balance(SEE, BOB), VESTING_AMOUNT);
 			assert_eq!(Tokens::locks(&BOB, SEE), vec![balance_lock.clone()]);
@@ -505,7 +505,7 @@ fn cliff_vesting_works() {
 			);
 		}
 
-		MockBlockNumberProvider::set(VESTING_PERIOD);
+		System::set_block_number(VESTING_PERIOD);
 		assert_ok!(Vesting::claim(RuntimeOrigin::signed(BOB), SEE));
 		assert!(Tokens::locks(&BOB, SEE).is_empty());
 		assert_ok!(Tokens::transfer(

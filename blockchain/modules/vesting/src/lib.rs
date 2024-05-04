@@ -57,7 +57,7 @@ use frame_system::{ensure_root, ensure_signed, pallet_prelude::*};
 use parity_scale_codec::{HasCompact, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{
-	traits::{AtLeast32Bit, BlockNumberProvider, CheckedAdd, Saturating, StaticLookup, Zero},
+	traits::{AtLeast32Bit, CheckedAdd, Saturating, StaticLookup, Zero},
 	ArithmeticError, DispatchResult, RuntimeDebug,
 };
 use sp_std::{
@@ -164,9 +164,6 @@ pub mod module {
 
 		/// The maximum vesting schedules for EDF
 		type MaxEDFVestingSchedules: Get<u32>;
-
-		// The block number provider
-		type BlockNumberProvider: BlockNumberProvider<BlockNumber = BlockNumberFor<Self>>;
 	}
 
 	#[pallet::error]
@@ -422,7 +419,7 @@ impl<T: Config> Pallet<T> {
 
 	/// Returns locked balance based on current block number.
 	fn locked_balance(currency_id: CurrencyIdOf<T>, who: &T::AccountId) -> BalanceOf<T> {
-		let now = T::BlockNumberProvider::current_block_number();
+		let now = frame_system::Pallet::<T>::block_number();
 		if currency_id == T::GetNativeCurrencyId::get() {
 			<NativeVestingSchedules<T>>::mutate_exists(who, |maybe_schedules| {
 				let total = if let Some(schedules) = maybe_schedules.as_mut() {
