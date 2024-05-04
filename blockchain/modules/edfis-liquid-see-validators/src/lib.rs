@@ -40,7 +40,7 @@ use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
-	traits::{BlockNumberProvider, Bounded, MaybeDisplay, MaybeSerializeDeserialize, Member, Zero},
+	traits::{Bounded, MaybeDisplay, MaybeSerializeDeserialize, Member, Zero},
 	DispatchResult, FixedPointNumber, RuntimeDebug,
 };
 use sp_std::{fmt::Debug, vec::Vec};
@@ -151,7 +151,7 @@ pub struct SlashInfo<Balance, AccountId> {
 	/// Address of a validator
 	validator: AccountId,
 	/// The amount of tokens a validator has in backing
-	token_amount: Balance,
+	amount: Balance,
 }
 
 /// Validator insurance and frozen status
@@ -194,9 +194,6 @@ pub mod module {
 		type OnIncreaseGuarantee: Happened<(Self::AccountId, Self::AccountId, Balance)>;
 		/// Callback to be called when a validator's insurance decreases.
 		type OnDecreaseGuarantee: Happened<(Self::AccountId, Self::AccountId, Balance)>;
-
-		// The block number provider
-		type BlockNumberProvider: BlockNumberProvider<BlockNumber = BlockNumberFor<Self>>;
 	}
 
 	#[pallet::error]
@@ -337,7 +334,7 @@ pub mod module {
 						guarantee.bonded.is_zero() || guarantee.bonded >= T::MinBondAmount::get(),
 						Error::<T>::BelowMinBondAmount,
 					);
-					let expired_block = T::BlockNumberProvider::current_block_number() + T::BondingDuration::get();
+					let expired_block = frame_system::Pallet::<T>::block_number() + T::BondingDuration::get();
 					guarantee.unbonding = Some((amount, expired_block));
 
 					Self::deposit_event(Event::UnbondGuarantee {
@@ -387,7 +384,7 @@ pub mod module {
 			);
 			Self::update_guarantee(&guarantor, &validator, |guarantee| -> DispatchResult {
 				let old_total = guarantee.total;
-				*guarantee = guarantee.consolidate_unbonding(T::BlockNumberProvider::current_block_number());
+				*guarantee = guarantee.consolidate_unbonding(frame_system::Pallet::<T>::block_number());
 				let new_total = guarantee
 					.bonded
 					.saturating_add(guarantee.unbonding.unwrap_or_default().0);
@@ -466,12 +463,12 @@ pub mod module {
 
 			for SlashInfo {
 				validator,
-				token_amount,
+				amount,
 			} in slashes
 			{
 				let ValidatorBacking { total_insurance, .. } = Self::validator_backings(&validator).unwrap_or_default();
 				let insurance_loss = staking_liquid_exchange_rate
-					.saturating_mul_int(token_amount)
+					.saturating_mul_int(amount)
 					.min(total_insurance);
 
 				for (guarantor, _) in Guarantees::<T>::iter_prefix(&validator) {

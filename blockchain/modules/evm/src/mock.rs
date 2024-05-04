@@ -33,7 +33,7 @@ use orml_traits::parameter_type_with_key;
 use primitives::{Amount, BlockNumber, CurrencyId, ReserveIdentifier, TokenSymbol};
 use sp_core::{bytes::from_hex, H160};
 use sp_runtime::{
-	traits::{BlockNumberProvider, IdentityLookup},
+	traits::IdentityLookup,
 	AccountId32, BuildStorage,
 };
 use std::{collections::BTreeMap, str::FromStr};

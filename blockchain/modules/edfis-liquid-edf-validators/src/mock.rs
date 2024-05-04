@@ -163,18 +163,6 @@ impl ExchangeRateProvider for MockLiquidStakingExchangeProvider {
 	}
 }
 
-parameter_types! {
-	pub static MockBlockNumberProvider: u64 = 0;
-}
-
-impl BlockNumberProvider for MockBlockNumberProvider {
-	type BlockNumber = u64;
-
-	fn current_block_number() -> Self::BlockNumber {
-		Self::get()
-	}
-}
-
 ord_parameter_types! {
 	pub const Admin: AccountId = 10;
 }
@@ -192,7 +180,6 @@ impl Config for Runtime {
 	type WeightInfo = ();
 	type OnIncreaseGuarantee = MockOnIncreaseGuarantee;
 	type OnDecreaseGuarantee = MockOnDecreaseGuarantee;
-	type BlockNumberProvider = MockBlockNumberProvider;
 }
 
 type Block = frame_system::mocking::MockBlock<Runtime>;

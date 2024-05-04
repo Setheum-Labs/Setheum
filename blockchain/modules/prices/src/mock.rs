@@ -206,14 +206,6 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = Nothing;
 }
 
-impl BlockNumberProvider for MockBlockNumberProvider {
-	type BlockNumber = BlockNumber;
-
-	fn current_block_number() -> Self::BlockNumber {
-		Self::get()
-	}
-}
-
 ord_parameter_types! {
 	pub const One: AccountId = 1;
 }
@@ -223,7 +215,6 @@ parameter_types! {
 	pub const GetSEECurrencyId: CurrencyId = SEE;
 	pub const GetLiquidSEECurrencyId: CurrencyId = LSEE;
 	pub USSDFixedPrice: Price = Price::one();
-	pub static MockBlockNumberProvider: BlockNumber = 0;
 }
 
 impl Config for Runtime {
@@ -238,7 +229,6 @@ impl Config for Runtime {
 	type SwapManager = MockSwapManager;
 	type Currency = Tokens;
 	type Erc20InfoMapping = MockErc20InfoMapping;
-	type BlockNumber = MockBlockNumberProvider;
 	type PricingPegged = PricingPegged;
 	type WeightInfo = ();
 }

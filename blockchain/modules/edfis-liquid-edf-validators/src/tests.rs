@@ -381,7 +381,6 @@ fn bond_work() {
 fn unbond_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		MockBlockNumberProvider::set(1);
 
 		assert_ok!(EdfisLiquidSeeValidatorsModule::bond(
 			RuntimeOrigin::signed(ALICE),
@@ -464,7 +463,6 @@ fn unbond_work() {
 fn rebond_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		MockBlockNumberProvider::set(1);
 
 		assert_ok!(EdfisLiquidSeeValidatorsModule::bond(
 			RuntimeOrigin::signed(ALICE),
@@ -536,7 +534,6 @@ fn rebond_work() {
 fn withdraw_unbonded_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		System::set_block_number(1);
-		MockBlockNumberProvider::set(1);
 
 		assert_ok!(EdfisLiquidSeeValidatorsModule::bond(
 			RuntimeOrigin::signed(ALICE),
@@ -583,7 +580,7 @@ fn withdraw_unbonded_work() {
 			200
 		);
 
-		MockBlockNumberProvider::set(100);
+		System::set_block_number(100)
 		assert_ok!(EdfisLiquidSeeValidatorsModule::withdraw_unbonded(
 			RuntimeOrigin::signed(ALICE),
 			VALIDATOR_1
@@ -612,7 +609,7 @@ fn withdraw_unbonded_work() {
 			200
 		);
 		System::reset_events();
-		MockBlockNumberProvider::set(101);
+		System::set_block_number(101)
 		assert_ok!(EdfisLiquidSeeValidatorsModule::withdraw_unbonded(
 			RuntimeOrigin::signed(ALICE),
 			VALIDATOR_1
@@ -743,11 +740,11 @@ fn slash_work() {
 				vec![
 					SlashInfo {
 						validator: VALIDATOR_1,
-						relaychain_token_amount: 90
+						amount: 90
 					},
 					SlashInfo {
 						validator: VALIDATOR_2,
-						relaychain_token_amount: 50
+						amount: 50
 					},
 				]
 			),
@@ -759,11 +756,11 @@ fn slash_work() {
 			vec![
 				SlashInfo {
 					validator: VALIDATOR_1,
-					relaychain_token_amount: 90
+					amount: 90
 				},
 				SlashInfo {
 					validator: VALIDATOR_2,
-					relaychain_token_amount: 50
+					amount: 50
 				},
 			]
 		));
@@ -850,7 +847,7 @@ fn slash_work() {
 #[test]
 fn contains_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		MockBlockNumberProvider::set(1);
+		System::set_block_number(1)
 
 		assert_ok!(EdfisLiquidSeeValidatorsModule::bond(
 			RuntimeOrigin::signed(ALICE),

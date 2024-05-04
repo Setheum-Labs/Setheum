@@ -40,7 +40,7 @@ pub use primitives::{Address, Amount, BlockNumber, CurrencyId, Header, Multiplie
 use sp_core::H160;
 use sp_runtime::{
 	generic,
-	traits::{AccountIdConversion, BlockNumberProvider, IdentityLookup},
+	traits::{AccountIdConversion, IdentityLookup},
 	AccountId32, FixedU128, Percent,
 };
 

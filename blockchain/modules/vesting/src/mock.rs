@@ -67,15 +67,6 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = Nothing;
 }
 
-impl BlockNumberProvider for MockBlockNumberProvider {
-	type BlockNumber = BlockNumber;
-
-	fn current_block_number() -> Self::BlockNumber {
-		Self::get()
-	}
-}
-
-
 pub struct EnsureAliceOrBob;
 impl EnsureOrigin<RuntimeOrigin> for EnsureAliceOrBob {
 	type Success = AccountId;
@@ -102,15 +93,6 @@ pub const EDF: CurrencyId = CurrencyId::Token(TokenSymbol::edf);
 parameter_types! {
 	pub const GetNativeCurrencyId: CurrencyId = SEE;
 	pub const GetDEFCurrencyId: CurrencyId = EDF;
-	pub static MockBlockNumberProvider: u64 = 0;
-}
-
-impl BlockNumberProvider for MockBlockNumberProvider {
-	type BlockNumber = u64;
-
-	fn current_block_number() -> BlockNumberFor<Runtime> {
-		Self::get()
-	}
 }
 
 impl Config for Runtime {
@@ -124,7 +106,6 @@ impl Config for Runtime {
 	type WeightInfo = ();
 	type MaxNativeVestingSchedules = ConstU32<2>;
 	type MaxEDFVestingSchedules = ConstU32<2>;
-	type BlockNumberProvider = MockBlockNumberProvider;
 }
 
 type Block = frame_system::mocking::MockBlock<Runtime>;
