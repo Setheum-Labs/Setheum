@@ -135,30 +135,6 @@ fn access_price_of_ussd() {
 }
 
 #[test]
-fn access_price_of_liquid_currency() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(
-			PricesModule::access_price(SEE),
-			Some(Price::saturating_from_integer(10000000000u128))
-		); // 100 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			PricesModule::access_price(LSEE),
-			Some(Price::saturating_from_integer(5000000000u128))
-		); // see_price * 1/2
-
-		mock_oracle_update();
-		assert_eq!(
-			PricesModule::access_price(SEE),
-			Some(Price::saturating_from_integer(1000000000u128))
-		); // 10 USD, right shift the decimal point (18-12) places
-		assert_eq!(
-			PricesModule::access_price(LSEE),
-			Some(Price::saturating_from_integer(600000000u128))
-		); // see_price * 3/5
-	});
-}
-
-#[test]
 fn access_price_of_dex_share_currency() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(
@@ -311,20 +287,12 @@ fn price_providers_work() {
 			RealTimePriceProvider::<Runtime>::get_price(USSD),
 			Some(Price::saturating_from_integer(1000000u128))
 		);
-		assert_eq!(
-			RealTimePriceProvider::<Runtime>::get_price(LSEE),
-			Some(Price::saturating_from_integer(5000000000u128))
-		);
 		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(EDF), None);
 		assert_eq!(RealTimePriceProvider::<Runtime>::get_price(LP_USSD_SEE), lp_price_1);
 
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(USSD),
 			Some(Price::saturating_from_integer(1000000u128))
-		);
-		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(LSEE),
-			Some(Price::saturating_from_integer(5000000000u128))
 		);
 		assert_eq!(PriorityLockedPriceProvider::<Runtime>::get_price(EDF), None);
 		assert_eq!(
@@ -333,13 +301,11 @@ fn price_providers_work() {
 		);
 
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USSD), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LSEE), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(EDF), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USSD_SEE), None);
 
 		// lock price
 		assert_ok!(PricesModule::lock_price(RuntimeOrigin::signed(1), USSD));
-		assert_ok!(PricesModule::lock_price(RuntimeOrigin::signed(1), LSEE));
 		assert_noop!(
 			PricesModule::lock_price(RuntimeOrigin::signed(1), EDF),
 			Error::<Runtime>::AccessPriceFailed
@@ -349,10 +315,6 @@ fn price_providers_work() {
 		assert_eq!(
 			LockedPriceProvider::<Runtime>::get_price(USSD),
 			Some(Price::saturating_from_integer(1000000u128))
-		);
-		assert_eq!(
-			LockedPriceProvider::<Runtime>::get_price(LSEE),
-			Some(Price::saturating_from_integer(5000000000u128))
 		);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(EDF), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USSD_SEE), lp_price_1);
@@ -372,10 +334,6 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(1000000u128))
 		);
 		assert_eq!(
-			RealTimePriceProvider::<Runtime>::get_price(LSEE),
-			Some(Price::saturating_from_integer(600000000u128))
-		);
-		assert_eq!(
 			RealTimePriceProvider::<Runtime>::get_price(EDF),
 			Some(Price::saturating_from_integer(200000000u128))
 		);
@@ -384,10 +342,6 @@ fn price_providers_work() {
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(USSD),
 			Some(Price::saturating_from_integer(1000000u128))
-		);
-		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(LSEE),
-			Some(Price::saturating_from_integer(5000000000u128))
 		);
 		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(EDF),
@@ -402,16 +356,11 @@ fn price_providers_work() {
 			LockedPriceProvider::<Runtime>::get_price(USSD),
 			Some(Price::saturating_from_integer(1000000u128))
 		);
-		assert_eq!(
-			LockedPriceProvider::<Runtime>::get_price(LSEE),
-			Some(Price::saturating_from_integer(5000000000u128))
-		);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(EDF), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USSD_SEE), lp_price_1);
 
 		// unlock price
 		assert_ok!(PricesModule::unlock_price(RuntimeOrigin::signed(1), USSD));
-		assert_ok!(PricesModule::unlock_price(RuntimeOrigin::signed(1), LSEE));
 		assert_noop!(
 			PricesModule::unlock_price(RuntimeOrigin::signed(1), EDF),
 			Error::<Runtime>::NoLockedPrice
@@ -423,10 +372,6 @@ fn price_providers_work() {
 			Some(Price::saturating_from_integer(1000000u128))
 		);
 		assert_eq!(
-			PriorityLockedPriceProvider::<Runtime>::get_price(LSEE),
-			Some(Price::saturating_from_integer(600000000u128))
-		);
-		assert_eq!(
 			PriorityLockedPriceProvider::<Runtime>::get_price(EDF),
 			Some(Price::saturating_from_integer(200000000u128))
 		);
@@ -436,7 +381,6 @@ fn price_providers_work() {
 		);
 
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(USSD), None);
-		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LSEE), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(EDF), None);
 		assert_eq!(LockedPriceProvider::<Runtime>::get_price(LP_USSD_SEE), None);
 	});

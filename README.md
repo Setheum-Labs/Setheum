@@ -78,7 +78,7 @@ Setheum is a light-speed decentralised blockchain network with EVM and WASM smar
 
 ### 1.2. Ethical DeFi
 
-Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including an AMM DEX (inspired by Uniswap v3), Decentralised Liquid Staking and Ethical Zero-interest Halal sStablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD) and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable without compromising decentralisation or economic stability, offering stable cryptocurrencies that have scalable value and reliability, setheum provides just that, backed by crypto assets on an efficient zero-interest debt-based system.
+Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all kinds of top notch DeFi protocols including an AMM DEX (inspired by Uniswap v3), Ethical Zero-interest Halal Stablecoins that gives us the properties of both Fiat and Crypto with SlickUSD (USSD) and the Setter (SETR) using an Ethical Collateralized Debt Position (ECDP) mechanism that is over-Collateralized and multi-Collateralised and stable without compromising decentralisation or economic stability, offering stable cryptocurrencies that have scalable value and reliability, setheum provides just that, backed by crypto assets on an efficient zero-interest debt-based system.
 
 #### 1.2.1. Ethical DeFi Projects:
 
@@ -86,7 +86,7 @@ Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all 
   - `Edfis Exchange`: AMM (Automated Market Maker) DEX Protocol inspired by Uniswap v3 design
   - `Edfis Launchpad`: Launchpad Crowdsales protocol for bootstrapping pools on Edfis Exchange
   - `Edfis Launchpool`: Launchpool protocol for bootstrapping pools on Edfis Exchange
-  - `Edfis Liquid Staking`: Liquid Staking Protocol
+  - `Edfis Pay`: Decentralised Escrow Payment Protocol
 - `Setter`: Unpegged ECDP Stablecoin
 - `SlickUSD`: USD Pegged ECDP Stablecoin
 

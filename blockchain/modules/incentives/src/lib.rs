@@ -32,8 +32,6 @@
 //! 1. EcdpSetrLiquidityRewards: record the shares and rewards for Setter (SETR) ECDP users who are staking LP tokens.
 //! 2. EcdpUssdLiquidityRewards: record the shares and rewards for Slick USD (USSD) ECDP users who are staking LP tokens.
 //! 3. EdfisLiquidityRewards: record the shares and rewards for Edfis makers who are staking LP token.
-//! 4. EdfisXLiquidityRewards: record the shares and rewards for Edfis X (Cross-chain) makers who are staking XLP token.
-//! 5. MoyaEarnRewards: record the shares and rewards for users of Moya Earn (Moya Liquid Staking Protocol).
 //!
 //! Rewards accumulation:
 //! 1. Rewards: periodicly(AccumulatePeriod), accumulate fixed amount according to Rewards.

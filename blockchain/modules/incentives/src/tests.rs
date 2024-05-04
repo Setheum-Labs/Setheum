@@ -344,7 +344,6 @@ fn on_initialize_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(TokensModule::deposit(SEE, &RewardsSource::get(), 10000));
 		assert_ok!(TokensModule::deposit(USSD, &RewardsSource::get(), 10000));
-		assert_ok!(TokensModule::deposit(LEDF, &RewardsSource::get(), 10000));
 
 		assert_ok!(IncentivesModule::update_incentive_rewards(
 			RuntimeOrigin::signed(ROOT::get()),
@@ -361,7 +360,6 @@ fn on_initialize_should_work() {
 
 		assert_eq!(TokensModule::free_balance(SEE, &RewardsSource::get()), 10000);
 		assert_eq!(TokensModule::free_balance(USSD, &RewardsSource::get()), 10000);
-		assert_eq!(TokensModule::free_balance(LEDF, &RewardsSource::get()), 10000);
 		
 		assert_eq!(
 			RewardsModule::pool_infos(PoolId::Dex(BTC_USSD_LP)),
@@ -394,7 +392,6 @@ fn on_initialize_should_work() {
 			10000 - (1000 + 200 + 100 + 100)
 		);
 		assert_eq!(TokensModule::free_balance(USSD, &RewardsSource::get()), 10000 - 500);
-		assert_eq!(TokensModule::free_balance(LEDF, &RewardsSource::get()), 10000);
 		
 		// 100 SEE is incentive reward
 		assert_eq!(
@@ -427,7 +424,6 @@ fn on_initialize_should_work() {
 			8600 - (1000 + 2000 + 100 + 200 + 100)
 		);
 		assert_eq!(TokensModule::free_balance(USSD, &RewardsSource::get()), 9500 - 500);
-		assert_eq!(TokensModule::free_balance(LEDF, &RewardsSource::get()), 10000 - 50);
 		
 		// 100 SEE is incentive reward
 		assert_eq!(
@@ -461,7 +457,6 @@ fn on_initialize_should_work() {
 			5200 - (100 + 200 + 100)
 		);
 		assert_eq!(TokensModule::free_balance(USSD, &RewardsSource::get()), 9000);
-		assert_eq!(TokensModule::free_balance(LEDF, &RewardsSource::get()), 9950);
 		
 		// after shutdown, PoolId::Dex will accumulate incentive rewards
 		// reward
@@ -541,10 +536,6 @@ fn transfer_reward_and_update_rewards_storage_atomically_when_accumulate_incenti
 		assert_ok!(TokensModule::deposit(SEE, &RewardsSource::get(), 100));
 		assert_eq!(TokensModule::free_balance(SEE, &RewardsSource::get()), 100);
 		assert_eq!(TokensModule::free_balance(USSD, &RewardsSource::get()), 100);
-		assert_eq!(
-			orml_rewards::PoolInfos::<Runtime>::contains_key(PoolId::Dex(LEDF)),
-			false
-		);
 
 		assert_eq!(TokensModule::free_balance(SEE, &RewardsSource::get()), 100);
 		assert_eq!(TokensModule::free_balance(USSD, &RewardsSource::get()), 100);
