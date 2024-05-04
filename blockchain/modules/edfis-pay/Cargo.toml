@@ -1,11 +1,10 @@
 [package]
-name = "module-setheum-pay"
-version = "0.9.81-dev"
+name = "module-edfis-pay"
+version = "0.5.0-dev"
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
 repository.workspace = true
-
 
 [dependencies]
 parity-scale-codec = { workspace = true }
