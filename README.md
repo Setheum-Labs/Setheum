@@ -1,6 +1,6 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Setheum - Powering The New Internet
+# Setheum - Powering Light-Speed Web3 Solutions
 
 <p align="center">
   <img src="./media/SetheumLabel.jpg" style="width:1300px" />
@@ -36,7 +36,7 @@ Setheum's Blockchain Network node Implementation in Rust, ready for hacking :roc
 [![Lines of Code](https://img.shields.io/badge/LinesOfCode-gray?logo=LinesOfCode)](https://cloc.info/github.com/Setheum-Labs/Setheum)
 </div>
 
-> NOTE: SETHEUM means `Salam Ethereum`, it also means `The house of gifts` from the name `Seth/Sheeth` meaning `gift` in hebrew and the name of the Prophet Sheeth/Seth in Islam,  it also stands for `Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market`.
+> NOTE: SETHEUM means `Salam Eth`, `Super Eth`, `The house of gifts` and `gifted`. Originally from the name `Seth/Sheeth` mixed with `Ethereum`, it also stands for `Secure, Evergreen, Truthful, Heterogeneous, Economically Unbiased Market`.
 
 <!-- TOC -->
 - [Setheum - Powering The New Internet](#setheum---powering-the-new-internet)
