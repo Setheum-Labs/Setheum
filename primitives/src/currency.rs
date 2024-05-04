@@ -140,14 +140,6 @@ macro_rules! create_currency_id {
 					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(EDF)).unwrap().dex_share_currency_id()).unwrap(),
 				},
 				Token {
-					symbol: "LP_LSEE_SETR".to_string(),
-					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(LSEE)).unwrap().dex_share_currency_id()).unwrap(),
-				},
-				Token {
-					symbol: "LP_LEDF_SETR".to_string(),
-					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(LEDF)).unwrap().dex_share_currency_id()).unwrap(),
-				},
-				Token {
 					symbol: "LP_USSD_SETR".to_string(),
 					address: EvmAddress::try_from(TradingPair::from_currency_ids(CurrencyId::Token(SETR), CurrencyId::Token(USSD)).unwrap().dex_share_currency_id()).unwrap(),
 				},
@@ -180,17 +172,14 @@ create_currency_id! {
 	#[repr(u8)]
 	pub enum TokenSymbol {
 		// 0 - 100: Reserved for Setheum Native Assets
-			// Primary Protocol Tokens
+		// Primary Protocol Tokens
 		SEE("Setheum", 12) = 0,
 		EDF("Ethical DeFi", 12) = 1,
-			// Liquid Staking Tokens
-		LSEE("Liquid SEE", 12) = 2,
-		LEDF("Liquid EDF", 12) = 3,
-			// ECDP Stablecoin Tokens
+		// ECDP Stablecoin Tokens
 		SETR("Setter", 12) = 4,
 		USSD("Slick USD", 12) = 5,
 
-		// 101-255: Reserved for Fiat Currencies
+		// 101-255: Reserved for Fiat Currencies represented on EdfisPay
 		AED("UAE Dirham", 2) = 101,
 		AMD("Armenian Dram", 2) = 102,
 		AOA("Angolan Kwanza", 2) = 103,
