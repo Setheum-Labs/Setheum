@@ -84,7 +84,8 @@ Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all 
 
 - `Edfis`: Ethical DeFi Suite
   - `Edfis Pay`: Decentralised Escrow Payment Protocol
-  - `Edfis Exchange`: AMM (Automated Market Maker) DEX Protocol inspired by Uniswap v3 design
+  - `Edfis Swap Exchange`: AMM (Automated Market Maker) DEX Protocol inspired by Uniswap v3 design
+  - `Edfis P2P Exchange`: Decentralized P2P Exchange Protocol as a crypto on-off ramp
   - `Edfis Launchpad`: Launchpad Crowdsales protocol for bootstrapping pools on Edfis Exchange
   - `Edfis Launchpool`: Launchpool protocol for bootstrapping pools on Edfis Exchange
 - `Setter`: Unpegged ECDP Stablecoin
