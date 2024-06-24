@@ -1,0 +1,91 @@
+[package]
+name = "senterprise-extension"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[dependencies]
+# Frontend dependencies:
+
+ink = { workspace = true, optional = true }
+sp-core = { workspace = true, optional = true }
+
+# Backend dependencies:
+
+getrandom = { version = "0.2.12", features = ["js"], optional = true }
+log = { workspace = true, optional = true }
+parity-scale-codec = { workspace = true, features = ["derive"], optional = true }
+
+frame-support = { workspace = true, optional = true }
+frame-system = { workspace = true, optional = true }
+pallet-contracts = { workspace = true, optional = true }
+sp-std = { workspace = true, optional = true }
+
+module-feature-control = { path = "../modules/feature-control", default-features = false, optional = true }
+
+## Proof verification dependencies:
+
+setheum-runtime-interfaces = { workspace = true, optional = true }
+module-vk-storage = { workspace = true, optional = true }
+
+# Benchmarking
+
+frame-benchmarking = { workspace = true, optional = true }
+paste = { workspace = true, optional = true }
+
+[dev-dependencies]
+setheum-runtime = { workspace = true }
+
+[build-dependencies]
+halo2_proofs = { workspace = true, features = ["mock-kzg-params", "multicore"] }
+
+[features]
+# This is an artificial feature that is used by 3rd party crates in macro expansions.
+std = []
+
+# `runtime` and `runtime-std` features are dedicated to the runtime crate. They bring the backend part of the extension.
+runtime = [
+    "getrandom",
+    "log",
+    "parity-scale-codec",
+    "frame-support",
+    "frame-system",
+    "pallet-contracts",
+    "sp-std",
+    "module-feature-control",
+    "module-vk-storage",
+    "setheum-runtime-interfaces",
+]
+runtime-std = [
+    "runtime",
+    "std",
+    "parity-scale-codec/std",
+    "frame-support/std",
+    "frame-system/std",
+    "pallet-contracts/std",
+    "sp-std/std",
+    "module-feature-control/std",
+    "module-vk-storage/std",
+    "setheum-runtime-interfaces/std",
+]
+
+# `ink` and `ink-std` features are dedicated to the ink! part of the extension. They bring the smart contract part of
+# the extension.
+ink = [
+    "dep:ink",
+    "sp-core",
+]
+ink-std = [
+    "ink",
+    "std",
+    "ink/std",
+    "sp-core/std",
+]
+
+runtime-benchmarks = [
+    "runtime",
+    "frame-benchmarking",
+    "paste",
+]

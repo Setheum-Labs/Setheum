@@ -1,0 +1,25 @@
+[workspace]
+
+[package]
+name = "senterprise-extension-test-contract"
+version = "0.1.0"
+authors = ["Setheum Labs", "Open Web3 Foundation"]
+edition = "2021"
+homepage = "https://setheum.xyz"
+repository = "https://github.com/Setheum-Labs/Setheum"
+publish = false
+
+[dependencies]
+ink = { version = "5.0.0-rc", default-features = false }
+senterprise-extension = { path = "../", features = ["ink"] }
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+    "senterprise-extension/ink-std",
+]
+ink-as-dependency = []
