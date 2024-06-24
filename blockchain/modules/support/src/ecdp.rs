@@ -172,23 +172,3 @@ pub trait EcdpUssdManager<AccountId, CurrencyId, Amount, Balance> {
 	/// Get exchange rate of debit units to debit value for a currency_id
 	fn get_debit_exchange_rate(currency_id: CurrencyId) -> ExchangeRate;
 }
-
-/// Functionality of Setter ECDP Protocol to be exposed to EVM.
-pub trait EcdpSetrManager<AccountId, Amount, Balance> {
-	/// Adjust ECDP loan
-	fn adjust_loan(
-		who: &AccountId,
-		collateral_adjustment: Amount,
-		debit_adjustment: Amount,
-	) -> DispatchResult;
-	/// Close ECDP loan using DEX
-	fn close_loan_by_dex(who: AccountId, max_collateral_amount: Balance) -> DispatchResult;
-	/// Get open ECDP corresponding to an account and collateral
-	fn get_position(who: &AccountId) -> EcdpEcdpPosition;
-	/// Get liquidation ratio for collateral
-	fn get_collateral_parameters() -> Vec<U256>;
-	/// Get current ratio of collateral to debit of open ECDP
-	fn get_current_collateral_ratio(who: &AccountId) -> Option<Ratio>;
-	/// Get exchange rate of debit units to debit value for a currency_id
-	fn get_debit_exchange_rate() -> ExchangeRate;
-}
