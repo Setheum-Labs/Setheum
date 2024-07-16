@@ -91,22 +91,6 @@ Ethical DeFi Suite is the DeFi powerhouse of the Setheum Network, providing all 
 - `Setter`: Unpegged ECDP Stablecoin
 - `SlickUSD`: USD Pegged ECDP Stablecoin
 
-##### Edfis Pay - Transfers
-
-Create these measures as a part of `Edfis Pay` so that users can opt-in and out at will.
-1. `ensure_account_exists()`: If the account doesn't exist, fail the transaction.
-2. `ensure-account_has_ed()`: If the account doesn't have ED, fail the transaction.
-
-Provide various types of transfer options to users, each of which must handle both `ensure_account_exists()` and `account_has_ed()` options (they are optional for users to use, so they should be of type `Boolean`).
-
-###### Transfer Types that Handle this issue:
-1. `red_packet_transfer`: to `automatically_unlock` the funds to the sender if the receiver does not opened the red packet within `TransferUnlockPeriod` , therefore reversing the transaction.
-2. `reclaimable_transfer`: allows the sender to `reclaim` (unlock) the funds if the receiver does not `claim` the transfer within `TransferUnlockPeriod` , therefore reversing the transaction.
-3. `willing_transfer`: allows the receiver to `accept` or `reject` the funds.
-4. `reversible_willing_transfer`: allows the receiver to `accept` or `reject` the funds. The transfer will automatically unlock if the receiver does not `claim` the transfer within `TransferUnlockPeriod` , therefore reversing the transaction.
-5. `protected_transfer`: allows the receiver to `claim` the transfer only if the receiver knows the `password` to the transfer, else the transfer cannot be claimed therefore the `TransferStatus` stays as `Unclaimed`.
-6. `reversible_protected_transfer`: allows the receiver to `claim` the transfer only if the receiver knows the `password` to the transfer, else the transfer cannot be claimed. The transfer will `automatically_unlock` the funds to the sender if the receiver does not claim the transfer within `TransferUnlockPeriod`.
-
 ## 2.0. Getting Started
 
 This project contains some configuration files to help get started :hammer_and_wrench:
