@@ -1,6 +1,6 @@
 بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 
-# Setheum: The Unified Web3 Base Layer - Scalably Solving Web3’s Fragmentation Problems.
+# Setheum: The Unified Web3 Base Layer - Globally Solving Web3’s Fragmentation Problems.
 
 <p align="center">
   <img src="./media/SetheumLabel.jpg" style="width:1300px" />
