@@ -220,14 +220,6 @@ git add .
 cargo update check-all
 ```
 
-Update Sygma:
-
-```bash
-cd sygma && git checkout master && git pull
-git add .
-cargo update check-all
-```
-
 __Note:__ All build command from Makefile are designed for local development purposes and hence have `SKIP_WASM_BUILD` enabled to speed up build time and use `--execution native` to only run using native execution mode.
 
 ## 4.0. Nodes
